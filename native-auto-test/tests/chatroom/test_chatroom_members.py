@@ -150,7 +150,7 @@ def _assert_joiner_ext_delivered_to_observer(
     for _ in range(12):
         observer_events = collect_chatroom_events(
             observer_device,
-            expected_event_types={"onMemberJoinedFromChatRoom"},
+            expected_event_types={"onRoomMemberJoined"},
             chatroom_id=room_id,
             timeout=0.5,
             require_event=False,
@@ -170,7 +170,7 @@ def _assert_joiner_ext_delivered_to_observer(
         # 仅收集加入方自身事件用于失败诊断，不参与匹配判定。
         self_events = collect_chatroom_events(
             joiner_device,
-            expected_event_types={"onMemberJoinedFromChatRoom"},
+            expected_event_types={"onRoomMemberJoined"},
             chatroom_id=room_id,
             timeout=0.5,
             require_event=False,
@@ -188,7 +188,7 @@ def _assert_joiner_ext_delivered_to_observer(
     assert_chatroom_event(
         assert_api,
         matching_event,
-        event_type="onMemberJoinedFromChatRoom",
+        event_type="onRoomMemberJoined",
         room_id=room_id,
         participant=joiner_user,
         ext=ext,

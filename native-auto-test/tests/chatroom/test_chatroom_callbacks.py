@@ -42,7 +42,7 @@ def _join_chatroom_as_b_and_wait_ready(device_b, assert_api, room_id: str) -> No
     _first_chatroom_event(
         device_b,
         room_id=room_id,
-        event_types={ChatRoomEvent.ON_MEMBER_JOINED.value, "onMemberJoinedFromChatRoom"},
+        event_types={ChatRoomEvent.ON_MEMBER_JOINED.value, "onRoomMemberJoined"},
     )
 
 
@@ -60,7 +60,7 @@ def test_chatroom_admin_added_and_removed_callbacks(device_a, device_b, assert_a
         add_evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
-            event_types={ChatRoomEvent.ON_ADMIN_ADDED.value, "onAdminAddedFromChatRoom"},
+            event_types={ChatRoomEvent.ON_ADMIN_ADDED.value, "onRoomAdminAdded"},
         )
         add_data = _event_data(add_evt)
         assert add_data.get("roomId") == room_id, f"管理员添加回调 roomId 不匹配: {add_evt}"
@@ -75,7 +75,7 @@ def test_chatroom_admin_added_and_removed_callbacks(device_a, device_b, assert_a
         remove_evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
-            event_types={ChatRoomEvent.ON_ADMIN_REMOVED.value, "onAdminRemovedFromChatRoom"},
+            event_types={ChatRoomEvent.ON_ADMIN_REMOVED.value, "onRoomAdminRemoved"},
         )
         remove_data = _event_data(remove_evt)
         assert remove_data.get("roomId") == room_id, f"管理员移除回调 roomId 不匹配: {remove_evt}"
@@ -98,7 +98,7 @@ def test_chatroom_owner_changed_callback(device_a, device_b, assert_api, user_a,
         evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
-            event_types={ChatRoomEvent.ON_OWNER_CHANGED.value, "onOwnerChangedFromChatRoom"},
+            event_types={ChatRoomEvent.ON_OWNER_CHANGED.value, "onRoomOwnerChanged"},
         )
         data = _event_data(evt)
         assert data.get("roomId") == room_id, f"owner 变更回调 roomId 不匹配: {evt}"
@@ -112,7 +112,7 @@ def test_chatroom_all_member_mute_state_callbacks(device_a, device_b, assert_api
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="cb_mute_all", desc_prefix="cb_mute_all")
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
-        event_types = {ChatRoomEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED.value, "onAllChatRoomMemberMuteStateChanged"}
+        event_types = {ChatRoomEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED.value, "onRoomAllMemberMuteStateChanged"}
 
         mute_resp = device_a.call("ChatRoomManager", Cmd.muteAllChatRoomMembers.value, info={"roomId": room_id})
         _assert_success_envelope(assert_api, mute_resp, cmd=Cmd.muteAllChatRoomMembers.value, device="deviceA")
@@ -174,7 +174,7 @@ def test_chatroom_attributes_updated_and_removed_callbacks(device_a, device_b, a
         removed_evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
-            event_types={ChatRoomEvent.ON_ATTRIBUTES_REMOVED.value, "onAttributesRemoved"},
+            event_types={ChatRoomEvent.ON_ATTRIBUTES_REMOVED.value, "onRoomAttributesDidRemoved"},
         )
         removed_data = _event_data(removed_evt)
         removed_keys = removed_data.get("removedKeys") or removed_data.get("keys")
@@ -203,7 +203,7 @@ def test_chatroom_announcement_changed_callback(device_a, device_b, assert_api, 
         evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
-            event_types={ChatRoomEvent.ON_ANNOUNCEMENT_CHANGED.value, "onAnnouncementChangedFromChatRoom"},
+            event_types={ChatRoomEvent.ON_ANNOUNCEMENT_CHANGED.value, "onRoomAnnouncementChanged"},
         )
         data = _event_data(evt)
         assert data.get("roomId") == room_id, f"公告变更回调 roomId 不匹配: {evt}"
@@ -228,7 +228,7 @@ def test_chatroom_specification_changed_callback(device_a, device_b, assert_api,
         evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
-            event_types={ChatRoomEvent.ON_SPECIFICATION_CHANGED.value, "onSpecificationChanged"},
+            event_types={ChatRoomEvent.ON_SPECIFICATION_CHANGED.value, "onRoomSpecificationChanged"},
         )
         data = _event_data(evt)
         room = data.get("room")
@@ -253,7 +253,7 @@ def test_chatroom_allow_list_added_and_removed_callbacks(device_a, device_b, ass
         add_evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
-            event_types={ChatRoomEvent.ON_WHITE_LIST_ADDED.value, "onAllowListAddedFromChatRoom"},
+            event_types={ChatRoomEvent.ON_WHITE_LIST_ADDED.value, "onRoomWhiteListAdded"},
         )
         add_data = _event_data(add_evt)
         assert add_data.get("roomId") == room_id, f"白名单添加回调 roomId 不匹配: {add_evt}"
@@ -273,7 +273,7 @@ def test_chatroom_allow_list_added_and_removed_callbacks(device_a, device_b, ass
         remove_evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
-            event_types={ChatRoomEvent.ON_WHITE_LIST_REMOVED.value, "onAllowListRemovedFromChatRoom"},
+            event_types={ChatRoomEvent.ON_WHITE_LIST_REMOVED.value, "onRoomWhiteListRemoved"},
         )
         remove_data = _event_data(remove_evt)
         assert remove_data.get("roomId") == room_id, f"白名单移除回调 roomId 不匹配: {remove_evt}"
@@ -296,7 +296,7 @@ def test_chatroom_mute_list_added_and_removed_callbacks(device_a, device_b, asse
         mute_evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
-            event_types={ChatRoomEvent.ON_MUTE_LIST_ADDED.value, "onMuteListAddedFromChatRoom"},
+            event_types={ChatRoomEvent.ON_MUTE_LIST_ADDED.value, "onRoomMuteListAdded"},
         )
         mute_data = _event_data(mute_evt)
         mutes = mute_data.get("mutes")
@@ -314,7 +314,7 @@ def test_chatroom_mute_list_added_and_removed_callbacks(device_a, device_b, asse
         unmute_evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
-            event_types={ChatRoomEvent.ON_MUTE_LIST_REMOVED.value, "onMuteListRemovedFromChatRoom"},
+            event_types={ChatRoomEvent.ON_MUTE_LIST_REMOVED.value, "onRoomMuteListRemoved"},
         )
         unmute_data = _event_data(unmute_evt)
         unmute_mutes = unmute_data.get("mutes")
@@ -345,7 +345,7 @@ def test_chatroom_member_exited_callback(device_a, device_b, assert_api, user_a,
         evt = _first_chatroom_event(
             device_a,
             room_id=room_id,
-            event_types={ChatRoomEvent.ON_MEMBER_EXITED.value, "onMemberExitedFromChatRoom"},
+            event_types={ChatRoomEvent.ON_MEMBER_EXITED.value, "onRoomMemberExited"},
         )
         data = _event_data(evt)
         assert data.get("roomId") == room_id, f"成员退出回调 roomId 不匹配: {evt}"
@@ -369,7 +369,7 @@ def test_chatroom_removed_and_destroyed_callbacks(device_a, device_b, assert_api
         removed_evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
-            event_types={ChatRoomEvent.ON_REMOVED_FROM_CHAT_ROOM.value, "onRemovedFromChatRoom"},
+            event_types={ChatRoomEvent.ON_REMOVED_FROM_CHAT_ROOM.value, "onRoomRemoved"},
         )
         removed_data = _event_data(removed_evt)
         assert removed_data.get("roomId") == room_id, f"成员被移除回调 roomId 不匹配: {removed_evt}"
@@ -382,7 +382,7 @@ def test_chatroom_removed_and_destroyed_callbacks(device_a, device_b, assert_api
         destroyed_evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
-            event_types={ChatRoomEvent.ON_CHAT_ROOM_DESTROYED.value, "onChatRoomDestroyed"},
+            event_types={ChatRoomEvent.ON_CHAT_ROOM_DESTROYED.value, "onRoomDestroyed"},
         )
         destroyed_data = _event_data(destroyed_evt)
         assert destroyed_data.get("roomId") == room_id, f"聊天室销毁回调 roomId 不匹配: {destroyed_evt}"

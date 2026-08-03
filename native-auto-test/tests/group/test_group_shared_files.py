@@ -33,22 +33,22 @@ def _consume_direct_invite_events(
 ) -> None:
     member_events = collect_group_events(
         member_device,
-        expected_event_types={"onAutoAcceptInvitationFromGroup"},
+        expected_event_types={"onGroupAutoAcceptInvitation"},
         group_id=group_id,
-        required_all_event_types={"onAutoAcceptInvitationFromGroup"},
+        required_all_event_types={"onGroupAutoAcceptInvitation"},
         timeout=10.0,
     )
     assert_api.assert_response_matches(
         member_events[0],
         expected={
             "type": "event",
-            "eventType": "onAutoAcceptInvitationFromGroup",
+            "eventType": "onGroupAutoAcceptInvitation",
             "data": {"groupId": group_id, "inviter": owner, "inviteMessage": ""},
         },
         ignore_keys={"timestamp", "sequence"},
     )
 
-    owner_event_types = {"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"}
+    owner_event_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
     owner_events = collect_group_events(
         owner_device,
         expected_event_types=owner_event_types,
@@ -77,7 +77,7 @@ def _assert_shared_file_added_event(
         event,
         expected={
             "type": "event",
-            "eventType": "onSharedFileAddedFromGroup",
+            "eventType": "onGroupSharedFileAdded",
             "data": {
                 "groupId": group_id,
                 "sharedFile": {
@@ -157,9 +157,9 @@ def _upload_remove_and_assert_peer_events(
 
     added_events = collect_group_events(
         observer_device,
-        expected_event_types={"onSharedFileAddedFromGroup"},
+        expected_event_types={"onGroupSharedFileAdded"},
         group_id=group_id,
-        required_all_event_types={"onSharedFileAddedFromGroup"},
+        required_all_event_types={"onGroupSharedFileAdded"},
         timeout=20.0,
     )
     shared_file = _assert_shared_file_added_event(
@@ -171,7 +171,7 @@ def _upload_remove_and_assert_peer_events(
     assert_no_group_event(
         operator_device,
         group_id=group_id,
-        event_types={"onSharedFileAddedFromGroup"},
+        event_types={"onGroupSharedFileAdded"},
     )
 
     _assert_file_list_matches_event(
@@ -201,16 +201,16 @@ def _upload_remove_and_assert_peer_events(
 
     deleted_events = collect_group_events(
         observer_device,
-        expected_event_types={"onSharedFileDeletedFromGroup"},
+        expected_event_types={"onGroupSharedFileDeleted"},
         group_id=group_id,
-        required_all_event_types={"onSharedFileDeletedFromGroup"},
+        required_all_event_types={"onGroupSharedFileDeleted"},
         timeout=10.0,
     )
     assert_api.assert_response_matches(
         deleted_events[0],
         expected={
             "type": "event",
-            "eventType": "onSharedFileDeletedFromGroup",
+            "eventType": "onGroupSharedFileDeleted",
             "data": {"groupId": group_id, "fileId": file_id},
         },
         ignore_keys={"timestamp", "sequence"},
@@ -218,7 +218,7 @@ def _upload_remove_and_assert_peer_events(
     assert_no_group_event(
         operator_device,
         group_id=group_id,
-        event_types={"onSharedFileDeletedFromGroup"},
+        event_types={"onGroupSharedFileDeleted"},
     )
 
     resp_empty = operator_device.call(
@@ -338,23 +338,23 @@ def test_group_admin_upload_remove_shared_file_notifies_owner(
         )
         admin_events = collect_group_events(
             device_b,
-            expected_event_types={"onAdminAddedFromGroup"},
+            expected_event_types={"onGroupAdminAdded"},
             group_id=group_id,
-            required_all_event_types={"onAdminAddedFromGroup"},
+            required_all_event_types={"onGroupAdminAdded"},
             timeout=10.0,
         )
         assert_group_events(
             assert_api,
             admin_events,
-            expected_event_types={"onAdminAddedFromGroup"},
+            expected_event_types={"onGroupAdminAdded"},
             group_id=group_id,
-            required_all_event_types={"onAdminAddedFromGroup"},
+            required_all_event_types={"onGroupAdminAdded"},
             expected_member=user_b,
         )
         assert_no_group_event(
             device_a,
             group_id=group_id,
-            event_types={"onAdminAddedFromGroup"},
+            event_types={"onGroupAdminAdded"},
         )
 
         _upload_remove_and_assert_peer_events(

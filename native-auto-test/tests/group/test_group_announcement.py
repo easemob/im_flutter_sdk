@@ -20,33 +20,33 @@ pytestmark = [pytest.mark.client, pytest.mark.group]
 def _consume_direct_invite_events(device_a, device_b, assert_api, *, group_id: str, user_a: str, user_b: str) -> None:
     member_events = collect_group_events(
         device_b,
-        expected_event_types={"onAutoAcceptInvitationFromGroup", "onMemberJoinedFromGroup"},
+        expected_event_types={"onGroupAutoAcceptInvitation", "onGroupMemberJoined"},
         group_id=group_id,
-        required_all_event_types={"onAutoAcceptInvitationFromGroup"},
+        required_all_event_types={"onGroupAutoAcceptInvitation"},
         timeout=10.0,
     )
     assert_group_events(
         assert_api,
         member_events,
-        expected_event_types={"onAutoAcceptInvitationFromGroup", "onMemberJoinedFromGroup"},
+        expected_event_types={"onGroupAutoAcceptInvitation", "onGroupMemberJoined"},
         group_id=group_id,
-        required_all_event_types={"onAutoAcceptInvitationFromGroup"},
+        required_all_event_types={"onGroupAutoAcceptInvitation"},
         expected_inviter=user_a,
         expected_member=user_b,
     )
     owner_events = collect_group_events(
         device_a,
-        expected_event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+        expected_event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
         group_id=group_id,
-        required_all_event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+        required_all_event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
         timeout=10.0,
     )
     assert_group_events(
         assert_api,
         owner_events,
-        expected_event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+        expected_event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
         group_id=group_id,
-        required_all_event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+        required_all_event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
         expected_member=user_b,
     )
 
@@ -96,16 +96,16 @@ def test_group_owner_update_announcement_notifies_member(device_a, device_b, ass
 
         announcement_events = collect_group_events(
             device_b,
-            expected_event_types={"onAnnouncementChangedFromGroup"},
+            expected_event_types={"onGroupAnnouncementChanged"},
             group_id=group_id,
-            required_all_event_types={"onAnnouncementChangedFromGroup"},
+            required_all_event_types={"onGroupAnnouncementChanged"},
             timeout=10.0,
         )
         assert_api.assert_response_matches(
             announcement_events[0],
             expected={
                 "type": "event",
-                "eventType": "onAnnouncementChangedFromGroup",
+                "eventType": "onGroupAnnouncementChanged",
                 "data": {"groupId": group_id, "announcement": announcement},
             },
             ignore_keys={"timestamp", "sequence"},
@@ -113,7 +113,7 @@ def test_group_owner_update_announcement_notifies_member(device_a, device_b, ass
         assert_no_group_event(
             device_a,
             group_id=group_id,
-            event_types={"onAnnouncementChangedFromGroup"},
+            event_types={"onGroupAnnouncementChanged"},
         )
 
         resp_get = device_a.call(
@@ -179,20 +179,20 @@ def test_group_admin_update_announcement_notifies_owner(device_a, device_b, asse
         )
         admin_events = collect_group_events(
             device_b,
-            expected_event_types={"onAdminAddedFromGroup"},
+            expected_event_types={"onGroupAdminAdded"},
             group_id=group_id,
-            required_all_event_types={"onAdminAddedFromGroup"},
+            required_all_event_types={"onGroupAdminAdded"},
             timeout=10.0,
         )
         assert_group_events(
             assert_api,
             admin_events,
-            expected_event_types={"onAdminAddedFromGroup"},
+            expected_event_types={"onGroupAdminAdded"},
             group_id=group_id,
-            required_all_event_types={"onAdminAddedFromGroup"},
+            required_all_event_types={"onGroupAdminAdded"},
             expected_member=user_b,
         )
-        assert_no_group_event(device_a, group_id=group_id, event_types={"onAdminAddedFromGroup"})
+        assert_no_group_event(device_a, group_id=group_id, event_types={"onGroupAdminAdded"})
 
         resp_update = device_b.call(
             "GroupManager",
@@ -212,16 +212,16 @@ def test_group_admin_update_announcement_notifies_owner(device_a, device_b, asse
 
         announcement_events = collect_group_events(
             device_a,
-            expected_event_types={"onAnnouncementChangedFromGroup"},
+            expected_event_types={"onGroupAnnouncementChanged"},
             group_id=group_id,
-            required_all_event_types={"onAnnouncementChangedFromGroup"},
+            required_all_event_types={"onGroupAnnouncementChanged"},
             timeout=10.0,
         )
         assert_api.assert_response_matches(
             announcement_events[0],
             expected={
                 "type": "event",
-                "eventType": "onAnnouncementChangedFromGroup",
+                "eventType": "onGroupAnnouncementChanged",
                 "data": {"groupId": group_id, "announcement": announcement},
             },
             ignore_keys={"timestamp", "sequence"},
@@ -229,7 +229,7 @@ def test_group_admin_update_announcement_notifies_owner(device_a, device_b, asse
         assert_no_group_event(
             device_b,
             group_id=group_id,
-            event_types={"onAnnouncementChangedFromGroup"},
+            event_types={"onGroupAnnouncementChanged"},
         )
 
         resp_get = device_a.call(

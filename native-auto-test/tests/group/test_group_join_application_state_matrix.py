@@ -129,15 +129,15 @@ def _request_join(
     )
     request_events = collect_group_events(
         owner_device,
-        expected_event_types={"onRequestToJoinReceivedFromGroup"},
+        expected_event_types={"onGroupRequestToJoinReceived"},
         group_id=group_id,
-        required_all_event_types={"onRequestToJoinReceivedFromGroup"},
+        required_all_event_types={"onGroupRequestToJoinReceived"},
         timeout=10.0,
     )
     _assert_event(
         assert_api,
         request_events[0],
-        event_type="onRequestToJoinReceivedFromGroup",
+        event_type="onGroupRequestToJoinReceived",
         data={
             "groupId": group_id,
             "groupName": group_name,
@@ -225,15 +225,15 @@ def test_group_join_application_empty_reason_uses_server_default(
         )
         request_events = collect_group_events(
             device_a,
-            expected_event_types={"onRequestToJoinReceivedFromGroup"},
+            expected_event_types={"onGroupRequestToJoinReceived"},
             group_id=group_id,
-            required_all_event_types={"onRequestToJoinReceivedFromGroup"},
+            required_all_event_types={"onGroupRequestToJoinReceived"},
             timeout=10.0,
         )
         _assert_event(
             assert_api,
             request_events[0],
-            event_type="onRequestToJoinReceivedFromGroup",
+            event_type="onGroupRequestToJoinReceived",
             data={
                 "groupId": group_id,
                 "groupName": group_name,
@@ -256,9 +256,9 @@ def test_group_join_application_empty_reason_uses_server_default(
         )
         collect_group_events(
             device_b,
-            expected_event_types={"onRequestToJoinDeclinedFromGroup"},
+            expected_event_types={"onGroupRequestToJoinDeclined"},
             group_id=group_id,
-            required_all_event_types={"onRequestToJoinDeclinedFromGroup"},
+            required_all_event_types={"onGroupRequestToJoinDeclined"},
             timeout=10.0,
         )
         _fetch_group(
@@ -330,15 +330,15 @@ def test_group_duplicate_join_application_keeps_single_pending_request(
         )
         declined_events = collect_group_events(
             device_b,
-            expected_event_types={"onRequestToJoinDeclinedFromGroup"},
+            expected_event_types={"onGroupRequestToJoinDeclined"},
             group_id=group_id,
-            required_all_event_types={"onRequestToJoinDeclinedFromGroup"},
+            required_all_event_types={"onGroupRequestToJoinDeclined"},
             timeout=10.0,
         )
         _assert_event(
             assert_api,
             declined_events[0],
-            event_type="onRequestToJoinDeclinedFromGroup",
+            event_type="onGroupRequestToJoinDeclined",
             data={
                 "groupId": group_id,
                 "groupName": None,
@@ -421,9 +421,9 @@ def test_group_join_application_cannot_be_processed_twice(
             result=None,
         )
         first_event_type = (
-            "onRequestToJoinAcceptedFromGroup"
+            "onGroupRequestToJoinAccepted"
             if first_action == "accept"
-            else "onRequestToJoinDeclinedFromGroup"
+            else "onGroupRequestToJoinDeclined"
         )
         first_events = collect_group_events(
             device_b,
@@ -549,15 +549,15 @@ def test_group_join_application_processing_permission_by_role(
         if make_admin:
             request_events = collect_group_events(
                 device_b,
-                expected_event_types={"onRequestToJoinReceivedFromGroup"},
+                expected_event_types={"onGroupRequestToJoinReceived"},
                 group_id=group_id,
-                required_all_event_types={"onRequestToJoinReceivedFromGroup"},
+                required_all_event_types={"onGroupRequestToJoinReceived"},
                 timeout=10.0,
             )
             _assert_event(
                 assert_api,
                 request_events[0],
-                event_type="onRequestToJoinReceivedFromGroup",
+                event_type="onGroupRequestToJoinReceived",
                 data={
                     "groupId": group_id,
                     "groupName": group_name,
@@ -569,7 +569,7 @@ def test_group_join_application_processing_permission_by_role(
             assert_no_group_event(
                 device_b,
                 group_id=group_id,
-                event_types={"onRequestToJoinReceivedFromGroup"},
+                event_types={"onGroupRequestToJoinReceived"},
             )
 
         command = (
@@ -591,9 +591,9 @@ def test_group_join_application_processing_permission_by_role(
                 result=None,
             )
             event_type = (
-                "onRequestToJoinAcceptedFromGroup"
+                "onGroupRequestToJoinAccepted"
                 if action == "accept"
-                else "onRequestToJoinDeclinedFromGroup"
+                else "onGroupRequestToJoinDeclined"
             )
             result_events = collect_group_events(
                 device_a,
@@ -691,7 +691,7 @@ def test_group_non_member_cannot_process_join_application(
         assert_no_group_event(
             device_b,
             group_id=group_id,
-            event_types={"onRequestToJoinAcceptedFromGroup", "onRequestToJoinDeclinedFromGroup"},
+            event_types={"onGroupRequestToJoinAccepted", "onGroupRequestToJoinDeclined"},
         )
     finally:
         if device_a_is_c:

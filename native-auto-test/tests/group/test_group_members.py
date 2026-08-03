@@ -51,12 +51,12 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
         expected_add_events = {
             GroupChangeEvent.ON_INVITATION_RECEIVED.value,
             GroupChangeEvent.ON_AUTO_ACCEPT_INVITATION.value,
-            "onAutoAcceptInvitationFromGroup",
-            "onAllowListRemovedFromGroup",
-            "onMemberJoinedFromGroup",
+            "onGroupAutoAcceptInvitation",
+            "onGroupWhiteListRemoved",
+            "onGroupMemberJoined",
         }
         required_add_events = {
-            "onAutoAcceptInvitationFromGroup",
+            "onGroupAutoAcceptInvitation",
         }
         add_events = collect_group_events(
             device_b,
@@ -80,22 +80,22 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
         owner_add_events = collect_group_events(
             device_a,
             expected_event_types={
-                "onMembersJoinedFromGroup",
-                "onMemberJoinedFromGroup",
+                "onGroupMembersJoined",
+                "onGroupMemberJoined",
             },
             group_id=group_id,
-            required_all_event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+            required_all_event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
             timeout=10.0,
         )
         assert_group_events(
             assert_api,
             owner_add_events,
             expected_event_types={
-                "onMembersJoinedFromGroup",
-                "onMemberJoinedFromGroup",
+                "onGroupMembersJoined",
+                "onGroupMemberJoined",
             },
             group_id=group_id,
-            required_all_event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+            required_all_event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
             expected_member=user_b,
         )
 
@@ -134,10 +134,10 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
 
         expected_remove_events = {
             GroupChangeEvent.ON_USER_REMOVED.value,
-            "onLeaveFromGroup",
-            "onUserRemovedFromGroup",
+            "onGroupMemberExited",
+            "onGroupUserRemoved",
         }
-        required_remove_events = {"onUserRemovedFromGroup"}
+        required_remove_events = {"onGroupUserRemoved"}
         remove_events = collect_group_events(
             device_b,
             expected_event_types=expected_remove_events,
@@ -159,22 +159,22 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
         owner_remove_events = collect_group_events(
             device_a,
             expected_event_types={
-                "onMembersExitedFromGroup",
-                "onMemberExitedFromGroup",
+                "onGroupMembersExited",
+                "onGroupMemberExited",
             },
             group_id=group_id,
-            required_all_event_types={"onMembersExitedFromGroup", "onMemberExitedFromGroup"},
+            required_all_event_types={"onGroupMembersExited", "onGroupMemberExited"},
             timeout=10.0,
         )
         assert_group_events(
             assert_api,
             owner_remove_events,
             expected_event_types={
-                "onMembersExitedFromGroup",
-                "onMemberExitedFromGroup",
+                "onGroupMembersExited",
+                "onGroupMemberExited",
             },
             group_id=group_id,
-            required_all_event_types={"onMembersExitedFromGroup", "onMemberExitedFromGroup"},
+            required_all_event_types={"onGroupMembersExited", "onGroupMemberExited"},
             expected_member=user_b,
         )
 
@@ -233,7 +233,7 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
             ignore_keys={"sequence"},
         )
 
-        joined_event_types = {"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"}
+        joined_event_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
         owner_join_events = collect_group_events(
             device_a,
             expected_event_types=joined_event_types,
@@ -243,19 +243,19 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
         )
         owner_join_by_type = {event["eventType"]: event for event in owner_join_events}
         assert_api.assert_response_matches(
-            owner_join_by_type["onMembersJoinedFromGroup"],
+            owner_join_by_type["onGroupMembersJoined"],
             expected={
                 "type": "event",
-                "eventType": "onMembersJoinedFromGroup",
+                "eventType": "onGroupMembersJoined",
                 "data": {"groupId": group_id, "userIds": [user_b]},
             },
             ignore_keys={"timestamp", "sequence"},
         )
         assert_api.assert_response_matches(
-            owner_join_by_type["onMemberJoinedFromGroup"],
+            owner_join_by_type["onGroupMemberJoined"],
             expected={
                 "type": "event",
-                "eventType": "onMemberJoinedFromGroup",
+                "eventType": "onGroupMemberJoined",
                 "data": {"groupId": group_id, "member": user_b},
             },
             ignore_keys={"timestamp", "sequence"},
@@ -291,7 +291,7 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
             ignore_keys={"sequence"},
         )
 
-        exited_event_types = {"onMembersExitedFromGroup", "onMemberExitedFromGroup"}
+        exited_event_types = {"onGroupMembersExited", "onGroupMemberExited"}
         owner_exit_events = collect_group_events(
             device_a,
             expected_event_types=exited_event_types,
@@ -301,19 +301,19 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
         )
         owner_exit_by_type = {event["eventType"]: event for event in owner_exit_events}
         assert_api.assert_response_matches(
-            owner_exit_by_type["onMembersExitedFromGroup"],
+            owner_exit_by_type["onGroupMembersExited"],
             expected={
                 "type": "event",
-                "eventType": "onMembersExitedFromGroup",
+                "eventType": "onGroupMembersExited",
                 "data": {"groupId": group_id, "userIds": [user_b]},
             },
             ignore_keys={"timestamp", "sequence"},
         )
         assert_api.assert_response_matches(
-            owner_exit_by_type["onMemberExitedFromGroup"],
+            owner_exit_by_type["onGroupMemberExited"],
             expected={
                 "type": "event",
-                "eventType": "onMemberExitedFromGroup",
+                "eventType": "onGroupMemberExited",
                 "data": {"groupId": group_id, "member": user_b},
             },
             ignore_keys={"timestamp", "sequence"},
@@ -403,12 +403,12 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
             ignore_keys={"sequence"},
         )
 
-        expected_joined_events = {"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"}
+        expected_joined_events = {"onGroupMembersJoined", "onGroupMemberJoined"}
         joined_events = collect_group_events(
             device_a,
             expected_event_types=expected_joined_events,
             group_id=group_id,
-            required_all_event_types={"onMemberJoinedFromGroup"},
+            required_all_event_types={"onGroupMemberJoined"},
             timeout=10.0,
         )
         assert_group_events(
@@ -416,9 +416,9 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
             joined_events,
             expected_event_types=expected_joined_events,
             group_id=group_id,
-            required_all_event_types={"onMemberJoinedFromGroup"},
+            required_all_event_types={"onGroupMemberJoined"},
         )
-        joined_batch = [evt for evt in joined_events if evt.get("eventType") == "onMembersJoinedFromGroup"]
+        joined_batch = [evt for evt in joined_events if evt.get("eventType") == "onGroupMembersJoined"]
         if joined_batch:
             # SDK 可能对批量添加逐个触发事件，每个事件只含一个用户；合并所有事件的 userIds
             all_user_ids: list[str] = []
@@ -434,7 +434,7 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
             joined_single_members = {
                 (evt.get("data") or {}).get("member")
                 for evt in joined_events
-                if evt.get("eventType") == "onMemberJoinedFromGroup"
+                if evt.get("eventType") == "onGroupMemberJoined"
             }
             assert all(m in joined_single_members for m in members), (
                 "未收到 onMembersJoinedFromGroup，且 onMemberJoinedFromGroup 未覆盖全部成员: "
@@ -457,12 +457,12 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
             ignore_keys={"sequence"},
         )
 
-        expected_exited_events = {"onMembersExitedFromGroup", "onMemberExitedFromGroup"}
+        expected_exited_events = {"onGroupMembersExited", "onGroupMemberExited"}
         exited_events = collect_group_events(
             device_a,
             expected_event_types=expected_exited_events,
             group_id=group_id,
-            required_all_event_types={"onMembersExitedFromGroup"},
+            required_all_event_types={"onGroupMembersExited"},
             timeout=10.0,
         )
         assert_group_events(
@@ -470,9 +470,9 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
             exited_events,
             expected_event_types=expected_exited_events,
             group_id=group_id,
-            required_all_event_types={"onMembersExitedFromGroup"},
+            required_all_event_types={"onGroupMembersExited"},
         )
-        exited_batch = [evt for evt in exited_events if evt.get("eventType") == "onMembersExitedFromGroup"]
+        exited_batch = [evt for evt in exited_events if evt.get("eventType") == "onGroupMembersExited"]
         if exited_batch:
             # SDK 对批量移除逐个触发事件，合并所有事件的 userIds
             all_exit_ids: list[str] = []
@@ -488,7 +488,7 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
             exited_single_members = {
                 (evt.get("data") or {}).get("member")
                 for evt in exited_events
-                if evt.get("eventType") == "onUserRemovedFromGroup"
+                if evt.get("eventType") == "onGroupUserRemoved"
             }
             assert all(m in exited_single_members for m in members), (
                 "未收到 onMembersExitedFromGroup，且 onUserRemovedFromGroup 未覆盖全部成员: "

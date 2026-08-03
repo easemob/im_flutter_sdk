@@ -134,7 +134,8 @@ public final class TestControlBridge implements MethodChannel.MethodCallHandler 
                 "managedWebSocket",
                 Boolean.parseBoolean(intentString("runnerWsManaged", "false"))
         );
-        info.put("capabilities", Collections.emptyList());
+        // capabilities 由 Artifact Manifest / API Matrix 管理；Runner 不上报
+        // capabilities 字段，CapabilityResolver 视为"委托 Matrix"。
         return info;
     }
 

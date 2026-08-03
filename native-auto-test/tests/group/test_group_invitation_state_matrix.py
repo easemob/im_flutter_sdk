@@ -64,16 +64,16 @@ def _create_pending_invitation(
     )
     invitation_events = collect_group_events(
         device_b,
-        expected_event_types={"onInvitationReceivedFromGroup"},
+        expected_event_types={"onGroupInvitationReceived"},
         group_id=group_id,
-        required_all_event_types={"onInvitationReceivedFromGroup"},
+        required_all_event_types={"onGroupInvitationReceived"},
         timeout=10.0,
     )
     assert_api.assert_response_matches(
         invitation_events[0],
         expected={
             "type": "event",
-            "eventType": "onInvitationReceivedFromGroup",
+            "eventType": "onGroupInvitationReceived",
             "data": {
                 "groupId": group_id,
                 "groupName": group_name,
@@ -226,24 +226,24 @@ def test_group_invitation_wrong_inviter_does_not_consume_pending(
         accepted_events = collect_group_events(
             device_a,
             expected_event_types={
-                "onInvitationAcceptedFromGroup",
-                "onMembersJoinedFromGroup",
-                "onMemberJoinedFromGroup",
+                "onGroupInvitationAccepted",
+                "onGroupMembersJoined",
+                "onGroupMemberJoined",
             },
             group_id=group_id,
             required_all_event_types={
-                "onInvitationAcceptedFromGroup",
-                "onMembersJoinedFromGroup",
-                "onMemberJoinedFromGroup",
+                "onGroupInvitationAccepted",
+                "onGroupMembersJoined",
+                "onGroupMemberJoined",
             },
             timeout=10.0,
         )
         by_type = {event["eventType"]: event for event in accepted_events}
         assert_api.assert_response_matches(
-            by_type["onInvitationAcceptedFromGroup"],
+            by_type["onGroupInvitationAccepted"],
             expected={
                 "type": "event",
-                "eventType": "onInvitationAcceptedFromGroup",
+                "eventType": "onGroupInvitationAccepted",
                 "data": {"groupId": group_id, "invitee": user_b, "reason": ""},
             },
             ignore_keys={"timestamp", "sequence"},
@@ -311,15 +311,15 @@ def test_group_invitation_cannot_be_processed_twice(
             collect_group_events(
                 device_a,
                 expected_event_types={
-                    "onInvitationAcceptedFromGroup",
-                    "onMembersJoinedFromGroup",
-                    "onMemberJoinedFromGroup",
+                    "onGroupInvitationAccepted",
+                    "onGroupMembersJoined",
+                    "onGroupMemberJoined",
                 },
                 group_id=group_id,
                 required_all_event_types={
-                    "onInvitationAcceptedFromGroup",
-                    "onMembersJoinedFromGroup",
-                    "onMemberJoinedFromGroup",
+                    "onGroupInvitationAccepted",
+                    "onGroupMembersJoined",
+                    "onGroupMemberJoined",
                 },
                 timeout=10.0,
             )
@@ -335,7 +335,7 @@ def test_group_invitation_cannot_be_processed_twice(
             assert_no_group_event(
                 device_a,
                 group_id=group_id,
-                event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+                event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
             )
 
         second_cmd = (

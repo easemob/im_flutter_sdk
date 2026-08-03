@@ -81,16 +81,16 @@ def test_group_invitation_explicit_accept_when_auto_accept_disabled(
             device_b,
             expected_event_types={
                 GroupChangeEvent.ON_INVITATION_RECEIVED.value,
-                "onInvitationReceivedFromGroup",
+                "onGroupInvitationReceived",
             },
             group_id=group_id,
-            required_all_event_types={"onInvitationReceivedFromGroup"},
+            required_all_event_types={"onGroupInvitationReceived"},
             timeout=10.0,
         )
         _assert_exact_group_event(
             assert_api,
             invitation_events[0],
-            event_type="onInvitationReceivedFromGroup",
+            event_type="onGroupInvitationReceived",
             data={
                 "groupId": group_id,
                 "groupName": group_name,
@@ -118,9 +118,9 @@ def test_group_invitation_explicit_accept_when_auto_accept_disabled(
         accepted = True
 
         accepted_event_types = {
-            "onInvitationAcceptedFromGroup",
-            "onMembersJoinedFromGroup",
-            "onMemberJoinedFromGroup",
+            "onGroupInvitationAccepted",
+            "onGroupMembersJoined",
+            "onGroupMemberJoined",
         }
         accepted_events = collect_group_events(
             device_a,
@@ -132,20 +132,20 @@ def test_group_invitation_explicit_accept_when_auto_accept_disabled(
         accepted_by_type = {event["eventType"]: event for event in accepted_events}
         _assert_exact_group_event(
             assert_api,
-            accepted_by_type["onInvitationAcceptedFromGroup"],
-            event_type="onInvitationAcceptedFromGroup",
+            accepted_by_type["onGroupInvitationAccepted"],
+            event_type="onGroupInvitationAccepted",
             data={"groupId": group_id, "invitee": user_b, "reason": ""},
         )
         _assert_exact_group_event(
             assert_api,
-            accepted_by_type["onMembersJoinedFromGroup"],
-            event_type="onMembersJoinedFromGroup",
+            accepted_by_type["onGroupMembersJoined"],
+            event_type="onGroupMembersJoined",
             data={"groupId": group_id, "userIds": [user_b]},
         )
         _assert_exact_group_event(
             assert_api,
-            accepted_by_type["onMemberJoinedFromGroup"],
-            event_type="onMemberJoinedFromGroup",
+            accepted_by_type["onGroupMemberJoined"],
+            event_type="onGroupMemberJoined",
             data={"groupId": group_id, "member": user_b},
         )
         assert_no_group_event(
@@ -212,7 +212,7 @@ def test_group_invitation_explicit_decline_when_auto_accept_disabled(
     group_id = ""
     group_name = new_group_name("invite_explicit_decline")
     decline_reason = "explicit-decline"
-    joined_event_types = {"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"}
+    joined_event_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
     try:
         resp_option = device_b.call(
             "Client",
@@ -241,15 +241,15 @@ def test_group_invitation_explicit_decline_when_auto_accept_disabled(
         )
         invitation_events = collect_group_events(
             device_b,
-            expected_event_types={"onInvitationReceivedFromGroup"},
+            expected_event_types={"onGroupInvitationReceived"},
             group_id=group_id,
-            required_all_event_types={"onInvitationReceivedFromGroup"},
+            required_all_event_types={"onGroupInvitationReceived"},
             timeout=10.0,
         )
         _assert_exact_group_event(
             assert_api,
             invitation_events[0],
-            event_type="onInvitationReceivedFromGroup",
+            event_type="onGroupInvitationReceived",
             data={
                 "groupId": group_id,
                 "groupName": group_name,
@@ -279,9 +279,9 @@ def test_group_invitation_explicit_decline_when_auto_accept_disabled(
         try:
             declined_events = collect_group_events(
                 device_a,
-                expected_event_types={"onInvitationDeclinedFromGroup"},
+                expected_event_types={"onGroupInvitationDeclined"},
                 group_id=group_id,
-                required_all_event_types={"onInvitationDeclinedFromGroup"},
+                required_all_event_types={"onGroupInvitationDeclined"},
                 timeout=10.0,
             )
         except AssertionError as error:
@@ -290,7 +290,7 @@ def test_group_invitation_explicit_decline_when_auto_accept_disabled(
             _assert_exact_group_event(
                 assert_api,
                 declined_events[0],
-                event_type="onInvitationDeclinedFromGroup",
+                event_type="onGroupInvitationDeclined",
                 data={"groupId": group_id, "invitee": user_b, "reason": decline_reason},
             )
         assert_no_group_event(device_a, group_id=group_id, event_types=joined_event_types)
@@ -387,22 +387,22 @@ def test_group_invitation_auto_accept_when_confirmation_required(
 
         auto_events = collect_group_events(
             device_b,
-            expected_event_types={"onAutoAcceptInvitationFromGroup"},
+            expected_event_types={"onGroupAutoAcceptInvitation"},
             group_id=group_id,
-            required_all_event_types={"onAutoAcceptInvitationFromGroup"},
+            required_all_event_types={"onGroupAutoAcceptInvitation"},
             timeout=10.0,
         )
         _assert_exact_group_event(
             assert_api,
             auto_events[0],
-            event_type="onAutoAcceptInvitationFromGroup",
+            event_type="onGroupAutoAcceptInvitation",
             data={"groupId": group_id, "inviter": user_a, "inviteMessage": ""},
         )
 
         owner_event_types = {
-            "onInvitationAcceptedFromGroup",
-            "onMembersJoinedFromGroup",
-            "onMemberJoinedFromGroup",
+            "onGroupInvitationAccepted",
+            "onGroupMembersJoined",
+            "onGroupMemberJoined",
         }
         owner_events = collect_group_events(
             device_a,
@@ -414,20 +414,20 @@ def test_group_invitation_auto_accept_when_confirmation_required(
         owner_by_type = {event["eventType"]: event for event in owner_events}
         _assert_exact_group_event(
             assert_api,
-            owner_by_type["onInvitationAcceptedFromGroup"],
-            event_type="onInvitationAcceptedFromGroup",
+            owner_by_type["onGroupInvitationAccepted"],
+            event_type="onGroupInvitationAccepted",
             data={"groupId": group_id, "invitee": user_b, "reason": ""},
         )
         _assert_exact_group_event(
             assert_api,
-            owner_by_type["onMembersJoinedFromGroup"],
-            event_type="onMembersJoinedFromGroup",
+            owner_by_type["onGroupMembersJoined"],
+            event_type="onGroupMembersJoined",
             data={"groupId": group_id, "userIds": [user_b]},
         )
         _assert_exact_group_event(
             assert_api,
-            owner_by_type["onMemberJoinedFromGroup"],
-            event_type="onMemberJoinedFromGroup",
+            owner_by_type["onGroupMemberJoined"],
+            event_type="onGroupMemberJoined",
             data={"groupId": group_id, "member": user_b},
         )
         assert_no_group_event(device_b, group_id=group_id, event_types=owner_event_types)
@@ -486,10 +486,10 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
             expected_event_types={
                 GroupChangeEvent.ON_REQUEST_TO_JOIN_RECEIVED.value,
                 "onGroupRequestToJoinReceived",
-                "onRequestToJoinReceivedFromGroup",
+                "onGroupRequestToJoinReceived",
             },
             group_id=group_id,
-            required_all_event_types={"onRequestToJoinReceivedFromGroup"},
+            required_all_event_types={"onGroupRequestToJoinReceived"},
             timeout=10.0,
         )
         assert_group_events(
@@ -498,10 +498,10 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
             expected_event_types={
                 GroupChangeEvent.ON_REQUEST_TO_JOIN_RECEIVED.value,
                 "onGroupRequestToJoinReceived",
-                "onRequestToJoinReceivedFromGroup",
+                "onGroupRequestToJoinReceived",
             },
             group_id=group_id,
-            required_all_event_types={"onRequestToJoinReceivedFromGroup"},
+            required_all_event_types={"onGroupRequestToJoinReceived"},
             expected_member=user_b,
         )
 
@@ -527,12 +527,12 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
                 GroupChangeEvent.ON_REQUEST_TO_JOIN_ACCEPTED.value,
                 GroupChangeEvent.ON_MEMBER_JOINED.value,
                 "onGroupRequestToJoinAccepted",
-                "onRequestToJoinAcceptedFromGroup",
-                "onMemberJoinedFromGroup",
+                "onGroupRequestToJoinAccepted",
+                "onGroupMemberJoined",
             },
             group_id=group_id,
             allow_missing_group_id=True,
-            required_all_event_types={"onRequestToJoinAcceptedFromGroup"},
+            required_all_event_types={"onGroupRequestToJoinAccepted"},
             timeout=10.0,
         )
         assert_group_events(
@@ -542,16 +542,16 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
                 GroupChangeEvent.ON_REQUEST_TO_JOIN_ACCEPTED.value,
                 GroupChangeEvent.ON_MEMBER_JOINED.value,
                 "onGroupRequestToJoinAccepted",
-                "onRequestToJoinAcceptedFromGroup",
-                "onMemberJoinedFromGroup",
+                "onGroupRequestToJoinAccepted",
+                "onGroupMemberJoined",
             },
             group_id=group_id,
             allow_missing_group_id=True,
-            required_all_event_types={"onRequestToJoinAcceptedFromGroup"},
+            required_all_event_types={"onGroupRequestToJoinAccepted"},
             expected_member=user_b,
         )
 
-        owner_joined_event_types = {"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"}
+        owner_joined_event_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
         owner_joined_events = collect_group_events(
             device_a,
             expected_event_types=owner_joined_event_types,
@@ -562,14 +562,14 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
         owner_joined_by_type = {event["eventType"]: event for event in owner_joined_events}
         _assert_exact_group_event(
             assert_api,
-            owner_joined_by_type["onMembersJoinedFromGroup"],
-            event_type="onMembersJoinedFromGroup",
+            owner_joined_by_type["onGroupMembersJoined"],
+            event_type="onGroupMembersJoined",
             data={"groupId": group_id, "userIds": [user_b]},
         )
         _assert_exact_group_event(
             assert_api,
-            owner_joined_by_type["onMemberJoinedFromGroup"],
-            event_type="onMemberJoinedFromGroup",
+            owner_joined_by_type["onGroupMemberJoined"],
+            event_type="onGroupMemberJoined",
             data={"groupId": group_id, "member": user_b},
         )
         assert_no_group_event(device_b, group_id=group_id, event_types=owner_joined_event_types)
@@ -628,10 +628,10 @@ def test_group_request_to_join_and_decline_success(device_a, device_b, assert_ap
             expected_event_types={
                 GroupChangeEvent.ON_REQUEST_TO_JOIN_RECEIVED.value,
                 "onGroupRequestToJoinReceived",
-                "onRequestToJoinReceivedFromGroup",
+                "onGroupRequestToJoinReceived",
             },
             group_id=group_id,
-            required_all_event_types={"onRequestToJoinReceivedFromGroup"},
+            required_all_event_types={"onGroupRequestToJoinReceived"},
             timeout=10.0,
         )
         assert_group_events(
@@ -640,10 +640,10 @@ def test_group_request_to_join_and_decline_success(device_a, device_b, assert_ap
             expected_event_types={
                 GroupChangeEvent.ON_REQUEST_TO_JOIN_RECEIVED.value,
                 "onGroupRequestToJoinReceived",
-                "onRequestToJoinReceivedFromGroup",
+                "onGroupRequestToJoinReceived",
             },
             group_id=group_id,
-            required_all_event_types={"onRequestToJoinReceivedFromGroup"},
+            required_all_event_types={"onGroupRequestToJoinReceived"},
             expected_member=user_b,
         )
 
@@ -668,11 +668,11 @@ def test_group_request_to_join_and_decline_success(device_a, device_b, assert_ap
             expected_event_types={
                 GroupChangeEvent.ON_REQUEST_TO_JOIN_DECLINED.value,
                 "onGroupRequestToJoinDeclined",
-                "onRequestToJoinDeclinedFromGroup",
+                "onGroupRequestToJoinDeclined",
             },
             group_id=group_id,
             allow_missing_group_id=True,
-            required_all_event_types={"onRequestToJoinDeclinedFromGroup"},
+            required_all_event_types={"onGroupRequestToJoinDeclined"},
             timeout=10.0,
         )
         assert_group_events(
@@ -681,15 +681,15 @@ def test_group_request_to_join_and_decline_success(device_a, device_b, assert_ap
             expected_event_types={
                 GroupChangeEvent.ON_REQUEST_TO_JOIN_DECLINED.value,
                 "onGroupRequestToJoinDeclined",
-                "onRequestToJoinDeclinedFromGroup",
+                "onGroupRequestToJoinDeclined",
             },
             group_id=group_id,
             allow_missing_group_id=True,
-            required_all_event_types={"onRequestToJoinDeclinedFromGroup"},
+            required_all_event_types={"onGroupRequestToJoinDeclined"},
             expected_member=user_b,
         )
 
-        joined_event_types = {"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"}
+        joined_event_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
         assert_no_group_event(device_a, group_id=group_id, event_types=joined_event_types)
         assert_no_group_event(device_b, group_id=group_id, event_types=joined_event_types)
         server = device_a.call(

@@ -53,7 +53,8 @@ class EventRouter {
             .map(_canonicalMessage)
             .toList(),
       };
-    } else if (call.method == 'onMessageSuccess' &&
+    } else if ((call.method == 'onMessageSuccess' ||
+            call.method == 'onMessageError') &&
         data.containsKey('message')) {
       data['msgId'] = data.remove('localId');
       data['msg'] = _canonicalMessage(data.remove('message'));

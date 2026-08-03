@@ -55,11 +55,11 @@ def test_group_block_unblock_members_success(device_a, device_b, assert_api, use
             device_b,
             expected_event_types={
                 GroupChangeEvent.ON_USER_REMOVED.value,
-                "onUserRemovedFromGroup",
+                "onGroupUserRemoved",
             },
             group_id=group_id,
             allow_missing_group_id=True,
-            required_all_event_types={"onUserRemovedFromGroup"},
+            required_all_event_types={"onGroupUserRemoved"},
             timeout=10.0,
         )
         assert_group_events(
@@ -67,11 +67,11 @@ def test_group_block_unblock_members_success(device_a, device_b, assert_api, use
             removed_events,
             expected_event_types={
                 GroupChangeEvent.ON_USER_REMOVED.value,
-                "onUserRemovedFromGroup",
+                "onGroupUserRemoved",
             },
             group_id=group_id,
             allow_missing_group_id=True,
-            required_all_event_types={"onUserRemovedFromGroup"},
+            required_all_event_types={"onGroupUserRemoved"},
         )
         assert_group_snapshot(
             assert_api,
@@ -142,10 +142,10 @@ def test_group_mute_unmute_members_success(device_a, device_b, assert_api, user_
             device_b,
             expected_event_types={
                 GroupChangeEvent.ON_MUTE_LIST_ADDED.value,
-                "onMuteListAddedFromGroup",
+                "onGroupMuteListAdded",
             },
             group_id=group_id,
-            required_all_event_types={"onMuteListAddedFromGroup"},
+            required_all_event_types={"onGroupMuteListAdded"},
             timeout=10.0,
         )
         assert_group_events(
@@ -153,10 +153,10 @@ def test_group_mute_unmute_members_success(device_a, device_b, assert_api, user_
             mute_events,
             expected_event_types={
                 GroupChangeEvent.ON_MUTE_LIST_ADDED.value,
-                "onMuteListAddedFromGroup",
+                "onGroupMuteListAdded",
             },
             group_id=group_id,
-            required_all_event_types={"onMuteListAddedFromGroup"},
+            required_all_event_types={"onGroupMuteListAdded"},
             expected_member=user_b,
         )
         resp_unmute = device_a.call("GroupManager", Cmd.unMuteMembers.value, info={"groupId": group_id, "members": [user_b]})
@@ -174,10 +174,10 @@ def test_group_mute_unmute_members_success(device_a, device_b, assert_api, user_
             device_b,
             expected_event_types={
                 GroupChangeEvent.ON_MUTE_LIST_REMOVED.value,
-                "onMuteListRemovedFromGroup",
+                "onGroupMuteListRemoved",
             },
             group_id=group_id,
-            required_all_event_types={"onMuteListRemovedFromGroup"},
+            required_all_event_types={"onGroupMuteListRemoved"},
             timeout=10.0,
         )
         assert_group_events(
@@ -185,10 +185,10 @@ def test_group_mute_unmute_members_success(device_a, device_b, assert_api, user_
             unmute_events,
             expected_event_types={
                 GroupChangeEvent.ON_MUTE_LIST_REMOVED.value,
-                "onMuteListRemovedFromGroup",
+                "onGroupMuteListRemoved",
             },
             group_id=group_id,
-            required_all_event_types={"onMuteListRemovedFromGroup"},
+            required_all_event_types={"onGroupMuteListRemoved"},
             expected_member=user_b,
         )
     finally:
@@ -218,7 +218,7 @@ def test_group_mute_all_unmute_all_success(device_a, device_b, assert_api, user_
             device_b,
             expected_event_types={
                 GroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED.value,
-                "onAllGroupMemberMuteStateChanged",
+                "onGroupAllMemberMuteStateChanged",
             },
             group_id=group_id,
             allow_missing_group_id=True,
@@ -230,7 +230,7 @@ def test_group_mute_all_unmute_all_success(device_a, device_b, assert_api, user_
             mute_all_events,
             expected_event_types={
                 GroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED.value,
-                "onAllGroupMemberMuteStateChanged",
+                "onGroupAllMemberMuteStateChanged",
             },
             group_id=group_id,
             allow_missing_group_id=True,
@@ -251,7 +251,7 @@ def test_group_mute_all_unmute_all_success(device_a, device_b, assert_api, user_
             device_b,
             expected_event_types={
                 GroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED.value,
-                "onAllGroupMemberMuteStateChanged",
+                "onGroupAllMemberMuteStateChanged",
             },
             group_id=group_id,
             allow_missing_group_id=True,
@@ -263,7 +263,7 @@ def test_group_mute_all_unmute_all_success(device_a, device_b, assert_api, user_
             unmute_all_events,
             expected_event_types={
                 GroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED.value,
-                "onAllGroupMemberMuteStateChanged",
+                "onGroupAllMemberMuteStateChanged",
             },
             group_id=group_id,
             allow_missing_group_id=True,
@@ -289,10 +289,10 @@ def test_group_add_remove_white_list_success(device_a, device_b, assert_api, use
             device_b,
             expected_event_types={
                 GroupChangeEvent.ON_WHITE_LIST_ADDED.value,
-                "onAllowListAddedFromGroup",
+                "onGroupWhiteListAdded",
             },
             group_id=group_id,
-            required_all_event_types={"onAllowListAddedFromGroup"},
+            required_all_event_types={"onGroupWhiteListAdded"},
             timeout=10.0,
         )
         assert_group_events(
@@ -300,10 +300,10 @@ def test_group_add_remove_white_list_success(device_a, device_b, assert_api, use
             add_white_events,
             expected_event_types={
                 GroupChangeEvent.ON_WHITE_LIST_ADDED.value,
-                "onAllowListAddedFromGroup",
+                "onGroupWhiteListAdded",
             },
             group_id=group_id,
-            required_all_event_types={"onAllowListAddedFromGroup"},
+            required_all_event_types={"onGroupWhiteListAdded"},
             expected_member=user_b,
         )
         resp_remove = device_a.call("GroupManager", Cmd.removeWhiteList.value, info={"groupId": group_id, "members": [user_b]})
@@ -316,10 +316,10 @@ def test_group_add_remove_white_list_success(device_a, device_b, assert_api, use
             device_b,
             expected_event_types={
                 GroupChangeEvent.ON_WHITE_LIST_REMOVED.value,
-                "onAllowListRemovedFromGroup",
+                "onGroupWhiteListRemoved",
             },
             group_id=group_id,
-            required_all_event_types={"onAllowListRemovedFromGroup"},
+            required_all_event_types={"onGroupWhiteListRemoved"},
             timeout=10.0,
         )
         assert_group_events(
@@ -327,10 +327,10 @@ def test_group_add_remove_white_list_success(device_a, device_b, assert_api, use
             remove_white_events,
             expected_event_types={
                 GroupChangeEvent.ON_WHITE_LIST_REMOVED.value,
-                "onAllowListRemovedFromGroup",
+                "onGroupWhiteListRemoved",
             },
             group_id=group_id,
-            required_all_event_types={"onAllowListRemovedFromGroup"},
+            required_all_event_types={"onGroupWhiteListRemoved"},
             expected_member=user_b,
         )
     finally:

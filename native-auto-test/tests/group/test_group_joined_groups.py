@@ -215,18 +215,18 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
 
         initial_member_events = collect_group_events(
             device_b,
-            expected_event_types={"onAutoAcceptInvitationFromGroup"},
+            expected_event_types={"onGroupAutoAcceptInvitation"},
             group_id=group_id,
-            required_all_event_types={"onAutoAcceptInvitationFromGroup"},
+            required_all_event_types={"onGroupAutoAcceptInvitation"},
             timeout=10.0,
         )
         _assert_exact_event(
             assert_api,
             initial_member_events[0],
-            event_type="onAutoAcceptInvitationFromGroup",
+            event_type="onGroupAutoAcceptInvitation",
             data={"groupId": group_id, "inviter": user_a, "inviteMessage": ""},
         )
-        joined_event_types = {"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"}
+        joined_event_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
         initial_owner_events = collect_group_events(
             device_a,
             expected_event_types=joined_event_types,
@@ -267,18 +267,18 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
         )
         removed_member_events = collect_group_events(
             device_b,
-            expected_event_types={"onUserRemovedFromGroup"},
+            expected_event_types={"onGroupUserRemoved"},
             group_id=group_id,
-            required_all_event_types={"onUserRemovedFromGroup"},
+            required_all_event_types={"onGroupUserRemoved"},
             timeout=10.0,
         )
         _assert_exact_event(
             assert_api,
             removed_member_events[0],
-            event_type="onUserRemovedFromGroup",
+            event_type="onGroupUserRemoved",
             data={"groupId": group_id, "groupName": group_name},
         )
-        exited_event_types = {"onMembersExitedFromGroup", "onMemberExitedFromGroup"}
+        exited_event_types = {"onGroupMembersExited", "onGroupMemberExited"}
         removed_owner_events = collect_group_events(
             device_a,
             expected_event_types=exited_event_types,
@@ -320,15 +320,15 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
         )
         readded_member_events = collect_group_events(
             device_b,
-            expected_event_types={"onAutoAcceptInvitationFromGroup"},
+            expected_event_types={"onGroupAutoAcceptInvitation"},
             group_id=group_id,
-            required_all_event_types={"onAutoAcceptInvitationFromGroup"},
+            required_all_event_types={"onGroupAutoAcceptInvitation"},
             timeout=10.0,
         )
         _assert_exact_event(
             assert_api,
             readded_member_events[0],
-            event_type="onAutoAcceptInvitationFromGroup",
+            event_type="onGroupAutoAcceptInvitation",
             data={"groupId": group_id, "inviter": user_a, "inviteMessage": ""},
         )
         readded_owner_events = collect_group_events(

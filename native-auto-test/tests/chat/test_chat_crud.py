@@ -274,11 +274,13 @@ def test_chat_send_to_self_event(device_a, assert_api, user_a):
 # ======================== Read ========================
 
 
-def test_chat_get_message_invalid_id_returns_none(device_a, assert_api):
+def test_chat_get_message_invalid_id_returns_empty(device_a, assert_api):
+    # 新路径直连 Wrapper：无效 msgId 找不到消息时，Wrapper.onSuccess(null)
+    # 返回空 Map {}（Dart 业务层此前将其归一化为 null）。
     resp = device_a.call("ChatManager", Cmd.getMessage.value, info={"msgId": "__invalid_msg_id__"})
     assert_api.assert_response_matches(
         resp,
-        expected={"manager": "ChatManager", "cmd": Cmd.getMessage.value, "device": "deviceA", "result": None},
+        expected={"manager": "ChatManager", "cmd": Cmd.getMessage.value, "device": "deviceA", "result": {}},
         ignore_keys={"sequence"},
     )
 
@@ -600,10 +602,12 @@ def test_chat_recall_message_invalid_id_response(device_a, assert_api):
 
 
 def test_chat_remove_reaction_invalid_id_response(device_a, assert_api):
+    # 新路径直连 Wrapper：无效 msgId 操作失败时返回空 Map {}
+    # （Dart 业务层此前将其归一化为 null）。
     resp = device_a.call("ChatManager", Cmd.removeReaction.value, info={"reaction": "👍", "msgId": "__invalid_msg_id__"})
     assert_api.assert_response_matches(
         resp,
-        expected={"manager": "ChatManager", "cmd": Cmd.removeReaction.value, "device": "deviceA", "result": None},
+        expected={"manager": "ChatManager", "cmd": Cmd.removeReaction.value, "device": "deviceA", "result": {}},
         ignore_keys={"sequence"},
     )
 

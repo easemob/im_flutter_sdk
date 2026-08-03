@@ -31,12 +31,12 @@ def test_group_create_group(device_a, device_b, assert_api, user_a, user_b):
         expected_events = {
             GroupChangeEvent.ON_INVITATION_RECEIVED.value,
             GroupChangeEvent.ON_AUTO_ACCEPT_INVITATION.value,
-            "onAutoAcceptInvitationFromGroup",
-            "onAllowListRemovedFromGroup",
-            "onMemberJoinedFromGroup",
+            "onGroupAutoAcceptInvitation",
+            "onGroupWhiteListRemoved",
+            "onGroupMemberJoined",
         }
         required_events = {
-            "onAutoAcceptInvitationFromGroup",
+            "onGroupAutoAcceptInvitation",
         }
         events = collect_group_events(
             device_b,
@@ -60,22 +60,22 @@ def test_group_create_group(device_a, device_b, assert_api, user_a, user_b):
         owner_events = collect_group_events(
             device_a,
             expected_event_types={
-                "onMembersJoinedFromGroup",
-                "onMemberJoinedFromGroup",
+                "onGroupMembersJoined",
+                "onGroupMemberJoined",
             },
             group_id=group_id,
-            required_all_event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+            required_all_event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
             timeout=10.0,
         )
         assert_group_events(
             assert_api,
             owner_events,
             expected_event_types={
-                "onMembersJoinedFromGroup",
-                "onMemberJoinedFromGroup",
+                "onGroupMembersJoined",
+                "onGroupMemberJoined",
             },
             group_id=group_id,
-            required_all_event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+            required_all_event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
             expected_member=user_b,
         )
     finally:

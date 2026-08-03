@@ -139,6 +139,12 @@ def _collect_diffs(
             )
         return diffs
 
+    # 新路径直连 Wrapper：无返回值 API（update*Setting/unsubscribe 等）
+    # 返回空 Map {}，而旧路径（经 Dart 层）返回 None。两者视为等价，
+    # 避免大量 Case 因"类型不同"失败。
+    if expected is None and actual == {}:
+        return diffs
+
     if type(actual) != type(expected):
         diffs.append(f"{path}: 类型不同 — 预期 {type(expected).__name__!r}, 实际 {type(actual).__name__!r}")
         return diffs

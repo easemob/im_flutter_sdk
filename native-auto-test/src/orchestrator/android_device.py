@@ -101,6 +101,10 @@ class AndroidDevice:
                 artifact.application_id,
             ]
         )
+        # force-stop 后旧 task 的 Intent 恢复会与带新参数的 am start 竞争，
+        # 恢复的旧 Intent 可能覆盖新 wsUrl/runId。等待系统把旧任务恢复动作
+        # 跑完，再显式启动，避免 App 连到旧的 WS/主题。
+        time.sleep(2)
         command = [
             self.adb,
             "-s",
@@ -110,7 +114,9 @@ class AndroidDevice:
             "start",
             "-W",
             "-f",
-            "0x10008000",
+            # NEW_TASK(0x10000000) | CLEAR_TASK(0x00004000)：丢弃旧任务栈，
+            # 确保 App 使用本次 Intent 携带的 runner 参数，而不是恢复旧任务。
+            "0x10004000",
             "-n",
             component,
             "--es",

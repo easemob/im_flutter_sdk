@@ -21,6 +21,8 @@ FIXTURE_DEVICE_REQUIREMENTS = {
     "api_device_b": frozenset({"device_b"}),
     "listener_a": frozenset({"device_a"}),
     "listener_b": frozenset({"device_b"}),
+    # chat 模块 autouse：无论 Case 声明什么，都要建立好友关系（双设备）
+    "ensure_friends": frozenset({"device_a", "device_b"}),
 }
 
 

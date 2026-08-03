@@ -83,10 +83,10 @@ def test_group_add_admin_and_remove_admin_success(device_a, device_b, assert_api
             device_b,
             expected_event_types={
                 GroupChangeEvent.ON_ADMIN_ADDED.value,
-                "onAdminAddedFromGroup",
+                "onGroupAdminAdded",
             },
             group_id=group_id,
-            required_all_event_types={"onAdminAddedFromGroup"},
+            required_all_event_types={"onGroupAdminAdded"},
             timeout=10.0,
         )
         assert_group_events(
@@ -94,10 +94,10 @@ def test_group_add_admin_and_remove_admin_success(device_a, device_b, assert_api
             admin_added_events,
             expected_event_types={
                 GroupChangeEvent.ON_ADMIN_ADDED.value,
-                "onAdminAddedFromGroup",
+                "onGroupAdminAdded",
             },
             group_id=group_id,
-            required_all_event_types={"onAdminAddedFromGroup"},
+            required_all_event_types={"onGroupAdminAdded"},
             expected_member=user_b,
         )
         _assert_no_group_event(
@@ -105,7 +105,7 @@ def test_group_add_admin_and_remove_admin_success(device_a, device_b, assert_api
             group_id=group_id,
             event_types={
                 GroupChangeEvent.ON_ADMIN_ADDED.value,
-                "onAdminAddedFromGroup",
+                "onGroupAdminAdded",
             },
         )
 
@@ -159,10 +159,10 @@ def test_group_add_admin_and_remove_admin_success(device_a, device_b, assert_api
             device_b,
             expected_event_types={
                 GroupChangeEvent.ON_ADMIN_REMOVED.value,
-                "onAdminRemovedFromGroup",
+                "onGroupAdminRemoved",
             },
             group_id=group_id,
-            required_all_event_types={"onAdminRemovedFromGroup"},
+            required_all_event_types={"onGroupAdminRemoved"},
             timeout=10.0,
         )
         assert_group_events(
@@ -170,10 +170,10 @@ def test_group_add_admin_and_remove_admin_success(device_a, device_b, assert_api
             admin_removed_events,
             expected_event_types={
                 GroupChangeEvent.ON_ADMIN_REMOVED.value,
-                "onAdminRemovedFromGroup",
+                "onGroupAdminRemoved",
             },
             group_id=group_id,
-            required_all_event_types={"onAdminRemovedFromGroup"},
+            required_all_event_types={"onGroupAdminRemoved"},
             expected_member=user_b,
         )
         _assert_no_group_event(
@@ -181,7 +181,7 @@ def test_group_add_admin_and_remove_admin_success(device_a, device_b, assert_api
             group_id=group_id,
             event_types={
                 GroupChangeEvent.ON_ADMIN_REMOVED.value,
-                "onAdminRemovedFromGroup",
+                "onGroupAdminRemoved",
             },
         )
 
@@ -237,10 +237,10 @@ def test_group_update_owner_success(device_a, device_b, assert_api, user_a, user
             device_b,
             expected_event_types={
                 GroupChangeEvent.ON_OWNER_CHANGED.value,
-                "onOwnerChangedFromGroup",
+                "onGroupOwnerChanged",
             },
             group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
+            required_all_event_types={"onGroupOwnerChanged"},
             timeout=10.0,
         )
         assert_group_events(
@@ -248,19 +248,19 @@ def test_group_update_owner_success(device_a, device_b, assert_api, user_a, user
             owner_changed_events,
             expected_event_types={
                 GroupChangeEvent.ON_OWNER_CHANGED.value,
-                "onOwnerChangedFromGroup",
+                "onGroupOwnerChanged",
             },
             group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
+            required_all_event_types={"onGroupOwnerChanged"},
         )
         owner_changed_a_events = collect_group_events(
             device_a,
             expected_event_types={
                 GroupChangeEvent.ON_OWNER_CHANGED.value,
-                "onOwnerChangedFromGroup",
+                "onGroupOwnerChanged",
             },
             group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
+            required_all_event_types={"onGroupOwnerChanged"},
             timeout=10.0,
         )
         assert_group_events(
@@ -268,10 +268,10 @@ def test_group_update_owner_success(device_a, device_b, assert_api, user_a, user
             owner_changed_a_events,
             expected_event_types={
                 GroupChangeEvent.ON_OWNER_CHANGED.value,
-                "onOwnerChangedFromGroup",
+                "onGroupOwnerChanged",
             },
             group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
+            required_all_event_types={"onGroupOwnerChanged"},
         )
 
         resp_get_after_owner_change = device_b.call(
@@ -307,10 +307,10 @@ def test_group_update_owner_success(device_a, device_b, assert_api, user_a, user
             device_a,
             expected_event_types={
                 GroupChangeEvent.ON_OWNER_CHANGED.value,
-                "onOwnerChangedFromGroup",
+                "onGroupOwnerChanged",
             },
             group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
+            required_all_event_types={"onGroupOwnerChanged"},
             timeout=10.0,
         )
         assert_group_events(
@@ -318,19 +318,19 @@ def test_group_update_owner_success(device_a, device_b, assert_api, user_a, user
             owner_back_a_events,
             expected_event_types={
                 GroupChangeEvent.ON_OWNER_CHANGED.value,
-                "onOwnerChangedFromGroup",
+                "onGroupOwnerChanged",
             },
             group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
+            required_all_event_types={"onGroupOwnerChanged"},
         )
         owner_back_b_events = collect_group_events(
             device_b,
             expected_event_types={
                 GroupChangeEvent.ON_OWNER_CHANGED.value,
-                "onOwnerChangedFromGroup",
+                "onGroupOwnerChanged",
             },
             group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
+            required_all_event_types={"onGroupOwnerChanged"},
             timeout=10.0,
         )
         assert_group_events(
@@ -338,10 +338,10 @@ def test_group_update_owner_success(device_a, device_b, assert_api, user_a, user
             owner_back_b_events,
             expected_event_types={
                 GroupChangeEvent.ON_OWNER_CHANGED.value,
-                "onOwnerChangedFromGroup",
+                "onGroupOwnerChanged",
             },
             group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
+            required_all_event_types={"onGroupOwnerChanged"},
         )
     finally:
         if group_id:

@@ -109,9 +109,17 @@ class CapabilityResolver:
         api = f"{manager}.{cmd}"
         platform = str(runner_info.get("platform") or "")
         sdk_version = str(runner_info.get("sdkVersion") or "")
-        runner_caps = set(runner_info.get("capabilities") or [])
-        # Empty capabilities means Runner delegates to API Matrix.
-        reported = api in runner_caps if runner_caps else True
+        # Runner 未上报 capabilities 字段时视为委托 API Matrix，不再做
+        # reported 与 Matrix 的交叉比对；上报了（含空列表）则按实际能力比对。
+        delegates = (
+            "capabilities" not in runner_info
+            or runner_info["capabilities"] is None
+        )
+        reported = (
+            False
+            if delegates
+            else api in set(runner_info["capabilities"])
+        )
 
         if platform != self.matrix.platform:
             return CapabilityDecision(
@@ -135,7 +143,7 @@ class CapabilityResolver:
                 reported,
             )
         matrix_supported = api in expected
-        if matrix_supported != reported:
+        if not delegates and matrix_supported != reported:
             return CapabilityDecision(
                 api,
                 platform,

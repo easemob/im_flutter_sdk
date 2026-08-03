@@ -390,12 +390,18 @@ def pytest_addoption(parser):
 
 
 def pytest_collection_modifyitems(config, items):
-    """Collect only device fixtures declared directly by selected test functions."""
+    """Collect device fixtures declared directly OR via business autouse."""
     fixture_sets: list[tuple[str, ...]] = []
     for item in items:
         fixture_info = getattr(item, "_fixtureinfo", None)
+        if fixture_info is None:
+            fixture_sets.append(())
+            continue
         direct_names = tuple(getattr(fixture_info, "argnames", ()) or ())
-        fixture_sets.append(direct_names)
+        initial_names = tuple(getattr(fixture_info, "initialnames", ()) or ())
+        # initialnames 含 autouse（如 chat 的 ensure_friends），用它补全
+        # 业务 autouse 声明的设备需求；direct argnames 保持"Case 直接声明"。
+        fixture_sets.append(tuple(dict.fromkeys((*initial_names, *direct_names))))
     plan = ExecutionPlan.from_direct_fixtures(fixture_sets)
     config._native_required_device_roles = set(plan.required_roles)
 
@@ -1071,6 +1077,25 @@ class _DeviceChannelWrapper:
         return self._conn.begin_case(case_id)
 
     def end_case(self) -> None:
+        # Case 结束时把未消费事件写入 Allure，便于定位"等待事件超时"
+        # 时到底收到了什么（连接状态变化、推送事件等）。
+        pending = self._conn.drain_pending_events()
+        if pending:
+            try:
+                import allure
+
+                allure.attach(
+                    json.dumps(
+                        [_redact(event) for event in pending],
+                        ensure_ascii=False,
+                        indent=2,
+                        default=str,
+                    ),
+                    f"Case 未消费事件 (device={self._device}, count={len(pending)})",
+                    allure.attachment_type.JSON,
+                )
+            except ImportError:
+                pass
         self._conn.end_case()
 
     def wait_for_hello(
@@ -1613,6 +1638,38 @@ def pytest_sessionstart(session):
             cwd=flutter_test,
             check=True,
         )
+        # build 后 APK hash 必然变化，自动更新对应 Manifest 的
+        # artifactSha256，避免下次不带 --build 时 hash 校验失败。
+        _refresh_artifact_hash(flavor, flutter_test)
+
+
+def _refresh_artifact_hash(flavor: str, flutter_test: Path) -> None:
+    """重新计算 flavor APK 的 SHA-256 并写回 Artifact Manifest。"""
+    import hashlib
+    import json
+
+    apk = flutter_test / "build" / "app" / "outputs" / "flutter-apk" / f"app-{flavor}-debug.apk"
+    if not apk.is_file():
+        print(f"[build] APK not found after build: {apk}")
+        return
+    digest = hashlib.sha256(apk.read_bytes()).hexdigest()
+    version = flavor.replace("sdk", "")
+    # sdk423 → 4.23.0
+    dotted = f"{version[0]}.{version[1:]}.0"
+    manifest_path = (
+        Path(__file__).resolve().parent.parent
+        / "config" / "artifact_manifests" / f"android-{dotted}.json"
+    )
+    if not manifest_path.is_file():
+        print(f"[build] manifest not found: {manifest_path}")
+        return
+    data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    data["artifactSha256"] = digest
+    manifest_path.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    print(f"[build] updated {manifest_path.name} artifactSha256={digest[:12]}…")
 
 
 def pytest_configure(config):

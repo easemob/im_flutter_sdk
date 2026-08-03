@@ -31,11 +31,11 @@ def _assert_specification_updated_event(
         device_b,
         expected_event_types={
             GroupChangeEvent.ON_SPECIFICATION_DID_UPDATE.value,
-            "onSpecificationDidUpdate",
+            "onGroupSpecificationDidUpdate",
         },
         group_id=group_id,
         allow_missing_group_id=True,
-        required_all_event_types={"onSpecificationDidUpdate"},
+        required_all_event_types={"onGroupSpecificationDidUpdate"},
         timeout=10.0,
     )
     assert_group_events(
@@ -43,13 +43,13 @@ def _assert_specification_updated_event(
         events,
         expected_event_types={
             GroupChangeEvent.ON_SPECIFICATION_DID_UPDATE.value,
-            "onSpecificationDidUpdate",
+            "onGroupSpecificationDidUpdate",
         },
         group_id=group_id,
         allow_missing_group_id=True,
-        required_all_event_types={"onSpecificationDidUpdate"},
+        required_all_event_types={"onGroupSpecificationDidUpdate"},
     )
-    spec_event = next(evt for evt in events if evt.get("eventType") == "onSpecificationDidUpdate")
+    spec_event = next(evt for evt in events if evt.get("eventType") == "onGroupSpecificationDidUpdate")
     group = ((spec_event.get("data") or {}).get("group") or {})
     assert group.get("groupId") == group_id, f"规格变更回调 groupId 不匹配: {spec_event}"
     assert group.get("name") == expected_name, f"规格变更回调 name 不匹配: {spec_event}"
@@ -66,7 +66,7 @@ def _assert_no_specification_updated_event(device, *, group_id: str, timeout: fl
             continue
         if evt.get("type") != "event":
             continue
-        if evt.get("eventType") not in {GroupChangeEvent.ON_SPECIFICATION_DID_UPDATE.value, "onSpecificationDidUpdate"}:
+        if evt.get("eventType") not in {GroupChangeEvent.ON_SPECIFICATION_DID_UPDATE.value, "onGroupSpecificationDidUpdate"}:
             continue
         data = evt.get("data")
         if isinstance(data, dict) and isinstance(data.get("group"), dict) and data["group"].get("groupId") == group_id:

@@ -69,7 +69,7 @@ base:
     - ChatManager.asyncFetchGroupAcks
     - ChatManager.deleteMessagesBeforeTimestamp
     - ChatManager.translateMessage
-    - ChatManager.fetchSupportedLanguages
+    - ChatManager.fetchSupportLanguages
     - ChatManager.addReaction
     - ChatManager.removeReaction
     - ChatManager.fetchReactionList
@@ -281,6 +281,6 @@ base:
     # ── MessageManager ──
     - MessageManager.getReactionList
     - MessageManager.groupAckCount
-    - MessageManager.getChatThread
+    - MessageManager.chatThread
 
 versions: {}

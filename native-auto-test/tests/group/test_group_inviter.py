@@ -49,13 +49,13 @@ def test_group_inviter_user_success(device_a, device_b, assert_api, user_a, user
             expected_event_types={
                 GroupChangeEvent.ON_INVITATION_RECEIVED.value,
                 GroupChangeEvent.ON_AUTO_ACCEPT_INVITATION.value,
-                "onAutoAcceptInvitationFromGroup",
-                "onAllowListRemovedFromGroup",
-                "onMemberJoinedFromGroup",
+                "onGroupAutoAcceptInvitation",
+                "onGroupWhiteListRemoved",
+                "onGroupMemberJoined",
             },
             group_id=group_id,
             allow_missing_group_id=True,
-            required_all_event_types={"onAutoAcceptInvitationFromGroup"},
+            required_all_event_types={"onGroupAutoAcceptInvitation"},
             timeout=10.0,
         )
         assert_group_events(
@@ -64,13 +64,13 @@ def test_group_inviter_user_success(device_a, device_b, assert_api, user_a, user
             expected_event_types={
                 GroupChangeEvent.ON_INVITATION_RECEIVED.value,
                 GroupChangeEvent.ON_AUTO_ACCEPT_INVITATION.value,
-                "onAutoAcceptInvitationFromGroup",
-                "onAllowListRemovedFromGroup",
-                "onMemberJoinedFromGroup",
+                "onGroupAutoAcceptInvitation",
+                "onGroupWhiteListRemoved",
+                "onGroupMemberJoined",
             },
             group_id=group_id,
             allow_missing_group_id=True,
-            required_all_event_types={"onAutoAcceptInvitationFromGroup"},
+            required_all_event_types={"onGroupAutoAcceptInvitation"},
             expected_inviter=user_a,
             expected_member=user_b,
         )

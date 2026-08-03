@@ -762,6 +762,24 @@ class DeviceConnection:
             if key not in _MANAGED_EVENT_TRANSPORT_FIELDS
         }
 
+    def drain_pending_events(self) -> list[dict[str, Any]]:
+        """导出本连接上尚未被消费的事件（缓冲 + 队列），用于 Allure 诊断。
+
+        只取 type == event 的消息；不消费响应。供 Case 结束时 dump 查看
+        "到底收到了什么事件"，尤其用于定位等待目标事件超时的 Case。
+        """
+        drained: list[dict[str, Any]] = []
+        while self._event_buffer:
+            drained.append(self._event_buffer.popleft())
+        while True:
+            try:
+                m = self._recv_queue.get_nowait()
+            except queue.Empty:
+                break
+            if isinstance(m, dict) and m.get("type") == "event":
+                drained.append(m)
+        return drained
+
     def begin_case(self, case_id: str) -> int:
         """Start an isolated event view without deleting SDK or queued data."""
         self._case_id = case_id

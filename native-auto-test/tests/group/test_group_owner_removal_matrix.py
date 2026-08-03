@@ -69,7 +69,7 @@ def _assert_owner_changed(assert_api, event: dict, *, group_id: str,
         event,
         expected={
             "type": "event",
-            "eventType": "onOwnerChangedFromGroup",
+            "eventType": "onGroupOwnerChanged",
             "data": {
                 "groupId": group_id,
                 "newOwner": new_owner,
@@ -164,16 +164,16 @@ def test_group_transfer_owner_to_admin_normalizes_roles(
 
         events_a = collect_group_events(
             device_a,
-            expected_event_types={"onOwnerChangedFromGroup"},
+            expected_event_types={"onGroupOwnerChanged"},
             group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
+            required_all_event_types={"onGroupOwnerChanged"},
             timeout=10.0,
         )
         events_b = collect_group_events(
             device_b,
-            expected_event_types={"onOwnerChangedFromGroup"},
+            expected_event_types={"onGroupOwnerChanged"},
             group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
+            required_all_event_types={"onGroupOwnerChanged"},
             timeout=10.0,
         )
         _assert_owner_changed(assert_api, events_a[0], group_id=group_id,
@@ -260,7 +260,7 @@ def test_group_transfer_owner_target_boundaries(
         assert_no_group_event(
             device_b,
             group_id=group_id,
-            event_types={"onOwnerChangedFromGroup"},
+            event_types={"onGroupOwnerChanged"},
         )
     finally:
         if group_id:
@@ -398,16 +398,16 @@ def test_group_transfer_then_new_owner_removes_former_owner(
         owner_is_b = True
         collect_group_events(
             device_a,
-            expected_event_types={"onOwnerChangedFromGroup"},
+            expected_event_types={"onGroupOwnerChanged"},
             group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
+            required_all_event_types={"onGroupOwnerChanged"},
             timeout=10.0,
         )
         collect_group_events(
             device_b,
-            expected_event_types={"onOwnerChangedFromGroup"},
+            expected_event_types={"onGroupOwnerChanged"},
             group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
+            required_all_event_types={"onGroupOwnerChanged"},
             timeout=10.0,
         )
 
@@ -426,16 +426,16 @@ def test_group_transfer_then_new_owner_removes_former_owner(
         _assert_true(assert_api, remove, cmd=Cmd.removeMembers.value, device="deviceB")
         removed_events = collect_group_events(
             device_a,
-            expected_event_types={"onUserRemovedFromGroup"},
+            expected_event_types={"onGroupUserRemoved"},
             group_id=group_id,
-            required_all_event_types={"onUserRemovedFromGroup"},
+            required_all_event_types={"onGroupUserRemoved"},
             timeout=10.0,
         )
         assert_api.assert_response_matches(
             removed_events[0],
             expected={
                 "type": "event",
-                "eventType": "onUserRemovedFromGroup",
+                "eventType": "onGroupUserRemoved",
                 "data": {"groupId": group_id, "groupName": group_name},
             },
             ignore_keys={"timestamp", "sequence"},
@@ -496,7 +496,7 @@ def test_group_remove_current_owner_is_ignored(
         assert_no_group_event(
             device_b,
             group_id=group_id,
-            event_types={"onUserRemovedFromGroup", "onMembersExitedFromGroup", "onMemberExitedFromGroup"},
+            event_types={"onGroupUserRemoved", "onGroupMembersExited", "onGroupMemberExited"},
         )
     finally:
         if group_id:
@@ -539,16 +539,16 @@ def test_group_owner_removes_admin_success(
         _assert_true(assert_api, response, cmd=Cmd.removeMembers.value, device="deviceA")
         removed_events = collect_group_events(
             device_b,
-            expected_event_types={"onUserRemovedFromGroup"},
+            expected_event_types={"onGroupUserRemoved"},
             group_id=group_id,
-            required_all_event_types={"onUserRemovedFromGroup"},
+            required_all_event_types={"onGroupUserRemoved"},
             timeout=10.0,
         )
         assert_api.assert_response_matches(
             removed_events[0],
             expected={
                 "type": "event",
-                "eventType": "onUserRemovedFromGroup",
+                "eventType": "onGroupUserRemoved",
                 "data": {"groupId": group_id, "groupName": group_name},
             },
             ignore_keys={"timestamp", "sequence"},
@@ -607,7 +607,7 @@ def test_group_remove_other_member_permission_by_role(
         )
         if make_admin:
             _assert_true(assert_api, response, cmd=Cmd.removeMembers.value, device="deviceB")
-            joined_event_types = {"onMembersExitedFromGroup", "onMemberExitedFromGroup"}
+            joined_event_types = {"onGroupMembersExited", "onGroupMemberExited"}
             owner_events = collect_group_events(
                 device_a,
                 expected_event_types=joined_event_types,
@@ -625,10 +625,10 @@ def test_group_remove_other_member_permission_by_role(
             for events in (owner_events, admin_events):
                 by_type = {event["eventType"]: event for event in events}
                 assert_api.assert_response_matches(
-                    by_type["onMembersExitedFromGroup"],
+                    by_type["onGroupMembersExited"],
                     expected={
                         "type": "event",
-                        "eventType": "onMembersExitedFromGroup",
+                        "eventType": "onGroupMembersExited",
                         "data": {"groupId": group_id, "userIds": [user_c]},
                     },
                     ignore_keys={"timestamp", "sequence"},
@@ -698,16 +698,16 @@ def test_group_owner_must_transfer_before_leaving(
         owner_is_b = True
         collect_group_events(
             device_a,
-            expected_event_types={"onOwnerChangedFromGroup"},
+            expected_event_types={"onGroupOwnerChanged"},
             group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
+            required_all_event_types={"onGroupOwnerChanged"},
             timeout=10.0,
         )
         collect_group_events(
             device_b,
-            expected_event_types={"onOwnerChangedFromGroup"},
+            expected_event_types={"onGroupOwnerChanged"},
             group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
+            required_all_event_types={"onGroupOwnerChanged"},
             timeout=10.0,
         )
         former_owner_leave = device_a.call(
@@ -718,17 +718,17 @@ def test_group_owner_must_transfer_before_leaving(
         _assert_true(assert_api, former_owner_leave, cmd=Cmd.leaveGroup.value, device="deviceA")
         exited_events = collect_group_events(
             device_b,
-            expected_event_types={"onMembersExitedFromGroup", "onMemberExitedFromGroup"},
+            expected_event_types={"onGroupMembersExited", "onGroupMemberExited"},
             group_id=group_id,
-            required_all_event_types={"onMembersExitedFromGroup", "onMemberExitedFromGroup"},
+            required_all_event_types={"onGroupMembersExited", "onGroupMemberExited"},
             timeout=10.0,
         )
         by_type = {event["eventType"]: event for event in exited_events}
         assert_api.assert_response_matches(
-            by_type["onMembersExitedFromGroup"],
+            by_type["onGroupMembersExited"],
             expected={
                 "type": "event",
-                "eventType": "onMembersExitedFromGroup",
+                "eventType": "onGroupMembersExited",
                 "data": {"groupId": group_id, "userIds": [user_a]},
             },
             ignore_keys={"timestamp", "sequence"},
@@ -779,16 +779,16 @@ def test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_membe
         _assert_true(assert_api, response, cmd=Cmd.removeMembers.value, device="deviceA")
         removed_events = collect_group_events(
             device_b,
-            expected_event_types={"onUserRemovedFromGroup"},
+            expected_event_types={"onGroupUserRemoved"},
             group_id=group_id,
-            required_all_event_types={"onUserRemovedFromGroup"},
+            required_all_event_types={"onGroupUserRemoved"},
             timeout=10.0,
         )
         assert_api.assert_response_matches(
             removed_events[0],
             expected={
                 "type": "event",
-                "eventType": "onUserRemovedFromGroup",
+                "eventType": "onGroupUserRemoved",
                 "data": {"groupId": group_id, "groupName": group_name},
             },
             ignore_keys={"timestamp", "sequence"},

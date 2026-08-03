@@ -701,7 +701,7 @@ def test_group_message_send_rejects_invalid_group_target(
 
 
 def _assert_owner_member_exited_events(device_a, assert_api, *, group_id: str, member: str) -> None:
-    event_types = {"onMembersExitedFromGroup", "onMemberExitedFromGroup"}
+    event_types = {"onGroupMembersExited", "onGroupMemberExited"}
     events = collect_group_events(
         device_a,
         expected_event_types=event_types,
@@ -711,19 +711,19 @@ def _assert_owner_member_exited_events(device_a, assert_api, *, group_id: str, m
     )
     by_type = {event["eventType"]: event for event in events}
     assert_api.assert_response_matches(
-        by_type["onMembersExitedFromGroup"],
+        by_type["onGroupMembersExited"],
         expected={
             "type": "event",
-            "eventType": "onMembersExitedFromGroup",
+            "eventType": "onGroupMembersExited",
             "data": {"groupId": group_id, "userIds": [member]},
         },
         ignore_keys={"timestamp", "sequence"},
     )
     assert_api.assert_response_matches(
-        by_type["onMemberExitedFromGroup"],
+        by_type["onGroupMemberExited"],
         expected={
             "type": "event",
-            "eventType": "onMemberExitedFromGroup",
+            "eventType": "onGroupMemberExited",
             "data": {"groupId": group_id, "member": member},
         },
         ignore_keys={"timestamp", "sequence"},
@@ -770,7 +770,7 @@ def test_group_message_send_rejects_non_member_states(
             assert_no_group_event(
                 device_b,
                 group_id=group_id,
-                event_types={"onMembersExitedFromGroup", "onMemberExitedFromGroup"},
+                event_types={"onGroupMembersExited", "onGroupMemberExited"},
             )
         elif member_state == "removed":
             remove_resp = device_a.call(
@@ -790,15 +790,15 @@ def test_group_message_send_rejects_non_member_states(
             )
             removed_event_types = {
                 GroupChangeEvent.ON_USER_REMOVED.value,
-                "onLeaveFromGroup",
-                "onUserRemovedFromGroup",
+                "onGroupMemberExited",
+                "onGroupUserRemoved",
             }
             removed_events = collect_group_events(
                 device_b,
                 expected_event_types=removed_event_types,
                 group_id=group_id,
                 allow_missing_group_id=True,
-                required_all_event_types={"onUserRemovedFromGroup"},
+                required_all_event_types={"onGroupUserRemoved"},
                 timeout=10.0,
             )
             assert_group_events(
@@ -807,7 +807,7 @@ def test_group_message_send_rejects_non_member_states(
                 expected_event_types=removed_event_types,
                 group_id=group_id,
                 allow_missing_group_id=True,
-                required_all_event_types={"onUserRemovedFromGroup"},
+                required_all_event_types={"onGroupUserRemoved"},
                 expected_member=user_b,
             )
             _assert_owner_member_exited_events(device_a, assert_api, group_id=group_id, member=user_b)

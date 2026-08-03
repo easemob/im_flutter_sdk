@@ -49,10 +49,10 @@ def test_group_set_and_fetch_member_attributes_success(device_a, device_b, asser
             expected_event_types={
                 GroupChangeEvent.ON_ATTRIBUTES_CHANGED_OF_MEMBER.value,
                 "onGroupAttributesChangedOfMember",
-                "onAttributesChangedOfGroupMember",
+                "onGroupAttributesChangedOfMember",
             },
             group_id=group_id,
-            required_all_event_types={"onAttributesChangedOfGroupMember"},
+            required_all_event_types={"onGroupAttributesChangedOfMember"},
             timeout=10.0,
         )
         assert_group_events(
@@ -61,10 +61,10 @@ def test_group_set_and_fetch_member_attributes_success(device_a, device_b, asser
             expected_event_types={
                 GroupChangeEvent.ON_ATTRIBUTES_CHANGED_OF_MEMBER.value,
                 "onGroupAttributesChangedOfMember",
-                "onAttributesChangedOfGroupMember",
+                "onGroupAttributesChangedOfMember",
             },
             group_id=group_id,
-            required_all_event_types={"onAttributesChangedOfGroupMember"},
+            required_all_event_types={"onGroupAttributesChangedOfMember"},
             expected_member=user_b,
         )
 

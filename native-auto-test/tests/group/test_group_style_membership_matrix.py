@@ -153,7 +153,7 @@ def test_group_join_public_group_rejects_every_non_open_style(
         assert_no_group_event(
             device_a,
             group_id=group_id,
-            event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+            event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
         )
     finally:
         if group_id:
@@ -202,7 +202,7 @@ def test_group_request_to_join_rejects_every_non_approval_style(
         )
         joined = style == 3 and response.get("result") is None
         if joined:
-            joined_types = {"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"}
+            joined_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
             owner_events = collect_group_events(
                 device_a,
                 expected_event_types=joined_types,
@@ -212,10 +212,10 @@ def test_group_request_to_join_rejects_every_non_approval_style(
             )
             by_type = {event["eventType"]: event for event in owner_events}
             assert_api.assert_response_matches(
-                by_type["onMembersJoinedFromGroup"],
+                by_type["onGroupMembersJoined"],
                 expected={
                     "type": "event",
-                    "eventType": "onMembersJoinedFromGroup",
+                    "eventType": "onGroupMembersJoined",
                     "data": {"groupId": group_id, "userIds": [user_b]},
                 },
                 ignore_keys={"timestamp", "sequence"},
@@ -303,16 +303,16 @@ def test_group_direct_invite_ignores_auto_accept_disabled_when_confirmation_not_
         )
         invite_events = collect_group_events(
             device_b,
-            expected_event_types={"onAutoAcceptInvitationFromGroup"},
+            expected_event_types={"onGroupAutoAcceptInvitation"},
             group_id=group_id,
-            required_all_event_types={"onAutoAcceptInvitationFromGroup"},
+            required_all_event_types={"onGroupAutoAcceptInvitation"},
             timeout=10.0,
         )
         assert_api.assert_response_matches(
             invite_events[0],
             expected={
                 "type": "event",
-                "eventType": "onAutoAcceptInvitationFromGroup",
+                "eventType": "onGroupAutoAcceptInvitation",
                 "data": {"groupId": group_id, "inviter": user_a, "inviteMessage": ""},
             },
             ignore_keys={"timestamp", "sequence"},
@@ -370,21 +370,21 @@ def test_group_create_group_invites_member_for_each_remaining_style(
         )
         invite_events = collect_group_events(
             device_b,
-            expected_event_types={"onAutoAcceptInvitationFromGroup"},
+            expected_event_types={"onGroupAutoAcceptInvitation"},
             group_id=group_id,
-            required_all_event_types={"onAutoAcceptInvitationFromGroup"},
+            required_all_event_types={"onGroupAutoAcceptInvitation"},
             timeout=10.0,
         )
         assert_api.assert_response_matches(
             invite_events[0],
             expected={
                 "type": "event",
-                "eventType": "onAutoAcceptInvitationFromGroup",
+                "eventType": "onGroupAutoAcceptInvitation",
                 "data": {"groupId": group_id, "inviter": user_a, "inviteMessage": ""},
             },
             ignore_keys={"timestamp", "sequence"},
         )
-        owner_joined_types = {"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"}
+        owner_joined_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
         collect_group_events(
             device_a,
             expected_event_types=owner_joined_types,
@@ -439,16 +439,16 @@ def test_group_owner_can_invite_for_each_remaining_style(
         _assert_true_response(assert_api, response, cmd=invite_cmd, device="deviceA")
         invite_events = collect_group_events(
             device_b,
-            expected_event_types={"onAutoAcceptInvitationFromGroup"},
+            expected_event_types={"onGroupAutoAcceptInvitation"},
             group_id=group_id,
-            required_all_event_types={"onAutoAcceptInvitationFromGroup"},
+            required_all_event_types={"onGroupAutoAcceptInvitation"},
             timeout=10.0,
         )
         assert_api.assert_response_matches(
             invite_events[0],
             expected={
                 "type": "event",
-                "eventType": "onAutoAcceptInvitationFromGroup",
+                "eventType": "onGroupAutoAcceptInvitation",
                 "data": {"groupId": group_id, "inviter": user_a, "inviteMessage": ""},
             },
             ignore_keys={"timestamp", "sequence"},
@@ -528,7 +528,7 @@ def test_group_member_invitation_permission_depends_on_style(
         else:
             info["welcome"] = "member-invite"
         response = device_b.call("GroupManager", invite_cmd, info=info)
-        joined_events = {"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"}
+        joined_events = {"onGroupMembersJoined", "onGroupMemberJoined"}
         if should_succeed:
             _assert_true_response(assert_api, response, cmd=invite_cmd, device="deviceB")
             owner_events = collect_group_events(
@@ -540,10 +540,10 @@ def test_group_member_invitation_permission_depends_on_style(
             )
             by_type = {event["eventType"]: event for event in owner_events}
             assert_api.assert_response_matches(
-                by_type["onMembersJoinedFromGroup"],
+                by_type["onGroupMembersJoined"],
                 expected={
                     "type": "event",
-                    "eventType": "onMembersJoinedFromGroup",
+                    "eventType": "onGroupMembersJoined",
                     "data": {"groupId": group_id, "userIds": [user_c]},
                 },
                 ignore_keys={"timestamp", "sequence"},
@@ -570,10 +570,10 @@ def test_group_member_invitation_permission_depends_on_style(
                 )
                 by_type = {event["eventType"]: event for event in owner_events}
                 assert_api.assert_response_matches(
-                    by_type["onMembersJoinedFromGroup"],
+                    by_type["onGroupMembersJoined"],
                     expected={
                         "type": "event",
-                        "eventType": "onMembersJoinedFromGroup",
+                        "eventType": "onGroupMembersJoined",
                         "data": {"groupId": group_id, "userIds": [user_c]},
                     },
                     ignore_keys={"timestamp", "sequence"},
@@ -687,7 +687,7 @@ def test_group_public_open_join_rejects_duplicate_membership(
             device="deviceB",
         )
         joined = True
-        joined_types = {"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"}
+        joined_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
         collect_group_events(
             device_a,
             expected_event_types=joined_types,
@@ -752,7 +752,7 @@ def test_group_public_open_join_rejects_when_group_is_full(
         assert_no_group_event(
             device_a,
             group_id=group_id,
-            event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+            event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
         )
     finally:
         if device_b_is_c:
@@ -810,9 +810,9 @@ def test_group_public_open_join_rejects_blocked_user(
         )
         collect_group_events(
             device_b,
-            expected_event_types={"onUserRemovedFromGroup"},
+            expected_event_types={"onGroupUserRemoved"},
             group_id=group_id,
-            required_all_event_types={"onUserRemovedFromGroup"},
+            required_all_event_types={"onGroupUserRemoved"},
             timeout=10.0,
         )
         device_a.drain_events()
@@ -825,7 +825,7 @@ def test_group_public_open_join_rejects_blocked_user(
         assert_no_group_event(
             device_a,
             group_id=group_id,
-            event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+            event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
         )
         _fetch_group(
             device_a,

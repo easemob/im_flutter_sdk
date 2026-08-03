@@ -41,7 +41,9 @@ class RunnerInfo {
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    // capabilities 为空时不输出该字段：CapabilityResolver 把"字段缺失"
+    // 视为 Runner 委托 API Matrix，避免与空列表（确实不支持）混淆。
+    final json = <String, dynamic>{
       'runnerId': runnerId,
       'deviceName': deviceName,
       'runId': runId,
@@ -52,8 +54,11 @@ class RunnerInfo {
       'platform': platform,
       'sdkVersion': sdkVersion,
       'appVersion': appVersion,
-      'capabilities': capabilities.toList()..sort(),
     };
+    if (capabilities.isNotEmpty) {
+      json['capabilities'] = capabilities.toList()..sort();
+    }
+    return json;
   }
 
   final String runnerId;

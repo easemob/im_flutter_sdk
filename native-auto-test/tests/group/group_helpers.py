@@ -4,6 +4,9 @@ import time
 
 from src import Cmd, GroupChangeEvent
 
+# 群组事件名已统一为 onGroupXxx（Android/iOS Wrapper 与 Python
+# GroupChangeEvent 枚举一致），Case 硬编码也已对齐，无需归一化。
+
 
 def new_group_name(prefix: str = "auto_group") -> str:
     return f"{prefix}_{int(time.time() * 1000)}"
@@ -60,11 +63,12 @@ def collect_group_events(
     timeout: float = 10.0,
     idle_grace_window: float = 0.8,
 ) -> list[dict]:
+    expected_norm = set(expected_event_types)
     required_all = set(required_all_event_types or set())
     for required_type in required_all:
-        assert required_type in expected_event_types, (
+        assert required_type in expected_norm, (
             f"required 事件必须包含在 expected_event_types 中: required={required_type}, "
-            f"expected={sorted(expected_event_types)}"
+            f"expected={sorted(expected_norm)}"
         )
 
     deadline = time.monotonic() + timeout
@@ -107,7 +111,7 @@ def collect_group_events(
             if not isinstance(evt_type, str):
                 continue
             seen_event_types.append(evt_type)
-            if evt_type not in expected_event_types:
+            if evt_type not in expected_norm:
                 continue
 
             if group_id is not None:
@@ -121,6 +125,8 @@ def collect_group_events(
                 elif actual_gid != group_id:
                     continue
 
+            if isinstance(item, dict):
+                item["eventType"] = evt_type
             matched.append(item)
             matched_types.add(evt_type)
             last_matched_at = now
@@ -267,7 +273,8 @@ def _assert_list_field_contains_user(
 
 
 def _assert_member_field(data: dict, *, expected_member: str | None, evt: dict) -> None:
-    member_keys = ("member", "userId", "username", "admin", "applicant", "invitee", "accepter", "decliner")
+    # administrator 是生产 Wrapper 对 onGroupAdminAdded 的成员字段
+    member_keys = ("member", "userId", "username", "admin", "administrator", "applicant", "invitee", "accepter", "decliner")
     member_list_keys = ("members", "userIds", "users", "admins")
     for key in member_keys:
         if key not in data:
@@ -319,12 +326,12 @@ def assert_group_event_data_fields(
     invitation_events = {
         GroupChangeEvent.ON_INVITATION_RECEIVED.value,
         GroupChangeEvent.ON_AUTO_ACCEPT_INVITATION.value,
-        "onAutoAcceptInvitationFromGroup",
+        "onGroupAutoAcceptInvitation",
     }
     if event_type_value in invitation_events:
         _assert_any_non_empty_str_field(
             data,
-            ("inviter", "from", "operator"),
+            ("inviter", "from", "operator", "operatorId"),
             field_label="inviter",
             expected_value=expected_inviter,
             evt=evt,
@@ -340,7 +347,7 @@ def assert_group_event_data_fields(
     request_join_received_events = {
         GroupChangeEvent.ON_REQUEST_TO_JOIN_RECEIVED.value,
         "onGroupRequestToJoinReceived",
-        "onRequestToJoinReceivedFromGroup",
+        "onGroupRequestToJoinReceived",
     }
     if event_type_value in request_join_received_events:
         _assert_member_field(data, expected_member=expected_member, evt=evt)
@@ -355,12 +362,12 @@ def assert_group_event_data_fields(
     request_join_accepted_events = {
         GroupChangeEvent.ON_REQUEST_TO_JOIN_ACCEPTED.value,
         "onGroupRequestToJoinAccepted",
-        "onRequestToJoinAcceptedFromGroup",
+        "onGroupRequestToJoinAccepted",
     }
     if event_type_value in request_join_accepted_events:
         _assert_any_non_empty_str_field(
             data,
-            ("accepter", "accepter", "operator", "owner", "admin"),
+            ("accepter", "accepter", "operator", "operatorId", "owner", "admin"),
             field_label="accepter",
             evt=evt,
         )
@@ -369,12 +376,12 @@ def assert_group_event_data_fields(
     request_join_declined_events = {
         GroupChangeEvent.ON_REQUEST_TO_JOIN_DECLINED.value,
         "onGroupRequestToJoinDeclined",
-        "onRequestToJoinDeclinedFromGroup",
+        "onGroupRequestToJoinDeclined",
     }
     if event_type_value in request_join_declined_events:
         _assert_any_non_empty_str_field(
             data,
-            ("decliner", "operator", "owner", "admin"),
+            ("decliner", "operator", "operatorId", "owner", "admin"),
             field_label="decliner",
             evt=evt,
         )
@@ -386,16 +393,16 @@ def assert_group_event_data_fields(
         )
         return
 
-    if event_type_value == "onMemberJoinedFromGroup":
+    if event_type_value == "onGroupMemberJoined":
         _assert_member_field(data, expected_member=expected_member, evt=evt)
         return
 
-    if event_type_value in {"onMembersJoinedFromGroup", "onMembersExitedFromGroup"}:
+    if event_type_value in {"onGroupMembersJoined", "onGroupMembersExited"}:
         expected_members = [expected_member] if expected_member else None
         _assert_member_list_field(data, expected_members=expected_members, evt=evt)
         return
 
-    if event_type_value == "onAllowListRemovedFromGroup":
+    if event_type_value == "onGroupWhiteListRemoved":
         _assert_list_field_contains_user(
             data,
             ("members", "whitelist", "allowList"),
@@ -408,14 +415,14 @@ def assert_group_event_data_fields(
     admin_events = {
         GroupChangeEvent.ON_ADMIN_ADDED.value,
         GroupChangeEvent.ON_ADMIN_REMOVED.value,
-        "onAdminAddedFromGroup",
-        "onAdminRemovedFromGroup",
+        "onGroupAdminAdded",
+        "onGroupAdminRemoved",
     }
     if event_type_value in admin_events:
         _assert_member_field(data, expected_member=expected_member, evt=evt)
         return
 
-    if event_type_value in {GroupChangeEvent.ON_OWNER_CHANGED.value, "onOwnerChangedFromGroup"}:
+    if event_type_value in {GroupChangeEvent.ON_OWNER_CHANGED.value, "onGroupOwnerChanged"}:
         _assert_any_non_empty_str_field(
             data,
             ("newOwner", "owner", "to"),
@@ -424,7 +431,7 @@ def assert_group_event_data_fields(
         )
         _assert_any_non_empty_str_field(
             data,
-            ("oldOwner", "from", "operator"),
+            ("oldOwner", "from", "operator", "operatorId"),
             field_label="oldOwner",
             evt=evt,
         )
@@ -469,7 +476,7 @@ def assert_group_event_data_fields(
     if event_type_value in {
         GroupChangeEvent.ON_ATTRIBUTES_CHANGED_OF_MEMBER.value,
         "onGroupAttributesChangedOfMember",
-        "onAttributesChangedOfGroupMember",
+        "onGroupAttributesChangedOfMember",
     }:
         _assert_member_field(data, expected_member=expected_member, evt=evt)
         _assert_any_dict_field(
@@ -482,13 +489,17 @@ def assert_group_event_data_fields(
 
     removed_events = {
         GroupChangeEvent.ON_USER_REMOVED.value,
-        "onUserRemovedFromGroup",
-        "onLeaveFromGroup",
+        "onGroupUserRemoved",
     }
     if event_type_value in removed_events:
         assert any(isinstance(data.get(key), str) for key in ("groupName", "name")), (
             f"群组回调 data 缺少 groupName/name 字符串字段，data={data}, evt={evt}"
         )
+        return
+
+    # onGroupMemberExited 的 SDK 回调只带 groupId + member，无 groupName
+    if event_type_value == "onGroupMemberExited":
+        _assert_member_field(data, expected_member=expected_member, evt=evt)
         return
 
     invitation_feedback_events = {
@@ -527,7 +538,7 @@ def assert_group_event_data_fields(
 
     if event_type_value in {
         GroupChangeEvent.ON_SPECIFICATION_DID_UPDATE.value,
-        "onSpecificationDidUpdate",
+        "onGroupSpecificationDidUpdate",
     }:
         _assert_any_dict_field(
             data,
@@ -598,12 +609,13 @@ def assert_group_events(
     expected_member: str | None = None,
 ) -> None:
     assert events, "群组回调列表为空"
+    expected_norm = set(expected_event_types)
     required_all = set(required_all_event_types or set())
     seen_types: set[str] = set()
 
     for evt in events:
         evt_type = event_type(evt)
-        assert evt_type in expected_event_types, (
+        assert evt_type in expected_norm, (
             f"群组回调事件类型不在 expected 中: eventType={evt_type}, expected={sorted(expected_event_types)}, evt={evt}"
         )
         assert_group_event(
