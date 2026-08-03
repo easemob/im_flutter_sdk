@@ -34,6 +34,8 @@ class ExecutionPlan:
     def from_direct_fixtures(
         cls,
         fixture_sets: Iterable[Iterable[str]],
+        *,
+        required_role_sets: Iterable[Iterable[str]] = (),
     ) -> "ExecutionPlan":
         roles: set[str] = set()
         for fixture_names in fixture_sets:
@@ -43,6 +45,8 @@ class ExecutionPlan:
                 roles.update(
                     FIXTURE_DEVICE_REQUIREMENTS.get(fixture_name, ())
                 )
+        for required_roles in required_role_sets:
+            roles.update(required_roles)
         return cls(frozenset(roles))
 
     @staticmethod

@@ -51,6 +51,18 @@ class AccountSpec:
 
 
 @dataclass(frozen=True)
+class TopologySpec:
+    """A named sender/recipient account grouping for one test family."""
+
+    name: str
+    sender_account: str
+    recipient_account: str
+    sender_action_device: str
+    sender_devices: tuple[str, ...]
+    recipient_devices: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class Scenario:
     name: str
     startup_timeout: float
@@ -58,9 +70,11 @@ class Scenario:
     shutdown_on_finish: bool
     roles: dict[str, RoleSpec]
     accounts: dict[str, AccountSpec]
+    topologies: dict[str, TopologySpec]
     hello_timeout: float = 30
     start_retry: int = 1
     keep_device_alive: bool = True
+    start_emulators: bool = True
 
 
 def load_scenario(path: str | Path) -> Scenario:
@@ -93,6 +107,7 @@ def load_scenario(path: str | Path) -> Scenario:
             avd=_optional(item.get("avd")),
             serial=_optional(item.get("serial")),
         )
+    topologies = _load_topologies(raw.get("topologies"), roles)
     runner = raw.get("runner") or {}
     keep_device_alive = bool(
         runner.get(
@@ -111,10 +126,92 @@ def load_scenario(path: str | Path) -> Scenario:
         shutdown_on_finish=not keep_device_alive,
         roles=roles,
         accounts=accounts,
+        topologies=topologies,
         hello_timeout=float(runner.get("hello_timeout") or 30),
         start_retry=int(runner.get("start_retry") or 1),
         keep_device_alive=keep_device_alive,
+        start_emulators=bool(runner.get("start_emulators", True)),
     )
+
+
+def _load_topologies(
+    raw_topologies: Any,
+    roles: dict[str, RoleSpec],
+) -> dict[str, TopologySpec]:
+    topologies: dict[str, TopologySpec] = {}
+    for name, item in (raw_topologies or {}).items():
+        topology_name = str(name)
+        data = item or {}
+        sender = _topology_party(
+            topology_name,
+            "sender",
+            data.get("sender"),
+            roles,
+        )
+        recipient = _topology_party(
+            topology_name,
+            "recipient",
+            data.get("recipient"),
+            roles,
+        )
+        if sender["account"] == recipient["account"]:
+            raise ValueError(
+                f"Topology {topology_name!r} sender and recipient must use "
+                "different accounts"
+            )
+        topologies[topology_name] = TopologySpec(
+            name=topology_name,
+            sender_account=sender["account"],
+            recipient_account=recipient["account"],
+            sender_action_device=sender["action_device"],
+            sender_devices=sender["devices"],
+            recipient_devices=recipient["devices"],
+        )
+    return topologies
+
+
+def _topology_party(
+    topology_name: str,
+    field: str,
+    raw_party: Any,
+    roles: dict[str, RoleSpec],
+) -> dict[str, Any]:
+    if not isinstance(raw_party, dict):
+        raise ValueError(
+            f"Topology {topology_name!r}.{field} must be a mapping"
+        )
+    account = str(raw_party.get("account") or "")
+    if not account:
+        raise ValueError(
+            f"Topology {topology_name!r}.{field}.account is required"
+        )
+    account_devices = tuple(
+        role_name
+        for role_name, role in roles.items()
+        if role.account == account
+    )
+    if not account_devices:
+        raise ValueError(
+            f"Topology {topology_name!r}.{field}.account={account!r} "
+            "has no configured devices"
+        )
+    action_device = str(raw_party.get("action_device") or account_devices[0])
+    if action_device not in account_devices:
+        raise ValueError(
+            f"Topology {topology_name!r}.{field}.action_device={action_device!r} "
+            f"does not belong to account {account!r}"
+        )
+    # 基础投递默认只需一台动作发送端；接收账号默认覆盖全部在线端。
+    # 发送方跨端同步 case 可显式设置 include_all_devices: true。
+    include_all_devices = bool(
+        raw_party.get("include_all_devices", field == "recipient")
+    )
+    devices = account_devices if include_all_devices else (action_device,)
+    return {
+        "account": account,
+        "action_device": action_device,
+        "devices": devices,
+    }
 
 
 def load_artifacts(path: str | Path) -> dict[tuple[str, str], Artifact]:

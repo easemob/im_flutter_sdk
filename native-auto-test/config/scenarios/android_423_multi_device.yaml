@@ -63,7 +63,17 @@ devices:
     serial: ${NATIVE_TEST_SERIAL_C_SEC:-}
     avd: ${NATIVE_TEST_AVD_C_SEC:-}
 
+topologies:
+  direct_chat_delivery:
+    sender:
+      account: account_b
+      action_device: device_b
+    recipient:
+      account: account_a
+
 runner:
+  # 模拟器由使用者预先启动；serial 缺失或未在线时直接报错。
+  start_emulators: false
   device_ready_timeout: 180
   hello_timeout: 30
   start_retry: 1

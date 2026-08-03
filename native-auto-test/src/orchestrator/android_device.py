@@ -21,10 +21,12 @@ class AndroidDevice:
         *,
         startup_timeout: float,
         claimed_serials: set[str] | None = None,
+        allow_avd_start: bool = True,
     ) -> None:
         self.role = role
         self.startup_timeout = startup_timeout
         self.claimed_serials = claimed_serials if claimed_serials is not None else set()
+        self.allow_avd_start = allow_avd_start
         self.adb = _find_android_tool("adb")
         self.emulator = _find_android_tool("emulator")
         self.serial: str | None = None
@@ -41,6 +43,11 @@ class AndroidDevice:
                 )
             self.serial = self.role.serial
         else:
+            if not self.allow_avd_start:
+                raise AndroidEnvironmentError(
+                    f"role={self.role.role} requires an online configured serial; "
+                    "automatic emulator startup is disabled"
+                )
             available = sorted(online - self.claimed_serials)
             if available:
                 self.serial = available[0]

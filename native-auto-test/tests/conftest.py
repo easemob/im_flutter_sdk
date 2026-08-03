@@ -391,19 +391,64 @@ def pytest_addoption(parser):
 
 def pytest_collection_modifyitems(config, items):
     """Collect device fixtures declared directly OR via business autouse."""
+    scenario = _scenario_for_collection(config)
     fixture_sets: list[tuple[str, ...]] = []
+    topology_role_sets: list[tuple[str, ...]] = []
     for item in items:
         fixture_info = getattr(item, "_fixtureinfo", None)
         if fixture_info is None:
             fixture_sets.append(())
+            topology_role_sets.append(_topology_roles_for_item(item, scenario))
             continue
         direct_names = tuple(getattr(fixture_info, "argnames", ()) or ())
         initial_names = tuple(getattr(fixture_info, "initialnames", ()) or ())
         # initialnames 含 autouse（如 chat 的 ensure_friends），用它补全
         # 业务 autouse 声明的设备需求；direct argnames 保持"Case 直接声明"。
         fixture_sets.append(tuple(dict.fromkeys((*initial_names, *direct_names))))
-    plan = ExecutionPlan.from_direct_fixtures(fixture_sets)
+        topology_role_sets.append(_topology_roles_for_item(item, scenario))
+    plan = ExecutionPlan.from_direct_fixtures(
+        fixture_sets,
+        required_role_sets=topology_role_sets,
+    )
     config._native_required_device_roles = set(plan.required_roles)
+
+
+def _scenario_for_collection(config):
+    value = str(config.getoption("--scenario") or "").strip()
+    if not value:
+        return None
+    from src.orchestrator.config import load_scenario
+
+    return load_scenario(
+        _resolve_repo_path(value, folder="config/scenarios")
+    )
+
+
+def _topology_roles_for_item(item, scenario) -> tuple[str, ...]:
+    marker = item.get_closest_marker("topology")
+    if marker is None:
+        return ()
+    if scenario is None:
+        raise pytest.UsageError(
+            f"{item.nodeid} uses @pytest.mark.topology but no --scenario was provided"
+        )
+    topology_names = tuple(str(name) for name in marker.args)
+    if not topology_names:
+        raise pytest.UsageError(
+            f"{item.nodeid} uses @pytest.mark.topology without a topology name"
+        )
+    unknown = sorted(set(topology_names).difference(scenario.topologies))
+    if unknown:
+        raise pytest.UsageError(
+            f"{item.nodeid} references undefined topologies {unknown}; "
+            f"available={sorted(scenario.topologies)}"
+        )
+    roles: set[str] = set()
+    for topology_name in topology_names:
+        topology = scenario.topologies[topology_name]
+        roles.update(topology.sender_devices)
+        roles.update(topology.recipient_devices)
+    return tuple(sorted(roles))
 
 
 @pytest.fixture(scope="session")
@@ -631,20 +676,41 @@ def _test_usernames(run_id: str | None = None) -> tuple[str, str, str]:
     return f"{prefix}user1", f"{prefix}user2", f"{prefix}user3"
 
 
+def _scenario_usernames(
+    run_id: str | None,
+    account_slots: tuple[str, ...],
+) -> dict[str, str]:
+    """Generate one stable, session-unique username per configured account."""
+    raw_suffix = os.getenv("NATIVE_TEST_USER_SUFFIX", "")
+    source = raw_suffix or run_id or uuid.uuid4().hex[:8]
+    suffix = "".join(char for char in source.lower() if char.isalnum())[-12:]
+    prefix = f"test{suffix}"
+    return {
+        slot: f"{prefix}user{index}"
+        for index, slot in enumerate(account_slots, start=1)
+    }
+
+
 @pytest.fixture(scope="session")
 def created_test_users(test_run_id, phase1_scenario):
-    """Provision account_a/b/c and preserve existing user fixtures."""
+    """Provision scenario accounts while preserving user_a/user_b/user_c."""
     global _LAST_CREATE_USERS_ERROR
     _LAST_CREATE_USERS_ERROR = ""
     keep_users = os.getenv("KEEP_TEST_USERS", "0") in ("1", "true", "True")
     token = get_rest_auth_token()
-    generated = dict(
-        zip(
-            ("account_a", "account_b", "account_c"),
-            _test_usernames(test_run_id),
-        )
+    configured_slots = (
+        tuple(phase1_scenario.accounts)
+        if phase1_scenario is not None
+        else ()
     )
-    users = dict(generated)
+    # 旧 case 仍会注入 user_c，即使两设备 scenario 只声明 A/B。
+    # 新的语义账号场景（例如 user_1/user_2）则不强行创建遗留账号。
+    account_slots = (
+        tuple(dict.fromkeys(("account_a", "account_b", "account_c", *configured_slots)))
+        if {"account_a", "account_b"}.intersection(configured_slots)
+        else (configured_slots or ("account_a", "account_b", "account_c"))
+    )
+    users = _scenario_usernames(test_run_id, account_slots)
     provisions = {slot: "rest" for slot in users}
     passwords = {slot: SESSION_PWD for slot in users}
     if phase1_scenario is not None:
@@ -669,7 +735,7 @@ def created_test_users(test_run_id, phase1_scenario):
         if provision == "rest"
     ]
     if not token or not to_create:
-        yield users["account_a"], users["account_b"], users["account_c"]
+        yield users
         return
 
     with _allure_step("创建测试用户"):
@@ -694,7 +760,7 @@ def created_test_users(test_run_id, phase1_scenario):
     created_users = [item["username"] for item in to_create]
     time.sleep(5.0)
     try:
-        yield users["account_a"], users["account_b"], users["account_c"]
+        yield users
     finally:
         if not keep_users:
             with _allure_step("删除测试用户"):
@@ -712,18 +778,18 @@ def created_test_users(test_run_id, phase1_scenario):
 @pytest.fixture(scope="session")
 def user_a(created_test_users):
     """设备 A 对应用户名（session 内创建，teardown 删除）。"""
-    return created_test_users[0]
+    return created_test_users["account_a"]
 
 
 @pytest.fixture(scope="session")
 def user_b(created_test_users):
     """设备 B 对应用户名（session 内创建，teardown 删除）。"""
-    return created_test_users[1]
+    return created_test_users["account_b"]
 
 @pytest.fixture(scope="session")
 def user_c(created_test_users):
     """设备 A 对应用户名（session 内创建，teardown 删除）。"""
-    return created_test_users[2]
+    return created_test_users["account_c"]
 
 def _account_slot(logical_role: str, phase1_scenario) -> str:
     return (
@@ -736,19 +802,14 @@ def _account_slot(logical_role: str, phase1_scenario) -> str:
 def _account_user(
     logical_role: str,
     phase1_scenario,
-    users: tuple[str, str, str],
+    users: dict[str, str],
 ) -> str:
     account = _account_slot(logical_role, phase1_scenario)
-    mapping = {
-        "account_a": users[0],
-        "account_b": users[1],
-        "account_c": users[2],
-    }
-    if account not in mapping:
+    if account not in users:
         raise RuntimeError(
             f"Unsupported account slot {account!r} for role {logical_role!r}"
         )
-    return mapping[account]
+    return users[account]
 
 
 def _account_password(logical_role: str, phase1_scenario) -> str:
@@ -804,14 +865,14 @@ def _login_one(device, user_id: str, password: str) -> None:
 
 @pytest.fixture(scope="session", autouse=True)
 def global_login_logout(
-    request,
     required_device_roles,
     phase1_scenario,
     created_test_users,
+    device_pool,
 ):
     """Prepare only the selected logical devices once for the whole Session."""
     roles = sorted(required_device_roles)
-    devices = {role: request.getfixturevalue(role) for role in roles}
+    devices = {role: device_pool.get(role) for role in roles}
 
     if devices and not get_rest_auth_token():
         creator = next(iter(devices.values()))
@@ -827,18 +888,13 @@ def global_login_logout(
                 ].provision == "rest"
             )
         }
-        user_by_slot = {
-            "account_a": created_test_users[0],
-            "account_b": created_test_users[1],
-            "account_c": created_test_users[2],
-        }
         for slot in sorted(accounts_to_create):
             try:
                 creator.call(
                     "Client",
                     Cmd.createAccount.value,
                     info={
-                        "userId": user_by_slot[slot],
+                    "userId": created_test_users[slot],
                         "password": (
                             phase1_scenario.accounts[slot].password
                             if (
@@ -1036,13 +1092,14 @@ class _DeviceChannelWrapper:
                 )
                 pytest.fail(f"Framework/Configuration Error: {error}", pytrace=False)
 
-    def attach_execution_context(self) -> None:
+    def attach_execution_context(self, *, include_parameters: bool = True) -> None:
         _attach_execution_context_allure(
             scenario_name=self._scenario_name,
             device=self._device,
             runner_info=self._conn.runner_info,
             account_slot=self._account_slot,
             account_user=self._account_user,
+            include_parameters=include_parameters,
         )
 
     def receive_message(self, *, match_cmd=None, match_event_type=None, timeout=10.0):
@@ -1122,6 +1179,152 @@ class _DeviceChannelWrapper:
     def runner_info(self):
         return self._conn.runner_info
 
+    @property
+    def device_name(self) -> str:
+        return self._device
+
+
+@dataclass(frozen=True)
+class TopologyContext:
+    """Semantic endpoints for one sender/recipient scenario topology."""
+
+    name: str
+    sender_user: str
+    recipient_user: str
+    sender_action_device: _DeviceChannelWrapper
+    sender_devices: tuple[_DeviceChannelWrapper, ...]
+    recipient_devices: tuple[_DeviceChannelWrapper, ...]
+    sender_roles: tuple[str, ...]
+    recipient_roles: tuple[str, ...]
+
+
+def _attach_topology_allure(
+    topology: TopologyContext,
+    phase1_scenario,
+) -> None:
+    try:
+        import allure
+
+        def endpoint(role: str, device: _DeviceChannelWrapper) -> dict:
+            spec = phase1_scenario.roles[role]
+            return {
+                "role": role,
+                "account": spec.account,
+                "platform": spec.platform,
+                "sdkVersion": spec.sdk_version,
+                "runnerId": spec.runner_id,
+                "deviceName": spec.device_name,
+                "runner": device.runner_info,
+            }
+
+        sender_by_role = dict(zip(topology.sender_roles, topology.sender_devices))
+        recipient_by_role = dict(
+            zip(topology.recipient_roles, topology.recipient_devices)
+        )
+
+        def display_endpoint(role: str) -> str:
+            spec = phase1_scenario.roles[role]
+            platform = str(spec.platform).replace("android", "Android").replace(
+                "ios", "iOS"
+            )
+            return f"{spec.device_name}（{platform} · SDK {spec.sdk_version}）"
+
+        action_role = next(
+            role
+            for role, device in sender_by_role.items()
+            if device is topology.sender_action_device
+        )
+        sender_account = phase1_scenario.roles[action_role].account
+        recipient_account = phase1_scenario.roles[
+            topology.recipient_roles[0]
+        ].account
+        payload = {
+            "name": topology.name,
+            "sender": {
+                "user": topology.sender_user,
+                "actionRole": action_role,
+                "devices": [
+                    endpoint(role, device)
+                    for role, device in sender_by_role.items()
+                ],
+            },
+            "recipient": {
+                "user": topology.recipient_user,
+                "devices": [
+                    endpoint(role, device)
+                    for role, device in recipient_by_role.items()
+                ],
+            },
+        }
+        allure.dynamic.parameter("测试类型", "场景拓扑：单聊消息投递")
+        allure.dynamic.parameter("测试场景", phase1_scenario.name)
+        allure.dynamic.parameter("拓扑", topology.name)
+        allure.dynamic.parameter("发送账号", sender_account)
+        allure.dynamic.parameter("动作发送端", display_endpoint(action_role))
+        allure.dynamic.parameter("接收账号", recipient_account)
+        allure.dynamic.parameter(
+            "接收端", "；".join(display_endpoint(role) for role in topology.recipient_roles)
+        )
+        allure.attach(
+            "\n".join(
+                (
+                    "场景：单聊消息投递",
+                    f"发送：{sender_account} / {display_endpoint(action_role)}",
+                    f"接收：{recipient_account} / "
+                    + "、".join(
+                        display_endpoint(role) for role in topology.recipient_roles
+                    ),
+                    "预期：接收账号的每个在线端都收到同一条消息。",
+                )
+            ),
+            "拓扑摘要",
+            allure.attachment_type.TEXT,
+        )
+        allure.attach(
+            json.dumps(payload, ensure_ascii=False, indent=2, default=str),
+            "Topology",
+            allure.attachment_type.JSON,
+        )
+    except ImportError:
+        pass
+
+
+@pytest.fixture
+def topology(request, phase1_scenario, device_pool, created_test_users):
+    """Resolve the single semantic topology declared on the current case."""
+    marker = request.node.get_closest_marker("topology")
+    if marker is None or len(marker.args) != 1:
+        raise pytest.UsageError(
+            f"{request.node.nodeid} must declare exactly one "
+            "@pytest.mark.topology('name') to use the topology fixture"
+        )
+    if phase1_scenario is None:
+        raise pytest.UsageError("topology fixture requires --scenario")
+    name = str(marker.args[0])
+    try:
+        spec = phase1_scenario.topologies[name]
+    except KeyError as error:
+        raise pytest.UsageError(
+            f"Topology {name!r} is not defined by scenario "
+            f"{phase1_scenario.name!r}"
+        ) from error
+    context = TopologyContext(
+        name=name,
+        sender_user=created_test_users[spec.sender_account],
+        recipient_user=created_test_users[spec.recipient_account],
+        sender_action_device=device_pool.get(spec.sender_action_device),
+        sender_devices=tuple(
+            device_pool.get(role) for role in spec.sender_devices
+        ),
+        recipient_devices=tuple(
+            device_pool.get(role) for role in spec.recipient_devices
+        ),
+        sender_roles=spec.sender_devices,
+        recipient_roles=spec.recipient_devices,
+    )
+    _attach_topology_allure(context, phase1_scenario)
+    return context
+
 
 def _attach_capability_allure(decision: dict) -> None:
     try:
@@ -1143,17 +1346,19 @@ def _attach_execution_context_allure(
     runner_info: dict | None,
     account_slot: str | None = None,
     account_user: str | None = None,
+    include_parameters: bool = True,
 ) -> None:
     try:
         import allure
 
-        if scenario_name:
-            allure.dynamic.parameter("scenario", scenario_name)
-        allure.dynamic.parameter("logicalDevice", device)
-        if account_slot:
-            allure.dynamic.parameter(f"{device}.accountSlot", account_slot)
-        if account_user:
-            allure.dynamic.parameter(f"{device}.account", account_user)
+        if include_parameters:
+            if scenario_name:
+                allure.dynamic.parameter("scenario", scenario_name)
+            allure.dynamic.parameter("logicalDevice", device)
+            if account_slot:
+                allure.dynamic.parameter(f"{device}.accountSlot", account_slot)
+            if account_user:
+                allure.dynamic.parameter(f"{device}.account", account_user)
         allure.attach(
             json.dumps(
                 {
@@ -1287,7 +1492,14 @@ def _device_channel(
     conn.start()
     try:
         account_slot = _account_slot(logical_role, phase1_scenario)
-        generated_users = _test_usernames(ws_runtime.run_id)
+        generated_users = _scenario_usernames(
+            ws_runtime.run_id,
+            (
+                tuple(phase1_scenario.accounts)
+                if phase1_scenario is not None
+                else ("account_a", "account_b", "account_c")
+            ),
+        )
         account_spec = (
             phase1_scenario.accounts.get(account_slot)
             if phase1_scenario is not None
@@ -1323,8 +1535,56 @@ def _device_channel(
         conn.stop()
 
 
+class _DevicePool:
+    """Session-scoped channels keyed by arbitrary scenario role names."""
+
+    def __init__(
+        self,
+        *,
+        ws_debug,
+        phase1_environment,
+        phase1_scenario,
+        capability_resolver,
+        runner_registry,
+        ws_runtime,
+    ) -> None:
+        self._dependencies = {
+            "ws_debug": ws_debug,
+            "phase1_environment": phase1_environment,
+            "phase1_scenario": phase1_scenario,
+            "capability_resolver": capability_resolver,
+            "runner_registry": runner_registry,
+            "ws_runtime": ws_runtime,
+        }
+        self._channels: dict[str, _DeviceChannelWrapper] = {}
+        self._generators: dict[str, object] = {}
+
+    def get(self, role: str) -> _DeviceChannelWrapper:
+        if role in self._channels:
+            return self._channels[role]
+        generator = _device_channel(role, **self._dependencies)
+        try:
+            channel = next(generator)
+        except StopIteration as error:
+            raise RuntimeError(f"Device channel {role!r} did not initialize") from error
+        self._channels[role] = channel
+        self._generators[role] = generator
+        return channel
+
+    def close(self) -> None:
+        for role, generator in reversed(tuple(self._generators.items())):
+            try:
+                next(generator)
+            except StopIteration:
+                pass
+            else:
+                raise RuntimeError(f"Device channel {role!r} did not finish")
+        self._generators.clear()
+        self._channels.clear()
+
+
 @pytest.fixture(scope="session")
-def device_a(
+def device_pool(
     ws_debug,
     phase1_environment,
     phase1_scenario,
@@ -1332,137 +1592,72 @@ def device_a(
     runner_registry,
     ws_runtime,
 ):
-    yield from _device_channel(
-        "device_a",
-        ws_debug,
-        phase1_environment,
-        phase1_scenario,
-        capability_resolver,
-        runner_registry,
-        ws_runtime,
+    """Get an already deployed Runner channel by its scenario role."""
+    pool = _DevicePool(
+        ws_debug=ws_debug,
+        phase1_environment=phase1_environment,
+        phase1_scenario=phase1_scenario,
+        capability_resolver=capability_resolver,
+        runner_registry=runner_registry,
+        ws_runtime=ws_runtime,
     )
+    try:
+        yield pool
+    finally:
+        pool.close()
 
 
 @pytest.fixture(scope="session")
-def device_a_sec(
-    ws_debug,
-    phase1_environment,
-    phase1_scenario,
-    capability_resolver,
-    runner_registry,
-    ws_runtime,
-):
-    yield from _device_channel(
-        "device_a_sec",
-        ws_debug,
-        phase1_environment,
-        phase1_scenario,
-        capability_resolver,
-        runner_registry,
-        ws_runtime,
-    )
+def device_a(device_pool):
+    return device_pool.get("device_a")
 
 
 @pytest.fixture(scope="session")
-def device_b(
-    ws_debug,
-    phase1_environment,
-    phase1_scenario,
-    capability_resolver,
-    runner_registry,
-    ws_runtime,
-):
-    yield from _device_channel(
-        "device_b",
-        ws_debug,
-        phase1_environment,
-        phase1_scenario,
-        capability_resolver,
-        runner_registry,
-        ws_runtime,
-    )
+def device_a_sec(device_pool):
+    return device_pool.get("device_a_sec")
 
 
 @pytest.fixture(scope="session")
-def device_b_sec(
-    ws_debug,
-    phase1_environment,
-    phase1_scenario,
-    capability_resolver,
-    runner_registry,
-    ws_runtime,
-):
-    yield from _device_channel(
-        "device_b_sec",
-        ws_debug,
-        phase1_environment,
-        phase1_scenario,
-        capability_resolver,
-        runner_registry,
-        ws_runtime,
-    )
+def device_b(device_pool):
+    return device_pool.get("device_b")
 
 
 @pytest.fixture(scope="session")
-def device_c(
-    ws_debug,
-    phase1_environment,
-    phase1_scenario,
-    capability_resolver,
-    runner_registry,
-    ws_runtime,
-):
-    yield from _device_channel(
-        "device_c",
-        ws_debug,
-        phase1_environment,
-        phase1_scenario,
-        capability_resolver,
-        runner_registry,
-        ws_runtime,
-    )
+def device_b_sec(device_pool):
+    return device_pool.get("device_b_sec")
 
 
 @pytest.fixture(scope="session")
-def device_c_sec(
-    ws_debug,
-    phase1_environment,
-    phase1_scenario,
-    capability_resolver,
-    runner_registry,
-    ws_runtime,
-):
-    yield from _device_channel(
-        "device_c_sec",
-        ws_debug,
-        phase1_environment,
-        phase1_scenario,
-        capability_resolver,
-        runner_registry,
-        ws_runtime,
-    )
+def device_c(device_pool):
+    return device_pool.get("device_c")
+
+
+@pytest.fixture(scope="session")
+def device_c_sec(device_pool):
+    return device_pool.get("device_c_sec")
 
 
 @pytest.fixture(autouse=True)
-def case_event_context(request):
+def case_event_context(request, phase1_scenario, device_pool):
     """Create a per-Case event cursor for directly requested device fixtures."""
     fixture_info = getattr(request.node, "_fixtureinfo", None)
     direct_names = tuple(getattr(fixture_info, "argnames", ()) or ())
-    roles = sorted(DEVICE_ROLE_NAMES.intersection(direct_names))
-    devices = [request.getfixturevalue(role) for role in roles]
+    topology_roles = _topology_roles_for_item(request.node, phase1_scenario)
+    roles = sorted(
+        DEVICE_ROLE_NAMES.intersection(direct_names).union(topology_roles)
+    )
+    devices = [device_pool.get(role) for role in roles]
     case_id = request.node.nodeid
     try:
         import allure
 
-        allure.dynamic.parameter(
-            "caseType",
-            ExecutionPlan.case_type(roles),
-        )
+        if not topology_roles:
+            allure.dynamic.parameter("caseType", ExecutionPlan.case_type(roles))
     except ImportError:
         pass
     for device in devices:
         device.begin_case(case_id)
-        device.attach_execution_context()
+        device.attach_execution_context(include_parameters=not topology_roles)
     yield
     for device in devices:
         device.end_case()
@@ -1681,6 +1876,10 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "contact: ContactManager / friend API tests")
     config.addinivalue_line("markers", "presence: PresenceManager / online status tests")
     config.addinivalue_line("markers", "multi_device: tests requiring multiple devices/topics")
+    config.addinivalue_line(
+        "markers",
+        "topology(*names): named scenario topologies required by this case",
+    )
     config.addinivalue_line("markers", "agorachat4_23_0: AgoraChat SDK 4.23.0 release coverage tests")
     config.addinivalue_line("markers", "phase1: first-stage multi-version runner acceptance")
     config.addinivalue_line("markers", "upgrade: coverage-install data retention tests")

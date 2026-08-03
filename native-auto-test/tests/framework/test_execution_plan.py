@@ -24,6 +24,23 @@ def test_execution_plan_maps_upgrade_fixture_to_device_a():
     assert plan.required_roles == {"device_a"}
 
 
+def test_execution_plan_includes_explicit_topology_roles():
+    plan = ExecutionPlan.from_direct_fixtures(
+        [("assert_api",)],
+        required_role_sets=[
+            ("u2_android", "u1_android", "u1_ios"),
+            ("u2_android", "u1_android", "u1_ios", "u1_web"),
+        ],
+    )
+
+    assert plan.required_roles == {
+        "u2_android",
+        "u1_android",
+        "u1_ios",
+        "u1_web",
+    }
+
+
 def test_case_type_supports_three_required_topologies():
     assert ExecutionPlan.case_type(["device_a"]) == "single_device"
     assert (

@@ -80,6 +80,7 @@ class EnvironmentManager:
                     role,
                     startup_timeout=self.scenario.startup_timeout,
                     claimed_serials=claimed,
+                    allow_avd_start=self.scenario.start_emulators,
                 )
                 last_error: Exception | None = None
                 for attempt in range(self.scenario.start_retry + 1):

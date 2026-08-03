@@ -37,7 +37,43 @@ def test_new_scenario_supports_six_slots_and_same_account_binding():
     assert scenario.roles["device_a_sec"].account == "account_a"
     assert scenario.roles["device_b"].account == "account_b"
     assert scenario.keep_device_alive is True
+    assert scenario.start_emulators is False
     assert scenario.hello_timeout == 30
+    topology = scenario.topologies["direct_chat_delivery"]
+    assert topology.sender_action_device == "device_b"
+    assert topology.sender_devices == ("device_b",)
+    assert topology.recipient_devices == ("device_a", "device_a_sec")
+
+
+def test_scenario_topology_automatically_includes_new_account_devices(tmp_path):
+    scenario_file = tmp_path / "cross_platform-topology.yaml"
+    scenario_file.write_text(
+        """
+name: cross-platform-topology
+accounts:
+  user_1: {provision: rest}
+  user_2: {provision: rest}
+devices:
+  u1_android: {platform: android, sdk_version: 4.23.0, account: user_1}
+  u1_ios: {platform: ios, sdk_version: 4.23.0, account: user_1}
+  u1_web: {platform: web, sdk_version: 4.23.0, account: user_1}
+  u2_android: {platform: android, sdk_version: 4.23.0, account: user_2}
+topologies:
+  direct_chat_delivery:
+    sender: {account: user_2, action_device: u2_android}
+    recipient: {account: user_1}
+""",
+        encoding="utf-8",
+    )
+
+    topology = load_scenario(scenario_file).topologies["direct_chat_delivery"]
+
+    assert topology.sender_devices == ("u2_android",)
+    assert topology.recipient_devices == (
+        "u1_android",
+        "u1_ios",
+        "u1_web",
+    )
 
 
 def test_scenario_supports_existing_account_without_cleanup(tmp_path):
