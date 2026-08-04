@@ -1,0 +1,31 @@
+name: agora_chat_sdk_android
+description: Integrate the Chat SDK to enjoy the global IM services with high reliability, ultra-low latency, and high concurrency.
+version: 1.4.0
+homepage: https://www.agora.io/en/
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.3.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # agora_chat_sdk_interface: ^4.15.0+1
+  agora_chat_sdk_interface:
+    path: ../agora_chat_sdk_interface
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+
+  plugin:
+    implements: agora_chat_sdk
+    platforms:
+      android:
+        dartPluginClass: ClientAndroid
+        package: com.easemob.im_flutter_sdk
+        pluginClass: ImFlutterSdkPlugin
