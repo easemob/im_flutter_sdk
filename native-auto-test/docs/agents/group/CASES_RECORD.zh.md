@@ -653,7 +653,7 @@
 | 176 | `test_group_message_send_receive_by_type` | `txt/file/image/video/voice/location/cmd/custom` 八种群消息；A 发送、B 接收 | 8 | 真实双设备严格通过 |
 | 177 | `test_group_message_send_receive_combine` | 同群两条真实文本作为来源，再发送/接收 `combine` | 1 | 真实双设备严格通过 |
 | 178 | `test_group_message_ack_boundary_methods` | 非法群消息 ID/群 ID 调用 `ackGroupMessageRead` | 1 | 真实设备严格通过 |
-| 179 | `test_group_message_fetch_acks_success` | 需要群回执的文本消息、B 回执、A 分页查询 | 1 | 真实双设备严格通过 |
+| 179 | `test_group_message_fetch_acks_success` | A 建群并邀请 B；B 发送需要群回执的文本消息；A 的主/副端均收消息，A 主端回执，B 查询 | 1 | 场景拓扑：一发一收账号多端；待本轮真实设备回归 |
 | 180 | `test_group_message_send_rejects_invalid_group_target` | 空 groupId、不存在 groupId | 2 | 真实双设备严格通过；分别为 `500`、`606` |
 | 181 | `test_group_message_send_rejects_non_member_states` | 从未入群、主动退出、被群主移除后发送 | 3 | 真实双设备严格通过；均为 `602` |
 

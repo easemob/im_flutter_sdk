@@ -31,6 +31,8 @@ target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
+  # Runner 通过 interface 直连原生 Wrapper；与 Android sdk423 的直接注册一致。
+  pod 'im_flutter_sdk_ios', :path => '../../im_flutter_sdk_ios/ios'
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
     inherit! :search_paths

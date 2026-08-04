@@ -70,6 +70,7 @@ topologies:
       action_device: device_b
     recipient:
       account: account_a
+      action_device: device_a
 
 runner:
   # 模拟器由使用者预先启动；serial 缺失或未在线时直接报错。

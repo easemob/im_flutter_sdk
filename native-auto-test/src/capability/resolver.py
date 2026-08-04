@@ -63,6 +63,12 @@ class ApiMatrix:
     def load(cls, path: str | Path) -> "ApiMatrix":
         source = Path(path)
         raw = yaml.safe_load(source.read_text(encoding="utf-8")) or {}
+        inherited = raw.get("inherits")
+        if inherited:
+            parent = cls.load(source.parent / str(inherited))
+            raw = {"platform": raw.get("platform") or parent.platform,
+                   "base": {"version": parent.base_version, "apis": sorted(parent.base_apis)},
+                   "versions": raw.get("versions") or parent.versions}
         base = raw.get("base") or {}
         versions: dict[str, dict[str, set[str]]] = {}
         for version, delta in (raw.get("versions") or {}).items():
@@ -97,8 +103,11 @@ class ApiMatrix:
 
 
 class CapabilityResolver:
-    def __init__(self, matrix: ApiMatrix) -> None:
-        self.matrix = matrix
+    def __init__(self, matrix: ApiMatrix | dict[str, ApiMatrix]) -> None:
+        self.matrices = {matrix.platform: matrix} if isinstance(matrix, ApiMatrix) else matrix
+
+    def matrix_for(self, platform: str) -> ApiMatrix | None:
+        return self.matrices.get(platform)
 
     def resolve(
         self,
@@ -121,7 +130,8 @@ class CapabilityResolver:
             else api in set(runner_info["capabilities"])
         )
 
-        if platform != self.matrix.platform:
+        matrix = self.matrix_for(platform)
+        if matrix is None:
             return CapabilityDecision(
                 api,
                 platform,
@@ -131,7 +141,7 @@ class CapabilityResolver:
                 None,
                 reported,
             )
-        expected = self.matrix.apis_for(sdk_version)
+        expected = matrix.apis_for(sdk_version)
         if expected is None:
             return CapabilityDecision(
                 api,

@@ -6,15 +6,16 @@ from pathlib import Path
 
 from .android_device import AndroidDevice, AndroidEnvironmentError
 from .config import Artifact, Scenario, load_artifacts, load_scenario
+from .ios_simulator import IOSSimulatorDevice
 
 
 @dataclass
 class EnvironmentRuntime:
     scenario: Scenario
     artifacts: dict[str, Artifact]
-    devices: dict[str, AndroidDevice]
+    devices: dict[str, AndroidDevice | IOSSimulatorDevice]
 
-    def device_for(self, role: str) -> AndroidDevice:
+    def device_for(self, role: str) -> AndroidDevice | IOSSimulatorDevice:
         return self.devices[role]
 
     def artifact_for(self, role: str) -> Artifact:
@@ -46,7 +47,7 @@ class EnvironmentManager:
 
     def start(self) -> EnvironmentRuntime:
         claimed: set[str] = set()
-        devices: dict[str, AndroidDevice] = {}
+        devices: dict[str, AndroidDevice | IOSSimulatorDevice] = {}
         artifacts: dict[str, Artifact] = {}
         try:
             selected = (
@@ -61,10 +62,6 @@ class EnvironmentManager:
                 )
             for role_name in sorted(selected):
                 role = self.scenario.roles[role_name]
-                if role.platform != "android":
-                    raise AndroidEnvironmentError(
-                        f"phase 1 only supports android, got {role.platform!r}"
-                    )
                 key = (role.platform, role.sdk_version)
                 if key not in self.artifact_catalog:
                     raise AndroidEnvironmentError(
@@ -76,12 +73,22 @@ class EnvironmentManager:
                     print(f"[env] skipping hash validation for {artifact.path.name}")
                 else:
                     self._validate_artifact_hash(artifact)
-                device = AndroidDevice(
-                    role,
-                    startup_timeout=self.scenario.startup_timeout,
-                    claimed_serials=claimed,
-                    allow_avd_start=self.scenario.start_emulators,
-                )
+                if role.platform == "android":
+                    device = AndroidDevice(
+                        role,
+                        startup_timeout=self.scenario.startup_timeout,
+                        claimed_serials=claimed,
+                        allow_avd_start=self.scenario.start_emulators,
+                    )
+                elif role.platform == "ios":
+                    device = IOSSimulatorDevice(
+                        role,
+                        startup_timeout=self.scenario.startup_timeout,
+                    )
+                else:
+                    raise AndroidEnvironmentError(
+                        f"unsupported platform {role.platform!r}; expected android or ios"
+                    )
                 last_error: Exception | None = None
                 for attempt in range(self.scenario.start_retry + 1):
                     try:
@@ -128,9 +135,9 @@ class EnvironmentManager:
                 f"artifact manifest is required for "
                 f"{artifact.platform} {artifact.sdk_version}"
             )
-        if not artifact.path.is_file():
+        if not artifact.path.exists():
             raise AndroidEnvironmentError(
-                f"artifact file does not exist: {artifact.path}"
+                f"artifact path does not exist: {artifact.path}"
             )
         if not artifact.artifact_sha256:
             raise AndroidEnvironmentError(
@@ -148,6 +155,8 @@ class EnvironmentManager:
 
     @staticmethod
     def _validate_artifact_hash(artifact: Artifact) -> None:
+        if artifact.artifact_sha256 == "runtime":
+            return
         if not artifact.artifact_sha256:
             return
         digest = hashlib.sha256(artifact.path.read_bytes()).hexdigest()

@@ -1,4 +1,10 @@
 artifacts:
+  ios:
+    4.24.0:
+      path: ../../im_flutter_test/build/ios/iphonesimulator/Runner.app
+      manifest: artifact_manifests/ios-4.24.0.json
+      flavor: sdk424
+      application_id: com.easemob.imFlutterTest
   android:
     4.10.0:
       path: ../../im_flutter_test/build/app/outputs/flutter-apk/app-sdk410-debug.apk

@@ -1,13 +1,24 @@
 from __future__ import annotations
 
+from contextlib import nullcontext
 import time
 import uuid
 
 import pytest
 
 from src import Cmd
+from tests.chat._utils import build_text
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
+
+
+def _allure_step(name: str):
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext()
 
 
 def _wait_event(device, event_type: str, *, predicate=None, timeout: float = 30.0):
@@ -26,11 +37,12 @@ def _wait_event(device, event_type: str, *, predicate=None, timeout: float = 30.
     pytest.fail(f"未收到 {event_type} 目标事件，seen={seen}")
 
 
-def _wait_delivery_event(device, *, real_id: str, timeout: float = 30.0):
-    """兼容当前桥接可能使用的 delivery 回调命名，只接受目标真实 msgId。"""
+def _wait_delivery_event(device, *, real_id: str, expected_message_count: int = 1, timeout: float = 30.0):
+    """收集目标消息的送达记录；多端接收时同一 msgId 会有多条记录。"""
     seen = []
     deadline = time.monotonic() + timeout
     allowed = {Cmd.onMessagesDelivered.value, Cmd.onMessageDeliveryAck.value}
+    matched_messages = []
     while time.monotonic() < deadline:
         evt = device.receive_message(timeout=min(2.0, max(0.1, deadline - time.monotonic())))
         if not evt:
@@ -39,8 +51,17 @@ def _wait_delivery_event(device, *, real_id: str, timeout: float = 30.0):
         if evt.get("eventType") not in allowed:
             continue
         messages = ((evt.get("data") or {}).get("messages")) or []
-        if any(isinstance(m, dict) and str(m.get("msgId")) == str(real_id) for m in messages):
-            return evt
+        matched_messages.extend(
+            m for m in messages
+            if isinstance(m, dict) and str(m.get("msgId")) == str(real_id)
+        )
+        if len(matched_messages) >= expected_message_count:
+            return {
+                "type": evt.get("type"),
+                "eventType": evt.get("eventType"),
+                "data": {"messages": matched_messages},
+                "timestamp": evt.get("timestamp"),
+            }
     pytest.fail(f"未收到 delivery 目标事件，realId={real_id}, seen={seen}")
 
 
@@ -227,18 +248,103 @@ def _send_type_and_receive(
     return resp, success_evt, received_evt, temp_id, real_id
 
 
-def test_chat_missing_location_message_send_receive(device_a, device_b, assert_api, user_a, user_b):
-    _send_type_and_receive(
-        device_a, device_b, assert_api, user_a, user_b,
-        type_key="location",
-        payload={
-            "targetId": user_b,
-            "latitude": 30.2741,
-            "longitude": 120.1551,
-            "address": "batch1-location",
-            "buildingName": "batch1",
-        },
-    )
+@pytest.mark.topology("account_b_to_account_a")
+def test_chat_missing_location_message_send_receive(topology, assert_api):
+    """位置消息投递：B 发送，A 的主端与副端均收到相同位置消息。"""
+    sender = topology.sender_action_device
+    recipients = topology.recipient_devices
+    sender_user = topology.sender_user
+    recipient_user = topology.recipient_user
+    body = {
+        "type": 3,
+        "latitude": 30.2741,
+        "longitude": 120.1551,
+        "address": "batch1-location",
+        "buildingName": "batch1",
+    }
+    message = build_text(sender_user, recipient_user, "")
+    message["body"] = body
+
+    with _allure_step("清理发送账号和接收账号全部端的历史事件"):
+        for device in (*topology.sender_devices, *recipients):
+            device.drain_events(timeout=0.5)
+
+    with _allure_step(f"{sender.device_name} 向接收账号发送位置消息"):
+        response = sender.call("ChatManager", Cmd.sendMessage.value, info=message)
+    temp_id = ((response.get("result") or {}).get("msgId"))
+    assert temp_id, f"sendMessage 未返回临时 msgId: {response}"
+
+    with _allure_step(f"等待 {sender.device_name} 的消息发送成功回调（onMessageSuccess）"):
+        success_event = _wait_event(
+            sender,
+            Cmd.onMessageSuccess.value,
+            predicate=lambda event: str((event.get("data") or {}).get("msgId")) == str(temp_id),
+        )
+    sent = ((success_event.get("data") or {}).get("msg")) or {}
+    real_id = sent.get("msgId")
+    assert real_id, f"onMessageSuccess 未返回真实 msgId: {success_event}"
+
+    with _allure_step("确认位置消息已提交"):
+        assert_api.assert_response_matches(
+            response,
+            expected={
+                "manager": "ChatManager", "cmd": Cmd.sendMessage.value,
+                "device": sender.device_name,
+                "result": {
+                    "msgId": temp_id, "from": sender_user, "to": recipient_user,
+                    "convId": recipient_user, "chatType": 0, "direction": 0,
+                    "status": 0, "hasRead": True, "hasReadAck": False,
+                    "hasDeliverAck": False, "needGroupAck": False, "isThread": False,
+                    "isContentReplaced": False, "body": body,
+                },
+            },
+            ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState", "deliverOnlineOnly"},
+        )
+    with _allure_step("确认位置消息发送成功"):
+        assert_api.assert_response_matches(
+            {"type": success_event.get("type"), "eventType": success_event.get("eventType"), "data": {"messages": [sent]}},
+            expected={
+                "type": "event", "eventType": Cmd.onMessageSuccess.value,
+                "data": {"messages": [{
+                    "msgId": str(real_id), "from": sender_user, "to": recipient_user,
+                    "convId": recipient_user, "chatType": 0, "direction": 0, "status": 2,
+                    "hasRead": True, "hasReadAck": False, "hasDeliverAck": False,
+                    "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+                    "deliverOnlineOnly": False, "body": body,
+                }]},
+            },
+            ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState"},
+        )
+
+    for role, recipient in zip(topology.recipient_roles, recipients):
+        with _allure_step(f"接收端 {role} 收到位置消息（onMessagesReceived）"):
+            received_event = _wait_event(
+                recipient,
+                Cmd.onMessagesReceived.value,
+                predicate=lambda event: any(
+                    isinstance(item, dict) and str(item.get("msgId")) == str(real_id)
+                    for item in ((event.get("data") or {}).get("messages") or [])
+                ),
+            )
+            received = next(
+                item for item in ((received_event.get("data") or {}).get("messages") or [])
+                if isinstance(item, dict) and str(item.get("msgId")) == str(real_id)
+            )
+        with _allure_step(f"确认接收端 {role} 收到当前位置消息"):
+            assert_api.assert_response_matches(
+                {"type": received_event.get("type"), "eventType": received_event.get("eventType"), "data": {"messages": [received]}},
+                expected={
+                    "type": "event", "eventType": Cmd.onMessagesReceived.value,
+                    "data": {"messages": [{
+                        "msgId": str(real_id), "from": sender_user, "to": recipient_user,
+                        "convId": sender_user, "chatType": 0, "direction": 1, "status": 2,
+                        "hasRead": False, "hasReadAck": False, "hasDeliverAck": True,
+                        "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+                        "deliverOnlineOnly": False, "body": body,
+                    }]},
+                },
+                ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState"},
+            )
 
 
 def test_chat_missing_voice_message_send_receive(device_a, device_b, assert_api, user_a, user_b):
@@ -249,16 +355,123 @@ def test_chat_missing_voice_message_send_receive(device_a, device_b, assert_api,
     )
 
 
-def test_chat_missing_custom_message_send_receive(device_a, device_b, assert_api, user_a, user_b):
-    _send_type_and_receive(
-        device_a, device_b, assert_api, user_a, user_b,
-        type_key="custom",
-        payload={
-            "targetId": user_b,
-            "event": f"batch1-custom-{uuid.uuid4().hex[:8]}",
-            "params": {"source": "batch1", "value": "真实日志"},
-        },
-    )
+@pytest.mark.topology("account_b_to_account_a")
+def test_chat_missing_custom_message_send_receive(topology, assert_api):
+    """自定义消息投递：B 发送，A 的主端与副端均收到相同 custom 消息。"""
+    sender = topology.sender_action_device
+    recipients = topology.recipient_devices
+    sender_user = topology.sender_user
+    recipient_user = topology.recipient_user
+    event_name = f"batch1-custom-{uuid.uuid4().hex[:8]}"
+    params = {"source": "batch1", "value": "真实日志"}
+    message = build_text(sender_user, recipient_user, "")
+    message["body"] = {"type": 7, "event": event_name, "params": params}
+
+    with _allure_step("清理发送账号和接收账号全部端的历史事件"):
+        for device in (*topology.sender_devices, *recipients):
+            device.drain_events(timeout=0.5)
+
+    with _allure_step(f"{sender.device_name} 向接收账号发送自定义消息"):
+        response = sender.call(
+            "ChatManager",
+            Cmd.sendMessage.value,
+            info=message,
+        )
+    temp_id = ((response.get("result") or {}).get("msgId"))
+    assert temp_id, f"sendMessage 未返回临时 msgId: {response}"
+
+    with _allure_step(f"等待 {sender.device_name} 的消息发送成功回调（onMessageSuccess）"):
+        success_event = _wait_event(
+            sender,
+            Cmd.onMessageSuccess.value,
+            predicate=lambda event: str((event.get("data") or {}).get("msgId")) == str(temp_id),
+        )
+    sent = ((success_event.get("data") or {}).get("msg")) or {}
+    real_id = sent.get("msgId")
+    assert real_id, f"onMessageSuccess 未返回真实 msgId: {success_event}"
+
+    with _allure_step("确认自定义消息已提交"):
+        assert_api.assert_response_matches(
+            response,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.sendMessage.value,
+                "device": sender.device_name,
+                "result": {
+                    "msgId": temp_id,
+                    "from": sender_user,
+                    "to": recipient_user,
+                    "convId": recipient_user,
+                    "chatType": 0,
+                    "direction": 0,
+                    "status": 0,
+                    "hasRead": True,
+                    "hasReadAck": False,
+                    "hasDeliverAck": False,
+                    "needGroupAck": False,
+                    "isThread": False,
+                    "isContentReplaced": False,
+                    "body": {"type": 7, "event": event_name, "params": params},
+                },
+            },
+            ignore_keys={
+                "sequence", "serverTime", "localTime", "broadcast", "onlineState",
+                "deliverOnlineOnly",
+            },
+        )
+    with _allure_step("确认自定义消息发送成功"):
+        assert_api.assert_response_matches(
+            {"type": success_event.get("type"), "eventType": success_event.get("eventType"), "data": {"messages": [sent]}},
+            expected={
+                "type": "event",
+                "eventType": Cmd.onMessageSuccess.value,
+                "data": {"messages": [{
+                    "msgId": str(real_id), "from": sender_user, "to": recipient_user,
+                    "convId": recipient_user, "chatType": 0, "direction": 0, "status": 2,
+                    "hasRead": True, "hasReadAck": False, "hasDeliverAck": False,
+                    "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+                    "deliverOnlineOnly": False,
+                    "body": {"type": 7, "event": event_name, "params": params},
+                }]},
+            },
+            ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState"},
+        )
+
+    for role, recipient in zip(topology.recipient_roles, recipients):
+        with _allure_step(f"接收端 {role} 收到自定义消息（onMessagesReceived）"):
+            received_event = _wait_event(
+                recipient,
+                Cmd.onMessagesReceived.value,
+                predicate=lambda event: any(
+                    isinstance(item, dict)
+                    and str(item.get("msgId")) == str(real_id)
+                    and (item.get("body") or {}).get("event") == event_name
+                    for item in ((event.get("data") or {}).get("messages") or [])
+                ),
+            )
+            received = next(
+                item
+                for item in ((received_event.get("data") or {}).get("messages") or [])
+                if isinstance(item, dict)
+                and str(item.get("msgId")) == str(real_id)
+            )
+        with _allure_step(f"确认接收端 {role} 收到当前自定义消息"):
+            assert_api.assert_response_matches(
+                {"type": received_event.get("type"), "eventType": received_event.get("eventType"), "data": {"messages": [received]}},
+                expected={
+                    "type": "event",
+                    "eventType": Cmd.onMessagesReceived.value,
+                    "data": {"messages": [{
+                        "msgId": str(real_id), "from": sender_user, "to": recipient_user,
+                        "convId": sender_user, "chatType": 0, "direction": 1, "status": 2,
+                        "hasRead": False, "hasReadAck": False, "hasDeliverAck": True,
+                        "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+                        "deliverOnlineOnly": False,
+                        "body": {"type": 7, "event": event_name, "params": params},
+                    }]},
+                },
+                ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState"},
+            )
 
 
 @pytest.mark.parametrize(

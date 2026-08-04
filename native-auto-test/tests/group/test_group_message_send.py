@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import nullcontext
 import os
 import time
 import uuid
@@ -45,6 +46,21 @@ _MESSAGE_IGNORE_KEYS = {
 def _drain_devices(device_a, device_b) -> None:
     device_a.drain_events()
     device_b.drain_events()
+
+
+def _allure_step(name: str):
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext()
+
+
+def _assert_response_step(assert_api, step_name: str, actual: dict, **kwargs) -> None:
+    """Put strict response evidence below the business step in Allure."""
+    with _allure_step(step_name):
+        assert_api.assert_response_matches(actual, **kwargs)
 
 
 def _build_group_text(from_user: str, group_id: str, content: str, *, need_group_ack: bool = False) -> dict:
@@ -162,7 +178,7 @@ def _wait_success(device, *, temp_id: str, timeout: float = 60.0) -> dict:
             seen.append(evt)
         if str(((evt or {}).get("data") or {}).get("msgId")) == str(temp_id):
             return evt
-    pytest.fail(f"A 端未收到目标 onMessageSuccess: tempId={temp_id}, events={seen}")
+    pytest.fail(f"{device.device_name} 未收到目标 onMessageSuccess: tempId={temp_id}, events={seen}")
 
 
 def _wait_received(device, *, event_type: str, real_id: str, timeout: float = 60.0) -> dict:
@@ -187,7 +203,7 @@ def _wait_received(device, *, event_type: str, real_id: str, timeout: float = 60
                 "data": {"messages": [target]},
                 "timestamp": evt.get("timestamp"),
             }
-    pytest.fail(f"B 端未收到目标 {event_type}: realId={real_id}, events={seen}")
+    pytest.fail(f"{device.device_name} 未收到目标 {event_type}: realId={real_id}, events={seen}")
 
 
 def _wait_send_terminal(device, *, temp_id: str, timeout: float = 30.0) -> tuple[str, dict]:
@@ -541,36 +557,55 @@ def test_group_message_ack_boundary_methods(device_a, assert_api):
     )
 
 
-def test_group_message_fetch_acks_success(device_a, device_b, assert_api, user_a, user_b):
-    """A 发送需要群回执的文本消息，B 回执后 A 分页查询该消息的群回执。"""
+@pytest.mark.topology("account_b_to_account_a")
+def test_group_message_fetch_acks_success(topology, assert_api):
+    """A 建群后，B 发群消息；A 的全部在线端收消息，A 主端回执，B 查询回执。"""
+    sender = topology.sender_action_device
+    recipient_action = topology.recipient_action_device
+    recipients = topology.recipient_devices
+    sender_user = topology.sender_user
+    recipient_user = topology.recipient_user
     group_id = ""
     try:
-        _drain_devices(device_a, device_b)
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=new_group_name("group_ack"),
-            invite_members=[user_b],
-        )
+        with _allure_step("清理参与设备的历史事件"):
+            for device in (*topology.sender_devices, *recipients):
+                device.drain_events(timeout=0.5)
+
+        with _allure_step(f"{recipient_action.device_name} 创建群并邀请发送账号"):
+            group_id, _ = create_group(
+                recipient_action,
+                assert_api,
+                owner=recipient_user,
+                group_name=new_group_name("group_ack"),
+                invite_members=[sender_user],
+            )
         time.sleep(float(os.getenv("GROUP_MESSAGE_MEMBER_SETTLE_SECONDS", "5")))
+
+        # 入群回调与消息投递回调属于不同业务阶段，避免前者污染后续消息断言。
+        with _allure_step("清理建群及入群产生的历史事件"):
+            for device in (*topology.sender_devices, *recipients):
+                device.drain_events(timeout=0.5)
+
         content = f"group-ack-{uuid.uuid4().hex[:8]}"
-        send_resp = device_a.call(
-            "ChatManager",
-            Cmd.sendMessage.value,
-            info=_build_group_text(user_a, group_id, content, need_group_ack=True),
-        )
+        with _allure_step(f"{sender.device_name} 向群发送需要群回执的文本消息"):
+            send_resp = sender.call(
+                "ChatManager",
+                Cmd.sendMessage.value,
+                info=_build_group_text(sender_user, group_id, content, need_group_ack=True),
+            )
         temp_id = ((send_resp.get("result") or {}).get("msgId"))
         assert temp_id, f"群消息发送响应未返回临时 msgId: {send_resp}"
-        assert_api.assert_response_matches(
+        _assert_response_step(
+            assert_api,
+            "确认群消息已提交",
             send_resp,
             expected={
                 "manager": "ChatManager",
                 "cmd": Cmd.sendMessage.value,
-                "device": "deviceA",
+                "device": sender.device_name,
                 "result": {
                     "msgId": temp_id,
-                    "from": user_a,
+                    "from": sender_user,
                     "to": group_id,
                     "convId": group_id,
                     "chatType": 1,
@@ -589,20 +624,14 @@ def test_group_message_fetch_acks_success(device_a, device_b, assert_api, user_a
             },
             ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly"},
         )
-        success_evt = _wait_success(device_a, temp_id=temp_id)
+        with _allure_step(f"等待 {sender.device_name} 的消息发送成功回调（onMessageSuccess）"):
+            success_evt = _wait_success(sender, temp_id=temp_id)
         success_msg = (((success_evt.get("data") or {}).get("msg")) or {})
         real_id = success_msg.get("msgId")
         assert real_id, f"群回执消息成功事件未返回真实 msgId: {success_evt}"
-        recv_evt = _wait_received(
-            device_b,
-            event_type=Cmd.onMessagesReceived.value,
-            real_id=str(real_id),
-        )
-        recv_msg = (((recv_evt.get("data") or {}).get("messages")) or [])[0]
-        msg_id = str(recv_msg["msgId"])
         event_message = {
-            "msgId": msg_id,
-            "from": user_a,
+            "msgId": str(real_id),
+            "from": sender_user,
             "to": group_id,
             "convId": group_id,
             "chatType": 1,
@@ -615,7 +644,9 @@ def test_group_message_fetch_acks_success(device_a, device_b, assert_api, user_a
             "deliverOnlineOnly": False,
             "body": {"type": 0, "content": content},
         }
-        assert_api.assert_response_matches(
+        _assert_response_step(
+            assert_api,
+            "确认消息发送成功",
             success_evt,
             expected={
                 "type": "event",
@@ -627,52 +658,69 @@ def test_group_message_fetch_acks_success(device_a, device_b, assert_api, user_a
             },
             ignore_keys=_MESSAGE_IGNORE_KEYS,
         )
-        assert_api.assert_response_matches(
-            recv_evt,
-            expected={
-                "type": "event",
-                "eventType": Cmd.onMessagesReceived.value,
-                "data": {
-                    "messages": [{**event_message, "direction": 1, "hasRead": False}],
+        for recipient in recipients:
+            with _allure_step(
+                f"接收端 {recipient.device_name} 收到群消息（onMessagesReceived）"
+            ):
+                recv_evt = _wait_received(
+                    recipient,
+                    event_type=Cmd.onMessagesReceived.value,
+                    real_id=str(real_id),
+                )
+            _assert_response_step(
+                assert_api,
+                f"确认接收端 {recipient.device_name} 收到当前群消息",
+                recv_evt,
+                expected={
+                    "type": "event",
+                    "eventType": Cmd.onMessagesReceived.value,
+                    "data": {
+                        "messages": [{**event_message, "direction": 1, "hasRead": False}],
+                    },
                 },
-            },
-            ignore_keys=_MESSAGE_IGNORE_KEYS,
-        )
+                ignore_keys=_MESSAGE_IGNORE_KEYS,
+            )
 
-        ack_resp = device_b.call(
-            "ChatManager",
-            Cmd.ackGroupMessageRead.value,
-            info={"msgId": msg_id, "group_id": group_id, "content": "read"},
-        )
-        assert_api.assert_response_matches(
+        with _allure_step(f"接收端动作设备 {recipient_action.device_name} 发送群已读回执"):
+            ack_resp = recipient_action.call(
+                "ChatManager",
+                Cmd.ackGroupMessageRead.value,
+                info={"msgId": str(real_id), "group_id": group_id, "content": "read"},
+            )
+        _assert_response_step(
+            assert_api,
+            "确认群已读回执提交成功",
             ack_resp,
             expected={
                 "manager": "ChatManager",
                 "cmd": Cmd.ackGroupMessageRead.value,
-                "device": "deviceB",
+                "device": recipient_action.device_name,
                 "result": True,
             },
             ignore_keys={"sequence"},
         )
 
-        fetch_resp = device_a.call(
-            "ChatManager",
-            Cmd.asyncFetchGroupAcks.value,
-            info={"msgId": msg_id, "group_id": group_id, "pageSize": 20, "ack_id": None},
-        )
-        assert_api.assert_response_matches(
+        with _allure_step(f"{sender.device_name} 查询该消息的群回执"):
+            fetch_resp = sender.call(
+                "ChatManager",
+                Cmd.asyncFetchGroupAcks.value,
+                info={"msgId": str(real_id), "group_id": group_id, "pageSize": 20, "ack_id": None},
+            )
+        _assert_response_step(
+            assert_api,
+            "确认群回执查询响应符合当前 SDK 基线",
             fetch_resp,
             expected={
                 "manager": "ChatManager",
                 "cmd": Cmd.asyncFetchGroupAcks.value,
-                "device": "deviceA",
+                "device": sender.device_name,
                 "result": {"cursor": "", "list": []},
             },
             ignore_keys={"sequence"},
         )
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id, device_b=device_b)
+            destroy_group(recipient_action, assert_api, group_id, device_b=sender)
 
 
 @pytest.mark.parametrize("target_kind", ["empty", "nonexistent"])

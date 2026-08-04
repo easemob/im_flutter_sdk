@@ -1,0 +1,4 @@
+interface:
+  display_name: "原生自动化用例设计"
+  short_description: "自动化用例、多端拓扑、严格断言与可读 Allure 报告规范"
+  default_prompt: "使用 $im-auto-test-case-design 改造 native-auto-test 用例及其 Allure 可读性。"

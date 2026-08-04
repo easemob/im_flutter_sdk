@@ -59,6 +59,7 @@ class TopologySpec:
     recipient_account: str
     sender_action_device: str
     sender_devices: tuple[str, ...]
+    recipient_action_device: str
     recipient_devices: tuple[str, ...]
 
 
@@ -165,6 +166,7 @@ def _load_topologies(
             recipient_account=recipient["account"],
             sender_action_device=sender["action_device"],
             sender_devices=sender["devices"],
+            recipient_action_device=recipient["action_device"],
             recipient_devices=recipient["devices"],
         )
     return topologies
@@ -254,7 +256,7 @@ def load_artifacts(path: str | Path) -> dict[tuple[str, str], Artifact]:
                 path=artifact_path,
                 flavor=str(item.get("flavor") or ""),
                 application_id=str(item["application_id"]),
-                activity=str(item["activity"]),
+                activity=str(item.get("activity") or ""),
                 artifact_id=str(
                     manifest.get("artifactId")
                     or item.get("artifact_id")

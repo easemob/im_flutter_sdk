@@ -192,6 +192,7 @@ def _attach_compare_result_allure(
     expected_resolved: dict[str, Any],
     match: bool,
     diffs: list[str],
+    failure_summary: str | None = None,
 ) -> None:
     """将比对结果（预期、实际、一致/差异列表）写入 Allure 报告。"""
     try:
@@ -210,9 +211,15 @@ def _attach_compare_result_allure(
             if match:
                 allure.attach("一致", "比对结果", allure.attachment_type.TEXT)
             else:
+                if failure_summary:
+                    allure.attach(
+                        failure_summary,
+                        "失败摘要",
+                        allure.attachment_type.TEXT,
+                    )
                 allure.attach(
-                    "不一致\n\n" + "\n".join(diffs),
-                    "比对结果（差异）",
+                    "\n".join(diffs),
+                    "字段差异（原始）",
                     allure.attachment_type.TEXT,
                 )
     except ImportError:
@@ -244,6 +251,34 @@ def compare_response(
     return (len(diffs) == 0, diffs)
 
 
+def _business_error_summary(
+    actual: dict[str, Any],
+    expected: dict[str, Any],
+) -> str | None:
+    """Summarize an error result instead of flooding success-field diffs."""
+    actual_result = actual.get("result")
+    expected_result = expected.get("result")
+    if not isinstance(actual_result, dict):
+        return None
+    if not {"code", "description"}.issubset(actual_result):
+        return None
+    # Error cases deliberately expect this shape and should retain field diffing.
+    if isinstance(expected_result, dict) and {"code", "description"}.issubset(
+        expected_result
+    ):
+        return None
+    api = ".".join(
+        str(value)
+        for value in (actual.get("manager"), actual.get("cmd"))
+        if value
+    ) or "当前命令"
+    return (
+        f"{api} 未成功执行：code={actual_result['code']}，"
+        f"description={actual_result['description']!r}。"
+        "因此未继续比较成功响应中的消息字段。"
+    )
+
+
 def assert_response_matches(
     actual: dict[str, Any],
     expected: dict[str, Any],
@@ -263,7 +298,16 @@ def assert_response_matches(
     """
     resolved = resolve_expected(expected, context or {})
     ok, diffs = compare_response(actual, resolved, ignore_keys=ignore_keys)
-    _attach_compare_result_allure(actual, resolved, ok, diffs)
+    failure_summary = None if ok else _business_error_summary(actual, resolved)
+    _attach_compare_result_allure(
+        actual,
+        resolved,
+        ok,
+        diffs,
+        failure_summary=failure_summary,
+    )
     if not ok:
+        if failure_summary:
+            raise AssertionError(failure_summary)
         msg = "响应与预期不一致:\n" + "\n".join(f"  - {d}" for d in diffs)
         raise AssertionError(msg)

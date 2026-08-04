@@ -52,7 +52,7 @@
 
 正常 cases
 13. `tests/chat/test_chat_crud.py::test_chat_send_and_received`
-   A 发送消息到 B，双端校验发送成功响应与接收回调字段。
+   场景拓扑：动作发送端发送；发送账号的其他在线端收到 `direction=0` 的同账号出站同步并可 `getMessage` 查询（`hasDeliverAck` 在该同步事件中端侧返回不稳定，不作为契约）；接收账号的全部在线端均收到 `direction=1` 的入站消息并可查询；动作发送端严格断言与接收在线端数量一致的送达回执。Android 4.23 四端实机通过。
 14. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_text_basic`
    发送基础文本消息，验证普通文本类型发送与接收成功。
 15. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_text_with_languages`
@@ -84,7 +84,7 @@
 24. `tests/chat/test_chat.py::test_chat_translate_message_nonexistent_message`（当前可为 skip/环境语义，暂缓细节见 deferred）
    不存在消息执行翻译，当前环境可能 skip，语义冻结在 deferred 中维护。
 25. `tests/chat/test_chat_crud.py::test_chat_translate_message_recalled_message`
-   对已撤回消息执行翻译，验证异常对象状态下接口返回语义。
+   接收账号全部在线端收到原消息、撤回信息和撤回消息本体，验证已撤回消息的回调传播语义。
 
 ## recallMessage / modifyMessage
 
@@ -106,7 +106,7 @@
 
 正常 cases
 31. `tests/chat/test_chat_crud.py::test_chat_ack_message_read_success`
-   对有效消息回执已读，按当前 Android 实测冻结同步响应 `result=True` 与发送方已读事件。
+   场景拓扑：B 发消息后，A 主/副端均收到；A 主端回执已读，B 断言 `onMessagesRead`。冻结同步响应 `result=True` 与发送方已读事件；本轮 Android 4.23 真实设备通过。
 32. `tests/chat/test_chat_ack_read_strict.py::test_chat_ack_message_read_success_with_event`
    已读回执成功后按当前 Android 实测冻结同步响应 `result=True`，并补充校验发送方已读事件。
 33. `tests/chat/test_chat_s3_non_message_ops.py::test_chat_ack_conversation_read_success_with_event`
@@ -391,7 +391,7 @@
 122. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_recall_message_receiver_recalled_info_event`
    覆盖 `recallMessage` 正常撤回链路，发送方撤回已送达单聊消息后，接收方收到 `onMessagesRecalledInfo` 事件；按真实模拟器返回断言 `recallMsgId`、`convId`、`msg` 与 `ext`，消息体兼容 `translations` 且 `receiverList` 可选。
 123. `tests/chat/test_chat_reaction_fetch.py::test_chat_reaction_change_event_received_by_sender`
-   覆盖 `addReaction` 正常事件链路，接收方给单聊消息添加 reaction 后，发送方和接收方均收到 `onMessageReactionDidChange` 事件；按真实模拟器返回分别断言 `convId`、`msgId`、`operations`、`reactions` 与 `isAddedBySelf`。
+   场景拓扑：动作发送端发送消息后，发送账号其他在线端同步原消息并可 `getMessage` 查询，接收账号全部在线端收到消息；接收动作端添加 reaction 后，发送账号与接收账号的全部在线端均收到 `messageReactionDidChange`。严格断言 `convId`、`msgId`、`operations`、`reactions` 与 `isAddedBySelf`；Android 4.23 四端实机通过。
 124. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_conversation_marks_and_fetch_options`
    覆盖 `addRemoteAndLocalConversationsMark`、`deleteRemoteAndLocalConversationsMark`、`fetchConversationsByOptions`，标记会话后按 options 拉取并校验 mark，再删除标记。
 125. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_message_count_and_search_options_boundaries`
@@ -445,11 +445,11 @@
 
 正常 cases
 131. `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_location_message_send_receive`
-   5556 发送位置消息，5558 收到位置消息；按真实日志断言 `body.type=3`、经纬度、地址和建筑名。
+   场景拓扑：B 通过原生 `sendMessage` 发送 `body.type=3` 位置消息，A 主/副端均断言经纬度、地址和建筑名；本轮 Android 4.23 真实设备通过。
 132. `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_voice_message_send_receive`
    5556 发送语音消息，5558 收到语音消息；按真实日志断言 `body.type=4`、`displayName=voice.mp3`、发送端 `fileStatus=3`、接收端 `fileStatus=0` 和 `duration=1`。动态路径、secret、remotePath、fileSize 不写死。
 133. `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_custom_message_send_receive`
-   5556 发送自定义消息，5558 收到自定义消息；断言真实 `event` 和 `params`。
+   场景拓扑：B 通过原生 `sendMessage` 发送 `body.type=7` 自定义消息，A 主/副端均断言真实 `event` 和 `params`；本轮 Android 4.23 真实设备通过。
 134. `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_message_delivery_ack[txt-payload0]`
    开启 `requireDeliveryAck=true` 后，文本消息收到 `onMessagesDelivered`，断言真实消息 ID、发送方、接收方、会话和文本 body。
 135. `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_message_delivery_ack[custom-payload1]`
@@ -481,7 +481,7 @@
 ## 单聊文档启用场景补齐（5556/5558 实测）
 
 145. `tests/chat/test_chat_text_boundaries_and_location_delivery.py::*`
-   覆盖空文本、特殊字符、250 字符、请求 `from` 与登录用户不一致，以及位置消息送达回执。发送响应、发送成功、接收和送达事件均保留参与者、会话、方向、状态、已读/送达字段及完整 body；不匹配 `from` 实测异步返回 `500 Message is invalid`。
+   覆盖空文本、特殊字符、250 字符、请求 `from` 与登录用户不一致，以及位置消息送达回执。文本边界 case 场景拓扑改造中：B 发文本后 A 主/副端均收并验证送达；其余断言保持原有参与者、会话、方向、状态、已读/送达字段及完整 body；待本轮 Android 4.23 真实设备回归。不匹配 `from` 实测异步返回 `500 Message is invalid`。
 146. `tests/chat/test_chat_typed_message_pin_flows.py::*` 与 `tests/chat/test_chat_message_pin_boundaries.py::*`
    覆盖位置/自定义消息由收发双方交叉置顶和取消置顶，以及类型消息撤回后置顶边界；按真实模拟器返回，原始发送方执行 pin/unpin 时仅接收方收到 `onMessagePinChanged`，接收方执行 pin/unpin 当前不产生该回调；通过 `fetchPinnedMessages` 校验最终服务端状态，并保留消息类型、方向、状态、已读/送达等字段。
 147. `tests/chat/test_chat_report_and_thumbnail_additional.py::test_chat_receiver_reports_text_message` 与 `test_chat_report_text_message_parameter_boundaries[*]`
@@ -495,7 +495,7 @@
 151. `tests/chat/test_chat_conversation_marks_boundaries.py::test_chat_conversation_mark_idempotent_and_remove_unmarked` 与 `test_chat_conversation_mark_self_current_behavior`
    覆盖重复标记、重复取消、取消未标记、标记自己；正常场景通过目标会话投影断言 `type/isPinned/isThread/marks`，当前环境标记自己会话实测返回 `result=null`。
 152. `tests/chat/test_chat_message_modification_matrix.py::*` 与 `tests/chat/test_chat_s4_message_content_changed.py::test_chat_modify_custom_message_content_changed_event`
-   覆盖文本 body/ext/同时修改、空 ID、不存在 ID、非发送者、自定义内容、CMD 不支持、语音/图片/视频 ext 与 body 不支持。修改成功结果及接收端内容变更事件保留 operator、attributes、类型、方向、状态及送达字段。
+   覆盖文本 body/ext/同时修改、空 ID、不存在 ID、非发送者、自定义内容、CMD 不支持、语音/图片/视频 ext 与 body 不支持。自定义消息 case 额外验证接收账号的全部在线端都收到原消息及内容变更回调；修改成功结果及回调保留 operator、attributes、类型、方向、状态及送达字段。
 153. `tests/chat/test_chat_crud.py::test_chat_fetch_support_languages_success`
    获取真实支持语言列表；严格校验每项恰好包含非空 `nativeName/code/name`、code 唯一，并固定校验 `zh-Hans` 与 `en` 的真实三字段内容，不再使用 `result != None` 弱断言。
 154. `tests/chat/test_chat_attachment_download_and_history_boundaries.py::*` 与 `tests/chat/test_chat_s423_message_callback_and_combine.py::test_attachment_messages_send_receive_and_public_download_methods`

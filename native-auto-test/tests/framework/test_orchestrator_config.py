@@ -42,6 +42,19 @@ def test_new_scenario_supports_six_slots_and_same_account_binding():
     topology = scenario.topologies["direct_chat_delivery"]
     assert topology.sender_action_device == "device_b"
     assert topology.sender_devices == ("device_b",)
+    assert topology.recipient_action_device == "device_a"
+    assert topology.recipient_devices == ("device_a", "device_a_sec")
+
+
+def test_default_multi_device_scenario_declares_recipient_action_device():
+    scenario = load_scenario(
+        ROOT / "config/scenarios/android_423_multi_device_default.yaml"
+    )
+
+    topology = scenario.topologies["account_b_to_account_a"]
+    assert scenario.name == "android-423-multi-device-default"
+    assert topology.sender_action_device == "device_b"
+    assert topology.recipient_action_device == "device_a"
     assert topology.recipient_devices == ("device_a", "device_a_sec")
 
 
@@ -69,6 +82,7 @@ topologies:
     topology = load_scenario(scenario_file).topologies["direct_chat_delivery"]
 
     assert topology.sender_devices == ("u2_android",)
+    assert topology.recipient_action_device == "u1_android"
     assert topology.recipient_devices == (
         "u1_android",
         "u1_ios",

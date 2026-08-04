@@ -606,7 +606,12 @@ def capability_resolver(request, phase1_scenario):
     if phase1_scenario is None:
         return None
     path = _resolve_repo_path(str(request.config.getoption("--api-matrix")))
-    return CapabilityResolver(ApiMatrix.load(path))
+    matrices = {"android": ApiMatrix.load(path)}
+    for platform in {role.platform for role in phase1_scenario.roles.values()}:
+        candidate = path.parent / f"{platform}.yaml"
+        if platform not in matrices and candidate.is_file():
+            matrices[platform] = ApiMatrix.load(candidate)
+    return CapabilityResolver(matrices)
 
 
 @pytest.fixture(scope="session")
@@ -1082,9 +1087,9 @@ class _DeviceChannelWrapper:
                 decision = self._resolver.require(runner_info, manager, cmd)
                 _attach_capability_allure(decision.to_dict())
             except UnsupportedCapability as error:
-                _attach_capability_allure(
-                    self._resolver.resolve(runner_info, manager, cmd).to_dict()
-                )
+                decision = self._resolver.resolve(runner_info, manager, cmd).to_dict()
+                _attach_capability_allure(decision)
+                _attach_capability_skip_allure(decision)
                 pytest.skip(str(error))
             except CapabilityConfigurationError as error:
                 _attach_capability_allure(
@@ -1193,6 +1198,7 @@ class TopologyContext:
     recipient_user: str
     sender_action_device: _DeviceChannelWrapper
     sender_devices: tuple[_DeviceChannelWrapper, ...]
+    recipient_action_device: _DeviceChannelWrapper
     recipient_devices: tuple[_DeviceChannelWrapper, ...]
     sender_roles: tuple[str, ...]
     recipient_roles: tuple[str, ...]
@@ -1234,6 +1240,11 @@ def _attach_topology_allure(
             for role, device in sender_by_role.items()
             if device is topology.sender_action_device
         )
+        recipient_action_role = next(
+            role
+            for role, device in recipient_by_role.items()
+            if device is topology.recipient_action_device
+        )
         sender_account = phase1_scenario.roles[action_role].account
         recipient_account = phase1_scenario.roles[
             topology.recipient_roles[0]
@@ -1250,31 +1261,40 @@ def _attach_topology_allure(
             },
             "recipient": {
                 "user": topology.recipient_user,
+                "actionRole": recipient_action_role,
                 "devices": [
                     endpoint(role, device)
                     for role, device in recipient_by_role.items()
                 ],
             },
         }
-        allure.dynamic.parameter("测试类型", "场景拓扑：单聊消息投递")
+        allure.dynamic.parameter("测试类型", "场景拓扑：一发一收账号多端")
         allure.dynamic.parameter("测试场景", phase1_scenario.name)
         allure.dynamic.parameter("拓扑", topology.name)
         allure.dynamic.parameter("发送账号", sender_account)
         allure.dynamic.parameter("动作发送端", display_endpoint(action_role))
+        allure.dynamic.parameter(
+            "发送端", "；".join(display_endpoint(role) for role in topology.sender_roles)
+        )
         allure.dynamic.parameter("接收账号", recipient_account)
+        allure.dynamic.parameter("接收端动作设备", display_endpoint(recipient_action_role))
         allure.dynamic.parameter(
             "接收端", "；".join(display_endpoint(role) for role in topology.recipient_roles)
         )
         allure.attach(
             "\n".join(
                 (
-                    "场景：单聊消息投递",
-                    f"发送：{sender_account} / {display_endpoint(action_role)}",
+                    "场景：一个发送账号动作端 → 一个接收账号全部在线端",
+                    f"发送账号：{sender_account} / 动作端 {display_endpoint(action_role)}",
+                    "发送账号在线端："
+                    + "、".join(
+                        display_endpoint(role) for role in topology.sender_roles
+                    ),
                     f"接收：{recipient_account} / "
                     + "、".join(
                         display_endpoint(role) for role in topology.recipient_roles
                     ),
-                    "预期：接收账号的每个在线端都收到同一条消息。",
+                    "预期：接收账号的每个在线端都收到同一条消息；后续接收方动作由指定设备执行。",
                 )
             ),
             "拓扑摘要",
@@ -1316,6 +1336,7 @@ def topology(request, phase1_scenario, device_pool, created_test_users):
         sender_devices=tuple(
             device_pool.get(role) for role in spec.sender_devices
         ),
+        recipient_action_device=device_pool.get(spec.recipient_action_device),
         recipient_devices=tuple(
             device_pool.get(role) for role in spec.recipient_devices
         ),
@@ -1335,6 +1356,40 @@ def _attach_capability_allure(decision: dict) -> None:
             f"Capability {decision.get('api')}",
             allure.attachment_type.JSON,
         )
+    except ImportError:
+        pass
+
+
+def _attach_capability_skip_allure(decision: dict) -> None:
+    """Make capability-gated skips understandable in the Allure summary."""
+    try:
+        import allure
+
+        api = str(decision.get("api") or "未知 API")
+        platform = str(decision.get("platform") or "未知平台")
+        sdk_version = str(decision.get("sdkVersion") or "未知版本")
+        matrix_supported = decision.get("matrixSupported")
+        runner_reported = decision.get("runnerReported")
+        reason = (
+            f"能力前置检查跳过：{api} 未被 {platform} SDK {sdk_version} "
+            "的 API Matrix 声明为支持能力。"
+        )
+        allure.dynamic.parameter("执行结论", "跳过：当前能力矩阵不支持该 API")
+        allure.dynamic.parameter("跳过 API", api)
+        allure.dynamic.parameter("跳过原因", reason)
+        with allure.step(f"能力检查：{api}（不支持，跳过）"):
+            allure.attach(
+                "\n".join(
+                    (
+                        reason,
+                        f"API Matrix 支持：{matrix_supported}",
+                        f"Runner 上报支持：{runner_reported}",
+                        "说明：命令未发送到设备；这不是业务回调失败。",
+                    )
+                ),
+                "跳过说明",
+                allure.attachment_type.TEXT,
+            )
     except ImportError:
         pass
 
@@ -1419,13 +1474,18 @@ def _register_runner(
         hello=hello,
     )
     if resolver is not None:
-        matrix_capabilities = resolver.matrix.apis_for(role.sdk_version)
+        matrix = resolver.matrix_for(role.platform)
+        if matrix is None:
+            raise CapabilityConfigurationError(
+                f"no API Matrix for platform={role.platform!r}"
+            )
+        matrix_capabilities = matrix.apis_for(role.sdk_version)
         if matrix_capabilities is None:
             raise CapabilityConfigurationError(
                 f"sdkVersion={role.sdk_version!r} is absent from API Matrix"
             )
         artifact_capabilities = set(artifact.capabilities)
-        if artifact_capabilities != matrix_capabilities:
+        if artifact_capabilities != {"*"} and artifact_capabilities != matrix_capabilities:
             raise CapabilityConfigurationError(
                 "Artifact manifest capabilities conflict with API Matrix: "
                 f"role={logical_role}, "
