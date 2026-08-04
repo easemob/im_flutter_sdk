@@ -40,6 +40,7 @@ class RoleSpec:
     account: str = ""
     avd: str | None = None
     serial: str | None = None
+    browser: str | None = None
 
 
 @dataclass(frozen=True)
@@ -76,6 +77,7 @@ class Scenario:
     start_retry: int = 1
     keep_device_alive: bool = True
     start_emulators: bool = True
+    web_app_key: str = ""
 
 
 def load_scenario(path: str | Path) -> Scenario:
@@ -107,6 +109,7 @@ def load_scenario(path: str | Path) -> Scenario:
             account=str(item.get("account") or _default_account(role_name)),
             avd=_optional(item.get("avd")),
             serial=_optional(item.get("serial")),
+            browser=_optional(item.get("browser")),
         )
     topologies = _load_topologies(raw.get("topologies"), roles)
     runner = raw.get("runner") or {}
@@ -132,6 +135,7 @@ def load_scenario(path: str | Path) -> Scenario:
         start_retry=int(runner.get("start_retry") or 1),
         keep_device_alive=keep_device_alive,
         start_emulators=bool(runner.get("start_emulators", True)),
+        web_app_key=str(runner.get("web_app_key") or ""),
     )
 
 

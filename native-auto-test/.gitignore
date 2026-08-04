@@ -14,6 +14,8 @@ __pycache__/
 .venv/
 
 out/
+web_runner/node_modules/
+web_runner/dist/
 
 # Local config with secrets
 config.yaml

@@ -7,15 +7,16 @@ from pathlib import Path
 from .android_device import AndroidDevice, AndroidEnvironmentError
 from .config import Artifact, Scenario, load_artifacts, load_scenario
 from .ios_simulator import IOSSimulatorDevice
+from .web_browser import WebBrowserDevice
 
 
 @dataclass
 class EnvironmentRuntime:
     scenario: Scenario
     artifacts: dict[str, Artifact]
-    devices: dict[str, AndroidDevice | IOSSimulatorDevice]
+    devices: dict[str, AndroidDevice | IOSSimulatorDevice | WebBrowserDevice]
 
-    def device_for(self, role: str) -> AndroidDevice | IOSSimulatorDevice:
+    def device_for(self, role: str) -> AndroidDevice | IOSSimulatorDevice | WebBrowserDevice:
         return self.devices[role]
 
     def artifact_for(self, role: str) -> Artifact:
@@ -47,7 +48,7 @@ class EnvironmentManager:
 
     def start(self) -> EnvironmentRuntime:
         claimed: set[str] = set()
-        devices: dict[str, AndroidDevice | IOSSimulatorDevice] = {}
+        devices: dict[str, AndroidDevice | IOSSimulatorDevice | WebBrowserDevice] = {}
         artifacts: dict[str, Artifact] = {}
         try:
             selected = (
@@ -85,9 +86,19 @@ class EnvironmentManager:
                         role,
                         startup_timeout=self.scenario.startup_timeout,
                     )
+                elif role.platform == "web":
+                    if not self.scenario.web_app_key:
+                        raise AndroidEnvironmentError(
+                            "runner.web_app_key is required when a Web role is configured"
+                        )
+                    device = WebBrowserDevice(
+                        role,
+                        startup_timeout=self.scenario.startup_timeout,
+                        app_key=self.scenario.web_app_key,
+                    )
                 else:
                     raise AndroidEnvironmentError(
-                        f"unsupported platform {role.platform!r}; expected android or ios"
+                        f"unsupported platform {role.platform!r}; expected android, ios, or web"
                     )
                 last_error: Exception | None = None
                 for attempt in range(self.scenario.start_retry + 1):
@@ -122,7 +133,7 @@ class EnvironmentManager:
                 artifacts[role_name] = artifact
         except Exception:
             for device in devices.values():
-                if self.scenario.shutdown_on_finish:
+                if self.scenario.shutdown_on_finish or isinstance(device, WebBrowserDevice):
                     device.stop_emulator()
             raise
         self.runtime = EnvironmentRuntime(self.scenario, artifacts, devices)
@@ -175,7 +186,10 @@ class EnvironmentManager:
             )
 
     def stop(self) -> None:
-        if self.runtime and self.scenario.shutdown_on_finish:
+        if self.runtime:
             for device in self.runtime.devices.values():
-                device.stop_emulator()
+                # Android/iOS 可以按 scenario 保持已启动的模拟器；Web Runner
+                # 绑定本次 managed WS 和临时 profile，结束后必须关闭。
+                if self.scenario.shutdown_on_finish or isinstance(device, WebBrowserDevice):
+                    device.stop_emulator()
         self.runtime = None

@@ -1,4 +1,10 @@
 artifacts:
+  web:
+    4.23.0:
+      path: ../web_runner/dist
+      manifest: artifact_manifests/web-4.23.0.json
+      flavor: web423
+      application_id: native-auto-test-web-runner
   ios:
     4.24.0:
       path: ../../im_flutter_test/build/ios/iphonesimulator/Runner.app

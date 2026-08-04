@@ -1,0 +1,15 @@
+{
+  "name": "easemob-web-test-runner",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  },
+  "dependencies": {
+    "easemob-websdk": "4.23.0",
+    "im_flutter_sdk_web": "file:../../im_flutter_sdk_web"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.9"
+  }
+}

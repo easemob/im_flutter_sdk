@@ -326,7 +326,7 @@ def pytest_addoption(parser):
         "--build",
         action="store_true",
         default=False,
-        help="Automatically build the required APK before running tests.",
+        help="Automatically build the required Android/Web Runner artifacts before running tests.",
     )
     parser.addoption(
         "--manage-runners",
@@ -1866,7 +1866,7 @@ def upgrade_runner(
 
 
 def pytest_sessionstart(session):
-    """Build APK before running tests if --build is set."""
+    """Build the selected platform Runners before running tests if --build is set."""
     if not session.config.getoption("--build", default=False):
         return
     scenario_path = str(session.config.getoption("--scenario") or "")
@@ -1897,6 +1897,16 @@ def pytest_sessionstart(session):
         # build 后 APK hash 必然变化，自动更新对应 Manifest 的
         # artifactSha256，避免下次不带 --build 时 hash 校验失败。
         _refresh_artifact_hash(flavor, flutter_test)
+
+    if any(role.platform == "web" for role in scenario.roles.values()):
+        import shutil
+
+        npm = shutil.which("npm")
+        if not npm:
+            raise RuntimeError("npm not found; Web Runner requires Node.js/npm")
+        web_runner = Path(__file__).resolve().parent.parent / "web_runner"
+        subprocess.run([npm, "install"], cwd=web_runner, check=True)
+        subprocess.run([npm, "run", "build"], cwd=web_runner, check=True)
 
 
 def _refresh_artifact_hash(flavor: str, flutter_test: Path) -> None:

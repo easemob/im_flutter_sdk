@@ -46,6 +46,17 @@
 - [x] `tests/phase1/test_multi_device.py::test_third_party_message_reaches_both_same_account_devices`
   - 第三方发送的消息抵达同账号两个在线端。
 
+### Web 4.23 浏览器 Runner
+
+- [x] Web 4.23 基础接入
+  - 独立 `web_runner/` 使用官方 `easemob-websdk@4.23.0`，不经过 Flutter MethodChannel。
+  - `WebBrowserDevice` 为每个 Web role 启动隔离 Chrome profile，并通过 managed WebSocket 注册为 Runner。
+  - 独立 `config/api_matrix/web.yaml` 仅声明已适配的 Web API；不继承 Android/iOS 基线。
+  - 新场景：`config/scenarios/android_ios_web_423_multi_device_default.yaml`，账号 B 额外登录 `deviceBWeb`。
+- [x] 五端业务回归
+  - `test_chat_send_and_received`：Android + iOS + Web strict 通过；B Android、B iOS、B Web 均收到并可查询同一消息，A 收到 3 条送达回执。
+  - `test_chat_reaction_change_event_received_by_sender`：Android + iOS + Web strict 通过；三端接收账号均收到自身 reaction 变更事件。
+
 ## 待改：Chat
 
 ### P0：直接验证多端事件派发
