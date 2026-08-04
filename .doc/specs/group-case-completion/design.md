@@ -170,6 +170,38 @@ sequenceDiagram
 - 群成员变更操作继续严格断言 GroupManager 同步响应、双方群事件和服务端成员状态，发送失败不能替代成员状态前置验证。
 - 类型构造边界由 Chat 公共发送 API 覆盖；Group 只补 chatType 影响的目标与成员权限，不重复媒体路径和动态类型错误。
 
+### Offline group case architecture
+
+- 新增 `tests/group/group_offline_helpers.py`，只负责 SDK logout/login、群邀请自动接受开关恢复、按 groupId 过滤事件、joined groups 查询和清理；业务 expected 留在各测试文件。
+- 新增 `tests/group/test_group_offline_invitation_application.py`：离线邀请、邀请处理结果、群主离线接收申请、申请人离线接收审批结果。
+- 新增 `tests/group/test_group_offline_message_delivery.py`：群文本积压、多消息未读/最新消息、CMD online-only、A 离线后的 read-ack count、首次接收前/接收后撤回和离线修改。
+- 新增 `tests/group/test_group_offline_member_state.py`：移出、黑名单、解散和退出后的重登最终状态。
+- 新增 `tests/group/test_group_offline_roles_and_configuration.py`：管理员、群主迁移、群资料、公告、禁言、白名单、成员属性和共享文件最终状态。
+- 两台设备固定为 A/群主和 B/成员或申请人。需要改变角色时在同一 case 内用服务端操作迁移，不需要第三台在线设备。
+
+### Offline invitation and application workflow
+
+- 邀请回放：B 先设置 `autoAcceptGroupInvitation=false` 并 logout，A 创建 `style=0/inviteNeedConfirm=true` 群；B login 后保留同步期间事件，再接受或拒绝。
+- 邀请结果回放：A/B 在线建立 pending 后 A logout，B 处理；A login 后只按本次 groupId/invitee 过滤结果事件，再查询服务端成员状态。
+- 申请回放：A 创建 `style=2` 审批群后 logout，B 申请；A login 后处理。申请人结果回放则在 B 申请成功后 logout，由 A 处理，再由 B login 验证。
+- 每条 case 在 `finally` 恢复 A/B 登录态和 B 的 option；只有确认当前操作者在线且仍有权限时才销群。
+
+### Offline group message workflow
+
+- 文本发送复用 Group `ChatManager` 的真实 `chatType=1` 消息结构，发送响应以临时 msgId、成功事件以服务端 msgId、离线接收以同一服务端 msgId 关联。
+- 多消息回放按目标 msgId 集合收集，不断言事件分包或顺序；未读数在任何会改变本地会话状态的历史拉取前断言。
+- `deliverOnlineOnly` 使用 CMD，因为 `EMMessage.createCmdSendMessage` 是现有公开 builder 唯一暴露该开关的消息类型；B 上线后同时检查无目标 CMD 事件和 `getMessage=null`。
+- read-ack 离线 sender case 沿用 count-only 范围：B ACK 成功后 A 重登；真实日志确认本地 count 初始仍为 `0`，因此先调用 `asyncFetchGroupAcks` 同步服务端回执状态，但不对返回明细做业务断言，最终只严格断言 `MessageManager/groupAckCount=1`。
+- 撤回/修改先 discovery 两种窗口：首次投递前变化、已投递后观察方离线变化。最终 strict 不预设单聊的 recalled info/msg/body 组合。
+
+### Offline member and configuration state
+
+- 成员终态以服务端群详情、block list、joined groups 和本地 group 查询交叉验证；事件只作为真实回放的附加必达项。黑名单 case 使用 `PublicOpenJoin` 群，B 重登后真实调用 `joinPublicGroup` 并按日志冻结 `613/blacklist`，证明不能重新加入。
+- 管理员/群主迁移以服务端 `owner/adminList/memberList` 为权威，并在 B 重登后读取本地群对象确认权限同步。
+- 群资料和配置操作按 API 分开参数 item；对 subject/description/avatar/ext/announcement 断言固定请求值和服务端最终值。
+- 禁言、全员禁言、白名单、成员属性和共享文件使用各自查询 API验证最终状态。上传仍只由具备本地素材 bridge 的设备执行。
+- 配置事件若未离线回放，不把“无事件”固化为 SDK 永久契约；本批台账记录本轮实际行为，主验收始终是同步响应和最终服务端状态。
+
 ## Constraints / Tradeoffs
 
 - 不修改 `im_flutter_sdk/`、Android/iOS Wrapper 或发布 API。
@@ -196,3 +228,6 @@ sequenceDiagram
 9. 群发送边界逐条执行 RED/discovery/strict；成员状态 case 同步保留 A/B ADB 日志，仅在出现预期外行为时用于诊断，不使用 tracelog。
 10. 群回执 count case 只在 B 成功 read-ack 后轮询 A 的 `MessageManager/groupAckCount`，严格断言同步响应信封和 `result=1`。
 11. 运行该 count case strict 验证；不以回调、回执明细列表或非法 ID 结果作为本轮验收项。
+12. 群离线专项逐文件执行 discovery，保存 A/B logcat 和 pytest 原始输出；每个事件 expected 只从对应 node 的本轮证据生成。
+13. 每个离线文件先 `py_compile` 和 `pytest --collect-only`，再逐 node strict，最后运行四个离线文件的联合 strict；只有用户明确要求时才重复完整 `tests/group`。
+14. 对所有新增断言执行反模式扫描：禁止 `ne(None)`、actual 自证 expected、忽略 `result/data/body`、事件重组后断言和“收到候选之一即可”。
