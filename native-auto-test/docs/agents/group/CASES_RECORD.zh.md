@@ -707,10 +707,76 @@
 - 群资料变更回调的 `memberList/adminList` 会随端侧缓存时机出现/缺失；事件严格断言稳定的
   `groupId/name/desc/owner/memberCount/permissionType`，成员与管理员列表由最终服务端群快照精确断言。
 
+## 第六阶段：群组离线再上线专项
+
+以下 `24` 个测试函数展开为 `31 items`。仅使用 A/B 两台 Android 模拟器：A 固定承担群主或
+发送方，B 承担受邀者、申请人、群成员或观察方；离线统一使用 SDK `logout/login` 窗口。
+
+### 群邀请与入群申请
+
+| 编号 | 测试函数 | 展开场景 | Items | 结果 |
+|---|---|---|---:|---|
+| 194 | `test_group_offline_invitation_received_and_processed_after_login` | B 离线收到邀请；上线后分别接受、拒绝 | 2 | 真实双设备严格通过 |
+| 195 | `test_group_offline_owner_receives_invitation_result_after_relogin` | A 离线期间 B 接受、拒绝邀请；A 重登验证结果与成员终态 | 2 | 真实双设备严格通过 |
+| 196 | `test_group_offline_owner_receives_join_application_and_processes_after_login` | A 离线收到 B 的入群申请；上线后分别同意、拒绝 | 2 | 真实双设备严格通过 |
+| 197 | `test_group_offline_applicant_receives_application_result_after_relogin` | B 申请后离线；A 同意、拒绝；B 重登验证结果与 joined 状态 | 2 | 真实双设备严格通过 |
+
+### 群聊消息离线投递
+
+| 编号 | 测试函数 | 场景 | Items | 结果 |
+|---|---|---|---:|---|
+| 198 | `test_group_offline_text_message_received_after_login` | B 离线时 A 发送群文本；B 重登按真实服务端 msgId 接收并查询本地消息 | 1 | 严格通过 |
+| 199 | `test_group_offline_multiple_text_messages_and_conversation_state` | B 离线积压 3 条文本；重登验证消息集合、未读数 3 和最新消息 | 1 | 严格通过 |
+| 200 | `test_group_offline_cmd_deliver_online_only_not_received_after_login` | CMD `deliverOnlineOnly=true`；B 重登后无目标事件且本地查不到消息 | 1 | 严格通过 |
+| 201 | `test_group_offline_sender_reads_ack_count_after_relogin` | A 离线期间 B read-ack；A 重登同步服务端回执状态后只断言 `groupAckCount=1` | 1 | 严格通过 |
+| 202 | `test_group_offline_message_recalled_before_first_recipient_login` | B 首次接收前 A 撤回；重登验证撤回语义和本地终态 | 1 | 严格通过 |
+| 203 | `test_group_offline_recipient_receives_recall_after_relogin` | B 已接收后离线，A 撤回；B 重登验证撤回和本地终态 | 1 | 严格通过 |
+| 204 | `test_group_offline_recipient_receives_content_change_after_relogin` | B 离线期间 A 修改群消息；B 重登验证修改事件与最终正文 | 1 | 严格通过 |
+
+### 成员终态变化
+
+| 编号 | 测试函数 | 场景 | Items | 结果 |
+|---|---|---|---:|---|
+| 205 | `test_group_offline_member_removed_state_after_login` | B 离线被移出；重登验证移出事件、成员列表和 joined 清理 | 1 | 严格通过 |
+| 206 | `test_group_offline_member_blocked_state_after_login` | B 离线被加入黑名单；重登验证非成员、blockList、joined 清理及重新加入返回 `613/blacklist` | 1 | 严格通过 |
+| 207 | `test_group_offline_group_destroyed_state_after_login` | B 离线期间群被解散；重登验证销群事件、本地群与服务端群均不存在 | 1 | 严格通过 |
+| 208 | `test_group_offline_member_leave_state_persists_after_relogin` | B 主动退出后 logout/login；验证退出终态保持 | 1 | 严格通过 |
+
+### 角色与群配置
+
+| 编号 | 测试函数 | 展开场景 | Items | 结果 |
+|---|---|---|---:|---|
+| 209 | `test_group_offline_admin_add_remove_final_state` | B 离线期间添加、移除管理员 | 1 | 严格通过 |
+| 210 | `test_group_offline_owner_transfer_final_state` | B 离线期间成为群主；验证 owner 与权限迁移 | 1 | 严格通过 |
+| 211 | `test_group_offline_metadata_final_state` | 名称、描述、头像、扩展字段分别修改 | 4 | 真实返回严格通过 |
+| 212 | `test_group_offline_announcement_final_state` | B 离线期间修改公告 | 1 | 严格通过 |
+| 213 | `test_group_offline_member_mute_unmute_final_state` | B 离线期间禁言、解除禁言 | 1 | 严格通过 |
+| 214 | `test_group_offline_mute_all_unmute_all_final_state` | B 离线期间全员禁言、解除 | 1 | 严格通过 |
+| 215 | `test_group_offline_allow_list_add_remove_final_state` | B 离线期间加入、移出白名单 | 1 | 严格通过 |
+| 216 | `test_group_offline_member_attributes_final_state` | B 修改成员属性时 A 离线；A 重登查询最终属性 | 1 | 严格通过 |
+| 217 | `test_group_offline_shared_file_upload_delete_final_state` | B 离线期间上传、删除共享文件；重登查询最终列表 | 1 | 严格通过 |
+
+### 第六阶段真实返回补充
+
+- 邀请拒绝接口成功且成员终态正确，但当前 Android 链路没有向邀请方回放拒绝结果事件；case
+  使用独立负向事件窗口和最终成员状态验收，不伪造回调。
+- A 重登后直接查询离线 read-ack 的 `groupAckCount` 稳定为 `0`；调用
+  `asyncFetchGroupAcks` 同步服务端回执后 count 为 `1`。case 不断言回执详情，只保留用户要求的
+  read-ack 后 count 业务结果。
+- 当前 Android 实测名称和描述更新后的服务端字段为空字符串；头像和扩展字段返回请求值，均按
+  本轮日志冻结，没有用请求值自证预期。
+- B 重登后的白名单成员检查为加入后 `true`、移出后 `false`；群主端白名单列表始终包含群主，
+  因此分别为 `[A,B]` 和 `[A]`。
+- 共享文件事件中的名称可能为编码值，而服务端列表名称为 `bigPic.jpg`；跨设备最终列表按同一
+  `fileId/owner/createTime/fileSize` 严格关联，删除后列表为空。
+- 补齐真实离线回放事件断言后的四文件联合严格结果：
+  `31 passed, 1 warning in 391.78s`；证据目录为
+  `out/group_offline_20260730_185752/`。
+
 ## 统计
-- 当前记录测试函数条目：`193`；第二阶段新增 `29` 个函数、展开 `66 items`；第三阶段累计 `6` 个函数、展开 `16 items`；第四阶段迁移 `5` 个 ChatThread 函数、展开 `5 items`；第五阶段新增 `7` 个函数、展开 `18 items`。
+- 当前记录测试函数条目：`217`；第二阶段新增 `29` 个函数、展开 `66 items`；第三阶段累计 `6` 个函数、展开 `16 items`；第四阶段迁移 `5` 个 ChatThread 函数、展开 `5 items`；第五阶段新增 `7` 个函数、展开 `18 items`；第六阶段新增 `24` 个函数、展开 `31 items`。
 - 第二阶段逐文件严格结果：`60 passed, 6 failed`；原邀请/申请文件为 `10 passed, 1 failed`。
-- 当前 pytest 收集：`266 items`。
+- 当前 pytest 收集：`297 items`。
 - 已完成的 Group 全量（补空原因 case 前）：`215 passed, 7 failed, 1 skipped, 1 warning in 718.82s`，
   共 `223 items`；随后新增的空原因 case 单独实跑为 `1 passed`，因此当前代码全部 case 的已验证
   合并统计为 `216 passed, 7 failed, 1 skipped`。
@@ -721,3 +787,5 @@
 - 第三阶段新增 5 个发送边界 items：真实双设备同 session strict 为 `5 passed`；未重复原 11 个正常/回执 items。
 - 第五阶段 discovery 后按真实返回收紧；新增文件严格结果为
   `18 passed, 1 warning in 151.67s`，未重复 Group 全模块回归。
+- 第六阶段四文件联合 strict 为 `31 passed, 1 warning in 391.78s`；`py_compile`、
+  `31 tests collected`、断言反模式扫描、`git diff --check` 和 speckit 均通过。
