@@ -114,6 +114,7 @@ make setup   # config + deps + pods
 - 默认分支为 `flutter2_stable`；`alpha`、`dev`、`customMsg` 等为特性或历史分支，勿在其上做版本开发
 - 发布新版本：新建与版本号同名的分支
 - **切换分支前先确认工作区干净**（`git status` 无未提交改动）；不干净则停止操作并告知用户，由用户决定如何处理
+- **创建 worktree 时，统一放在仓库根目录的 `.worktree/` 文件夹下**（如 `git worktree add .worktree/agora-1.4.0 agora-1.4.0`），不要放在仓库外部
 
 ## 平台支持
 
