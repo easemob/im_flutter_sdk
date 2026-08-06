@@ -31,7 +31,7 @@ class GroupMemberInfo {
   /// ~chinese
   /// 群成员角色。
   /// ~end
-  final EMGroupPermissionType role;
+  final ChatGroupPermissionType role;
   /// ~english
   /// The group namecard of the group member.
   /// ~end
@@ -75,7 +75,7 @@ class GroupMemberInfo {
   GroupMemberInfo.fromJson(Map<String, dynamic> map)
       : userId = map["userId"],
         joinedTs = map["joinedTs"],
-        role = EMGroupPermissionTypeExtension.values(map["role"]),
+        role = ChatGroupPermissionTypeExtension.values(map["role"]),
         namecard = map["namecard"],
         nickname = map["nickname"],
         avatarUrl = map["avatarUrl"];

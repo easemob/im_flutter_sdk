@@ -1,7 +1,7 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk/src/tools/em_extension.dart';
+import 'package:im_flutter_sdk/src/tools/chat_extension.dart';
 
 /// ~english
 /// The parameter configuration class for pulling historical messages from the server.
@@ -14,7 +14,7 @@ class FetchMessageOptions {
   /// ~english
   /// The parameter configuration class for pulling historical messages from the server.
   ///
-  /// Param [direction] The message search direction. The default value is [EMSearchDirection.Up]. See [EMSearchDirection].
+  /// Param [direction] The message search direction. The default value is [ChatSearchDirection.Up]. See [ChatSearchDirection].
   ///
   /// Param [from] The user ID of the message sender in the group conversation.
   ///
@@ -44,7 +44,7 @@ class FetchMessageOptions {
   /// ~chinese
   /// 从服务端查询历史消息的参数配置类。
   ///
-  /// Param [direction] 消息搜索方向。默认为 [EMSearchDirection.Up] , 详见 [EMSearchDirection]。
+  /// Param [direction] 消息搜索方向。默认为 [ChatSearchDirection.Up] , 详见 [ChatSearchDirection]。
   ///
   /// Param [from] 群组会话中的消息发送方的用户 ID。
   ///
@@ -71,7 +71,7 @@ class FetchMessageOptions {
     this.startTs = -1,
     this.endTs = -1,
     this.needSave = false,
-    this.direction = EMSearchDirection.Up,
+    this.direction = ChatSearchDirection.Up,
   });
 
   @Deprecated('Use [senders] instead')
@@ -136,13 +136,13 @@ class FetchMessageOptions {
   final int endTs;
 
   /// ~english
-  /// The message search direction. The default value is [EMSearchDirection.Up]. See [EMSearchDirection].
+  /// The message search direction. The default value is [ChatSearchDirection.Up]. See [ChatSearchDirection].
   /// ~end
   ///
   /// ~chinese
-  /// 消息搜索方向，默认为[EMSearchDirection.Up]。详见 [EMSearchDirection]。
+  /// 消息搜索方向，默认为[ChatSearchDirection.Up]。详见 [ChatSearchDirection]。
   /// ~end
-  final EMSearchDirection direction;
+  final ChatSearchDirection direction;
 
   /// ~english
   /// Whether to save the retrieved messages to the database:

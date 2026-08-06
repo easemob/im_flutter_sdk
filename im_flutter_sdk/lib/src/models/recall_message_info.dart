@@ -1,5 +1,5 @@
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk/src/tools/em_extension.dart';
+import 'package:im_flutter_sdk/src/tools/chat_extension.dart';
 
 class RecallMessageInfo {
   factory RecallMessageInfo.fromJson(Map map) {
@@ -7,13 +7,13 @@ class RecallMessageInfo {
       recallMessageId: map['recallMsgId'],
       recallBy: map['recallBy'],
       conversationId: map['convId'],
-      recallMessage: map.getValue<EMMessage>(
+      recallMessage: map.getValue<ChatMessage>(
         "msg",
         callback: (map) {
           if (map == null) {
             return null;
           }
-          return EMMessage.fromJson(map);
+          return ChatMessage.fromJson(map);
         },
       ),
       ext: map.getValue('ext', callback: (ext) => ext as String?),
@@ -44,7 +44,7 @@ class RecallMessageInfo {
   /// ~chinese
   /// 撤回的消息，离线撤回会为空。
   /// ~end
-  final EMMessage? recallMessage;
+  final ChatMessage? recallMessage;
 
   /// ~english
   /// The extension field of the recalled message.

@@ -6,7 +6,7 @@ class MessageSearchOptions {
     this.from,
     this.ts = -1,
     this.count = 10,
-    this.direction = EMSearchDirection.Up,
+    this.direction = ChatSearchDirection.Up,
   });
 
   /// ~english
@@ -47,5 +47,5 @@ class MessageSearchOptions {
   /// ~chinese
   /// 消息搜索方向。
   /// ~end
-  final EMSearchDirection direction;
+  final ChatSearchDirection direction;
 }

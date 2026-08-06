@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk/src/tools/em_extension.dart';
-import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
+import 'package:im_flutter_sdk/src/tools/chat_extension.dart';
+import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart' as platform_interface;
 
 /// ~english
 /// The chat thread manager class.
@@ -10,11 +10,11 @@ import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 /// ~chinese
 /// 子区管理类。
 /// ~end
-class EMChatThreadManager {
-  final Map<String, EMChatThreadEventHandler> _eventHandlesMap = {};
+class ChatThreadManager {
+  final Map<String, ChatThreadEventHandler> _eventHandlesMap = {};
 
-  EMChatThreadManager() {
-    Client.instance.chatThreadManager
+  ChatThreadManager() {
+    platform_interface.Client.instance.chatThreadManager
         .updateNativeHandler((MethodCall call) async {
       Map? argMap = call.arguments;
       if (call.method == ChatMethodKeys.onChatThreadCreate) {
@@ -35,7 +35,7 @@ class EMChatThreadManager {
       return;
     }
     for (var element in _eventHandlesMap.values) {
-      element.onChatThreadCreate?.call(EMChatThreadEvent.fromJson(event));
+      element.onChatThreadCreate?.call(ChatThreadEvent.fromJson(event));
     }
   }
 
@@ -44,7 +44,7 @@ class EMChatThreadManager {
       return;
     }
     for (var element in _eventHandlesMap.values) {
-      element.onChatThreadUpdate?.call(EMChatThreadEvent.fromJson(event));
+      element.onChatThreadUpdate?.call(ChatThreadEvent.fromJson(event));
     }
   }
 
@@ -53,7 +53,7 @@ class EMChatThreadManager {
       return;
     }
     for (var element in _eventHandlesMap.values) {
-      element.onChatThreadDestroy?.call(EMChatThreadEvent.fromJson(event));
+      element.onChatThreadDestroy?.call(ChatThreadEvent.fromJson(event));
     }
   }
 
@@ -64,7 +64,7 @@ class EMChatThreadManager {
 
     for (var element in _eventHandlesMap.values) {
       element.onUserKickOutOfChatThread?.call(
-        EMChatThreadEvent.fromJson(event),
+        ChatThreadEvent.fromJson(event),
       );
     }
   }
@@ -74,7 +74,7 @@ class EMChatThreadManager {
   ///
   /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
   ///
-  /// Param [handler] The handle for chat thread event. See [EMChatThreadEventHandler].
+  /// Param [handler] The handle for chat thread event. See [ChatThreadEventHandler].
   /// ~end
   ///
   /// ~chinese
@@ -82,11 +82,11 @@ class EMChatThreadManager {
   ///
   /// Param [identifier] 自定义事件 ID，用于查找事件监听。
   ///
-  /// Param [handler] 事件监听. 请见 [EMChatThreadEventHandler].
+  /// Param [handler] 事件监听. 请见 [ChatThreadEventHandler].
   /// ~end
   void addEventHandler(
     String identifier,
-    EMChatThreadEventHandler handler,
+    ChatThreadEventHandler handler,
   ) {
     _eventHandlesMap[identifier] = handler;
   }
@@ -121,7 +121,7 @@ class EMChatThreadManager {
   ///
   /// **Return** Thread 事件监听。
   /// ~end
-  EMChatThreadEventHandler? getEventHandler(String identifier) {
+  ChatThreadEventHandler? getEventHandler(String identifier) {
     return _eventHandlesMap[identifier];
   }
 
@@ -143,7 +143,7 @@ class EMChatThreadManager {
   ///
   /// **Return** The chat thread object.
   ///
-  /// **Throws** A description of the exception. See [EMError].
+  /// **Throws** A description of the exception. See [ChatError].
   /// ~end
   ///
   /// ~chinese
@@ -153,20 +153,20 @@ class EMChatThreadManager {
   ///
   /// **Return** 若调用成功，返回子区详情；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
   /// ~end
 
-  Future<EMChatThread?> fetchChatThread({
+  Future<ChatThread?> fetchChatThread({
     required String chatThreadId,
   }) async {
     try {
       Map req = {"threadId": chatThreadId};
-      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
         ChatMethodKeys.fetchChatThreadDetail,
         req,
       );
-      EMError.hasErrorFromResult(result);
-      return EMChatThread.fromJson(
+      ChatError.hasErrorFromResult(result);
+      return ChatThread.fromJson(
           result[ChatMethodKeys.fetchChatThreadDetail]);
     } catch (e) {
       rethrow;
@@ -180,9 +180,9 @@ class EMChatThreadManager {
   ///
   /// Param [limit] The number of fetches at one time. Value range [1, 50].
   ///
-  /// **Return** Returns the result of [EMCursorResult], including the cursor for getting data next time and the chat thread object list.
+  /// **Return** Returns the result of [ChatCursorResult], including the cursor for getting data next time and the chat thread object list.
   ///
-  /// **Throws** A description of the exception. See [EMError].
+  /// **Throws** A description of the exception. See [ChatError].
   /// ~end
   ///
   /// ~chinese
@@ -194,23 +194,23 @@ class EMChatThreadManager {
   ///
   /// **Return** 若调用成功，返回子区列表；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
   /// ~end
 
-  Future<EMCursorResult<EMChatThread>> fetchJoinedChatThreads({
+  Future<ChatCursorResult<ChatThread>> fetchJoinedChatThreads({
     String? cursor,
     int limit = 20,
   }) async {
     try {
       Map req = {"pageSize": limit};
       req.putIfNotNull("cursor", cursor);
-      Map result = await Client.instance.chatThreadManager
+      Map result = await platform_interface.Client.instance.chatThreadManager
           .callNativeMethod(ChatMethodKeys.fetchJoinedChatThreads, req);
-      EMError.hasErrorFromResult(result);
-      return EMCursorResult.fromJson(
+      ChatError.hasErrorFromResult(result);
+      return ChatCursorResult.fromJson(
           result[ChatMethodKeys.fetchJoinedChatThreads],
           dataItemCallback: (map) {
-        return EMChatThread.fromJson(map);
+        return ChatThread.fromJson(map);
       });
     } catch (e) {
       rethrow;
@@ -226,9 +226,9 @@ class EMChatThreadManager {
   ///
   /// Param [limit] The number of fetches at one time. Value range [1, 50].
   ///
-  /// **Return** result of [EMCursorResult], including the cursor for getting data next time and the chat thread object list.
+  /// **Return** result of [ChatCursorResult], including the cursor for getting data next time and the chat thread object list.
   ///
-  /// **Throws** A description of the exception. See [EMError].
+  /// **Throws** A description of the exception. See [ChatError].
   /// ~end
   ///
   /// ~chinese
@@ -242,10 +242,10 @@ class EMChatThreadManager {
   ///
   /// **Return** 若调用成功，返回子区列表；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
   /// ~end
 
-  Future<EMCursorResult<EMChatThread>> fetchChatThreadsWithParentId({
+  Future<ChatCursorResult<ChatThread>> fetchChatThreadsWithParentId({
     required String parentId,
     String? cursor,
     int limit = 20,
@@ -256,13 +256,13 @@ class EMChatThreadManager {
         "pageSize": limit,
       };
       req.putIfNotNull("cursor", cursor);
-      Map result = await Client.instance.chatThreadManager
+      Map result = await platform_interface.Client.instance.chatThreadManager
           .callNativeMethod(ChatMethodKeys.fetchChatThreadsWithParentId, req);
-      EMError.hasErrorFromResult(result);
-      return EMCursorResult.fromJson(
+      ChatError.hasErrorFromResult(result);
+      return ChatCursorResult.fromJson(
           result[ChatMethodKeys.fetchChatThreadsWithParentId],
           dataItemCallback: (map) {
-        return EMChatThread.fromJson(map);
+        return ChatThread.fromJson(map);
       });
     } catch (e) {
       rethrow;
@@ -278,9 +278,9 @@ class EMChatThreadManager {
   ///
   /// Param [limit] The number of fetches at one time. Value range [1, 50].
   ///
-  /// **Return** The result of [EMCursorResult], including the cursor for getting data next time and the chat thread object list.
+  /// **Return** The result of [ChatCursorResult], including the cursor for getting data next time and the chat thread object list.
   ///
-  /// **Throws** A description of the exception. See [EMError].
+  /// **Throws** A description of the exception. See [ChatError].
   /// ~end
   ///
   /// ~chinese
@@ -294,10 +294,10 @@ class EMChatThreadManager {
   ///
   /// **Return** 若调用成功，返回子区列表；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
   /// ~end
 
-  Future<EMCursorResult<EMChatThread>> fetchJoinedChatThreadsWithParentId({
+  Future<ChatCursorResult<ChatThread>> fetchJoinedChatThreadsWithParentId({
     required String parentId,
     String? cursor,
     int limit = 20,
@@ -308,13 +308,13 @@ class EMChatThreadManager {
         "pageSize": limit,
       };
       req.putIfNotNull("cursor", cursor);
-      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
           ChatMethodKeys.fetchJoinedChatThreadsWithParentId, req);
-      EMError.hasErrorFromResult(result);
-      return EMCursorResult.fromJson(
+      ChatError.hasErrorFromResult(result);
+      return ChatCursorResult.fromJson(
           result[ChatMethodKeys.fetchJoinedChatThreadsWithParentId],
           dataItemCallback: (map) {
-        return EMChatThread.fromJson(map);
+        return ChatThread.fromJson(map);
       });
     } catch (e) {
       rethrow;
@@ -332,9 +332,9 @@ class EMChatThreadManager {
   ///
   /// Param [limit] The number of fetches at one time. Value range [1, 50].
   ///
-  /// **Return** The result of [EMCursorResult], including the cursor for getting data next time and the chat thread member list.
+  /// **Return** The result of [ChatCursorResult], including the cursor for getting data next time and the chat thread member list.
   ///
-  /// **Throws** A description of the exception. See [EMError].
+  /// **Throws** A description of the exception. See [ChatError].
   /// ~end
   ///
   /// ~chinese
@@ -349,12 +349,12 @@ class EMChatThreadManager {
   ///
   /// Param [limit] 每页期望返回的成员数。取值范围为 [1,50]。
   ///
-  /// **Return** 若调用成功，返回子区成员 [EMCursorResult]；失败则抛出异常。
+  /// **Return** 若调用成功，返回子区成员 [ChatCursorResult]；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
   /// ~end
 
-  Future<EMCursorResult<String>> fetchChatThreadMembers({
+  Future<ChatCursorResult<String>> fetchChatThreadMembers({
     required String chatThreadId,
     String? cursor,
     int limit = 20,
@@ -365,12 +365,12 @@ class EMChatThreadManager {
         "threadId": chatThreadId,
       };
       req.putIfNotNull("cursor", cursor);
-      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
         ChatMethodKeys.fetchChatThreadMember,
         req,
       );
-      EMError.hasErrorFromResult(result);
-      return EMCursorResult<String>.fromJson(
+      ChatError.hasErrorFromResult(result);
+      return ChatCursorResult<String>.fromJson(
           result[ChatMethodKeys.fetchChatThreadMember],
           dataItemCallback: (obj) => obj);
     } catch (e) {
@@ -385,7 +385,7 @@ class EMChatThreadManager {
   ///
   /// **Return** returns a Map collection, the key is the chat thread ID, and the value is the latest message object of the chat thread.
   ///
-  /// **Throws** A description of the exception. See [EMError].
+  /// **Throws** A description of the exception. See [ChatError].
   /// ~end
   ///
   /// ~chinese
@@ -395,30 +395,30 @@ class EMChatThreadManager {
   ///
   /// **Return** 若调用成功，返回子区的最新一条消息列表；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
   /// ~end
 
-  Future<Map<String, EMMessage>> fetchLatestMessageWithChatThreads({
+  Future<Map<String, ChatMessage>> fetchLatestMessageWithChatThreads({
     required List<String> chatThreadIds,
   }) async {
     try {
       Map req = {
         "threadIds": chatThreadIds,
       };
-      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
         ChatMethodKeys.fetchLastMessageWithChatThreads,
         req,
       );
-      EMError.hasErrorFromResult(result);
+      ChatError.hasErrorFromResult(result);
       Map? map = result[ChatMethodKeys.fetchLastMessageWithChatThreads];
-      Map<String, EMMessage> ret = {};
+      Map<String, ChatMessage> ret = {};
       if (map == null) {
         return ret;
       }
 
       for (var key in map.keys) {
         Map<String, dynamic> msgMap = map[key];
-        ret[key] = EMMessage.fromJson(msgMap);
+        ret[key] = ChatMessage.fromJson(msgMap);
       }
       return ret;
     } catch (e) {
@@ -433,7 +433,7 @@ class EMChatThreadManager {
   ///
   /// Param [chatThreadId] Chat Thread ID.
   ///
-  /// **Throws** A description of the exception. See [EMError].
+  /// **Throws** A description of the exception. See [ChatError].
   /// ~end
   ///
   /// ~chinese
@@ -442,13 +442,13 @@ class EMChatThreadManager {
   /// @note
   /// 只有子区所属群主、群管理员及子区创建者可调用该方法。
   ///
-  /// 被移出的成员会收到 [EMChatThreadEventHandler.onUserKickOutOfChatThread] 回调。
+  /// 被移出的成员会收到 [ChatThreadEventHandler.onUserKickOutOfChatThread] 回调。
   ///
   /// Param [memberId] 被移出子区的成员的用户 ID。
   ///
   /// Param [chatThreadId] 子区 ID。
   ///
-  /// **Throws** A description of the exception. See [EMError].
+  /// **Throws** A description of the exception. See [ChatError].
   /// ~end
 
   Future<void> removeMemberFromChatThread({
@@ -460,11 +460,11 @@ class EMChatThreadManager {
         "memberId": memberId,
         "threadId": chatThreadId,
       };
-      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
         ChatMethodKeys.removeMemberFromChatThread,
         req,
       );
-      EMError.hasErrorFromResult(result);
+      ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
     }
@@ -475,13 +475,13 @@ class EMChatThreadManager {
   ///
   /// The group owner, group administrator and Thread creator have permission.
   /// After modifying chat thread name, members of the organization (group) to which chat thread belongs will receive the update notification event.
-  /// You can set [EMChatThreadEventHandler.onChatThreadUpdate] to listen on the event.
+  /// You can set [ChatThreadEventHandler.onChatThreadUpdate] to listen on the event.
   ///
   /// Param [chatThreadId] Chat Thread ID.
   ///
   /// Param [newName]  New Chat Thread name. No more than 64 characters in length.
   ///
-  /// **Throws** A description of the exception. See [EMError].
+  /// **Throws** A description of the exception. See [ChatError].
   /// ~end
   ///
   /// ~chinese
@@ -490,13 +490,13 @@ class EMChatThreadManager {
   /// @note
   /// 只有子区所属群主、群管理员及子区创建者可调用该方法。
   ///
-  /// 子区所属群组的所有成员均会收到 [EMChatThreadEventHandler.onChatThreadUpdate]。
+  /// 子区所属群组的所有成员均会收到 [ChatThreadEventHandler.onChatThreadUpdate]。
   ///
   /// Param [chatThreadId] 子区 ID。
   ///
   /// Param [newName] 子区的新名称。长度不超过 64 个字符。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
   /// ~end
 
   Future<void> updateChatThreadName({
@@ -508,11 +508,11 @@ class EMChatThreadManager {
         "name": newName,
         "threadId": chatThreadId,
       };
-      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
         ChatMethodKeys.updateChatThreadSubject,
         req,
       );
-      EMError.hasErrorFromResult(result);
+      ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
     }
@@ -524,11 +524,11 @@ class EMChatThreadManager {
   /// Group members have permission.
   /// After chat thread is created, the following notices will appear:
   /// 1. Members of the organization (group) to which chat thread belongs will receive the created notification event,
-  /// and can listen to related events by setting [EMChatThreadEventHandler].
-  /// The event callback function is [EMChatThreadEventHandler.onChatThreadCreate].
-  /// 2. Multiple devices will receive the notification event and you can set [EMMultiDeviceEventHandler] to listen on the event.
-  /// The event callback function is [EMMultiDeviceEventHandler.onChatThreadEvent], where the first parameter is the event,
-  /// for example, [EMMultiDevicesEvent.CHAT_THREAD_CREATE] for the chat thread creation event.
+  /// and can listen to related events by setting [ChatThreadEventHandler].
+  /// The event callback function is [ChatThreadEventHandler.onChatThreadCreate].
+  /// 2. Multiple devices will receive the notification event and you can set [ChatMultiDeviceEventHandler] to listen on the event.
+  /// The event callback function is [ChatMultiDeviceEventHandler.onChatThreadEvent], where the first parameter is the event,
+  /// for example, [ChatMultiDevicesEvent.CHAT_THREAD_CREATE] for the chat thread creation event.
   ///
   /// Param [name] Chat Thread name. No more than 64 characters in length.
   ///
@@ -536,9 +536,9 @@ class EMChatThreadManager {
   ///
   /// Param [parentId] Parent ID, generally refers to group ID.
   ///
-  /// **Return** EMChatThread object
+  /// **Return** ChatThread object
   ///
-  /// **Throws** A description of the exception. See [EMError].
+  /// **Throws** A description of the exception. See [ChatError].
   /// ~end
   ///
   /// ~chinese
@@ -548,9 +548,9 @@ class EMChatThreadManager {
   /// 所有群成员都可以调用。
   /// 子区创建成功后，会出现如下情况：
   ///
-  /// - 单设备登录时，子区所属群组的所有成员均会收到 [EMChatThreadEventHandler.onChatThreadCreate] 。
+  /// - 单设备登录时，子区所属群组的所有成员均会收到 [ChatThreadEventHandler.onChatThreadCreate] 。
   ///
-  /// - 多端多设备登录时，各设备会收到 [EMMultiDeviceEventHandler.onChatThreadEvent] 回调。
+  /// - 多端多设备登录时，各设备会收到 [ChatMultiDeviceEventHandler.onChatThreadEvent] 回调。
   ///
   /// Param [name] 要创建的子区的名称。长度不超过 64 个字符。
   ///
@@ -560,10 +560,10 @@ class EMChatThreadManager {
   ///
   /// **Return** 调用成功时，返回创建的子区对象；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
   /// ~end
 
-  Future<EMChatThread> createChatThread({
+  Future<ChatThread> createChatThread({
     required String name,
     required String messageId,
     required String parentId,
@@ -574,12 +574,12 @@ class EMChatThreadManager {
         "msgId": messageId,
         "parentId": parentId,
       };
-      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
         ChatMethodKeys.createChatThread,
         req,
       );
-      EMError.hasErrorFromResult(result);
-      return EMChatThread.fromJson(result[ChatMethodKeys.createChatThread]);
+      ChatError.hasErrorFromResult(result);
+      return ChatThread.fromJson(result[ChatMethodKeys.createChatThread]);
     } catch (e) {
       rethrow;
     }
@@ -589,18 +589,18 @@ class EMChatThreadManager {
   /// Join Chat Thread.
   ///
   /// Group members have permission.
-  /// Join successfully, return the Chat Thread details [EMChatThread], the details do not include the number of members.
-  /// Repeated addition will throw an EMError.
+  /// Join successfully, return the Chat Thread details [ChatThread], the details do not include the number of members.
+  /// Repeated addition will throw an ChatError.
   /// After joining chat thread, the multiple devices will receive the notification event.
-  /// You can set [EMMultiDeviceEventHandler] to listen on the event.
-  /// The event callback function is [EMMultiDeviceEventHandler.onChatThreadEvent],
-  /// where the first parameter is the event, and chat thread join event is [EMMultiDevicesEvent.CHAT_THREAD_JOIN].
+  /// You can set [ChatMultiDeviceEventHandler] to listen on the event.
+  /// The event callback function is [ChatMultiDeviceEventHandler.onChatThreadEvent],
+  /// where the first parameter is the event, and chat thread join event is [ChatMultiDevicesEvent.CHAT_THREAD_JOIN].
   ///
   /// Param [chatThreadId] Chat Thread ID.
   ///
   /// **Return** The joined chat thread object;
   ///
-  /// **Throws** A description of the exception. See [EMError].
+  /// **Throws** A description of the exception. See [ChatError].
   /// ~end
   ///
   /// ~chinese
@@ -609,28 +609,28 @@ class EMChatThreadManager {
   /// @note
   /// 子区所属群组的所有成员均可调用该方法。
   ///
-  /// 加入成功后，多端多设备登录情况下，其他设备会收到 [EMMultiDeviceEventHandler.onChatThreadEvent]，Event 的值为 [EMMultiDevicesEvent.CHAT_THREAD_JOIN]。
+  /// 加入成功后，多端多设备登录情况下，其他设备会收到 [ChatMultiDeviceEventHandler.onChatThreadEvent]，Event 的值为 [ChatMultiDevicesEvent.CHAT_THREAD_JOIN]。
   ///
   /// Param [chatThreadId] 子区 ID。
   ///
-  /// **Return** 若调用成功，返回子区详情 [EMChatThread]，详情中不含成员数量；失败则抛出异常。
+  /// **Return** 若调用成功，返回子区详情 [ChatThread]，详情中不含成员数量；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
   /// ~end
 
-  Future<EMChatThread> joinChatThread({
+  Future<ChatThread> joinChatThread({
     required String chatThreadId,
   }) async {
     try {
       Map req = {
         "threadId": chatThreadId,
       };
-      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
         ChatMethodKeys.joinChatThread,
         req,
       );
-      EMError.hasErrorFromResult(result);
-      return EMChatThread.fromJson(result[ChatMethodKeys.joinChatThread]);
+      ChatError.hasErrorFromResult(result);
+      return ChatThread.fromJson(result[ChatMethodKeys.joinChatThread]);
     } catch (e) {
       rethrow;
     }
@@ -641,13 +641,13 @@ class EMChatThreadManager {
   ///
   /// The operation is available to Chat Thread members.
   /// After leave chat thread, the multiple devices will receive the notification event.
-  /// You can set {@EMMultiDeviceEventHandler} to listen on the event.
-  /// The event callback function is [EMMultiDeviceEventHandler.onChatThreadEvent],
-  /// where the first parameter is the event, and chat thread exit event is [EMMultiDevicesEvent.CHAT_THREAD_LEAVE].
+  /// You can set {@ChatMultiDeviceEventHandler} to listen on the event.
+  /// The event callback function is [ChatMultiDeviceEventHandler.onChatThreadEvent],
+  /// where the first parameter is the event, and chat thread exit event is [ChatMultiDevicesEvent.CHAT_THREAD_LEAVE].
   ///
   /// Param [chatThreadId] Chat Thread ID.
   ///
-  /// **Throws** A description of the exception. See [EMError].
+  /// **Throws** A description of the exception. See [ChatError].
   /// ~end
   ///
   /// ~chinese
@@ -655,11 +655,11 @@ class EMChatThreadManager {
   ///
   /// @note
   /// 子区中的所有成员均可调用该方法。
-  /// 多端多设备登录情况下，其他设备会收到 [EMMultiDeviceEventHandler.onChatThreadEvent] 回调，Event 的值为 [EMMultiDevicesEvent.CHAT_THREAD_LEAVE]。
+  /// 多端多设备登录情况下，其他设备会收到 [ChatMultiDeviceEventHandler.onChatThreadEvent] 回调，Event 的值为 [ChatMultiDevicesEvent.CHAT_THREAD_LEAVE]。
   ///
   /// Param [chatThreadId] 要退出的子区 ID。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
   /// ~end
 
   Future<void> leaveChatThread({
@@ -669,11 +669,11 @@ class EMChatThreadManager {
       Map req = {
         "threadId": chatThreadId,
       };
-      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
         ChatMethodKeys.leaveChatThread,
         req,
       );
-      EMError.hasErrorFromResult(result);
+      ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
     }
@@ -685,15 +685,15 @@ class EMChatThreadManager {
   /// Group owner and group administrator to which the Chat Thread belongs have permission.
   /// After chat thread is disbanded, there will be the following notification:
   /// 1. Members of the organization (group) to which chat thread belongs will receive the disbanded notification event,
-  /// and can listen to related events by setting [EMChatThreadEventHandler].
-  /// The event callback function is [EMChatThreadEventHandler.onChatThreadDestroy].
-  /// 2. Multiple devices will receive the notification event and you can set [EMMultiDeviceEventHandler] to listen on the event.
-  /// The event callback function is [EMMultiDeviceEventHandler.onChatThreadEvent], where the first parameter is the event,
-  /// for example, [EMMultiDevicesEvent.CHAT_THREAD_DESTROY] for the chat thread destruction event.
+  /// and can listen to related events by setting [ChatThreadEventHandler].
+  /// The event callback function is [ChatThreadEventHandler.onChatThreadDestroy].
+  /// 2. Multiple devices will receive the notification event and you can set [ChatMultiDeviceEventHandler] to listen on the event.
+  /// The event callback function is [ChatMultiDeviceEventHandler.onChatThreadEvent], where the first parameter is the event,
+  /// for example, [ChatMultiDevicesEvent.CHAT_THREAD_DESTROY] for the chat thread destruction event.
   ///
   /// Param [chatThreadId] Chat Thread ID.
   ///
-  /// **Throws** A description of the exception. See [EMError].
+  /// **Throws** A description of the exception. See [ChatError].
   /// ~end
   ///
   /// ~chinese
@@ -701,12 +701,12 @@ class EMChatThreadManager {
   ///
   /// @note
   /// 只有子区所属群组的群主及管理员可调用该方法。
-  /// 单设备登录时，子区所在群的所有成员均会收到 [EMChatThreadEventHandler.onChatThreadDestroy] 。
-  /// 多端多设备登录时，其他设备会收到 [EMMultiDeviceEventHandler.onChatThreadEvent] 回调，Event 的值为 [EMMultiDevicesEvent.CHAT_THREAD_DESTROY]。
+  /// 单设备登录时，子区所在群的所有成员均会收到 [ChatThreadEventHandler.onChatThreadDestroy] 。
+  /// 多端多设备登录时，其他设备会收到 [ChatMultiDeviceEventHandler.onChatThreadEvent] 回调，Event 的值为 [ChatMultiDevicesEvent.CHAT_THREAD_DESTROY]。
   ///
   /// Param [chatThreadId] 子区 ID。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
   /// ~end
 
   Future<void> destroyChatThread({
@@ -716,11 +716,11 @@ class EMChatThreadManager {
       Map req = {
         "threadId": chatThreadId,
       };
-      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
         ChatMethodKeys.destroyChatThread,
         req,
       );
-      EMError.hasErrorFromResult(result);
+      ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
     }
