@@ -71,6 +71,8 @@ make setup   # config + deps + pods
 
 新增或修改公开 API 时，两种语言必须同步维护。
 
+生成单语 API 文档：运行 `im_flutter_sdk/scripts/gen-apidoc.sh [cn|en]`（默认 `cn`），脚本会在临时副本中剥离另一语言块与标记行后用 `dart doc` 生成 HTML，输出到 `im_flutter_sdk/output/apidoc-<lang>/`（已 gitignore）。
+
 ## 新增 API 的标准链路
 
 参照已有 API（如 `loadConversationMessagesWithKeyword`）按以下链路逐层实现，不可跨层跳过：

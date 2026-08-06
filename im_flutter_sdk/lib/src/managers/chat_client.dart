@@ -1096,8 +1096,12 @@ class ChatClient {
   }
 
   /// ~english
+  /// Updates the login extension information.
+  /// ~end
   ///
-
+  /// ~chinese
+  /// 更新登录扩展信息。
+  /// ~end
   Future<void> updateLoginExtensionInfoSetting(String extension) async {
     try {
       Map req = {'extension': extension};

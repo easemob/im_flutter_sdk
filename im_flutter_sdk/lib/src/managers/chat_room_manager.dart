@@ -227,6 +227,7 @@ class ChatRoomManager {
     _eventHandlesMap.clear();
   }
 
+  /// ~english
   /// Joins the chat room.
   ///
   /// To exit the chat room, call [leaveChatRoom].

@@ -743,6 +743,7 @@ enum ChatMultiDevicesEvent {
 
   /// ~english
   /// If user A modifies custom attributes of a group member on Device A1, this event is triggered on Device A2.
+  /// ~end
   ///
   /// ~chinese
   /// 用户 A 在设备 A1 上修改群组成员属性，则设备 A2 上会收到该事件。
