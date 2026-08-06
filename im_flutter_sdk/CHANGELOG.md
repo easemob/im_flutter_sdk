@@ -1,18 +1,27 @@
 ## 4.22.0
 - 安卓依赖 SDK 升级到 4.22.1；
 - iOS依赖 SDK 升级到 4.22.1；
+- 公开 API 命名统一为 `Chat` 前缀，与海外版 agora_chat_sdk 对齐：
+  - 原 `EM` 前缀的类、枚举等公开名字统一改名，如 `EMClient` → `ChatClient`、`EMOptions` → `ChatOptions`、`EMMessage` → `ChatMessage`；
+  - 旧名字通过 `em_compat.dart` 中以 `@Deprecated` 标记的 typedef 保留，现有代码无需修改即可继续编译运行，建议逐步迁移到新名字，旧名字将在未来大版本移除；
+  - 少量无法 typedef 的名字直接改名、不兼容：`EMLog` → `ChatLog`、`EMTools` → `ChatTools`、`EMGroupPermissionTypeExtension` → `ChatGroupPermissionTypeExtension`；
+  - 深路径导入（如 `package:im_flutter_sdk/src/models/em_options.dart`）不再兼容，请统一从包入口 `package:im_flutter_sdk/im_flutter_sdk.dart` 导入；
+- iOS 支持 Swift Package Manager 集成，与 CocoaPods 方式并存：
+  - iOS 插件源码迁移至 `Sources/im_flutter_sdk_ios` 目录，CocoaPods 与 SPM 共用同一份源码；
+  - SPM 方式集成时，原生 SDK 通过 Swift 包 `HyphenateChat_iOS`（4.22.1）依赖；
+  - iOS 最低支持版本提升至 13.0；
 - 新增图片消息原图（大图）下载 `downloadBigImage` API；
 - 新增语音转文字 `voiceMessageToText` 和 `voiceFileToText` API；
-- `EMMessage` 新增消息发送者信息 `senderInfo`；
-- `EMImageMessageBody` 新增原图（大图）字段 `bigImageLocalPath`、`bigImageRemotePath` 和 `bigImageDownloadStatus`；
-- `EMVoiceMessageBody` 新增语音转换文本 `text` 字段；
+- `ChatMessage` 新增消息发送者信息 `senderInfo`；
+- `ChatImageMessageBody` 新增原图（大图）字段 `bigImageLocalPath`、`bigImageRemotePath` 和 `bigImageDownloadStatus`；
+- `ChatVoiceMessageBody` 新增语音转换文本 `text` 字段；
 - 新增群名片 `updateGroupNamecard`、`getGroupNamecard` API 及群名片变更事件 `onUserGroupNamecardChanged`；
 - `GroupMemberInfo` 新增群成员名片 `namecard`、昵称 `nickname` 和头像 `avatarUrl` 字段；
-- `EMContact` 新增用户属性 `userInfo` 和添加时间 `addTimestamp` 字段；
+- `ChatContact` 新增用户属性 `userInfo` 和添加时间 `addTimestamp` 字段；
 - 新增联系人同步事件 `onContactSyncStart`、`onContactSyncFinish` 和联系人信息更新事件 `onContactInfoUpdate`；
 - 新增用户属性订阅 `subscribeUsersInfo`、`unsubscribeUsersInfo`、`fetchSubscribedUsers` 和 `getLocalUserInfoByIds` API；
 - 新增用户属性更新事件 `onSelfUserInfoUpdate` 和 `onUserInfoUpdate`；
-- `EMOptions` 新增 `enableUserInfo` 和 `enableAutoSyncContacts` 配置项；
+- `ChatOptions` 新增 `enableUserInfo` 和 `enableAutoSyncContacts` 配置项；
 
 ## 4.19.2
 - 安卓依赖 SDK 升级到 4.19.3.1；

@@ -56,33 +56,33 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 // 1. 初始化（app 启动时执行一次）
 Future<void> initSDK() async {
-  EMOptions options = EMOptions(
+  ChatOptions options = ChatOptions(
     appKey: "你的 AppKey",
     autoLogin: false,
   );
-  await EMClient.getInstance.init(options);
+  await ChatClient.getInstance.init(options);
   // 通知 SDK UI 已准备好，执行后才会收到事件回调
-  await EMClient.getInstance.startCallback();
+  await ChatClient.getInstance.startCallback();
 }
 
 // 2. 登录（生产环境建议使用 token 登录，token 由你的应用服务器下发）
 Future<void> signIn(String userId, String password) async {
   try {
-    await EMClient.getInstance.login(userId, password);
-  } on EMError catch (e) {
+    await ChatClient.getInstance.login(userId, password);
+  } on ChatError catch (e) {
     // 登录失败：e.code / e.description
   }
 }
 
 // 3. 添加收消息监听（key 需唯一，页面销毁时用同一 key 移除）
 void addChatListener() {
-  EMClient.getInstance.chatManager.addEventHandler(
+  ChatClient.getInstance.chatManager.addEventHandler(
     "UNIQUE_HANDLER_ID",
-    EMChatEventHandler(
+    ChatEventHandler(
       onMessagesReceived: (messages) {
         for (var msg in messages) {
           if (msg.body.type == MessageType.TXT) {
-            var body = msg.body as EMTextMessageBody;
+            var body = msg.body as ChatTextMessageBody;
             // 收到文本消息：body.content，发送方：msg.from
           }
         }
@@ -91,7 +91,7 @@ void addChatListener() {
   );
 
   // 消息发送状态回调
-  EMClient.getInstance.chatManager.addMessageEvent(
+  ChatClient.getInstance.chatManager.addMessageEvent(
     "UNIQUE_HANDLER_ID",
     ChatMessageEvent(
       onSuccess: (msgId, msg) {
@@ -109,30 +109,32 @@ void addChatListener() {
 
 // 4. 发送文本消息
 void sendTextMessage(String targetId, String content) {
-  var msg = EMMessage.createTxtSendMessage(
+  var msg = ChatMessage.createTxtSendMessage(
     targetId: targetId,
     content: content,
   );
-  EMClient.getInstance.chatManager.sendMessage(msg);
+  ChatClient.getInstance.chatManager.sendMessage(msg);
 }
 
 // 5. 退出登录
 Future<void> signOut() async {
   try {
-    await EMClient.getInstance.logout(true);
-  } on EMError catch (e) {
+    await ChatClient.getInstance.logout(true);
+  } on ChatError catch (e) {
     // 退出失败：e.code / e.description
   }
 }
 
 // 6. 页面销毁时移除监听（key 与添加时一致）
 void dispose() {
-  EMClient.getInstance.chatManager.removeMessageEvent("UNIQUE_HANDLER_ID");
-  EMClient.getInstance.chatManager.removeEventHandler("UNIQUE_HANDLER_ID");
+  ChatClient.getInstance.chatManager.removeMessageEvent("UNIQUE_HANDLER_ID");
+  ChatClient.getInstance.chatManager.removeEventHandler("UNIQUE_HANDLER_ID");
 }
 ```
 
-> 注意：注册账号（`EMClient.getInstance.createAccount`）仅建议在 demo 中使用，生产环境应由你的应用服务器调用环信 REST API 完成注册。
+> 注意：注册账号（`ChatClient.getInstance.createAccount`）仅建议在 demo 中使用，生产环境应由你的应用服务器调用环信 REST API 完成注册。
+
+> 说明：4.22.0 起公开 API 统一为 `Chat` 前缀命名（如 `ChatClient`、`ChatOptions`）。旧 `EM` 前缀名字仍可通过 `em_compat.dart` 中的 `@Deprecated` typedef 使用，建议新代码使用新名字。
 
 ## 示例应用
 
