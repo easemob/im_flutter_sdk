@@ -126,7 +126,7 @@ def _assert_sender_devices_received_message(
                 item for item in ((event.get("data") or {}).get("messages") or [])
                 if isinstance(item, dict) and str(item.get("msgId")) == str(real_id)
             )
-            assert_api.assert_response_matches(
+            assert_api.assert_event_matches(
                 {"type": event.get("type"), "eventType": event.get("eventType"), "data": {"messages": [message]}},
                 expected={
                     "type": "event",
@@ -147,7 +147,7 @@ def _assert_sender_devices_received_message(
                         "body": body,
                     }]},
                 },
-                ignore_keys=ignored,
+                ignore_keys=ignored - {"receiverList", "groupAckCount"},
             )
         with _allure_step(f"发送账号副端 {role} 可从本地消息库查询该消息"):
             lookup = device.call(
@@ -287,7 +287,7 @@ def _send_type_and_receive(
         },
     )
 
-    assert_api.assert_response_matches(
+    assert_api.assert_event_matches(
         success_evt,
         expected={
             "type": "event",
@@ -333,7 +333,7 @@ def _send_type_and_receive(
     receive_expected_body = dict(expected_body)
     if type_key == "voice":
         receive_expected_body["fileStatus"] = 0
-    assert_api.assert_response_matches(
+    assert_api.assert_event_matches(
         {"type": "event", "eventType": received_evt.get("eventType"), "data": {"messages": [received]}},
         expected={
             "type": "event",
@@ -417,7 +417,7 @@ def test_chat_missing_location_message_send_receive(topology, assert_api):
             ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState", "deliverOnlineOnly"},
         )
     with _allure_step("确认位置消息发送成功"):
-        assert_api.assert_response_matches(
+        assert_api.assert_event_matches(
             {"type": success_event.get("type"), "eventType": success_event.get("eventType"), "data": {"messages": [sent]}},
             expected={
                 "type": "event", "eventType": Cmd.onMessageSuccess.value,
@@ -457,7 +457,7 @@ def test_chat_missing_location_message_send_receive(topology, assert_api):
                 if isinstance(item, dict) and str(item.get("msgId")) == str(real_id)
             )
         with _allure_step(f"确认接收端 {role} 收到当前位置消息"):
-            assert_api.assert_response_matches(
+            assert_api.assert_event_matches(
                 {"type": received_event.get("type"), "eventType": received_event.get("eventType"), "data": {"messages": [received]}},
                 expected={
                     "type": "event", "eventType": Cmd.onMessagesReceived.value,
@@ -546,7 +546,7 @@ def test_chat_missing_custom_message_send_receive(topology, assert_api):
             },
         )
     with _allure_step("确认自定义消息发送成功"):
-        assert_api.assert_response_matches(
+        assert_api.assert_event_matches(
             {"type": success_event.get("type"), "eventType": success_event.get("eventType"), "data": {"messages": [sent]}},
             expected={
                 "type": "event",
@@ -592,7 +592,7 @@ def test_chat_missing_custom_message_send_receive(topology, assert_api):
                 and str(item.get("msgId")) == str(real_id)
             )
         with _allure_step(f"确认接收端 {role} 收到当前自定义消息"):
-            assert_api.assert_response_matches(
+            assert_api.assert_event_matches(
                 {"type": received_event.get("type"), "eventType": received_event.get("eventType"), "data": {"messages": [received]}},
                 expected={
                     "type": "event",
@@ -647,7 +647,7 @@ def test_chat_missing_message_delivery_ack(device_a, device_b, assert_api, user_
     else:
         delivery_body = {"type": 7, "event": payload["event"], "params": payload["params"]}
         delivery_ignore = set()
-    assert_api.assert_response_matches(
+    assert_api.assert_event_matches(
         delivery_evt,
         expected={
             "type": "event", "eventType": "{{deliveryEvent}}",

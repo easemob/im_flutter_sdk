@@ -30,6 +30,12 @@ def _assert_response_step(assert_api, step_name: str, actual: dict, **kwargs) ->
         assert_api.assert_response_matches(actual, **kwargs)
 
 
+def _assert_event_step(assert_api, step_name: str, actual: dict, **kwargs) -> None:
+    """Assert a cross-platform event while allowing platform-added message fields."""
+    with _allure_step(step_name):
+        assert_api.assert_event_matches(actual, **kwargs)
+
+
 @pytest.mark.topology("account_a_to_account_b")
 def test_chat_modify_custom_message_content_changed_event(topology, assert_api):
     """
@@ -116,7 +122,7 @@ def test_chat_modify_custom_message_content_changed_event(topology, assert_api):
             "deliverOnlineOnly",
         },
     )
-    _assert_response_step(
+    _assert_event_step(
         assert_api,
         "确认消息发送成功",
         {"type": "event", "eventType": Cmd.onMessageSuccess.value, "data": {"messages": [success_msg]}},
@@ -165,7 +171,7 @@ def test_chat_modify_custom_message_content_changed_event(topology, assert_api):
                 match_event_type=Cmd.onMessagesReceived.value,
                 timeout=20.0,
             )
-            assert_api.assert_response_matches(
+            assert_api.assert_event_matches(
                 evt_recv,
                 expected={
                     "type": "event",
@@ -287,7 +293,7 @@ def test_chat_modify_custom_message_content_changed_event(topology, assert_api):
             message for message in delivered_messages
             if isinstance(message, dict) and str(message.get("msgId")) == str(real_id)
         )
-    _assert_response_step(
+    _assert_event_step(
         assert_api,
         "确认消息已送达接收账号",
         {"type": "event", "eventType": Cmd.onMessagesDelivered.value, "data": {"messages": [delivered]}},
@@ -326,7 +332,7 @@ def test_chat_modify_custom_message_content_changed_event(topology, assert_api):
                 match_event_type=Cmd.onMessageContentChanged.value,
                 timeout=20.0,
             )
-            assert_api.assert_response_matches(
+            assert_api.assert_event_matches(
                 evt_changed,
                 expected={
                     "type": "event",

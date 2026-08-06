@@ -64,6 +64,12 @@ def _assert_response_step(assert_api, step_name: str, actual: dict, **kwargs) ->
         assert_api.assert_response_matches(actual, **kwargs)
 
 
+def _assert_event_step(assert_api, step_name: str, actual: dict, **kwargs) -> None:
+    """Assert a cross-platform event while allowing platform-added message fields."""
+    with _allure_step(step_name):
+        assert_api.assert_event_matches(actual, **kwargs)
+
+
 def _build_group_text(from_user: str, group_id: str, content: str, *, need_group_ack: bool = False) -> dict:
     return {
         "from": from_user,
@@ -397,7 +403,12 @@ def _assert_group_message(
             "eventType": Cmd.onCmdMessagesReceived.value if type_key == "cmd" else Cmd.onMessagesReceived.value,
             "data": {"messages": [message]},
         }
-    assert_api.assert_response_matches(actual, expected=expected, ignore_keys=_MESSAGE_IGNORE_KEYS)
+    matcher = (
+        assert_api.assert_response_matches
+        if phase == "response"
+        else assert_api.assert_event_matches
+    )
+    matcher(actual, expected=expected, ignore_keys=_MESSAGE_IGNORE_KEYS)
 
 
 def _send_group_message(
@@ -646,7 +657,7 @@ def test_group_message_fetch_acks_success(topology, assert_api):
             "deliverOnlineOnly": False,
             "body": {"type": 0, "content": content},
         }
-        _assert_response_step(
+        _assert_event_step(
             assert_api,
             "确认消息发送成功",
             success_evt,
@@ -671,7 +682,7 @@ def test_group_message_fetch_acks_success(topology, assert_api):
                     event_type=Cmd.onMessagesReceived.value,
                     real_id=str(real_id),
                 )
-            _assert_response_step(
+            _assert_event_step(
                 assert_api,
                 f"确认发送账号副端 {role} 已同步群消息",
                 synced_evt,
@@ -711,6 +722,7 @@ def test_group_message_fetch_acks_success(topology, assert_api):
                     "result": sender_lookup_message,
                 },
                 ignore_keys=_MESSAGE_IGNORE_KEYS,
+                allow_extra_fields=True,
             )
         for recipient in recipients:
             with _allure_step(
@@ -721,7 +733,7 @@ def test_group_message_fetch_acks_success(topology, assert_api):
                     event_type=Cmd.onMessagesReceived.value,
                     real_id=str(real_id),
                 )
-            _assert_response_step(
+            _assert_event_step(
                 assert_api,
                 f"确认接收端 {recipient.device_name} 收到当前群消息",
                 recv_evt,

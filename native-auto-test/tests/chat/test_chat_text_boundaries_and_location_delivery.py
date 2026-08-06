@@ -84,7 +84,7 @@ def _send_text_and_assert(topology, assert_api, *, content):
         )
 
     with _allure_step("确认文本边界消息发送成功"):
-        assert_api.assert_response_matches(
+        assert_api.assert_event_matches(
             {"type": success_event.get("type"), "eventType": success_event.get("eventType"), "data": {"messages": [sent]}},
             expected={"type": "event", "eventType": Cmd.onMessageSuccess.value, "data": {"messages": [{
                 "msgId": real_id, "from": sender_user, "to": recipient_user, "convId": recipient_user,
@@ -116,7 +116,7 @@ def _send_text_and_assert(topology, assert_api, *, content):
                 content=content,
             )
         with _allure_step(f"确认接收端 {role} 收到当前文本"):
-            assert_api.assert_response_matches(
+            assert_api.assert_event_matches(
                 {"type": received_event.get("type"), "eventType": received_event.get("eventType"), "data": {"messages": [received]}},
                 expected={"type": "event", "eventType": Cmd.onMessagesReceived.value, "data": {"messages": [{
                     "msgId": real_id, "from": sender_user, "to": recipient_user, "convId": sender_user,
@@ -137,7 +137,7 @@ def _send_text_and_assert(topology, assert_api, *, content):
             expected_message_count=len(recipients),
         )
     with _allure_step(f"确认文本边界消息已由接收账号的 {len(recipients)} 个在线端送达"):
-        assert_api.assert_response_matches(
+        assert_api.assert_event_matches(
             delivery,
             expected={"type": "event", "eventType": delivery.get("eventType"), "data": {"messages": [{
                 "msgId": real_id, "from": sender_user, "to": recipient_user, "convId": recipient_user,

@@ -37,12 +37,19 @@ def _wait_message_event(device, event_type: str, *, real_id: str, content: str, 
             if str(msg.get("msgId")) == str(real_id) and ((msg.get("body") or {}).get("content") == content):
                 matched_messages.append(msg)
         if len(matched_messages) >= expected_message_count:
-            return {
+            filtered_event = {
                 "type": evt.get("type"),
                 "eventType": evt.get("eventType"),
                 "data": {"messages": matched_messages},
                 "timestamp": evt.get("timestamp"),
             }
+            source_device = getattr(evt, "_allure_source_device", None)
+            if source_device:
+                return evt.__class__(
+                    filtered_event,
+                    source_device=source_device,
+                )
+            return filtered_event
     raise AssertionError(f"未收到目标消息事件: event={event_type}, msgId={real_id}, content={content}, events={seen}")
 
 
@@ -63,12 +70,12 @@ def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_i
         "deliverOnlineOnly": False,
         "body": {"type": 0, "content": content},
     }
-    ignore_keys = {"timestamp", "sequence", "serverTime", "localTime", "receiverList", "broadcast", "onlineState", "translations", "groupAckCount"}
+    ignore_keys = {"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState", "translations"}
     if has_deliver_ack is None:
         ignore_keys.add("hasDeliverAck")
     else:
         message["hasDeliverAck"] = has_deliver_ack
-    assert_api.assert_response_matches(
+    assert_api.assert_event_matches(
         evt,
         expected={
             "type": "event",
@@ -104,6 +111,7 @@ def _assert_message_lookup(assert_api, response: dict, *, device_name: str, real
             "deliverOnlineOnly", "targetLanguages", "translations", "hasDeliverAck",
             "receiverList", "groupAckCount",
         },
+        allow_extra_fields=True,
     )
 
 

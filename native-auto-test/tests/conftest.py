@@ -6,6 +6,7 @@ Allure：请求、响应、比对结果会写入报告（需安装 allure-pytest
 from __future__ import annotations
 
 import json
+import inspect
 import os
 import sys
 import time
@@ -89,6 +90,143 @@ def _attach_request_response_allure(step_name: str, request_body: dict, response
                 "响应",
                 allure.attachment_type.JSON,
             )
+    except ImportError:
+        pass
+
+
+_API_ACTION_LABELS = {
+    ("Client", "login"): "登录账号",
+    ("Client", "logout"): "退出账号",
+    ("ChatManager", "sendMessage"): "发送消息",
+    ("ChatManager", "getMessage"): "查询本地消息",
+    ("ChatManager", "translateMessage"): "请求消息翻译",
+    ("ChatManager", "recallMessage"): "撤回消息",
+    ("ChatManager", "addReaction"): "添加消息 reaction",
+    ("ChatManager", "removeReaction"): "移除消息 reaction",
+    ("ChatManager", "ackMessageRead"): "提交消息已读回执",
+    ("ChatManager", "modifyMessage"): "修改消息内容",
+}
+
+
+def _api_step_name(
+    manager: str,
+    cmd: str,
+    device: str,
+    info: dict | None = None,
+) -> str:
+    action = _API_ACTION_LABELS.get((manager, cmd), "调用 API")
+    details: list[str] = []
+    payload = info or {}
+    for key in ("msgId", "to", "convId", "reaction"):
+        if payload.get(key) is not None:
+            details.append(f"{key}={payload[key]}")
+    body = payload.get("body")
+    if isinstance(body, dict) and body.get("content") is not None:
+        content = str(body["content"])
+        details.append(f"内容={content[:32]!r}")
+    suffix = f"，{', '.join(details)}" if details else ""
+    return f"{device} {action}{suffix}（{manager}.{cmd}）"
+
+
+def _case_description(request) -> str:
+    """Return a readable Allure description, with a deterministic fallback."""
+    name = str(getattr(request.node, "name", request.node.nodeid))
+    parameter_suffix = ""
+    if "[" in name and name.endswith("]"):
+        parameter_suffix = f"（参数：{name.split('[', 1)[1][:-1]}）"
+    description = inspect.getdoc(getattr(request.node, "obj", None))
+    if description:
+        return description.strip() + parameter_suffix
+    case_name = name.split("[", 1)[0].replace("_", " ").strip()
+    return f"自动化验证：{case_name}{parameter_suffix}。"
+
+
+def _display_role(role_spec) -> str:
+    platform = str(role_spec.platform).replace("android", "Android").replace(
+        "ios", "iOS"
+    ).replace("web", "Web")
+    return (
+        f"{role_spec.device_name}（{platform} · SDK {role_spec.sdk_version}）"
+    )
+
+
+def _direct_case_groups(phase1_scenario, roles: tuple[str, ...]) -> list[list[object]]:
+    groups: dict[str, list[object]] = {}
+    if phase1_scenario:
+        for role in roles:
+            spec = phase1_scenario.roles[role]
+            groups.setdefault(spec.account, []).append(spec)
+    return list(groups.values())
+
+
+def _direct_case_type(phase1_scenario, roles: tuple[str, ...]) -> str:
+    groups = _direct_case_groups(phase1_scenario, roles)
+    if not groups:
+        return "single_device"
+    if len(groups) == 1:
+        return "same_account_multi_device" if len(groups[0]) > 1 else "single_device"
+    return (
+        "cross_account_multi_device"
+        if any(len(group) > 1 for group in groups)
+        else "cross_account_single_device"
+    )
+
+
+def _attach_case_allure_metadata(request, phase1_scenario, roles: tuple[str, ...]) -> None:
+    """Attach a common description and device/platform metadata to every Case.
+
+    Topology cases receive their sender/recipient-specific parameters from the
+    topology fixture. Direct-device cases still get the same baseline fields
+    (scenario, case type, sender/recipient accounts, and every endpoint).
+    """
+    try:
+        import allure
+
+        allure.dynamic.description(_case_description(request))
+        marker = request.node.get_closest_marker("topology")
+        topology_names = tuple(str(value) for value in (marker.args if marker else ()))
+        direct_names = tuple(
+            getattr(getattr(request.node, "_fixtureinfo", None), "argnames", ())
+            or ()
+        )
+        has_topology_fixture = "topology" in direct_names
+
+        # The topology fixture adds the complete sender/recipient/account
+        # parameter set. Keep this common hook responsible for the description
+        # only in that case, avoiding duplicate Allure parameters.
+        if topology_names and has_topology_fixture:
+            return
+
+        allure.dynamic.parameter(
+            "测试类型",
+            "场景拓扑：一发一收账号多端"
+            if topology_names
+            else "普通 API：直接设备调用",
+        )
+        allure.dynamic.parameter(
+            "测试场景",
+            phase1_scenario.name if phase1_scenario else "未指定 scenario",
+        )
+        specs = [phase1_scenario.roles[role] for role in roles] if phase1_scenario else []
+        groups = _direct_case_groups(phase1_scenario, roles)
+        sender_specs = groups[0] if groups else []
+        recipient_specs = groups[1] if len(groups) > 1 else sender_specs
+        allure.dynamic.parameter(
+            "发送账号",
+            sender_specs[0].account if sender_specs else "未解析",
+        )
+        allure.dynamic.parameter(
+            "接收账号",
+            recipient_specs[0].account if recipient_specs else "未解析",
+        )
+        allure.dynamic.parameter(
+            "发送端",
+            "；".join(_display_role(spec) for spec in sender_specs) or "未解析",
+        )
+        allure.dynamic.parameter(
+            "接收端",
+            "；".join(_display_role(spec) for spec in recipient_specs) or "未解析",
+        )
     except ImportError:
         pass
 
@@ -652,7 +790,7 @@ def _make_api(device: str):
     def _call(manager: str, cmd: str, info: dict | None = None, **kwargs):
         req = {"manager": manager, "cmd": cmd, "info": info or {}, "topic": topic, "device": device, **kwargs}
         resp = ws_request(manager=manager, cmd=cmd, info=info, topic=topic, device=device, **kwargs)
-        _attach_request_response_allure(f"API 请求 {manager}.{cmd} (device={device})", req, resp)
+        _attach_request_response_allure(_api_step_name(manager, cmd, device, info), req, resp)
         return resp
 
     class _API:
@@ -1037,6 +1175,14 @@ def listener_b(ws_debug):
     listener.stop()
 
 
+class _AllureEventPayload(dict):
+    """Event dict with display-only device metadata kept outside its JSON keys."""
+
+    def __init__(self, value: dict, *, source_device: str):
+        super().__init__(value)
+        self._allure_source_device = source_device
+
+
 class _DeviceChannelWrapper:
     """
     对 DeviceConnection 的封装：同一连接上发请求-等响应 + 收推送，并挂 Allure。
@@ -1067,7 +1213,7 @@ class _DeviceChannelWrapper:
         resp = self._conn.call(manager, cmd, info, **kwargs)
         report_response = self._conn.last_transport_response or resp
         _attach_request_response_allure(
-            f"API 请求 {manager}.{cmd} (device={self._device})",
+            _api_step_name(manager, cmd, self._device, info),
             req,
             report_response,
         )
@@ -1085,7 +1231,9 @@ class _DeviceChannelWrapper:
                 )
             try:
                 decision = self._resolver.require(runner_info, manager, cmd)
-                _attach_capability_allure(decision.to_dict())
+                # Successful capability checks are an implementation detail;
+                # keep the Allure report focused on business steps. Detailed
+                # capability data is still attached for skips/config errors.
             except UnsupportedCapability as error:
                 decision = self._resolver.resolve(runner_info, manager, cmd).to_dict()
                 _attach_capability_allure(decision)
@@ -1114,22 +1262,7 @@ class _DeviceChannelWrapper:
             timeout=timeout,
         )
         if event is not None:
-            try:
-                import allure
-
-                allure.attach(
-                    json.dumps(
-                        _redact(self._conn.last_transport_event or event),
-                        ensure_ascii=False,
-                        indent=2,
-                        default=str,
-                    ),
-                    f"事件 {match_event_type or match_cmd or 'unfiltered'} "
-                    f"(device={self._device})",
-                    allure.attachment_type.JSON,
-                )
-            except ImportError:
-                pass
+            event = _AllureEventPayload(event, source_device=self._device)
         return event
 
     def drain_events(self, timeout: float = 2.0) -> None:
@@ -1268,6 +1401,7 @@ def _attach_topology_allure(
                 ],
             },
         }
+        allure.dynamic.parameter("caseType", "scenario_topology")
         allure.dynamic.parameter("测试类型", "场景拓扑：一发一收账号多端")
         allure.dynamic.parameter("测试场景", phase1_scenario.name)
         allure.dynamic.parameter("拓扑", topology.name)
@@ -1406,14 +1540,6 @@ def _attach_execution_context_allure(
     try:
         import allure
 
-        if include_parameters:
-            if scenario_name:
-                allure.dynamic.parameter("scenario", scenario_name)
-            allure.dynamic.parameter("logicalDevice", device)
-            if account_slot:
-                allure.dynamic.parameter(f"{device}.accountSlot", account_slot)
-            if account_user:
-                allure.dynamic.parameter(f"{device}.account", account_user)
         allure.attach(
             json.dumps(
                 {
@@ -1699,28 +1825,46 @@ def device_c_sec(device_pool):
 
 @pytest.fixture(autouse=True)
 def case_event_context(request, phase1_scenario, device_pool):
-    """Create a per-Case event cursor for directly requested device fixtures."""
+    """Create per-Case event cursors and attach common Allure metadata."""
     fixture_info = getattr(request.node, "_fixtureinfo", None)
     direct_names = tuple(getattr(fixture_info, "argnames", ()) or ())
     topology_roles = _topology_roles_for_item(request.node, phase1_scenario)
-    roles = sorted(
-        DEVICE_ROLE_NAMES.intersection(direct_names).union(topology_roles)
-    )
+    initial_names = tuple(getattr(fixture_info, "initialnames", ()) or ())
+    legacy_aliases = {
+        "api_device_a": "device_a",
+        "api_device_b": "device_b",
+        "listener_a": "device_a",
+        "listener_b": "device_b",
+    }
+    roles_set = set(DEVICE_ROLE_NAMES.intersection(direct_names))
+    for fixture_name, role in legacy_aliases.items():
+        if fixture_name in direct_names or fixture_name in initial_names:
+            roles_set.add(role)
+    roles = sorted(roles_set.union(topology_roles))
+    _attach_case_allure_metadata(request, phase1_scenario, tuple(roles))
     devices = [device_pool.get(role) for role in roles]
     case_id = request.node.nodeid
     try:
         import allure
 
         if not topology_roles:
-            allure.dynamic.parameter("caseType", ExecutionPlan.case_type(roles))
+            allure.dynamic.parameter(
+                "caseType",
+                _direct_case_type(phase1_scenario, tuple(roles)),
+            )
     except ImportError:
         pass
-    for device in devices:
-        device.begin_case(case_id)
-        device.attach_execution_context(include_parameters=not topology_roles)
-    yield
-    for device in devices:
-        device.end_case()
+    with _allure_step("测试准备：建立设备事件上下文"):
+        for device in devices:
+            device.begin_case(case_id)
+            device.attach_execution_context(include_parameters=not topology_roles)
+    try:
+        with _allure_step("测试执行：Case 业务步骤"):
+            yield
+    finally:
+        with _allure_step("测试后置：结束设备事件上下文"):
+            for device in devices:
+                device.end_case()
 
 
 @pytest.fixture
