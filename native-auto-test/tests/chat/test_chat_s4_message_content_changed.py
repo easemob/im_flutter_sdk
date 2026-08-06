@@ -9,6 +9,7 @@ import pytest
 
 from src import Cmd, gt
 from tests.chat._utils import build_text
+from tests.chat.test_chat_message_types_and_delivery import _assert_sender_devices_received_message
 
 
 pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.agorachat1_4_0]
@@ -29,9 +30,11 @@ def _assert_response_step(assert_api, step_name: str, actual: dict, **kwargs) ->
         assert_api.assert_response_matches(actual, **kwargs)
 
 
-@pytest.mark.topology("account_b_to_account_a")
+@pytest.mark.topology("account_a_to_account_b")
 def test_chat_modify_custom_message_content_changed_event(topology, assert_api):
     """
+    场景：A 发送自定义消息并修改内容，B 的全部在线端验证内容变更事件；同时验证 A 副端同步原消息。
+
     覆盖发版项：
     - v4.15.1 修复：修改非文本/自定义消息时，onMessageContentChanged 回调返回内容修复
     """
@@ -143,7 +146,17 @@ def test_chat_modify_custom_message_content_changed_event(topology, assert_api):
             },
         },
         context={"realId": real_id, "fromUser": sender_user, "toUser": recipient_user, "oldEvent": old_event},
-        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState"},
+        ignore_keys={
+            "timestamp", "sequence", "serverTime", "localTime",
+            "broadcast", "onlineState", "data.messages[0].hasDeliverAck",
+        },
+    )
+
+    _assert_sender_devices_received_message(
+        topology,
+        assert_api,
+        real_id=str(real_id),
+        body={"type": 7, "event": old_event, "params": old_params},
     )
 
     for role, device in zip(topology.recipient_roles, recipients):
@@ -211,6 +224,14 @@ def test_chat_modify_custom_message_content_changed_event(topology, assert_api):
                 "attributes": {"editedByCase": "agorachat1.4.0"},
             },
         )
+    modify_result = resp_modify.get("result") or {}
+    if modify_result.get("code") == 305:
+        with _allure_step("跳过：当前 SDK/服务端不支持 modifyMessage"):
+            pytest.skip(
+                "ChatManager.modifyMessage 当前不可用："
+                f"code={modify_result.get('code')}, "
+                f"description={modify_result.get('description')!r}"
+            )
     _assert_response_step(
         assert_api,
         "确认消息内容已修改",

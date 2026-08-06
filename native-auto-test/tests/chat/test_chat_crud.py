@@ -161,6 +161,7 @@ def _assert_message_lookup(
     direction: int,
     conv_id: str,
     has_read: bool,
+    has_read_ack: bool = False,
 ) -> None:
     assert_api.assert_response_matches(
         response,
@@ -177,7 +178,7 @@ def _assert_message_lookup(
                 "direction": direction,
                 "status": 2,
                 "hasRead": has_read,
-                "hasReadAck": False,
+                "hasReadAck": has_read_ack,
                 "needGroupAck": False,
                 "isThread": False,
                 "isContentReplaced": False,
@@ -674,14 +675,16 @@ def test_chat_modify_message_invalid_id_response(device_a, assert_api):
     )
 
 
-@pytest.mark.topology("account_b_to_account_a")
+@pytest.mark.topology("account_a_to_account_b")
 def test_chat_translate_message_recalled_message(topology, assert_api):
     """
     场景：发送账号向接收账号发送文本消息后撤回。
 
-    验证：接收账号的每个在线端均收到原始消息、撤回信息及撤回后的消息本体。
+    验证：发送账号副端同步原始消息；接收账号的每个在线端均收到原始消息、
+    撤回信息及撤回后的消息本体。
     """
     action_sender = topology.sender_action_device
+    sender_devices = topology.sender_devices
     recipients = topology.recipient_devices
     sender_user = topology.sender_user
     recipient_user = topology.recipient_user
@@ -701,6 +704,47 @@ def test_chat_translate_message_recalled_message(topology, assert_api):
         )
         real_id = (((evt_success or {}).get("data") or {}).get("msg") or {}).get("msgId")
         assert real_id, f"onMessageSuccess 缺少 msgId: {evt_success}"
+
+    for role, device in zip(topology.sender_roles, sender_devices):
+        if device is action_sender:
+            continue
+        with _allure_step(f"发送账号副端 {role} 收到本账号消息同步（onMessagesReceived）"):
+            evt_synced = _wait_message_event(
+                device,
+                Cmd.onMessagesReceived.value,
+                real_id=real_id,
+                content=content,
+            )
+            _assert_text_message_event(
+                assert_api,
+                evt_synced,
+                event_type=Cmd.onMessagesReceived.value,
+                real_id=real_id,
+                user_a=sender_user,
+                user_b=recipient_user,
+                content=content,
+                direction=0,
+                conv_id=recipient_user,
+                has_read=True,
+                has_deliver_ack=None,
+            )
+        with _allure_step(f"发送账号副端 {role} 可从本地消息库查询该消息"):
+            _assert_message_lookup(
+                assert_api,
+                device.call(
+                    "ChatManager",
+                    Cmd.getMessage.value,
+                    info={"msgId": str(real_id)},
+                ),
+                device_name=device.device_name,
+                real_id=real_id,
+                user_a=sender_user,
+                user_b=recipient_user,
+                content=content,
+                direction=0,
+                conv_id=recipient_user,
+                has_read=True,
+            )
 
     for role, device in zip(topology.recipient_roles, recipients):
         with _allure_step(f"接收端 {role} 验证原始文本消息 msgId={real_id}"):
@@ -764,6 +808,71 @@ def test_chat_translate_message_recalled_message(topology, assert_api):
             },
             ignore_keys={"sequence"},
         )
+
+    for role, device in zip(topology.sender_roles, sender_devices):
+        if device is action_sender:
+            continue
+        with _allure_step(f"发送账号副端 {role} 验证撤回信息 onMessagesRecalledInfo msgId={real_id}"):
+            evt_recall_info = _wait_recall_info_event(
+                device,
+                real_id=real_id,
+                content=content,
+            )
+            infos = ((evt_recall_info.get("data") or {}).get("infos") or [])
+            info = next(
+                (
+                    item for item in infos
+                    if isinstance(item, dict)
+                    and str(item.get("recallMsgId")) == str(real_id)
+                ),
+                None,
+            )
+            assert info is not None, (
+                f"发送账号副端 {role} 的 onMessagesRecalledInfo 缺少目标消息: "
+                f"msgId={real_id}, event={evt_recall_info}"
+            )
+            assert info.get("recallBy") == sender_user, (
+                f"发送账号副端 {role} 的撤回人不正确: "
+                f"expected={sender_user!r}, actual={info.get('recallBy')!r}"
+            )
+            recalled_msg = info.get("msg") or {}
+            assert str(recalled_msg.get("msgId")) == str(real_id), (
+                f"发送账号副端 {role} 的撤回信息 msgId 不一致: "
+                f"expected={real_id!r}, actual={recalled_msg.get('msgId')!r}"
+            )
+            assert (recalled_msg.get("body") or {}).get("content") == content, (
+                f"发送账号副端 {role} 的撤回信息内容不一致: "
+                f"expected={content!r}, actual={(recalled_msg.get('body') or {}).get('content')!r}"
+            )
+
+        with _allure_step(f"发送账号副端 {role} 验证撤回消息本体 onMessagesRecalled msgId={real_id}"):
+            evt_recalled = _wait_message_event(
+                device,
+                Cmd.onMessagesRecalled.value,
+                real_id=real_id,
+                content=content,
+            )
+            messages = ((evt_recalled.get("data") or {}).get("messages") or [])
+            recalled_msg = next(
+                (
+                    item for item in messages
+                    if isinstance(item, dict)
+                    and str(item.get("msgId")) == str(real_id)
+                ),
+                None,
+            )
+            assert recalled_msg is not None, (
+                f"发送账号副端 {role} 的 onMessagesRecalled 缺少目标消息: "
+                f"msgId={real_id}, event={evt_recalled}"
+            )
+            assert recalled_msg.get("from") == sender_user, (
+                f"发送账号副端 {role} 的撤回消息 from 不正确: "
+                f"expected={sender_user!r}, actual={recalled_msg.get('from')!r}"
+            )
+            assert recalled_msg.get("to") == recipient_user, (
+                f"发送账号副端 {role} 的撤回消息 to 不正确: "
+                f"expected={recipient_user!r}, actual={recalled_msg.get('to')!r}"
+            )
 
     for role, device in zip(topology.recipient_roles, recipients):
         with _allure_step(f"接收端 {role} 验证撤回信息 onMessagesRecalledInfo msgId={real_id}"):
@@ -837,9 +946,9 @@ def test_chat_translate_message_recalled_message(topology, assert_api):
             )
 
 
-@pytest.mark.topology("account_b_to_account_a")
+@pytest.mark.topology("account_a_to_account_b")
 def test_chat_ack_message_read_success(topology, assert_api):
-    """单聊已读：B 发消息，A 的全部在线端收消息，A 主端回执，B 收到已读事件。"""
+    """A 发送文本，B 的全部在线端接收并发送已读回执；验证 A 主副端已读回调和本地状态同步。"""
     sender = topology.sender_action_device
     recipient_action = topology.recipient_action_device
     recipients = topology.recipient_devices
@@ -871,6 +980,47 @@ def test_chat_ack_message_read_success(topology, assert_api):
             expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": sender.device_name, "result": {"msgId": temp_id, "from": sender_user, "to": recipient_user, "convId": recipient_user, "chatType": 0, "direction": 0, "status": 0, "hasRead": True, "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False, "isThread": False, "isContentReplaced": False, "body": {"type": 0, "content": content}}},
             ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState", "deliverOnlineOnly", "targetLanguages", "translations"},
         )
+
+    for role, sender_device in zip(topology.sender_roles, topology.sender_devices):
+        if sender_device is sender:
+            continue
+        with _allure_step(f"发送账号副端 {role} 收到待已读消息同步（onMessagesReceived）"):
+            synced = _wait_message_event(
+                sender_device,
+                Cmd.onMessagesReceived.value,
+                real_id=str(sent_real_id),
+                content=content,
+            )
+            _assert_text_message_event(
+                assert_api,
+                synced,
+                event_type=Cmd.onMessagesReceived.value,
+                real_id=str(sent_real_id),
+                user_a=sender_user,
+                user_b=recipient_user,
+                content=content,
+                direction=0,
+                conv_id=recipient_user,
+                has_read=True,
+                has_deliver_ack=None,
+            )
+        with _allure_step(f"发送账号副端 {role} 可从本地消息库查询待已读消息"):
+            _assert_message_lookup(
+                assert_api,
+                sender_device.call(
+                    "ChatManager",
+                    Cmd.getMessage.value,
+                    info={"msgId": str(sent_real_id)},
+                ),
+                device_name=sender_device.device_name,
+                real_id=str(sent_real_id),
+                user_a=sender_user,
+                user_b=recipient_user,
+                content=content,
+                direction=0,
+                conv_id=recipient_user,
+                has_read=True,
+            )
 
     for recipient in recipients:
         with _allure_step(f"接收端 {recipient.device_name} 收到待已读消息（onMessagesReceived）"):
@@ -975,6 +1125,49 @@ def test_chat_ack_message_read_success(topology, assert_api):
             context={"msgId": str(sent_real_id), "fromUser": sender_user, "toUser": recipient_user, "content": content},
             ignore_keys={"timestamp", "sequence", "serverTime", "localTime"},
         )
+
+    for role, sender_device in zip(topology.sender_roles, topology.sender_devices):
+        if sender_device is sender:
+            continue
+        with _allure_step(f"发送账号副端 {role} 收到已读回调（onMessagesRead）"):
+            sender_read_event = _wait_message_event(
+                sender_device,
+                Cmd.onMessagesRead.value,
+                real_id=str(sent_real_id),
+                content=content,
+            )
+            _assert_text_message_event(
+                assert_api,
+                sender_read_event,
+                event_type=Cmd.onMessagesRead.value,
+                real_id=str(sent_real_id),
+                user_a=sender_user,
+                user_b=recipient_user,
+                content=content,
+                direction=0,
+                conv_id=recipient_user,
+                has_read=True,
+                has_read_ack=True,
+                has_deliver_ack=None,
+            )
+        with _allure_step(f"发送账号副端 {role} 本地消息已同步为已读"):
+            _assert_message_lookup(
+                assert_api,
+                sender_device.call(
+                    "ChatManager",
+                    Cmd.getMessage.value,
+                    info={"msgId": str(sent_real_id)},
+                ),
+                device_name=sender_device.device_name,
+                real_id=str(sent_real_id),
+                user_a=sender_user,
+                user_b=recipient_user,
+                content=content,
+                direction=0,
+                conv_id=recipient_user,
+                has_read=True,
+                has_read_ack=True,
+            )
 
 
 # ======================== Delete ========================

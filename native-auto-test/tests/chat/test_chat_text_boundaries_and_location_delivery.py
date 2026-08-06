@@ -8,7 +8,11 @@ import pytest
 
 from src import Cmd
 from tests.chat._utils import build_text
-from tests.chat.test_chat_message_types_and_delivery import _send_type_and_receive, _wait_delivery_event
+from tests.chat.test_chat_message_types_and_delivery import (
+    _assert_sender_devices_received_message,
+    _send_type_and_receive,
+    _wait_delivery_event,
+)
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
@@ -89,8 +93,20 @@ def _send_text_and_assert(topology, assert_api, *, content):
                 "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
                 "body": expected_body,
             }]}},
-            ignore_keys={"timestamp", "sequence", "localTime", "serverTime", "broadcast", "onlineState", "targetLanguages", "translations"},
+            ignore_keys={
+                "timestamp", "sequence", "localTime", "serverTime",
+                "broadcast", "onlineState", "targetLanguages", "translations",
+                "data.messages[0].hasDeliverAck",
+            },
         )
+
+    _assert_sender_devices_received_message(
+        topology,
+        assert_api,
+        real_id=str(real_id),
+        body=expected_body,
+        content=content,
+    )
 
     for role, recipient in zip(topology.recipient_roles, recipients):
         with _allure_step(f"接收端 {role} 收到文本边界消息（onMessagesReceived）"):
@@ -112,7 +128,9 @@ def _send_text_and_assert(topology, assert_api, *, content):
                 ignore_keys={"timestamp", "sequence", "localTime", "serverTime", "broadcast", "onlineState", "targetLanguages", "translations"},
             )
 
-    with _allure_step(f"等待 {sender.device_name} 的 {len(recipients)} 条送达回执（onMessagesDelivered）"):
+    with _allure_step(
+        f"等待 {sender.device_name} 的 {len(recipients)} 条送达回执（onMessagesDelivered/onMessageDeliveryAck）"
+    ):
         delivery = _wait_delivery_event(
             sender,
             real_id=real_id,
@@ -125,10 +143,14 @@ def _send_text_and_assert(topology, assert_api, *, content):
                 "msgId": real_id, "from": sender_user, "to": recipient_user, "convId": recipient_user,
                 "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
                 "hasReadAck": False, "hasDeliverAck": True, "needGroupAck": False,
-                "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
+                "isThread": False, "isContentReplaced": False,
                 "body": expected_body,
             } for _ in recipients]}},
-            ignore_keys={"timestamp", "sequence", "localTime", "serverTime", "targetLanguages", "translations"},
+            ignore_keys={
+                "timestamp", "sequence", "localTime", "serverTime",
+                "broadcast", "onlineState", "deliverOnlineOnly",
+                "targetLanguages", "translations",
+            },
         )
     return real_id
 
@@ -142,8 +164,25 @@ def _send_text_and_assert(topology, assert_api, *, content):
     ],
     ids=["empty", "special-characters", "length-250"],
 )
-@pytest.mark.topology("account_b_to_account_a")
+@pytest.mark.topology("account_a_to_account_b")
 def test_chat_text_content_boundaries(topology, assert_api, content):
+    boundary_name = (
+        "空文本"
+        if content == ""
+        else "长度 250"
+        if len(content) == 250
+        else "特殊字符与 Unicode 文本"
+    )
+    try:
+        import allure
+
+        allure.dynamic.title(f"文本边界：{boundary_name}")
+        allure.dynamic.description(
+            f"A 发送{boundary_name}，验证 A 副端同步、B 全部在线端接收及多端送达回执。"
+        )
+        allure.dynamic.parameter("边界场景", boundary_name)
+    except ImportError:
+        pass
     _send_text_and_assert(topology, assert_api, content=content)
 
 

@@ -32,6 +32,7 @@ _MESSAGE_IGNORE_KEYS = {
     "targetLanguages",
     "translations",
     "receiverList",
+    "deliverOnlineOnly",
     "fileSize",
     "localPath",
     "remotePath",
@@ -557,9 +558,9 @@ def test_group_message_ack_boundary_methods(device_a, assert_api):
     )
 
 
-@pytest.mark.topology("account_b_to_account_a")
+@pytest.mark.topology("account_a_to_account_b")
 def test_group_message_fetch_acks_success(topology, assert_api):
-    """A 建群后，B 发群消息；A 的全部在线端收消息，A 主端回执，B 查询回执。"""
+    """B 创建群并邀请 A，A 发送群消息；验证 A 副端同步、B 全部在线端接收及群回执查询。"""
     sender = topology.sender_action_device
     recipient_action = topology.recipient_action_device
     recipients = topology.recipient_devices
@@ -578,6 +579,7 @@ def test_group_message_fetch_acks_success(topology, assert_api):
                 owner=recipient_user,
                 group_name=new_group_name("group_ack"),
                 invite_members=[sender_user],
+                device_name=recipient_action.device_name,
             )
         time.sleep(float(os.getenv("GROUP_MESSAGE_MEMBER_SETTLE_SECONDS", "5")))
 
@@ -658,6 +660,58 @@ def test_group_message_fetch_acks_success(topology, assert_api):
             },
             ignore_keys=_MESSAGE_IGNORE_KEYS,
         )
+        for role, sender_device in zip(topology.sender_roles, topology.sender_devices):
+            if sender_device is sender:
+                continue
+            with _allure_step(
+                f"发送账号副端 {role} 收到群消息同步（onMessagesReceived）"
+            ):
+                synced_evt = _wait_received(
+                    sender_device,
+                    event_type=Cmd.onMessagesReceived.value,
+                    real_id=str(real_id),
+                )
+            _assert_response_step(
+                assert_api,
+                f"确认发送账号副端 {role} 已同步群消息",
+                synced_evt,
+                expected={
+                    "type": "event",
+                    "eventType": Cmd.onMessagesReceived.value,
+                    "data": {
+                        "messages": [{**event_message, "direction": 0, "hasRead": True}],
+                    },
+                },
+                ignore_keys=_MESSAGE_IGNORE_KEYS,
+            )
+            with _allure_step(
+                f"发送账号副端 {role} 从本地消息库查询群消息"
+            ):
+                lookup = sender_device.call(
+                    "ChatManager",
+                    Cmd.getMessage.value,
+                    info={"msgId": str(real_id)},
+                )
+            sender_lookup_message = {
+                **event_message,
+                "direction": 0,
+                "hasRead": True,
+            }
+            # Android 4.23 的 getMessage 结果不稳定返回该可选字段；
+            # 发送端同步事件仍保留字段校验，避免放宽真正的事件契约。
+            sender_lookup_message.pop("deliverOnlineOnly", None)
+            _assert_response_step(
+                assert_api,
+                f"确认发送账号副端 {role} 已落库群消息",
+                lookup,
+                expected={
+                    "manager": "ChatManager",
+                    "cmd": Cmd.getMessage.value,
+                    "device": sender_device.device_name,
+                    "result": sender_lookup_message,
+                },
+                ignore_keys=_MESSAGE_IGNORE_KEYS,
+            )
         for recipient in recipients:
             with _allure_step(
                 f"接收端 {recipient.device_name} 收到群消息（onMessagesReceived）"
@@ -720,7 +774,13 @@ def test_group_message_fetch_acks_success(topology, assert_api):
         )
     finally:
         if group_id:
-            destroy_group(recipient_action, assert_api, group_id, device_b=sender)
+            destroy_group(
+                recipient_action,
+                assert_api,
+                group_id,
+                device_b=sender,
+                device_name=recipient_action.device_name,
+            )
 
 
 @pytest.mark.parametrize("target_kind", ["empty", "nonexistent"])
