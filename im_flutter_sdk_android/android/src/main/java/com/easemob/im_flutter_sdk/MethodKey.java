@@ -382,4 +382,10 @@ public class MethodKey {
     // 4.15.2
     static final String loadConversationMessagesWithKeyword = "loadConversationMessagesWithKeyword";
     static final String loadMessagesWithIds = "loadMessagesWithIds";
+    static final String updateGroupConfigs = "updateGroupConfigs";
+    static final String updateGroupExtension = "updateGroupExtension";
+    static final String getGroupMessageReadReceipts = "getGroupMessageReadReceipts";
+    static final String searchMessagesFromServer = "searchMessagesFromServer";
+    static final String deleteConversations = "deleteConversations";
+    static final String getPushConfigsFromServer = "getPushConfigsFromServer";
 }

@@ -4,6 +4,9 @@ import android.content.Context;
 
 import com.hyphenate.exceptions.HyphenateException;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -16,6 +19,11 @@ import io.flutter.plugin.common.MethodChannel;
 
 
 public class Wrapper implements MethodChannel.MethodCallHandler {
+
+  /** 命令处理器：接收 JSON 参数、channel 名、Result 回调。 */
+  public interface CmdHandler {
+    void handle(JSONObject param, String channelName, MethodChannel.Result result) throws Exception;
+  }
 
   private static final String CHANNEL_PREFIX = "com.chat.im/";
 
@@ -34,6 +42,71 @@ public class Wrapper implements MethodChannel.MethodCallHandler {
   public FlutterPlugin.FlutterPluginBinding binging;
   public MethodChannel channel;
 
+  /** 命令注册表：cmd 字符串 -> 处理器。子类在 registerAll() 中填充。 */
+  protected final Map<String, CmdHandler> handlers = new HashMap<>();
+
+  /** 注册单个命令处理器。 */
+  protected void register(String cmd, CmdHandler handler) {
+    handlers.put(cmd, handler);
+  }
+
+  /** 注册当前 SDK 基线的命令表。基线子类实现；版本增量子类通过 applyVersionOverrides() 覆盖。 */
+  protected void registerAll() {}
+
+  /** 版本增量钩子：更高版本 SDK 在此覆盖/删除/新增命令。默认空操作。 */
+  protected void applyVersionOverrides() {}
+
+  /** 统一命令分发：解析参数 -> 查注册表 -> 分发；未注册命令返回 notImplemented。 */
+  @Override
+  public void onMethodCall(MethodCall call, MethodChannel.Result result) {
+    final JSONObject param;
+    try {
+      param = argumentsToJSONObject(call.arguments);
+    } catch (JSONException e) {
+      replyJsonOrRuntimeError(result, e);
+      return;
+    }
+    CmdHandler handler = handlers.get(call.method);
+    if (handler != null) {
+      try {
+        handler.handle(param, call.method, result);
+      } catch (Exception e) {
+        replyJsonOrRuntimeError(result, e);
+      }
+    } else {
+      result.notImplemented();
+    }
+  }
+
+  /**
+   * JSON 通道里 args 在部分机型/版本上可能是 {@link JSONObject}，也可能是 {@link Map} 等，
+   * 强转失败会抛 ClassCastException。统一转 JSONObject。
+   */
+  protected static JSONObject argumentsToJSONObject(Object args) throws JSONException {
+    if (args == null) {
+      return new JSONObject();
+    }
+    if (args instanceof JSONObject) {
+      return (JSONObject) args;
+    }
+    if (args instanceof Map) {
+      return new JSONObject((Map<?, ?>) args);
+    }
+    if (args instanceof String) {
+      return new JSONObject((String) args);
+    }
+    throw new JSONException("Unsupported args type: " + args.getClass().getName());
+  }
+
+  /** 统一错误响应。 */
+  protected void replyJsonOrRuntimeError(MethodChannel.Result result, Throwable t) {
+    post(() -> {
+      Map<String, Object> data = new HashMap<>();
+      String msg = t.getMessage() != null ? t.getMessage() : t.toString();
+      data.put("error", ErrorHelper.toJson(-1, msg));
+      result.success(data);
+    });
+  }
 
   public void post(Runnable runnable) {
     ImFlutterSdkPlugin.handler.post(runnable);
@@ -65,10 +138,5 @@ public class Wrapper implements MethodChannel.MethodCallHandler {
         data.put("error", HyphenateExceptionHelper.toJson(e));
         result.success(data);
     });
-  }
-
-  @Override
-  public void onMethodCall(MethodCall call, MethodChannel.Result result) {
-    result.notImplemented();
   }
 }

@@ -1,0 +1,285 @@
+platform: android
+
+base:
+  version: 5.0.0
+  apis:
+
+    # ── Client ──
+    - Client.acceptInvitationAlways
+    - Client.changeAppId
+    - Client.changeAppKey
+    - Client.compressLogs
+    - Client.getCurrentDeviceId
+    - Client.getCurrentUser
+    - Client.getLoggedInDevicesFromServer
+    - Client.getToken
+    - Client.init
+    - Client.isConnected
+    - Client.isLoggedInBefore
+    - Client.kickAllDevices
+    - Client.kickDevice
+    - Client.login
+    - Client.logout
+    - Client.renewToken
+    - Client.startCallback
+    - Client.updateAutoAcceptGroupInvitationSetting
+    - Client.updateAutoDownloadAttachmentThumbnailSetting
+    - Client.updateDeleteMessageWhenLeaveRoomSetting
+    - Client.updateDeleteMessagesWhenLeaveGroupSetting
+    - Client.updateDeliveryAckSetting
+    - Client.updateLoginExtensionInfo
+    - Client.updateMessagesReceiveCallbackIncludeSendSetting
+    - Client.updateRegradeMessagesSetting
+    - Client.updateRoomOwnerCanLeaveSetting
+    - Client.updateSortMessageByServerTimeSetting
+    - Client.updateUsingHttpsOnlySetting
+    - Client.uploadLog
+
+    # ── ChatManager ──
+    - ChatManager.ackConversationRead
+    - ChatManager.ackGroupMessageRead
+    - ChatManager.ackMessageRead
+    - ChatManager.addReaction
+    - ChatManager.addRemoteAndLocalConversationsMark
+    - ChatManager.asyncFetchGroupAcks
+    - ChatManager.deleteAllMessageAndConversation
+    - ChatManager.deleteConversation
+    - ChatManager.deleteMessagesBeforeTimestamp
+    - ChatManager.deleteRemoteAndLocalConversationsMark
+    - ChatManager.deleteRemoteConversation
+    - ChatManager.downloadAndParseCombineMessage
+    - ChatManager.downloadAttachment
+    - ChatManager.downloadBigImage
+    - ChatManager.downloadMessageAttachmentInCombine
+    - ChatManager.downloadMessageThumbnailInCombine
+    - ChatManager.downloadThumbnail
+    - ChatManager.fetchConversationsByOptions
+    - ChatManager.fetchConversationsFromServerWithPage
+    - ChatManager.fetchHistoryMessages
+    - ChatManager.fetchHistoryMessagesByOptions
+    - ChatManager.fetchPinnedMessages
+    - ChatManager.fetchReactionDetail
+    - ChatManager.fetchReactionList
+    - ChatManager.fetchSupportLanguages
+    - ChatManager.getConversation
+    - ChatManager.getConversationsFromServer
+    - ChatManager.getConversationsFromServerWithCursor
+    - ChatManager.getMessage
+    - ChatManager.getMessageCount
+    - ChatManager.getPinnedConversationsFromServerWithCursor
+    - ChatManager.getThreadConversation
+    - ChatManager.getUnreadMessageCount
+    - ChatManager.importMessages
+    - ChatManager.loadAllConversations
+    - ChatManager.loadConversationMessagesWithKeyword
+    - ChatManager.loadMessagesWithIds
+    - ChatManager.markAllChatMsgAsRead
+    - ChatManager.modifyMessage
+    - ChatManager.pinConversation
+    - ChatManager.pinMessage
+    - ChatManager.recallMessage
+    - ChatManager.removeMessagesFromServerWithMsgIds
+    - ChatManager.removeMessagesFromServerWithTs
+    - ChatManager.removeReaction
+    - ChatManager.resendMessage
+    - ChatManager.searchChatMsgFromDB
+    - ChatManager.searchMsgsByOptions
+    - ChatManager.sendMessage
+    - ChatManager.translateMessage
+    - ChatManager.unpinMessage
+    - ChatManager.updateChatMessage
+
+    # ── ContactManager ──
+    - ChatManager.getGroupMessageReadReceipts
+    - ChatManager.searchMessagesFromServer
+    - ChatManager.deleteConversations
+    - ContactManager.acceptInvitation
+    - ContactManager.addContact
+    - ContactManager.addUserToBlockList
+    - ContactManager.declineInvitation
+    - ContactManager.deleteContact
+    - ContactManager.fetchAllContacts
+    - ContactManager.fetchContacts
+    - ContactManager.getAllContacts
+    - ContactManager.getAllContactsFromDB
+    - ContactManager.getAllContactsFromServer
+    - ContactManager.getBlockListFromDB
+    - ContactManager.getBlockListFromServer
+    - ContactManager.getContact
+    - ContactManager.getSelfIdsOnOtherPlatform
+    - ContactManager.removeUserFromBlockList
+    - ContactManager.setContactRemark
+
+    # ── GroupManager ──
+    - GroupManager.acceptInvitationFromGroup
+    - GroupManager.acceptJoinApplication
+    - GroupManager.addAdmin
+    - GroupManager.addMembers
+    - GroupManager.addWhiteList
+    - GroupManager.blockGroup
+    - GroupManager.blockMembers
+    - GroupManager.clearAllGroupsFromDB
+    - GroupManager.createGroup
+    - GroupManager.declineInvitationFromGroup
+    - GroupManager.declineJoinApplication
+    - GroupManager.destroyGroup
+    - GroupManager.downloadGroupSharedFile
+    - GroupManager.fetchGroupMembersInfo
+    - GroupManager.fetchJoinedGroupCount
+    - GroupManager.fetchMemberAttributesFromGroup
+    - GroupManager.fetchMembersAttributesFromGroup
+    - GroupManager.getGroupAnnouncementFromServer
+    - GroupManager.getGroupBlockListFromServer
+    - GroupManager.getGroupFileListFromServer
+    - GroupManager.getGroupMemberListFromServer
+    - GroupManager.getGroupMuteListFromServer
+    - GroupManager.getGroupSpecificationFromServer
+    - GroupManager.getGroupWhiteListFromServer
+    - GroupManager.getGroupWithId
+    - GroupManager.getJoinedGroups
+    - GroupManager.getJoinedGroupsFromServer
+    - GroupManager.getPublicGroupsFromServer
+    - GroupManager.inviterUser
+    - GroupManager.isMemberInGroupMuteList
+    - GroupManager.isMemberInWhiteListFromServer
+    - GroupManager.joinPublicGroup
+    - GroupManager.leaveGroup
+    - GroupManager.muteAllMembers
+    - GroupManager.muteMembers
+    - GroupManager.removeAdmin
+    - GroupManager.removeGroupSharedFile
+    - GroupManager.removeMemberAttributesFromGroup
+    - GroupManager.removeMembers
+    - GroupManager.removeWhiteList
+    - GroupManager.requestToJoinPublicGroup
+    - GroupManager.setMemberAttributesFromGroup
+    - GroupManager.unMuteAllMembers
+    - GroupManager.unMuteMembers
+    - GroupManager.unblockGroup
+    - GroupManager.unblockMembers
+    - GroupManager.updateDescription
+    - GroupManager.updateGroupAnnouncement
+    - GroupManager.updateGroupAvatar
+    - GroupManager.updateGroupConfigs
+    - GroupManager.updateGroupExtension
+    - GroupManager.updateGroupExt
+    - GroupManager.updateGroupOwner
+    - GroupManager.updateGroupSubject
+    - GroupManager.uploadGroupSharedFile
+
+    # ── ChatRoomManager ──
+    - ChatRoomManager.addChatRoomAdmin
+    - ChatRoomManager.addMembersToChatRoomWhiteList
+    - ChatRoomManager.blockChatRoomMembers
+    - ChatRoomManager.changeChatRoomDescription
+    - ChatRoomManager.changeChatRoomOwner
+    - ChatRoomManager.changeChatRoomSubject
+    - ChatRoomManager.fetchChatRoomAnnouncement
+    - ChatRoomManager.fetchChatRoomAttributes
+    - ChatRoomManager.fetchChatRoomBlockList
+    - ChatRoomManager.fetchChatRoomInfoFromServer
+    - ChatRoomManager.fetchChatRoomMembers
+    - ChatRoomManager.fetchChatRoomMuteList
+    - ChatRoomManager.fetchChatRoomWhiteListFromServer
+    - ChatRoomManager.fetchPublicChatRoomsFromServer
+    - ChatRoomManager.getChatRoom
+    - ChatRoomManager.isMemberInChatRoomMuteList
+    - ChatRoomManager.isMemberInChatRoomWhiteListFromServer
+    - ChatRoomManager.joinChatRoom
+    - ChatRoomManager.leaveChatRoom
+    - ChatRoomManager.muteAllChatRoomMembers
+    - ChatRoomManager.muteChatRoomMembers
+    - ChatRoomManager.removeChatRoomAdmin
+    - ChatRoomManager.removeChatRoomAttributes
+    - ChatRoomManager.removeChatRoomMembers
+    - ChatRoomManager.removeMembersFromChatRoomWhiteList
+    - ChatRoomManager.setChatRoomAttributes
+    - ChatRoomManager.unBlockChatRoomMembers
+    - ChatRoomManager.unMuteAllChatRoomMembers
+    - ChatRoomManager.unMuteChatRoomMembers
+    - ChatRoomManager.updateChatRoomAnnouncement
+
+    # ── PushManager ──
+    - PushManager.bindDeviceToken
+    - PushManager.fetchConversationSilentMode
+    - PushManager.fetchPreferredNotificationLanguage
+    - PushManager.fetchSilentModeForAll
+    - PushManager.fetchSilentModeForConversations
+    - PushManager.getImPushConfig
+    - PushManager.getImPushConfigFromServer
+    - PushManager.getPushTemplate
+    - PushManager.getPushConfigsFromServer
+    - PushManager.removeConversationSilentMode
+    - PushManager.reportPushAction
+    - PushManager.setConversationSilentMode
+    - PushManager.setPreferredNotificationLanguage
+    - PushManager.setPushTemplate
+    - PushManager.setSilentModeForAll
+    - PushManager.syncSilentModels
+    - PushManager.updateFCMPushToken
+    - PushManager.updateHMSPushToken
+    - PushManager.updateImPushStyle
+    - PushManager.updatePushNickname
+
+    # ── UserInfoManager ──
+    - UserInfoManager.fetchOwnInfo
+    - UserInfoManager.fetchUserInfoById
+    - UserInfoManager.fetchUserInfoByIdWithType
+    - UserInfoManager.updateOwnUserInfo
+    - UserInfoManager.updateOwnUserInfoWithType
+
+    # ── PresenceManager ──
+    - PresenceManager.fetchPresenceStatus
+    - PresenceManager.fetchSubscribedMembersWithPageNum
+    - PresenceManager.presenceSubscribe
+    - PresenceManager.presenceUnsubscribe
+    - PresenceManager.publishPresenceWithDescription
+
+    # ── ChatThreadManager ──
+    - ChatThreadManager.createChatThread
+    - ChatThreadManager.destroyChatThread
+    - ChatThreadManager.fetchChatThreadDetail
+    - ChatThreadManager.fetchChatThreadMember
+    - ChatThreadManager.fetchChatThreadsWithParentId
+    - ChatThreadManager.fetchJoinedChatThreads
+    - ChatThreadManager.fetchJoinedChatThreadsWithParentId
+    - ChatThreadManager.fetchLastMessageWithChatThreads
+    - ChatThreadManager.joinChatThread
+    - ChatThreadManager.leaveChatThread
+    - ChatThreadManager.removeMemberFromChatThread
+    - ChatThreadManager.updateChatThreadSubject
+
+    # ── ConversationManager ──
+    - ConversationManager.appendMessage
+    - ConversationManager.clearAllMessages
+    - ConversationManager.conversationDeleteServerMessageWithIds
+    - ConversationManager.conversationDeleteServerMessageWithTime
+    - ConversationManager.conversationGetLocalMessageCount
+    - ConversationManager.conversationRemindType
+    - ConversationManager.conversationSearchMsgsByOptions
+    - ConversationManager.deleteMessageByIds
+    - ConversationManager.deleteMessagesWithTs
+    - ConversationManager.getLatestMessage
+    - ConversationManager.getLatestMessageFromOthers
+    - ConversationManager.getUnreadMsgCount
+    - ConversationManager.loadMsgWithId
+    - ConversationManager.loadMsgWithKeywords
+    - ConversationManager.loadMsgWithMsgType
+    - ConversationManager.loadMsgWithStartId
+    - ConversationManager.loadMsgWithTime
+    - ConversationManager.markAllMessagesAsRead
+    - ConversationManager.markMessageAsRead
+    - ConversationManager.messageCount
+    - ConversationManager.pinnedMessages
+    - ConversationManager.removeMessage
+    - ConversationManager.removeMsgFromServerWithTimeStamp
+    - ConversationManager.syncConversationExt
+    - ConversationManager.updateConversationMessage
+
+    # ── MessageManager ──
+    - MessageManager.chatThread
+    - MessageManager.getPinInfo
+    - MessageManager.getReactionList
+    - MessageManager.groupAckCount
+
+versions: {}

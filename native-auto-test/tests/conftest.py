@@ -962,19 +962,43 @@ def _account_password(logical_role: str, phase1_scenario) -> str:
     return phase1_scenario.accounts[slot].password
 
 
-def _login_one(device, user_id: str, password: str) -> None:
+def _scenario_is_v5(phase1_scenario) -> bool:
+    """判断当前 scenario 是否使用 5.x SDK（决定用 token 登录还是密码登录）。"""
+    if phase1_scenario is None:
+        return False
+    for role in phase1_scenario.roles.values():
+        if role.platform == "android" and role.sdk_version:
+            major = str(role.sdk_version).split(".")[0]
+            if major.isdigit() and int(major) >= 5:
+                return True
+    return False
+
+
+def _login_one(device, user_id: str, password: str, use_token: bool = False) -> None:
     response: dict = {}
     for attempt in range(3):
         try:
-            response = device.call(
-                "Client",
-                Cmd.login.value,
-                info={
-                    "userId": user_id,
-                    "pwdOrToken": password,
-                    "isPassword": True,
-                },
-            )
+            if use_token:
+                # 5.0 统一 token 登录：先用账号密码换 token
+                from src.rest_api.user_api import fetch_user_token
+
+                tok = fetch_user_token(user_id, password)
+                token = tok.get("access_token", "")
+                response = device.call(
+                    "Client",
+                    Cmd.login.value,
+                    info={"userId": user_id, "pwdOrToken": token, "isPassword": False},
+                )
+            else:
+                response = device.call(
+                    "Client",
+                    Cmd.login.value,
+                    info={
+                        "userId": user_id,
+                        "pwdOrToken": password,
+                        "isPassword": True,
+                    },
+                )
         except TimeoutError:
             if attempt == 2:
                 raise
@@ -1052,11 +1076,13 @@ def global_login_logout(
                 pass
 
     with _allure_step("Session 按需登录"):
+        _v5 = _scenario_is_v5(phase1_scenario)
         for role, device in devices.items():
             _login_one(
                 device,
                 _account_user(role, phase1_scenario, created_test_users),
                 _account_password(role, phase1_scenario),
+                use_token=_v5,
             )
         roles_by_account: dict[str, list[str]] = {}
         for role in roles:
@@ -2023,9 +2049,9 @@ def pytest_sessionstart(session):
     for role in scenario.roles.values():
         if role.platform != "android":
             continue
-        # sdk_version like "4.23.0" → flavor like "sdk423"
+        # sdk_version like "4.23.0" → flavor like "sdk423"; "5.0.0" → "sdk500"（minor 补 2 位）
         parts = role.sdk_version.split(".")
-        ver = "".join(parts[:2])
+        ver = f"{parts[0]}{int(parts[1]):02d}"
         flavors.add(f"sdk{ver}")
     for flavor in sorted(flavors):
         import subprocess, shutil
@@ -2065,7 +2091,7 @@ def _refresh_artifact_hash(flavor: str, flutter_test: Path) -> None:
     digest = hashlib.sha256(apk.read_bytes()).hexdigest()
     version = flavor.replace("sdk", "")
     # sdk423 → 4.23.0
-    dotted = f"{version[0]}.{version[1:]}.0"
+    dotted = f"{version[0]}.{int(version[1:])}.0"
     manifest_path = (
         Path(__file__).resolve().parent.parent
         / "config" / "artifact_manifests" / f"android-{dotted}.json"

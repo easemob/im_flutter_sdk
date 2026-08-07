@@ -16,6 +16,14 @@
     - 示例工程运行基础用例；新增/变更 API 写最小调用样例（可临时置于 example）。
     - Android 与 iOS 分别完成本地构建验证（参见 `docs/specs/dependency-spec.md`）。
 
+## 5.0 原生 API 基线
+
+- 5.0 升级的原生真相源位于 `docs/native-api/5.0/`；提取阶段不得读取或复用现有 Flutter wrapper。
+- Android 公开边界以厂商 API 文档中的类型为准，方法、字段、枚举与回调签名从 5.0.0 JAR 提取。
+- iOS 公开边界以 `HyphenateChat.framework/Headers` 全部头文件为准，声明和符号关系由 Apple Clang 提取。
+- 使用 `im_flutter_sdk/scripts/extract_native_api.py` 重新生成；`manifest.json` 中的输入哈希和数量用于检查基线漂移。
+- wrapper 适配时再以 Android 命名为基准建立 Android/iOS/Dart 映射；不得反向用旧 wrapper 补写原生基线。
+
 - 命名与兼容性
   - 若 Android/iOS/Dart 命名不一致：统一改为 Android 命名；如需兼容旧名，在 Dart 层提供过渡别名，并标注弃用。
   - 回调/事件：事件名与负载字段名保持一致，避免大小写和下划线差异；数组/分页结果统一使用 `EMCursorResult`/`EMPageResult` 等约定模型。

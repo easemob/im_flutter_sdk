@@ -1,0 +1,1317 @@
+Hyphenate iOS SDK 5.0.0 public API
+Boundary: framework public headers; signatures: Apple Clang API symbols
+
+## EMChatManagerDelegate.h
+[objective-c.protocol] @protocol EMChatManagerDelegate <NSObject>
+[objective-c.method] - (void) onStreamMessagesReceived:(NSArray<EMChatMessage *> *) messages;
+[objective-c.method] - (void) messagesDidReceive:(NSArray<EMChatMessage *> *) aMessages;
+[objective-c.method] - (void) cmdMessagesDidReceive:(NSArray<EMChatMessage *> *) aCmdMessages;
+[objective-c.method] - (void) groupMessageReadReceiptsHasChanged;
+[objective-c.method] - (void) messagesDidDeliver:(NSArray<EMChatMessage *> *) aMessages;
+[objective-c.method] - (void) messagesInfoDidRecall:(NSArray<EMRecallMessageInfo *> *) aRecallMessagesInfo;
+[objective-c.method] - (void) messageStatusDidChange:(EMChatMessage *) aMessage error:(EMError *) aError;
+[objective-c.method] - (void) messageAttachmentStatusDidChange:(EMChatMessage *) aMessage error:(EMError *) aError;
+[objective-c.method] - (void) onMessageContentChanged:(EMChatMessage *) message operatorId:(NSString *) operatorId operationTime:(NSUInteger) operationTime;
+[objective-c.method] - (void) onMessagePinChanged:(NSString *) messageId conversationId:(NSString *) conversationId operation:(EMMessagePinOperation) pinOperation pinInfo:(EMMessagePinInfo *) pinInfo;
+[objective-c.method] - (void) messageReactionDidChange:(NSArray<EMMessageReactionChange *> *) changes;
+[objective-c.method] - (void) onMessageReadReceipts:(NSArray<EMMessageReadReceipt *> *) aReceipts;
+
+## EMChatMessage.h
+[objective-c.enum] enum EMChatType : NSInteger;
+[objective-c.enum.case] EMChatTypeChat
+[objective-c.enum.case] EMChatTypeGroupChat
+[objective-c.enum.case] EMChatTypeChatRoom
+[objective-c.enum] enum EMMessageStatus : NSInteger;
+[objective-c.enum.case] EMMessageStatusPending
+[objective-c.enum.case] EMMessageStatusDelivering
+[objective-c.enum.case] EMMessageStatusSucceed
+[objective-c.enum.case] EMMessageStatusFailed
+[objective-c.enum] enum EMMessageDirection : NSInteger;
+[objective-c.enum.case] EMMessageDirectionSend
+[objective-c.enum.case] EMMessageDirectionReceive
+[objective-c.enum] enum EMChatRoomMessagePriority : NSInteger;
+[objective-c.enum.case] EMChatRoomMessagePriorityHigh
+[objective-c.enum.case] EMChatRoomMessagePriorityNormal
+[objective-c.enum.case] EMChatRoomMessagePriorityLow
+[objective-c.class] @interface EMMessagePinInfo : NSObject
+[objective-c.property] @property (nonatomic, strong) NSString * operatorId;
+[objective-c.property] @property (nonatomic) NSInteger pinTime;
+[objective-c.enum] enum EMMessagePinOperation : NSInteger;
+[objective-c.enum.case] EMMessagePin
+[objective-c.enum.case] EMMessageUnpin
+[objective-c.class] @interface EMMessageSenderInfo : NSObject
+[objective-c.property] @property (nonatomic, strong) NSString * userId;
+[objective-c.property] @property (nonatomic, strong) NSString * nickname;
+[objective-c.property] @property (nonatomic, strong) NSString * avatarUrl;
+[objective-c.property] @property (nonatomic, strong) NSString * remark;
+[objective-c.property] @property (nonatomic, strong) NSString * groupNameCard;
+[objective-c.class] @interface EMChatMessage : NSObject
+[objective-c.property] @property (nonatomic, copy) NSString * messageId;
+[objective-c.property] @property (nonatomic, copy) NSString * conversationId;
+[objective-c.property] @property (nonatomic) EMMessageDirection direction;
+[objective-c.property] @property (nonatomic, copy) NSString * from;
+[objective-c.property] @property (nonatomic, copy) NSString * to;
+[objective-c.property] @property (nonatomic) long long timestamp;
+[objective-c.property] @property (nonatomic) long long localTime;
+[objective-c.property] @property (nonatomic) EMChatType chatType;
+[objective-c.property] @property (nonatomic) EMMessageStatus status;
+[objective-c.property] @property (nonatomic, readonly) BOOL onlineState;
+[objective-c.property] @property (nonatomic, readonly) BOOL isPeerRead;
+[objective-c.property] @property (nonatomic) BOOL isChatThreadMessage;
+[objective-c.property] @property (nonatomic) BOOL isNeedReadReceipt;
+[objective-c.property] @property (nonatomic, readonly) int groupReadReceiptCount;
+[objective-c.property] @property (nonatomic) BOOL isDeliverAcked;
+[objective-c.property] @property (nonatomic, readonly) BOOL isRead;
+[objective-c.property] @property (nonatomic) BOOL isListened;
+[objective-c.property] @property (nonatomic, strong) EMMessageBody * body;
+[objective-c.property] @property (nonatomic, readonly) NSArray<EMMessageReaction *> * reactionList;
+[objective-c.property] @property (nonatomic, copy) NSDictionary * ext;
+[objective-c.property] @property (readonly) EMChatThread * chatThread;
+[objective-c.property] @property (nonatomic) EMChatRoomMessagePriority priority;
+[objective-c.property] @property (nonatomic, readonly) BOOL broadcast;
+[objective-c.property] @property (nonatomic) BOOL deliverOnlineOnly;
+[objective-c.property] @property (nonatomic, copy) NSString * webhookEnv;
+[objective-c.property] @property (nonatomic, strong) NSArray<NSString *> * receiverList;
+[objective-c.property] @property (nonatomic, readonly) BOOL isContentReplaced;
+[objective-c.property] @property (nonatomic, readonly) CGFloat progress;
+[objective-c.property] @property (nonatomic, readonly) EMMessagePinInfo * pinnedInfo;
+[objective-c.property] @property (nonatomic, readonly) EMStreamChunk * streamChunk;
+[objective-c.property] @property (nonatomic, readonly) EMMessageSenderInfo * senderInfo;
+[objective-c.method] - (instancetype) initWithConversationID:(NSString *) aConversationId from:(NSString *) aFrom to:(NSString *) aTo body:(EMMessageBody *) aBody ext:(NSDictionary *) aExt;
+[objective-c.method] - (instancetype) initWithConversationID:(NSString *) aConversationId body:(EMMessageBody *) aBody ext:(NSDictionary *) aExt;
+
+## EMChatThread.h
+[objective-c.class] @interface EMChatThread : NSObject
+[objective-c.property] @property (readonly) NSString * threadId;
+[objective-c.property] @property (nonatomic, strong) NSString * threadName;
+[objective-c.property] @property (readonly) NSString * owner;
+[objective-c.property] @property (readonly) NSString * messageId;
+[objective-c.property] @property (readonly) NSString * parentId;
+[objective-c.property] @property (readonly) int membersCount;
+[objective-c.property] @property (readonly) int messageCount;
+[objective-c.property] @property (readonly) NSInteger createAt;
+[objective-c.property] @property (readonly) EMChatMessage * lastMessage;
+
+## EMChatThreadEvent.h
+[objective-c.enum] enum EMThreadOperation : NSUInteger;
+[objective-c.enum.case] EMThreadOperationUnknown
+[objective-c.enum.case] EMThreadOperationCreate
+[objective-c.enum.case] EMThreadOperationUpdate
+[objective-c.enum.case] EMThreadOperationDelete
+[objective-c.enum.case] EMThreadOperationUpdate_msg
+[objective-c.enum.case] EMThreadOperationUserRemoved
+[objective-c.class] @interface EMChatThreadEvent : NSObject
+[objective-c.property] @property (readonly) EMThreadOperation type;
+[objective-c.property] @property (readonly) NSString * from;
+[objective-c.property] @property (readonly) EMChatThread * chatThread;
+
+## EMChatroom.h
+[objective-c.enum] enum EMChatroomPermissionType : NSInteger;
+[objective-c.enum.case] EMChatroomPermissionTypeNone
+[objective-c.enum.case] EMChatroomPermissionTypeMember
+[objective-c.enum.case] EMChatroomPermissionTypeAdmin
+[objective-c.enum.case] EMChatroomPermissionTypeOwner
+[objective-c.class] @interface EMChatroom : NSObject
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * chatroomId;
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * subject;
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * description;
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * owner;
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * announcement;
+[objective-c.property] @property (nonatomic, copy, readonly) NSArray<NSString *> * adminList;
+[objective-c.property] @property (nonatomic, copy, readonly) NSArray<NSString *> * memberList;
+[objective-c.property] @property (nonatomic, strong, readonly) NSArray<NSString *> * blacklist;
+[objective-c.property] @property (nonatomic, strong, readonly) NSDictionary<NSString *,NSNumber *> * muteMembers;
+[objective-c.property] @property (nonatomic, strong, readonly) NSArray<NSString *> * whitelist;
+[objective-c.property] @property (nonatomic, readonly) EMChatroomPermissionType permissionType;
+[objective-c.property] @property (nonatomic, readonly) NSInteger maxOccupantsCount;
+[objective-c.property] @property (nonatomic, readonly) NSInteger occupantsCount;
+[objective-c.property] @property (nonatomic, readonly) BOOL isMuteAllMembers;
+[objective-c.property] @property (nonatomic, readonly) NSInteger createTimestamp;
+[objective-c.property] @property (nonatomic, readonly) BOOL isInWhitelist;
+[objective-c.property] @property (nonatomic, readonly) NSInteger muteExpireTimestamp;
+[objective-c.type.method] + (instancetype) chatroomWithId:(NSString *) aChatroomId;
+[objective-c.property] @property (nonatomic, strong, readonly) NSArray<NSString *> * muteList;
+
+## EMChatroomManagerDelegate.h
+[objective-c.enum] enum EMChatroomBeKickedReason : NSInteger;
+[objective-c.enum.case] EMChatroomBeKickedReasonBeRemoved
+[objective-c.enum.case] EMChatroomBeKickedReasonDestroyed
+[objective-c.enum.case] EMChatroomBeKickedReasonOffline
+[objective-c.protocol] @protocol EMChatroomManagerDelegate <NSObject>
+[objective-c.method] - (void) userDidJoinChatroom:(EMChatroom *) aChatroom user:(NSString *) aUsername ext:(NSString *) ext;
+[objective-c.method] - (void) userDidLeaveChatroom:(EMChatroom *) aChatroom user:(NSString *) aUsername;
+[objective-c.method] - (void) didDismissFromChatroom:(EMChatroom *) aChatroom reason:(EMChatroomBeKickedReason) aReason;
+[objective-c.method] - (void) chatroomSpecificationDidUpdate:(EMChatroom *) aChatroom;
+[objective-c.method] - (void) chatroomMuteListDidUpdate:(EMChatroom *) aChatroom addedMutedMembers:(NSDictionary<NSString *,NSNumber *> *) aMutes;
+[objective-c.method] - (void) chatroomMuteListDidUpdate:(EMChatroom *) aChatroom removedMutedMembers:(NSArray<NSString *> *) aMutes;
+[objective-c.method] - (void) chatroomWhiteListDidUpdate:(EMChatroom *) aChatroom addedWhiteListMembers:(NSArray<NSString *> *) aMembers;
+[objective-c.method] - (void) chatroomWhiteListDidUpdate:(EMChatroom *) aChatroom removedWhiteListMembers:(NSArray<NSString *> *) aMembers;
+[objective-c.method] - (void) chatroomAllMemberMuteChanged:(EMChatroom *) aChatroom isAllMemberMuted:(BOOL) aMuted;
+[objective-c.method] - (void) chatroomAdminListDidUpdate:(EMChatroom *) aChatroom addedAdmin:(NSString *) aAdmin;
+[objective-c.method] - (void) chatroomAdminListDidUpdate:(EMChatroom *) aChatroom removedAdmin:(NSString *) aAdmin;
+[objective-c.method] - (void) chatroomOwnerDidUpdate:(EMChatroom *) aChatroom newOwner:(NSString *) aNewOwner oldOwner:(NSString *) aOldOwner;
+[objective-c.method] - (void) chatroomAnnouncementDidUpdate:(EMChatroom *) aChatroom announcement:(NSString *) aAnnouncement;
+[objective-c.method] - (void) chatroomAttributesDidUpdated:(NSString *) roomId attributeMap:(NSDictionary<NSString *,NSString *> *) attributeMap from:(NSString *) fromId;
+[objective-c.method] - (void) chatroomAttributesDidRemoved:(NSString *) roomId attributes:(NSArray<__kindof NSString *> *) attributes from:(NSString *) fromId;
+[objective-c.method] - (void) userDidJoinChatroom:(EMChatroom *) aChatroom user:(NSString *) aUsername;
+[objective-c.method] - (void) chatroomMuteListDidUpdate:(EMChatroom *) aChatroom addedMutedMembers:(NSArray<NSString *> *) aMutes muteExpire:(NSInteger) aMuteExpire;
+
+## EMChatroomOptions.h
+[objective-c.class] @interface EMChatroomOptions : NSObject
+[objective-c.property] @property (nonatomic) NSInteger maxUsersCount;
+
+## EMClient.h
+[objective-c.class] @interface EMClient : NSObject
+[objective-c.property] @property (nonatomic, strong, readonly) NSString * version;
+[objective-c.property] @property (atomic, strong, readonly) NSString * currentUsername;
+[objective-c.property] @property (nonatomic, strong, readonly) EMOptions * options;
+[objective-c.property] @property (nonatomic, strong, readonly) id<IEMChatManager> chatManager;
+[objective-c.property] @property (nonatomic, strong, readonly) id<IEMContactManager> contactManager;
+[objective-c.property] @property (nonatomic, strong, readonly) id<IEMGroupManager> groupManager;
+[objective-c.property] @property (nonatomic, strong, readonly) id<IEMThreadManager> threadManager;
+[objective-c.property] @property (nonatomic, strong, readonly) id<IEMChatroomManager> roomManager;
+[objective-c.property] @property (nonatomic, strong, readonly) id<IEMPushManager> pushManager;
+[objective-c.property] @property (nonatomic, readonly) BOOL isLoggedIn;
+[objective-c.property] @property (nonatomic, readonly) BOOL isConnected;
+[objective-c.property] @property (nonatomic, readonly) NSString * accessUserToken;
+[objective-c.property] @property (nonatomic, strong, readonly) id<IEMUserInfoManager> userInfoManager;
+[objective-c.property] @property (nonatomic, strong, readonly) id<IEMPresenceManager> presenceManager;
+[objective-c.type.method] + (instancetype) sharedClient;
+[objective-c.method] - (void) addDelegate:(id<EMClientDelegate>) aDelegate delegateQueue:(dispatch_queue_t) aQueue;
+[objective-c.method] - (void) removeDelegate:(id) aDelegate;
+[objective-c.method] - (void) addMultiDevicesDelegate:(id<EMMultiDevicesDelegate>) aDelegate delegateQueue:(dispatch_queue_t) aQueue;
+[objective-c.method] - (void) removeMultiDevicesDelegate:(id<EMMultiDevicesDelegate>) aDelegate;
+[objective-c.method] - (EMError *) initializeSDKWithOptions:(EMOptions *) aOptions;
+[objective-c.method] - (EMError *) changeAppkey:(NSString *) aAppkey;
+[objective-c.method] - (EMError *) changeAppId:(NSString *) aAppId;
+[objective-c.method] - (void) loginWithUsername:(NSString *) aUsername token:(NSString *) aToken completion:(void (^)(NSString * aUsername, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMError *) renewToken:(NSString *) newToken;
+[objective-c.method] - (void) renewToken:(NSString *) newToken completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMError *) logout:(BOOL) aIsUnbindDeviceToken;
+[objective-c.method] - (void) logout:(BOOL) aIsUnbindDeviceToken completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMError *) bindPushKitToken:(NSData *) aPushToken;
+[objective-c.method] - (void) registerPushKitToken:(NSData *) aPushToken completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMError *) unBindPushKitToken;
+[objective-c.method] - (void) unRegisterPushKitTokenWithCompletion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMError *) bindDeviceToken:(NSData *) aDeviceToken;
+[objective-c.method] - (void) registerForRemoteNotificationsWithDeviceToken:(NSData *) aDeviceToken completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getRTCTokenWithChannel:(NSString *) aChannelName completion:(void (^)(NSUInteger rtcUId, NSString * aToken, NSInteger expiredTs, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getUserIdByRTCUIds:(NSArray<NSNumber *> *) uIds completion:(void (^)(NSDictionary<NSNumber *,NSString *> * accountInfos, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) registerForRemoteNotificationsWithCertName:(NSString *) aCertName deviceToken:(NSData *) aDeviceToken completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) bindFCMToken:(NSString *) aFCMToken completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMError *) uploadLogToServer;
+[objective-c.method] - (void) uploadDebugLogToServerWithCompletion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (NSString *) getLogFilesPath:(EMError * *) pError;
+[objective-c.method] - (void) getLogFilesPathWithCompletion:(void (^)(NSString * aPath, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) log:(NSString *) aLog;
+[objective-c.method] - (void) addLogDelegate:(id<EMLogDelegate>) aDelegate delegateQueue:(dispatch_queue_t) aQueue;
+[objective-c.method] - (void) removeLogDelegate:(id<EMLogDelegate>) aDelegate;
+[objective-c.method] - (void) getLoggedInDevicesFromServerWithUserId:(NSString *) aUserID token:(NSString *) aToken completion:(void (^)(NSArray<EMDeviceConfig *> * aList, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) kickDeviceWithUserId:(NSString *) aUserID token:(NSString *) aToken resource:(NSString *) aResource completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) kickAllDevicesWithUserId:(NSString *) aUserID token:(NSString *) aToken completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMDeviceConfig *) getDeviceConfig:(EMError * *) pError;
+[objective-c.method] - (void) applicationDidEnterBackground:(id) aApplication;
+[objective-c.method] - (void) applicationWillEnterForeground:(id) aApplication;
+[objective-c.method] - (void) application:(id) application didReceiveRemoteNotification:(NSDictionary *) userInfo;
+
+## EMClientDelegate.h
+[objective-c.enum] enum EMConnectionState : NSInteger;
+[objective-c.enum.case] EMConnectionConnected
+[objective-c.enum.case] EMConnectionDisconnected
+[objective-c.protocol] @protocol EMClientDelegate <NSObject>
+[objective-c.method] - (void) connectionStateDidChange:(EMConnectionState) aConnectionState;
+[objective-c.method] - (void) userAccountDidLoginFromOtherDeviceWithInfo:(EMLoginExtensionInfo *) info;
+[objective-c.method] - (void) userAccountDidRemoveFromServer;
+[objective-c.method] - (void) userDidForbidByServer;
+[objective-c.method] - (void) userAccountDidForcedToLogout:(EMError *) aError;
+[objective-c.method] - (void) tokenWillExpire:(EMErrorCode) aErrorCode;
+[objective-c.method] - (void) tokenDidExpire:(EMErrorCode) aErrorCode;
+[objective-c.method] - (void) onOfflineMessageSyncStart;
+[objective-c.method] - (void) onOfflineMessageSyncFinish;
+[objective-c.method] - (void) syncDataStartWithType:(EMDataSyncType) type;
+[objective-c.method] - (void) syncDataFinished:(EMError *) error type:(EMDataSyncType) type;
+[objective-c.method] - (void) onDatabaseOpened:(EMError *) error username:(NSString *) username;
+
+## EMCmdMessageBody.h
+[objective-c.class] @interface EMCmdMessageBody : EMMessageBody
+[objective-c.property] @property (nonatomic, copy) NSString * action;
+[objective-c.property] @property (nonatomic) BOOL isDeliverOnlineOnly;
+[objective-c.method] - (instancetype) initWithAction:(NSString *) aAction;
+
+## EMCombineMessageBody.h
+[objective-c.class] @interface EMCombineMessageBody : EMFileMessageBody
+[objective-c.property] @property (nonatomic, strong) NSString * title;
+[objective-c.property] @property (nonatomic, strong) NSString * summary;
+[objective-c.property] @property (nonatomic, strong) NSString * compatibleText;
+[objective-c.property] @property (nonatomic, readonly) NSArray<NSString *> * messageIdList;
+[objective-c.method] - (instancetype) initWithTitle:(NSString *) aTitle summary:(NSString *) aSummary compatibleText:(NSString *) aCompatibleText messageIdList:(NSArray<NSString *> *) aMessageIdList;
+
+## EMCommonDefs.h
+[objective-c.macro] #define EM_DEPRECATED_IOS(_hyphenateIntro, _hyphenateDep, ...)
+
+## EMContact.h
+[objective-c.class] @interface EMContact : NSObject
+[objective-c.property] @property (nonatomic, strong, readonly) NSString * userId;
+[objective-c.property] @property (nonatomic, strong) NSString * remark;
+[objective-c.property] @property (nonatomic, strong, readonly) EMUserInfo * userInfo;
+[objective-c.property] @property (nonatomic, assign, readonly) NSUInteger addTimestamp;
+[objective-c.method] - (instancetype) initWithUserId:(NSString *) userId remark:(NSString *) remark createAt:(NSUInteger) createAt;
+
+## EMContactManagerDelegate.h
+[objective-c.protocol] @protocol EMContactManagerDelegate <NSObject>
+[objective-c.method] - (void) friendRequestDidApproveByUser:(NSString *) aUsername;
+[objective-c.method] - (void) friendRequestDidDeclineByUser:(NSString *) aUsername;
+[objective-c.method] - (void) friendshipDidRemoveByUser:(NSString *) aUsername;
+[objective-c.method] - (void) friendshipDidAddByUser:(NSString *) aUsername;
+[objective-c.method] - (void) friendRequestDidReceiveFromUser:(NSString *) aUsername message:(NSString *) aMessage;
+[objective-c.method] - (void) onFriendInfoChanged:(EMContact *) contact;
+
+## EMConversation.h
+[objective-c.enum] enum EMConversationType : NSInteger;
+[objective-c.enum.case] EMConversationTypeChat
+[objective-c.enum.case] EMConversationTypeGroupChat
+[objective-c.enum.case] EMConversationTypeChatRoom
+[objective-c.enum] enum EMMarkType : NSInteger;
+[objective-c.enum.case] EMMarkType0
+[objective-c.enum.case] EMMarkType1
+[objective-c.enum.case] EMMarkType2
+[objective-c.enum.case] EMMarkType3
+[objective-c.enum.case] EMMarkType4
+[objective-c.enum.case] EMMarkType5
+[objective-c.enum.case] EMMarkType6
+[objective-c.enum.case] EMMarkType7
+[objective-c.enum.case] EMMarkType8
+[objective-c.enum.case] EMMarkType9
+[objective-c.enum.case] EMMarkType10
+[objective-c.enum.case] EMMarkType11
+[objective-c.enum.case] EMMarkType12
+[objective-c.enum.case] EMMarkType13
+[objective-c.enum.case] EMMarkType14
+[objective-c.enum.case] EMMarkType15
+[objective-c.enum.case] EMMarkType16
+[objective-c.enum.case] EMMarkType17
+[objective-c.enum.case] EMMarkType18
+[objective-c.enum.case] EMMarkType19
+[objective-c.enum] enum EMMessageSearchDirection : NSInteger;
+[objective-c.enum.case] EMMessageSearchDirectionUp
+[objective-c.enum.case] EMMessageSearchDirectionDown
+[objective-c.enum] enum EMMessageSearchScope : NSInteger;
+[objective-c.enum.case] EMMessageSearchScopeContent
+[objective-c.enum.case] EMMessageSearchScopeExt
+[objective-c.enum.case] EMMessageSearchScopeAll
+[objective-c.class] @interface EMConversation : NSObject
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * conversationId;
+[objective-c.property] @property (nonatomic, assign, readonly) EMConversationType type;
+[objective-c.property] @property (nonatomic, assign, readonly) int unreadMessagesCount;
+[objective-c.property] @property (nonatomic, assign, readonly) int messagesCount;
+[objective-c.property] @property (nonatomic, copy) NSDictionary * ext;
+[objective-c.property] @property (nonatomic, assign) BOOL isChatThread;
+[objective-c.property] @property (readonly) BOOL isPinned;
+[objective-c.property] @property (readonly) int64_t pinnedTime;
+[objective-c.property] @property (nonatomic, strong, readonly) EMChatMessage * latestMessage;
+[objective-c.property] @property (nonatomic, readonly) NSArray<NSNumber *> * marks;
+[objective-c.property] @property (nonatomic, readonly) EMPushRemindType disturbType;
+[objective-c.method] - (EMChatMessage *) lastReceivedMessage;
+[objective-c.method] - (NSString *) conversationName;
+[objective-c.method] - (NSString *) conversationAvatar;
+[objective-c.method] - (void) insertMessage:(EMChatMessage *) aMessage error:(EMError * *) pError;
+[objective-c.method] - (void) appendMessage:(EMChatMessage *) aMessage error:(EMError * *) pError;
+[objective-c.method] - (void) deleteMessageWithId:(NSString *) aMessageId error:(EMError * *) pError;
+[objective-c.method] - (void) deleteAllMessages:(EMError * *) pError;
+[objective-c.method] - (void) removeMessagesFromServerMessageIds:(NSArray<__kindof NSString *> *) messageIds completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) removeMessagesFromServerWithTimeStamp:(NSTimeInterval) beforeTimeStamp completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) updateMessageChange:(EMChatMessage *) aMessage error:(EMError * *) pError;
+[objective-c.method] - (NSArray<EMChatMessage *> *) pinnedMessages;
+[objective-c.method] - (EMChatMessage *) loadMessageWithId:(NSString *) aMessageId error:(EMError * *) pError;
+[objective-c.method] - (NSArray<EMChatMessage *> *) loadMessagesStartFromId:(NSString *) aMessageId count:(int) aCount searchDirection:(EMMessageSearchDirection) aDirection;
+[objective-c.method] - (void) loadMessagesStartFromId:(NSString *) aMessageId count:(int) aCount searchDirection:(EMMessageSearchDirection) aDirection completion:(void (^)(NSArray<EMChatMessage *> * aMessages, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (NSArray<EMChatMessage *> *) loadMessagesWithType:(EMMessageBodyType) aType timestamp:(long long) aTimestamp count:(int) aCount fromUser:(NSString *) aUsername searchDirection:(EMMessageSearchDirection) aDirection;
+[objective-c.method] - (void) loadMessagesWithType:(EMMessageBodyType) aType timestamp:(long long) aTimestamp count:(int) aCount fromUser:(NSString *) aUsername searchDirection:(EMMessageSearchDirection) aDirection completion:(void (^)(NSArray<EMChatMessage *> * aMessages, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) searchMessagesWithTypes:(NSArray<NSNumber *> *) aTypes timestamp:(long long) aTimestamp count:(int) aCount fromUser:(NSString *) aUsername searchDirection:(EMMessageSearchDirection) aDirection completion:(void (^)(NSArray<EMChatMessage *> * aMessages, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (NSArray<EMChatMessage *> *) loadMessagesWithKeyword:(NSString *) aKeywords timestamp:(long long) aTimestamp count:(int) aCount fromUser:(NSString *) aSender searchDirection:(EMMessageSearchDirection) aDirection;
+[objective-c.method] - (void) loadMessagesWithKeyword:(NSString *) aKeywords timestamp:(long long) aTimestamp count:(int) aCount fromUser:(NSString *) aSender searchDirection:(EMMessageSearchDirection) aDirection completion:(void (^)(NSArray<EMChatMessage *> * aMessages, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) loadMessagesWithKeyword:(NSString *) aKeywords timestamp:(long long) aTimestamp count:(int) aCount fromUser:(NSString *) aSender searchDirection:(EMMessageSearchDirection) aDirection scope:(EMMessageSearchScope) aScope completion:(void (^)(NSArray<EMChatMessage *> * aMessages, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) loadMessagesWithKeyword:(NSString *) aKeywords timestamp:(long long) aTimestamp count:(int) aCount fromUsers:(NSArray<NSString *> *) senders searchDirection:(EMMessageSearchDirection) aDirection scope:(EMMessageSearchScope) aScope completion:(void (^)(NSArray<EMChatMessage *> * aMessages, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (NSArray<EMChatMessage *> *) loadCustomMsgWithKeyword:(NSString *) aKeywords timestamp:(long long) aTimestamp count:(int) aCount fromUser:(NSString *) aSender searchDirection:(EMMessageSearchDirection) aDirection;
+[objective-c.method] - (void) loadCustomMsgWithKeyword:(NSString *) aKeywords timestamp:(long long) aTimestamp count:(int) aCount fromUser:(NSString *) aSender searchDirection:(EMMessageSearchDirection) aDirection completion:(void (^)(NSArray<EMChatMessage *> * aMessages, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (NSArray<EMChatMessage *> *) loadMessagesFrom:(long long) aStartTimestamp to:(long long) aEndTimestamp count:(int) aCount;
+[objective-c.method] - (void) loadMessagesFrom:(long long) aStartTimestamp to:(long long) aEndTimestamp count:(int) aCount completion:(void (^)(NSArray<EMChatMessage *> * aMessages, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMError *) removeMessagesStart:(NSInteger) aStartTimestamp to:(NSInteger) aEndTimestamp;
+[objective-c.method] - (NSInteger) getMessageCountStart:(NSInteger) aStartTimestamp to:(NSInteger) aEndTimestamp;
+
+## EMConversationDelegate.h
+[objective-c.protocol] @protocol EMConversationDelegate <NSObject>
+[objective-c.method] - (void) conversationListDidUpdate:(NSArray<EMConversation *> *) aConversationList;
+
+## EMConversationFilter.h
+[objective-c.class] @interface EMConversationFilter : NSObject
+[objective-c.property] @property (nonatomic) NSInteger pageSize;
+[objective-c.property] @property (nonatomic) EMMarkType mark;
+[objective-c.method] - (instancetype) initWithMark:(EMMarkType) mark pageSize:(NSInteger) pageSize;
+
+## EMCursorResult.h
+[objective-c.class] @interface EMCursorResult : NSObject
+[objective-c.property] @property (nonatomic, strong) NSArray<id> * list;
+[objective-c.property] @property (nonatomic, copy) NSString * cursor;
+[objective-c.type.method] + (instancetype) cursorResultWithList:(NSArray<id> *) aList andCursor:(NSString *) aCusror;
+
+## EMCustomMessageBody.h
+[objective-c.class] @interface EMCustomMessageBody : EMMessageBody
+[objective-c.property] @property (nonatomic, copy) NSString * event;
+[objective-c.property] @property (nonatomic, copy) NSDictionary<NSString *,NSString *> * customExt;
+[objective-c.method] - (instancetype) initWithEvent:(NSString *) aEvent customExt:(NSDictionary<NSString *,NSString *> *) aCustomExt;
+
+## EMDeviceConfig.h
+[objective-c.class] @interface EMDeviceConfig : NSObject
+[objective-c.property] @property (nonatomic, readonly) NSString * resource;
+[objective-c.property] @property (nonatomic, readonly) NSString * deviceUUID;
+[objective-c.property] @property (nonatomic, readonly) NSString * deviceName;
+
+## EMError.h
+[objective-c.class] @interface EMError : NSObject
+[objective-c.property] @property (nonatomic) EMErrorCode code;
+[objective-c.property] @property (nonatomic, copy) NSString * errorDescription;
+[objective-c.method] - (instancetype) initWithDescription:(NSString *) aDescription code:(EMErrorCode) aCode;
+[objective-c.type.method] + (instancetype) errorWithDescription:(NSString *) aDescription code:(EMErrorCode) aCode;
+
+## EMErrorCode.h
+[objective-c.enum] enum EMErrorCode : NSInteger;
+[objective-c.enum.case] EMErrorNoError
+[objective-c.enum.case] EMErrorGeneral
+[objective-c.enum.case] EMErrorNetworkUnavailable
+[objective-c.enum.case] EMErrorDatabaseOperationFailed
+[objective-c.enum.case] EMErrorExceedServiceLimit
+[objective-c.enum.case] EMErrorServiceArrearages
+[objective-c.enum.case] EMErrorPushReportActionFailed
+[objective-c.enum.case] EMErrorPartialSuccess
+[objective-c.enum.case] EMErrorAppActiveNumbersReachLimitation
+[objective-c.enum.case] EMErrorInvalidAppkey
+[objective-c.enum.case] EMErrorInvalidUsername
+[objective-c.enum.case] EMErrorInvalidPassword
+[objective-c.enum.case] EMErrorInvalidURL
+[objective-c.enum.case] EMErrorInvalidToken
+[objective-c.enum.case] EMErrorUsernameTooLong
+[objective-c.enum.case] EMErrorChannelSyncNotOpen
+[objective-c.enum.case] EMErrorInvalidConversation
+[objective-c.enum.case] EMErrorTokenExpire
+[objective-c.enum.case] EMErrorTokeWillExpire
+[objective-c.enum.case] EMErrorInvalidParam
+[objective-c.enum.case] EMErrorOperationUnsupported
+[objective-c.enum.case] EMErrorQueryParamReachesLimit
+[objective-c.enum.case] EMErrorUserAlreadyLoginSame
+[objective-c.enum.case] EMErrorUserNotLogin
+[objective-c.enum.case] EMErrorUserAuthenticationFailed
+[objective-c.enum.case] EMErrorUserAlreadyExist
+[objective-c.enum.case] EMErrorUserNotFound
+[objective-c.enum.case] EMErrorUserIllegalArgument
+[objective-c.enum.case] EMErrorUserLoginOnAnotherDevice
+[objective-c.enum.case] EMErrorUserRemoved
+[objective-c.enum.case] EMErrorUserRegisterFailed
+[objective-c.enum.case] EMErrorUpdateApnsConfigsFailed
+[objective-c.enum.case] EMErrorUserPermissionDenied
+[objective-c.enum.case] EMErrorUserBindDeviceTokenFailed
+[objective-c.enum.case] EMErrorUserUnbindDeviceTokenFailed
+[objective-c.enum.case] EMErrorUserBindAnotherDevice
+[objective-c.enum.case] EMErrorUserLoginTooManyDevices
+[objective-c.enum.case] EMErrorUserMuted
+[objective-c.enum.case] EMErrorUserKickedByChangePassword
+[objective-c.enum.case] EMErrorUserKickedByOtherDevice
+[objective-c.enum.case] EMErrorUserAlreadyLoginAnother
+[objective-c.enum.case] EMErrorUserMutedByAdmin
+[objective-c.enum.case] EMErrorUserDeviceChanged
+[objective-c.enum.case] EMErrorUserNotOnRoster
+[objective-c.enum.case] EMErrorServerNotReachable
+[objective-c.enum.case] EMErrorServerTimeout
+[objective-c.enum.case] EMErrorServerBusy
+[objective-c.enum.case] EMErrorServerUnknownError
+[objective-c.enum.case] EMErrorServerGetDNSConfigFailed
+[objective-c.enum.case] EMErrorServerServingForbidden
+[objective-c.enum.case] EMErrorServerDecryptionFailed
+[objective-c.enum.case] EMErrorServerGetRTCConfigFailed
+[objective-c.enum.case] EMErrorServerNoMatchURL
+[objective-c.enum.case] EMErrorConnectionTimeout
+[objective-c.enum.case] EMErrorConnectionDNSError
+[objective-c.enum.case] EMErrorConnectionIOError
+[objective-c.enum.case] EMErrorConnectionStreamClosed
+[objective-c.enum.case] EMErrorConnectionProvisionTimeout
+[objective-c.enum.case] EMErrorFileNotFound
+[objective-c.enum.case] EMErrorFileInvalid
+[objective-c.enum.case] EMErrorFileUploadFailed
+[objective-c.enum.case] EMErrorFileDownloadFailed
+[objective-c.enum.case] EMErrorFileDeleteFailed
+[objective-c.enum.case] EMErrorFileTooLarge
+[objective-c.enum.case] EMErrorFileContentImproper
+[objective-c.enum.case] EMErrorFileExpired
+[objective-c.enum.case] EMErrorFileDurationTooLong
+[objective-c.enum.case] EMErrorFileVoiceToTextFailed
+[objective-c.enum.case] EMErrorMessageInvalid
+[objective-c.enum.case] EMErrorMessageIncludeIllegalContent
+[objective-c.enum.case] EMErrorMessageTrafficLimit
+[objective-c.enum.case] EMErrorMessageEncryption
+[objective-c.enum.case] EMErrorMessageRecallTimeLimit
+[objective-c.enum.case] EMErrorServiceNotEnable
+[objective-c.enum.case] EMErrorMessageExpired
+[objective-c.enum.case] EMErrorMessageIllegalWhiteList
+[objective-c.enum.case] EMErrorMessageExternalLogicBlocked
+[objective-c.enum.case] EMErrorMessageCurrentLimiting
+[objective-c.enum.case] EMErrorMessageSizeLimit
+[objective-c.enum.case] EMErrorEditFailed
+[objective-c.enum.case] EMErrorStreamIntervalTimeout
+[objective-c.enum.case] EMErrorMessageStreamTimeout
+[objective-c.enum.case] EMErrorGroupInvalidId
+[objective-c.enum.case] EMErrorGroupAlreadyJoined
+[objective-c.enum.case] EMErrorGroupNotJoined
+[objective-c.enum.case] EMErrorGroupPermissionDenied
+[objective-c.enum.case] EMErrorGroupMembersFull
+[objective-c.enum.case] EMErrorGroupSharedFileInvalidId
+[objective-c.enum.case] EMErrorGroupNotExist
+[objective-c.enum.case] EMErrorGroupDisabled
+[objective-c.enum.case] EMErrorGroupNameViolation
+[objective-c.enum.case] EMErrorGroupMemberAttributesReachLimit
+[objective-c.enum.case] EMErrorGroupMemberAttributesUpdateFailed
+[objective-c.enum.case] EMErrorGroupMemberAttributesKeyReachLimit
+[objective-c.enum.case] EMErrorGroupMemberAttributesValueReachLimit
+[objective-c.enum.case] EMErrorGroupUserInBlockList
+[objective-c.enum.case] EMErrorChatroomInvalidId
+[objective-c.enum.case] EMErrorChatroomAlreadyJoined
+[objective-c.enum.case] EMErrorChatroomNotJoined
+[objective-c.enum.case] EMErrorChatroomPermissionDenied
+[objective-c.enum.case] EMErrorChatroomMembersFull
+[objective-c.enum.case] EMErrorChatroomNotExist
+[objective-c.enum.case] EMErrorChatroomOwnerNotAllowLeave
+[objective-c.enum.case] EMErrorChatroomUserInBlockList
+[objective-c.enum.case] EMErrorUserCountExceed
+[objective-c.enum.case] EMErrorUserInfoDataLengthExceed
+[objective-c.enum.case] EMErrorContactAddFailed
+[objective-c.enum.case] EMErrorContactReachLimit
+[objective-c.enum.case] EMErrorContactReachLimitPeer
+[objective-c.enum.case] EMErrorPresenceParamExceed
+[objective-c.enum.case] EMErrorPresenceCannotSubscribeSelf
+[objective-c.enum.case] EMErrorTranslateParamError
+[objective-c.enum.case] EMErrorTranslateServiceNotEnabled
+[objective-c.enum.case] EMErrorTranslateUsageLimit
+[objective-c.enum.case] EMErrorTranslateServiceFail
+[objective-c.enum.case] EMErrorModerationFailed
+[objective-c.enum.case] EMErrorThirdServiceFailed
+[objective-c.enum.case] EMErrorReactionReachLimit
+[objective-c.enum.case] EMErrorReactionHasBeenOperated
+[objective-c.enum.case] EMErrorReactionOperationIsIllegal
+[objective-c.enum.case] EMErrorThreadNotExist
+[objective-c.enum.case] EMErrorThreadAlreadyExist
+[objective-c.enum.case] EMErrorThreadCreateMessageIllegal
+[objective-c.enum.case] EMErrorNotSupportPush
+[objective-c.enum.case] EMErrorPushBindFailed
+[objective-c.enum.case] EMErrorPushUnBindFailed
+
+## EMFetchServerMessagesOption.h
+[objective-c.class] @interface EMFetchServerMessagesOption : NSObject
+[objective-c.property] @property (nonatomic, strong) NSString * from;
+[objective-c.property] @property (nonatomic, strong) NSArray<NSString *> * fromIds;
+[objective-c.property] @property (nonatomic, strong) NSArray<NSNumber *> * msgTypes;
+[objective-c.property] @property (nonatomic) NSInteger startTime;
+[objective-c.property] @property (nonatomic) NSInteger endTime;
+[objective-c.property] @property (nonatomic) EMMessageSearchDirection direction;
+[objective-c.property] @property (nonatomic) BOOL isSave;
+
+## EMFileMessageBody.h
+[objective-c.enum] enum EMDownloadStatus : NSInteger;
+[objective-c.enum.case] EMDownloadStatusDownloading
+[objective-c.enum.case] EMDownloadStatusSucceed
+[objective-c.enum.case] EMDownloadStatusFailed
+[objective-c.enum.case] EMDownloadStatusPending
+[objective-c.class] @interface EMFileMessageBody : EMMessageBody
+[objective-c.property] @property (nonatomic, copy) NSString * displayName;
+[objective-c.property] @property (nonatomic, copy) NSString * localPath;
+[objective-c.property] @property (nonatomic, copy) NSString * remotePath;
+[objective-c.property] @property (nonatomic, copy) NSString * secretKey;
+[objective-c.property] @property (nonatomic) long long fileLength;
+[objective-c.property] @property (nonatomic) EMDownloadStatus downloadStatus;
+[objective-c.method] - (instancetype) initWithLocalPath:(NSString *) aLocalPath displayName:(NSString *) aDisplayName;
+
+## EMGroup.h
+[objective-c.class] @interface EMGroup : NSObject
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * groupId;
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * groupName;
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * groupAvatar;
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * description;
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * announcement;
+[objective-c.property] @property (nonatomic, strong, readonly) EMGroupConfigs * settings;
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * owner;
+[objective-c.property] @property (nonatomic, copy, readonly) NSArray<NSString *> * adminList;
+[objective-c.property] @property (nonatomic, copy, readonly) NSArray<NSString *> * memberList;
+[objective-c.property] @property (nonatomic, strong, readonly) NSArray<NSString *> * blacklist;
+[objective-c.property] @property (nonatomic, strong, readonly) NSArray<NSString *> * muteList;
+[objective-c.property] @property (nonatomic, strong, readonly) NSArray<NSString *> * whiteList;
+[objective-c.property] @property (nonatomic, strong, readonly) NSArray<EMGroupSharedFile *> * sharedFileList;
+[objective-c.property] @property (nonatomic, readonly) BOOL isPublic;
+[objective-c.property] @property (nonatomic, readonly) BOOL isBlocked;
+[objective-c.property] @property (nonatomic, readonly) EMGroupPermissionType permissionType;
+[objective-c.property] @property (nonatomic, strong, readonly) NSArray<NSString *> * users;
+[objective-c.property] @property (nonatomic, readonly) NSInteger occupantsCount;
+[objective-c.property] @property (nonatomic, readonly) BOOL isMuteAllMembers;
+[objective-c.property] @property (nonatomic, readonly) BOOL isDisabled;
+[objective-c.type.method] + (instancetype) groupWithId:(NSString *) aGroupId;
+
+## EMGroupConfigs.h
+[objective-c.macro] #define KSDK_GROUP_MINUSERSCOUNT
+[objective-c.macro] #define KSDK_GROUP_USERSCOUNTDEFAULT
+[objective-c.enum] enum EMGroupConfigsType : NSUInteger;
+[objective-c.enum.case] EMGroupConfigsTypeAllowInvites
+[objective-c.enum.case] EMGroupConfigsTypeMaxUsers
+[objective-c.enum.case] EMGroupConfigsTypeInviteNeedConfirm
+[objective-c.enum.case] EMGroupConfigsTypeJoinApprovalRequired
+[objective-c.enum.case] EMGroupConfigsTypeIsPublic
+[objective-c.enum.case] EMGroupConfigsTypeExt
+[objective-c.class] @interface EMGroupConfigs : NSObject
+[objective-c.property] @property (nonatomic) NSInteger maxUsers;
+[objective-c.property] @property (nonatomic) BOOL IsInviteNeedConfirm;
+[objective-c.property] @property (nonatomic, strong) NSString * ext;
+[objective-c.property] @property (nonatomic) BOOL allowInvites;
+[objective-c.property] @property (nonatomic) BOOL joinApprovalRequired;
+[objective-c.property] @property (nonatomic) BOOL isPublic;
+
+## EMGroupManagerDelegate.h
+[objective-c.enum] enum EMGroupLeaveReason : NSInteger;
+[objective-c.enum.case] EMGroupLeaveReasonBeRemoved
+[objective-c.enum.case] EMGroupLeaveReasonUserLeave
+[objective-c.enum.case] EMGroupLeaveReasonDestroyed
+[objective-c.protocol] @protocol EMGroupManagerDelegate <NSObject>
+[objective-c.method] - (void) joinGroupRequestDidReceive:(EMGroup *) aGroup user:(NSString *) aUsername reason:(NSString *) aReason;
+[objective-c.method] - (void) groupInvitationDidReceive:(NSString *) aGroupId groupName:(NSString *) aGroupName inviter:(NSString *) aInviter message:(NSString *) aMessage;
+[objective-c.method] - (void) groupInvitationDidAccept:(EMGroup *) aGroup invitee:(NSString *) aInvitee;
+[objective-c.method] - (void) groupInvitationDidDecline:(EMGroup *) aGroup invitee:(NSString *) aInvitee reason:(NSString *) aReason;
+[objective-c.method] - (void) didJoinGroup:(EMGroup *) aGroup inviter:(NSString *) aInviter message:(NSString *) aMessage;
+[objective-c.method] - (void) didLeaveGroup:(EMGroup *) aGroup reason:(EMGroupLeaveReason) aReason;
+[objective-c.method] - (void) joinGroupRequestDidDecline:(NSString *) aGroupId reason:(NSString *) aReason decliner:(NSString *) aDecliner applicant:(NSString *) aApplicant;
+[objective-c.method] - (void) joinGroupRequestDidApprove:(EMGroup *) aGroup;
+[objective-c.method] - (void) groupListDidUpdate:(NSArray<EMGroup *> *) aGroupList;
+[objective-c.method] - (void) groupMuteListDidUpdate:(EMGroup *) aGroup addedMutedMembers:(NSArray<NSString *> *) aMutedMembers muteExpire:(NSInteger) aMuteExpire;
+[objective-c.method] - (void) groupMuteListDidUpdate:(EMGroup *) aGroup removedMutedMembers:(NSArray<NSString *> *) aMutedMembers;
+[objective-c.method] - (void) groupWhiteListDidUpdate:(EMGroup *) aGroup addedWhiteListMembers:(NSArray<NSString *> *) aMembers;
+[objective-c.method] - (void) groupWhiteListDidUpdate:(EMGroup *) aGroup removedWhiteListMembers:(NSArray<NSString *> *) aMembers;
+[objective-c.method] - (void) groupAllMemberMuteChanged:(EMGroup *) aGroup isAllMemberMuted:(BOOL) aMuted;
+[objective-c.method] - (void) groupAdminListDidUpdate:(EMGroup *) aGroup addedAdmin:(NSString *) aAdmin;
+[objective-c.method] - (void) groupAdminListDidUpdate:(EMGroup *) aGroup removedAdmin:(NSString *) aAdmin;
+[objective-c.method] - (void) groupOwnerDidUpdate:(EMGroup *) aGroup newOwner:(NSString *) aNewOwner oldOwner:(NSString *) aOldOwner;
+[objective-c.method] - (void) userDidJoinGroup:(EMGroup *) group users:(NSArray<NSString *> *) userIds;
+[objective-c.method] - (void) userDidLeaveGroup:(EMGroup *) group users:(NSArray<NSString *> *) userIds;
+[objective-c.method] - (void) groupAnnouncementDidUpdate:(EMGroup *) aGroup announcement:(NSString *) aAnnouncement;
+[objective-c.method] - (void) groupFileListDidUpdate:(EMGroup *) aGroup addedSharedFile:(EMGroupSharedFile *) aSharedFile;
+[objective-c.method] - (void) groupFileListDidUpdate:(EMGroup *) aGroup removedSharedFile:(NSString *) aFileId;
+[objective-c.method] - (void) groupStateChanged:(EMGroup *) aGroup isDisabled:(BOOL) aDisabled;
+[objective-c.method] - (void) groupSpecificationDidUpdate:(EMGroup *) aGroup;
+[objective-c.method] - (void) onAttributesChangedOfGroupMember:(NSString *) groupId userId:(NSString *) userId attributes:(NSDictionary<NSString *,NSString *> *) attributes operatorId:(NSString *) operatorId;
+[objective-c.method] - (void) onUserGroupNamecardChanged:(NSString *) groupId userId:(NSString *) userId namecard:(NSString *) namecard;
+
+## EMGroupMemberInfo.h
+[objective-c.enum] enum EMGroupPermissionType : NSInteger;
+[objective-c.enum.case] EMGroupPermissionTypeNone
+[objective-c.enum.case] EMGroupPermissionTypeMember
+[objective-c.enum.case] EMGroupPermissionTypeAdmin
+[objective-c.enum.case] EMGroupPermissionTypeOwner
+[objective-c.class] @interface EMGroupMemberInfo : NSObject
+[objective-c.property] @property (nonatomic, copy) NSString * userId;
+[objective-c.property] @property (nonatomic, assign) NSUInteger joinedTimestamp;
+[objective-c.property] @property (nonatomic, assign) EMGroupPermissionType role;
+[objective-c.property] @property (nonatomic, copy) NSString * namecard;
+[objective-c.property] @property (nonatomic, copy) NSString * nickname;
+[objective-c.property] @property (nonatomic, copy) NSString * avatarUrl;
+
+## EMGroupReadReceipt.h
+[objective-c.class] @interface EMGroupReadReceipt : NSObject
+[objective-c.property] @property (nonatomic, copy) NSString * messageId;
+[objective-c.property] @property (nonatomic, copy) NSString * readReceiptId;
+[objective-c.property] @property (nonatomic, strong) EMGroupMemberInfo * from;
+[objective-c.property] @property (nonatomic) int readCount;
+[objective-c.property] @property (nonatomic) long long timestamp;
+
+## EMGroupSharedFile.h
+[objective-c.class] @interface EMGroupSharedFile : NSObject
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * fileId;
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * fileName;
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * fileOwner;
+[objective-c.property] @property (nonatomic) long long createdAt;
+[objective-c.property] @property (nonatomic) long long fileSize;
+[objective-c.type.method] + (instancetype) sharedFileWithId:(NSString *) aFileId;
+
+## EMImageMessageBody.h
+[objective-c.class] @interface EMImageMessageBody : EMFileMessageBody
+[objective-c.property] @property (nonatomic) CGSize size;
+[objective-c.property] @property (nonatomic) CGFloat compressionRatio;
+[objective-c.property] @property (nonatomic, copy) NSString * thumbnailDisplayName;
+[objective-c.property] @property (nonatomic, copy) NSString * thumbnailLocalPath;
+[objective-c.property] @property (nonatomic, copy) NSString * thumbnailRemotePath;
+[objective-c.property] @property (nonatomic, copy) NSString * thumbnailSecretKey;
+[objective-c.property] @property (nonatomic) CGSize thumbnailSize;
+[objective-c.property] @property (nonatomic) long long thumbnailFileLength;
+[objective-c.property] @property (nonatomic) EMDownloadStatus thumbnailDownloadStatus;
+[objective-c.property] @property (nonatomic, copy) NSString * bigImageLocalPath;
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * bigImageRemotePath;
+[objective-c.property] @property (nonatomic) EMDownloadStatus bigImageDownloadStatus;
+[objective-c.property] @property (nonatomic) BOOL isGif;
+[objective-c.property] @property (nonatomic) BOOL isOriginalImage;
+[objective-c.method] - (instancetype) initWithGifFilePath:(NSString *) aGifFilePath displayName:(NSString *) aDisplayName;
+
+## EMLocalNotificationManager.h
+[objective-c.enum] enum EMNotificationState : NSInteger;
+[objective-c.enum.case] EMWillPresentNotification
+[objective-c.enum.case] EMDidReceiveNotificationResponse
+[objective-c.protocol] @protocol EMLocalNotificationDelegate <NSObject>
+[objective-c.method] - (void) emuserNotificationCenter:(UNUserNotificationCenter *) center willPresentNotification:(UNNotification *) notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions options)) completionHandler;
+[objective-c.method] - (void) emuserNotificationCenter:(UNUserNotificationCenter *) center didReceiveNotificationResponse:(UNNotificationResponse *) response withCompletionHandler:(void (^)()) completionHandler;
+[objective-c.method] - (void) emuserNotificationCenter:(UNUserNotificationCenter *) center openSettingsForNotification:(UNNotification *) notification;
+[objective-c.method] - (void) emGetNotificationMessage:(UNNotification *) notification state:(EMNotificationState) state;
+[objective-c.method] - (void) emHandleNotificationContent:(UNMutableNotificationContent *) content;
+[objective-c.method] - (void) emDidRecivePushSilentMessage:(NSDictionary *) messageDic;
+[objective-c.class] @interface EMLocalNotificationManager : NSObject
+[objective-c.type.method] + (instancetype) sharedManager;
+[objective-c.method] - (void) launchWithDelegate:(id<EMLocalNotificationDelegate>) aDelegate;
+[objective-c.method] - (void) userNotificationCenter:(UNUserNotificationCenter *) center willPresentNotification:(UNNotification *) notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions options)) completionHandler;
+[objective-c.method] - (void) userNotificationCenter:(UNUserNotificationCenter *) center didReceiveNotificationResponse:(UNNotificationResponse *) response withCompletionHandler:(void (^)()) completionHandler;
+
+## EMLocationMessageBody.h
+[objective-c.class] @interface EMLocationMessageBody : EMMessageBody
+[objective-c.property] @property (nonatomic) double latitude;
+[objective-c.property] @property (nonatomic) double longitude;
+[objective-c.property] @property (nonatomic, copy) NSString * address;
+[objective-c.property] @property (nonatomic, copy) NSString * buildingName;
+[objective-c.method] - (instancetype) initWithLatitude:(double) aLatitude longitude:(double) aLongitude address:(NSString *) aAddress;
+[objective-c.method] - (instancetype) initWithLatitude:(double) aLatitude longitude:(double) aLongitude address:(NSString *) aAddress buildingName:(NSString *) aBuildingName;
+
+## EMLogDelegate.h
+[objective-c.protocol] @protocol EMLogDelegate <NSObject>
+[objective-c.method] - (void) logDidOutput:(NSString *) log;
+
+## EMLoginExtensionInfo.h
+[objective-c.class] @interface EMLoginExtensionInfo : NSObject
+[objective-c.property] @property (nonatomic, copy) NSString * deviceName;
+[objective-c.property] @property (nonatomic, copy) NSString * extensionInfo;
+
+## EMMessageBody.h
+[objective-c.enum] enum EMMessageBodyType : NSInteger;
+[objective-c.enum.case] EMMessageBodyTypeText
+[objective-c.enum.case] EMMessageBodyTypeImage
+[objective-c.enum.case] EMMessageBodyTypeVideo
+[objective-c.enum.case] EMMessageBodyTypeLocation
+[objective-c.enum.case] EMMessageBodyTypeVoice
+[objective-c.enum.case] EMMessageBodyTypeFile
+[objective-c.enum.case] EMMessageBodyTypeCmd
+[objective-c.enum.case] EMMessageBodyTypeCustom
+[objective-c.enum.case] EMMessageBodyTypeCombine
+[objective-c.class] @interface EMMessageBody : NSObject
+[objective-c.property] @property (nonatomic, readonly) EMMessageBodyType type;
+[objective-c.property] @property (nonatomic, assign, readonly) NSUInteger operationTime;
+[objective-c.property] @property (nonatomic, readonly) NSString * operatorId;
+[objective-c.property] @property (nonatomic, assign, readonly) NSUInteger operatorCount;
+
+## EMMessageReaction.h
+[objective-c.class] @interface EMMessageReaction : NSObject
+[objective-c.property] @property (readonly) NSString * reaction;
+[objective-c.property] @property (readonly) NSUInteger count;
+[objective-c.property] @property (readonly) BOOL isAddedBySelf;
+[objective-c.property] @property (readonly) NSArray<NSString *> * userList;
+
+## EMMessageReactionChange.h
+[objective-c.class] @interface EMMessageReactionChange : NSObject
+[objective-c.property] @property (readonly) NSString * conversationId;
+[objective-c.property] @property (readonly) NSString * messageId;
+[objective-c.property] @property (readonly) NSArray<EMMessageReaction *> * reactions;
+[objective-c.property] @property (readonly) NSArray<EMMessageReactionOperation *> * operations;
+
+## EMMessageReactionOperation.h
+[objective-c.enum] enum EMMessageReactionOperate : NSUInteger;
+[objective-c.enum.case] EMMessageReactionOperateRemove
+[objective-c.enum.case] EMMessageReactionOperateAdd
+[objective-c.class] @interface EMMessageReactionOperation : NSObject
+[objective-c.property] @property (copy, readonly) NSString * userId;
+[objective-c.property] @property (copy, readonly) NSString * reaction;
+[objective-c.property] @property (assign, readonly) EMMessageReactionOperate operate;
+
+## EMMessageReadReceipt.h
+[objective-c.class] @interface EMMessageReadReceipt : NSObject
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * messageId;
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * conversationId;
+[objective-c.property] @property (nonatomic, assign, readonly) BOOL isPeerReceipt;
+[objective-c.property] @property (nonatomic, assign, readonly) NSInteger readCount;
+
+## EMMessageSearchOption.h
+[objective-c.enum] enum EMKeywordListMatchType : NSInteger;
+[objective-c.enum.case] EMKeywordListMatchTypeOR
+[objective-c.enum.case] EMKeywordListMatchTypeAND
+[objective-c.class] @interface EMMessageSearchOption : NSObject
+[objective-c.property] @property (nonatomic, strong) NSArray<NSString *> * keywordList;
+[objective-c.property] @property (nonatomic) EMKeywordListMatchType keywordMatchType;
+[objective-c.property] @property (nonatomic, strong) NSString * conversationId;
+[objective-c.property] @property (nonatomic, strong) NSArray<NSNumber *> * msgTypes;
+[objective-c.property] @property (nonatomic) NSInteger startTime;
+[objective-c.property] @property (nonatomic) NSInteger endTime;
+[objective-c.property] @property (nonatomic) EMMessageSearchScope searchScope;
+
+## EMMultiDevicesDelegate.h
+[objective-c.enum] enum EMMultiDevicesEvent : NSInteger;
+[objective-c.enum.case] EMMultiDevicesEventUnknow
+[objective-c.enum.case] EMMultiDevicesEventContactRemove
+[objective-c.enum.case] EMMultiDevicesEventContactAccept
+[objective-c.enum.case] EMMultiDevicesEventContactDecline
+[objective-c.enum.case] EMMultiDevicesEventContactBan
+[objective-c.enum.case] EMMultiDevicesEventContactAllow
+[objective-c.enum.case] EMMultiDevicesEventGroupCreate
+[objective-c.enum.case] EMMultiDevicesEventGroupDestroy
+[objective-c.enum.case] EMMultiDevicesEventGroupJoin
+[objective-c.enum.case] EMMultiDevicesEventGroupLeave
+[objective-c.enum.case] EMMultiDevicesEventGroupApply
+[objective-c.enum.case] EMMultiDevicesEventGroupApplyAccept
+[objective-c.enum.case] EMMultiDevicesEventGroupApplyDecline
+[objective-c.enum.case] EMMultiDevicesEventGroupInvite
+[objective-c.enum.case] EMMultiDevicesEventGroupInviteAccept
+[objective-c.enum.case] EMMultiDevicesEventGroupInviteDecline
+[objective-c.enum.case] EMMultiDevicesEventGroupKick
+[objective-c.enum.case] EMMultiDevicesEventGroupBan
+[objective-c.enum.case] EMMultiDevicesEventGroupAllow
+[objective-c.enum.case] EMMultiDevicesEventGroupBlock
+[objective-c.enum.case] EMMultiDevicesEventGroupUnBlock
+[objective-c.enum.case] EMMultiDevicesEventGroupAssignOwner
+[objective-c.enum.case] EMMultiDevicesEventGroupAddAdmin
+[objective-c.enum.case] EMMultiDevicesEventGroupRemoveAdmin
+[objective-c.enum.case] EMMultiDevicesEventGroupAddMute
+[objective-c.enum.case] EMMultiDevicesEventGroupRemoveMute
+[objective-c.enum.case] EMMultiDevicesEventGroupAddWhiteList
+[objective-c.enum.case] EMMultiDevicesEventGroupRemoveWhiteList
+[objective-c.enum.case] EMMultiDevicesEventGroupAllBan
+[objective-c.enum.case] EMMultiDevicesEventGroupRemoveAllBan
+[objective-c.enum.case] EMMultiDevicesEventGroupUpdate
+[objective-c.enum.case] EMMultiDevicesEventChatThreadCreate
+[objective-c.enum.case] EMMultiDevicesEventChatThreadDestroy
+[objective-c.enum.case] EMMultiDevicesEventChatThreadJoin
+[objective-c.enum.case] EMMultiDevicesEventChatThreadLeave
+[objective-c.enum.case] EMMultiDevicesEventChatThreadUpdate
+[objective-c.enum.case] EMMultiDevicesEventChatThreadKick
+[objective-c.enum.case] EMMultiDevicesEventGroupMemberAttributesChanged
+[objective-c.enum.case] EMMultiDevicesEventConversationPinned
+[objective-c.enum.case] EMMultiDevicesEventConversationUnpinned
+[objective-c.enum.case] EMMultiDevicesEventConversationDelete
+[objective-c.enum.case] EMMultiDevicesEventConversationUpdateMark
+[objective-c.enum.case] EMMultiDevicesEventConversationMuteInfoChanged
+[objective-c.enum.case] EMMultiDevicesEventConversationUnreadMessageCountCleared
+[objective-c.enum.case] EMMultiDevicesEventAllConversationUnreadMessageCountCleared
+[objective-c.protocol] @protocol EMMultiDevicesDelegate <NSObject>
+[objective-c.method] - (void) multiDevicesContactEventDidReceive:(EMMultiDevicesEvent) aEvent username:(NSString *) aUsername ext:(NSString *) aExt;
+[objective-c.method] - (void) multiDevicesGroupEventDidReceive:(EMMultiDevicesEvent) aEvent groupId:(NSString *) aGroupId ext:(id) aExt;
+[objective-c.method] - (void) multiDevicesChatThreadEventDidReceive:(EMMultiDevicesEvent) aEvent threadId:(NSString *) aThreadId ext:(id) aExt;
+[objective-c.method] - (void) multiDevicesUndisturbEventNotifyFormOtherDeviceData:(NSString *) undisturbData;
+[objective-c.method] - (void) multiDevicesMessageBeRemoved:(NSString *) conversationId deviceId:(NSString *) deviceId;
+[objective-c.method] - (void) multiDevicesConversationEvent:(EMMultiDevicesEvent) event conversationId:(NSString *) conversationId conversationType:(EMConversationType) conversationType;
+
+## EMOptions+PrivateDeploy.h
+[objective-c.property] @property (nonatomic, assign) BOOL enableDnsConfig;
+[objective-c.property] @property (nonatomic, assign) int chatPort;
+[objective-c.property] @property (nonatomic, copy) NSString * chatServer;
+[objective-c.property] @property (nonatomic, copy) NSString * restServer;
+[objective-c.property] @property (nonatomic, assign) BOOL enableTLSConnection;
+[objective-c.property] @property (nonatomic, copy) NSString * dnsURL;
+[objective-c.property] @property (nonatomic, copy) NSString * webSocketServer;
+[objective-c.property] @property (nonatomic, assign) int webSocketPort;
+[objective-c.property] @property (nonatomic, copy) NSString * syncDataWSHost;
+[objective-c.property] @property (nonatomic, assign) int syncDataWSPort;
+
+## EMOptions.h
+[objective-c.enum] enum EMLogLevel : NSInteger;
+[objective-c.enum.case] EMLogLevelDebug
+[objective-c.enum.case] EMLogLevelWarning
+[objective-c.enum.case] EMLogLevelError
+[objective-c.enum] enum AreaCode : NSInteger;
+[objective-c.enum.case] AreaCodeCN
+[objective-c.enum.case] AreaCodeNA
+[objective-c.enum.case] AreaCodeEU
+[objective-c.enum.case] AreaCodeAS
+[objective-c.enum.case] AreaCodeJP
+[objective-c.enum.case] AreaCodeIN
+[objective-c.enum.case] AreaCodeGLOB
+[objective-c.enum] enum EMSDKPlatform : NSUInteger;
+[objective-c.enum.case] EMSDKPlatformNative
+[objective-c.enum.case] EMSDKPlatformFlutter
+[objective-c.enum.case] EMSDKPlatformReactNative
+[objective-c.enum.case] EMSDKPlatformUnity
+[objective-c.enum] enum EMDataSyncType : NSInteger;
+[objective-c.enum.case] EMDataSyncTypeNone
+[objective-c.enum.case] EMDataSyncTypeConversations
+[objective-c.enum.case] EMDataSyncTypeContacts
+[objective-c.enum.case] EMDataSyncTypeJoinedGroups
+[objective-c.class] @interface EMOptions : NSObject
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * appkey;
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * appId;
+[objective-c.property] @property (nonatomic, assign) BOOL enableConsoleLog;
+[objective-c.property] @property (nonatomic, assign) EMLogLevel logLevel;
+[objective-c.property] @property (nonatomic, assign) BOOL usingHttpsOnly;
+[objective-c.property] @property (nonatomic, assign) BOOL deleteMessagesOnLeaveGroup;
+[objective-c.property] @property (nonatomic, assign) BOOL deleteMessagesOnLeaveChatroom;
+[objective-c.property] @property (nonatomic, assign) BOOL canChatroomOwnerLeave;
+[objective-c.property] @property (nonatomic, assign) BOOL autoAcceptGroupInvitation;
+[objective-c.property] @property (nonatomic, assign) BOOL autoAcceptFriendInvitation;
+[objective-c.property] @property (nonatomic, assign) BOOL autoDownloadThumbnail;
+[objective-c.property] @property (nonatomic, assign) BOOL enableDeliveryAck;
+[objective-c.property] @property (nonatomic, assign) BOOL sortMessageByServerTime;
+[objective-c.property] @property (nonatomic, assign) BOOL isAutoTransferMessageAttachments;
+[objective-c.property] @property (nonatomic, copy) NSString * apnsCertName;
+[objective-c.property] @property (nonatomic, copy) NSString * pushKitCertName;
+[objective-c.property] @property (nonatomic) AreaCode area;
+[objective-c.property] @property (nonatomic) BOOL enableStatistics;
+[objective-c.property] @property (nonatomic) BOOL loadEmptyConversations;
+[objective-c.property] @property (nonatomic) NSInteger customOSType;
+[objective-c.property] @property (strong) NSString * customDeviceName;
+[objective-c.property] @property (nonatomic) BOOL useReplacedMessageContents;
+[objective-c.property] @property (nonatomic) BOOL includeSendMessageInMessageListener;
+[objective-c.property] @property (nonatomic) BOOL enableUserInfo;
+[objective-c.property] @property (nonatomic) BOOL regardImportMessagesAsRead;
+[objective-c.property] @property (nonatomic) BOOL autoLoadConversations;
+[objective-c.property] @property (nonatomic) NSString * loginExtensionInfo;
+[objective-c.property] @property (nonatomic) BOOL workPathCopiable;
+[objective-c.property] @property (nonatomic, copy) NSString * uiKitVersion;
+[objective-c.property] @property (nonatomic) EMSDKPlatform platform;
+[objective-c.property] @property (nonatomic) NSInteger dohVendor;
+[objective-c.property] @property (nonatomic, assign) EMDataSyncType dataSyncType;
+[objective-c.property] @property (nonatomic, copy) NSArray<NSString *> * ntpServers;
+[objective-c.type.method] + (instancetype) optionsWithAppkey:(NSString *) aAppkey;
+[objective-c.type.method] + (instancetype) optionsWithAppId:(NSString *) appId;
+
+## EMPageResult.h
+[objective-c.class] @interface EMPageResult : NSObject
+[objective-c.property] @property (nonatomic, strong) NSArray<id> * list;
+[objective-c.property] @property (nonatomic) NSInteger count;
+[objective-c.type.method] + (instancetype) pageResultWithList:(NSArray<id> *) aList andCount:(NSInteger) aCount;
+
+## EMPresence.h
+[objective-c.class] @interface EMPresenceStatusDetail : NSObject
+[objective-c.property] @property (nonatomic, strong) NSString * device;
+[objective-c.property] @property (nonatomic) NSInteger status;
+[objective-c.class] @interface EMPresence : NSObject
+[objective-c.property] @property (nonatomic, strong) NSString * publisher;
+[objective-c.property] @property (nonatomic, strong) NSArray<EMPresenceStatusDetail *> * statusDetails;
+[objective-c.property] @property (nonatomic) NSString * statusDescription;
+[objective-c.property] @property (nonatomic) NSInteger lastTime;
+[objective-c.property] @property (nonatomic) NSInteger expirytime;
+
+## EMPresenceManagerDelegate.h
+[objective-c.protocol] @protocol EMPresenceManagerDelegate <NSObject>
+[objective-c.method] - (void) presenceStatusDidChanged:(NSArray<EMPresence *> *) presences;
+
+## EMPushOptions.h
+[objective-c.macro] #define kPushNickname
+[objective-c.macro] #define kPushDisplayStyle
+[objective-c.macro] #define kPushNoDisturbing
+[objective-c.macro] #define kPushNoDisturbingStartH
+[objective-c.macro] #define kPushNoDisturbingStartM
+[objective-c.macro] #define kPushNoDisturbingEndH
+[objective-c.macro] #define kPushNoDisturbingEndM
+[objective-c.enum] enum EMPushDisplayStyle : NSInteger;
+[objective-c.enum.case] EMPushDisplayStyleSimpleBanner
+[objective-c.enum.case] EMPushDisplayStyleMessageSummary
+[objective-c.class] @interface EMPushOptions : NSObject
+[objective-c.property] @property (nonatomic, strong, readonly) NSString * displayName;
+[objective-c.property] @property (nonatomic, readonly) EMPushDisplayStyle displayStyle;
+
+## EMRecallMessageInfo.h
+[objective-c.class] @interface EMRecallMessageInfo : NSObject
+[objective-c.property] @property (nonatomic, copy) NSString * recallBy;
+[objective-c.property] @property (nonatomic, copy) NSString * recallMessageId;
+[objective-c.property] @property (nonatomic, strong) EMChatMessage * recallMessage;
+[objective-c.property] @property (nonatomic, strong) NSString * ext;
+[objective-c.property] @property (nonatomic, strong) NSString * conversationId;
+
+## EMSearchServerMessageResult.h
+[objective-c.class] @interface EMSearchServerMessageResult : NSObject
+[objective-c.property] @property (nonatomic, readonly) NSString * messageId;
+[objective-c.property] @property (nonatomic, readonly) EMMessageBody * body;
+[objective-c.property] @property (nonatomic, readonly) NSDictionary * ext;
+[objective-c.property] @property (nonatomic, readonly) NSString * from;
+[objective-c.property] @property (nonatomic, readonly) NSString * to;
+[objective-c.property] @property (nonatomic, readonly) NSString * conversationId;
+[objective-c.property] @property (nonatomic, readonly) EMChatType chatType;
+[objective-c.property] @property (nonatomic, readonly) NSInteger timestamp;
+[objective-c.property] @property (nonatomic, readonly) NSArray<NSString *> * highlightTexts;
+
+## EMSilentModeParam.h
+[objective-c.enum] enum EMSilentModeParamType : NSInteger;
+[objective-c.enum.case] EMSilentModeParamTypeRemindType
+[objective-c.enum.case] EMSilentModeParamTypeDuration
+[objective-c.enum.case] EMSilentModeParamTypeInterval
+[objective-c.enum] enum EMPushRemindType : NSInteger;
+[objective-c.enum.case] EMPushRemindTypeAll
+[objective-c.enum.case] EMPushRemindTypeMentionOnly
+[objective-c.enum.case] EMPushRemindTypeNone
+[objective-c.class] @interface EMSilentModeParam : NSObject
+[objective-c.property] @property (nonatomic, assign, readonly) EMSilentModeParamType paramType;
+[objective-c.property] @property (nonatomic, assign) int silentModeDuration;
+[objective-c.property] @property (nonatomic, assign) EMPushRemindType remindType;
+[objective-c.property] @property (nonatomic, strong) EMSilentModeTime * silentModeStartTime;
+[objective-c.property] @property (nonatomic, strong) EMSilentModeTime * silentModeEndTime;
+[objective-c.method] - (instancetype) initWithParamType:(EMSilentModeParamType) aParamType;
+
+## EMSilentModeResult.h
+[objective-c.class] @interface EMSilentModeResult : NSObject
+[objective-c.property] @property (nonatomic, assign, readonly) NSTimeInterval expireTimestamp;
+[objective-c.property] @property (nonatomic, assign, readonly) EMPushRemindType remindType;
+[objective-c.property] @property (nonatomic, strong, readonly) EMSilentModeTime * silentModeStartTime;
+[objective-c.property] @property (nonatomic, strong, readonly) EMSilentModeTime * silentModeEndTime;
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * conversationID;
+[objective-c.property] @property (nonatomic, assign, readonly) EMConversationType conversationType;
+[objective-c.property] @property (nonatomic, assign, readonly) BOOL isConversationRemindTypeEnabled;
+
+## EMSilentModeTime.h
+[objective-c.class] @interface EMSilentModeTime : NSObject
+[objective-c.property] @property (nonatomic, assign, readonly) int hours;
+[objective-c.property] @property (nonatomic, assign, readonly) int minutes;
+[objective-c.method] - (instancetype) initWithHours:(int) aHours minutes:(int) aMinutes;
+
+## EMStreamChunk.h
+[objective-c.enum] enum EMStreamChunkStatus : NSInteger;
+[objective-c.enum.case] EMStreamChunkStatusStart
+[objective-c.enum.case] EMStreamChunkStatusStartAndComplete
+[objective-c.enum.case] EMStreamChunkStatusProgress
+[objective-c.enum.case] EMStreamChunkStatusComplete
+[objective-c.enum.case] EMStreamChunkStatusError
+[objective-c.class] @interface EMStreamChunk : NSObject
+[objective-c.property] @property (nonatomic) EMStreamChunkStatus status;
+[objective-c.property] @property (nonatomic) int16_t errorCode;
+[objective-c.property] @property (nonatomic) int16_t finishReason;
+[objective-c.property] @property (nonatomic, copy) NSString * text;
+[objective-c.property] @property (nonatomic, copy) NSString * customType;
+[objective-c.property] @property (nonatomic, readonly) BOOL isComplete;
+
+## EMTextMessageBody.h
+[objective-c.class] @interface EMTextMessageBody : EMMessageBody
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * text;
+[objective-c.property] @property (nonatomic, copy) NSArray<NSString *> * targetLanguages;
+[objective-c.property] @property (nonatomic, copy, readonly) NSDictionary<NSString *,NSString *> * translations;
+[objective-c.method] - (instancetype) initWithText:(NSString *) aText;
+
+## EMThreadManagerDelegate.h
+[objective-c.protocol] @protocol EMThreadManagerDelegate <NSObject>
+[objective-c.method] - (void) onChatThreadCreate:(EMChatThreadEvent *) event;
+[objective-c.method] - (void) onChatThreadUpdate:(EMChatThreadEvent *) event;
+[objective-c.method] - (void) onChatThreadDestroy:(EMChatThreadEvent *) event;
+[objective-c.method] - (void) onUserKickOutOfChatThread:(EMChatThreadEvent *) event;
+
+## EMTranslateLanguage.h
+[objective-c.class] @interface EMTranslateLanguage : NSObject
+[objective-c.property] @property (nonatomic, strong) NSString * languageCode;
+[objective-c.property] @property (nonatomic, strong) NSString * languageName;
+[objective-c.property] @property (nonatomic, strong) NSString * languageNativeName;
+
+## EMUserInfo.h
+[objective-c.enum] enum EMUserInfoType : NSInteger;
+[objective-c.enum.case] EMUserInfoTypeNickName
+[objective-c.enum.case] EMUserInfoTypeAvatarURL
+[objective-c.enum.case] EMUserInfoTypePhone
+[objective-c.enum.case] EMUserInfoTypeMail
+[objective-c.enum.case] EMUserInfoTypeGender
+[objective-c.enum.case] EMUserInfoTypeSign
+[objective-c.enum.case] EMUserInfoTypeBirth
+[objective-c.enum.case] EMUserInfoTypeExt
+[objective-c.class] @interface EMUserInfo : NSObject
+[objective-c.property] @property (nonatomic, copy) NSString * userId;
+[objective-c.property] @property (nonatomic, copy) NSString * nickname;
+[objective-c.property] @property (nonatomic, copy) NSString * avatarUrl;
+[objective-c.property] @property (nonatomic, copy) NSString * mail;
+[objective-c.property] @property (nonatomic, copy) NSString * phone;
+[objective-c.property] @property (nonatomic) NSInteger gender;
+[objective-c.property] @property (nonatomic, copy) NSString * sign;
+[objective-c.property] @property (nonatomic, copy) NSString * birth;
+[objective-c.property] @property (nonatomic, copy) NSString * ext;
+
+## EMUserInfoManagerDelegate.h
+[objective-c.protocol] @protocol EMUserInfoManagerDelegate <NSObject>
+[objective-c.method] - (void) onSelfUserInfoUpdate:(EMUserInfo *) aUserInfo;
+[objective-c.method] - (void) onUserInfoUpdate:(NSDictionary<NSString *,EMUserInfo *> *) aUserInfos;
+
+## EMVideoMessageBody.h
+[objective-c.class] @interface EMVideoMessageBody : EMFileMessageBody
+[objective-c.property] @property (nonatomic) int duration;
+[objective-c.property] @property (nonatomic, copy) NSString * thumbnailLocalPath;
+[objective-c.property] @property (nonatomic, copy) NSString * thumbnailRemotePath;
+[objective-c.property] @property (nonatomic, copy) NSString * thumbnailSecretKey;
+[objective-c.property] @property (nonatomic) CGSize thumbnailSize;
+[objective-c.property] @property (nonatomic) EMDownloadStatus thumbnailDownloadStatus;
+
+## EMVoiceMessageBody.h
+[objective-c.class] @interface EMVoiceMessageBody : EMFileMessageBody
+[objective-c.property] @property (nonatomic) int duration;
+[objective-c.property] @property (nonatomic, copy, readonly) NSString * text;
+
+## EMVoiceParam.h
+[objective-c.enum] enum EMVoiceFormat : UInt32;
+[objective-c.enum.case] EMVoiceFormatPCM
+[objective-c.enum.case] EMVoiceFormatAMR
+[objective-c.enum.case] EMVoiceFormatMP3
+[objective-c.class] @interface EMVoiceParam : NSObject
+[objective-c.property] @property (nonatomic, assign) EMVoiceFormat format;
+[objective-c.property] @property (nonatomic, assign) NSInteger sampleRate;
+[objective-c.property] @property (nonatomic, assign) NSInteger bitsPerSample;
+[objective-c.property] @property (nonatomic, assign) NSInteger channels;
+
+## IEMChatManager.h
+[objective-c.enum] enum EMMessageFetchHistoryDirection : NSUInteger;
+[objective-c.enum.case] EMMessageFetchHistoryDirectionUp
+[objective-c.enum.case] EMMessageFetchHistoryDirectionDown
+[objective-c.protocol] @protocol IEMChatManager <NSObject>
+[objective-c.method] - (void) addDelegate:(id<EMChatManagerDelegate>) aDelegate delegateQueue:(dispatch_queue_t) aQueue;
+[objective-c.method] - (void) removeDelegate:(id<EMChatManagerDelegate>) aDelegate;
+[objective-c.method] - (void) addConversationDelegate:(id<EMConversationDelegate>) aDelegate delegateQueue:(dispatch_queue_t) aQueue;
+[objective-c.method] - (void) removeConversationDelegate:(id<EMConversationDelegate>) aDelegate;
+[objective-c.method] - (NSArray<EMConversation *> *) getAllConversations;
+[objective-c.method] - (NSArray<EMConversation *> *) filterConversationsFromDB:(BOOL) cleanMemoryCache filter:(BOOL (^)(EMConversation * conversation)) filter;
+[objective-c.method] - (void) cleanConversationsMemoryCache;
+[objective-c.method] - (NSArray<EMConversation *> *) getAllConversations:(BOOL) isSort;
+[objective-c.method] - (NSInteger) getUnreadMessageCount;
+[objective-c.method] - (void) pinConversation:(NSString *) conversationId isPinned:(BOOL) isPinned completionBlock:(void (^)(EMError * error)) completionBlock;
+[objective-c.method] - (EMConversation *) getConversationWithConvId:(NSString *) aConversationId;
+[objective-c.method] - (EMConversation *) getConversation:(NSString *) aConversationId type:(EMConversationType) aType createIfNotExist:(BOOL) aIfCreate;
+[objective-c.method] - (EMConversation *) getConversation:(NSString *) aConversationId type:(EMConversationType) aType createIfNotExist:(BOOL) aIfCreate isThread:(BOOL) isThread;
+[objective-c.method] - (void) deleteConversation:(NSString *) aConversationId isDeleteMessages:(BOOL) aIsDeleteMessages completion:(void (^)(NSString * aConversationId, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) deleteServerConversation:(NSString *) aConversationId conversationType:(EMConversationType) aConversationType isDeleteServerMessages:(BOOL) aIsDeleteServerMessages completion:(void (^)(NSString * aConversationId, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) deleteConversations:(NSArray<EMConversation *> *) aConversations isDeleteMessages:(BOOL) aIsDeleteMessages completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatMessage *) getMessageWithMessageId:(NSString *) aMessageId;
+[objective-c.method] - (NSString *) getMessageAttachmentPath:(NSString *) aConversationId;
+[objective-c.method] - (void) importMessages:(NSArray<EMChatMessage *> *) aMessages completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) updateMessage:(EMChatMessage *) aMessage completion:(void (^)(EMChatMessage * aMessage, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) modifyMessage:(NSString *) messageId body:(EMMessageBody *) body ext:(NSDictionary *) ext completion:(void (^)(EMError * error, EMChatMessage * message)) completionBlock;
+[objective-c.method] - (void) sendMessageReadReceipts:(NSArray<EMChatMessage *> *) aMessages completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) clearConversationUnreadMessageCount:(NSString *) aConversationId completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) clearAllConversationUnreadMessageCount:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getGroupMessageReadReceipts:(NSArray<EMChatMessage *> *) aMessages completion:(void (^)(NSArray<EMMessageReadReceipt *> * aReceipts, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) recallMessageWithMessageId:(NSString *) aMessageId completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) recallMessageWithMessageId:(NSString *) aMessageId ext:(NSString *) ext completion:(void (^)(EMError * )) aCompletionBlock;
+[objective-c.method] - (void) sendMessage:(EMChatMessage *) aMessage progress:(void (^)(int progress)) aProgressBlock completion:(void (^)(EMChatMessage * message, EMError * error)) aCompletionBlock;
+[objective-c.method] - (void) downloadMessageThumbnail:(EMChatMessage *) aMessage progress:(void (^)(int progress)) aProgressBlock completion:(void (^)(EMChatMessage * message, EMError * error)) aCompletionBlock;
+[objective-c.method] - (void) downloadMessageAttachment:(EMChatMessage *) aMessage progress:(void (^)(int progress)) aProgressBlock completion:(void (^)(EMChatMessage * message, EMError * error)) aCompletionBlock;
+[objective-c.method] - (void) downloadBigImageAttachment:(EMChatMessage *) aMessage progress:(void (^)(int progress)) aProgressBlock completion:(void (^)(EMChatMessage * message, EMError * error)) aCompletionBlock;
+[objective-c.method] - (void) downloadAndParseCombineMessage:(EMChatMessage *) aMessage completion:(void (^)(NSArray<EMChatMessage *> * messages, EMError * error)) aCompletionBlock;
+[objective-c.method] - (void) asyncFetchGroupMessageReadUsersFromServer:(NSString *) aMessageId groupId:(NSString *) aGroupId readReceiptId:(NSString *) aReadReceiptId pageSize:(int) aPageSize completion:(void (^)(EMCursorResult<EMGroupReadReceipt *> * aResult, EMError * error, int totalCount)) aCompletionBlock;
+[objective-c.method] - (void) deleteMessagesBefore:(NSUInteger) aTimestamp completion:(void (^)(EMError * error)) aCompletion;
+[objective-c.method] - (void) removeMessagesFromServerWithConversation:(EMConversation *) conversation messageIds:(NSArray<__kindof NSString *> *) messageIds completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) removeMessagesFromServerWithConversation:(EMConversation *) conversation timeStamp:(NSTimeInterval) beforeTimeStamp completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) translateMessage:(EMChatMessage *) aMessage targetLanguages:(NSArray<NSString *> *) aLanguages completion:(void (^)(EMChatMessage * message, EMError * error)) aCompletionBlock;
+[objective-c.method] - (void) voiceMessageToText:(EMChatMessage *) aMessage completion:(void (^)(NSString * text, EMError * error)) aCompletionBlock;
+[objective-c.method] - (void) voiceFileToText:(NSString *) aFilePath voiceParam:(EMVoiceParam *) aVoiceParam completion:(void (^)(NSString * text, EMError * error)) aCompletionBlock;
+[objective-c.method] - (void) fetchSupportedLanguages:(void (^)(NSArray<EMTranslateLanguage *> * languages, EMError * error)) aCompletionBlock;
+[objective-c.method] - (void) searchMessagesWithTypes:(NSArray<NSNumber *> *) aTypes timestamp:(long long) aTimestamp count:(int) aCount fromUser:(NSString *) aUsername searchDirection:(EMMessageSearchDirection) aDirection completion:(void (^)(NSArray<EMChatMessage *> * aMessages, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) loadMessagesWithKeyword:(NSString *) aKeywords timestamp:(long long) aTimestamp count:(int) aCount fromUser:(NSString *) aSender searchDirection:(EMMessageSearchDirection) aDirection scope:(EMMessageSearchScope) aScope completion:(void (^)(NSArray<EMChatMessage *> * aMessages, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) loadConversationMessagesWithKeyword:(NSString *) aKeywords timestamp:(long long) aTimestamp fromUser:(NSString *) aSender searchDirection:(EMMessageSearchDirection) aDirection scope:(EMMessageSearchScope) aScope completion:(void (^)(NSDictionary<NSString *,NSArray<NSString *> *> * aConversationMessages, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) addReaction:(NSString *) reaction toMessage:(NSString *) messageId completion:(void (^)(EMError * )) completion;
+[objective-c.method] - (void) removeReaction:(NSString *) reaction fromMessage:(NSString *) messageId completion:(void (^)(EMError * )) completion;
+[objective-c.method] - (void) getReactionList:(NSArray<NSString *> *) messageIds groupId:(NSString *) groupId chatType:(EMChatType) chatType completion:(void (^)(NSDictionary<NSString *,NSArray<EMMessageReaction *> *> * , EMError * )) completion;
+[objective-c.method] - (void) getReactionDetail:(NSString *) messageId reaction:(NSString *) reaction cursor:(NSString *) cursor pageSize:(uint64_t) pageSize completion:(void (^)(EMMessageReaction * , NSString * cursor, EMError * )) completion;
+[objective-c.method] - (void) fetchMessagesFromServerBy:(NSString *) conversationId conversationType:(EMConversationType) type cursor:(NSString *) cursor pageSize:(NSUInteger) pageSize option:(EMFetchServerMessagesOption *) option completion:(void (^)(EMCursorResult<EMChatMessage *> * result, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) searchMessagesFromServerWithOption:(EMMessageSearchOption *) option pageSize:(NSInteger) pageSize pageNum:(NSInteger) pageNum completion:(void (^)(EMPageResult<EMSearchServerMessageResult *> * result, EMError * aError)) completion;
+[objective-c.method] - (void) addConversationMark:(NSArray<NSString *> *) conversationIds mark:(EMMarkType) mark completion:(void (^)(EMError * aError)) completion;
+[objective-c.method] - (void) removeConversationMark:(NSArray<NSString *> *) conversationIds mark:(EMMarkType) mark completion:(void (^)(EMError * aError)) completion;
+[objective-c.method] - (void) deleteAllMessagesAndConversations:(BOOL) clearServerData completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) pinMessage:(NSString *) messageId completion:(void (^)(EMChatMessage * message, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) unpinMessage:(NSString *) messageId completion:(void (^)(EMChatMessage * message, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getPinnedMessagesFromServer:(NSString *) conversationId completion:(void (^)(NSArray<EMChatMessage *> * messages, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getMessageCountWithCompletion:(void (^)(NSInteger count, EMError * aError)) completion;
+[objective-c.method] - (void) getMessages:(NSArray<NSString *> *) aMessageIds withConversationId:(NSString *) aConversationId completion:(void (^)(NSArray<EMChatMessage *> * aMessages, EMError * aError)) aCompletionBlock;
+
+## IEMChatroomManager.h
+[objective-c.protocol] @protocol IEMChatroomManager <NSObject>
+[objective-c.method] - (void) addDelegate:(id<EMChatroomManagerDelegate>) aDelegate delegateQueue:(dispatch_queue_t) aQueue;
+[objective-c.method] - (void) removeDelegate:(id<EMChatroomManagerDelegate>) aDelegate;
+[objective-c.method] - (EMPageResult<EMChatroom *> *) getChatroomsFromServerWithPage:(NSInteger) aPageNum pageSize:(NSInteger) aPageSize error:(EMError * *) pError;
+[objective-c.method] - (void) getChatroomsFromServerWithPage:(NSInteger) aPageNum pageSize:(NSInteger) aPageSize completion:(void (^)(EMPageResult<EMChatroom *> * aResult, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) joinChatroom:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) joinChatroom:(NSString *) aChatroomId completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) joinChatroom:(NSString *) aChatroomId ext:(NSString *) ext leaveOtherRooms:(BOOL) leaveOtherRooms completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) leaveChatroom:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) leaveChatroom:(NSString *) aChatroomId completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) getChatroomSpecificationFromServerWithId:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) getChatroomSpecificationFromServerWithId:(NSString *) aChatroomId completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getChatroomSpecificationFromServerWithId:(NSString *) aChatroomId fetchMembers:(bool) aFetchMembers completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMCursorResult<NSString *> *) getChatroomMemberListFromServerWithId:(NSString *) aChatroomId cursor:(NSString *) aCursor pageSize:(NSInteger) aPageSize error:(EMError * *) pError;
+[objective-c.method] - (void) getChatroomMemberListFromServerWithId:(NSString *) aChatroomId cursor:(NSString *) aCursor pageSize:(NSInteger) aPageSize completion:(void (^)(EMCursorResult<NSString *> * aResult, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (NSArray<NSString *> *) getChatroomBlacklistFromServerWithId:(NSString *) aChatroomId pageNumber:(NSInteger) aPageNum pageSize:(NSInteger) aPageSize error:(EMError * *) pError;
+[objective-c.method] - (void) getChatroomBlacklistFromServerWithId:(NSString *) aChatroomId pageNumber:(NSInteger) aPageNum pageSize:(NSInteger) aPageSize completion:(void (^)(NSArray<NSString *> * aList, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (NSArray<NSString *> *) getChatroomMuteListFromServerWithId:(NSString *) aChatroomId pageNumber:(NSInteger) aPageNum pageSize:(NSInteger) aPageSize error:(EMError * *) pError;
+[objective-c.method] - (void) getChatroomMuteListFromServerWithId:(NSString *) aChatroomId pageNumber:(NSInteger) aPageNum pageSize:(NSInteger) aPageSize completion:(void (^)(NSArray<NSString *> * aList, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (NSArray<NSString *> *) getChatroomWhiteListFromServerWithId:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) getChatroomWhiteListFromServerWithId:(NSString *) aChatroomId completion:(void (^)(NSArray<NSString *> * aList, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (BOOL) isMemberInWhiteListFromServerWithChatroomId:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) isMemberInWhiteListFromServerWithChatroomId:(NSString *) aChatroomId completion:(void (^)(BOOL inWhiteList, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) isMemberInMuteListFromServerWithChatroomId:(NSString *) aChatroomId completion:(void (^)(BOOL inMuteList, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (NSString *) getChatroomAnnouncementWithId:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) getChatroomAnnouncementWithId:(NSString *) aChatroomId completion:(void (^)(NSString * aAnnouncement, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) updateSubject:(NSString *) aSubject forChatroom:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) updateSubject:(NSString *) aSubject forChatroom:(NSString *) aChatroomId completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) updateDescription:(NSString *) aDescription forChatroom:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) updateDescription:(NSString *) aDescription forChatroom:(NSString *) aChatroomId completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) removeMembers:(NSArray<NSString *> *) aMembers fromChatroom:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) removeMembers:(NSArray<NSString *> *) aMembers fromChatroom:(NSString *) aChatroomId completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) blockMembers:(NSArray<NSString *> *) aMembers fromChatroom:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) blockMembers:(NSArray<NSString *> *) aMembers fromChatroom:(NSString *) aChatroomId completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) unblockMembers:(NSArray<NSString *> *) aMembers fromChatroom:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) unblockMembers:(NSArray<NSString *> *) aMembers fromChatroom:(NSString *) aChatroomId completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) updateChatroomOwner:(NSString *) aChatroomId newOwner:(NSString *) aNewOwner error:(EMError * *) pError;
+[objective-c.method] - (void) updateChatroomOwner:(NSString *) aChatroomId newOwner:(NSString *) aNewOwner completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) addAdmin:(NSString *) aAdmin toChatroom:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) addAdmin:(NSString *) aAdmin toChatroom:(NSString *) aChatroomId completion:(void (^)(EMChatroom * aChatroomp, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) removeAdmin:(NSString *) aAdmin fromChatroom:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) removeAdmin:(NSString *) aAdmin fromChatroom:(NSString *) aChatroomId completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) muteMembers:(NSArray<NSString *> *) aMuteMembers muteMilliseconds:(NSInteger) aMuteMilliseconds fromChatroom:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) muteMembers:(NSArray<NSString *> *) aMuteMembers muteMilliseconds:(NSInteger) aMuteMilliseconds fromChatroom:(NSString *) aChatroomId completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) unmuteMembers:(NSArray<NSString *> *) aMembers fromChatroom:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) unmuteMembers:(NSArray<NSString *> *) aMembers fromChatroom:(NSString *) aChatroomId completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) muteAllMembersFromChatroom:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) muteAllMembersFromChatroom:(NSString *) aChatroomId completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) unmuteAllMembersFromChatroom:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) unmuteAllMembersFromChatroom:(NSString *) aChatroomId completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) addWhiteListMembers:(NSArray<NSString *> *) aMembers fromChatroom:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) addWhiteListMembers:(NSArray<NSString *> *) aMembers fromChatroom:(NSString *) aChatroomId completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) removeWhiteListMembers:(NSArray<NSString *> *) aMembers fromChatroom:(NSString *) aChatroomId error:(EMError * *) pError;
+[objective-c.method] - (void) removeWhiteListMembers:(NSArray<NSString *> *) aMembers fromChatroom:(NSString *) aChatroomId completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMChatroom *) updateChatroomAnnouncementWithId:(NSString *) aChatroomId announcement:(NSString *) aAnnouncement error:(EMError * *) pError;
+[objective-c.method] - (void) updateChatroomAnnouncementWithId:(NSString *) aChatroomId announcement:(NSString *) aAnnouncement completion:(void (^)(EMChatroom * aChatroom, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) setChatroomAttributes:(NSString *) roomId attributes:(NSDictionary<NSString *,NSString *> *) keyValues autoDelete:(BOOL) autoDelete completionBlock:(void (^)(EMError * aError, NSDictionary<NSString *,EMError *> * failureKeys)) completionBlock;
+[objective-c.method] - (void) setChatroomAttribute:(NSString *) roomId key:(NSString *) key value:(NSString *) value autoDelete:(BOOL) autoDelete completionBlock:(void (^)(EMError * aError)) completionBlock;
+[objective-c.method] - (void) setChatroomAttributesForced:(NSString *) roomId attributes:(NSDictionary<NSString *,NSString *> *) keyValues autoDelete:(BOOL) autoDelete completionBlock:(void (^)(EMError * aError, NSDictionary<NSString *,EMError *> * failureKeys)) completionBlock;
+[objective-c.method] - (void) setChatroomAttributeForced:(NSString *) roomId key:(NSString *) key value:(NSString *) value autoDelete:(BOOL) autoDelete completionBlock:(void (^)(EMError * aError)) completionBlock;
+[objective-c.method] - (void) removeChatroomAttributes:(NSString *) roomId attributes:(NSArray<__kindof NSString *> *) keyValues completionBlock:(void (^)(EMError * aError, NSDictionary<NSString *,EMError *> * failureKeys)) completionBlock;
+[objective-c.method] - (void) removeChatroomAttribute:(NSString *) roomId key:(NSString *) key completionBlock:(void (^)(EMError * aError)) completionBlock;
+[objective-c.method] - (void) removeChatroomAttributesForced:(NSString *) roomId attributes:(NSArray<__kindof NSString *> *) keyValues completionBlock:(void (^)(EMError * aError, NSDictionary<NSString *,EMError *> * failureKeys)) completionBlock;
+[objective-c.method] - (void) removeChatroomAttributeForced:(NSString *) roomId key:(NSString *) key completionBlock:(void (^)(EMError * aError)) completionBlock;
+[objective-c.method] - (void) fetchChatroomAttributes:(NSString *) roomId keys:(NSArray<__kindof NSString *> *) keys completion:(void (^)(EMError * aError, NSDictionary<NSString *,NSString *> * properties)) completionBlock;
+[objective-c.method] - (void) fetchChatroomAllAttributes:(NSString *) roomId completion:(void (^)(EMError * error, NSDictionary<NSString *,NSString *> * properties)) completionBlock;
+
+## IEMContactManager.h
+[objective-c.protocol] @protocol IEMContactManager <NSObject>
+[objective-c.method] - (void) addDelegate:(id<EMContactManagerDelegate>) aDelegate delegateQueue:(dispatch_queue_t) aQueue;
+[objective-c.method] - (void) removeDelegate:(id) aDelegate;
+[objective-c.method] - (NSArray<NSString *> *) getContacts;
+[objective-c.method] - (NSArray<EMContact *> *) getAllContacts;
+[objective-c.method] - (void) setContactRemark:(NSString *) userId remark:(NSString *) remark completion:(void (^)(EMContact * contact, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMContact *) getContact:(NSString *) userId;
+[objective-c.method] - (void) addContact:(NSString *) aUsername message:(NSString *) aMessage completion:(void (^)(NSString * aUsername, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (EMError *) deleteContact:(NSString *) aUsername isDeleteConversation:(BOOL) aIsDeleteConversation;
+[objective-c.method] - (void) deleteContact:(NSString *) aUsername isDeleteConversation:(BOOL) aIsDeleteConversation completion:(void (^)(NSString * aUsername, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) approveFriendRequestFromUser:(NSString *) aUsername completion:(void (^)(NSString * aUsername, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) declineFriendRequestFromUser:(NSString *) aUsername completion:(void (^)(NSString * aUsername, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getBlackListFromServerWithCompletion:(void (^)(NSArray<NSString *> * aList, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (NSArray<NSString *> *) getBlackList;
+[objective-c.method] - (void) addUserToBlackList:(NSString *) aUsername completion:(void (^)(NSString * aUsername, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) saveBlackList:(NSArray<NSString *> *) aBlackList completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) removeUserFromBlackList:(NSString *) aUsername completion:(void (^)(NSString * aUsername, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getSelfIdsOnOtherPlatformWithCompletion:(void (^)(NSArray<NSString *> * aList, EMError * aError)) aCompletionBlock;
+
+## IEMGroupManager.h
+[objective-c.protocol] @protocol IEMGroupManager <NSObject>
+[objective-c.method] - (void) addDelegate:(id<EMGroupManagerDelegate>) aDelegate delegateQueue:(dispatch_queue_t) aQueue;
+[objective-c.method] - (void) removeDelegate:(id) aDelegate;
+[objective-c.method] - (NSArray<EMGroup *> *) getJoinedGroups;
+[objective-c.method] - (void) cleanAllGroupsFromDB;
+[objective-c.method] - (void) getJoinedGroupsCountFromServerWithCompletion:(void (^)(NSInteger groupCount, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) createGroupWithSubject:(NSString *) subject avatar:(NSString *) avatar description:(NSString *) description invitees:(NSArray<NSString *> *) invitees message:(NSString *) message setting:(EMGroupConfigs *) setting completion:(void (^)(EMGroup * group, EMError * error)) completionBlock;
+[objective-c.method] - (void) getGroupSpecificationFromServerWithId:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getGroupSpecificationFromServerWithId:(NSString *) aGroupId fetchMembers:(BOOL) fetchMembers completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getGroupMemberListFromServerWithId:(NSString *) aGroupId cursor:(NSString *) aCursor pageSize:(NSInteger) aPageSize completion:(void (^)(EMCursorResult<NSString *> * aResult, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) fetchGroupMemberInfoListFromServerWithGroupId:(NSString *) groupId cursor:(NSString *) cursor limit:(NSInteger) limit completion:(void (^)(EMCursorResult<EMGroupMemberInfo *> * cursorResult, EMError * error)) completionBlock;
+[objective-c.method] - (void) getGroupBlacklistFromServerWithId:(NSString *) aGroupId pageNumber:(NSInteger) aPageNum pageSize:(NSInteger) aPageSize completion:(void (^)(NSArray<NSString *> * aList, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getGroupMuteListFromServerWithId:(NSString *) aGroupId pageNumber:(NSInteger) aPageNum pageSize:(NSInteger) aPageSize completion:(void (^)(NSArray<NSString *> * aList, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) fetchGroupMuteListFromServerWithId:(NSString *) aGroupId pageNumber:(NSInteger) aPageNum pageSize:(NSInteger) aPageSize completion:(void (^)(NSDictionary<NSString *,NSNumber *> * aDict, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getGroupFileListWithId:(NSString *) aGroupId pageNumber:(NSInteger) aPageNum pageSize:(NSInteger) aPageSize completion:(void (^)(NSArray<EMGroupSharedFile *> * aList, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getGroupWhiteListFromServerWithId:(NSString *) aGroupId completion:(void (^)(NSArray<NSString *> * aList, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) isMemberInWhiteListFromServerWithGroupId:(NSString *) aGroupId completion:(void (^)(BOOL inWhiteList, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) isMemberInMuteListFromServerWithGroupId:(NSString *) aGroupId completion:(void (^)(BOOL inMuteList, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getGroupAnnouncementWithId:(NSString *) aGroupId completion:(void (^)(NSString * aAnnouncement, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) joinPublicGroup:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) requestToJoinPublicGroup:(NSString *) aGroupId message:(NSString *) aMessage completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) addMembers:(NSArray<NSString *> *) aUsers toGroup:(NSString *) aGroupId message:(NSString *) aMessage completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) removeMembers:(NSArray<NSString *> *) aUsers fromGroup:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) blockMembers:(NSArray<NSString *> *) aMembers fromGroup:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) unblockMembers:(NSArray<NSString *> *) aMembers fromGroup:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) updateGroupSubject:(NSString *) aSubject forGroup:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) updateGroupAvatar:(NSString *) avatar groupId:(NSString *) groupId completion:(void (^)(EMGroup * group, EMError * error)) completionBlock;
+[objective-c.method] - (void) updateGroupWithId:(NSString *) groupId types:(EMGroupConfigsType) type configs:(EMGroupConfigs *) configs completion:(void (^)(EMGroup * group, EMError * error)) aCompletionBlock;
+[objective-c.method] - (void) updateDescription:(NSString *) aDescription forGroup:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) leaveGroup:(NSString *) aGroupId completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) destroyGroup:(NSString *) aGroupId finishCompletion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) blockGroup:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) unblockGroup:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) updateGroupOwner:(NSString *) aGroupId newOwner:(NSString *) aNewOwner completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) addAdmin:(NSString *) aAdmin toGroup:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) removeAdmin:(NSString *) aAdmin fromGroup:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) muteMembers:(NSArray<NSString *> *) aMuteMembers muteMilliseconds:(NSInteger) aMuteMilliseconds fromGroup:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) unmuteMembers:(NSArray<NSString *> *) aMembers fromGroup:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) muteAllMembersFromGroup:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) unmuteAllMembersFromGroup:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) addWhiteListMembers:(NSArray<NSString *> *) aMembers fromGroup:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) removeWhiteListMembers:(NSArray<NSString *> *) aMembers fromGroup:(NSString *) aGroupId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) uploadGroupSharedFileWithId:(NSString *) aGroupId filePath:(NSString *) aFilePath progress:(void (^)(int progress)) aProgressBlock completion:(void (^)(EMGroupSharedFile * aSharedFile, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) downloadGroupSharedFileWithId:(NSString *) aGroupId filePath:(NSString *) aFilePath sharedFileId:(NSString *) aSharedFileId progress:(void (^)(int progress)) aProgressBlock completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) removeGroupSharedFileWithId:(NSString *) aGroupId sharedFileId:(NSString *) aSharedFileId completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) updateGroupAnnouncementWithId:(NSString *) aGroupId announcement:(NSString *) aAnnouncement completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) updateGroupExtWithId:(NSString *) aGroupId ext:(NSString *) aExt completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) approveJoinGroupRequest:(NSString *) aGroupId sender:(NSString *) aUsername completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) declineJoinGroupRequest:(NSString *) aGroupId sender:(NSString *) aUsername reason:(NSString *) aReason completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) acceptInvitationFromGroup:(NSString *) aGroupId inviter:(NSString *) aUsername completion:(void (^)(EMGroup * aGroup, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) declineGroupInvitation:(NSString *) aGroupId inviter:(NSString *) aInviter reason:(NSString *) aReason completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) setMemberAttribute:(NSString *) groupId userId:(NSString *) userId attributes:(NSDictionary<NSString *,NSString *> *) attributes completion:(void (^)(EMError * error)) completionBlock;
+[objective-c.method] - (void) fetchMemberAttribute:(NSString *) groupId userId:(NSString *) userId completion:(void (^)(NSDictionary<NSString *,NSString *> * , EMError * )) completionBlock;
+[objective-c.method] - (void) fetchMembersAttributes:(NSString *) groupId userIds:(NSArray<__kindof NSString *> *) userIds keys:(NSArray<__kindof NSString *> *) keys completion:(void (^)(NSDictionary<NSString *,NSDictionary<NSString *,NSString *> *> * attributes, EMError * error)) completionBlock;
+[objective-c.method] - (void) updateGroupNamecard:(NSString *) groupId namecard:(NSString *) namecard completion:(void (^)(EMError * error)) completionBlock;
+[objective-c.method] - (NSString *) getGroupNamecardWithGroupId:(NSString *) groupId userId:(NSString *) userId;
+
+## IEMPresenceManager.h
+[objective-c.protocol] @protocol IEMPresenceManager <NSObject>
+[objective-c.method] - (void) publishPresenceWithDescription:(NSString *) aDescription completion:(void (^)(EMError * error)) aCompletion;
+[objective-c.method] - (void) subscribe:(NSArray<NSString *> *) members expiry:(NSInteger) expiry completion:(void (^)(NSArray<EMPresence *> * presences, EMError * error)) aCompletion;
+[objective-c.method] - (void) unsubscribe:(NSArray<NSString *> *) members completion:(void (^)(EMError * error)) aCompletion;
+[objective-c.method] - (void) fetchSubscribedMembersWithPageNum:(NSUInteger) pageNum pageSize:(NSUInteger) pageSize Completion:(void (^)(NSArray<NSString *> * members, EMError * error)) aCompletion;
+[objective-c.method] - (void) fetchPresenceStatus:(NSArray<NSString *> *) members completion:(void (^)(NSArray<EMPresence *> * presences, EMError * error)) aCompletion;
+[objective-c.method] - (void) addDelegate:(id<EMPresenceManagerDelegate>) aDelegate delegateQueue:(dispatch_queue_t) aQueue;
+[objective-c.method] - (void) removeDelegate:(id<EMPresenceManagerDelegate>) aDelegate;
+
+## IEMPushManager.h
+[objective-c.protocol] @protocol IEMPushManager <NSObject>
+[objective-c.property] @property (nonatomic, strong, readonly) EMPushOptions * pushOptions;
+[objective-c.method] - (void) updatePushDisplayStyle:(EMPushDisplayStyle) pushDisplayStyle completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) updatePushDisplayName:(NSString *) aDisplayName completion:(void (^)(NSString * aDisplayName, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getPushNotificationOptionsFromServerWithCompletion:(void (^)(EMPushOptions * aOptions, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) setSilentModeForAll:(EMSilentModeParam *) aParam completion:(void (^)(EMSilentModeResult * aResult, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getSilentModeForAllWithCompletion:(void (^)(EMSilentModeResult * aResult, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) syncSilentModeConversationsFromServerCompletion:(void (^)(EMError * error)) completionBlock;
+[objective-c.method] - (void) setSilentModeForConversation:(NSString *) aConversationId conversationType:(EMConversationType) aConversationType params:(EMSilentModeParam *) aParam completion:(void (^)(EMSilentModeResult * aResult, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getSilentModeForConversation:(NSString *) aConversationId conversationType:(EMConversationType) aConversationType completion:(void (^)(EMSilentModeResult * aResult, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) clearRemindTypeForConversation:(NSString *) aConversationId conversationType:(EMConversationType) aConversationType completion:(void (^)(EMSilentModeResult * aResult, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getSilentModeForConversations:(NSArray<EMConversation *> *) aConversationArray completion:(void (^)(NSDictionary<NSString *,EMSilentModeResult *> * aResult, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) setPreferredNotificationLanguage:(NSString *) aLaguangeCode completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getPreferredNotificationLanguageCompletion:(void (^)(NSString * aLaguangeCode, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) setPushTemplate:(NSString *) aPushTemplateName completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getPushTemplate:(void (^)(NSString * aPushTemplateName, EMError * aError)) aCompletionBlock;
+
+## IEMThreadManager.h
+[objective-c.protocol] @protocol IEMThreadManager <NSObject>
+[objective-c.method] - (void) addDelegate:(id<EMThreadManagerDelegate>) aDelegate delegateQueue:(dispatch_queue_t) aQueue;
+[objective-c.method] - (void) removeDelegate:(id<EMThreadManagerDelegate>) aDelegate;
+[objective-c.method] - (void) getChatThreadFromSever:(NSString *) threadId completion:(void (^)(EMChatThread * thread, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getJoinedChatThreadsFromServerWithCursor:(NSString *) aCursor pageSize:(NSInteger) aPageSize completion:(void (^)(EMCursorResult<EMChatThread *> * result, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getChatThreadsFromServerWithParentId:(NSString *) parentId cursor:(NSString *) aCursor pageSize:(NSInteger) aPageSize completion:(void (^)(EMCursorResult<EMChatThread *> * result, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getJoinedChatThreadsFromServerWithParentId:(NSString *) parentId cursor:(NSString *) aCursor pageSize:(NSInteger) aPageSize completion:(void (^)(EMCursorResult<EMChatThread *> * result, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getChatThreadMemberListFromServerWithId:(NSString *) threadId cursor:(NSString *) aCursor pageSize:(NSInteger) pageSize completion:(void (^)(EMCursorResult<NSString *> * aResult, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) getLastMessageFromSeverWithChatThreads:(NSArray<NSString *> *) threadIds completion:(void (^)(NSDictionary<NSString *,EMChatMessage *> * messageMap, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) removeMemberFromChatThread:(NSString *) aUser threadId:(NSString *) athreadId completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) updateChatThreadName:(NSString *) name threadId:(NSString *) athreadId completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) createChatThread:(NSString *) threadName messageId:(NSString *) messageId parentId:(NSString *) parentId completion:(void (^)(EMChatThread * thread, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) joinChatThread:(NSString *) threadId completion:(void (^)(EMChatThread * thread, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) leaveChatThread:(NSString *) athreadId completion:(void (^)(EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) destroyChatThread:(NSString *) athreadId completion:(void (^)(EMError * aError)) aCompletionBlock;
+
+## IEMUserInfoManager.h
+[objective-c.protocol] @protocol IEMUserInfoManager <NSObject>
+[objective-c.method] - (void) addDelegate:(id<EMUserInfoManagerDelegate>) aDelegate delegateQueue:(dispatch_queue_t) aQueue;
+[objective-c.method] - (void) removeDelegate:(id<EMUserInfoManagerDelegate>) aDelegate;
+[objective-c.method] - (void) updateOwnUserInfo:(EMUserInfo *) aUserData completion:(void (^)(EMUserInfo * aUserInfo, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) updateOwnUserInfo:(NSString *) aValue withType:(EMUserInfoType) aType completion:(void (^)(EMUserInfo * aUserInfo, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) fetchUserInfoById:(NSArray<NSString *> *) aUserIds completion:(void (^)(NSDictionary<NSString *,EMUserInfo *> * aUserDatas, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (void) fetchUserInfoById:(NSArray<NSString *> *) aUserIds type:(NSArray<NSNumber *> *) aType completion:(void (^)(NSDictionary<NSString *,EMUserInfo *> * aUserDatas, EMError * aError)) aCompletionBlock;
+[objective-c.method] - (NSDictionary<NSString *,EMUserInfo *> *) getUserInfoByIds:(NSArray<NSString *> *) aUserIds;
+[objective-c.method] - (void) subscribeUsersInfo:(NSArray<NSString *> *) userIds completion:(void (^)(EMError * error)) completionBlock;
+[objective-c.method] - (void) unsubscribeUsersInfo:(NSArray<NSString *> *) userIds completion:(void (^)(EMError * error)) completionBlock;
+[objective-c.method] - (void) fetchSubscribedUsers:(void (^)(NSArray<EMUserInfo *> * users, EMError * error)) completionBlock;

@@ -1,0 +1,31 @@
+name: android-500-500
+
+accounts:
+  account_a:
+    provision: rest
+  account_b:
+    provision: rest
+
+devices:
+  device_a:
+    device_name: deviceA
+    platform: android
+    sdk_version: 5.0.0
+    account: account_a
+    runner_id: android-500-device-a
+    serial: ${NATIVE_TEST_SERIAL_A:-}
+    avd: ${NATIVE_TEST_AVD_A:-Pixel_5}
+  device_b:
+    device_name: deviceB
+    platform: android
+    sdk_version: 5.0.0
+    account: account_b
+    runner_id: android-500-device-b
+    serial: ${NATIVE_TEST_SERIAL_B:-}
+    avd: ${NATIVE_TEST_AVD_B:-Pixel_5_2}
+
+runner:
+  device_ready_timeout: 180
+  hello_timeout: 30
+  start_retry: 1
+  keep_device_alive: true

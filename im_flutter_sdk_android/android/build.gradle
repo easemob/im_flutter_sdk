@@ -39,10 +39,27 @@ android {
     defaultConfig {
         minSdk = 21
     }
-    // 默认固定为本地依赖（目录不带版本号）。如需改为远程依赖，请按下方 dependencies 段注释切换。
+    // 每个 flavor 对应一个 SDK 版本，jar 在 src/<flavor>/libs，jniLibs 在 src/<flavor>/jniLibs。
+    // 切换 SDK 版本不需要改代码；app 侧同 flavor 名自动匹配本 library 的 flavor。
+    flavorDimensions 'chatSdk'
+    productFlavors {
+        sdk423 {
+            dimension 'chatSdk'
+        }
+        sdk500 {
+            dimension 'chatSdk'
+        }
+    }
+    // 每个 flavor 用独立的 java 源集（同名类覆盖 main，实现版本差异 wrapper）；
+    // jniLibs 指向各自版本的 .so。
     sourceSets {
-        main {
-            jniLibs.srcDirs = ['./libs/easemob-sdk/libs']
+        sdk423 {
+            java.srcDirs = ['src/sdk423/java']
+            jniLibs.srcDirs = ['src/sdk423/jniLibs']
+        }
+        sdk500 {
+            java.srcDirs = ['src/sdk500/java']
+            jniLibs.srcDirs = ['src/sdk500/jniLibs']
         }
     }
 }
@@ -53,16 +70,14 @@ tasks.withType(JavaCompile){
 
 dependencies {
     api 'androidx.appcompat:appcompat:1.1.0'
-    // 手动作为 4.23 flavor 的 Android library 引入时，编译期仍需要
-    // Flutter embedding；运行期由宿主 Flutter App 提供。
+    // 手动作为 Android library 引入时，编译期仍需要 Flutter embedding；
+    // 运行期由宿主 Flutter App 提供。
     compileOnly "io.flutter:flutter_embedding_debug:1.0.0-${flutterEngineRevision}"
 
-    // 本地依赖（默认）：修改为实际 JAR 文件名即可
-    // 替换 JAR 后务必：flutter clean → 删除各模块 build/ → example/android 下 ./gradlew clean → 再编译。
-
-    api files('./libs/easemob-sdk/libs/hyphenatechat_4.23.0.jar')
-    // 远程依赖（改为远程时，注释掉上面的 implementation files(...)，取消下一行注释）
-    // implementation 'io.hyphenate:hyphenate-chat:4.19.1'
-    // 仅包含 android/libs 根目录下的 *.jar（子目录里的 JAR 只走上面的显式 implementation files）
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    // 本地依赖（默认）：按 flavor 引对应版本的 JAR。替换 JAR 后务必 clean 再编译。
+    sdk423Api files('./src/sdk423/libs/hyphenatechat_4.23.0.jar')
+    sdk500Api files('./src/sdk500/libs/hyphenatechat_5.0.0.jar')
+    // 远程依赖（改为远程时，注释掉上面的 files(...)，取消下一行注释）
+    // sdk423Api 'io.hyphenate:hyphenate-chat:4.23.0'
+    // sdk500Api 'io.hyphenate:hyphenate-chat:5.0.0'
 }

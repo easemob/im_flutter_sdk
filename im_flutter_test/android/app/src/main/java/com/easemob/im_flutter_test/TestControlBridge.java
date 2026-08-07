@@ -8,6 +8,7 @@ import android.os.Looper;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
+import com.hyphenate.chat.EMTextMessageBody;
 
 import java.util.Collections;
 import java.util.Map;
@@ -67,7 +68,10 @@ public final class TestControlBridge implements MethodChannel.MethodCallHandler 
                 ? "phase1-upgrade"
                 : String.valueOf(conversationValue);
         worker.execute(() -> {
-            EMMessage message = EMMessage.createTxtSendMessage(marker, conversationId);
+            // 5.0 移除 createTxtSendMessage，改用 createSendMessage + setBody
+            EMMessage message = EMMessage.createSendMessage(EMMessage.Type.TXT);
+            message.setBody(new EMTextMessageBody(marker));
+            message.setTo(conversationId);
             message.setMsgId(marker);
             EMConversation conversation = EMClient.getInstance()
                     .chatManager()

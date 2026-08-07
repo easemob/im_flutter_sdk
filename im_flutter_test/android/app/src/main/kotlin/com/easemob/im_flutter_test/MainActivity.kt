@@ -6,23 +6,16 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 
 class MainActivity : FlutterActivity() {
-    private var nativeSdkBridge: NativeSdkBridge? = null
     private var testControlBridge: TestControlBridge? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        if (BuildConfig.FLAVOR == "sdk423") {
-            val plugin = Class
-                .forName("com.easemob.im_flutter_sdk.ImFlutterSdkPlugin")
-                .getDeclaredConstructor()
-                .newInstance() as FlutterPlugin
-            flutterEngine.plugins.add(plugin)
-        } else {
-            nativeSdkBridge = NativeSdkBridge(
-                this,
-                flutterEngine.dartExecutor.binaryMessenger,
-            )
-        }
+        // 4.23 / 5.0 统一使用生产 Wrapper（im_flutter_sdk_android）；410/414 旧路径已移除
+        val plugin = Class
+            .forName("com.easemob.im_flutter_sdk.ImFlutterSdkPlugin")
+            .getDeclaredConstructor()
+            .newInstance() as FlutterPlugin
+        flutterEngine.plugins.add(plugin)
         testControlBridge = TestControlBridge(
             this,
             flutterEngine.dartExecutor.binaryMessenger,
@@ -32,8 +25,6 @@ class MainActivity : FlutterActivity() {
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
         testControlBridge?.dispose()
         testControlBridge = null
-        nativeSdkBridge?.dispose()
-        nativeSdkBridge = null
         super.cleanUpFlutterEngine(flutterEngine)
     }
 
