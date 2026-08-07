@@ -957,20 +957,21 @@ class ChatMessage {
       ..from = map["from"]
       ..body = _bodyFromMap(map["body"])!
       ..attributes = map.getMapValue("attributes")
-      ..direction = MessageDirection.values[map["direction"]]
+      ..direction =
+          MessageDirection.values[map["direction"] ?? MessageDirection.SEND.index]
       ..hasRead = map.boolValue('hasRead')
       ..hasReadAck = map.boolValue('hasReadAck')
       ..needGroupAck = map.boolValue('needGroupAck')
       ..hasDeliverAck = map.boolValue('hasDeliverAck')
       .._msgId = map["msgId"]
       ..conversationId = map["convId"]
-      ..chatType = ChatType.values[map["chatType"]]
+      ..chatType = ChatType.values[map["chatType"] ?? ChatType.Chat.index]
       ..localTime = map["localTime"] ?? 0
       ..serverTime = map["serverTime"] ?? 0
       ..isChatThreadMessage = map["isThread"] ?? false
       ..onlineState = map["onlineState"] ?? true
       ..deliverOnlineOnly = map['deliverOnlineOnly'] ?? false
-      ..status = MessageStatus.values[map["status"]]
+      ..status = MessageStatus.values[map["status"] ?? MessageStatus.CREATE.index]
       ..receiverList = map["receiverList"]?.cast<String>()
       ..isBroadcast = map["broadcast"] ?? false
       ..isContentReplaced = map["isContentReplaced"] ?? false
@@ -1387,7 +1388,8 @@ class ChatFileMessageBody extends ChatMessageBody {
     fileSize = map["fileSize"];
     localPath = map["localPath"] ?? "";
     displayName = map["displayName"];
-    fileStatus = DownloadStatus.values[map["fileStatus"]];
+    fileStatus =
+        DownloadStatus.values[map["fileStatus"] ?? DownloadStatus.PENDING.index];
   }
 
   @override
@@ -1522,7 +1524,8 @@ class ChatImageMessageBody extends ChatFileMessageBody {
     sendOriginalImage = map["sendOriginalImage"] ?? false;
     height = (map["height"] ?? 0).toDouble();
     width = (map["width"] ?? 0).toDouble();
-    thumbnailStatus = DownloadStatus.values[map["thumbnailStatus"]];
+    thumbnailStatus = DownloadStatus
+        .values[map["thumbnailStatus"] ?? DownloadStatus.PENDING.index];
     isGif = map["isGif"] ?? false;
     bigImageLocalPath = map["bigImageLocalPath"];
     bigImageRemotePath = map["bigImageRemotePath"];
@@ -1818,7 +1821,8 @@ class ChatVideoMessageBody extends ChatFileMessageBody {
     thumbnailSecret = map["thumbnailSecret"];
     height = (map["height"] ?? 0).toDouble();
     width = (map["width"] ?? 0).toDouble();
-    thumbnailStatus = DownloadStatus.values[map["thumbnailStatus"]];
+    thumbnailStatus = DownloadStatus
+        .values[map["thumbnailStatus"] ?? DownloadStatus.PENDING.index];
   }
 
   @override
@@ -2067,7 +2071,8 @@ class CombineMessageBody extends ChatMessageBody {
     var body = CombineMessageBody(
       title: map["title"],
       summary: map["summary"],
-      fileStatus: DownloadStatus.values[map["fileStatus"]],
+      fileStatus:
+          DownloadStatus.values[map["fileStatus"] ?? DownloadStatus.PENDING.index],
     );
     body._localPath = map["localPath"];
     body._remotePath = map["remotePath"];

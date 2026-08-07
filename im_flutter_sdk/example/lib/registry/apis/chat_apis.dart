@@ -13,6 +13,8 @@ final chatApis = <ApiEntry>[
         '接收完整消息 JSON（EMMessage.fromJson 解析）后发送。chatType：0 单聊/1 群聊/2 聊天室；'
         'direction：0 发送/1 接收；status：0 创建/1 发送中/2 成功/3 失败；'
         'body.type：0 文本/1 图片/2 视频/3 位置/4 语音/5 文件/6 命令/7 自定义/8 合并。'
+        '附件类 body（图片/视频/语音/文件）必须带 localPath；chatType/direction/status 及'
+        ' fileStatus/thumbnailStatus 等状态字段可省略，缺省按默认值解析。'
         '发送后等待消息状态事件，输出结果的 data 是服务器改写 msgId 后的消息 JSON，'
         '填入 downloadBigImage / voiceMessageToText 的 message 字段即可串联。',
     paramsTemplate: '''{
