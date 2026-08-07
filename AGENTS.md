@@ -41,18 +41,19 @@ make setup   # config + deps + pods
 ## 命名约定
 
 - Dart 文件统一 snake_case；Manager 文件为业务名 + `_manager`：`chat_manager.dart`
-- 公开 Dart 类统一 `EM` 前缀：`EMClient`、`EMMessage`、`EMError`
-- Manager 类：`EM{业务}Manager`，如 `EMChatManager`；事件处理器：`EM{业务}EventHandler`
+- 公开 Dart 类统一 `Chat` 前缀：`ChatClient`、`ChatMessage`、`ChatError`（与海外版 agora_chat_sdk 命名一致）
+- Manager 类：`Chat{业务}Manager`，如 `ChatGroupManager`；事件处理器：`Chat{业务}EventHandler`
 - 原生类统一 `*Wrapper` 后缀：`ChatManagerWrapper.java` / `ChatManagerWrapper.m`；iOS 数据转换类用 `*Helper` 后缀
-- Model 文件历史上存在 `em_` 前缀（`em_message.dart`）与无前缀（`em_message_stream_chunk.dart` 之外的如 `fetch_message_options.dart`）两种风格，新增时参考同类文件、保持类名 `EM` 前缀即可
+- Model 文件存在 `chat_` 前缀（`chat_message.dart`）与无前缀（如 `fetch_message_options.dart`）两种风格，新增时参考同类文件、保持类名 `Chat` 前缀即可
+- 旧 `EM*` 命名已由 `lib/em_compat.dart` 中的 `@Deprecated` typedef 统一兼容（4.22.0 改名时聚拢，仅为兼容存量用户代码），**新代码不得再使用 `EM*` 名称**，也不得向 em_compat.dart 新增条目
 - MethodChannel 统一前缀 `com.chat.im`，格式 `com.chat.im/{manager_name}`：`com.chat.im/chat_manager`
 
 ## 代码风格要点
 
 - import 顺序：dart 标准库 → flutter → `im_flutter_sdk` → `im_flutter_sdk_interface`
-- Manager 一律通过 `EMClient.getInstance` 获取，禁止直接实例化
+- Manager 一律通过 `ChatClient.getInstance` 获取，禁止直接实例化
 - Model 必须实现 `fromJson` 工厂构造与 `toJson()`；MethodChannel 传输格式为 JSON Map
-- MethodChannel 方法名必须使用常量：Dart 侧 `ChatMethodKeys`、Android 侧 `MethodKey.java`、iOS 侧 `MethodKeys.h`，禁止在代码中硬编码字符串；原生回调事件名统一定义在 `em_event_keys.dart`
+- MethodChannel 方法名必须使用常量：Dart 侧 `ChatMethodKeys`、Android 侧 `MethodKey.java`、iOS 侧 `MethodKeys.h`，禁止在代码中硬编码字符串；原生回调事件名统一定义在 `chat_event_keys.dart`
 - 事件处理器以唯一 id 为 key 存于 `Map<String, Handler>`，通过 `addEventHandler(id, handler)` / `removeEventHandler(id)` 管理
 
 ## 文档注释规范
@@ -79,7 +80,7 @@ make setup   # config + deps + pods
 
 | 层 | 文件 | 动作 |
 |---|---|---|
-| Dart 实现 | `im_flutter_sdk/lib/src/managers/{业务}_manager.dart` | 新增公开方法与双语注释；可空参数用 `putIfNotNull` 组装请求 Map；用 `EMError.hasErrorFromResult(result)` 处理错误；返回值转为强类型对象 |
+| Dart 实现 | `im_flutter_sdk/lib/src/managers/{业务}_manager.dart` | 新增公开方法与双语注释；可空参数用 `putIfNotNull` 组装请求 Map；用 `ChatError.hasErrorFromResult(result)` 处理错误；返回值转为强类型对象 |
 | Dart 常量 | `im_flutter_sdk/lib/src/internal/chat_method_keys.dart` | 新增 `static const String` 方法名常量 |
 | Android 常量 | `im_flutter_sdk_android/android/src/main/java/com/easemob/im_flutter_sdk/MethodKey.java` | 新增同名同值常量 |
 | Android 实现 | 同目录下 `{业务}Wrapper.java` | `onMethodCall` 注册分支；参数校验与类型/枚举转换；调用 Hyphenate Android SDK 异步 API；回调中经 `updateObject` 返回可序列化结构 |
@@ -99,9 +100,9 @@ make setup   # config + deps + pods
 - [ ] 返回结构可被 Dart 正确反序列化（注意 `Map<String, List<String>>` 等泛型）
 - [ ] Android 与 iOS 的路由分支均已注册
 
-新增 Model：在 `im_flutter_sdk/lib/src/models/` 建文件，类名 `EM` 前缀，实现 `fromJson`/`toJson`，在 `im_flutter_sdk/lib/im_flutter_sdk.dart` 导出，写双语注释。
+新增 Model：在 `im_flutter_sdk/lib/src/models/` 建文件，类名 `Chat` 前缀，实现 `fromJson`/`toJson`，在 `im_flutter_sdk/lib/im_flutter_sdk.dart` 导出，写双语注释。
 
-新增事件处理器：在 `im_flutter_sdk/lib/src/handlers/manager_event_handler.dart` 定义 `EM{业务}EventHandler`，在对应 Manager 实现 `addEventHandler`/`removeEventHandler`，原生事件名加入 `lib/src/internal/em_event_keys.dart`。
+新增事件处理器：在 `im_flutter_sdk/lib/src/handlers/manager_event_handler.dart` 定义 `Chat{业务}EventHandler`，在对应 Manager 实现 `addEventHandler`/`removeEventHandler`，原生事件名加入 `lib/src/internal/chat_event_keys.dart`。
 
 ## 版本与 CHANGELOG
 
