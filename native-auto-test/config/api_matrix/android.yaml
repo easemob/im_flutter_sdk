@@ -1,11 +1,9 @@
 platform: android
 base:
-  version: 4.23.0
+  version: 5.0.0
   apis:
   - Client.init
-  - Client.createAccount
   - Client.login
-  - Client.loginWithAgoraToken
   - Client.renewToken
   - Client.logout
   - Client.changeAppKey
@@ -29,7 +27,6 @@ base:
   - Client.updateAutoAcceptGroupInvitationSetting
   - Client.acceptInvitationAlways
   - Client.updateAutoDownloadAttachmentThumbnailSetting
-  - Client.updateRequireAckSetting
   - Client.updateDeliveryAckSetting
   - Client.updateSortMessageByServerTimeSetting
   - Client.updateMessagesReceiveCallbackIncludeSendSetting
@@ -69,7 +66,6 @@ base:
   - ChatManager.removeReaction
   - ChatManager.fetchReactionList
   - ChatManager.fetchReactionDetail
-  - ChatManager.reportMessage
   - ChatManager.fetchConversationsFromServerWithPage
   - ChatManager.removeMessagesFromServerWithMsgIds
   - ChatManager.removeMessagesFromServerWithTs
@@ -161,9 +157,6 @@ base:
   - ChatRoomManager.fetchPublicChatRoomsFromServer
   - ChatRoomManager.fetchChatRoomInfoFromServer
   - ChatRoomManager.getChatRoom
-  - ChatRoomManager.getAllChatRooms
-  - ChatRoomManager.createChatRoom
-  - ChatRoomManager.destroyChatRoom
   - ChatRoomManager.changeChatRoomSubject
   - ChatRoomManager.changeChatRoomDescription
   - ChatRoomManager.fetchChatRoomMembers
@@ -240,7 +233,6 @@ base:
   - ConversationManager.getLatestMessageFromOthers
   - ConversationManager.clearAllMessages
   - ConversationManager.deleteMessagesWithTs
-  - ConversationManager.insertMessage
   - ConversationManager.appendMessage
   - ConversationManager.updateConversationMessage
   - ConversationManager.loadMsgWithId
@@ -260,9 +252,22 @@ base:
   - MessageManager.groupAckCount
   - MessageManager.chatThread
   - MessageManager.getPinInfo
+  - ChatManager.deleteConversations
+  - ChatManager.getGroupMessageReadReceipts
+  - ChatManager.searchMessagesFromServer
+  - GroupManager.updateGroupConfigs
+  - GroupManager.updateGroupExtension
+  - PushManager.getPushConfigsFromServer
 versions:
-  5.0.0:
+  4.23.0:
     removed:
+    - ChatManager.deleteConversations
+    - ChatManager.getGroupMessageReadReceipts
+    - ChatManager.searchMessagesFromServer
+    - GroupManager.updateGroupConfigs
+    - GroupManager.updateGroupExtension
+    - PushManager.getPushConfigsFromServer
+    added:
     - ChatManager.reportMessage
     - ChatRoomManager.createChatRoom
     - ChatRoomManager.destroyChatRoom
@@ -271,10 +276,3 @@ versions:
     - Client.loginWithAgoraToken
     - Client.updateRequireAckSetting
     - ConversationManager.insertMessage
-    added:
-    - ChatManager.deleteConversations
-    - ChatManager.getGroupMessageReadReceipts
-    - ChatManager.searchMessagesFromServer
-    - GroupManager.updateGroupConfigs
-    - GroupManager.updateGroupExtension
-    - PushManager.getPushConfigsFromServer
