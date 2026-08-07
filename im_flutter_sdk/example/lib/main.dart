@@ -5,6 +5,7 @@ import 'log/floating_log.dart';
 import 'log/log_store.dart';
 import 'pages/init_page.dart';
 import 'sdk_state.dart';
+import 'tools/floating_attachment.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +40,7 @@ class StatusBar extends StatelessWidget {
   }
 }
 
-/// 根壳：状态条常显 + init 成功后插入悬浮日志（生命周期独立于页面）。
+/// 根壳：状态条常显 + init 成功后插入悬浮日志/悬浮附件（生命周期独立于页面）。
 class RootShell extends StatefulWidget {
   final Widget? child;
   const RootShell({super.key, required this.child});
@@ -60,7 +61,10 @@ class _RootShellState extends State<RootShell> {
           _logShown = true;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             final overlay = appNavigatorKey.currentState?.overlay;
-            if (overlay != null) FloatingLog.show(overlay);
+            if (overlay != null) {
+              FloatingLog.show(overlay);
+              FloatingAttachment.show(overlay);
+            }
           });
         }
         return Column(
