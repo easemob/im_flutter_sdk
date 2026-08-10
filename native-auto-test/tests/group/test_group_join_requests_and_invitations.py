@@ -4,6 +4,7 @@ from __future__ import annotations
 import pytest
 
 from src import Cmd, GroupChangeEvent
+from src.tools.group_capacity import get_group_create_max_count
 from tests.group.group_helpers import (
     assert_group_events,
     assert_no_group_event,
@@ -453,7 +454,7 @@ def test_group_invitation_auto_accept_when_confirmation_required(
             owner=user_a,
             member_count_value=2,
             member_list_value=[user_b],
-            max_user_count_value=200,
+            max_user_count_value=get_group_create_max_count(),
             is_member_allow_to_invite=(style == 1),
             is_member_only=(style != 3),
         )

@@ -26,6 +26,10 @@ from src.tools.ws_client import (
     DeviceConnection,
 )
 from src.tools import assertions
+from src.tools.group_capacity import (
+    configure_group_create_max_count,
+    reset_group_create_max_count,
+)
 from src import Cmd
 
 # 未配置 REST 用户管理时的回退账号（仅当不创建用户时使用）
@@ -267,6 +271,20 @@ def _session_logout(device_a, device_b) -> None:
 # ----- Fixtures -----
 
 def pytest_addoption(parser):
+    def positive_int(value: str) -> int:
+        parsed = int(value)
+        if parsed <= 0:
+            raise ValueError("must be a positive integer")
+        return parsed
+
+    parser.addoption(
+        "--group-create-max-count",
+        action="store",
+        type=positive_int,
+        default=200,
+        metavar="COUNT",
+        help="Maximum members for ordinary Group create requests; default: 200.",
+    )
     parser.addoption(
         "--ws-debug",
         action="store_true",
@@ -601,6 +619,7 @@ def assert_api():
 
 def pytest_configure(config):
     """注册自定义 marker；报告见 README（pytest-html / allure）。"""
+    configure_group_create_max_count(config.getoption("--group-create-max-count"))
     config.addinivalue_line("markers", "client: Client manager API tests")
     config.addinivalue_line("markers", "chat: ChatManager API tests")
     config.addinivalue_line("markers", "group: GroupManager / group API tests")
@@ -608,3 +627,8 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "presence: PresenceManager / online status tests")
     config.addinivalue_line("markers", "multi_device: tests requiring multiple devices/topics")
     config.addinivalue_line("markers", "agorachat4_23_0: AgoraChat SDK 4.23.0 release coverage tests")
+
+
+def pytest_unconfigure(config):
+    """pytest 结束后清空本进程的容量场景，便于嵌入式重复运行。"""
+    reset_group_create_max_count()

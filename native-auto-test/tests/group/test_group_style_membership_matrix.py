@@ -4,6 +4,7 @@ from __future__ import annotations
 import pytest
 
 from src import Cmd
+from src.tools.group_capacity import get_group_create_max_count
 from tests.group.group_helpers import (
     assert_group_members_exact,
     assert_group_snapshot,
@@ -47,8 +48,11 @@ def _assert_none_response(assert_api, response: dict, *, cmd: str, device: str) 
 def _fetch_group(device, assert_api, *, group_id: str, group_name: str, owner: str,
                  member_count: int, members: list[str], style: int = 0,
                  admins: list[str] | None = None,
-                 block_list: list[str] | None = None, max_count: int = 200,
+                 block_list: list[str] | None = None, max_count: int | None = None,
                  device_name: str = "deviceA") -> dict:
+    if max_count is None:
+        max_count = get_group_create_max_count()
+
     response = device.call(
         "GroupManager",
         Cmd.getGroupSpecificationFromServer.value,
