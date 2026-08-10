@@ -46,14 +46,14 @@ def get_default_topic() -> str:
 
 
 def get_connect_timeout() -> float:
-    return float(load_config()["websocket"].get("connect_timeout", 10))
+    return float((load_config().get("websocket") or {}).get("connect_timeout", 10))
 
 
 def get_response_timeout() -> float:
     override = os.getenv("NATIVE_TEST_RESPONSE_TIMEOUT", "").strip()
     if override:
         return float(override)
-    return float(load_config()["websocket"].get("response_timeout", 30))
+    return float((load_config().get("websocket") or {}).get("response_timeout", 30))
 
 
 def get_topic(device: str | None = None) -> str:

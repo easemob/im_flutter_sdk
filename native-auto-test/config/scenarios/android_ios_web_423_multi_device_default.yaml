@@ -12,7 +12,6 @@ devices:
     platform: android
     sdk_version: 4.23.0
     account: account_a
-    runner_id: android-423-device-a
     serial: emulator-5554
 
   device_a_sec:
@@ -20,7 +19,6 @@ devices:
     platform: ios
     sdk_version: 4.24.0
     account: account_a
-    runner_id: ios-423-device-a-sec
     serial: 5C30BD0D-D2E0-40CE-8A4A-CAB975887F6E
 
   device_b:
@@ -28,7 +26,6 @@ devices:
     platform: android
     sdk_version: 4.23.0
     account: account_b
-    runner_id: android-423-device-b
     serial: emulator-5558
 
   device_b_sec:
@@ -36,7 +33,6 @@ devices:
     platform: ios
     sdk_version: 4.24.0
     account: account_b
-    runner_id: ios-423-device-b-sec
     serial: EE7B2CEE-7E25-43E6-8B83-8CE432CBE97D
 
   device_b_web:
@@ -44,7 +40,6 @@ devices:
     platform: web
     sdk_version: 4.23.0
     account: account_b
-    runner_id: web-423-device-b
 
 topologies:
   account_b_to_account_a:

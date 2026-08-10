@@ -579,6 +579,15 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     }
 }
 
+- (void)onDatabaseOpened:(EMError * _Nullable)error username:(NSString *_Nonnull)username {
+    NSMutableDictionary *data = [NSMutableDictionary dictionary];
+    data[@"username"] = username;
+    if (error) {
+        data[@"errorCode"] = @(error.code);
+    }
+    [self.channel invokeMethod:ChatOnDatabaseOpened arguments:data];
+}
+
 - (void)activeNumbersReachLimitation {
     [self.channel invokeMethod:ChatOnAppActiveNumberReachLimit arguments:nil];
 }

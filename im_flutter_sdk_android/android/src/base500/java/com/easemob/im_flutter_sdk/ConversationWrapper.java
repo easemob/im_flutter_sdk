@@ -73,6 +73,8 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
         register(MethodKey.pinnedMessages, this::pinnedMessages);
         register(MethodKey.conversationRemindType, this::remindType);
         register(MethodKey.conversationSearchMsgsByOptions, this::searchMsgByOptions);
+        register(MethodKey.getConversationName, this::getConversationName);
+        register(MethodKey.getConversationAvatar, this::getConversationAvatar);
         register(MethodKey.conversationGetLocalMessageCount, this::getLocalMessageCount);
         register(MethodKey.conversationDeleteServerMessageWithIds, this::deleteLocalAndServerMessages);
         register(MethodKey.conversationDeleteServerMessageWithTime, this::deleteLocalAndServerMessagesByTime);
@@ -411,6 +413,22 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
                 messages.add(MessageHelper.toJson(msg));
             }
             onSuccess(result, channelName, messages);
+        });
+    }
+
+    private void getConversationName(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        asyncRunnable(()-> {
+            EMConversation conversation = conversationParams.getConversation();
+            onSuccess(result, channelName, conversation.getConversationName());
+        });
+    }
+
+    private void getConversationAvatar(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        asyncRunnable(()-> {
+            EMConversation conversation = conversationParams.getConversation();
+            onSuccess(result, channelName, conversation.getConversationAvatar());
         });
     }
 

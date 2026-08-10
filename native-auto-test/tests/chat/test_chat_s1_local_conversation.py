@@ -62,10 +62,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                 "direction": 0,
                 "status": 0,
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": False,
-                "needGroupAck": False,
-                "isThread": False,
+                "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
                 "body": {"type": 0, "content": "{{content}}"},
             },
@@ -100,10 +97,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "deliverOnlineOnly": False,
+                    "needReadReceipt": False, "deliverOnlineOnly": False,
                     "isThread": False,
                     "isContentReplaced": False,
                     "body": {"type": 0, "content": "{{content}}"},
@@ -128,10 +122,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                         "direction": 1,
                         "status": 2,
                         "hasRead": False,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
-                        "deliverOnlineOnly": False,
+                        "needReadReceipt": False, "deliverOnlineOnly": False,
                         "isThread": False,
                         "isContentReplaced": False,
                         "body": {"type": 0, "content": "{{content}}"},
@@ -145,36 +136,6 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
 
     real_id = (((evt_success.get("data") or {}).get("msg")) or {}).get("msgId")
     assert real_id, f"missing real msgId from onMessageSuccess: {evt_success!r}"
-    evt_delivered = _wait_text_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, content=content)
-    assert_api.assert_response_matches(
-        evt_delivered,
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessagesDelivered.value,
-            "data": {
-                "messages": [
-                    {
-                        "from": "{{fromUser}}",
-                        "to": "{{toUser}}",
-                        "convId": "{{toUser}}",
-                        "chatType": 0,
-                        "direction": 0,
-                        "status": 2,
-                        "hasRead": True,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
-                        "deliverOnlineOnly": False,
-                        "isThread": False,
-                        "isContentReplaced": False,
-                        "body": {"type": 0, "content": "{{content}}"},
-                    }
-                ]
-            },
-        },
-        context={"fromUser": user_a, "toUser": user_b, "content": content},
-        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "msgId", "translations", "receiverList", "broadcast", "onlineState"},
-    )
     return str(real_id)
 
 

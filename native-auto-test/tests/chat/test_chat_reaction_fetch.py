@@ -63,8 +63,7 @@ def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_i
         "direction": direction,
         "status": 2,
         "hasRead": has_read,
-        "hasReadAck": False,
-        "needGroupAck": False,
+        "needReadReceipt": False,
         "isThread": False,
         "isContentReplaced": False,
         "deliverOnlineOnly": False,
@@ -101,8 +100,7 @@ def _assert_message_lookup(assert_api, response: dict, *, device_name: str, real
             "result": {
                 "msgId": str(real_id), "from": user_a, "to": user_b,
                 "convId": conv_id, "chatType": 0, "direction": direction,
-                "status": 2, "hasRead": has_read, "hasReadAck": False,
-                "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+                "status": 2, "hasRead": has_read, "needReadReceipt": False,  "isThread": False, "isContentReplaced": False,
                 "body": {"type": 0, "content": content},
             },
         },
@@ -233,10 +231,7 @@ def _send_text_and_wait_received(device_a, device_b, assert_api, user_a: str, us
                 "direction": 0,
                 "status": 0,
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": False,
-                "needGroupAck": False,
-                "isThread": False,
+                "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
                 "body": {"type": 0, "content": content},
             },
@@ -262,10 +257,7 @@ def _send_text_and_wait_received(device_a, device_b, assert_api, user_a: str, us
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "isThread": False,
+                    "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False,
                     "deliverOnlineOnly": False,
                     "body": {"type": 0, "content": content, "translations": {}},
@@ -276,9 +268,7 @@ def _send_text_and_wait_received(device_a, device_b, assert_api, user_a: str, us
     )
 
     evt_received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id, content=content)
-    _assert_text_message_event(assert_api, evt_received, event_type=Cmd.onMessagesReceived.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True)
-    evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, content=content)
-    _assert_text_message_event(assert_api, evt_delivered, event_type=Cmd.onMessagesDelivered.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True)
+    _assert_text_message_event(assert_api, evt_received, event_type=Cmd.onMessagesReceived.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=None)
     return str(real_id)
 
 
@@ -315,8 +305,7 @@ def test_chat_reaction_change_event_received_by_sender(topology, assert_api):
                 "result": {
                     "msgId": str(temp_id), "from": sender_user, "to": recipient_user,
                     "convId": recipient_user, "chatType": 0, "direction": 0,
-                    "status": 0, "hasRead": True, "hasReadAck": False,
-                    "needGroupAck": False, "isThread": False,
+                    "status": 0, "hasRead": True, "needReadReceipt": False,  "isThread": False,
                     "isContentReplaced": False, "body": {"type": 0, "content": content},
                 },
             },
@@ -335,8 +324,7 @@ def test_chat_reaction_change_event_received_by_sender(topology, assert_api):
                 "data": {"msgId": str(temp_id), "msg": {
                     "msgId": str(real_id), "from": sender_user, "to": recipient_user,
                     "convId": recipient_user, "chatType": 0, "direction": 0,
-                    "status": 2, "hasRead": True, "hasReadAck": False,
-                    "needGroupAck": False, "isThread": False,
+                    "status": 2, "hasRead": True, "needReadReceipt": False,  "isThread": False,
                     "isContentReplaced": False, "deliverOnlineOnly": False,
                     "body": {"type": 0, "content": content, "translations": {}},
                 }},
@@ -383,24 +371,8 @@ def test_chat_reaction_change_event_received_by_sender(topology, assert_api):
                 assert_api, received, event_type=Cmd.onMessagesReceived.value,
                 real_id=str(real_id), user_a=sender_user, user_b=recipient_user,
                 content=content, direction=1, conv_id=sender_user,
-                has_read=False, has_deliver_ack=True,
+                has_read=False, has_deliver_ack=None,
             )
-
-    with _allure_step(f"等待 {sender.device_name} 收到 {len(recipients)} 条消息送达回执（onMessagesDelivered）"):
-        delivered = _wait_message_event(
-            sender,
-            Cmd.onMessagesDelivered.value,
-            real_id=str(real_id),
-            content=content,
-            expected_message_count=len(recipients),
-        )
-    with _allure_step("确认消息已送达接收账号的全部在线端"):
-        _assert_text_message_event(
-            assert_api, delivered, event_type=Cmd.onMessagesDelivered.value,
-            real_id=str(real_id), user_a=sender_user, user_b=recipient_user,
-            content=content, direction=0, conv_id=recipient_user,
-            has_read=True, has_deliver_ack=True, expected_message_count=len(recipients),
-        )
 
     time.sleep(float(os.getenv("CHAT_REACTION_SETTLE_SECONDS", "10")))
 

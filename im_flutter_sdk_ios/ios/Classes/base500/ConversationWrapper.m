@@ -56,6 +56,14 @@
         [self getUnreadMsgCount:call.arguments
                     channelName:call.method
                          result:result];
+    } else if ([ChatGetConversationName isEqualToString:call.method]) {
+        [self getConversationName:call.arguments
+                      channelName:call.method
+                           result:result];
+    } else if ([ChatGetConversationAvatar isEqualToString:call.method]) {
+        [self getConversationAvatar:call.arguments
+                        channelName:call.method
+                             result:result];
     } else if ([ChatMarkAllMsgsAsRead isEqualToString:call.method]) {
         [self markAllMessagesAsRead:call.arguments
                         channelName:call.method
@@ -189,6 +197,36 @@
                       channelName:aChannelName
                             error:nil
                            object:@(conversation.unreadMessagesCount)];
+    }];
+}
+
+- (void)getConversationName:(NSDictionary *)param
+               channelName:(NSString *)aChannelName
+                    result:(FlutterResult)result
+{
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation) {
+        NSString *name = conversation.conversationName;
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:nil
+                           object:name ?: @""];
+    }];
+}
+
+- (void)getConversationAvatar:(NSDictionary *)param
+                 channelName:(NSString *)aChannelName
+                      result:(FlutterResult)result
+{
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation) {
+        NSString *avatar = conversation.conversationAvatar;
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:nil
+                           object:avatar ?: @""];
     }];
 }
 

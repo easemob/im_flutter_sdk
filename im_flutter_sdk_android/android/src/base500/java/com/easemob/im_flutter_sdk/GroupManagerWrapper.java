@@ -107,6 +107,7 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
         register(MethodKey.getGroupNamecard, this::getGroupNamecard);
         register(MethodKey.removeUserFromGroup, this::removeUserFromGroup);
         register(MethodKey.updateGroupNamecard, this::updateGroupNamecard);
+        register(MethodKey.getUsers, this::getUsers);
     }
 
 
@@ -1330,6 +1331,18 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
         String namecard = params.getString("namecard");
         EMClient.getInstance().groupManager().asyncUpdateGroupNamecard(groupId, namecard,
                 new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void getUsers(JSONObject params, String channelName, Result result) throws JSONException {
+        String groupId = params.getString("groupId");
+        asyncRunnable(() -> {
+            try {
+                EMGroup group = EMClient.getInstance().groupManager().getGroupFromServer(groupId);
+                onSuccess(result, channelName, group.getUsers());
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        });
     }
 
 }

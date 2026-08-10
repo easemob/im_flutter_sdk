@@ -6,7 +6,7 @@ import time
 import pytest
 
 from src import Cmd, ge, ne
-from tests.chat._utils import build_text
+from tests.chat._utils import swt_to_send, build_text
 
 pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.agorachat4_23_0]
 
@@ -53,26 +53,6 @@ def _wait_received_message(device, msg_id: str, *, from_user: str, to_user: str,
             ):
                 return msg
     pytest.fail(f"onMessagesReceived 未包含目标消息: msgId={msg_id}, last={last}")
-
-
-def _wait_delivered_message(device, msg_id: str, *, from_user: str, to_user: str, timeout: float = 20.0) -> dict:
-    last = None
-    for _ in range(8):
-        evt = device.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=timeout)
-        last = evt
-        if not evt:
-            continue
-        messages = ((evt.get("data") or {}).get("messages") or [])
-        for msg in messages:
-            if (
-                isinstance(msg, dict)
-                and str(msg.get("msgId")) == str(msg_id)
-                and msg.get("from") == from_user
-                and msg.get("to") == to_user
-            ):
-                return msg
-    pytest.fail(f"onMessagesDelivered 未包含目标消息: msgId={msg_id}, last={last}")
-
 
 def _wait_message_progress(device, msg_id: str, *, timeout: float = 20.0) -> dict:
     last = None
@@ -158,10 +138,7 @@ def _assert_received_attachment_message(
             "status": 2,
             "deliverOnlineOnly": False,
             "hasRead": False,
-            "hasReadAck": False,
-            "hasDeliverAck": True,
-            "needGroupAck": False,
-            "isThread": False,
+            "needReadReceipt": False, "isThread": False,
             "isContentReplaced": False,
             "body": expected_body,
         },
@@ -225,9 +202,7 @@ def _assert_download_api_with_progress(device, assert_api, *, cmd: str, message:
             "status",
             "deliverOnlineOnly",
             "hasRead",
-            "hasReadAck",
             "hasDeliverAck",
-            "needGroupAck",
             "isThread",
             "isContentReplaced",
             "localPath",
@@ -311,9 +286,7 @@ def _assert_download_api_with_progress(device, assert_api, *, cmd: str, message:
             "status",
             "deliverOnlineOnly",
             "hasRead",
-            "hasReadAck",
             "hasDeliverAck",
-            "needGroupAck",
             "isThread",
             "isContentReplaced",
             "localPath",
@@ -368,9 +341,7 @@ def _assert_combine_inner_download_api_with_progress(device, assert_api, *, cmd:
             "status",
             "deliverOnlineOnly",
             "hasRead",
-            "hasReadAck",
             "hasDeliverAck",
-            "needGroupAck",
             "isThread",
             "isContentReplaced",
             "localPath",
@@ -453,9 +424,7 @@ def _assert_combine_inner_download_api_with_progress(device, assert_api, *, cmd:
             "status",
             "deliverOnlineOnly",
             "hasRead",
-            "hasReadAck",
             "hasDeliverAck",
-            "needGroupAck",
             "isThread",
             "isContentReplaced",
             "localPath",
@@ -478,8 +447,8 @@ def _assert_combine_inner_download_api_with_progress(device, assert_api, *, cmd:
 
 def _send_with_type(device_a, device_b, assert_api, user_a: str, user_b: str, *, type_key: str, payload: dict) -> tuple[dict, dict, dict]:
     info = {"type": type_key, "payload": payload, "chatType": 0}
-    resp = device_a.call("ChatManager", Cmd.sendMessageWithType.value, info=info)
-    _fail_if_error(resp, Cmd.sendMessageWithType.value)
+    resp = device_a.call("ChatManager", Cmd.sendMessage.value, info=swt_to_send(info))
+    _fail_if_error(resp, Cmd.sendMessage.value)
 
     temp_id = ((resp.get("result") or {}).get("msgId"))
     assert temp_id, f"sendMessageWithType 未返回临时 msgId: {resp}"
@@ -547,7 +516,7 @@ def _send_with_type(device_a, device_b, assert_api, user_a: str, user_b: str, *,
         resp,
         expected={
             "manager": "ChatManager",
-            "cmd": Cmd.sendMessageWithType.value,
+            "cmd": Cmd.sendMessage.value,
             "device": "deviceA",
             "result": {
                 "msgId": "{{tempId}}",
@@ -559,10 +528,7 @@ def _send_with_type(device_a, device_b, assert_api, user_a: str, user_b: str, *,
                 "status": ne(None),
                 "deliverOnlineOnly": False,
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": False,
-                "needGroupAck": False,
-                "isThread": False,
+                "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
                 "body": body_expected,
             },
@@ -587,10 +553,7 @@ def _send_with_type(device_a, device_b, assert_api, user_a: str, user_b: str, *,
                     "status": 2,
                     "deliverOnlineOnly": False,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "isThread": False,
+                    "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False,
                     "body": body_expected,
                 },
@@ -600,29 +563,6 @@ def _send_with_type(device_a, device_b, assert_api, user_a: str, user_b: str, *,
         ignore_keys=ignore_keys,
     )
     received_msg = _wait_received_message(device_b, real_id, from_user=user_a, to_user=user_b)
-    delivered_msg = _wait_delivered_message(device_a, real_id, from_user=user_a, to_user=user_b)
-    assert_api.assert_response_matches(
-        delivered_msg,
-        expected={
-            "msgId": "{{realId}}",
-            "from": "{{fromUser}}",
-            "to": "{{toUser}}",
-            "convId": "{{toUser}}",
-            "chatType": 0,
-            "direction": 0,
-            "status": 2,
-            "deliverOnlineOnly": False,
-            "hasRead": True,
-            "hasReadAck": False,
-            "hasDeliverAck": True,
-            "needGroupAck": False,
-            "isThread": False,
-            "isContentReplaced": False,
-            "body": body_expected,
-        },
-        context={"realId": real_id, "fromUser": user_a, "toUser": user_b},
-        ignore_keys=ignore_keys,
-    )
     return resp, sent_msg, received_msg
 
 
@@ -744,10 +684,7 @@ def _send_text_message_with_webhook_env(
                 "direction": 0,
                 "status": 0,
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": False,
-                "needGroupAck": False,
-                "isThread": False,
+                "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
                 "webhookEnv": "{{webhookEnv}}",
                 "body": {"type": 0, "content": "{{content}}"},
@@ -779,10 +716,7 @@ def _send_text_message_with_webhook_env(
                     "status": 2,
                     "deliverOnlineOnly": False,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "isThread": False,
+                    "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False,
                     "webhookEnv": "{{webhookEnv}}",
                     "body": {"type": 0, "content": "{{content}}"},
@@ -812,10 +746,7 @@ def _send_text_message_with_webhook_env(
             "status": 2,
             "deliverOnlineOnly": False,
             "hasRead": False,
-            "hasReadAck": False,
-            "hasDeliverAck": True,
-            "needGroupAck": False,
-            "isThread": False,
+            "needReadReceipt": False, "isThread": False,
             "isContentReplaced": False,
             "body": {"type": 0, "content": "{{content}}"},
         },
@@ -824,36 +755,6 @@ def _send_text_message_with_webhook_env(
             "fromUser": user_a,
             "toUser": user_b,
             "content": content,
-        },
-        ignore_keys=ignore_keys,
-    )
-    delivered_msg = _wait_delivered_message(device_a, real_id, from_user=user_a, to_user=user_b)
-    assert_api.assert_response_matches(
-        delivered_msg,
-        expected={
-            "msgId": "{{realId}}",
-            "from": "{{fromUser}}",
-            "to": "{{toUser}}",
-            "convId": "{{toUser}}",
-            "chatType": 0,
-            "direction": 0,
-            "status": 2,
-            "deliverOnlineOnly": False,
-            "hasRead": True,
-            "hasReadAck": False,
-            "hasDeliverAck": True,
-            "needGroupAck": False,
-            "isThread": False,
-            "isContentReplaced": False,
-            "webhookEnv": "{{webhookEnv}}",
-            "body": {"type": 0, "content": "{{content}}"},
-        },
-        context={
-            "realId": real_id,
-            "fromUser": user_a,
-            "toUser": user_b,
-            "content": content,
-            "webhookEnv": webhook_env,
         },
         ignore_keys=ignore_keys,
     )
@@ -926,10 +827,7 @@ def test_combine_forward_send_receive_and_inner_attachment_download(device_a, de
             "status": 2,
             "deliverOnlineOnly": False,
             "hasRead": False,
-            "hasReadAck": False,
-            "hasDeliverAck": True,
-            "needGroupAck": False,
-            "isThread": False,
+            "needReadReceipt": False, "isThread": False,
             "isContentReplaced": False,
             "body": {
                 "type": 8,

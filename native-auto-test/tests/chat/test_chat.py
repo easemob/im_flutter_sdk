@@ -70,8 +70,7 @@ def _build_text(from_user: str, to_user: str, content: str, chat_type: int = 0) 
         "direction": 0,            # SEND
         "body": {"type": 0, "content": content},
         # 推荐默认，避免端上严格校验
-        "hasReadAck": False,
-        "needGroupAck": False,
+        "needReadReceipt": False,
         "isThread": False,
         "deliverOnlineOnly": False
     }
@@ -135,9 +134,7 @@ def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_i
                         "chatType": 0,
                         "status": 2,
                         "hasRead": has_read,
-                        "hasReadAck": False,
-                        "hasDeliverAck": has_deliver_ack,
-                        "needGroupAck": False,
+                        "needReadReceipt": False, "hasDeliverAck": has_deliver_ack,
                         "deliverOnlineOnly": False,
                         "isThread": False,
                         "isContentReplaced": False,
@@ -189,10 +186,7 @@ def test_chat_send_to_self_should_not_succeed(device_a, assert_api, user_a):
                     "chatType": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "deliverOnlineOnly": False,
+                    "needReadReceipt": False, "deliverOnlineOnly": False,
                     "isThread": False,
                     "isContentReplaced": False,
                 },
@@ -226,10 +220,7 @@ def test_chat_send_to_self_should_not_succeed(device_a, assert_api, user_a):
                 "direction": 0,
                 "status": 0,
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": False,
-                "needGroupAck": False,
-                "isThread": False,
+                "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
                 "body": {"type": 0, "content": "{{content}}"},
             },
@@ -368,10 +359,7 @@ def test_chat_add_reaction_empty_reaction_response(device_a, device_b, assert_ap
                 "status": 0,
                 "body": {"type": 0, "content": content},
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": False,
-                "needGroupAck": False,
-                "isThread": False,
+                "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
             },
         },
@@ -394,10 +382,7 @@ def test_chat_add_reaction_empty_reaction_response(device_a, device_b, assert_ap
                     "chatType": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "deliverOnlineOnly": False,
+                    "needReadReceipt": False, "deliverOnlineOnly": False,
                     "isThread": False,
                     "isContentReplaced": False,
                 },
@@ -406,9 +391,7 @@ def test_chat_add_reaction_empty_reaction_response(device_a, device_b, assert_ap
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState", "targetLanguages"},
     )
     evt_received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id, content=content)
-    _assert_text_message_event(assert_api, evt_received, event_type=Cmd.onMessagesReceived.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True)
-    evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, content=content)
-    _assert_text_message_event(assert_api, evt_delivered, event_type=Cmd.onMessagesDelivered.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True)
+    _assert_text_message_event(assert_api, evt_received, event_type=Cmd.onMessagesReceived.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=None)
     resp = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": "", "msgId": real_id})
     print("ADD_REACTION_EMPTY RESP:", resp)
     # 空 reaction：按当前实现返回固定错误

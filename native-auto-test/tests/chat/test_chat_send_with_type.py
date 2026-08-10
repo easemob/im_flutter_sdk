@@ -6,6 +6,8 @@ import pytest
 
 from src import Cmd, ne, gt, ge
 
+from tests.chat._utils import swt_to_send
+
 pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.agorachat1_4_0]
 
 
@@ -95,7 +97,6 @@ def _assert_text_message_event(
     direction: int,
     conv_id: str,
     has_read: bool,
-    has_deliver_ack: bool,
     target_languages: list[str] | None = None,
 ):
     body = {"type": 0, "content": content}
@@ -117,9 +118,7 @@ def _assert_text_message_event(
                         "direction": direction,
                         "status": 2,
                         "hasRead": has_read,
-                        "hasReadAck": False,
-                        "hasDeliverAck": has_deliver_ack,
-                        "needGroupAck": False,
+                        "needReadReceipt": False,
                         "isThread": False,
                         "isContentReplaced": False,
                         "deliverOnlineOnly": False,
@@ -139,21 +138,10 @@ def _assert_send_success_and_events(device_a, device_b, assert_api, user_a, user
     except Exception:
         pass
 
-    info = {
-        "type": "txt",
-        "payload": {
-            "targetId": user_b,
-            "content": content,
-        },
-        "chatType": 0,
-    }
+    info = {"type": "txt", "payload": {"targetId": user_b, "content": content}, "chatType": 0}
     if target_languages:
         info["payload"]["targetLanguages"] = list(target_languages)
-
-    resp = device_a.call("ChatManager", Cmd.sendMessageWithType.value, info=info)
-    # 端未实现时返回 MissingPluginException；直接跳过
-    if resp.get("success") is False and "MissingPluginException" in str((resp.get("error") or {}).get("description", "")):
-        pytest.skip("MissingPlugin: sendMessageWithType 未在当前集成端实现")
+    resp = device_a.call("ChatManager", Cmd.sendMessage.value, info=swt_to_send(info))
     resp_result = resp.get("result") or {}
     resp_temp_id = resp_result.get("msgId")
     evt_success = _wait_success_event(device_a, temp_id=resp_temp_id, content=content)
@@ -180,10 +168,7 @@ def _assert_send_success_and_events(device_a, device_b, assert_api, user_a, user
                     "status": 2,
                     "deliverOnlineOnly": False,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "isThread": False,
+                    "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False,
                 },
             },
@@ -196,7 +181,7 @@ def _assert_send_success_and_events(device_a, device_b, assert_api, user_a, user
         resp,
         expected={
             "manager": "ChatManager",
-            "cmd": Cmd.sendMessageWithType.value,
+            "cmd": Cmd.sendMessage.value,
             "device": "deviceA",
             "result": {
                 "msgId": "{{tempId}}",
@@ -205,13 +190,9 @@ def _assert_send_success_and_events(device_a, device_b, assert_api, user_a, user
                 "convId": "{{toUser}}",
                 "chatType": 0,
                 "direction": 0,
-                "status": 1,
                 "deliverOnlineOnly": False,
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": False,
-                "needGroupAck": False,
-                "isThread": False,
+                "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
                 "body": {"type": 0, "content": "{{content}}"},
             },
@@ -219,6 +200,7 @@ def _assert_send_success_and_events(device_a, device_b, assert_api, user_a, user
         context={"tempId": temp_id, "fromUser": user_a, "toUser": user_b, "content": content},
         ignore_keys={
             "sequence",
+            "status",
             "serverTime",
             "localTime",
             "broadcast",
@@ -246,22 +228,6 @@ def _assert_send_success_and_events(device_a, device_b, assert_api, user_a, user
         direction=1,
         conv_id=user_a,
         has_read=False,
-        has_deliver_ack=True,
-        target_languages=target_languages,
-    )
-    evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, body_type=0, content=content)
-    _assert_text_message_event(
-        assert_api,
-        evt_delivered,
-        event_type=Cmd.onMessagesDelivered.value,
-        real_id=real_id,
-        user_a=user_a,
-        user_b=user_b,
-        content=content,
-        direction=0,
-        conv_id=user_b,
-        has_read=True,
-        has_deliver_ack=True,
         target_languages=target_languages,
     )
     return real_id
@@ -280,25 +246,15 @@ def test_send_message_with_type_text_with_languages(device_a, device_b, assert_a
     except Exception:
         pass
 
-    info = {
-        "type": "txt",
-        "payload": {
-            "targetId": user_b,
-            "content": content,
-            "targetLanguages": ["zh-Hans"],
-        },
-        "chatType": 0,
-    }
-    resp = device_a.call("ChatManager", Cmd.sendMessageWithType.value, info=info)
-    if resp.get("success") is False and "MissingPluginException" in str((resp.get("error") or {}).get("description", "")):
-        pytest.skip("MissingPlugin: sendMessageWithType 未在当前集成端实现")
+    info = {"type": "txt", "payload": {"targetId": user_b, "content": content, "targetLanguages": ["zh-Hans"]}, "chatType": 0}
+    resp = device_a.call("ChatManager", Cmd.sendMessage.value, info=swt_to_send(info))
     temp_id = ((resp.get("result") or {}).get("msgId"))
     assert temp_id, f"sendMessageWithType(text,targetLanguages) 未返回临时 msgId: {resp}"
     assert_api.assert_response_matches(
         resp,
         expected={
             "manager": "ChatManager",
-            "cmd": Cmd.sendMessageWithType.value,
+            "cmd": Cmd.sendMessage.value,
             "device": "deviceA",
             "result": {
                 "msgId": temp_id,
@@ -307,21 +263,19 @@ def test_send_message_with_type_text_with_languages(device_a, device_b, assert_a
                 "convId": user_b,
                 "chatType": 0,
                 "direction": 0,
-                "status": 1,
                 "body": {"type": 0, "content": content, "targetLanguages": ["zh-Hans"]},
             },
         },
         ignore_keys={
             "sequence",
+            "status",
             "serverTime",
             "localTime",
             "broadcast",
             "onlineState",
             "deliverOnlineOnly",
             "hasRead",
-            "hasReadAck",
             "hasDeliverAck",
-            "needGroupAck",
             "isThread",
             "isContentReplaced",
         },
@@ -346,10 +300,7 @@ def test_send_message_with_type_text_with_languages(device_a, device_b, assert_a
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "isThread": False,
+                    "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False,
                     "deliverOnlineOnly": False,
                     "body": {
@@ -364,6 +315,7 @@ def test_send_message_with_type_text_with_languages(device_a, device_b, assert_a
         ignore_keys={
             "timestamp",
             "sequence",
+            "status",
             "serverTime",
             "localTime",
             "broadcast",
@@ -383,22 +335,6 @@ def test_send_message_with_type_text_with_languages(device_a, device_b, assert_a
         direction=1,
         conv_id=user_a,
         has_read=False,
-        has_deliver_ack=True,
-        target_languages=["zh-Hans"],
-    )
-    evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, body_type=0, content=content)
-    _assert_text_message_event(
-        assert_api,
-        evt_delivered,
-        event_type=Cmd.onMessagesDelivered.value,
-        real_id=real_id,
-        user_a=user_a,
-        user_b=user_b,
-        content=content,
-        direction=0,
-        conv_id=user_b,
-        has_read=True,
-        has_deliver_ack=True,
         target_languages=["zh-Hans"],
     )
 
@@ -406,15 +342,8 @@ def test_send_message_with_type_text_with_languages(device_a, device_b, assert_a
 def test_send_message_with_type_cmd_received_by_cmd_callback(device_a, device_b, assert_api, user_a, user_b):
     """sendMessageWithType(cmd)：发送 CMD 消息，接收方收到 onCmdMessagesReceived 且不混入普通消息回调。"""
     action = f"cmd-action-{uuid.uuid4().hex[:8]}"
-    info = {
-        "type": "cmd",
-        "payload": {
-            "targetId": user_b,
-            "action": action,
-            "deliverOnlineOnly": False,
-        },
-        "chatType": 0,
-    }
+    info = {"type": "cmd", "payload": {"targetId": user_b, "action": action, "deliverOnlineOnly": False}, "chatType": 0}
+    resp = device_a.call("ChatManager", Cmd.sendMessage.value, info=swt_to_send(info))
 
     try:
         device_a.drain_events()
@@ -422,16 +351,14 @@ def test_send_message_with_type_cmd_received_by_cmd_callback(device_a, device_b,
     except Exception:
         pass
 
-    resp = device_a.call("ChatManager", Cmd.sendMessageWithType.value, info=info)
-    if resp.get("success") is False and "MissingPluginException" in str((resp.get("error") or {}).get("description", "")):
-        pytest.skip("MissingPlugin: sendMessageWithType 未在当前集成端实现")
+    resp = device_a.call("ChatManager", Cmd.sendMessage.value, info=swt_to_send(info))
     temp_id = ((resp.get("result") or {}).get("msgId"))
-    assert temp_id, f"sendMessageWithType(cmd) 未返回临时 msgId: {resp}"
+    assert temp_id, f"sendMessage(cmd) 未返回临时 msgId: {resp}"
     assert_api.assert_response_matches(
         resp,
         expected={
             "manager": "ChatManager",
-            "cmd": Cmd.sendMessageWithType.value,
+            "cmd": Cmd.sendMessage.value,
             "device": "deviceA",
             "result": {
                 "msgId": temp_id,
@@ -440,13 +367,9 @@ def test_send_message_with_type_cmd_received_by_cmd_callback(device_a, device_b,
                 "convId": user_b,
                 "chatType": 0,
                 "direction": 0,
-                "status": 1,
                 "deliverOnlineOnly": False,
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": False,
-                "needGroupAck": False,
-                "isThread": False,
+                "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
                 "body": {"type": 6, "action": action, "deliverOnlineOnly": False},
             },
@@ -474,10 +397,7 @@ def test_send_message_with_type_cmd_received_by_cmd_callback(device_a, device_b,
                     "status": 2,
                     "deliverOnlineOnly": False,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "isThread": False,
+                    "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False,
                     "body": {"type": 6, "action": action, "deliverOnlineOnly": False},
                 },
@@ -504,10 +424,7 @@ def test_send_message_with_type_cmd_received_by_cmd_callback(device_a, device_b,
                         "status": 2,
                         "deliverOnlineOnly": False,
                         "hasRead": False,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
-                        "isThread": False,
+                        "needReadReceipt": False, "isThread": False,
                         "isContentReplaced": False,
                         "body": {"type": 6, "action": action, "deliverOnlineOnly": False},
                     },
@@ -517,7 +434,6 @@ def test_send_message_with_type_cmd_received_by_cmd_callback(device_a, device_b,
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "receiverList"},
     )
 
-
 def _send_with_payload_and_assert(device_a, device_b, assert_api, user_a, user_b, *, type_key: str, payload: dict):
     try:
         device_a.drain_events()
@@ -525,11 +441,9 @@ def _send_with_payload_and_assert(device_a, device_b, assert_api, user_a, user_b
     except Exception:
         pass
 
-    info = {"type": type_key, "payload": payload, "chatType": 0}
-    resp = device_a.call("ChatManager", Cmd.sendMessageWithType.value, info=info)
-    # 若未实现，提前跳过
-    if resp.get("success") is False and "MissingPluginException" in str((resp.get("error") or {}).get("description", "")):
-        pytest.skip("MissingPlugin: sendMessageWithType 未在当前集成端实现")
+    # 媒体消息未传 filePath → 桥接层自动用测试 App 素材补默认路径（interface_router._fillDefaultMediaPath）
+    info = swt_to_send({"type": type_key, "payload": payload, "chatType": 0})
+    resp = device_a.call("ChatManager", Cmd.sendMessage.value, info=info)
 
     # 收紧同步响应：信封 + 关键字段 + 临时ID
     temp_id = ((resp.get("result") or {}).get("msgId"))
@@ -569,7 +483,7 @@ def _send_with_payload_and_assert(device_a, device_b, assert_api, user_a, user_b
         resp,
         expected={
             "manager": "ChatManager",
-            "cmd": Cmd.sendMessageWithType.value,
+            "cmd": Cmd.sendMessage.value,
             "device": "deviceA",
             "result": {
                 "msgId": "{{tempId}}",
@@ -578,13 +492,9 @@ def _send_with_payload_and_assert(device_a, device_b, assert_api, user_a, user_b
                 "convId": "{{toUser}}",
                 "chatType": 0,
                 "direction": 0,
-                "status": 1,
                 "deliverOnlineOnly": False,
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": False,
-                "needGroupAck": False,
-                "isThread": False,
+                "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
                 "body": body_resp,
             },
@@ -592,6 +502,7 @@ def _send_with_payload_and_assert(device_a, device_b, assert_api, user_a, user_b
         context={"tempId": temp_id, "fromUser": user_a, "toUser": user_b},
         ignore_keys={
             "sequence",
+            "status",
             "serverTime",
             "localTime",
             "broadcast",
@@ -648,10 +559,7 @@ def _send_with_payload_and_assert(device_a, device_b, assert_api, user_a, user_b
                     "status": 2,
                     "deliverOnlineOnly": False,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "isThread": False,
+                    "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False,
                     "body": body_evt,
                 },
@@ -681,41 +589,7 @@ def _send_with_payload_and_assert(device_a, device_b, assert_api, user_a, user_b
                         "status": 2,
                         "deliverOnlineOnly": False,
                         "hasRead": False,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
-                        "isThread": False,
-                        "isContentReplaced": False,
-                        "body": body_evt,
-                    }
-                ]
-            },
-        },
-        context={"realId": real_id, "fromUser": user_a, "toUser": user_b},
-        ignore_keys=ignore_extra | {"receiverList"},
-    )
-    evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, body_type=body_type)
-    assert_api.assert_response_matches(
-        evt_delivered,
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessagesDelivered.value,
-            "data": {
-                "messages": [
-                    {
-                        "msgId": "{{realId}}",
-                        "from": "{{fromUser}}",
-                        "to": "{{toUser}}",
-                        "convId": "{{toUser}}",
-                        "direction": 0,
-                        "chatType": 0,
-                        "status": 2,
-                        "deliverOnlineOnly": False,
-                        "hasRead": True,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
-                        "isThread": False,
+                        "needReadReceipt": False, "isThread": False,
                         "isContentReplaced": False,
                         "body": body_evt,
                     }

@@ -80,6 +80,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
         register(MethodKey.getToken, this::getToken);
         register(MethodKey.getCurrentDeviceId, this::getCurrentDeviceId);
         register(MethodKey.isConnected, this::isConnected);
+        register(MethodKey.isDatabaseOpened, this::isDatabaseOpened);
         register(MethodKey.renewToken, this::renewToken);
         register(MethodKey.startCallback, this::startCallback);
         register(MethodKey.updateUsingHttpsOnlySetting, this::updateUsingHttpsOnlySetting);
@@ -197,6 +198,10 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
     private void isConnected(JSONObject param, String channelName, Result result) throws JSONException{
         asyncRunnable(()-> onSuccess(result, channelName, EMClient.getInstance().isConnected()));
+    }
+
+    private void isDatabaseOpened(JSONObject param, String channelName, Result result) throws JSONException{
+        asyncRunnable(()-> onSuccess(result, channelName, EMClient.getInstance().isDatabaseOpened()));
     }
 
     private void uploadLog(JSONObject param, String channelName, Result result) throws JSONException {
@@ -423,7 +428,25 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
             @Override
             public void onDatabaseOpened(String dbPath) {
-                // 5.0 新增回调：数据库打开（避免 AbstractMethodError）
+                // 5.0 新增回调：数据库打开（转发事件）
+                Map<String, Object> data = new HashMap<>();
+                data.put("username", dbPath);
+                post(() -> channel.invokeMethod(MethodKey.onDatabaseOpened, data));
+            }
+
+            @Override
+            public void onDataSyncStart(EMOptions.EMDataSyncType type) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("type", type != null ? type.ordinal() : -1);
+                post(() -> channel.invokeMethod(MethodKey.onDataSyncStart, data));
+            }
+
+            @Override
+            public void onDataSyncFinish(EMOptions.EMDataSyncType type, int errorCode) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("type", type != null ? type.ordinal() : -1);
+                data.put("errorCode", errorCode);
+                post(() -> channel.invokeMethod(MethodKey.onDataSyncFinish, data));
             }
 
             @Override

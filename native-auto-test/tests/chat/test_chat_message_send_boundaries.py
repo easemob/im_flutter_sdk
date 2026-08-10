@@ -84,10 +84,7 @@ def _assert_failed_send_envelopes(
         "chatType": 0,
         "direction": 0,
         "hasRead": True,
-        "hasReadAck": False,
-        "hasDeliverAck": False,
-        "needGroupAck": False,
-        "isThread": False,
+        "needReadReceipt": False, "isThread": False,
         "isContentReplaced": False,
         "deliverOnlineOnly": False,
     }
@@ -96,7 +93,7 @@ def _assert_failed_send_envelopes(
         resp,
         expected={
             "manager": "ChatManager",
-            "cmd": Cmd.sendMessageWithType.value,
+            "cmd": Cmd.sendMessage.value,
             "device": "deviceA",
             "result": {**message, "status": response_status, "body": response_body},
         },
@@ -149,12 +146,8 @@ def test_chat_message_send_target_boundaries(
     )
     resp = device_a.call(
         "ChatManager",
-        Cmd.sendMessageWithType.value,
-        info={
-            "type": type_key,
-            "payload": payload,
-            "chatType": 0,
-        },
+        Cmd.sendMessage.value,
+        info={"to": target_id, "chatType": 0, "direction": 0, "body": body},
     )
     temp_id = ((resp.get("result") or {}).get("msgId"))
     assert temp_id, f"发送目标错误未返回待关联临时 msgId: case={case_name}, resp={resp}"
@@ -162,7 +155,7 @@ def test_chat_message_send_target_boundaries(
         resp,
         expected={
             "manager": "ChatManager",
-            "cmd": Cmd.sendMessageWithType.value,
+            "cmd": Cmd.sendMessage.value,
             "device": "deviceA",
             "result": {
                 "msgId": temp_id,
@@ -173,10 +166,7 @@ def test_chat_message_send_target_boundaries(
                 "direction": 0,
                 "status": 1,
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": False,
-                "needGroupAck": False,
-                "isThread": False,
+                "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
                 "deliverOnlineOnly": False,
                 "body": body,
@@ -215,10 +205,7 @@ def test_chat_message_send_target_boundaries(
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "isThread": False,
+                    "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False,
                     "deliverOnlineOnly": False,
                     "body": body,
@@ -258,9 +245,7 @@ def test_chat_message_send_target_boundaries(
             "translations",
             "deliverOnlineOnly",
             "hasRead",
-            "hasReadAck",
             "hasDeliverAck",
-            "needGroupAck",
             "isThread",
             "isContentReplaced",
         },
@@ -326,8 +311,8 @@ def test_chat_message_type_rejects_missing_required_payload(
     }
     resp = device_a.call(
         "ChatManager",
-        Cmd.sendMessageWithType.value,
-        info={"type": type_key, "payload": resolved_payload, "chatType": 0},
+        Cmd.sendMessage.value,
+        info=swt_to_send({"type": type_key, "payload": resolved_payload, "chatType": 0}),
     )
     assert_api.assert_error(resp, code=-1, description=description)
 
@@ -339,17 +324,18 @@ def test_chat_combine_message_rejects_empty_source_ids(device_a, device_b, asser
     title = f"empty-combine-{uuid.uuid4().hex[:8]}"
     resp = device_a.call(
         "ChatManager",
-        Cmd.sendMessageWithType.value,
+        Cmd.sendMessage.value,
         info={
-            "type": "combine",
-            "payload": {
-                "targetId": user_b,
+            "to": user_b,
+            "chatType": 0,
+            "direction": 0,
+            "body": {
+                "type": 8,
                 "title": title,
                 "summary": "empty source ids",
                 "compatibleText": "empty combine",
                 "msgIds": [],
             },
-            "chatType": 0,
         },
     )
     temp_id = ((resp.get("result") or {}).get("msgId"))
@@ -415,8 +401,8 @@ def test_chat_media_message_rejects_nonexistent_device_path(
         payload["duration"] = 1
     resp = device_a.call(
         "ChatManager",
-        Cmd.sendMessageWithType.value,
-        info={"type": type_key, "payload": payload, "chatType": 0},
+        Cmd.sendMessage.value,
+        info=swt_to_send({"type": type_key, "payload": payload, "chatType": 0}),
     )
     temp_id = ((resp.get("result") or {}).get("msgId"))
     assert temp_id, f"不存在媒体路径未返回临时 msgId: type={type_key}, resp={resp}"

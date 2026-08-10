@@ -96,6 +96,15 @@ class OptionsHelper {
             options.setEnableUserInfo(json.getBoolean("enableUserInfo"));
         }
         options.setLoadEmptyConversations(json.optBoolean("loadEmptyConversations", false));
+        // 5.0 数据同步类型（dataSyncType）
+        if (json.has("dataSyncType")) {
+            int dataSync = json.optInt("dataSyncType", 1);
+            java.util.EnumSet<EMOptions.EMDataSyncType> syncTypes = java.util.EnumSet.noneOf(EMOptions.EMDataSyncType.class);
+            if ((dataSync & 1) != 0) syncTypes.add(EMOptions.EMDataSyncType.CONVERSATIONS);
+            if ((dataSync & 2) != 0) syncTypes.add(EMOptions.EMDataSyncType.CONTACTS);
+            if ((dataSync & 4) != 0) syncTypes.add(EMOptions.EMDataSyncType.JOINED_GROUPS);
+            options.setDataSyncType(syncTypes);
+        }
         if (json.has("deviceName")) {
             options.setCustomDeviceName(json.optString("deviceName"));
         }
@@ -171,6 +180,12 @@ class OptionsHelper {
         data.put("autoLogin", options.getAutoLogin());
         data.put("requireAck", options.getRequireAck());
         data.put("requireDeliveryAck", options.getRequireDeliveryAck());
+        // 5.0 数据同步类型（位掩码输出）
+        int dataSyncMask = 0;
+        for (EMOptions.EMDataSyncType t : options.getDataSyncType()) {
+            dataSyncMask |= 1 << t.ordinal();
+        }
+        data.put("dataSyncType", dataSyncMask);
         data.put("sortMessageByServerTime", options.isSortMessageByServerTime());
         data.put("acceptInvitationAlways", options.getAcceptInvitationAlways());
         data.put("autoAcceptGroupInvitation", options.isAutoAcceptGroupInvitation());
@@ -451,10 +466,11 @@ class MessageHelper {
         if (json.has("from")) {
             message.setFrom(json.getString("from"));
         }
-        // 5.0 移除 setAcked/setUnread/setIsNeedGroupAck/setGroupAckCount，改为 readReceipt 体系。
-        // hasReadAck / needGroupAck 统一映射到 needReadReceipt（单聊回执与群回执共用）。
+        // 5.0 以 needReadReceipt 为准（输入：needReadReceipt；兼容 hasReadAck/needGroupAck 兜底）
         message.setIsNeedReadReceipt(
-                json.optBoolean("hasReadAck", false) || json.optBoolean("needGroupAck", false));
+                json.optBoolean("needReadReceipt", false)
+                        || json.optBoolean("hasReadAck", false)
+                        || json.optBoolean("needGroupAck", false));
 
         message.setIsChatThreadMessage(json.optBoolean("isThread", false));
 
@@ -568,8 +584,10 @@ class MessageHelper {
         }
         data.put("from", message.getFrom());
         data.put("to", message.getTo());
-        data.put("hasReadAck", message.isNeedReadReceipt());
+        // 5.0 以 needReadReceipt 为准（单聊群聊统一，替代 4.x hasReadAck/needGroupAck）
+        data.put("needReadReceipt", message.isNeedReadReceipt());
         data.put("hasDeliverAck", message.isDelivered());
+        data.put("deliverOnlineOnly", message.isDeliverOnlineOnly());
         data.put("localTime", message.localTime());
         data.put("serverTime", message.getMsgTime());
         data.put("status", EnumTools.messageStatusToInt(message.status()));
@@ -578,7 +596,6 @@ class MessageHelper {
         data.put("convId", message.conversationId());
         data.put("msgId", message.getMsgId());
         data.put("hasRead", message.isRead());
-        data.put("needGroupAck", message.isNeedReadReceipt());
         data.put("onlineState", message.isOnlineState());
         data.put("broadcast", message.isBroadcast());
         data.put("isContentReplaced", message.isContentReplaced());

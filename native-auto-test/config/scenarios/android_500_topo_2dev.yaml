@@ -12,7 +12,6 @@ devices:
     platform: android
     sdk_version: 5.0.0
     account: account_a
-    runner_id: android-500-device-a
     serial: emulator-5554
 
   device_b:
@@ -20,7 +19,6 @@ devices:
     platform: android
     sdk_version: 5.0.0
     account: account_b
-    runner_id: android-500-device-b
     serial: emulator-5558
 
 topologies:

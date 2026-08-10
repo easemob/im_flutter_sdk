@@ -164,6 +164,8 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
         });
     }
 
+
+
     private void resendMessage(JSONObject params, String channelName, Result result) throws JSONException {
         EMMessage tempMsg = MessageHelper.fromJson(params);
         EMMessage msg = EMClient.getInstance().chatManager().getMessage(tempMsg.getMsgId());
@@ -219,9 +221,11 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
         asyncRunnable(() -> {
                 EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
                 if (msg != null) {
+                    // 5.0 asyncSendMessageReadReceipts 要求 isNeedReadReceipt=true，否则跳过
+                    msg.setIsNeedReadReceipt(true);
                     List<EMMessage> msgs = new ArrayList<>();
                     msgs.add(msg);
-                    EMClient.getInstance().chatManager().asyncSendMessageReadReceipts(msgs, new EMWrapperCallBack(result, channelName, null));
+                    EMClient.getInstance().chatManager().asyncSendMessageReadReceipts(msgs, new EMWrapperCallBack(result, channelName, true));
                 } else {
                     onError(result, new HyphenateException(500, "The message was not found"));
                 }
@@ -235,9 +239,11 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
         asyncRunnable(()->{
                 EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
                 if (msg != null) {
+                    // 5.0 asyncSendMessageReadReceipts 要求 isNeedReadReceipt=true，否则跳过
+                    msg.setIsNeedReadReceipt(true);
                     List<EMMessage> msgs = new ArrayList<>();
                     msgs.add(msg);
-                    EMClient.getInstance().chatManager().asyncSendMessageReadReceipts(msgs, new EMWrapperCallBack(result, channelName, null));
+                    EMClient.getInstance().chatManager().asyncSendMessageReadReceipts(msgs, new EMWrapperCallBack(result, channelName, true));
                 } else {
                     onError(result, new HyphenateException(500, "The message was not found"));
                 }

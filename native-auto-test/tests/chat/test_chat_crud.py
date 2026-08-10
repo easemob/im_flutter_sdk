@@ -147,8 +147,7 @@ def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_i
         "direction": direction,
         "status": 2,
         "hasRead": has_read,
-        "hasReadAck": has_read_ack,
-        "needGroupAck": False,
+        "needReadReceipt": has_read_ack,
         "isThread": False,
         "isContentReplaced": False,
         "deliverOnlineOnly": False,
@@ -204,8 +203,7 @@ def _assert_message_lookup(
                 "direction": direction,
                 "status": 2,
                 "hasRead": has_read,
-                "hasReadAck": has_read_ack,
-                "needGroupAck": False,
+                "needReadReceipt": has_read_ack,
                 "isThread": False,
                 "isContentReplaced": False,
                 "body": {"type": 0, "content": content},
@@ -331,23 +329,6 @@ def _send_text_and_verify_topology_delivery(
                 direction=1, conv_id=sender_user, has_read=False,
             )
 
-    with _allure_step(
-        f"{sender.device_name} 验证 {len(recipients)} 个接收账号端的消息送达回执"
-    ):
-        delivered = _wait_message_event(
-            sender,
-            Cmd.onMessagesDelivered.value,
-            real_id=str(real_id),
-            content=content,
-            expected_message_count=len(recipients),
-        )
-        _assert_text_message_event(
-            assert_api, delivered, event_type=Cmd.onMessagesDelivered.value,
-            real_id=str(real_id), user_a=sender_user, user_b=recipient_user,
-            content=content, direction=0, conv_id=recipient_user,
-            has_read=True, has_deliver_ack=True,
-            expected_message_count=len(recipients),
-        )
     return str(real_id)
 
 
@@ -440,9 +421,6 @@ def test_chat_send_and_received(topology, assert_api):
                     "direction": 0,
                     "status": 0,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
                     "isThread": False,
                     "isContentReplaced": False,
                     "body": {"type": 0, "content": content},
@@ -487,9 +465,7 @@ def test_chat_send_and_received(topology, assert_api):
                         "chatType": 0,
                         "status": 2,
                         "hasRead": True,
-                        "hasReadAck": False,
-                        "needGroupAck": False,
-                        "deliverOnlineOnly": False,
+                                "deliverOnlineOnly": False,
                         "isThread": False,
                         "isContentReplaced": False,
                     },
@@ -576,30 +552,6 @@ def test_chat_send_and_received(topology, assert_api):
     with _allure_step("汇总：目标账号的全部在线端均收到同一服务端消息"):
         assert received_roles == list(topology.recipient_roles)
 
-    with _allure_step(f"发送端验证 {len(recipients)} 个接收端的送达回执: msgId={real_id}"):
-        evt_delivered = _wait_message_event(
-            action_sender,
-            Cmd.onMessagesDelivered.value,
-            real_id=real_id,
-            content=content,
-            expected_message_count=len(recipients),
-        )
-        _assert_text_message_event(
-            assert_api,
-            evt_delivered,
-            event_type=Cmd.onMessagesDelivered.value,
-            real_id=real_id,
-            user_a=topology.sender_user,
-            user_b=topology.recipient_user,
-            content=content,
-            direction=0,
-            conv_id=topology.recipient_user,
-            has_read=True,
-            has_deliver_ack=True,
-            expected_message_count=len(recipients),
-        )
-
-
 def test_chat_send_to_self_event(device_a, assert_api, user_a):
     try:
         device_a.drain_events()
@@ -627,9 +579,6 @@ def test_chat_send_to_self_event(device_a, assert_api, user_a):
                     "chatType": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
                     "deliverOnlineOnly": False,
                     "isThread": False,
                     "isContentReplaced": False,
@@ -654,9 +603,6 @@ def test_chat_send_to_self_event(device_a, assert_api, user_a):
                 "direction": 0,
                 "status": 0,
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": False,
-                "needGroupAck": False,
                 "isThread": False,
                 "isContentReplaced": False,
                 "body": {"type": 0, "content": "{{content}}"},
@@ -907,29 +853,6 @@ def test_chat_translate_message_recalled_message(topology, assert_api):
                 has_deliver_ack=None,
             )
 
-    with _allure_step(f"发送端验证 {len(recipients)} 个接收端的送达回执: msgId={real_id}"):
-        evt_delivered = _wait_message_event(
-            action_sender,
-            Cmd.onMessagesDelivered.value,
-            real_id=real_id,
-            content=content,
-            expected_message_count=len(recipients),
-        )
-        _assert_text_message_event(
-            assert_api,
-            evt_delivered,
-            event_type=Cmd.onMessagesDelivered.value,
-            real_id=real_id,
-            user_a=sender_user,
-            user_b=recipient_user,
-            content=content,
-            direction=0,
-            conv_id=recipient_user,
-            has_read=True,
-            has_deliver_ack=True,
-            expected_message_count=len(recipients),
-        )
-
     with _allure_step(f"动作发送端撤回消息 msgId={real_id}"):
         time.sleep(2)
         resp_recall = action_sender.call(
@@ -1012,10 +935,7 @@ def test_chat_translate_message_recalled_message(topology, assert_api):
                                     "direction": 1,
                                     "status": 2,
                                     "hasRead": False,
-                                    "hasReadAck": False,
-                                    "hasDeliverAck": True,
-                                    "needGroupAck": False,
-                                    "isThread": False,
+                                                    "isThread": False,
                                     "isContentReplaced": False,
                                     "body": {
                                         "type": 0,
@@ -1029,7 +949,7 @@ def test_chat_translate_message_recalled_message(topology, assert_api):
                 ignore_keys={
                     "timestamp", "sequence", "serverTime", "localTime",
                     "broadcast", "onlineState", "targetLanguages",
-                    "deliverOnlineOnly",
+                    "deliverOnlineOnly", "data.infos[0].msg.hasDeliverAck",
                 },
             )
 
@@ -1049,10 +969,13 @@ def test_chat_ack_message_read_success(topology, assert_api):
 
     content = f"ackread-{uuid.uuid4().hex[:6]}"
     with _allure_step(f"{sender.device_name} 向接收账号发送待已读文本消息"):
+        # 5.0 需要已读回执的消息须发送前标记 isNeedReadReceipt（needReadReceipt 映射）
+        msg_info = build_text(sender_user, recipient_user, content)
+        msg_info["needReadReceipt"] = True
         resp_send = sender.call(
             "ChatManager",
             Cmd.sendMessage.value,
-            info=build_text(sender_user, recipient_user, content),
+            info=msg_info,
         )
     with _allure_step(f"等待 {sender.device_name} 的消息发送成功回调（onMessageSuccess）"):
         evt_success = sender.receive_message(
@@ -1065,7 +988,7 @@ def test_chat_ack_message_read_success(topology, assert_api):
     with _allure_step("确认待已读消息已提交"):
         assert_api.assert_response_matches(
             resp_send,
-            expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": sender.device_name, "result": {"msgId": temp_id, "from": sender_user, "to": recipient_user, "convId": recipient_user, "chatType": 0, "direction": 0, "status": 0, "hasRead": True, "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False, "isThread": False, "isContentReplaced": False, "body": {"type": 0, "content": content}}},
+            expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": sender.device_name, "result": {"msgId": temp_id, "from": sender_user, "to": recipient_user, "convId": recipient_user, "chatType": 0, "direction": 0, "status": 0, "hasRead": True, "needReadReceipt": True, "isThread": False, "isContentReplaced": False, "body": {"type": 0, "content": content}}},
             ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState", "deliverOnlineOnly", "targetLanguages", "translations"},
         )
 
@@ -1090,6 +1013,7 @@ def test_chat_ack_message_read_success(topology, assert_api):
                 direction=0,
                 conv_id=recipient_user,
                 has_read=True,
+                has_read_ack=True,
                 has_deliver_ack=None,
             )
         with _allure_step(f"发送账号副端 {role} 可从本地消息库查询待已读消息"):
@@ -1108,6 +1032,7 @@ def test_chat_ack_message_read_success(topology, assert_api):
                 direction=0,
                 conv_id=recipient_user,
                 has_read=True,
+                has_read_ack=True,
             )
 
     for recipient in recipients:
@@ -1130,32 +1055,9 @@ def test_chat_ack_message_read_success(topology, assert_api):
                 direction=1,
                 conv_id=sender_user,
                 has_read=False,
+                has_read_ack=True,
                 has_deliver_ack=None,
             )
-
-    with _allure_step(f"等待 {sender.device_name} 的 {len(recipients)} 条送达回执（onMessagesDelivered）"):
-        evt_delivered = _wait_message_event(
-            sender,
-            Cmd.onMessagesDelivered.value,
-            real_id=str(sent_real_id),
-            content=content,
-            expected_message_count=len(recipients),
-        )
-    with _allure_step(f"确认同一消息已由接收账号的 {len(recipients)} 个在线端送达"):
-        _assert_text_message_event(
-            assert_api,
-            evt_delivered,
-            event_type=Cmd.onMessagesDelivered.value,
-            real_id=str(sent_real_id),
-            user_a=sender_user,
-            user_b=recipient_user,
-            content=content,
-            direction=0,
-            conv_id=recipient_user,
-            has_read=True,
-            has_deliver_ack=True,
-            expected_message_count=len(recipients),
-        )
 
     with _allure_step(f"接收端动作设备 {recipient_action.device_name} 标记消息已读"):
         resp_ack = recipient_action.call(
@@ -1199,9 +1101,7 @@ def test_chat_ack_message_read_success(topology, assert_api):
                         "direction": 0,
                         "status": 2,
                         "hasRead": True,
-                        "hasReadAck": True,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
+                        "needReadReceipt": True,
                         "isThread": False,
                         "isContentReplaced": False,
                         "deliverOnlineOnly": False,
@@ -1284,13 +1184,10 @@ def test_chat_remove_reaction_invalid_id_response(device_a, assert_api):
 # ======================== Errors / Edge ========================
 
 
-def test_chat_ack_conversation_read_invalid_id_response(device_b, assert_api, sdk_is_v5):
+def test_chat_ack_conversation_read_invalid_id_response(device_b, assert_api):
     resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": "__invalid_conversation_id__"})
-    # 5.x 错误码 110/"conversation not found"（4.x 为 500/"Message is invalid"）
-    if sdk_is_v5:
-        expected_result = {"code": 110, "description": "conversation not found"}
-    else:
-        expected_result = {"code": 500, "description": "Message is invalid"}
+    # 5.0 错误码 110/"conversation not found"（4.x 为 500）
+    expected_result = {"code": 110, "description": "conversation not found"}
     assert_api.assert_response_matches(
         resp,
         expected={

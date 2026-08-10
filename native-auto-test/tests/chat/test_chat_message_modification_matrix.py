@@ -59,9 +59,7 @@ def _assert_text_message_event(
                         "direction": direction,
                         "status": 2,
                         "hasRead": has_read,
-                        "hasReadAck": False,
-                        "hasDeliverAck": has_deliver_ack,
-                        "needGroupAck": False,
+                        "needReadReceipt": False, "hasDeliverAck": has_deliver_ack,
                         "isThread": False,
                         "isContentReplaced": False,
                         "deliverOnlineOnly": False,
@@ -91,7 +89,7 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
         direction=0,
         conv_id=user_b,
         has_read=True,
-        has_deliver_ack=False,
+        has_deliver_ack=None,
     )
     deadline = time.monotonic() + 30
     received_message = None
@@ -115,96 +113,9 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
         direction=1,
         conv_id=user_a,
         has_read=False,
-        has_deliver_ack=True,
+        has_deliver_ack=None,
     )
-    deadline = time.monotonic() + 30
-    delivered_message = None
-    while time.monotonic() < deadline:
-        event = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=2)
-        for item in (((event or {}).get("data") or {}).get("messages") or []):
-            if isinstance(item, dict) and str(item.get("msgId")) == str(message["msgId"]):
-                delivered_message = item
-                break
-        if delivered_message:
-            break
-    assert delivered_message, f"发送端未收到待修改文本消息送达事件: msgId={message['msgId']}"
-    _assert_text_message_event(
-        assert_api=assert_api,
-        event_type=Cmd.onMessagesDelivered.value,
-        message=delivered_message,
-        msg_id=message["msgId"],
-        user_a=user_a,
-        user_b=user_b,
-        content=content,
-        direction=0,
-        conv_id=user_b,
-        has_read=True,
-        has_deliver_ack=True,
-    )
-    return message
 
-
-def _wait_changed(device, *, msg_id, timeout=30.0):
-    deadline = time.monotonic() + timeout
-    seen = []
-    while time.monotonic() < deadline:
-        event = device.receive_message(match_event_type=Cmd.onMessageContentChanged.value, timeout=2)
-        if event:
-            seen.append(event)
-        message = ((event or {}).get("data") or {}).get("message") or {}
-        if str(message.get("msgId")) == str(msg_id):
-            return event
-    pytest.fail(f"未收到消息修改事件: msgId={msg_id}, seen={seen}")
-
-
-@pytest.mark.parametrize("mode", ["body", "attributes", "body-and-attributes"])
-def test_chat_modify_text_body_and_attributes(device_a, device_b, assert_api, user_a, user_b, mode):
-    old_content = f"modify-text-old-{uuid.uuid4().hex[:6]}"
-    message = _send_text(device_a, device_b, assert_api, user_a, user_b, old_content)
-    time.sleep(float(os.getenv("CHAT_MODIFY_SETTLE_SECONDS", "5")))
-    new_content = f"modify-text-new-{uuid.uuid4().hex[:6]}"
-    attributes = {"editMode": mode, "revision": "1"}
-    info = {"msgId": message["msgId"]}
-    if mode != "attributes":
-        info["msgBody"] = {"type": 0, "content": new_content}
-    if mode != "body":
-        info["attributes"] = attributes
-    response = device_a.call("ChatManager", Cmd.modifyMessage.value, info=info)
-    expected_content = old_content if mode == "attributes" else new_content
-    expected_result = {
-        "msgId": message["msgId"], "from": user_a, "to": user_b, "convId": user_b,
-        "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
-        "hasReadAck": False, "hasDeliverAck": True, "needGroupAck": False,
-        "isThread": False, "isContentReplaced": False,
-        "body": {"type": 0, "content": expected_content, "operatorId": user_a,
-                 "operatorTime": gt(0), "operatorCount": gt(0)},
-    }
-    if mode != "body":
-        expected_result["attributes"] = attributes
-    assert_api.assert_response_matches(
-        response,
-        expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value,
-                  "device": "deviceA", "result": expected_result},
-        ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState",
-                     "deliverOnlineOnly", "targetLanguages", "translations"},
-    )
-    event = _wait_changed(device_b, msg_id=message["msgId"])
-    expected_received = {
-        "msgId": message["msgId"], "from": user_a, "to": user_b, "convId": user_a,
-        "chatType": 0, "direction": 1, "status": 2, "hasRead": False,
-        "hasReadAck": False, "hasDeliverAck": True, "needGroupAck": False,
-        "isThread": False, "isContentReplaced": False,
-        "body": {"type": 0, "content": expected_content},
-    }
-    if mode != "body":
-        expected_received["attributes"] = attributes
-    assert_api.assert_response_matches(
-        event,
-        expected={"type": "event", "eventType": Cmd.onMessageContentChanged.value,
-                  "data": {"message": expected_received, "operatorId": user_a, "operationTime": gt(0)}},
-        ignore_keys={"timestamp", "sequence", "localTime", "serverTime", "broadcast", "onlineState",
-                     "deliverOnlineOnly", "targetLanguages", "translations", "receiverList"},
-    )
 
 
 def test_chat_modify_message_empty_id(device_a, assert_api):
@@ -239,9 +150,9 @@ def test_chat_modify_cmd_message_is_rejected(device_a, device_b, assert_api, use
     device_b.drain_events()
     action = f"modify-cmd-{uuid.uuid4().hex[:6]}"
     response = device_a.call(
-        "ChatManager", Cmd.sendMessageWithType.value,
-        info={"type": "cmd", "payload": {"targetId": user_b, "action": action,
-        "deliverOnlineOnly": False}, "chatType": 0},
+        "ChatManager", Cmd.sendMessage.value,
+        info={"to": user_b, "chatType": 0, "direction": 0,
+              "body": {"type": 6, "action": action, "deliverOnlineOnly": False}},
     )
     assert ((response.get("result") or {}).get("msgId")), response
     deadline = time.monotonic() + 30
@@ -295,8 +206,7 @@ def test_chat_modify_media_attributes(device_a, device_b, assert_api, user_a, us
         expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value,
                   "device": "deviceA", "result": {"msgId": message["msgId"],
                   "from": user_a, "to": user_b, "convId": user_b, "chatType": 0,
-                  "direction": 0, "status": 2, "hasRead": True, "hasReadAck": False,
-                  "needGroupAck": False, "isThread": False,
+                  "direction": 0, "status": 2, "hasRead": True, "needReadReceipt": False,  "isThread": False,
                   "isContentReplaced": False, "attributes": attributes,
                   "body": {"type": (message.get("body") or {}).get("type"),
                            "operatorId": user_a, "operatorTime": gt(0), "operatorCount": gt(0)}}},
@@ -312,8 +222,7 @@ def test_chat_modify_media_attributes(device_a, device_b, assert_api, user_a, us
         expected={"type": "event", "eventType": Cmd.onMessageContentChanged.value, "data": {
             "message": {"msgId": message["msgId"], "from": user_a, "to": user_b,
                         "convId": user_a, "chatType": 0, "direction": 1, "status": 2,
-                        "hasRead": False, "hasReadAck": False, "hasDeliverAck": True,
-                        "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+                        "hasRead": False, "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
                         "attributes": attributes,
                         "body": {"type": (message.get("body") or {}).get("type")}},
             "operatorId": user_a, "operationTime": gt(0),

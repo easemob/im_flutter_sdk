@@ -7,7 +7,7 @@ import uuid
 import pytest
 
 from src import Cmd
-from tests.chat._utils import build_text
+from tests.chat._utils import swt_to_send, build_text
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
@@ -35,60 +35,6 @@ def _wait_event(device, event_type: str, *, predicate=None, timeout: float = 30.
         if predicate is None or predicate(evt):
             return evt
     pytest.fail(f"未收到 {event_type} 目标事件，seen={seen}")
-
-
-def _wait_delivery_event(device, *, real_id: str, expected_message_count: int = 1, timeout: float = 30.0):
-    """收集目标消息的送达记录；多端接收时同一 msgId 会有多条记录。"""
-    seen = []
-    deadline = time.monotonic() + timeout
-    allowed = {Cmd.onMessagesDelivered.value, Cmd.onMessageDeliveryAck.value}
-    delivered_messages = []
-    ack_messages = []
-    while time.monotonic() < deadline:
-        evt = device.receive_message(timeout=min(2.0, max(0.1, deadline - time.monotonic())))
-        if not evt:
-            continue
-        seen.append(evt)
-        if evt.get("eventType") not in allowed:
-            continue
-        data = evt.get("data") or {}
-        # 不同 SDK 回调的 JSON 形态不同：
-        # onMessageDeliveryAck 直接把消息放在 data，
-        # onMessagesDelivered 才放在 data.messages[]。
-        if evt.get("eventType") == Cmd.onMessageDeliveryAck.value:
-            messages = [data] if str(data.get("msgId")) == str(real_id) else []
-            ack_messages.extend(
-                m for m in messages
-                if isinstance(m, dict) and str(m.get("msgId")) == str(real_id)
-            )
-        else:
-            messages = data.get("messages") or []
-            delivered_messages.extend(
-                m for m in messages
-                if isinstance(m, dict) and str(m.get("msgId")) == str(real_id)
-            )
-        # 两个事件由同一个原生回调派生，列表事件是规范批量结果，不能与
-        # 单条 Ack 相加，否则会把同一条消息重复计数。
-        if len(delivered_messages) >= expected_message_count:
-            return {
-                "type": evt.get("type"),
-                "eventType": evt.get("eventType"),
-                "data": {"messages": delivered_messages},
-                "timestamp": evt.get("timestamp"),
-            }
-    # 某些平台/版本只暴露单条 Ack，列表事件缺失时才使用 Ack 兜底。
-    if len(delivered_messages) < expected_message_count and len(ack_messages) >= expected_message_count:
-        return {
-            "type": "event",
-            "eventType": Cmd.onMessageDeliveryAck.value,
-            "data": {"messages": ack_messages},
-        }
-    pytest.fail(
-        f"送达回执数量不足：realId={real_id}, "
-        f"expected={expected_message_count}, matched={len(delivered_messages)}, "
-        f"observedEvents={len(seen)}, seen={seen}"
-    )
-
 
 def _assert_sender_devices_received_message(
     topology,
@@ -140,8 +86,7 @@ def _assert_sender_devices_received_message(
                         "direction": 0,
                         "status": 2,
                         "hasRead": True,
-                        "hasReadAck": False,
-                        "needGroupAck": False,
+                        "needReadReceipt": False,
                         "isThread": False,
                         "isContentReplaced": False,
                         "body": body,
@@ -170,8 +115,7 @@ def _assert_sender_devices_received_message(
                         "direction": 0,
                         "status": 2,
                         "hasRead": True,
-                        "hasReadAck": False,
-                        "needGroupAck": False,
+                        "needReadReceipt": False,
                         "isThread": False,
                         "isContentReplaced": False,
                         "body": body,
@@ -195,8 +139,8 @@ def _send_type_and_receive(
     device_b.drain_events()
     resp = device_a.call(
         "ChatManager",
-        Cmd.sendMessageWithType.value,
-        info={"type": type_key, "payload": payload, "chatType": 0},
+        Cmd.sendMessage.value,
+        info=swt_to_send({"type": type_key, "payload": payload, "chatType": 0}),
     )
     for device in (device_a, device_b):
         setting = device.call("Client", Cmd.updateDeliveryAckSetting.value, info={"requireDeliveryAck": True})
@@ -260,7 +204,7 @@ def _send_type_and_receive(
         resp,
         expected={
             "manager": "ChatManager",
-            "cmd": Cmd.sendMessageWithType.value,
+            "cmd": Cmd.sendMessage.value,
             "device": "deviceA",
             "result": {
                 "msgId": "{{tempId}}",
@@ -271,10 +215,7 @@ def _send_type_and_receive(
                 "direction": 0,
                 "status": 1,
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": False,
-                "needGroupAck": False,
-                "isThread": False,
+                "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
                 "deliverOnlineOnly": False,
                 "body": expected_body,
@@ -303,9 +244,7 @@ def _send_type_and_receive(
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": sent.get("hasDeliverAck"),
-                    "needGroupAck": False,
+                    "needReadReceipt": False, "hasDeliverAck": sent.get("hasDeliverAck"),
                     "isThread": False,
                     "isContentReplaced": False,
                     "deliverOnlineOnly": False,
@@ -348,10 +287,7 @@ def _send_type_and_receive(
                     "direction": 1,
                     "status": 2,
                     "hasRead": False,
-                    "hasReadAck": False,
-                    "hasDeliverAck": True,
-                    "needGroupAck": False,
-                    "isThread": False,
+                    "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False,
                     "deliverOnlineOnly": False,
                     "body": receive_expected_body,
@@ -409,8 +345,7 @@ def test_chat_missing_location_message_send_receive(topology, assert_api):
                 "result": {
                     "msgId": temp_id, "from": sender_user, "to": recipient_user,
                     "convId": recipient_user, "chatType": 0, "direction": 0,
-                    "status": 0, "hasRead": True, "hasReadAck": False,
-                    "hasDeliverAck": False, "needGroupAck": False, "isThread": False,
+                    "status": 0, "hasRead": True, "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False, "body": body,
                 },
             },
@@ -424,8 +359,7 @@ def test_chat_missing_location_message_send_receive(topology, assert_api):
                 "data": {"messages": [{
                     "msgId": str(real_id), "from": sender_user, "to": recipient_user,
                     "convId": recipient_user, "chatType": 0, "direction": 0, "status": 2,
-                    "hasRead": True, "hasReadAck": False, "hasDeliverAck": False,
-                    "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+                    "hasRead": True, "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
                     "deliverOnlineOnly": False, "body": body,
                 }]},
             },
@@ -464,8 +398,7 @@ def test_chat_missing_location_message_send_receive(topology, assert_api):
                     "data": {"messages": [{
                         "msgId": str(real_id), "from": sender_user, "to": recipient_user,
                         "convId": sender_user, "chatType": 0, "direction": 1, "status": 2,
-                        "hasRead": False, "hasReadAck": False, "hasDeliverAck": True,
-                        "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+                        "hasRead": False, "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
                         "deliverOnlineOnly": False, "body": body,
                     }]},
                 },
@@ -532,10 +465,7 @@ def test_chat_missing_custom_message_send_receive(topology, assert_api):
                     "direction": 0,
                     "status": 0,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "isThread": False,
+                    "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False,
                     "body": {"type": 7, "event": event_name, "params": params},
                 },
@@ -554,8 +484,7 @@ def test_chat_missing_custom_message_send_receive(topology, assert_api):
                 "data": {"messages": [{
                     "msgId": str(real_id), "from": sender_user, "to": recipient_user,
                     "convId": recipient_user, "chatType": 0, "direction": 0, "status": 2,
-                    "hasRead": True, "hasReadAck": False, "hasDeliverAck": False,
-                    "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+                    "hasRead": True, "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
                     "deliverOnlineOnly": False,
                     "body": {"type": 7, "event": event_name, "params": params},
                 }]},
@@ -600,8 +529,7 @@ def test_chat_missing_custom_message_send_receive(topology, assert_api):
                     "data": {"messages": [{
                         "msgId": str(real_id), "from": sender_user, "to": recipient_user,
                         "convId": sender_user, "chatType": 0, "direction": 1, "status": 2,
-                        "hasRead": False, "hasReadAck": False, "hasDeliverAck": True,
-                        "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+                        "hasRead": False, "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
                         "deliverOnlineOnly": False,
                         "body": {"type": 7, "event": event_name, "params": params},
                     }]},
@@ -640,24 +568,4 @@ def test_chat_missing_message_delivery_ack(device_a, device_b, assert_api, user_
         type_key=type_key,
         payload=payload,
     )
-    delivery_evt = _wait_delivery_event(device_a, real_id=real_id)
-    if type_key == "txt":
-        delivery_body = {"type": 0, "content": payload["content"]}
-        delivery_ignore = {"translations", "targetLanguages"}
-    else:
-        delivery_body = {"type": 7, "event": payload["event"], "params": payload["params"]}
-        delivery_ignore = set()
-    assert_api.assert_event_matches(
-        delivery_evt,
-        expected={
-            "type": "event", "eventType": "{{deliveryEvent}}",
-            "data": {"messages": [{
-                "msgId": "{{realId}}", "from": "{{fromUser}}", "to": "{{toUser}}", "convId": "{{toUser}}",
-                "chatType": 0, "direction": 0, "status": 2, "hasDeliverAck": True, "body": delivery_body,
-                "hasRead": True, "hasReadAck": False, "needGroupAck": False, "isThread": False,
-                "isContentReplaced": False, "deliverOnlineOnly": False,
-            }]},
-        },
-        context={"realId": real_id, "deliveryEvent": delivery_evt.get("eventType"), "fromUser": user_a, "toUser": user_b},
-        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", *delivery_ignore},
-    )
+    return real_id

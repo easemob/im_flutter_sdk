@@ -339,6 +339,8 @@
         [self getGroupNamecard:call.arguments channelName:call.method result:result];
     } else if ([ChatUpdateGroupNamecard isEqualToString:call.method]) {
         [self updateGroupNamecard:call.arguments channelName:call.method result:result];
+    } else if ([ChatGetUsers isEqualToString:call.method]) {
+        [self getUsers:call.arguments channelName:call.method result:result];
     }
     else if ([ChatFetchMemberAttributesFromGroup isEqualToString:call.method]) {
         [self fetchMemberAttributesFromGroup:call.arguments channelName:call.method result:result];
@@ -1567,6 +1569,18 @@
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager updateGroupNamecard:param[@"groupId"] namecard:param[@"namecard"] completion:^(EMError * _Nullable error) {
         [weakSelf wrapperCallBack:result channelName:aChannelName error:error object:@(!error)];
+    }];
+}
+
+- (void)getUsers:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *groupId = param[@"groupId"];
+    [EMClient.sharedClient.groupManager getGroupSpecificationFromServerWithId:groupId
+                                                                   completion:^(EMGroup *aGroup, EMError *aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:aGroup.users ?: @[]];
     }];
 }
 

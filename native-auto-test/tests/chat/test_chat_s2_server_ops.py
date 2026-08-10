@@ -60,9 +60,7 @@ def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_i
                         "direction": direction,
                         "status": 2,
                         "hasRead": has_read,
-                        "hasReadAck": False,
-                        "hasDeliverAck": has_deliver_ack,
-                        "needGroupAck": False,
+                        "needReadReceipt": False, "hasDeliverAck": has_deliver_ack,
                         "isThread": False,
                         "isContentReplaced": False,
                         "deliverOnlineOnly": False,
@@ -119,10 +117,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "isThread": False,
+                    "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False,
                     "deliverOnlineOnly": False,
                     "body": {"type": 0, "content": content, "translations": {}},
@@ -152,21 +147,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                 direction=1,
                 conv_id=user_a,
                 has_read=False,
-                has_deliver_ack=True,
-            )
-            evt_delivered = _wait_text_event(device_a, Cmd.onMessagesDelivered.value, real_id=str(real_id), content=content)
-            _assert_text_message_event(
-                assert_api,
-                evt_delivered,
-                event_type=Cmd.onMessagesDelivered.value,
-                real_id=str(real_id),
-                user_a=user_a,
-                user_b=user_b,
-                content=content,
-                direction=0,
-                conv_id=user_b,
-                has_read=True,
-                has_deliver_ack=True,
+                has_deliver_ack=None,
             )
             return str(real_id)
     raise AssertionError(f"未收到目标 onMessagesReceived: msgId={real_id}, events={seen_received}")

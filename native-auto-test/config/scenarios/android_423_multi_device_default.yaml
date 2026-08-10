@@ -16,7 +16,6 @@ devices:
     platform: android
     sdk_version: 4.23.0
     account: account_a
-    runner_id: android-423-device-a
     serial: emulator-5554
 
   device_a_sec:
@@ -24,7 +23,6 @@ devices:
     platform: android
     sdk_version: 4.23.0
     account: account_a
-    runner_id: android-423-device-a-sec
     serial: emulator-5556
 
   device_b:
@@ -32,7 +30,6 @@ devices:
     platform: android
     sdk_version: 4.23.0
     account: account_b
-    runner_id: android-423-device-b
     serial: emulator-5558
 
   device_b_sec:
@@ -40,7 +37,6 @@ devices:
     platform: android
     sdk_version: 4.23.0
     account: account_b
-    runner_id: android-423-device-b-sec
     serial: emulator-5560
 
 topologies:

@@ -33,8 +33,40 @@ private final class TestControlBridge {
       guard let self else { return }
       if call.method == "getRunnerInfo" {
         result(self.runnerInfo())
+      } else if call.method == "prepareDefaultMediaPath" {
+        self.prepareDefaultMediaPath(call, result)
       } else {
         result(FlutterMethodNotImplemented)
+      }
+    }
+  }
+
+  /// 测试支撑：返回默认媒体素材的真实本地路径（从 bundle 拷贝到应用文档目录）。
+  private func prepareDefaultMediaPath(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    guard let args = call.arguments as? [String: Any], let type = args["type"] as? String else {
+      result(FlutterError(code: "prepare_default_media_path", message: "missing type", details: nil))
+      return
+    }
+    let assetName: String
+    switch type {
+    case "image_heic": assetName = "imgHeic.HEIC"
+    case "image": assetName = "bigPic.jpg"
+    case "video": assetName = "video.mov"
+    case "voice": assetName = "voice.mp3"
+    default: assetName = "bigPic.jpg"
+    }
+    DispatchQueue.global().async {
+      guard let bundlePath = Bundle.main.path(forResource: assetName, ofType: nil, inDirectory: "flutter_assets/assets/media"),
+            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+        result(FlutterError(code: "prepare_default_media_path", message: "asset not found: \(assetName)", details: nil))
+        return
+      }
+      let dest = docs.appendingPathComponent(assetName)
+      if !FileManager.default.fileExists(atPath: dest.path) {
+        try? FileManager.default.copyItem(atPath: bundlePath, toPath: dest.path)
+      }
+      DispatchQueue.main.async {
+        result(dest.path)
       }
     }
   }

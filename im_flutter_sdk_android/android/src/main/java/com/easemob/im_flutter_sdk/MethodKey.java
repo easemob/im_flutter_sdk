@@ -417,4 +417,17 @@ public class MethodKey {
     static final String subscribeUsersInfo = "subscribeUsersInfo";
     static final String unsubscribeUsersInfo = "unsubscribeUsersInfo";
     static final String fetchSubscribedUsers = "fetchSubscribedUsers";
+
+    // ---- 5.0 数据同步/数据库/会话名/群成员（check_wrapper_diffs 补全）----
+    static final String setDataSyncType = "setDataSyncType";
+    static final String getDataSyncType = "getDataSyncType";
+    static final String isDatabaseOpened = "isDatabaseOpened";
+    static final String getConversationName = "getConversationName";
+    static final String getConversationAvatar = "getConversationAvatar";
+    static final String getUsers = "getUsers";
+    static final String onDataSyncStart = "onDataSyncStart";
+    static final String onDataSyncFinish = "onDataSyncFinish";
+    static final String onDatabaseOpened = "onDatabaseOpened";
+    static final String onConversationUnreadMessageCountCleared = "onConversationUnreadMessageCountCleared";
+    static final String onAllConversationsUnreadMessageCountCleared = "onAllConversationsUnreadMessageCountCleared";
 }

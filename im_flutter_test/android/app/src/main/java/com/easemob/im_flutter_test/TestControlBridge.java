@@ -53,9 +53,60 @@ public final class TestControlBridge implements MethodChannel.MethodCallHandler 
             case "exportUpgradeSnapshot":
                 exportUpgradeSnapshot(arguments, result);
                 return;
+            case "prepareDefaultMediaPath":
+                prepareDefaultMediaPath(arguments, result);
+                return;
             default:
                 result.notImplemented();
         }
+    }
+
+    /**
+     * 测试支撑：返回默认媒体素材的真实本地路径（从 assets/media 拷贝到应用文档目录）。
+     * 参数 type: file/image/image_heic/video/voice；case 未传 filePath 时用它填 payload.filePath。
+     */
+    private void prepareDefaultMediaPath(Map<?, ?> arguments, MethodChannel.Result result) {
+        final String type = String.valueOf(arguments.get("type"));
+        final String assetName;
+        switch (type == null ? "" : type) {
+            case "image_heic":
+                assetName = "imgHeic.HEIC";
+                break;
+            case "image":
+                assetName = "bigPic.jpg";
+                break;
+            case "video":
+                assetName = "video.mov";
+                break;
+            case "voice":
+                assetName = "voice.mp3";
+                break;
+            case "file":
+            default:
+                assetName = "bigPic.jpg";
+                break;
+        }
+        worker.execute(() -> {
+            try {
+                String dest = new java.io.File(activity.getFilesDir(), assetName).getAbsolutePath();
+                java.io.File f = new java.io.File(dest);
+                if (!f.exists()) {
+                    java.io.InputStream in = activity.getAssets().open("flutter_assets/assets/media/" + assetName);
+                    java.io.OutputStream out = new java.io.FileOutputStream(f);
+                    byte[] buf = new byte[8192];
+                    int n;
+                    while ((n = in.read(buf)) > 0) {
+                        out.write(buf, 0, n);
+                    }
+                    in.close();
+                    out.close();
+                }
+                final String path = dest;
+                mainHandler.post(() -> result.success(path));
+            } catch (Exception e) {
+                mainHandler.post(() -> result.error("prepare_default_media_path", e.toString(), null));
+            }
+        });
     }
 
     private void createUpgradeMessage(

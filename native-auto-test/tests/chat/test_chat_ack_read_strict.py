@@ -33,7 +33,7 @@ def test_chat_ack_message_read_invalid_msg_id(device_b, assert_api, user_a):
             "manager": "ChatManager",
             "cmd": Cmd.ackMessageRead.value,
             "device": "deviceB",
-            "result": True,
+            "result": {"code": 500, "description": "The message was not found"},
         },
         ignore_keys={"sequence"},
     )
@@ -48,7 +48,10 @@ def test_chat_ack_message_read_success_with_event(device_a, device_b, assert_api
         pass
 
     content = f"ack-read-{uuid.uuid4().hex[:8]}"
-    _ = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, content))
+    # 5.0 已读回执需发送时标记 needReadReceipt（否则接收端 asyncSendMessageReadReceipts 跳过）
+    msg_info = build_text(user_a, user_b, content)
+    msg_info["needReadReceipt"] = True
+    _ = device_a.call("ChatManager", Cmd.sendMessage.value, info=msg_info)
     evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
     sent = ((evt_success or {}).get("data") or {}).get("msg") or {}
     sent_real_id = sent.get("msgId")
@@ -69,10 +72,7 @@ def test_chat_ack_message_read_success_with_event(device_a, device_b, assert_api
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "isThread": False,
+                    "needReadReceipt": True, "isThread": False,
                     "isContentReplaced": False,
                     "deliverOnlineOnly": False,
                     "body": {"type": 0, "content": "{{content}}", "translations": {}},
@@ -109,44 +109,7 @@ def test_chat_ack_message_read_success_with_event(device_a, device_b, assert_api
                         "direction": 1,
                         "status": 2,
                         "hasRead": False,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
-                        "isThread": False,
-                        "isContentReplaced": False,
-                        "deliverOnlineOnly": False,
-                        "body": {"type": 0, "content": "{{content}}", "translations": {}},
-                    }
-                ],
-            },
-        },
-        context={"msgId": str(recv_msg_id), "fromUser": user_a, "toUser": user_b, "content": content},
-        ignore_keys={"timestamp", "sequence", "serverTime", "localTime"},
-    )
-
-    evt_delivered = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=20.0)
-    delivered = _target_message(evt_delivered, recv_msg_id, content=content)
-    assert delivered, f"missing delivered msg from onMessagesDelivered: {evt_delivered!r}"
-    assert_api.assert_response_matches(
-        {"type": "event", "eventType": Cmd.onMessagesDelivered.value, "data": {"messages": [delivered]}},
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessagesDelivered.value,
-            "data": {
-                "messages": [
-                    {
-                        "msgId": "{{msgId}}",
-                        "from": "{{fromUser}}",
-                        "to": "{{toUser}}",
-                        "convId": "{{toUser}}",
-                        "chatType": 0,
-                        "direction": 0,
-                        "status": 2,
-                        "hasRead": True,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
-                        "isThread": False,
+                        "needReadReceipt": True, "isThread": False,
                         "isContentReplaced": False,
                         "deliverOnlineOnly": False,
                         "body": {"type": 0, "content": "{{content}}", "translations": {}},
@@ -190,10 +153,7 @@ def test_chat_ack_message_read_success_with_event(device_a, device_b, assert_api
                         "direction": 0,
                         "status": 2,
                         "hasRead": True,
-                        "hasReadAck": True,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
-                        "isThread": False,
+                        "needReadReceipt": True, "isThread": False,
                         "isContentReplaced": False,
                         "deliverOnlineOnly": False,
                         "body": {"type": 0, "content": "{{content}}", "translations": {}},

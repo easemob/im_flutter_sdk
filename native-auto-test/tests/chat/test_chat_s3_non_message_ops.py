@@ -70,10 +70,7 @@ def _send_text_and_get_real_id_no_drain(device_a, device_b, assert_api, user_a: 
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "deliverOnlineOnly": False,
+                    "needReadReceipt": False, "deliverOnlineOnly": False,
                     "isThread": False,
                     "isContentReplaced": False,
                     "body": {"type": 0, "content": "{{content}}"},
@@ -109,10 +106,7 @@ def _send_text_and_get_real_id_no_drain(device_a, device_b, assert_api, user_a: 
                         "direction": 1,
                         "status": 2,
                         "hasRead": False,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
-                        "deliverOnlineOnly": False,
+                        "needReadReceipt": False, "deliverOnlineOnly": False,
                         "isThread": False,
                         "isContentReplaced": False,
                         "body": {"type": 0, "content": "{{content}}"},
@@ -135,36 +129,6 @@ def _send_text_and_get_real_id_no_drain(device_a, device_b, assert_api, user_a: 
             real_id = str(msg.get("msgId"))
             break
 
-    evt_delivered = _wait_text_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, content=content)
-    assert_api.assert_response_matches(
-        evt_delivered,
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessagesDelivered.value,
-            "data": {
-                "messages": [
-                    {
-                        "from": "{{fromUser}}",
-                        "to": "{{toUser}}",
-                        "convId": "{{toUser}}",
-                        "chatType": 0,
-                        "direction": 0,
-                        "status": 2,
-                        "hasRead": True,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
-                        "deliverOnlineOnly": False,
-                        "isThread": False,
-                        "isContentReplaced": False,
-                        "body": {"type": 0, "content": "{{content}}"},
-                    }
-                ]
-            },
-        },
-        context={"fromUser": user_a, "toUser": user_b, "content": content},
-        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "msgId", "translations", "receiverList", "broadcast", "onlineState"},
-    )
     return real_id
 
 

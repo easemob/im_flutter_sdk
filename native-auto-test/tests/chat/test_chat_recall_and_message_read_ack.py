@@ -6,6 +6,7 @@ import uuid
 import pytest
 
 from src import Cmd
+from tests.chat._utils import swt_to_send
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
@@ -24,7 +25,7 @@ def _event(device, event_type, predicate=None, timeout=30.0):
 
 def _send_typed(device_a, device_b, assert_api, user_a, user_b, type_key, payload):
     device_a.drain_events(); device_b.drain_events()
-    resp = device_a.call("ChatManager", Cmd.sendMessageWithType.value, info={"type": type_key, "payload": {"targetId": user_b, **payload}, "chatType": 0})
+    resp = device_a.call("ChatManager", Cmd.sendMessage.value, info=swt_to_send({"type": type_key, "payload": {"targetId": user_b, **payload}, "chatType": 0}))
     result = resp.get("result") or {}
     temp_id = result.get("msgId")
     assert temp_id, resp
@@ -43,4 +44,5 @@ def test_chat_missing_recall_empty_message_id(device_a, assert_api):
 @pytest.mark.parametrize("info", [{"msgId": "", "to": "test0714user1"}, {"msgId": "__invalid_msg_id__", "to": ""}, {"msgId": "__invalid_msg_id__", "to": "__invalid_user__"}])
 def test_chat_missing_ack_message_read_boundaries(device_b, assert_api, info):
     resp = device_b.call("ChatManager", Cmd.ackMessageRead.value, info=info)
-    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.ackMessageRead.value, "device": "deviceB", "result": True}, ignore_keys={"sequence"})
+    # 5.0 ackMessageRead 走 asyncSendMessageReadReceipts，需要本地消息；无效 msgId → 500
+    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.ackMessageRead.value, "device": "deviceB", "result": {"code": 500, "description": "The message was not found"}}, ignore_keys={"sequence"})

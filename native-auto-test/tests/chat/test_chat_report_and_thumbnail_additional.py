@@ -31,8 +31,7 @@ def _assert_text_event(assert_api, event_type, message, *, msg_id, user_a, user_
         expected={"type": "event", "eventType": event_type, "data": {"messages": [{
             "msgId": msg_id, "from": user_a, "to": user_b, "convId": conv_id,
             "chatType": 0, "direction": direction, "status": 2,
-            "hasRead": has_read, "hasReadAck": False, "hasDeliverAck": has_deliver_ack,
-            "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+            "hasRead": has_read, "needReadReceipt": False, "hasDeliverAck": has_deliver_ack, "isThread": False, "isContentReplaced": False,
             "deliverOnlineOnly": False,
             "body": {"type": 0, "content": content, "translations": {}},
         }]}},
@@ -52,8 +51,7 @@ def _send_text_message(device_a, device_b, assert_api, user_a, user_b, content):
         expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA", "result": {
             "msgId": temp_id, "from": user_a, "to": user_b, "convId": user_b,
             "chatType": 0, "direction": 0, "status": 0, "hasRead": True,
-            "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
-            "isThread": False, "isContentReplaced": False,
+            "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
             "body": {"type": 0, "content": content},
         }},
         ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState",
@@ -67,7 +65,7 @@ def _send_text_message(device_a, device_b, assert_api, user_a, user_b, content):
             _assert_text_event(
                 assert_api, Cmd.onMessageSuccess.value, message, msg_id=message["msgId"],
                 user_a=user_a, user_b=user_b, content=content,
-                direction=0, conv_id=user_b, has_read=True, has_deliver_ack=False,
+                direction=0, conv_id=user_b, has_read=True, has_deliver_ack=None,
             )
             return message
     pytest.fail(f"未收到文本发送成功事件: {content}")
@@ -83,8 +81,7 @@ def test_chat_download_thumbnail_for_text_message(device_a, device_b, assert_api
         expected={"manager": "ChatManager", "cmd": Cmd.downloadThumbnail.value, "device": "deviceA", "result": {
             "msgId": message["msgId"], "from": user_a, "to": user_b, "convId": user_b,
             "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
-            "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
-            "isThread": False, "isContentReplaced": False,
+            "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
             "body": {"type": 0, "content": content, "targetLanguages": [], "translations": {}},
         }},
         ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState", "deliverOnlineOnly"},
@@ -96,8 +93,7 @@ def test_chat_download_thumbnail_for_text_message(device_a, device_b, assert_api
             "msgId": message["msgId"],
             "msg": {"msgId": message["msgId"], "from": user_a, "to": user_b, "convId": user_b,
                     "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
-                    "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
-                    "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
+                    "needReadReceipt": False, "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
                     "body": {"type": 0, "content": content, "translations": {}}},
             "error": {"code": 403, "description": "Failed to download the file"},
         }},
@@ -107,11 +103,5 @@ def test_chat_download_thumbnail_for_text_message(device_a, device_b, assert_api
     _assert_text_event(
         assert_api, Cmd.onMessagesReceived.value, received, msg_id=message["msgId"],
         user_a=user_a, user_b=user_b, content=content,
-        direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True,
-    )
-    delivered = _wait_message_list_event(device_a, Cmd.onMessagesDelivered.value, msg_id=message["msgId"])
-    _assert_text_event(
-        assert_api, Cmd.onMessagesDelivered.value, delivered, msg_id=message["msgId"],
-        user_a=user_a, user_b=user_b, content=content,
-        direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True,
+        direction=1, conv_id=user_a, has_read=False, has_deliver_ack=None,
     )

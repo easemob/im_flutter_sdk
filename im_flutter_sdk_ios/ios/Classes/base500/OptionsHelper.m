@@ -27,6 +27,7 @@
     data[@"pushConfig"] = @{@"pushConfig": @{@"apnsCertName": self.apnsCertName}};
     data[@"enableDNSConfig"] = @(self.enableDnsConfig);
     data[@"enableUserInfo"] = @(self.enableUserInfo);
+    data[@"dataSyncType"] = @(self.dataSyncType);
     data[@"imPort"] = @(self.chatPort);
     data[@"imServer"] = self.chatServer;
     data[@"webSocketServer"] = self.webSocketServer;
@@ -75,6 +76,9 @@
     options.enableDnsConfig = [aJson[@"enableDNSConfig"] boolValue];
     if (aJson[@"enableUserInfo"]) {
         options.enableUserInfo = [aJson[@"enableUserInfo"] boolValue];
+    }
+    if (aJson[@"dataSyncType"]) {
+        options.dataSyncType = (EMDataSyncType)[aJson[@"dataSyncType"] integerValue];
     }
     options.chatPort = [aJson[@"imPort"] intValue];
     options.chatServer = aJson[@"imServer"];

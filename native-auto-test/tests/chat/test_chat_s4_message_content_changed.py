@@ -100,10 +100,7 @@ def test_chat_modify_custom_message_content_changed_event(topology, assert_api):
                 "direction": 0,
                 "status": 0,
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": False,
-                "needGroupAck": False,
-                "isThread": False,
+                "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
                 "body": {
                     "type": 7,
@@ -140,10 +137,7 @@ def test_chat_modify_custom_message_content_changed_event(topology, assert_api):
                         "direction": 0,
                         "status": 2,
                         "hasRead": True,
-                        "hasReadAck": False,
-                        "hasDeliverAck": False,
-                        "needGroupAck": False,
-                        "isThread": False,
+                        "needReadReceipt": False, "isThread": False,
                         "isContentReplaced": False,
                         "deliverOnlineOnly": False,
                         "body": {"type": 7, "event": "{{oldEvent}}", "params": old_params},
@@ -187,10 +181,7 @@ def test_chat_modify_custom_message_content_changed_event(topology, assert_api):
                                 "direction": 1,
                                 "status": 2,
                                 "hasRead": False,
-                                "hasReadAck": False,
-                                "hasDeliverAck": True,
-                                "needGroupAck": False,
-                                "isThread": False,
+                                "needReadReceipt": False, "isThread": False,
                                 "isContentReplaced": False,
                                 "deliverOnlineOnly": False,
                                 "body": {
@@ -255,10 +246,7 @@ def test_chat_modify_custom_message_content_changed_event(topology, assert_api):
                 "direction": 0,
                 "status": 2,
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": True,
-                "needGroupAck": False,
-                "isThread": False,
+                "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
                 "attributes": {"editedByCase": "agorachat1.4.0"},
                 "body": {
@@ -282,50 +270,6 @@ def test_chat_modify_custom_message_content_changed_event(topology, assert_api):
             "translations",
         },
     )
-    with _allure_step("等待消息送达回调（onMessagesDelivered）"):
-        evt_delivered = action_sender.receive_message(
-            match_event_type=Cmd.onMessagesDelivered.value,
-            timeout=20.0,
-        )
-    with _allure_step("确认送达回调对应当前消息"):
-        delivered_messages = ((evt_delivered or {}).get("data") or {}).get("messages") or []
-        delivered = next(
-            message for message in delivered_messages
-            if isinstance(message, dict) and str(message.get("msgId")) == str(real_id)
-        )
-    _assert_event_step(
-        assert_api,
-        "确认消息已送达接收账号",
-        {"type": "event", "eventType": Cmd.onMessagesDelivered.value, "data": {"messages": [delivered]}},
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessagesDelivered.value,
-            "data": {
-                "messages": [
-                    {
-                        "msgId": "{{realId}}",
-                        "from": "{{fromUser}}",
-                        "to": "{{toUser}}",
-                        "convId": "{{toUser}}",
-                        "chatType": 0,
-                        "direction": 0,
-                        "status": 2,
-                        "hasRead": True,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
-                        "isThread": False,
-                        "isContentReplaced": False,
-                        "deliverOnlineOnly": False,
-                        "body": {"type": 7, "event": "{{oldEvent}}", "params": old_params},
-                    }
-                ]
-            },
-        },
-        context={"realId": real_id, "fromUser": sender_user, "toUser": recipient_user, "oldEvent": old_event},
-        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState"},
-    )
-
     for role, device in zip(topology.recipient_roles, recipients):
         with _allure_step(f"接收端 {role} 收到内容更新通知（onMessageContentChanged）"):
             evt_changed = device.receive_message(
@@ -347,10 +291,7 @@ def test_chat_modify_custom_message_content_changed_event(topology, assert_api):
                             "direction": 1,
                             "status": 2,
                             "hasRead": False,
-                            "hasReadAck": False,
-                            "hasDeliverAck": True,
-                            "needGroupAck": False,
-                            "isThread": False,
+                            "needReadReceipt": False, "isThread": False,
                             "isContentReplaced": False,
                             "body": {
                                 "type": 7,

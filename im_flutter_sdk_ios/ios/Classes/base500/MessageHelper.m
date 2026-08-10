@@ -45,7 +45,7 @@
     msg.status = [EnumTools messageStatusFromInt:[aJson[@"status"] integerValue]];
     msg.localTime = [aJson[@"localTime"] longLongValue];
     msg.timestamp = [aJson[@"serverTime"] longLongValue];
-    msg.isNeedReadReceipt = [aJson[@"hasReadAck"] boolValue];
+    msg.isNeedReadReceipt = [aJson[@"needReadReceipt"] boolValue] || [aJson[@"hasReadAck"] boolValue] || [aJson[@"needGroupAck"] boolValue];
     msg.isDeliverAcked = [aJson[@"hasDeliverAck"] boolValue];
     msg.deliverOnlineOnly = [aJson[@"deliverOnlineOnly"] boolValue];
     if (aJson[@"webhookEnv"]) {
@@ -78,8 +78,8 @@
     ret[@"convId"] = self.conversationId;
     ret[@"hasRead"] = @(self.isRead);
     ret[@"hasDeliverAck"] = @(self.isDeliverAcked);
-    ret[@"hasReadAck"] = @(self.isNeedReadReceipt);
-    ret[@"needGroupAck"] = @(self.groupReadReceiptCount > 0);
+    // 5.0 以 needReadReceipt 为准（替代 4.x hasReadAck/needGroupAck）
+    ret[@"needReadReceipt"] = @(self.isNeedReadReceipt);
     ret[@"serverTime"] = @(self.timestamp);
     ret[@"groupAckCount"] = @(self.groupReadReceiptCount);
     ret[@"attributes"] = self.ext;

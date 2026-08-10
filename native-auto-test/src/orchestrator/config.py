@@ -105,7 +105,7 @@ def load_scenario(path: str | Path) -> Scenario:
             device_name=device_name,
             platform=str(item["platform"]),
             sdk_version=str(item["sdk_version"]),
-            runner_id=str(item.get("runner_id") or f"{raw.get('name')}-{role}"),
+            runner_id=str(item.get("runner_id") or device_name),
             account=str(item.get("account") or _default_account(role_name)),
             avd=_optional(item.get("avd")),
             serial=_optional(item.get("serial")),

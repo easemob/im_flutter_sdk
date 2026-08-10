@@ -441,3 +441,7 @@ static NSString *const ChatPinnedMessages = @"pinnedMessages";
 static NSString *const ChatSearchMessagesFromServer = @"searchMessagesFromServer";
 static NSString *const ChatDeleteConversations = @"deleteConversations";
 static NSString *const ChatGetGroupMessageReadReceipts = @"getGroupMessageReadReceipts";
+static NSString *const ChatGetConversationName = @"getConversationName";
+static NSString *const ChatGetConversationAvatar = @"getConversationAvatar";
+static NSString *const ChatGetUsers = @"getUsers";
+static NSString *const ChatOnDatabaseOpened = @"onDatabaseOpened";

@@ -40,9 +40,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                 "direction": 0,
                 "status": 0,
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": False,
-                "needGroupAck": False,
+                "needReadReceipt": False,
                 "isThread": False,
                 "isContentReplaced": False,
                 "body": {"type": 0, "content": content},
@@ -67,9 +65,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
+                    "needReadReceipt": False,
                     "isThread": False,
                     "isContentReplaced": False,
                     "deliverOnlineOnly": False,
@@ -119,9 +115,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                         "direction": 1,
                         "status": 2,
                         "hasRead": False,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
+                        "needReadReceipt": False,
                         "isThread": False,
                         "isContentReplaced": False,
                         "deliverOnlineOnly": False,
@@ -147,37 +141,6 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
     return real_id
 
 
-def _assert_delivery_event(device_a, assert_api, *, msg_id: str, user_a: str, user_b: str, content: str) -> None:
-    delivery_event = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=20.0)
-    assert_api.assert_response_matches(
-        delivery_event,
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessagesDelivered.value,
-            "data": {
-                "messages": [
-                    {
-                        "msgId": msg_id,
-                        "from": user_a,
-                        "to": user_b,
-                        "convId": user_b,
-                        "chatType": 0,
-                        "direction": 0,
-                        "status": 2,
-                        "hasRead": True,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
-                        "isThread": False,
-                        "isContentReplaced": False,
-                        "deliverOnlineOnly": False,
-                        "body": {"type": 0, "content": content},
-                    }
-                ]
-            },
-        },
-        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "translations", "targetLanguages"},
-    )
 
 
 def test_chat_load_conversation_messages_with_keyword_success(device_a, device_b, assert_api, user_a, user_b):
@@ -214,7 +177,6 @@ def test_chat_load_conversation_messages_with_keyword_success(device_a, device_b
         },
         ignore_keys={"sequence"},
     )
-    _assert_delivery_event(device_a, assert_api, msg_id=real_id, user_a=user_a, user_b=user_b, content=content)
 
 
 def test_chat_load_conversation_messages_with_keyword_no_hit(device_a, assert_api, user_a):

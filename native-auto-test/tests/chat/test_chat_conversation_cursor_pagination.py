@@ -73,8 +73,7 @@ def _assert_text_event(assert_api, event_type, message, *, msg_id, user_a, peer,
         expected={"type": "event", "eventType": event_type, "data": {"messages": [{
             "msgId": msg_id, "from": user_a, "to": peer, "convId": conv_id,
             "chatType": 0, "direction": direction, "status": 2,
-            "hasRead": has_read, "hasReadAck": False, "hasDeliverAck": has_deliver_ack,
-            "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+            "hasRead": has_read, "needReadReceipt": False, "hasDeliverAck": has_deliver_ack, "isThread": False, "isContentReplaced": False,
             "deliverOnlineOnly": False,
             "body": {"type": 0, "content": content, "translations": {}},
         }]}},
@@ -95,8 +94,7 @@ def _send_and_wait_server_conversation(device_a, device_b, assert_api, *, user_a
         expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA", "result": {
             "msgId": temp_id, "from": user_a, "to": peer, "convId": peer,
             "chatType": 0, "direction": 0, "status": 0, "hasRead": True,
-            "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
-            "isThread": False, "isContentReplaced": False,
+            "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
             "body": {"type": 0, "content": content},
         }},
         ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState",
@@ -106,17 +104,12 @@ def _send_and_wait_server_conversation(device_a, device_b, assert_api, *, user_a
     real_id = sent.get("msgId")
     _assert_text_event(
         assert_api, Cmd.onMessageSuccess.value, sent, msg_id=real_id, user_a=user_a, peer=peer,
-        content=content, direction=0, conv_id=peer, has_read=True, has_deliver_ack=False,
+        content=content, direction=0, conv_id=peer, has_read=True, has_deliver_ack=None,
     )
     _, received = _wait_text_event(device_b, Cmd.onMessagesReceived.value, content=content)
     _assert_text_event(
         assert_api, Cmd.onMessagesReceived.value, received, msg_id=real_id, user_a=user_a, peer=peer,
-        content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True,
-    )
-    _, delivered = _wait_text_event(device_a, Cmd.onMessagesDelivered.value, content=content)
-    _assert_text_event(
-        assert_api, Cmd.onMessagesDelivered.value, delivered, msg_id=real_id, user_a=user_a, peer=peer,
-        content=content, direction=0, conv_id=peer, has_read=True, has_deliver_ack=True,
+        content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=None,
     )
     deadline = time.monotonic() + 60
     while time.monotonic() < deadline:

@@ -7,6 +7,8 @@ import uuid
 
 import pytest
 
+from tests.chat._utils import swt_to_send
+
 from src import Cmd, GroupChangeEvent, ge
 from tests.group.group_helpers import (
     assert_group_events,
@@ -77,8 +79,7 @@ def _build_group_text(from_user: str, group_id: str, content: str, *, need_group
         "chatType": 1,
         "direction": 0,
         "body": {"type": 0, "content": content},
-        "hasReadAck": False,
-        "needGroupAck": need_group_ack,
+        "needReadReceipt": need_group_ack,
         "isThread": False,
         "deliverOnlineOnly": False,
     }
@@ -285,11 +286,12 @@ def _send_group_text_expect_error(
     observer.drain_events()
     resp = sender.call(
         "ChatManager",
-        Cmd.sendMessageWithType.value,
+        Cmd.sendMessage.value,
         info={
-            "type": "txt",
-            "payload": {"targetId": group_id, "content": content},
+            "to": group_id,
             "chatType": 1,
+            "direction": 0,
+            "body": {"type": 0, "content": content},
         },
     )
     temp_id = ((resp.get("result") or {}).get("msgId"))
@@ -304,10 +306,7 @@ def _send_group_text_expect_error(
         "chatType": 1,
         "direction": 0,
         "hasRead": True,
-        "hasReadAck": False,
-        "hasDeliverAck": False,
-        "needGroupAck": False,
-        "isThread": False,
+        "needReadReceipt": False, "isThread": False,
         "isContentReplaced": False,
         "deliverOnlineOnly": False,
         "body": {"type": 0, "content": content},
@@ -326,7 +325,7 @@ def _send_group_text_expect_error(
         resp,
         expected={
             "manager": "ChatManager",
-            "cmd": Cmd.sendMessageWithType.value,
+            "cmd": Cmd.sendMessage.value,
             "device": sender_name,
             "result": {**message, "status": 1},
         },
@@ -376,10 +375,7 @@ def _assert_group_message(
         "direction": 1 if phase == "received" else 0,
         "status": 2 if phase != "response" else 1,
         "hasRead": phase != "received",
-        "hasReadAck": False,
-        "hasDeliverAck": False,
-        "needGroupAck": False,
-        "isThread": False,
+        "needReadReceipt": False, "isThread": False,
         "isContentReplaced": False,
         "deliverOnlineOnly": False,
         "body": body,
@@ -387,7 +383,7 @@ def _assert_group_message(
     if phase == "response":
         expected = {
             "manager": "ChatManager",
-            "cmd": Cmd.sendMessageWithType.value,
+            "cmd": Cmd.sendMessage.value,
             "device": "deviceA",
             "result": message,
         }
@@ -424,8 +420,8 @@ def _send_group_message(
     _drain_devices(device_a, device_b)
     resp = device_a.call(
         "ChatManager",
-        Cmd.sendMessageWithType.value,
-        info={"type": type_key, "payload": payload, "chatType": 1},
+        Cmd.sendMessage.value,
+        info=swt_to_send({"type": type_key, "payload": payload, "chatType": 1}),
     )
     temp_id = ((resp.get("result") or {}).get("msgId"))
     assert temp_id, f"群 {type_key} 消息发送响应未返回临时 msgId: {resp}"
@@ -625,10 +621,7 @@ def test_group_message_fetch_acks_success(topology, assert_api):
                     "direction": 0,
                     "status": 0,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": True,
-                    "isThread": False,
+                    "needReadReceipt": True, "isThread": False,
                     "isContentReplaced": False,
                     "broadcast": False,
                     "onlineState": True,
@@ -649,10 +642,7 @@ def test_group_message_fetch_acks_success(topology, assert_api):
             "convId": group_id,
             "chatType": 1,
             "status": 2,
-            "hasReadAck": False,
-            "hasDeliverAck": False,
-            "needGroupAck": True,
-            "isThread": False,
+            "needReadReceipt": True, "isThread": False,
             "isContentReplaced": False,
             "deliverOnlineOnly": False,
             "body": {"type": 0, "content": content},

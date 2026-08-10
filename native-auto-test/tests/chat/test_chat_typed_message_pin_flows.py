@@ -147,8 +147,7 @@ def test_chat_typed_message_pin_and_cross_user_unpin(
         target,
         expected={"msgId": real_id, "from": user_a, "to": user_b,
                   "convId": conv_id, "chatType": 0, "direction": direction, "status": 2,
-                  "hasRead": has_read, "hasReadAck": False, "hasDeliverAck": has_delivery,
-                  "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+                  "hasRead": has_read, "needReadReceipt": False, "hasDeliverAck": has_delivery, "isThread": False, "isContentReplaced": False,
                   "broadcast": False, "onlineState": True, "body": expected_body},
         ignore_keys={"localTime", "serverTime", "deliverOnlineOnly", "receiverList"},
     )

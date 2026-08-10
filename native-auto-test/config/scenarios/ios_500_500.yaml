@@ -13,7 +13,6 @@ devices:
     platform: ios
     sdk_version: 5.0.0
     account: account_a
-    runner_id: ios-500-device-a
     serial: 5C30BD0D-D2E0-40CE-8A4A-CAB975887F6E
 
   device_b:
@@ -21,7 +20,6 @@ devices:
     platform: ios
     sdk_version: 5.0.0
     account: account_b
-    runner_id: ios-500-device-b
     serial: EE7B2CEE-7E25-43E6-8B83-8CE432CBE97D
 
 topologies:

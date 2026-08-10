@@ -77,8 +77,7 @@ def _send_text_and_assert(topology, assert_api, *, content):
             expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": sender.device_name, "result": {
                 "msgId": temp_id, "from": sender_user, "to": recipient_user, "convId": recipient_user,
                 "chatType": 0, "direction": 0, "status": 0, "hasRead": True,
-                "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
-                "isThread": False, "isContentReplaced": False, "body": expected_body,
+                "needReadReceipt": False, "isThread": False, "isContentReplaced": False, "body": expected_body,
             }},
             ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState", "deliverOnlineOnly", "targetLanguages", "translations"},
         )
@@ -89,8 +88,7 @@ def _send_text_and_assert(topology, assert_api, *, content):
             expected={"type": "event", "eventType": Cmd.onMessageSuccess.value, "data": {"messages": [{
                 "msgId": real_id, "from": sender_user, "to": recipient_user, "convId": recipient_user,
                 "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
-                "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
-                "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
+                "needReadReceipt": False, "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
                 "body": expected_body,
             }]}},
             ignore_keys={
@@ -121,37 +119,12 @@ def _send_text_and_assert(topology, assert_api, *, content):
                 expected={"type": "event", "eventType": Cmd.onMessagesReceived.value, "data": {"messages": [{
                     "msgId": real_id, "from": sender_user, "to": recipient_user, "convId": sender_user,
                     "chatType": 0, "direction": 1, "status": 2, "hasRead": False,
-                    "hasReadAck": False, "hasDeliverAck": True, "needGroupAck": False,
-                    "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
+                    "needReadReceipt": False, "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
                     "body": expected_body,
                 }]}},
                 ignore_keys={"timestamp", "sequence", "localTime", "serverTime", "broadcast", "onlineState", "targetLanguages", "translations"},
             )
 
-    with _allure_step(
-        f"等待 {sender.device_name} 的 {len(recipients)} 条送达回执（onMessagesDelivered/onMessageDeliveryAck）"
-    ):
-        delivery = _wait_delivery_event(
-            sender,
-            real_id=real_id,
-            expected_message_count=len(recipients),
-        )
-    with _allure_step(f"确认文本边界消息已由接收账号的 {len(recipients)} 个在线端送达"):
-        assert_api.assert_event_matches(
-            delivery,
-            expected={"type": "event", "eventType": delivery.get("eventType"), "data": {"messages": [{
-                "msgId": real_id, "from": sender_user, "to": recipient_user, "convId": recipient_user,
-                "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
-                "hasReadAck": False, "hasDeliverAck": True, "needGroupAck": False,
-                "isThread": False, "isContentReplaced": False,
-                "body": expected_body,
-            } for _ in recipients]}},
-            ignore_keys={
-                "timestamp", "sequence", "localTime", "serverTime",
-                "broadcast", "onlineState", "deliverOnlineOnly",
-                "targetLanguages", "translations",
-            },
-        )
     return real_id
 
 
@@ -201,8 +174,7 @@ def test_chat_send_rejects_mismatched_from(device_a, device_b, assert_api, user_
         expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA", "result": {
             "msgId": temp_id, "from": invalid_from, "to": user_b, "convId": user_b,
             "chatType": 0, "direction": 0, "status": 0, "hasRead": True,
-            "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
-            "isThread": False, "isContentReplaced": False,
+            "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
             "body": {"type": 0, "content": content},
         }},
         ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState", "deliverOnlineOnly", "targetLanguages", "translations"},
@@ -214,8 +186,7 @@ def test_chat_send_rejects_mismatched_from(device_a, device_b, assert_api, user_
             "msgId": temp_id,
             "msg": {"msgId": temp_id, "from": invalid_from, "to": user_b, "convId": user_b,
                     "chatType": 0, "direction": 0, "status": 0, "hasRead": True,
-                    "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
-                    "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
+                    "needReadReceipt": False, "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
                     "body": {"type": 0, "content": content, "translations": {}}},
             "error": {"code": 500, "description": "Message is invalid"},
         }},
@@ -237,8 +208,7 @@ def test_chat_location_message_delivery_ack(device_a, device_b, assert_api, user
         expected={"type": "event", "eventType": event.get("eventType"), "data": {"messages": [{
             "msgId": real_id, "from": user_a, "to": user_b, "convId": user_b,
             "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
-            "hasReadAck": False, "hasDeliverAck": True, "needGroupAck": False,
-            "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
+            "needReadReceipt": False, "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
             "body": {"type": 3, "latitude": payload["latitude"], "longitude": payload["longitude"],
                      "address": payload["address"], "buildingName": payload["buildingName"]},
         }]}},

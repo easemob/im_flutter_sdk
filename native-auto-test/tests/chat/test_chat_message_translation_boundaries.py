@@ -123,15 +123,15 @@ def _custom_message(device_a, device_b, assert_api, user_a, user_b):
     device_a.drain_events(); device_b.drain_events()
     resp_send = device_a.call(
         "ChatManager",
-        Cmd.sendMessageWithType.value,
-        info={"type": "custom", "payload": {"targetId": user_b, "event": event_name, "params": params},
-              "chatType": 0},
+        Cmd.sendMessage.value,
+        info={"to": user_b, "chatType": 0, "direction": 0,
+              "body": {"type": 7, "event": event_name, "params": params}},
     )
     temp_id = ((resp_send.get("result") or {}).get("msgId"))
     assert temp_id, resp_send
     assert_api.assert_response_matches(
         resp_send,
-        expected={"manager": "ChatManager", "cmd": Cmd.sendMessageWithType.value, "device": "deviceA",
+        expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA",
                   "result": {"msgId": temp_id, "from": user_a, "to": user_b, "convId": user_b,
                              "chatType": 0, "direction": 0, "status": 1, "hasRead": True,
                              "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
