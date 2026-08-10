@@ -3,10 +3,30 @@ from __future__ import annotations
 import time
 
 from src import Cmd, GroupChangeEvent
+from src.tools.group_capacity import get_group_create_max_count
 
 
 def new_group_name(prefix: str = "auto_group") -> str:
     return f"{prefix}_{int(time.time() * 1000)}"
+
+
+def build_group_options(
+    *,
+    style: int = 0,
+    max_count: int | None = None,
+    invite_need_confirm: bool = False,
+    ext: str = "auto-ext",
+) -> dict:
+    """构造 Group options；未显式指定容量时采用当前运行场景。"""
+    if max_count is None:
+        max_count = get_group_create_max_count()
+
+    return {
+        "style": style,
+        "maxCount": max_count,
+        "inviteNeedConfirm": invite_need_confirm,
+        "ext": ext,
+    }
 
 
 def extract_group_id(resp: dict) -> str:
@@ -635,7 +655,7 @@ def assert_group_snapshot(
     owner: str,
     expected_desc: str = "auto-test group",
     expected_ext: str = "auto-ext",
-    max_user_count_value: int = 200,
+    max_user_count_value: int | None = None,
     member_count_value: int | None = None,
     member_list_value: list[str] | None = None,
     admin_list_value: list[str] | None = None,
@@ -649,6 +669,9 @@ def assert_group_snapshot(
     is_member_only: bool = True,
     device: str = "deviceA",
 ) -> None:
+    if max_user_count_value is None:
+        max_user_count_value = get_group_create_max_count()
+
     expected_result = {
         "groupId": group_id,
         "name": group_name,
@@ -753,11 +776,17 @@ def create_group(
     group_name: str,
     invite_members: list[str],
     style: int = 0,
-    max_count: int = 200,
+    max_count: int | None = None,
     invite_need_confirm: bool = False,
     expected_member_count: int | None = None,
     device_name: str = "deviceA",
 ):
+    options = build_group_options(
+        style=style,
+        max_count=max_count,
+        invite_need_confirm=invite_need_confirm,
+    )
+
     resp_create = device_a.call(
         "GroupManager",
         Cmd.createGroup.value,
@@ -766,12 +795,7 @@ def create_group(
             "desc": "auto-test group",
             "inviteMembers": invite_members,
             "inviteReason": "auto-case",
-            "options": {
-                "style": style,
-                "maxCount": max_count,
-                "inviteNeedConfirm": invite_need_confirm,
-                "ext": "auto-ext",
-            },
+            "options": options,
         },
     )
     gid = extract_group_id(resp_create)
@@ -784,7 +808,7 @@ def create_group(
         group_name=group_name,
         owner=owner,
         member_count_value=(1 + len(invite_members) if expected_member_count is None else expected_member_count),
-        max_user_count_value=max_count,
+        max_user_count_value=options["maxCount"],
         is_member_allow_to_invite=(style == 1),
         is_member_only=(style != 3),
         device=device_name,

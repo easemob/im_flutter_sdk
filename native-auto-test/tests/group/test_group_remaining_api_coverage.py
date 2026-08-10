@@ -6,6 +6,7 @@ import uuid
 import pytest
 
 from src import Cmd
+from src.tools.group_capacity import get_group_create_max_count
 from tests.group.group_helpers import create_group, destroy_group, new_group_name
 
 
@@ -157,7 +158,7 @@ def test_group_update_avatar_success(device_a, assert_api, user_a):
                     "isMemberOnly": True,
                     "isMemberAllowToInvite": False,
                     "messageBlocked": False,
-                    "maxUserCount": 200,
+                    "maxUserCount": get_group_create_max_count(),
                 },
             },
             ignore_keys={
@@ -227,7 +228,7 @@ def test_group_update_avatar_abnormal_values(
                     "isMemberOnly": True,
                     "isMemberAllowToInvite": False,
                     "messageBlocked": False,
-                    "maxUserCount": 200,
+                    "maxUserCount": get_group_create_max_count(),
                 },
             },
             ignore_keys={

@@ -5,6 +5,13 @@
 - 每条 case 以全局序号编号；统计按“当前记录条目数”计算。
 - 暂缓与 skip 项统一写 `CASES_DEFERRED.zh.md`。
 
+## 常规建群容量场景
+
+- 默认场景：`cd native-auto-test && .venv/bin/python -m pytest -q tests/group`；未传参数时，常规 `createGroup.options.maxCount` 为 `200`。
+- 扩容场景：`cd native-auto-test && .venv/bin/python -m pytest -q --group-create-max-count=3000 tests/group`；复用同一套 case，常规建群和相关 `maxUserCount` 严格断言均为 `3000`。
+- 容量边界豁免：专门验证容量语义的 `maxCount=0/-1/1/2` 保持显式值，不受场景参数覆盖。
+- 静态验证（2026-08-10）：无设备容量契约测试 `5 passed`，`--group-create-max-count=3000 --collect-only` 成功收集，`--group-create-max-count=0 --collect-only` 以参数错误拒绝。尚未执行会创建真实群的 3000 discovery/strict 回归。
+
 ## createGroup
 
 正常 cases

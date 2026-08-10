@@ -6,6 +6,7 @@ import time
 import pytest
 
 from src import Cmd
+from src.tools.group_capacity import get_group_create_max_count
 from tests.group.group_helpers import (
     assert_group_events,
     assert_group_list_response,
@@ -45,7 +46,7 @@ def _joined_group_expected(
         "memberList": [],
         "blockList": [],
         "name": group_name,
-        "maxUserCount": 200,
+        "maxUserCount": get_group_create_max_count(),
         "isDisabled": False,
         "desc": "auto-test group",
         "announcement": "",
