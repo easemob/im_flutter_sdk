@@ -11,6 +11,7 @@ import com.hyphenate.chat.EMContact;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.exceptions.HyphenateException;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -48,6 +49,7 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
         register(MethodKey.getContact, this::getContact);
         register(MethodKey.fetchAllContacts, this::fetchAllContacts);
         register(MethodKey.fetchContacts, this::fetchContacts);
+        register(MethodKey.saveBlackList, this::saveBlackList);
     }
 
 
@@ -322,5 +324,21 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
     @Override
     public void unRegisterEaseListener() {
         EMClient.getInstance().contactManager().removeContactListener(contactListener);
+    }
+
+    private void saveBlackList(JSONObject params, String channelName, Result result) throws JSONException {
+        JSONArray ja = params.getJSONArray("usernames");
+        List<String> usernames = new ArrayList<>();
+        for (int i = 0; i < ja.length(); i++) {
+            usernames.add(ja.getString(i));
+        }
+        asyncRunnable(() -> {
+            try {
+                EMClient.getInstance().contactManager().saveBlackList(usernames);
+                onSuccess(result, channelName, true);
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        });
     }
 }

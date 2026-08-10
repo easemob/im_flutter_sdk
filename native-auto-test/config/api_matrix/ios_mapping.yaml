@@ -1,0 +1,2157 @@
+platform: ios
+base_version: 5.0.0
+# 生成: im_flutter_sdk/scripts/extract_ios_mapping.py
+# 协议名与 Android 对齐（以 Android 为准）；原生名为 iOS 5.0 基线
+
+apis:
+  - manager: ChatManager
+    native: addConversationDelegate:delegateQueue:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: addConversationMark:mark:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: addDelegate:delegateQueue:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: addReaction:toMessage:completion:
+    protocol: addReaction
+    mapping: strip_params
+  - manager: ChatManager
+    native: asyncFetchGroupMessageReadUsersFromServer:groupId:readReceiptId:pageSize:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: cleanConversationsMemoryCache
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: clearAllConversationUnreadMessageCount:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: clearConversationUnreadMessageCount:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: deleteAllMessagesAndConversations:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: deleteConversation:isDeleteMessages:completion:
+    protocol: deleteConversation
+    mapping: strip_params
+  - manager: ChatManager
+    native: deleteConversations:isDeleteMessages:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: deleteMessagesBefore:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: deleteServerConversation:conversationType:isDeleteServerMessages:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: downloadAndParseCombineMessage:completion:
+    protocol: downloadAndParseCombineMessage
+    mapping: strip_params
+  - manager: ChatManager
+    native: downloadBigImageAttachment:progress:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: downloadMessageAttachment:progress:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: downloadMessageThumbnail:progress:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: fetchMessagesFromServerBy:conversationType:cursor:pageSize:option:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: fetchSupportedLanguages:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: filterConversationsFromDB:filter:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: getAllConversations
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: getAllConversations:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: getConversation:type:createIfNotExist:
+    protocol: getConversation
+    mapping: strip_params
+  - manager: ChatManager
+    native: getConversation:type:createIfNotExist:isThread:
+    protocol: getConversation
+    mapping: strip_params
+  - manager: ChatManager
+    native: getConversationWithConvId:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: getGroupMessageReadReceipts:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: getMessageAttachmentPath:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: getMessageCountWithCompletion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: getMessageWithMessageId:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: getMessages:withConversationId:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: getPinnedMessagesFromServer:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: getReactionDetail:reaction:cursor:pageSize:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: getReactionList:groupId:chatType:completion:
+    protocol: getReactionList
+    mapping: strip_params
+  - manager: ChatManager
+    native: getUnreadMessageCount
+    protocol: getUnreadMessageCount
+    mapping: identical
+  - manager: ChatManager
+    native: importMessages:completion:
+    protocol: importMessages
+    mapping: strip_params
+  - manager: ChatManager
+    native: loadConversationMessagesWithKeyword:timestamp:fromUser:searchDirection:scope:completion:
+    protocol: loadConversationMessagesWithKeyword
+    mapping: strip_params
+  - manager: ChatManager
+    native: loadMessagesWithKeyword:timestamp:count:fromUser:searchDirection:scope:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: modifyMessage:body:ext:completion:
+    protocol: modifyMessage
+    mapping: strip_params
+  - manager: ChatManager
+    native: pinConversation:isPinned:completionBlock:
+    protocol: pinConversation
+    mapping: strip_params
+  - manager: ChatManager
+    native: pinMessage:completion:
+    protocol: pinMessage
+    mapping: strip_params
+  - manager: ChatManager
+    native: recallMessageWithMessageId:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: recallMessageWithMessageId:ext:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: removeConversationDelegate:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: removeConversationMark:mark:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: removeDelegate:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: removeMessagesFromServerWithConversation:messageIds:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: removeMessagesFromServerWithConversation:timeStamp:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: removeReaction:fromMessage:completion:
+    protocol: removeReaction
+    mapping: strip_params
+  - manager: ChatManager
+    native: searchMessagesFromServerWithOption:pageSize:pageNum:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: searchMessagesWithTypes:timestamp:count:fromUser:searchDirection:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: sendMessage:progress:completion:
+    protocol: sendMessage
+    mapping: strip_params
+  - manager: ChatManager
+    native: sendMessageReadReceipts:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: translateMessage:targetLanguages:completion:
+    protocol: translateMessage
+    mapping: strip_params
+  - manager: ChatManager
+    native: unpinMessage:completion:
+    protocol: unpinMessage
+    mapping: strip_params
+  - manager: ChatManager
+    native: updateMessage:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: voiceFileToText:voiceParam:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatManager
+    native: voiceMessageToText:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: addAdmin:toChatroom:completion:
+    protocol: addAdmin
+    mapping: strip_params
+  - manager: ChatRoomManager
+    native: addAdmin:toChatroom:error:
+    protocol: addAdmin
+    mapping: strip_params
+  - manager: ChatRoomManager
+    native: addDelegate:delegateQueue:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: addWhiteListMembers:fromChatroom:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: addWhiteListMembers:fromChatroom:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: blockMembers:fromChatroom:completion:
+    protocol: blockMembers
+    mapping: strip_params
+  - manager: ChatRoomManager
+    native: blockMembers:fromChatroom:error:
+    protocol: blockMembers
+    mapping: strip_params
+  - manager: ChatRoomManager
+    native: fetchChatroomAllAttributes:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: fetchChatroomAttributes:keys:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: getChatroomAnnouncementWithId:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: getChatroomAnnouncementWithId:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: getChatroomBlacklistFromServerWithId:pageNumber:pageSize:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: getChatroomBlacklistFromServerWithId:pageNumber:pageSize:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: getChatroomMemberListFromServerWithId:cursor:pageSize:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: getChatroomMemberListFromServerWithId:cursor:pageSize:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: getChatroomMuteListFromServerWithId:pageNumber:pageSize:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: getChatroomMuteListFromServerWithId:pageNumber:pageSize:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: getChatroomSpecificationFromServerWithId:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: getChatroomSpecificationFromServerWithId:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: getChatroomSpecificationFromServerWithId:fetchMembers:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: getChatroomWhiteListFromServerWithId:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: getChatroomWhiteListFromServerWithId:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: getChatroomsFromServerWithPage:pageSize:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: getChatroomsFromServerWithPage:pageSize:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: isMemberInMuteListFromServerWithChatroomId:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: isMemberInWhiteListFromServerWithChatroomId:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: isMemberInWhiteListFromServerWithChatroomId:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: joinChatroom:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: joinChatroom:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: joinChatroom:ext:leaveOtherRooms:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: leaveChatroom:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: leaveChatroom:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: muteAllMembersFromChatroom:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: muteAllMembersFromChatroom:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: muteMembers:muteMilliseconds:fromChatroom:completion:
+    protocol: muteMembers
+    mapping: strip_params
+  - manager: ChatRoomManager
+    native: muteMembers:muteMilliseconds:fromChatroom:error:
+    protocol: muteMembers
+    mapping: strip_params
+  - manager: ChatRoomManager
+    native: removeAdmin:fromChatroom:completion:
+    protocol: removeAdmin
+    mapping: strip_params
+  - manager: ChatRoomManager
+    native: removeAdmin:fromChatroom:error:
+    protocol: removeAdmin
+    mapping: strip_params
+  - manager: ChatRoomManager
+    native: removeChatroomAttribute:key:completionBlock:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: removeChatroomAttributeForced:key:completionBlock:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: removeChatroomAttributes:attributes:completionBlock:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: removeChatroomAttributesForced:attributes:completionBlock:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: removeDelegate:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: removeMembers:fromChatroom:completion:
+    protocol: removeMembers
+    mapping: strip_params
+  - manager: ChatRoomManager
+    native: removeMembers:fromChatroom:error:
+    protocol: removeMembers
+    mapping: strip_params
+  - manager: ChatRoomManager
+    native: removeWhiteListMembers:fromChatroom:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: removeWhiteListMembers:fromChatroom:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: setChatroomAttribute:key:value:autoDelete:completionBlock:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: setChatroomAttributeForced:key:value:autoDelete:completionBlock:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: setChatroomAttributes:attributes:autoDelete:completionBlock:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: setChatroomAttributesForced:attributes:autoDelete:completionBlock:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: unblockMembers:fromChatroom:completion:
+    protocol: unblockMembers
+    mapping: strip_params
+  - manager: ChatRoomManager
+    native: unblockMembers:fromChatroom:error:
+    protocol: unblockMembers
+    mapping: strip_params
+  - manager: ChatRoomManager
+    native: unmuteAllMembersFromChatroom:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: unmuteAllMembersFromChatroom:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: unmuteMembers:fromChatroom:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: unmuteMembers:fromChatroom:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: updateChatroomAnnouncementWithId:announcement:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: updateChatroomAnnouncementWithId:announcement:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: updateChatroomOwner:newOwner:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: updateChatroomOwner:newOwner:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: updateDescription:forChatroom:completion:
+    protocol: updateDescription
+    mapping: strip_params
+  - manager: ChatRoomManager
+    native: updateDescription:forChatroom:error:
+    protocol: updateDescription
+    mapping: strip_params
+  - manager: ChatRoomManager
+    native: updateSubject:forChatroom:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatRoomManager
+    native: updateSubject:forChatroom:error:
+    protocol: null
+    mapping: unknown
+  - manager: ChatThreadManager
+    native: addDelegate:delegateQueue:
+    protocol: null
+    mapping: unknown
+  - manager: ChatThreadManager
+    native: createChatThread:messageId:parentId:completion:
+    protocol: createChatThread
+    mapping: strip_params
+  - manager: ChatThreadManager
+    native: destroyChatThread:completion:
+    protocol: destroyChatThread
+    mapping: strip_params
+  - manager: ChatThreadManager
+    native: getChatThreadFromSever:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatThreadManager
+    native: getChatThreadMemberListFromServerWithId:cursor:pageSize:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatThreadManager
+    native: getChatThreadsFromServerWithParentId:cursor:pageSize:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatThreadManager
+    native: getJoinedChatThreadsFromServerWithCursor:pageSize:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatThreadManager
+    native: getJoinedChatThreadsFromServerWithParentId:cursor:pageSize:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatThreadManager
+    native: getLastMessageFromSeverWithChatThreads:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ChatThreadManager
+    native: joinChatThread:completion:
+    protocol: joinChatThread
+    mapping: strip_params
+  - manager: ChatThreadManager
+    native: leaveChatThread:completion:
+    protocol: leaveChatThread
+    mapping: strip_params
+  - manager: ChatThreadManager
+    native: removeDelegate:
+    protocol: null
+    mapping: unknown
+  - manager: ChatThreadManager
+    native: removeMemberFromChatThread:threadId:completion:
+    protocol: removeMemberFromChatThread
+    mapping: strip_params
+  - manager: ChatThreadManager
+    native: updateChatThreadName:threadId:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ContactManager
+    native: addContact:message:completion:
+    protocol: addContact
+    mapping: strip_params
+  - manager: ContactManager
+    native: addDelegate:delegateQueue:
+    protocol: null
+    mapping: unknown
+  - manager: ContactManager
+    native: addUserToBlackList:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ContactManager
+    native: approveFriendRequestFromUser:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ContactManager
+    native: declineFriendRequestFromUser:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ContactManager
+    native: deleteContact:isDeleteConversation:
+    protocol: deleteContact
+    mapping: strip_params
+  - manager: ContactManager
+    native: deleteContact:isDeleteConversation:completion:
+    protocol: deleteContact
+    mapping: strip_params
+  - manager: ContactManager
+    native: getAllContacts
+    protocol: getAllContacts
+    mapping: identical
+  - manager: ContactManager
+    native: getBlackList
+    protocol: null
+    mapping: unknown
+  - manager: ContactManager
+    native: getBlackListFromServerWithCompletion:
+    protocol: null
+    mapping: unknown
+  - manager: ContactManager
+    native: getContact:
+    protocol: getContact
+    mapping: strip_params
+  - manager: ContactManager
+    native: getContacts
+    protocol: null
+    mapping: unknown
+  - manager: ContactManager
+    native: getSelfIdsOnOtherPlatformWithCompletion:
+    protocol: null
+    mapping: unknown
+  - manager: ContactManager
+    native: removeDelegate:
+    protocol: null
+    mapping: unknown
+  - manager: ContactManager
+    native: removeUserFromBlackList:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ContactManager
+    native: saveBlackList:completion:
+    protocol: null
+    mapping: unknown
+  - manager: ContactManager
+    native: setContactRemark:remark:completion:
+    protocol: setContactRemark
+    mapping: strip_params
+  - manager: GroupManager
+    native: acceptInvitationFromGroup:inviter:completion:
+    protocol: acceptInvitationFromGroup
+    mapping: strip_params
+  - manager: GroupManager
+    native: addAdmin:toGroup:completion:
+    protocol: addAdmin
+    mapping: strip_params
+  - manager: GroupManager
+    native: addDelegate:delegateQueue:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: addMembers:toGroup:message:completion:
+    protocol: addMembers
+    mapping: strip_params
+  - manager: GroupManager
+    native: addWhiteListMembers:fromGroup:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: approveJoinGroupRequest:sender:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: blockGroup:completion:
+    protocol: blockGroup
+    mapping: strip_params
+  - manager: GroupManager
+    native: blockMembers:fromGroup:completion:
+    protocol: blockMembers
+    mapping: strip_params
+  - manager: GroupManager
+    native: cleanAllGroupsFromDB
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: createGroupWithSubject:avatar:description:invitees:message:setting:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: declineGroupInvitation:inviter:reason:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: declineJoinGroupRequest:sender:reason:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: destroyGroup:finishCompletion:
+    protocol: destroyGroup
+    mapping: strip_params
+  - manager: GroupManager
+    native: downloadGroupSharedFileWithId:filePath:sharedFileId:progress:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: fetchGroupMemberInfoListFromServerWithGroupId:cursor:limit:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: fetchGroupMuteListFromServerWithId:pageNumber:pageSize:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: fetchMemberAttribute:userId:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: fetchMembersAttributes:userIds:keys:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: getGroupAnnouncementWithId:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: getGroupBlacklistFromServerWithId:pageNumber:pageSize:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: getGroupFileListWithId:pageNumber:pageSize:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: getGroupMemberListFromServerWithId:cursor:pageSize:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: getGroupMuteListFromServerWithId:pageNumber:pageSize:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: getGroupNamecardWithGroupId:userId:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: getGroupSpecificationFromServerWithId:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: getGroupSpecificationFromServerWithId:fetchMembers:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: getGroupWhiteListFromServerWithId:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: getJoinedGroups
+    protocol: getJoinedGroups
+    mapping: identical
+  - manager: GroupManager
+    native: getJoinedGroupsCountFromServerWithCompletion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: isMemberInMuteListFromServerWithGroupId:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: isMemberInWhiteListFromServerWithGroupId:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: joinPublicGroup:completion:
+    protocol: joinPublicGroup
+    mapping: strip_params
+  - manager: GroupManager
+    native: leaveGroup:completion:
+    protocol: leaveGroup
+    mapping: strip_params
+  - manager: GroupManager
+    native: muteAllMembersFromGroup:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: muteMembers:muteMilliseconds:fromGroup:completion:
+    protocol: muteMembers
+    mapping: strip_params
+  - manager: GroupManager
+    native: removeAdmin:fromGroup:completion:
+    protocol: removeAdmin
+    mapping: strip_params
+  - manager: GroupManager
+    native: removeDelegate:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: removeGroupSharedFileWithId:sharedFileId:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: removeMembers:fromGroup:completion:
+    protocol: removeMembers
+    mapping: strip_params
+  - manager: GroupManager
+    native: removeWhiteListMembers:fromGroup:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: requestToJoinPublicGroup:message:completion:
+    protocol: requestToJoinPublicGroup
+    mapping: strip_params
+  - manager: GroupManager
+    native: setMemberAttribute:userId:attributes:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: unblockGroup:completion:
+    protocol: unblockGroup
+    mapping: strip_params
+  - manager: GroupManager
+    native: unblockMembers:fromGroup:completion:
+    protocol: unblockMembers
+    mapping: strip_params
+  - manager: GroupManager
+    native: unmuteAllMembersFromGroup:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: unmuteMembers:fromGroup:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: updateDescription:forGroup:completion:
+    protocol: updateDescription
+    mapping: strip_params
+  - manager: GroupManager
+    native: updateGroupAnnouncementWithId:announcement:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: updateGroupAvatar:groupId:completion:
+    protocol: updateGroupAvatar
+    mapping: strip_params
+  - manager: GroupManager
+    native: updateGroupExtWithId:ext:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: updateGroupNamecard:namecard:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: updateGroupOwner:newOwner:completion:
+    protocol: updateGroupOwner
+    mapping: strip_params
+  - manager: GroupManager
+    native: updateGroupSubject:forGroup:completion:
+    protocol: updateGroupSubject
+    mapping: strip_params
+  - manager: GroupManager
+    native: updateGroupWithId:types:configs:completion:
+    protocol: null
+    mapping: unknown
+  - manager: GroupManager
+    native: uploadGroupSharedFileWithId:filePath:progress:completion:
+    protocol: null
+    mapping: unknown
+  - manager: PresenceManager
+    native: addDelegate:delegateQueue:
+    protocol: null
+    mapping: unknown
+  - manager: PresenceManager
+    native: fetchPresenceStatus:completion:
+    protocol: fetchPresenceStatus
+    mapping: strip_params
+  - manager: PresenceManager
+    native: fetchSubscribedMembersWithPageNum:pageSize:Completion:
+    protocol: fetchSubscribedMembersWithPageNum
+    mapping: strip_params
+  - manager: PresenceManager
+    native: publishPresenceWithDescription:completion:
+    protocol: publishPresenceWithDescription
+    mapping: strip_params
+  - manager: PresenceManager
+    native: removeDelegate:
+    protocol: null
+    mapping: unknown
+  - manager: PresenceManager
+    native: subscribe:expiry:completion:
+    protocol: null
+    mapping: unknown
+  - manager: PresenceManager
+    native: unsubscribe:completion:
+    protocol: null
+    mapping: unknown
+  - manager: PushManager
+    native: clearRemindTypeForConversation:conversationType:completion:
+    protocol: null
+    mapping: unknown
+  - manager: PushManager
+    native: getPreferredNotificationLanguageCompletion:
+    protocol: null
+    mapping: unknown
+  - manager: PushManager
+    native: getPushNotificationOptionsFromServerWithCompletion:
+    protocol: null
+    mapping: unknown
+  - manager: PushManager
+    native: getPushTemplate:
+    protocol: getPushTemplate
+    mapping: strip_params
+  - manager: PushManager
+    native: getSilentModeForAllWithCompletion:
+    protocol: null
+    mapping: unknown
+  - manager: PushManager
+    native: getSilentModeForConversation:conversationType:completion:
+    protocol: null
+    mapping: unknown
+  - manager: PushManager
+    native: getSilentModeForConversations:completion:
+    protocol: null
+    mapping: unknown
+  - manager: PushManager
+    native: setPreferredNotificationLanguage:completion:
+    protocol: setPreferredNotificationLanguage
+    mapping: strip_params
+  - manager: PushManager
+    native: setPushTemplate:completion:
+    protocol: setPushTemplate
+    mapping: strip_params
+  - manager: PushManager
+    native: setSilentModeForAll:completion:
+    protocol: setSilentModeForAll
+    mapping: strip_params
+  - manager: PushManager
+    native: setSilentModeForConversation:conversationType:params:completion:
+    protocol: null
+    mapping: unknown
+  - manager: PushManager
+    native: syncSilentModeConversationsFromServerCompletion:
+    protocol: null
+    mapping: unknown
+  - manager: PushManager
+    native: updatePushDisplayName:completion:
+    protocol: null
+    mapping: unknown
+  - manager: PushManager
+    native: updatePushDisplayStyle:completion:
+    protocol: null
+    mapping: unknown
+  - manager: UserInfoManager
+    native: addDelegate:delegateQueue:
+    protocol: null
+    mapping: unknown
+  - manager: UserInfoManager
+    native: fetchSubscribedUsers:
+    protocol: null
+    mapping: unknown
+  - manager: UserInfoManager
+    native: fetchUserInfoById:completion:
+    protocol: fetchUserInfoById
+    mapping: strip_params
+  - manager: UserInfoManager
+    native: fetchUserInfoById:type:completion:
+    protocol: fetchUserInfoById
+    mapping: strip_params
+  - manager: UserInfoManager
+    native: getUserInfoByIds:
+    protocol: null
+    mapping: unknown
+  - manager: UserInfoManager
+    native: removeDelegate:
+    protocol: null
+    mapping: unknown
+  - manager: UserInfoManager
+    native: subscribeUsersInfo:completion:
+    protocol: null
+    mapping: unknown
+  - manager: UserInfoManager
+    native: unsubscribeUsersInfo:completion:
+    protocol: null
+    mapping: unknown
+  - manager: UserInfoManager
+    native: updateOwnUserInfo:completion:
+    protocol: updateOwnUserInfo
+    mapping: strip_params
+  - manager: UserInfoManager
+    native: updateOwnUserInfo:withType:completion:
+    protocol: updateOwnUserInfo
+    mapping: strip_params
+  # 协议名存在但 iOS 接口无对应（待确认）:
+  - manager: null
+    native: null
+    protocol: acceptInvitation
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: acceptInvitationAlways
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: acceptJoinApplication
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: ackConversationRead
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: ackGroupMessageRead
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: ackMessageRead
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: addChatRoomAdmin
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: addMembersToChatRoomWhiteList
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: addRemoteAndLocalConversationsMark
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: addUserToBlockList
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: addWhiteList
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: appendMessage
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: asyncFetchGroupAcks
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: bindDeviceToken
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: blockChatRoomMembers
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: changeAppId
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: changeAppKey
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: changeChatRoomDescription
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: changeChatRoomOwner
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: changeChatRoomSubject
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: chatThread
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: clearAllGroupsFromDB
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: clearAllMessages
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: compressLogs
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: conversationDeleteServerMessageWithIds
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: conversationDeleteServerMessageWithTime
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: conversationGetLocalMessageCount
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: conversationRemindType
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: conversationSearchMsgsByOptions
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: createAccount
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: createChatRoom
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: createGroup
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: declineInvitation
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: declineInvitationFromGroup
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: declineJoinApplication
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: deleteAllMessageAndConversation
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: deleteMessageByIds
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: deleteMessagesBeforeTimestamp
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: deleteMessagesWithTs
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: deleteRemoteAndLocalConversationsMark
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: deleteRemoteConversation
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: destroyChatRoom
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: downloadAttachment
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: downloadBigImage
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: downloadGroupSharedFile
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: downloadMessageAttachmentInCombine
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: downloadMessageThumbnailInCombine
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: downloadThumbnail
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchAllContacts
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchChatRoomAnnouncement
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchChatRoomAttributes
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchChatRoomBlockList
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchChatRoomInfoFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchChatRoomMembers
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchChatRoomMuteList
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchChatRoomWhiteListFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchChatThreadDetail
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchChatThreadMember
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchChatThreadsWithParentId
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchContacts
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchConversationSilentMode
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchConversationsByOptions
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchConversationsFromServerWithPage
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchGroupMembersInfo
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchHistoryMessages
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchHistoryMessagesByOptions
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchJoinedChatThreads
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchJoinedChatThreadsWithParentId
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchJoinedGroupCount
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchLastMessageWithChatThreads
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchMemberAttributesFromGroup
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchMembersAttributesFromGroup
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchPinnedMessages
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchPreferredNotificationLanguage
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchPublicChatRoomsFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchReactionDetail
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchReactionList
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchSilentModeForAll
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchSilentModeForConversations
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchSupportLanguages
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: fetchUserInfoByIdWithType
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getAllChatRooms
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getAllContactsFromDB
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getAllContactsFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getBlockListFromDB
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getBlockListFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getChatRoom
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getConversationsFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getConversationsFromServerWithCursor
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getCurrentDeviceId
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getCurrentUser
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getGroupAnnouncementFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getGroupBlockListFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getGroupFileListFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getGroupMemberListFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getGroupMuteListFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getGroupSpecificationFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getGroupWhiteListFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getGroupWithId
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getImPushConfig
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getImPushConfigFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getJoinedGroupsFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getLatestMessage
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getLatestMessageFromOthers
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getLoggedInDevicesFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getMessage
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getMessageCount
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getPinInfo
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getPinnedConversationsFromServerWithCursor
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getPublicGroupsFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getSelfIdsOnOtherPlatform
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getThreadConversation
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getToken
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: getUnreadMsgCount
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: groupAckCount
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: init
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: insertMessage
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: inviterUser
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: isConnected
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: isLoggedInBefore
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: isMemberInChatRoomMuteList
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: isMemberInChatRoomWhiteListFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: isMemberInGroupMuteList
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: isMemberInWhiteListFromServer
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: joinChatRoom
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: kickAllDevices
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: kickDevice
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: leaveChatRoom
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: loadAllConversations
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: loadMessagesWithIds
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: loadMsgWithId
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: loadMsgWithKeywords
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: loadMsgWithMsgType
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: loadMsgWithStartId
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: loadMsgWithTime
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: login
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: loginWithAgoraToken
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: logout
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: markAllChatMsgAsRead
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: markAllMessagesAsRead
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: markMessageAsRead
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: messageCount
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: messageReactionDidChange
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: muteAllChatRoomMembers
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: muteAllMembers
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: muteChatRoomMembers
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: pinnedMessages
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: presenceSubscribe
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: presenceUnsubscribe
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: recallMessage
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: removeChatRoomAdmin
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: removeChatRoomMembers
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: removeConversationSilentMode
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: removeGroupSharedFile
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: removeMemberAttributesFromGroup
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: removeMembersFromChatRoomWhiteList
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: removeMessage
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: removeMessagesFromServerWithMsgIds
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: removeMessagesFromServerWithTs
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: removeMsgFromServerWithTimeStamp
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: removeUserFromBlockList
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: removeWhiteList
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: renewToken
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: reportMessage
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: reportPushAction
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: resendMessage
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: searchChatMsgFromDB
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: searchMsgsByOptions
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: setChatRoomAttributes
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: setConversationSilentMode
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: setMemberAttributesFromGroup
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: startCallback
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: syncConversationExt
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: syncSilentModels
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: unBlockChatRoomMembers
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: unMuteAllChatRoomMembers
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: unMuteAllMembers
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: unMuteChatRoomMembers
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: unMuteMembers
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: updateAPNsPushToken
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: updateChatMessage
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: updateChatRoomAnnouncement
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: updateChatThreadSubject
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: updateConversationMessage
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: updateDeliveryAckSetting
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: updateFCMPushToken
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: updateGroupAnnouncement
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: updateGroupExt
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: updateImPushStyle
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: updateLoginExtensionInfo
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: updateOwnUserInfoWithType
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: updatePushNickname
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: updateRequireAckSetting
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: uploadGroupSharedFile
+    mapping: unpaired_protocol
+  - manager: null
+    native: null
+    protocol: uploadLog
+    mapping: unpaired_protocol
+
+events:
+  - delegate: EMChatManagerDelegate
+    native: cmdMessagesDidReceive:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatManagerDelegate
+    native: groupMessageReadReceiptsHasChanged
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatManagerDelegate
+    native: messageAttachmentStatusDidChange:error:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatManagerDelegate
+    native: messageReactionDidChange:
+    protocol: messageReactionDidChange
+    mapping: strip_params
+  - delegate: EMChatManagerDelegate
+    native: messageStatusDidChange:error:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatManagerDelegate
+    native: messagesDidDeliver:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatManagerDelegate
+    native: messagesDidReceive:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatManagerDelegate
+    native: messagesInfoDidRecall:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatManagerDelegate
+    native: onMessageContentChanged:operatorId:operationTime:
+    protocol: onMessageContentChanged
+    mapping: strip_params
+  - delegate: EMChatManagerDelegate
+    native: onMessagePinChanged:conversationId:operation:pinInfo:
+    protocol: onMessagePinChanged
+    mapping: strip_params
+  - delegate: EMChatManagerDelegate
+    native: onMessageReadReceipts:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatManagerDelegate
+    native: onStreamMessagesReceived:
+    protocol: onStreamMessagesReceived
+    mapping: strip_params
+  - delegate: EMChatroomManagerDelegate
+    native: chatroomAdminListDidUpdate:addedAdmin:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatroomManagerDelegate
+    native: chatroomAdminListDidUpdate:removedAdmin:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatroomManagerDelegate
+    native: chatroomAllMemberMuteChanged:isAllMemberMuted:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatroomManagerDelegate
+    native: chatroomAnnouncementDidUpdate:announcement:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatroomManagerDelegate
+    native: chatroomAttributesDidRemoved:attributes:from:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatroomManagerDelegate
+    native: chatroomAttributesDidUpdated:attributeMap:from:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatroomManagerDelegate
+    native: chatroomMuteListDidUpdate:addedMutedMembers:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatroomManagerDelegate
+    native: chatroomMuteListDidUpdate:addedMutedMembers:muteExpire:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatroomManagerDelegate
+    native: chatroomMuteListDidUpdate:removedMutedMembers:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatroomManagerDelegate
+    native: chatroomOwnerDidUpdate:newOwner:oldOwner:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatroomManagerDelegate
+    native: chatroomSpecificationDidUpdate:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatroomManagerDelegate
+    native: chatroomWhiteListDidUpdate:addedWhiteListMembers:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatroomManagerDelegate
+    native: chatroomWhiteListDidUpdate:removedWhiteListMembers:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatroomManagerDelegate
+    native: didDismissFromChatroom:reason:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatroomManagerDelegate
+    native: userDidJoinChatroom:user:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatroomManagerDelegate
+    native: userDidJoinChatroom:user:ext:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMChatroomManagerDelegate
+    native: userDidLeaveChatroom:user:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMClientDelegate
+    native: connectionStateDidChange:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMClientDelegate
+    native: onDatabaseOpened:username:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMClientDelegate
+    native: onOfflineMessageSyncFinish
+    protocol: onOfflineMessageSyncFinish
+    mapping: identical
+  - delegate: EMClientDelegate
+    native: onOfflineMessageSyncStart
+    protocol: onOfflineMessageSyncStart
+    mapping: identical
+  - delegate: EMClientDelegate
+    native: syncDataFinished:type:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMClientDelegate
+    native: syncDataStartWithType:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMClientDelegate
+    native: tokenDidExpire:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMClientDelegate
+    native: tokenWillExpire:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMClientDelegate
+    native: userAccountDidForcedToLogout:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMClientDelegate
+    native: userAccountDidLoginFromOtherDeviceWithInfo:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMClientDelegate
+    native: userAccountDidRemoveFromServer
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMClientDelegate
+    native: userDidForbidByServer
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMContactManagerDelegate
+    native: friendRequestDidApproveByUser:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMContactManagerDelegate
+    native: friendRequestDidDeclineByUser:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMContactManagerDelegate
+    native: friendRequestDidReceiveFromUser:message:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMContactManagerDelegate
+    native: friendshipDidAddByUser:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMContactManagerDelegate
+    native: friendshipDidRemoveByUser:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMContactManagerDelegate
+    native: onFriendInfoChanged:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMConversationDelegate
+    native: conversationListDidUpdate:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: didJoinGroup:inviter:message:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: didLeaveGroup:reason:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupAdminListDidUpdate:addedAdmin:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupAdminListDidUpdate:removedAdmin:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupAllMemberMuteChanged:isAllMemberMuted:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupAnnouncementDidUpdate:announcement:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupFileListDidUpdate:addedSharedFile:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupFileListDidUpdate:removedSharedFile:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupInvitationDidAccept:invitee:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupInvitationDidDecline:invitee:reason:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupInvitationDidReceive:groupName:inviter:message:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupListDidUpdate:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupMuteListDidUpdate:addedMutedMembers:muteExpire:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupMuteListDidUpdate:removedMutedMembers:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupOwnerDidUpdate:newOwner:oldOwner:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupSpecificationDidUpdate:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupStateChanged:isDisabled:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupWhiteListDidUpdate:addedWhiteListMembers:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: groupWhiteListDidUpdate:removedWhiteListMembers:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: joinGroupRequestDidApprove:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: joinGroupRequestDidDecline:reason:decliner:applicant:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: joinGroupRequestDidReceive:user:reason:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: onAttributesChangedOfGroupMember:userId:attributes:operatorId:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: onUserGroupNamecardChanged:userId:namecard:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: userDidJoinGroup:users:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMGroupManagerDelegate
+    native: userDidLeaveGroup:users:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMLocalNotificationDelegate
+    native: emDidRecivePushSilentMessage:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMLocalNotificationDelegate
+    native: emGetNotificationMessage:state:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMLocalNotificationDelegate
+    native: emHandleNotificationContent:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMLocalNotificationDelegate
+    native: emuserNotificationCenter:didReceiveNotificationResponse:withCompletionHandler:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMLocalNotificationDelegate
+    native: emuserNotificationCenter:openSettingsForNotification:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMLocalNotificationDelegate
+    native: emuserNotificationCenter:willPresentNotification:withCompletionHandler:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMLogDelegate
+    native: logDidOutput:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMMultiDevicesDelegate
+    native: multiDevicesChatThreadEventDidReceive:threadId:ext:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMMultiDevicesDelegate
+    native: multiDevicesContactEventDidReceive:username:ext:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMMultiDevicesDelegate
+    native: multiDevicesConversationEvent:conversationId:conversationType:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMMultiDevicesDelegate
+    native: multiDevicesGroupEventDidReceive:groupId:ext:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMMultiDevicesDelegate
+    native: multiDevicesMessageBeRemoved:deviceId:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMMultiDevicesDelegate
+    native: multiDevicesUndisturbEventNotifyFormOtherDeviceData:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMPresenceManagerDelegate
+    native: presenceStatusDidChanged:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMThreadManagerDelegate
+    native: onChatThreadCreate:
+    protocol: onChatThreadCreate
+    mapping: strip_params
+  - delegate: EMThreadManagerDelegate
+    native: onChatThreadDestroy:
+    protocol: onChatThreadDestroy
+    mapping: strip_params
+  - delegate: EMThreadManagerDelegate
+    native: onChatThreadUpdate:
+    protocol: onChatThreadUpdate
+    mapping: strip_params
+  - delegate: EMThreadManagerDelegate
+    native: onUserKickOutOfChatThread:
+    protocol: onUserKickOutOfChatThread
+    mapping: strip_params
+  - delegate: EMUserInfoManagerDelegate
+    native: onSelfUserInfoUpdate:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: EMUserInfoManagerDelegate
+    native: onUserInfoUpdate:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: addConversationDelegate:delegateQueue:
+    native: addConversationDelegate:delegateQueue:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: addDelegate:delegateQueue:
+    native: addDelegate:delegateQueue:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: addLogDelegate:delegateQueue:
+    native: addLogDelegate:delegateQueue:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: addMultiDevicesDelegate:delegateQueue:
+    native: addMultiDevicesDelegate:delegateQueue:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: launchWithDelegate:
+    native: launchWithDelegate:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: removeConversationDelegate:
+    native: removeConversationDelegate:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: removeDelegate:
+    native: removeDelegate:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: removeLogDelegate:
+    native: removeLogDelegate:
+    protocol: null
+    mapping: unforwarded_or_renamed
+  - delegate: removeMultiDevicesDelegate:
+    native: removeMultiDevicesDelegate:
+    protocol: null
+    mapping: unforwarded_or_renamed

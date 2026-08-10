@@ -69,6 +69,11 @@ public class ChatRoomManagerWrapper extends Wrapper implements MethodChannel.Met
         register(MethodKey.setChatRoomAttributes, this::setChatRoomAttributes);
         register(MethodKey.removeChatRoomAttributes, this::removeChatRoomAttributes);
         register(MethodKey.isMemberInChatRoomMuteList, this::isMemberInChatRoomMuteList);
+        register(MethodKey.fetchChatRoomAllAttributesFromServer, this::fetchChatRoomAllAttributesFromServer);
+        register(MethodKey.setChatroomAttribute, this::setChatroomAttribute);
+        register(MethodKey.setChatroomAttributeForced, this::setChatroomAttributeForced);
+        register(MethodKey.removeChatRoomAttributeFromServer, this::removeChatRoomAttributeFromServer);
+        register(MethodKey.removeChatRoomAttributeFromServerForced, this::removeChatRoomAttributeFromServerForced);
     }
 
 
@@ -813,5 +818,48 @@ public class ChatRoomManagerWrapper extends Wrapper implements MethodChannel.Met
                 updateObject(object);
             }
         });
+    }
+
+    private void fetchChatRoomAllAttributesFromServer(JSONObject params, String channelName, MethodChannel.Result result) throws JSONException {
+        String roomId = params.getString("roomId");
+        EMClient.getInstance().chatroomManager().asyncFetchChatRoomAllAttributesFromServer(roomId,
+                new EMValueWrapperCallBack<Map<String, String>>(result, channelName) {
+                    @Override
+                    public void onSuccess(Map<String, String> map) {
+                        updateObject(map);
+                    }
+                });
+    }
+
+    private void setChatroomAttribute(JSONObject params, String channelName, MethodChannel.Result result) throws JSONException {
+        String roomId = params.getString("roomId");
+        String key = params.getString("key");
+        String value = params.getString("value");
+        boolean autoDelete = params.optBoolean("autoDelete", true);
+        EMClient.getInstance().chatroomManager().asyncSetChatroomAttribute(roomId, key, value, autoDelete,
+                new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void setChatroomAttributeForced(JSONObject params, String channelName, MethodChannel.Result result) throws JSONException {
+        String roomId = params.getString("roomId");
+        String key = params.getString("key");
+        String value = params.getString("value");
+        boolean autoDelete = params.optBoolean("autoDelete", true);
+        EMClient.getInstance().chatroomManager().asyncSetChatroomAttributeForced(roomId, key, value, autoDelete,
+                new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void removeChatRoomAttributeFromServer(JSONObject params, String channelName, MethodChannel.Result result) throws JSONException {
+        String roomId = params.getString("roomId");
+        String key = params.getString("key");
+        EMClient.getInstance().chatroomManager().asyncRemoveChatRoomAttributeFromServer(roomId, key,
+                new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void removeChatRoomAttributeFromServerForced(JSONObject params, String channelName, MethodChannel.Result result) throws JSONException {
+        String roomId = params.getString("roomId");
+        String key = params.getString("key");
+        EMClient.getInstance().chatroomManager().asyncRemoveChatRoomAttributeFromServerForced(roomId, key,
+                new EMWrapperCallBack(result, channelName, null));
     }
 }

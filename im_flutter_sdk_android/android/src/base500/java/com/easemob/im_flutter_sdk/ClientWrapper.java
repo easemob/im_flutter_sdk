@@ -19,6 +19,7 @@ import android.content.Context;
 import com.hyphenate.EMConnectionListener;
 import com.hyphenate.EMMultiDeviceListener;
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMRTCTokenInfo;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMLoginExtensionInfo;
 import com.hyphenate.chat.EMOptions;
@@ -27,6 +28,7 @@ import com.hyphenate.exceptions.HyphenateException;
 import com.hyphenate.util.DeviceUuidFactory;
 
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -93,6 +95,11 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
         register(MethodKey.updateMessagesReceiveCallbackIncludeSendSetting, this::updateMessagesReceiveCallbackIncludeSendSetting);
         register(MethodKey.updateRegradeMessagesSetting, this::updateRegradeMessagesSetting);
         register(MethodKey.changeAppId, this::changeAppId);
+        register(MethodKey.notifyTokenExpired, this::notifyTokenExpired);
+        register(MethodKey.sendFCMTokenToServer, this::sendFCMTokenToServer);
+        register(MethodKey.sendHonorPushTokenToServer, this::sendHonorPushTokenToServer);
+        register(MethodKey.getRTCTokenInfoWithChannelName, this::getRTCTokenInfoWithChannelName);
+        register(MethodKey.getUserIdsWithRTCUids, this::getUserIdsWithRTCUids);
     }
 
 
@@ -525,6 +532,56 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
                 onError(result, e);
             }
         });
+    }
+
+    private void notifyTokenExpired(JSONObject params, String channelName, Result result) throws JSONException {
+        String pushToken = params.optString("pushToken", null);
+        EMClient.getInstance().notifyTokenExpired(pushToken);
+        onSuccess(result, channelName, true);
+    }
+
+    private void sendFCMTokenToServer(JSONObject params, String channelName, Result result) throws JSONException {
+        String token = params.getString("token");
+        EMClient.getInstance().sendFCMTokenToServer(token);
+        onSuccess(result, channelName, true);
+    }
+
+    private void sendHonorPushTokenToServer(JSONObject params, String channelName, Result result) throws JSONException {
+        String token = params.getString("token");
+        EMClient.getInstance().sendHonorPushTokenToServer(token);
+        onSuccess(result, channelName, true);
+    }
+
+    private void getRTCTokenInfoWithChannelName(JSONObject params, String channelName, Result result) throws JSONException {
+        String channelNameStr = params.getString("channelName");
+        EMClient.getInstance().asyncGetRTCTokenInfoWithChannelName(channelNameStr,
+                new EMValueWrapperCallBack<EMRTCTokenInfo>(result, channelName) {
+                    @Override
+                    public void onSuccess(EMRTCTokenInfo info) {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("rtcToken", info.getRtcToken());
+                        updateObject(map);
+                    }
+                });
+    }
+
+    private void getUserIdsWithRTCUids(JSONObject params, String channelName, Result result) throws JSONException {
+        JSONArray ja = params.getJSONArray("rtcUids");
+        List<Integer> rtcUids = new ArrayList<>();
+        for (int i = 0; i < ja.length(); i++) {
+            rtcUids.add(ja.getInt(i));
+        }
+        EMClient.getInstance().asyncGetUserIdsWithRTCUids(rtcUids,
+                new EMValueWrapperCallBack<Map<Integer, String>>(result, channelName) {
+                    @Override
+                    public void onSuccess(Map<Integer, String> map) {
+                        Map<String, Object> out = new HashMap<>();
+                        for (Map.Entry<Integer, String> e : map.entrySet()) {
+                            out.put(String.valueOf(e.getKey()), e.getValue());
+                        }
+                        updateObject(out);
+                    }
+                });
     }
 }
 

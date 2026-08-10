@@ -8,7 +8,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -31,6 +33,11 @@ public class UserInfoManagerWrapper extends Wrapper implements MethodCallHandler
         register(MethodKey.fetchUserInfoById, this::fetchUserInfoById);
         register(MethodKey.fetchUserInfoByIdWithType, this::fetchUserInfoByIdWithType);
         register(MethodKey.fetchOwnInfo, (params, channelName, result) -> fetchOwnInfo(channelName, result));
+        register(MethodKey.getUserInfoWithUserId, this::getUserInfoWithUserId);
+        register(MethodKey.getUserInfoWithUserIds, this::getUserInfoWithUserIds);
+        register(MethodKey.subscribeUsersInfo, this::subscribeUsersInfo);
+        register(MethodKey.unsubscribeUsersInfo, this::unsubscribeUsersInfo);
+        register(MethodKey.fetchSubscribedUsers, this::fetchSubscribedUsers);
     }
 
 
@@ -200,5 +207,54 @@ public class UserInfoManagerWrapper extends Wrapper implements MethodCallHandler
             default:
                 return EMUserInfo.EMUserInfoType.NICKNAME;
         }
+    }
+
+    private void getUserInfoWithUserId(JSONObject params, String channelName, Result result) throws JSONException {
+        String userId = params.getString("userId");
+        asyncRunnable(() -> {
+            try {
+                EMUserInfo info = EMClient.getInstance().userInfoManager().getUserInfoWithUserId(userId);
+                onSuccess(result, channelName, info == null ? null : userInfoToJson(info));
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        });
+    }
+
+    private void getUserInfoWithUserIds(JSONObject params, String channelName, Result result) throws JSONException {
+        String[] userIds = stringArrayFromJson(params.getJSONArray("userIds"));
+        EMClient.getInstance().userInfoManager().getUserInfoWithUserIds(userIds,
+                new EMValueWrapperCallBack<Map<String, EMUserInfo>>(result, channelName) {
+                    @Override
+                    public void onSuccess(Map<String, EMUserInfo> object) {
+                        updateObject(userInfoMapToJson(object));
+                    }
+                });
+    }
+
+    private void subscribeUsersInfo(JSONObject params, String channelName, Result result) throws JSONException {
+        String[] userIds = stringArrayFromJson(params.getJSONArray("userIds"));
+        EMClient.getInstance().userInfoManager().subscribeUsersInfo(userIds,
+                new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void unsubscribeUsersInfo(JSONObject params, String channelName, Result result) throws JSONException {
+        String[] userIds = stringArrayFromJson(params.getJSONArray("userIds"));
+        EMClient.getInstance().userInfoManager().unsubscribeUsersInfo(userIds,
+                new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void fetchSubscribedUsers(JSONObject params, String channelName, Result result) throws JSONException {
+        EMClient.getInstance().userInfoManager().fetchSubscribedUsers(
+                new EMValueWrapperCallBack<List<EMUserInfo>>(result, channelName) {
+                    @Override
+                    public void onSuccess(List<EMUserInfo> object) {
+                        List<Map<String, Object>> list = new ArrayList<>();
+                        for (EMUserInfo info : object) {
+                            list.add(userInfoToJson(info));
+                        }
+                        updateObject(list);
+                    }
+                });
     }
 }

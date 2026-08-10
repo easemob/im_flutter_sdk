@@ -1,0 +1,6 @@
+framework module HyphenateChat {
+  umbrella header "HyphenateChat.h"
+
+  export *
+  module * { export * }
+}

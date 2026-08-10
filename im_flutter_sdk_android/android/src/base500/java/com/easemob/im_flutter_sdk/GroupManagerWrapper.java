@@ -101,6 +101,12 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
         register(MethodKey.updateGroupAvatar, this::updateGroupAvatar);
         register(MethodKey.updateGroupConfigs, this::updateGroupConfigs);
         register(MethodKey.updateGroupExtension, this::updateGroupExtension);
+        register(MethodKey.blockUser, this::blockUser);
+        register(MethodKey.unblockUser, this::unblockUser);
+        register(MethodKey.fetchGroupBlackList, this::fetchGroupBlackList);
+        register(MethodKey.getGroupNamecard, this::getGroupNamecard);
+        register(MethodKey.removeUserFromGroup, this::removeUserFromGroup);
+        register(MethodKey.updateGroupNamecard, this::updateGroupNamecard);
     }
 
 
@@ -1274,6 +1280,56 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
                         updateObject(GroupHelper.toJson(group));
                     }
                 });
+    }
+
+    private void blockUser(JSONObject params, String channelName, Result result) throws JSONException {
+        String groupId = params.getString("groupId");
+        String username = params.getString("username");
+        EMClient.getInstance().groupManager().asyncBlockUser(groupId, username,
+                new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void unblockUser(JSONObject params, String channelName, Result result) throws JSONException {
+        String groupId = params.getString("groupId");
+        String username = params.getString("username");
+        EMClient.getInstance().groupManager().asyncUnblockUser(groupId, username,
+                new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void fetchGroupBlackList(JSONObject params, String channelName, Result result) throws JSONException {
+        String groupId = params.getString("groupId");
+        int pageNum = params.optInt("pageNum", 1);
+        int pageSize = params.optInt("pageSize", 20);
+        EMClient.getInstance().groupManager().asyncFetchGroupBlackList(groupId, pageNum, pageSize,
+                new EMValueWrapperCallBack<List<String>>(result, channelName) {
+                    @Override
+                    public void onSuccess(List<String> list) {
+                        updateObject(list);
+                    }
+                });
+    }
+
+    private void getGroupNamecard(JSONObject params, String channelName, Result result) throws JSONException {
+        String groupId = params.getString("groupId");
+        String member = params.getString("member");
+        asyncRunnable(() -> {
+            String namecard = EMClient.getInstance().groupManager().getGroupNamecard(groupId, member);
+            onSuccess(result, channelName, namecard);
+        });
+    }
+
+    private void removeUserFromGroup(JSONObject params, String channelName, Result result) throws JSONException {
+        String groupId = params.getString("groupId");
+        String username = params.getString("username");
+        EMClient.getInstance().groupManager().asyncRemoveUserFromGroup(groupId, username,
+                new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void updateGroupNamecard(JSONObject params, String channelName, Result result) throws JSONException {
+        String groupId = params.getString("groupId");
+        String namecard = params.getString("namecard");
+        EMClient.getInstance().groupManager().asyncUpdateGroupNamecard(groupId, namecard,
+                new EMWrapperCallBack(result, channelName, null));
     }
 
 }

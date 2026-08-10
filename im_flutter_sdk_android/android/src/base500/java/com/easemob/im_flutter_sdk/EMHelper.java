@@ -451,8 +451,10 @@ class MessageHelper {
         if (json.has("from")) {
             message.setFrom(json.getString("from"));
         }
-        // 5.0 移除 setAcked/setUnread/setIsNeedGroupAck/setGroupAckCount，改为 readReceipt 体系
-        message.setIsNeedReadReceipt(json.optBoolean("needGroupAck", false));
+        // 5.0 移除 setAcked/setUnread/setIsNeedGroupAck/setGroupAckCount，改为 readReceipt 体系。
+        // hasReadAck / needGroupAck 统一映射到 needReadReceipt（单聊回执与群回执共用）。
+        message.setIsNeedReadReceipt(
+                json.optBoolean("hasReadAck", false) || json.optBoolean("needGroupAck", false));
 
         message.setIsChatThreadMessage(json.optBoolean("isThread", false));
 
@@ -566,7 +568,7 @@ class MessageHelper {
         }
         data.put("from", message.getFrom());
         data.put("to", message.getTo());
-        data.put("hasReadAck", message.isRead());
+        data.put("hasReadAck", message.isNeedReadReceipt());
         data.put("hasDeliverAck", message.isDelivered());
         data.put("localTime", message.localTime());
         data.put("serverTime", message.getMsgTime());

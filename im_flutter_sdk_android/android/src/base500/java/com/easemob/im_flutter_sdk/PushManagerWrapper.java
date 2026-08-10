@@ -4,6 +4,7 @@ import com.hyphenate.EMError;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMPushConfigs;
+import com.hyphenate.chat.EMPushManager;
 import com.hyphenate.chat.EMPushManager.DisplayStyle;
 import com.hyphenate.chat.EMSilentModeParam;
 import com.hyphenate.chat.EMSilentModeResult;
@@ -110,7 +111,16 @@ public class PushManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void reportPushAction(JSONObject params, String channelName, Result result) throws JSONException {
-
+        JSONObject pushPayload = params.optJSONObject("pushPayload");
+        String actionStr = params.optString("action", "ARRIVE");
+        EMPushManager.EMPushAction action;
+        if ("CLICK".equals(actionStr)) {
+            action = EMPushManager.EMPushAction.CLICK;
+        } else {
+            action = EMPushManager.EMPushAction.ARRIVE;
+        }
+        EMClient.getInstance().pushManager().reportPushAction(pushPayload, action,
+                new EMWrapperCallBack(result, channelName, null));
     }
 
     private void setConversationSilentMode(JSONObject params, String channelName, Result result) throws JSONException {

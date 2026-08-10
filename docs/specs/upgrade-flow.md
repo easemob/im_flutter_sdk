@@ -31,11 +31,24 @@
   - 快速核对命令（示例）：
     - `rg -n "getCurrentDeviceId|loadConversationMessagesWithKeyword|loadMessagesWithIds|onStreamMessagesReceived" im_flutter_sdk im_flutter_sdk_android im_flutter_sdk_ios`
 
+- 步骤 3.5：事件核对（回调/事件的删除是静默的，编译不报错，必须人工核对）
+  - `javap` diff 原生 Listener 接口方法（Android）/ delegate 头文件（iOS）
+  - 对照 wrapper 转发：新事件要不要转发、旧事件是否被忽略/改名
+  - 决策：wrapper 补转发（映射到协议名）or 记录忽略（matrix 不需要）
+  - 参考：`docs/native-api/<ver>/android-api.json`（javap 基线）、`ios-api.json`
+
 - 步骤 4：自检与构建
+  - 协议名五方一致性：`python3 im_flutter_sdk/scripts/check_protocol_consistency.py`
+  - 命名规范：`docs/specs/naming-convention.md`
   - 规范自检：`im_flutter_sdk/scripts/speckit.sh check`
-  - Android 构建：`im_flutter_sdk/scripts/speckit.sh android`
-  - iOS 安装 Pods：`im_flutter_sdk/scripts/speckit.sh ios`
+  - Android 构建：`im_flutter_sdk/scripts/speckit.sh android`（或 `flutter build apk --flavor sdkXXX`）
+  - iOS 合并 + 安装 Pods：`im_flutter_sdk/scripts/merge_ios_sdk.sh sdkXXX`（5.0 用默认）→ `im_flutter_sdk/scripts/speckit.sh ios`
   - iOS 构建（模拟器）：`im_flutter_sdk/scripts/speckit.sh ios-build`
+  - wrapper 差异检查：`im_flutter_sdk/scripts/check_wrapper_diffs.sh`（Android 冗余文件）
+
+- 步骤 4.5：matrix 与映射更新
+  - `android.yaml` / `ios.yaml`：versions.<新版本>.removed/added（链式记录相对上一版）
+  - 映射文件：重跑 `extract_api_mapping.py`（Android）、`extract_ios_mapping.py`（iOS）
 
 - 步骤 5：完成与提交
   - 变更清单、版本号与 CHANGELOG 更新；

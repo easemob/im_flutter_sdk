@@ -109,6 +109,13 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
         register(MethodKey.deleteConversations, this::deleteConversations);
         register(MethodKey.loadConversationMessagesWithKeyword, this::loadConversationMessagesWithKeyword);
         register(MethodKey.loadMessagesWithIds, this::loadMessagesWithIds);
+        register(MethodKey.saveMessage, this::saveMessage);
+        register(MethodKey.cleanConversationsMemoryCache, this::cleanConversationsMemoryCache);
+        register(MethodKey.getConversationsByType, this::getConversationsByType);
+        register(MethodKey.filterConversationsFromDB, this::filterConversationsFromDB);
+        register(MethodKey.setVoiceMessageListened, this::setVoiceMessageListened);
+        register(MethodKey.voiceMessageToText, this::voiceMessageToText);
+        register(MethodKey.voiceFileToText, this::voiceFileToText);
     }
 
 
@@ -1254,6 +1261,76 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
         }
         boolean deleteMessages = params.optBoolean("deleteMessages", true);
         EMClient.getInstance().chatManager().asyncDeleteConversations(ids, deleteMessages, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void saveMessage(JSONObject params, String channelName, Result result) throws JSONException {
+        EMMessage msg = MessageHelper.fromJson(params.getJSONObject("message"));
+        EMClient.getInstance().chatManager().saveMessage(msg);
+        onSuccess(result, channelName, true);
+    }
+
+    private void cleanConversationsMemoryCache(JSONObject params, String channelName, Result result) throws JSONException {
+        EMClient.getInstance().chatManager().cleanConversationsMemoryCache();
+        onSuccess(result, channelName, true);
+    }
+
+    private void getConversationsByType(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation.EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("type"));
+        List<EMConversation> list = EMClient.getInstance().chatManager().getConversationsByType(type);
+        List<Map<String, Object>> convList = new ArrayList<>();
+        for (EMConversation conv : list) {
+            convList.add(ConversationHelper.toJson(conv));
+        }
+        onSuccess(result, channelName, convList);
+    }
+
+    private void filterConversationsFromDB(JSONObject params, String channelName, Result result) throws JSONException {
+        // 5.0 自定义过滤器：默认不过滤（返回全部），后续可扩展
+        EMCustomConversationFilter filter = conversation -> true;
+        boolean isOnlyUnread = params.optBoolean("onlyUnread", false);
+        EMClient.getInstance().chatManager().asyncFilterConversationsFromDB(filter, isOnlyUnread,
+                new EMValueWrapperCallBack<List<EMConversation>>(result, channelName) {
+                    @Override
+                    public void onSuccess(List<EMConversation> list) {
+                        List<Map<String, Object>> convList = new ArrayList<>();
+                        for (EMConversation conv : list) {
+                            convList.add(ConversationHelper.toJson(conv));
+                        }
+                        updateObject(convList);
+                    }
+                });
+    }
+
+    private void setVoiceMessageListened(JSONObject params, String channelName, Result result) throws JSONException {
+        EMMessage msg = MessageHelper.fromJson(params.getJSONObject("message"));
+        EMClient.getInstance().chatManager().setVoiceMessageListened(msg);
+        onSuccess(result, channelName, true);
+    }
+
+    private void voiceMessageToText(JSONObject params, String channelName, Result result) throws JSONException {
+        EMMessage msg = MessageHelper.fromJson(params.getJSONObject("message"));
+        EMClient.getInstance().chatManager().voiceMessageToText(msg,
+                new EMValueWrapperCallBack<String>(result, channelName) {
+                    @Override
+                    public void onSuccess(String text) {
+                        updateObject(text);
+                    }
+                });
+    }
+
+    private void voiceFileToText(JSONObject params, String channelName, Result result) throws JSONException {
+        String filePath = params.getString("filePath");
+        EMAudioParams audioParams = new EMAudioParams();
+        audioParams.setSampleRate(params.optInt("sampleRate", 16000));
+        audioParams.setBitsPerSample(params.optInt("bitsPerSample", 16));
+        audioParams.setChannels(params.optInt("channels", 1));
+        EMClient.getInstance().chatManager().voiceFileToText(filePath, audioParams,
+                new EMValueWrapperCallBack<String>(result, channelName) {
+                    @Override
+                    public void onSuccess(String text) {
+                        updateObject(text);
+                    }
+                });
     }
 
 }

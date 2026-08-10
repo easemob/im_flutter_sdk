@@ -1,0 +1,1889 @@
+platform: android
+base_version: 5.0.0
+# 生成: im_flutter_sdk/scripts/extract_api_mapping.py
+# 用途: 升级时 javap diff 原生名 -> 查 protocol 定位 wrapper 改动
+
+apis:
+  - manager: ContactManager
+    native: acceptInvitation
+    protocol: acceptInvitation
+    mapping: identical
+  - manager: Client
+    native: setAutoAcceptGroupInvitation
+    protocol: acceptInvitationAlways
+    mapping: derived
+  - manager: GroupManager
+    native: asyncAcceptInvitation
+    protocol: acceptInvitationFromGroup
+    mapping: derived
+  - manager: GroupManager
+    native: asyncAcceptApplication
+    protocol: acceptJoinApplication
+    mapping: derived
+  - manager: ChatManager
+    native: asyncClearConversationUnreadMessageCount
+    protocol: ackConversationRead
+    mapping: derived
+  - manager: ChatManager
+    native: asyncSendMessageReadReceipts
+    protocol: ackGroupMessageRead
+    mapping: derived
+  - manager: ChatManager
+    native: getMessage
+    protocol: ackGroupMessageRead
+    mapping: derived
+  - manager: ChatManager
+    native: asyncSendMessageReadReceipts
+    protocol: ackMessageRead
+    mapping: derived
+  - manager: ChatManager
+    native: getMessage
+    protocol: ackMessageRead
+    mapping: derived
+  - manager: GroupManager
+    native: asyncAddGroupAdmin
+    protocol: addAdmin
+    mapping: derived
+  - manager: ChatRoomManager
+    native: addChatRoomAdmin
+    protocol: addChatRoomAdmin
+    mapping: identical
+  - manager: ContactManager
+    native: addContact
+    protocol: addContact
+    mapping: identical
+  - manager: GroupManager
+    native: addUsersToGroup
+    protocol: addMembers
+    mapping: derived
+  - manager: ChatRoomManager
+    native: addToChatRoomWhiteList
+    protocol: addMembersToChatRoomWhiteList
+    mapping: derived
+  - manager: ChatManager
+    native: asyncAddReaction
+    protocol: addReaction
+    mapping: strip_async
+  - manager: ChatManager
+    native: asyncAddConversationMark
+    protocol: addRemoteAndLocalConversationsMark
+    mapping: derived
+  - manager: ContactManager
+    native: addUserToBlackList
+    protocol: addUserToBlockList
+    mapping: derived
+  - manager: GroupManager
+    native: addToGroupWhiteList
+    protocol: addWhiteList
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: appendMessage
+    mapping: derived
+  - manager: ChatManager
+    native: asyncFetchGroupMessageReadReceipts
+    protocol: asyncFetchGroupAcks
+    mapping: derived
+  - manager: PushManager
+    native: bindDeviceToken
+    protocol: bindDeviceToken
+    mapping: identical
+  - manager: ChatRoomManager
+    native: blockChatroomMembers
+    protocol: blockChatRoomMembers
+    mapping: derived
+  - manager: GroupManager
+    native: asyncBlockGroupMessage
+    protocol: blockGroup
+    mapping: derived
+  - manager: GroupManager
+    native: asyncBlockUsers
+    protocol: blockMembers
+    mapping: derived
+  - manager: GroupManager
+    native: asyncBlockUser
+    protocol: blockUser
+    mapping: strip_async
+  - manager: Client
+    native: changeAppId
+    protocol: changeAppId
+    mapping: identical
+  - manager: Client
+    native: changeAppkey
+    protocol: changeAppKey
+    mapping: derived
+  - manager: ChatRoomManager
+    native: changeChatroomDescription
+    protocol: changeChatRoomDescription
+    mapping: derived
+  - manager: ChatRoomManager
+    native: changeOwner
+    protocol: changeChatRoomOwner
+    mapping: derived
+  - manager: ChatRoomManager
+    native: changeChatRoomSubject
+    protocol: changeChatRoomSubject
+    mapping: identical
+  - manager: MessageManager
+    native: null
+    protocol: chatThread
+    mapping: unimplemented_or_unknown
+  - manager: ChatManager
+    native: cleanConversationsMemoryCache
+    protocol: cleanConversationsMemoryCache
+    mapping: identical
+  - manager: GroupManager
+    native: cleanAllGroupsFromLocal
+    protocol: clearAllGroupsFromDB
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: clearAllMessages
+    mapping: derived
+  - manager: Client
+    native: compressLogs
+    protocol: compressLogs
+    mapping: identical
+  - manager: ConversationManager
+    native: getConversation
+    protocol: conversationDeleteServerMessageWithIds
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: conversationDeleteServerMessageWithTime
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: conversationGetLocalMessageCount
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: conversationRemindType
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: conversationSearchMsgsByOptions
+    mapping: derived
+  - manager: ConversationManager
+    native: searchMsgFromDB
+    protocol: conversationSearchMsgsByOptions
+    mapping: derived
+  - manager: ChatThreadManager
+    native: createChatThread
+    protocol: createChatThread
+    mapping: identical
+  - manager: GroupManager
+    native: asyncCreateGroup
+    protocol: createGroup
+    mapping: strip_async
+  - manager: ContactManager
+    native: declineInvitation
+    protocol: declineInvitation
+    mapping: identical
+  - manager: GroupManager
+    native: asyncDeclineInvitation
+    protocol: declineInvitationFromGroup
+    mapping: derived
+  - manager: GroupManager
+    native: asyncDeclineApplication
+    protocol: declineJoinApplication
+    mapping: derived
+  - manager: ChatManager
+    native: asyncDeleteAllMsgsAndConversations
+    protocol: deleteAllMessageAndConversation
+    mapping: derived
+  - manager: ContactManager
+    native: deleteContact
+    protocol: deleteContact
+    mapping: identical
+  - manager: ChatManager
+    native: deleteConversation
+    protocol: deleteConversation
+    mapping: identical
+  - manager: ChatManager
+    native: asyncDeleteConversations
+    protocol: deleteConversations
+    mapping: strip_async
+  - manager: ConversationManager
+    native: getConversation
+    protocol: deleteMessageByIds
+    mapping: derived
+  - manager: ChatManager
+    native: deleteMessagesBeforeTimestamp
+    protocol: deleteMessagesBeforeTimestamp
+    mapping: identical
+  - manager: ConversationManager
+    native: getConversation
+    protocol: deleteMessagesWithTs
+    mapping: derived
+  - manager: ChatManager
+    native: asyncRemoveConversationMark
+    protocol: deleteRemoteAndLocalConversationsMark
+    mapping: derived
+  - manager: ChatManager
+    native: deleteConversationFromServer
+    protocol: deleteRemoteConversation
+    mapping: derived
+  - manager: ChatThreadManager
+    native: destroyChatThread
+    protocol: destroyChatThread
+    mapping: identical
+  - manager: GroupManager
+    native: asyncDestroyGroup
+    protocol: destroyGroup
+    mapping: strip_async
+  - manager: ChatManager
+    native: downloadAndParseCombineMessage
+    protocol: downloadAndParseCombineMessage
+    mapping: identical
+  - manager: ChatManager
+    native: null
+    protocol: downloadAttachment
+    mapping: unimplemented_or_unknown
+  - manager: ChatManager
+    native: null
+    protocol: downloadBigImage
+    mapping: unimplemented_or_unknown
+  - manager: GroupManager
+    native: asyncDownloadGroupSharedFile
+    protocol: downloadGroupSharedFile
+    mapping: strip_async
+  - manager: ChatManager
+    native: downloadAttachment
+    protocol: downloadMessageAttachmentInCombine
+    mapping: derived
+  - manager: ChatManager
+    native: downloadThumbnail
+    protocol: downloadMessageThumbnailInCombine
+    mapping: derived
+  - manager: ChatManager
+    native: null
+    protocol: downloadThumbnail
+    mapping: unimplemented_or_unknown
+  - manager: ContactManager
+    native: asyncFetchAllContactsFromLocal
+    protocol: fetchAllContacts
+    mapping: derived
+  - manager: ChatRoomManager
+    native: asyncFetchChatRoomAllAttributesFromServer
+    protocol: fetchChatRoomAllAttributesFromServer
+    mapping: strip_async
+  - manager: ChatRoomManager
+    native: fetchChatRoomAnnouncement
+    protocol: fetchChatRoomAnnouncement
+    mapping: identical
+  - manager: ChatRoomManager
+    native: asyncFetchChatroomAttributesFromServer
+    protocol: fetchChatRoomAttributes
+    mapping: derived
+  - manager: ChatRoomManager
+    native: fetchChatRoomBlackList
+    protocol: fetchChatRoomBlockList
+    mapping: derived
+  - manager: ChatRoomManager
+    native: fetchChatRoomFromServer
+    protocol: fetchChatRoomInfoFromServer
+    mapping: derived
+  - manager: ChatRoomManager
+    native: fetchChatRoomMembers
+    protocol: fetchChatRoomMembers
+    mapping: identical
+  - manager: ChatRoomManager
+    native: fetchChatRoomMuteList
+    protocol: fetchChatRoomMuteList
+    mapping: identical
+  - manager: ChatRoomManager
+    native: fetchChatRoomWhiteList
+    protocol: fetchChatRoomWhiteListFromServer
+    mapping: derived
+  - manager: ChatThreadManager
+    native: getChatThreadFromServer
+    protocol: fetchChatThreadDetail
+    mapping: derived
+  - manager: ChatThreadManager
+    native: getChatThreadMembers
+    protocol: fetchChatThreadMember
+    mapping: derived
+  - manager: ChatThreadManager
+    native: getChatThreadsFromServer
+    protocol: fetchChatThreadsWithParentId
+    mapping: derived
+  - manager: ContactManager
+    native: asyncFetchAllContactsFromLocal
+    protocol: fetchContacts
+    mapping: derived
+  - manager: PushManager
+    native: getSilentModeForConversation
+    protocol: fetchConversationSilentMode
+    mapping: derived
+  - manager: ChatManager
+    native: getAllConversationsBySort
+    protocol: fetchConversationsByOptions
+    mapping: derived
+  - manager: ChatManager
+    native: getAllConversationsBySort
+    protocol: fetchConversationsFromServerWithPage
+    mapping: derived
+  - manager: GroupManager
+    native: asyncFetchGroupBlackList
+    protocol: fetchGroupBlackList
+    mapping: strip_async
+  - manager: GroupManager
+    native: asyncFetchGroupMembersInfo
+    protocol: fetchGroupMembersInfo
+    mapping: strip_async
+  - manager: ChatManager
+    native: asyncFetchHistoryMessages
+    protocol: fetchHistoryMessages
+    mapping: strip_async
+  - manager: ChatManager
+    native: asyncFetchHistoryMessages
+    protocol: fetchHistoryMessagesByOptions
+    mapping: derived
+  - manager: ChatThreadManager
+    native: getJoinedChatThreadsFromServer
+    protocol: fetchJoinedChatThreads
+    mapping: derived
+  - manager: ChatThreadManager
+    native: getJoinedChatThreadsFromServer
+    protocol: fetchJoinedChatThreadsWithParentId
+    mapping: derived
+  - manager: GroupManager
+    native: asyncGetJoinedGroupsCountFromServer
+    protocol: fetchJoinedGroupCount
+    mapping: derived
+  - manager: ChatThreadManager
+    native: getChatThreadLatestMessage
+    protocol: fetchLastMessageWithChatThreads
+    mapping: derived
+  - manager: GroupManager
+    native: asyncFetchGroupMemberAllAttributes
+    protocol: fetchMemberAttributesFromGroup
+    mapping: derived
+  - manager: GroupManager
+    native: getCurrentUser
+    protocol: fetchMemberAttributesFromGroup
+    mapping: derived
+  - manager: GroupManager
+    native: asyncFetchGroupMembersAttributes
+    protocol: fetchMembersAttributesFromGroup
+    mapping: derived
+  - manager: ChatManager
+    native: asyncGetPinnedMessagesFromServer
+    protocol: fetchPinnedMessages
+    mapping: derived
+  - manager: PushManager
+    native: getPreferredNotificationLanguage
+    protocol: fetchPreferredNotificationLanguage
+    mapping: derived
+  - manager: PresenceManager
+    native: fetchPresenceStatus
+    protocol: fetchPresenceStatus
+    mapping: identical
+  - manager: ChatRoomManager
+    native: asyncFetchPublicChatRoomsFromServer
+    protocol: fetchPublicChatRoomsFromServer
+    mapping: strip_async
+  - manager: ChatManager
+    native: asyncGetReactionDetail
+    protocol: fetchReactionDetail
+    mapping: derived
+  - manager: ChatManager
+    native: asyncGetReactionList
+    protocol: fetchReactionList
+    mapping: derived
+  - manager: PushManager
+    native: getSilentModeForAll
+    protocol: fetchSilentModeForAll
+    mapping: derived
+  - manager: PushManager
+    native: getConversation
+    protocol: fetchSilentModeForConversations
+    mapping: derived
+  - manager: PushManager
+    native: getSilentModeForConversations
+    protocol: fetchSilentModeForConversations
+    mapping: derived
+  - manager: PresenceManager
+    native: fetchSubscribedMembers
+    protocol: fetchSubscribedMembersWithPageNum
+    mapping: derived
+  - manager: UserInfoManager
+    native: fetchSubscribedUsers
+    protocol: fetchSubscribedUsers
+    mapping: identical
+  - manager: ChatManager
+    native: fetchSupportLanguages
+    protocol: fetchSupportLanguages
+    mapping: identical
+  - manager: UserInfoManager
+    native: fetchUserInfoByUserId
+    protocol: fetchUserInfoById
+    mapping: derived
+  - manager: UserInfoManager
+    native: fetchUserInfoByAttribute
+    protocol: fetchUserInfoByIdWithType
+    mapping: derived
+  - manager: ChatManager
+    native: asyncFilterConversationsFromDB
+    protocol: filterConversationsFromDB
+    mapping: strip_async
+  - manager: ContactManager
+    native: asyncFetchAllContactsFromLocal
+    protocol: getAllContacts
+    mapping: derived
+  - manager: ContactManager
+    native: getContactsFromLocal
+    protocol: getAllContactsFromDB
+    mapping: derived
+  - manager: ContactManager
+    native: getContactsFromLocal
+    protocol: getAllContactsFromServer
+    mapping: derived
+  - manager: ContactManager
+    native: getBlackListUsernames
+    protocol: getBlockListFromDB
+    mapping: derived
+  - manager: ContactManager
+    native: getBlackListFromServer
+    protocol: getBlockListFromServer
+    mapping: derived
+  - manager: ChatRoomManager
+    native: getChatRoom
+    protocol: getChatRoom
+    mapping: identical
+  - manager: ContactManager
+    native: fetchContactFromLocal
+    protocol: getContact
+    mapping: derived
+  - manager: ChatManager
+    native: getConversation
+    protocol: getConversation
+    mapping: identical
+  - manager: ChatManager
+    native: getConversationsByType
+    protocol: getConversationsByType
+    mapping: identical
+  - manager: ChatManager
+    native: getAllConversationsBySort
+    protocol: getConversationsFromServer
+    mapping: derived
+  - manager: ChatManager
+    native: getAllConversationsBySort
+    protocol: getConversationsFromServerWithCursor
+    mapping: derived
+  - manager: Client
+    native: getContext
+    protocol: getCurrentDeviceId
+    mapping: derived
+  - manager: Client
+    native: getCurrentUser
+    protocol: getCurrentUser
+    mapping: identical
+  - manager: GroupManager
+    native: asyncFetchGroupAnnouncement
+    protocol: getGroupAnnouncementFromServer
+    mapping: derived
+  - manager: GroupManager
+    native: asyncGetBlockedUsers
+    protocol: getGroupBlockListFromServer
+    mapping: derived
+  - manager: GroupManager
+    native: asyncFetchGroupSharedFileList
+    protocol: getGroupFileListFromServer
+    mapping: derived
+  - manager: GroupManager
+    native: asyncFetchGroupMembers
+    protocol: getGroupMemberListFromServer
+    mapping: derived
+  - manager: ChatManager
+    native: asyncGetGroupMessageReadReceipts
+    protocol: getGroupMessageReadReceipts
+    mapping: strip_async
+  - manager: GroupManager
+    native: asyncFetchGroupMuteList
+    protocol: getGroupMuteListFromServer
+    mapping: derived
+  - manager: GroupManager
+    native: getGroupNamecard
+    protocol: getGroupNamecard
+    mapping: identical
+  - manager: GroupManager
+    native: getGroupFromServer
+    protocol: getGroupSpecificationFromServer
+    mapping: derived
+  - manager: GroupManager
+    native: fetchGroupWhiteList
+    protocol: getGroupWhiteListFromServer
+    mapping: derived
+  - manager: GroupManager
+    native: getGroup
+    protocol: getGroupWithId
+    mapping: derived
+  - manager: PushManager
+    native: getPushConfigs
+    protocol: getImPushConfig
+    mapping: derived
+  - manager: PushManager
+    native: getPushConfigsFromServer
+    protocol: getImPushConfigFromServer
+    mapping: derived
+  - manager: GroupManager
+    native: getAllGroups
+    protocol: getJoinedGroups
+    mapping: derived
+  - manager: GroupManager
+    native: getAllGroups
+    protocol: getJoinedGroupsFromServer
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: getLatestMessage
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: getLatestMessageFromOthers
+    mapping: derived
+  - manager: Client
+    native: fetchLoggedInDevicesFromServerWithToken
+    protocol: getLoggedInDevicesFromServer
+    mapping: derived
+  - manager: ChatManager
+    native: getMessage
+    protocol: getMessage
+    mapping: identical
+  - manager: ChatManager
+    native: asyncGetMessageCount
+    protocol: getMessageCount
+    mapping: strip_async
+  - manager: MessageManager
+    native: null
+    protocol: getPinInfo
+    mapping: unimplemented_or_unknown
+  - manager: ChatManager
+    native: getAllConversationsBySort
+    protocol: getPinnedConversationsFromServerWithCursor
+    mapping: derived
+  - manager: GroupManager
+    native: getAllGroups
+    protocol: getPublicGroupsFromServer
+    mapping: derived
+  - manager: PushManager
+    native: asyncGetPushConfigsFromServer
+    protocol: getPushConfigsFromServer
+    mapping: strip_async
+  - manager: PushManager
+    native: getPushTemplate
+    protocol: getPushTemplate
+    mapping: identical
+  - manager: Client
+    native: asyncGetRTCTokenInfoWithChannelName
+    protocol: getRTCTokenInfoWithChannelName
+    mapping: strip_async
+  - manager: MessageManager
+    native: null
+    protocol: getReactionList
+    mapping: unimplemented_or_unknown
+  - manager: ContactManager
+    native: getSelfIdsOnOtherPlatform
+    protocol: getSelfIdsOnOtherPlatform
+    mapping: identical
+  - manager: ChatManager
+    native: getConversation
+    protocol: getThreadConversation
+    mapping: derived
+  - manager: Client
+    native: getAccessToken
+    protocol: getToken
+    mapping: derived
+  - manager: ChatManager
+    native: getUnreadMessageCount
+    protocol: getUnreadMessageCount
+    mapping: identical
+  - manager: ConversationManager
+    native: getConversation
+    protocol: getUnreadMsgCount
+    mapping: derived
+  - manager: Client
+    native: asyncGetUserIdsWithRTCUids
+    protocol: getUserIdsWithRTCUids
+    mapping: strip_async
+  - manager: UserInfoManager
+    native: getUserInfoWithUserId
+    protocol: getUserInfoWithUserId
+    mapping: identical
+  - manager: UserInfoManager
+    native: getUserInfoWithUserIds
+    protocol: getUserInfoWithUserIds
+    mapping: identical
+  - manager: MessageManager
+    native: null
+    protocol: groupAckCount
+    mapping: unimplemented_or_unknown
+  - manager: ChatManager
+    native: importMessages
+    protocol: importMessages
+    mapping: identical
+  - manager: Client
+    native: init
+    protocol: init
+    mapping: identical
+  - manager: Client
+    native: setDebugMode
+    protocol: init
+    mapping: derived
+  - manager: GroupManager
+    native: asyncInviteUser
+    protocol: inviterUser
+    mapping: derived
+  - manager: Client
+    native: isConnected
+    protocol: isConnected
+    mapping: identical
+  - manager: Client
+    native: null
+    protocol: isLoggedInBefore
+    mapping: unimplemented_or_unknown
+  - manager: ChatRoomManager
+    native: asyncCheckIfInMuteList
+    protocol: isMemberInChatRoomMuteList
+    mapping: derived
+  - manager: ChatRoomManager
+    native: checkIfInChatRoomWhiteList
+    protocol: isMemberInChatRoomWhiteListFromServer
+    mapping: derived
+  - manager: GroupManager
+    native: asyncCheckIfInMuteList
+    protocol: isMemberInGroupMuteList
+    mapping: derived
+  - manager: GroupManager
+    native: checkIfInGroupWhiteList
+    protocol: isMemberInWhiteListFromServer
+    mapping: derived
+  - manager: ChatRoomManager
+    native: joinChatRoom
+    protocol: joinChatRoom
+    mapping: identical
+  - manager: ChatThreadManager
+    native: joinChatThread
+    protocol: joinChatThread
+    mapping: identical
+  - manager: GroupManager
+    native: joinGroup
+    protocol: joinPublicGroup
+    mapping: derived
+  - manager: Client
+    native: kickAllDevicesWithToken
+    protocol: kickAllDevices
+    mapping: derived
+  - manager: Client
+    native: kickDeviceWithToken
+    protocol: kickDevice
+    mapping: derived
+  - manager: ChatRoomManager
+    native: leaveChatRoom
+    protocol: leaveChatRoom
+    mapping: identical
+  - manager: ChatThreadManager
+    native: leaveChatThread
+    protocol: leaveChatThread
+    mapping: identical
+  - manager: GroupManager
+    native: asyncLeaveGroup
+    protocol: leaveGroup
+    mapping: strip_async
+  - manager: ChatManager
+    native: getAllConversationsBySort
+    protocol: loadAllConversations
+    mapping: derived
+  - manager: ChatManager
+    native: getCurrentUser
+    protocol: loadAllConversations
+    mapping: derived
+  - manager: ChatManager
+    native: asyncLoadConversationMessagesWithKeyword
+    protocol: loadConversationMessagesWithKeyword
+    mapping: strip_async
+  - manager: ChatManager
+    native: asyncLoadMessages
+    protocol: loadMessagesWithIds
+    mapping: derived
+  - manager: ConversationManager
+    native: getMessage
+    protocol: loadMsgWithId
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: loadMsgWithKeywords
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: loadMsgWithMsgType
+    mapping: derived
+  - manager: ConversationManager
+    native: searchMsgFromDB
+    protocol: loadMsgWithMsgType
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: loadMsgWithStartId
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: loadMsgWithTime
+    mapping: derived
+  - manager: ConversationManager
+    native: searchMsgFromDB
+    protocol: loadMsgWithTime
+    mapping: derived
+  - manager: Client
+    native: getCurrentUser
+    protocol: login
+    mapping: derived
+  - manager: Client
+    native: loginWithToken
+    protocol: login
+    mapping: derived
+  - manager: Client
+    native: logout
+    protocol: logout
+    mapping: identical
+  - manager: ChatManager
+    native: asyncClearAllConversationUnreadMessageCount
+    protocol: markAllChatMsgAsRead
+    mapping: derived
+  - manager: ConversationManager
+    native: asyncClearConversationUnreadMessageCount
+    protocol: markAllMessagesAsRead
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: markAllMessagesAsRead
+    mapping: derived
+  - manager: ConversationManager
+    native: asyncSendMessageReadReceipts
+    protocol: markMessageAsRead
+    mapping: derived
+  - manager: ConversationManager
+    native: getMessage
+    protocol: markMessageAsRead
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: messageCount
+    mapping: derived
+  - manager: ChatManager
+    native: asyncModifyMessage
+    protocol: modifyMessage
+    mapping: strip_async
+  - manager: ChatRoomManager
+    native: muteAllMembers
+    protocol: muteAllChatRoomMembers
+    mapping: derived
+  - manager: GroupManager
+    native: muteAllMembers
+    protocol: muteAllMembers
+    mapping: identical
+  - manager: ChatRoomManager
+    native: muteChatRoomMembers
+    protocol: muteChatRoomMembers
+    mapping: identical
+  - manager: GroupManager
+    native: asyncMuteGroupMembers
+    protocol: muteMembers
+    mapping: derived
+  - manager: Client
+    native: notifyTokenExpired
+    protocol: notifyTokenExpired
+    mapping: identical
+  - manager: ChatManager
+    native: asyncPinConversation
+    protocol: pinConversation
+    mapping: strip_async
+  - manager: ChatManager
+    native: asyncPinMessage
+    protocol: pinMessage
+    mapping: strip_async
+  - manager: ConversationManager
+    native: getConversation
+    protocol: pinnedMessages
+    mapping: derived
+  - manager: PresenceManager
+    native: subscribePresences
+    protocol: presenceSubscribe
+    mapping: derived
+  - manager: PresenceManager
+    native: unsubscribePresences
+    protocol: presenceUnsubscribe
+    mapping: derived
+  - manager: PresenceManager
+    native: publishPresence
+    protocol: publishPresenceWithDescription
+    mapping: derived
+  - manager: ChatManager
+    native: getMessage
+    protocol: recallMessage
+    mapping: derived
+  - manager: ChatManager
+    native: recallMessage
+    protocol: recallMessage
+    mapping: identical
+  - manager: GroupManager
+    native: asyncRemoveGroupAdmin
+    protocol: removeAdmin
+    mapping: derived
+  - manager: ChatRoomManager
+    native: removeChatRoomAdmin
+    protocol: removeChatRoomAdmin
+    mapping: identical
+  - manager: ChatRoomManager
+    native: asyncRemoveChatRoomAttributeFromServer
+    protocol: removeChatRoomAttributeFromServer
+    mapping: strip_async
+  - manager: ChatRoomManager
+    native: asyncRemoveChatRoomAttributeFromServerForced
+    protocol: removeChatRoomAttributeFromServerForced
+    mapping: strip_async
+  - manager: ChatRoomManager
+    native: asyncRemoveChatRoomAttributesFromServer
+    protocol: removeChatRoomAttributes
+    mapping: derived
+  - manager: ChatRoomManager
+    native: asyncRemoveChatRoomAttributesFromServerForced
+    protocol: removeChatRoomAttributes
+    mapping: derived
+  - manager: ChatRoomManager
+    native: removeChatRoomMembers
+    protocol: removeChatRoomMembers
+    mapping: identical
+  - manager: PushManager
+    native: clearRemindTypeForConversation
+    protocol: removeConversationSilentMode
+    mapping: derived
+  - manager: GroupManager
+    native: asyncDeleteGroupSharedFile
+    protocol: removeGroupSharedFile
+    mapping: derived
+  - manager: GroupManager
+    native: asyncSetGroupMemberAttributes
+    protocol: removeMemberAttributesFromGroup
+    mapping: derived
+  - manager: GroupManager
+    native: getCurrentUser
+    protocol: removeMemberAttributesFromGroup
+    mapping: derived
+  - manager: ChatThreadManager
+    native: removeMemberFromChatThread
+    protocol: removeMemberFromChatThread
+    mapping: identical
+  - manager: GroupManager
+    native: asyncRemoveUsersFromGroup
+    protocol: removeMembers
+    mapping: derived
+  - manager: ChatRoomManager
+    native: removeFromChatRoomWhiteList
+    protocol: removeMembersFromChatRoomWhiteList
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: removeMessage
+    mapping: derived
+  - manager: ChatManager
+    native: getConversation
+    protocol: removeMessagesFromServerWithMsgIds
+    mapping: derived
+  - manager: ChatManager
+    native: getConversation
+    protocol: removeMessagesFromServerWithTs
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: removeMsgFromServerWithTimeStamp
+    mapping: derived
+  - manager: ChatManager
+    native: asyncRemoveReaction
+    protocol: removeReaction
+    mapping: strip_async
+  - manager: ContactManager
+    native: removeUserFromBlackList
+    protocol: removeUserFromBlockList
+    mapping: derived
+  - manager: GroupManager
+    native: asyncRemoveUserFromGroup
+    protocol: removeUserFromGroup
+    mapping: strip_async
+  - manager: GroupManager
+    native: removeFromGroupWhiteList
+    protocol: removeWhiteList
+    mapping: derived
+  - manager: Client
+    native: renewToken
+    protocol: renewToken
+    mapping: identical
+  - manager: PushManager
+    native: reportPushAction
+    protocol: reportPushAction
+    mapping: identical
+  - manager: GroupManager
+    native: asyncApplyJoinToGroup
+    protocol: requestToJoinPublicGroup
+    mapping: derived
+  - manager: ChatManager
+    native: getMessage
+    protocol: resendMessage
+    mapping: derived
+  - manager: ChatManager
+    native: sendMessage
+    protocol: resendMessage
+    mapping: derived
+  - manager: ContactManager
+    native: saveBlackList
+    protocol: saveBlackList
+    mapping: identical
+  - manager: ChatManager
+    native: saveMessage
+    protocol: saveMessage
+    mapping: identical
+  - manager: ChatManager
+    native: searchMsgFromDB
+    protocol: searchChatMsgFromDB
+    mapping: derived
+  - manager: ChatManager
+    native: asyncSearchMessagesFromServer
+    protocol: searchMessagesFromServer
+    mapping: strip_async
+  - manager: ChatManager
+    native: getConversation
+    protocol: searchMsgsByOptions
+    mapping: derived
+  - manager: ChatManager
+    native: searchMsgFromDB
+    protocol: searchMsgsByOptions
+    mapping: derived
+  - manager: Client
+    native: sendFCMTokenToServer
+    protocol: sendFCMTokenToServer
+    mapping: identical
+  - manager: Client
+    native: sendHonorPushTokenToServer
+    protocol: sendHonorPushTokenToServer
+    mapping: identical
+  - manager: ChatManager
+    native: sendMessage
+    protocol: sendMessage
+    mapping: identical
+  - manager: ChatRoomManager
+    native: asyncSetChatroomAttributes
+    protocol: setChatRoomAttributes
+    mapping: derived
+  - manager: ChatRoomManager
+    native: asyncSetChatroomAttributesForced
+    protocol: setChatRoomAttributes
+    mapping: derived
+  - manager: ChatRoomManager
+    native: asyncSetChatroomAttribute
+    protocol: setChatroomAttribute
+    mapping: strip_async
+  - manager: ChatRoomManager
+    native: asyncSetChatroomAttributeForced
+    protocol: setChatroomAttributeForced
+    mapping: strip_async
+  - manager: ContactManager
+    native: asyncSetContactRemark
+    protocol: setContactRemark
+    mapping: strip_async
+  - manager: PushManager
+    native: setSilentModeForConversation
+    protocol: setConversationSilentMode
+    mapping: derived
+  - manager: GroupManager
+    native: asyncSetGroupMemberAttributes
+    protocol: setMemberAttributesFromGroup
+    mapping: derived
+  - manager: GroupManager
+    native: getCurrentUser
+    protocol: setMemberAttributesFromGroup
+    mapping: derived
+  - manager: PushManager
+    native: setPreferredNotificationLanguage
+    protocol: setPreferredNotificationLanguage
+    mapping: identical
+  - manager: PushManager
+    native: setPushTemplate
+    protocol: setPushTemplate
+    mapping: identical
+  - manager: PushManager
+    native: setSilentModeForAll
+    protocol: setSilentModeForAll
+    mapping: identical
+  - manager: ChatManager
+    native: setVoiceMessageListened
+    protocol: setVoiceMessageListened
+    mapping: identical
+  - manager: Client
+    native: null
+    protocol: startCallback
+    mapping: unimplemented_or_unknown
+  - manager: UserInfoManager
+    native: subscribeUsersInfo
+    protocol: subscribeUsersInfo
+    mapping: identical
+  - manager: ConversationManager
+    native: getConversation
+    protocol: syncConversationExt
+    mapping: derived
+  - manager: PushManager
+    native: syncSilentModeConversationsFromServer
+    protocol: syncSilentModels
+    mapping: derived
+  - manager: ChatManager
+    native: getMessage
+    protocol: translateMessage
+    mapping: derived
+  - manager: ChatManager
+    native: translateMessage
+    protocol: translateMessage
+    mapping: identical
+  - manager: ChatRoomManager
+    native: unblockChatRoomMembers
+    protocol: unBlockChatRoomMembers
+    mapping: derived
+  - manager: ChatRoomManager
+    native: unmuteAllMembers
+    protocol: unMuteAllChatRoomMembers
+    mapping: derived
+  - manager: GroupManager
+    native: unmuteAllMembers
+    protocol: unMuteAllMembers
+    mapping: derived
+  - manager: ChatRoomManager
+    native: unMuteChatRoomMembers
+    protocol: unMuteChatRoomMembers
+    mapping: identical
+  - manager: GroupManager
+    native: asyncUnMuteGroupMembers
+    protocol: unMuteMembers
+    mapping: derived
+  - manager: GroupManager
+    native: asyncUnblockGroupMessage
+    protocol: unblockGroup
+    mapping: derived
+  - manager: GroupManager
+    native: asyncUnblockUsers
+    protocol: unblockMembers
+    mapping: derived
+  - manager: GroupManager
+    native: asyncUnblockUser
+    protocol: unblockUser
+    mapping: strip_async
+  - manager: ChatManager
+    native: asyncUnPinMessage
+    protocol: unpinMessage
+    mapping: derived
+  - manager: UserInfoManager
+    native: unsubscribeUsersInfo
+    protocol: unsubscribeUsersInfo
+    mapping: identical
+  - manager: Client
+    native: setAutoAcceptGroupInvitation
+    protocol: updateAutoAcceptGroupInvitationSetting
+    mapping: derived
+  - manager: Client
+    native: setAutoDownloadThumbnail
+    protocol: updateAutoDownloadAttachmentThumbnailSetting
+    mapping: derived
+  - manager: ChatManager
+    native: getMessage
+    protocol: updateChatMessage
+    mapping: derived
+  - manager: ChatManager
+    native: updateMessage
+    protocol: updateChatMessage
+    mapping: derived
+  - manager: ChatRoomManager
+    native: updateChatRoomAnnouncement
+    protocol: updateChatRoomAnnouncement
+    mapping: identical
+  - manager: ChatThreadManager
+    native: updateChatThreadName
+    protocol: updateChatThreadSubject
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: updateConversationMessage
+    mapping: derived
+  - manager: ConversationManager
+    native: getMessage
+    protocol: updateConversationMessage
+    mapping: derived
+  - manager: ConversationManager
+    native: updateMessage
+    protocol: updateConversationMessage
+    mapping: derived
+  - manager: Client
+    native: setDeleteMessagesAsExitChatRoom
+    protocol: updateDeleteMessageWhenLeaveRoomSetting
+    mapping: derived
+  - manager: Client
+    native: setDeleteMessagesAsExitGroup
+    protocol: updateDeleteMessagesWhenLeaveGroupSetting
+    mapping: derived
+  - manager: Client
+    native: setRequireDeliveryAck
+    protocol: updateDeliveryAckSetting
+    mapping: derived
+  - manager: GroupManager
+    native: asyncChangeGroupDescription
+    protocol: updateDescription
+    mapping: derived
+  - manager: PushManager
+    native: bindDeviceToken
+    protocol: updateFCMPushToken
+    mapping: derived
+  - manager: PushManager
+    native: getPushConfig
+    protocol: updateFCMPushToken
+    mapping: derived
+  - manager: GroupManager
+    native: asyncUpdateGroupAnnouncement
+    protocol: updateGroupAnnouncement
+    mapping: strip_async
+  - manager: GroupManager
+    native: asyncChangeGroupAvatar
+    protocol: updateGroupAvatar
+    mapping: derived
+  - manager: GroupManager
+    native: getGroup
+    protocol: updateGroupAvatar
+    mapping: derived
+  - manager: GroupManager
+    native: asyncUpdateGroupConfigs
+    protocol: updateGroupConfigs
+    mapping: strip_async
+  - manager: GroupManager
+    native: updateGroupExtension
+    protocol: updateGroupExt
+    mapping: derived
+  - manager: GroupManager
+    native: asyncUpdateGroupExtension
+    protocol: updateGroupExtension
+    mapping: strip_async
+  - manager: GroupManager
+    native: asyncUpdateGroupNamecard
+    protocol: updateGroupNamecard
+    mapping: strip_async
+  - manager: GroupManager
+    native: asyncChangeOwner
+    protocol: updateGroupOwner
+    mapping: derived
+  - manager: GroupManager
+    native: asyncChangeGroupName
+    protocol: updateGroupSubject
+    mapping: derived
+  - manager: PushManager
+    native: sendHMSPushTokenToServer
+    protocol: updateHMSPushToken
+    mapping: derived
+  - manager: PushManager
+    native: asyncUpdatePushDisplayStyle
+    protocol: updateImPushStyle
+    mapping: derived
+  - manager: Client
+    native: setLoginCustomExt
+    protocol: updateLoginExtensionInfo
+    mapping: derived
+  - manager: Client
+    native: setIncludeSendMessageInMessageListener
+    protocol: updateMessagesReceiveCallbackIncludeSendSetting
+    mapping: derived
+  - manager: UserInfoManager
+    native: getCurrentUser
+    protocol: updateOwnUserInfo
+    mapping: derived
+  - manager: UserInfoManager
+    native: updateOwnInfo
+    protocol: updateOwnUserInfo
+    mapping: derived
+  - manager: UserInfoManager
+    native: updateOwnInfoByAttribute
+    protocol: updateOwnUserInfoWithType
+    mapping: derived
+  - manager: PushManager
+    native: asyncUpdatePushNickname
+    protocol: updatePushNickname
+    mapping: strip_async
+  - manager: PushManager
+    native: getCurrentUser
+    protocol: updatePushNickname
+    mapping: derived
+  - manager: Client
+    native: setRegardImportedMsgAsRead
+    protocol: updateRegradeMessagesSetting
+    mapping: derived
+  - manager: Client
+    native: allowChatroomOwnerLeave
+    protocol: updateRoomOwnerCanLeaveSetting
+    mapping: derived
+  - manager: Client
+    native: setSortMessageByServerTime
+    protocol: updateSortMessageByServerTimeSetting
+    mapping: derived
+  - manager: Client
+    native: setUsingHttpsOnly
+    protocol: updateUsingHttpsOnlySetting
+    mapping: derived
+  - manager: GroupManager
+    native: asyncUploadGroupSharedFile
+    protocol: uploadGroupSharedFile
+    mapping: strip_async
+  - manager: Client
+    native: uploadLog
+    protocol: uploadLog
+    mapping: identical
+  - manager: ChatManager
+    native: voiceFileToText
+    protocol: voiceFileToText
+    mapping: identical
+  - manager: ChatManager
+    native: voiceMessageToText
+    protocol: voiceMessageToText
+    mapping: identical
+
+  # 原生监听器注册/移除方法（wrapper 内部注册，协议层不暴露）:
+  - manager: ChatManager
+    native: addConversationListener
+    protocol: null
+    mapping: listener_api
+  - manager: ChatManager
+    native: addMessageListener
+    protocol: null
+    mapping: listener_api
+  - manager: ChatManager
+    native: removeConversationListener
+    protocol: null
+    mapping: listener_api
+  - manager: ChatManager
+    native: removeMessageListener
+    protocol: null
+    mapping: listener_api
+  - manager: ChatRoomManager
+    native: addChatRoomChangeListener
+    protocol: null
+    mapping: listener_api
+  - manager: ChatRoomManager
+    native: removeChatRoomChangeListener
+    protocol: null
+    mapping: listener_api
+  - manager: ChatThreadManager
+    native: addChatThreadChangeListener
+    protocol: null
+    mapping: listener_api
+  - manager: ChatThreadManager
+    native: removeChatThreadChangeListener
+    protocol: null
+    mapping: listener_api
+  - manager: Client
+    native: addConnectionListener
+    protocol: null
+    mapping: listener_api
+  - manager: Client
+    native: addLogListener
+    protocol: null
+    mapping: listener_api
+  - manager: Client
+    native: addMultiDeviceListener
+    protocol: null
+    mapping: listener_api
+  - manager: Client
+    native: removeConnectionListener
+    protocol: null
+    mapping: listener_api
+  - manager: Client
+    native: removeLogListener
+    protocol: null
+    mapping: listener_api
+  - manager: Client
+    native: removeMultiDeviceListener
+    protocol: null
+    mapping: listener_api
+  - manager: ContactManager
+    native: removeContactListener
+    protocol: null
+    mapping: listener_api
+  - manager: ContactManager
+    native: setContactListener
+    protocol: null
+    mapping: listener_api
+  - manager: GroupManager
+    native: addGroupChangeListener
+    protocol: null
+    mapping: listener_api
+  - manager: GroupManager
+    native: removeGroupChangeListener
+    protocol: null
+    mapping: listener_api
+  - manager: PresenceManager
+    native: addListener
+    protocol: null
+    mapping: listener_api
+  - manager: PresenceManager
+    native: clearListeners
+    protocol: null
+    mapping: listener_api
+  - manager: PresenceManager
+    native: removeListener
+    protocol: null
+    mapping: listener_api
+  - manager: UserInfoManager
+    native: addUserInfoManagerListener
+    protocol: null
+    mapping: listener_api
+  - manager: UserInfoManager
+    native: removeUserInfoManagerListener
+    protocol: null
+    mapping: listener_api
+
+  - manager: ChatManager
+    native: downloadBigImage
+    protocol: downloadBigImage
+    mapping: derived
+  - manager: ChatManager
+    native: getAllConversations
+    protocol: loadAllConversations
+    mapping: derived
+  - manager: ChatRoomManager
+    native: unBlockChatRoomMembers
+    protocol: unBlockChatRoomMembers
+    mapping: identical
+  # 原生 API 未在协议层实现（mapping=unknown 待人工确认：改名 or 未实现）:
+
+events:
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onAdminAdded
+    protocol: onGroupAdminAdded
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onAdminAdded
+    protocol: onRoomAdminAdded
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onAdminRemoved
+    protocol: onGroupAdminRemoved
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onAdminRemoved
+    protocol: onRoomAdminRemoved
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onAllMemberMuteStateChanged
+    protocol: onGroupAllMemberMuteStateChanged
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onAllMemberMuteStateChanged
+    protocol: onRoomAllMemberMuteStateChanged
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onAnnouncementChanged
+    protocol: onGroupAnnouncementChanged
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onAnnouncementChanged
+    protocol: onRoomAnnouncementChanged
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onAttributesRemoved
+    protocol: onRoomAttributesDidRemoved
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onAttributesUpdate
+    protocol: onRoomAttributesDidUpdated
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onChatRoomDestroyed
+    protocol: onRoomDestroyed
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onMemberExited
+    protocol: onRoomMemberExited
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onMemberJoined
+    protocol: onRoomMemberJoined
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onMuteListAdded
+    protocol: onGroupMuteListAdded
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onMuteListAdded
+    protocol: onRoomMuteListAdded
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onMuteListRemoved
+    protocol: onGroupMuteListRemoved
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onMuteListRemoved
+    protocol: onRoomMuteListRemoved
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onOwnerChanged
+    protocol: onGroupOwnerChanged
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onOwnerChanged
+    protocol: onRoomOwnerChanged
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onRemovedFromChatRoom
+    protocol: onRoomRemoved
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onSpecificationChanged
+    protocol: onGroupSpecificationDidUpdate
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onSpecificationChanged
+    protocol: onRoomSpecificationChanged
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onWhiteListAdded
+    protocol: onGroupWhiteListAdded
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onWhiteListAdded
+    protocol: onRoomWhiteListAdded
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onWhiteListRemoved
+    protocol: onGroupWhiteListRemoved
+    mapping: renamed
+  - listener: com.hyphenate.EMChatRoomChangeListener
+    native: onWhiteListRemoved
+    protocol: onRoomWhiteListRemoved
+    mapping: renamed
+  - listener: com.hyphenate.EMChatThreadChangeListener
+    native: onChatThreadCreated
+    protocol: onChatThreadCreate
+    mapping: renamed
+  - listener: com.hyphenate.EMChatThreadChangeListener
+    native: onChatThreadCreated
+    protocol: onChatThreadDestroy
+    mapping: renamed
+  - listener: com.hyphenate.EMChatThreadChangeListener
+    native: onChatThreadCreated
+    protocol: onChatThreadUpdate
+    mapping: renamed
+  - listener: com.hyphenate.EMChatThreadChangeListener
+    native: onChatThreadDestroyed
+    protocol: onChatThreadDestroy
+    mapping: renamed
+  - listener: com.hyphenate.EMChatThreadChangeListener
+    native: onChatThreadDestroyed
+    protocol: onUserKickOutOfChatThread
+    mapping: renamed
+  - listener: com.hyphenate.EMChatThreadChangeListener
+    native: onChatThreadUpdated
+    protocol: onChatThreadDestroy
+    mapping: renamed
+  - listener: com.hyphenate.EMChatThreadChangeListener
+    native: onChatThreadUpdated
+    protocol: onChatThreadUpdate
+    mapping: renamed
+  - listener: com.hyphenate.EMChatThreadChangeListener
+    native: onChatThreadUpdated
+    protocol: onUserKickOutOfChatThread
+    mapping: renamed
+  - listener: com.hyphenate.EMChatThreadChangeListener
+    native: onChatThreadUserRemoved
+    protocol: onUserKickOutOfChatThread
+    mapping: renamed
+  - listener: com.hyphenate.EMConnectionListener
+    native: onConnected
+    protocol: onConnected
+    mapping: identical
+  - listener: com.hyphenate.EMConnectionListener
+    native: onDataSyncFinish
+    protocol: null
+    mapping: unforwarded
+  - listener: com.hyphenate.EMConnectionListener
+    native: onDataSyncStart
+    protocol: null
+    mapping: unforwarded
+  - listener: com.hyphenate.EMConnectionListener
+    native: onDatabaseOpened
+    protocol: onTokenDidExpire
+    mapping: renamed
+  - listener: com.hyphenate.EMConnectionListener
+    native: onDatabaseOpened
+    protocol: onTokenWillExpire
+    mapping: renamed
+  - listener: com.hyphenate.EMConnectionListener
+    native: onDisconnected
+    protocol: onUserDidForbidByServer
+    mapping: renamed
+  - listener: com.hyphenate.EMConnectionListener
+    native: onDisconnected
+    protocol: onUserDidRemoveFromServer
+    mapping: renamed
+  - listener: com.hyphenate.EMConnectionListener
+    native: onLogout
+    protocol: onOfflineMessageSyncFinish
+    mapping: renamed
+  - listener: com.hyphenate.EMConnectionListener
+    native: onLogout
+    protocol: onOfflineMessageSyncStart
+    mapping: renamed
+  - listener: com.hyphenate.EMConnectionListener
+    native: onLogout
+    protocol: onUserDidLoginFromOtherDevice
+    mapping: renamed
+  - listener: com.hyphenate.EMConnectionListener
+    native: onOfflineMessageSyncFinish
+    protocol: onOfflineMessageSyncFinish
+    mapping: identical
+  - listener: com.hyphenate.EMConnectionListener
+    native: onOfflineMessageSyncStart
+    protocol: onOfflineMessageSyncFinish
+    mapping: renamed
+  - listener: com.hyphenate.EMConnectionListener
+    native: onOfflineMessageSyncStart
+    protocol: onOfflineMessageSyncStart
+    mapping: identical
+  - listener: com.hyphenate.EMConnectionListener
+    native: onTokenExpired
+    protocol: onTokenDidExpire
+    mapping: renamed
+  - listener: com.hyphenate.EMConnectionListener
+    native: onTokenExpired
+    protocol: onTokenWillExpire
+    mapping: renamed
+  - listener: com.hyphenate.EMConnectionListener
+    native: onTokenWillExpire
+    protocol: onTokenWillExpire
+    mapping: identical
+  - listener: com.hyphenate.EMConnectionListener
+    native: onTokenWillExpire
+    protocol: onUserDidLoginFromOtherDevice
+    mapping: renamed
+  - listener: com.hyphenate.EMContactListener
+    native: onContactAdded
+    protocol: onContactAdded
+    mapping: identical
+  - listener: com.hyphenate.EMContactListener
+    native: onContactDeleted
+    protocol: onContactDeleted
+    mapping: identical
+  - listener: com.hyphenate.EMContactListener
+    native: onContactInfoUpdate
+    protocol: null
+    mapping: unforwarded
+  - listener: com.hyphenate.EMContactListener
+    native: onContactInvited
+    protocol: onContactInvited
+    mapping: identical
+  - listener: com.hyphenate.EMContactListener
+    native: onFriendRequestAccepted
+    protocol: onFriendRequestAccepted
+    mapping: identical
+  - listener: com.hyphenate.EMContactListener
+    native: onFriendRequestDeclined
+    protocol: onFriendRequestDeclined
+    mapping: identical
+  - listener: com.hyphenate.EMConversationListener
+    native: onConversationUpdate
+    protocol: onConversationUpdate
+    mapping: identical
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onAdminAdded
+    protocol: onGroupAdminAdded
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onAdminAdded
+    protocol: onRoomAdminAdded
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onAdminRemoved
+    protocol: onGroupAdminRemoved
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onAdminRemoved
+    protocol: onRoomAdminRemoved
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onAllMemberMuteStateChanged
+    protocol: onGroupAllMemberMuteStateChanged
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onAllMemberMuteStateChanged
+    protocol: onRoomAllMemberMuteStateChanged
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onAnnouncementChanged
+    protocol: onGroupAnnouncementChanged
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onAnnouncementChanged
+    protocol: onRoomAnnouncementChanged
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onAutoAcceptInvitationFromGroup
+    protocol: onGroupAutoAcceptInvitation
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onGroupDestroyed
+    protocol: onGroupDestroyed
+    mapping: identical
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onGroupMemberAttributeChanged
+    protocol: onGroupAttributesChangedOfMember
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onInvitationAccepted
+    protocol: onGroupInvitationAccepted
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onInvitationDeclined
+    protocol: onGroupInvitationDeclined
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onInvitationReceived
+    protocol: onGroupInvitationReceived
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onMembersExited
+    protocol: onGroupMembersExited
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onMembersJoined
+    protocol: onGroupMembersJoined
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onMuteListAdded
+    protocol: onGroupMuteListAdded
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onMuteListAdded
+    protocol: onRoomMuteListAdded
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onMuteListRemoved
+    protocol: onGroupMuteListRemoved
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onMuteListRemoved
+    protocol: onRoomMuteListRemoved
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onOwnerChanged
+    protocol: onGroupOwnerChanged
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onOwnerChanged
+    protocol: onRoomOwnerChanged
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onRequestToJoinAccepted
+    protocol: onGroupRequestToJoinAccepted
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onRequestToJoinDeclined
+    protocol: onGroupRequestToJoinDeclined
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onRequestToJoinReceived
+    protocol: onGroupRequestToJoinReceived
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onSharedFileAdded
+    protocol: onGroupSharedFileAdded
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onSharedFileDeleted
+    protocol: onGroupSharedFileDeleted
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onSpecificationChanged
+    protocol: onGroupSpecificationDidUpdate
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onSpecificationChanged
+    protocol: onRoomSpecificationChanged
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onStateChanged
+    protocol: onGroupStateChanged
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onUserGroupNamecardUpdated
+    protocol: null
+    mapping: unforwarded
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onUserRemoved
+    protocol: onGroupUserRemoved
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onWhiteListAdded
+    protocol: onGroupWhiteListAdded
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onWhiteListAdded
+    protocol: onRoomWhiteListAdded
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onWhiteListRemoved
+    protocol: onGroupWhiteListRemoved
+    mapping: renamed
+  - listener: com.hyphenate.EMGroupChangeListener
+    native: onWhiteListRemoved
+    protocol: onRoomWhiteListRemoved
+    mapping: renamed
+  - listener: com.hyphenate.EMLogListener
+    native: onLog
+    protocol: null
+    mapping: unforwarded
+  - listener: com.hyphenate.EMMessageListener
+    native: onCmdMessageReceived
+    protocol: onCmdMessagesReceived
+    mapping: renamed
+  - listener: com.hyphenate.EMMessageListener
+    native: onMessageChanged
+    protocol: null
+    mapping: unforwarded
+  - listener: com.hyphenate.EMMessageListener
+    native: onMessageContentChanged
+    protocol: onMessageContentChanged
+    mapping: identical
+  - listener: com.hyphenate.EMMessageListener
+    native: onMessageDelivered
+    protocol: onMessageDeliveryAck
+    mapping: renamed
+  - listener: com.hyphenate.EMMessageListener
+    native: onMessageDelivered
+    protocol: onMessagesDelivered
+    mapping: renamed
+  - listener: com.hyphenate.EMMessageListener
+    native: onMessageDelivered
+    protocol: onReadAckForGroupMessageUpdated
+    mapping: renamed
+  - listener: com.hyphenate.EMMessageListener
+    native: onMessagePinChanged
+    protocol: onMessagePinChanged
+    mapping: identical
+  - listener: com.hyphenate.EMMessageListener
+    native: onMessageReadReceipts
+    protocol: onMessageReadAck
+    mapping: renamed
+  - listener: com.hyphenate.EMMessageListener
+    native: onMessageReadReceipts
+    protocol: onMessagesRead
+    mapping: renamed
+  - listener: com.hyphenate.EMMessageListener
+    native: onMessageRecalledWithExt
+    protocol: onMessagesRecalledInfo
+    mapping: renamed
+  - listener: com.hyphenate.EMMessageListener
+    native: onMessageReceived
+    protocol: onMessagesReceived
+    mapping: renamed
+  - listener: com.hyphenate.EMMessageListener
+    native: onReactionChanged
+    protocol: messageReactionDidChange
+    mapping: renamed
+  - listener: com.hyphenate.EMMessageListener
+    native: onReadReceiptForGroupMessageUpdated
+    protocol: messageReactionDidChange
+    mapping: renamed
+  - listener: com.hyphenate.EMMessageListener
+    native: onReadReceiptForGroupMessageUpdated
+    protocol: onReadAckForGroupMessageUpdated
+    mapping: renamed
+  - listener: com.hyphenate.EMMessageListener
+    native: onStreamMessageReceived
+    protocol: onStreamMessagesReceived
+    mapping: renamed
+  - listener: com.hyphenate.EMMultiDeviceListener
+    native: onChatThreadEvent
+    protocol: onMultiDeviceThreadEvent
+    mapping: renamed
+  - listener: com.hyphenate.EMMultiDeviceListener
+    native: onContactEvent
+    protocol: onMultiDeviceContactEvent
+    mapping: renamed
+  - listener: com.hyphenate.EMMultiDeviceListener
+    native: onConversationEvent
+    protocol: onMultiDevicesConversationEvent
+    mapping: renamed
+  - listener: com.hyphenate.EMMultiDeviceListener
+    native: onGroupEvent
+    protocol: onMultiDeviceGroupEvent
+    mapping: renamed
+  - listener: com.hyphenate.EMMultiDeviceListener
+    native: onMessageRemoved
+    protocol: onMultiDeviceRemoveMessagesEvent
+    mapping: renamed
+  - listener: com.hyphenate.EMPresenceListener
+    native: onPresenceUpdated
+    protocol: null
+    mapping: unforwarded
+  - listener: com.hyphenate.chat.EMUserInfoManagerListener
+    native: onSelfUserInfoUpdate
+    protocol: null
+    mapping: unforwarded
+  - listener: com.hyphenate.chat.EMUserInfoManagerListener
+    native: onUserInfoUpdate
+    protocol: null
+    mapping: unforwarded
+  - listener: com.hyphenate.push.PushListener
+    native: onBindTokenSuccess
+    protocol: null
+    mapping: unforwarded
+  - listener: com.hyphenate.push.PushListener
+    native: onError
+    protocol: onMessageError
+    mapping: renamed
+  # 协议名存在但原生无对应（自研增量/协议层自定义）:
+  - listener: null
+    native: null
+    protocol: onAppActiveNumberReachLimit
+    mapping: custom
+  - listener: null
+    native: null
+    protocol: onContactChanged
+    mapping: custom
+  - listener: null
+    native: null
+    protocol: onGroupChanged
+    mapping: custom
+  - listener: null
+    native: null
+    protocol: onMessageProgressUpdate
+    mapping: custom
+  - listener: null
+    native: null
+    protocol: onMessageSuccess
+    mapping: custom
+  - listener: null
+    native: null
+    protocol: onPresenceStatusChanged
+    mapping: custom
+  - listener: null
+    native: null
+    protocol: onSendDataToFlutter
+    mapping: custom
+  - listener: null
+    native: null
+    protocol: onUserAuthenticationFailed
+    mapping: custom
+  - listener: null
+    native: null
+    protocol: onUserDidChangePassword
+    mapping: custom
+  - listener: null
+    native: null
+    protocol: onUserDidLoginTooManyDevice
+    mapping: custom
+  - listener: null
+    native: null
+    protocol: onUserKickedByOtherDevice
+    mapping: custom

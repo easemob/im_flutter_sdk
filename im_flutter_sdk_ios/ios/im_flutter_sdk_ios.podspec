@@ -13,8 +13,10 @@ A new flutter plugin project.
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
 
-  s.source_files = 'Classes/**/*'
-  s.public_header_files = 'Classes/**/*.h'
+  s.source_files = 'Classes/merged/**/*'
+  s.public_header_files = 'Classes/merged/**/*.h'
+  # 注意：pod install 前先运行 im_flutter_sdk/scripts/merge_ios_sdk.sh 生成 Classes/merged/
+  # （基线 base500 + 版本差异合并，同 Android 的 mergeWrapperSrc 机制）
 
   s.dependency 'Flutter'
   s.ios.deployment_target = '12.0'

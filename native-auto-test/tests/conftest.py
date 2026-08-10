@@ -974,6 +974,12 @@ def _scenario_is_v5(phase1_scenario) -> bool:
     return False
 
 
+@pytest.fixture(scope="session")
+def sdk_is_v5(phase1_scenario) -> bool:
+    """当前场景是否 5.x SDK（用于跨版本 API 响应差异断言，如 ackConversationRead 错误码）。"""
+    return _scenario_is_v5(phase1_scenario)
+
+
 def _login_one(device, user_id: str, password: str, use_token: bool = False) -> None:
     response: dict = {}
     for attempt in range(3):

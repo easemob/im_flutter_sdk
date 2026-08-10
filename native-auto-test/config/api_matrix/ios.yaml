@@ -1,16 +1,47 @@
 platform: ios
-
 base:
-  version: 4.24.0
+  version: 5.0.0
+  # apis = iOS 5.0 wrapper 实际注册（与 wrapper 对齐）
   apis:
+
+    # ── Client ──
+    - Client.acceptInvitationAlways
+    - Client.changeAppId
+    - Client.changeAppKey
+    - Client.compressLogs
+    - Client.getCurrentDeviceId
+    - Client.getCurrentUser
+    - Client.getLoggedInDevicesFromServer
+    - Client.getRTCTokenInfoWithChannelName
+    - Client.getToken
+    - Client.getUserIdsWithRTCUids
+    - Client.init
+    - Client.isConnected
+    - Client.isLoggedInBefore
+    - Client.kickAllDevices
+    - Client.kickDevice
+    - Client.login
+    - Client.logout
+    - Client.notifyTokenExpired
+    - Client.renewToken
+    - Client.sendFCMTokenToServer
+    - Client.sendHonorPushTokenToServer
+    - Client.startCallback
+    - Client.updateDeliveryAckSetting
+    - Client.updateLoginExtensionInfo
+    - Client.uploadLog
+
+    # ── ChatManager ──
     - ChatManager.ackConversationRead
     - ChatManager.ackGroupMessageRead
     - ChatManager.ackMessageRead
     - ChatManager.addReaction
     - ChatManager.addRemoteAndLocalConversationsMark
     - ChatManager.asyncFetchGroupAcks
+    - ChatManager.cleanConversationsMemoryCache
     - ChatManager.deleteAllMessageAndConversation
     - ChatManager.deleteConversation
+    - ChatManager.deleteConversations
     - ChatManager.deleteMessagesBeforeTimestamp
     - ChatManager.deleteRemoteAndLocalConversationsMark
     - ChatManager.deleteRemoteConversation
@@ -27,9 +58,11 @@ base:
     - ChatManager.fetchReactionDetail
     - ChatManager.fetchReactionList
     - ChatManager.fetchSupportLanguages
+    - ChatManager.filterConversationsFromDB
     - ChatManager.getConversation
     - ChatManager.getConversationsFromServer
     - ChatManager.getConversationsFromServerWithCursor
+    - ChatManager.getGroupMessageReadReceipts
     - ChatManager.getMessage
     - ChatManager.getMessageCount
     - ChatManager.getPinnedConversationsFromServerWithCursor
@@ -45,88 +78,18 @@ base:
     - ChatManager.pinMessage
     - ChatManager.recallMessage
     - ChatManager.removeReaction
-    - ChatManager.reportMessage
     - ChatManager.resendMessage
     - ChatManager.searchChatMsgFromDB
+    - ChatManager.searchMessagesFromServer
     - ChatManager.searchMsgsByOptions
     - ChatManager.sendMessage
     - ChatManager.translateMessage
     - ChatManager.unpinMessage
     - ChatManager.updateChatMessage
-    - ChatRoomManager.addChatRoomAdmin
-    - ChatRoomManager.addMembersToChatRoomWhiteList
-    - ChatRoomManager.blockChatRoomMembers
-    - ChatRoomManager.changeChatRoomDescription
-    - ChatRoomManager.changeChatRoomOwner
-    - ChatRoomManager.changeChatRoomSubject
-    - ChatRoomManager.createChatRoom
-    - ChatRoomManager.destroyChatRoom
-    - ChatRoomManager.fetchChatRoomAnnouncement
-    - ChatRoomManager.fetchChatRoomAttributes
-    - ChatRoomManager.fetchChatRoomBlockList
-    - ChatRoomManager.fetchChatRoomInfoFromServer
-    - ChatRoomManager.fetchChatRoomMembers
-    - ChatRoomManager.fetchChatRoomMuteList
-    - ChatRoomManager.fetchChatRoomWhiteListFromServer
-    - ChatRoomManager.fetchPublicChatRoomsFromServer
-    - ChatRoomManager.getAllChatRooms
-    - ChatRoomManager.getChatRoom
-    - ChatRoomManager.isMemberInChatRoomWhiteListFromServer
-    - ChatRoomManager.joinChatRoom
-    - ChatRoomManager.leaveChatRoom
-    - ChatRoomManager.muteAllChatRoomMembers
-    - ChatRoomManager.muteChatRoomMembers
-    - ChatRoomManager.removeChatRoomAdmin
-    - ChatRoomManager.removeChatRoomMembers
-    - ChatRoomManager.removeMembersFromChatRoomWhiteList
-    - ChatRoomManager.setChatRoomAttributes
-    - ChatRoomManager.unBlockChatRoomMembers
-    - ChatRoomManager.unMuteAllChatRoomMembers
-    - ChatRoomManager.unMuteChatRoomMembers
-    - ChatRoomManager.updateChatRoomAnnouncement
-    - ChatThreadManager.createChatThread
-    - ChatThreadManager.destroyChatThread
-    - ChatThreadManager.fetchChatThreadDetail
-    - ChatThreadManager.fetchChatThreadMember
-    - ChatThreadManager.fetchChatThreadsWithParentId
-    - ChatThreadManager.fetchJoinedChatThreads
-    - ChatThreadManager.fetchJoinedChatThreadsWithParentId
-    - ChatThreadManager.fetchLastMessageWithChatThreads
-    - ChatThreadManager.joinChatThread
-    - ChatThreadManager.leaveChatThread
-    - ChatThreadManager.removeMemberFromChatThread
-    - ChatThreadManager.updateChatThreadSubject
-    - Client.acceptInvitationAlways
-    - Client.changeAppKey
-    - Client.compressLogs
-    - Client.createAccount
-    - Client.getCurrentDeviceId
-    - Client.getCurrentUser
-    - Client.getLoggedInDevicesFromServer
-    - Client.getToken
-    - Client.init
-    - Client.isConnected
-    - Client.isLoggedInBefore
-    - Client.kickAllDevices
-    - Client.kickDevice
-    - Client.login
-    - Client.loginWithAgoraToken
-    - Client.logout
-    - Client.renewToken
-    - Client.startCallback
-    - Client.updateAutoAcceptGroupInvitationSetting
-    - Client.updateAutoDownloadAttachmentThumbnailSetting
-    - Client.updateDeleteMessageWhenLeaveRoomSetting
-    - Client.updateDeleteMessagesWhenLeaveGroupSetting
-    - Client.updateDeliveryAckSetting
-    - Client.updateLoginExtensionInfo
-    - Client.updateMessagesReceiveCallbackIncludeSendSetting
-    - Client.updateRegradeMessagesSetting
-    - Client.updateRequireAckSetting
-    - Client.updateRoomOwnerCanLeaveSetting
-    - Client.updateSortMessageByServerTimeSetting
-    - Client.updateUsingHttpsOnlySetting
-    - Client.uploadLog
+    - ChatManager.voiceFileToText
+    - ChatManager.voiceMessageToText
+
+    # ── ContactManager ──
     - ContactManager.acceptInvitation
     - ContactManager.addContact
     - ContactManager.addUserToBlockList
@@ -142,33 +105,10 @@ base:
     - ContactManager.getContact
     - ContactManager.getSelfIdsOnOtherPlatform
     - ContactManager.removeUserFromBlockList
+    - ContactManager.saveBlackList
     - ContactManager.setContactRemark
-    - ConversationManager.appendMessage
-    - ConversationManager.clearAllMessages
-    - ConversationManager.conversationDeleteServerMessageWithIds
-    - ConversationManager.conversationDeleteServerMessageWithTime
-    - ConversationManager.conversationGetLocalMessageCount
-    - ConversationManager.conversationRemindType
-    - ConversationManager.conversationSearchMsgsByOptions
-    - ConversationManager.deleteMessageByIds
-    - ConversationManager.deleteMessagesWithTs
-    - ConversationManager.getLatestMessage
-    - ConversationManager.getLatestMessageFromOthers
-    - ConversationManager.getUnreadMsgCount
-    - ConversationManager.insertMessage
-    - ConversationManager.loadMsgWithId
-    - ConversationManager.loadMsgWithKeywords
-    - ConversationManager.loadMsgWithMsgType
-    - ConversationManager.loadMsgWithStartId
-    - ConversationManager.loadMsgWithTime
-    - ConversationManager.markAllMessagesAsRead
-    - ConversationManager.markMessageAsRead
-    - ConversationManager.messageCount
-    - ConversationManager.pinnedMessages
-    - ConversationManager.removeMessage
-    - ConversationManager.removeMsgFromServerWithTimeStamp
-    - ConversationManager.syncConversationExt
-    - ConversationManager.updateConversationMessage
+
+    # ── GroupManager ──
     - GroupManager.acceptInvitationFromGroup
     - GroupManager.acceptJoinApplication
     - GroupManager.addAdmin
@@ -182,6 +122,8 @@ base:
     - GroupManager.declineJoinApplication
     - GroupManager.destroyGroup
     - GroupManager.downloadGroupSharedFile
+    - GroupManager.fetchGroupBlackList
+    - GroupManager.fetchGroupMembersInfo
     - GroupManager.fetchJoinedGroupCount
     - GroupManager.fetchMemberAttributesFromGroup
     - GroupManager.fetchMembersAttributesFromGroup
@@ -190,6 +132,7 @@ base:
     - GroupManager.getGroupFileListFromServer
     - GroupManager.getGroupMemberListFromServer
     - GroupManager.getGroupMuteListFromServer
+    - GroupManager.getGroupNamecard
     - GroupManager.getGroupSpecificationFromServer
     - GroupManager.getGroupWhiteListFromServer
     - GroupManager.getGroupWithId
@@ -216,19 +159,49 @@ base:
     - GroupManager.unblockMembers
     - GroupManager.updateDescription
     - GroupManager.updateGroupAnnouncement
+    - GroupManager.updateGroupAvatar
     - GroupManager.updateGroupExt
+    - GroupManager.updateGroupNamecard
     - GroupManager.updateGroupOwner
     - GroupManager.updateGroupSubject
     - GroupManager.uploadGroupSharedFile
-    - MessageManager.chatThread
-    - MessageManager.getPinInfo
-    - MessageManager.getReactionList
-    - MessageManager.groupAckCount
-    - PresenceManager.fetchPresenceStatus
-    - PresenceManager.fetchSubscribedMembersWithPageNum
-    - PresenceManager.presenceSubscribe
-    - PresenceManager.presenceUnsubscribe
-    - PresenceManager.publishPresenceWithDescription
+
+    # ── ChatRoomManager ──
+    - ChatRoomManager.addChatRoomAdmin
+    - ChatRoomManager.addMembersToChatRoomWhiteList
+    - ChatRoomManager.blockChatRoomMembers
+    - ChatRoomManager.changeChatRoomDescription
+    - ChatRoomManager.changeChatRoomOwner
+    - ChatRoomManager.changeChatRoomSubject
+    - ChatRoomManager.fetchChatRoomAllAttributesFromServer
+    - ChatRoomManager.fetchChatRoomAnnouncement
+    - ChatRoomManager.fetchChatRoomAttributes
+    - ChatRoomManager.fetchChatRoomBlockList
+    - ChatRoomManager.fetchChatRoomInfoFromServer
+    - ChatRoomManager.fetchChatRoomMembers
+    - ChatRoomManager.fetchChatRoomMuteList
+    - ChatRoomManager.fetchChatRoomWhiteListFromServer
+    - ChatRoomManager.fetchPublicChatRoomsFromServer
+    - ChatRoomManager.getChatRoom
+    - ChatRoomManager.isMemberInChatRoomWhiteListFromServer
+    - ChatRoomManager.joinChatRoom
+    - ChatRoomManager.leaveChatRoom
+    - ChatRoomManager.muteAllChatRoomMembers
+    - ChatRoomManager.muteChatRoomMembers
+    - ChatRoomManager.removeChatRoomAdmin
+    - ChatRoomManager.removeChatRoomAttributeFromServer
+    - ChatRoomManager.removeChatRoomAttributeFromServerForced
+    - ChatRoomManager.removeChatRoomMembers
+    - ChatRoomManager.removeMembersFromChatRoomWhiteList
+    - ChatRoomManager.setChatRoomAttributes
+    - ChatRoomManager.setChatroomAttribute
+    - ChatRoomManager.setChatroomAttributeForced
+    - ChatRoomManager.unBlockChatRoomMembers
+    - ChatRoomManager.unMuteAllChatRoomMembers
+    - ChatRoomManager.unMuteChatRoomMembers
+    - ChatRoomManager.updateChatRoomAnnouncement
+
+    # ── PushManager ──
     - PushManager.bindDeviceToken
     - PushManager.fetchConversationSilentMode
     - PushManager.fetchPreferredNotificationLanguage
@@ -248,3 +221,168 @@ base:
     - PushManager.updateFCMPushToken
     - PushManager.updateImPushStyle
     - PushManager.updatePushNickname
+
+    # ── UserInfoManager ──
+    - UserInfoManager.fetchSubscribedUsers
+    - UserInfoManager.fetchUserInfoById
+    - UserInfoManager.fetchUserInfoByIdWithType
+    - UserInfoManager.getUserInfoWithUserId
+    - UserInfoManager.getUserInfoWithUserIds
+    - UserInfoManager.subscribeUsersInfo
+    - UserInfoManager.unsubscribeUsersInfo
+    - UserInfoManager.updateOwnUserInfo
+    - UserInfoManager.updateOwnUserInfoWithType
+
+    # ── PresenceManager ──
+    - PresenceManager.fetchPresenceStatus
+    - PresenceManager.fetchSubscribedMembersWithPageNum
+    - PresenceManager.presenceSubscribe
+    - PresenceManager.presenceUnsubscribe
+    - PresenceManager.publishPresenceWithDescription
+
+    # ── ChatThreadManager ──
+    - ChatThreadManager.createChatThread
+    - ChatThreadManager.destroyChatThread
+    - ChatThreadManager.fetchChatThreadDetail
+    - ChatThreadManager.fetchChatThreadMember
+    - ChatThreadManager.fetchChatThreadsWithParentId
+    - ChatThreadManager.fetchJoinedChatThreads
+    - ChatThreadManager.fetchJoinedChatThreadsWithParentId
+    - ChatThreadManager.fetchLastMessageWithChatThreads
+    - ChatThreadManager.joinChatThread
+    - ChatThreadManager.leaveChatThread
+    - ChatThreadManager.removeMemberFromChatThread
+    - ChatThreadManager.updateChatThreadSubject
+
+    # ── ConversationManager ──
+    - ConversationManager.appendMessage
+    - ConversationManager.clearAllMessages
+    - ConversationManager.conversationDeleteServerMessageWithIds
+    - ConversationManager.conversationDeleteServerMessageWithTime
+    - ConversationManager.conversationGetLocalMessageCount
+    - ConversationManager.conversationRemindType
+    - ConversationManager.conversationSearchMsgsByOptions
+    - ConversationManager.deleteMessageByIds
+    - ConversationManager.deleteMessagesWithTs
+    - ConversationManager.getLatestMessage
+    - ConversationManager.getLatestMessageFromOthers
+    - ConversationManager.getUnreadMsgCount
+    - ConversationManager.loadMsgWithId
+    - ConversationManager.loadMsgWithKeywords
+    - ConversationManager.loadMsgWithMsgType
+    - ConversationManager.loadMsgWithStartId
+    - ConversationManager.loadMsgWithTime
+    - ConversationManager.markAllMessagesAsRead
+    - ConversationManager.markMessageAsRead
+    - ConversationManager.messageCount
+    - ConversationManager.pinnedMessages
+    - ConversationManager.removeMessage
+    - ConversationManager.removeMsgFromServerWithTimeStamp
+    - ConversationManager.syncConversationExt
+    - ConversationManager.updateConversationMessage
+
+    # ── MessageManager ──
+    - MessageManager.chatThread
+    - MessageManager.getPinInfo
+    - MessageManager.getReactionList
+    - MessageManager.groupAckCount
+
+# Android 有、iOS wrapper 未注册（iOS 不支持）:
+unsupported:
+  - ChatManager.fetchConversationsFromServerWithPage
+  - ChatManager.getConversationsByType
+  - ChatManager.removeMessagesFromServerWithMsgIds
+  - ChatManager.removeMessagesFromServerWithTs
+  - ChatManager.saveMessage
+  - ChatManager.setVoiceMessageListened
+  - ChatRoomManager.isMemberInChatRoomMuteList
+  - ChatRoomManager.removeChatRoomAttributes
+  - Client.updateAutoAcceptGroupInvitationSetting
+  - Client.updateAutoDownloadAttachmentThumbnailSetting
+  - Client.updateDeleteMessageWhenLeaveRoomSetting
+  - Client.updateDeleteMessagesWhenLeaveGroupSetting
+  - Client.updateMessagesReceiveCallbackIncludeSendSetting
+  - Client.updateRegradeMessagesSetting
+  - Client.updateRoomOwnerCanLeaveSetting
+  - Client.updateSortMessageByServerTimeSetting
+  - Client.updateUsingHttpsOnlySetting
+  - GroupManager.blockUser
+  - GroupManager.removeUserFromGroup
+  - GroupManager.unblockUser
+  - GroupManager.updateGroupConfigs
+  - GroupManager.updateGroupExtension
+  - PushManager.getPushConfigsFromServer
+  - PushManager.updateHMSPushToken
+  - UserInfoManager.fetchOwnInfo
+
+# iOS 5.0 真独有能力（Android 平台没有）:
+ios_only_native:
+  - applicationDidEnterBackground
+  - applicationWillEnterForeground
+  - bindFCMToken
+  - bindPushKitToken
+  - emDidRecivePushSilentMessage
+  - emGetNotificationMessage
+  - emHandleNotificationContent
+  - emuserNotificationCenter
+  - registerForRemoteNotificationsWithCertName
+  - registerForRemoteNotificationsWithDeviceToken
+  - registerPushKitToken
+  - unBindPushKitToken
+  - unRegisterPushKitTokenWithCompletion
+
+versions:
+  4.24.0:
+    removed:
+    - ChatManager.reportMessage
+    - ChatRoomManager.createChatRoom
+    - ChatRoomManager.destroyChatRoom
+    - ChatRoomManager.getAllChatRooms
+    - Client.createAccount
+    - Client.loginWithAgoraToken
+    - Client.updateAutoAcceptGroupInvitationSetting
+    - Client.updateAutoDownloadAttachmentThumbnailSetting
+    - Client.updateDeleteMessageWhenLeaveRoomSetting
+    - Client.updateDeleteMessagesWhenLeaveGroupSetting
+    - Client.updateMessagesReceiveCallbackIncludeSendSetting
+    - Client.updateRegradeMessagesSetting
+    - Client.updateRequireAckSetting
+    - Client.updateRoomOwnerCanLeaveSetting
+    - Client.updateSortMessageByServerTimeSetting
+    - Client.updateUsingHttpsOnlySetting
+    - ConversationManager.insertMessage
+    added:
+    - ChatManager.cleanConversationsMemoryCache
+    - ChatManager.deleteConversations
+    - ChatManager.filterConversationsFromDB
+    - ChatManager.getGroupMessageReadReceipts
+    - ChatManager.searchMessagesFromServer
+    - ChatManager.voiceFileToText
+    - ChatManager.voiceMessageToText
+    - ChatRoomManager.fetchChatRoomAllAttributesFromServer
+    - ChatRoomManager.removeChatRoomAttributeFromServer
+    - ChatRoomManager.removeChatRoomAttributeFromServerForced
+    - ChatRoomManager.setChatroomAttribute
+    - ChatRoomManager.setChatroomAttributeForced
+    - Client.changeAppId
+    - Client.getRTCTokenInfoWithChannelName
+    - Client.getUserIdsWithRTCUids
+    - Client.notifyTokenExpired
+    - Client.sendFCMTokenToServer
+    - Client.sendHonorPushTokenToServer
+    - ContactManager.saveBlackList
+    - GroupManager.fetchGroupBlackList
+    - GroupManager.fetchGroupMembersInfo
+    - GroupManager.getGroupNamecard
+    - GroupManager.updateGroupAvatar
+    - GroupManager.updateGroupNamecard
+    - UserInfoManager.fetchSubscribedUsers
+    - UserInfoManager.fetchUserInfoById
+    - UserInfoManager.fetchUserInfoByIdWithType
+    - UserInfoManager.getUserInfoWithUserId
+    - UserInfoManager.getUserInfoWithUserIds
+    - UserInfoManager.subscribeUsersInfo
+    - UserInfoManager.unsubscribeUsersInfo
+    - UserInfoManager.updateOwnUserInfo
+    - UserInfoManager.updateOwnUserInfoWithType
+

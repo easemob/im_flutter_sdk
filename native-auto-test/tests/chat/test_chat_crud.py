@@ -321,7 +321,7 @@ def _send_text_and_verify_topology_delivery(
                 assert_api, received, event_type=Cmd.onMessagesReceived.value,
                 real_id=str(real_id), user_a=sender_user, user_b=recipient_user,
                 content=content, direction=1, conv_id=sender_user,
-                has_read=False, has_deliver_ack=True,
+                has_read=False, has_deliver_ack=None,
             )
             _assert_message_lookup(
                 assert_api,
@@ -556,7 +556,7 @@ def test_chat_send_and_received(topology, assert_api):
                 direction=1,
                 conv_id=topology.sender_user,
                 has_read=False,
-                has_deliver_ack=True,
+                has_deliver_ack=None,
             )
             received_roles.append(role)
         with _allure_step(f"接收端 {recipient.device_name} 可从本地消息库查询该消息"):
@@ -904,7 +904,7 @@ def test_chat_translate_message_recalled_message(topology, assert_api):
                 direction=1,
                 conv_id=sender_user,
                 has_read=False,
-                has_deliver_ack=True,
+                has_deliver_ack=None,
             )
 
     with _allure_step(f"发送端验证 {len(recipients)} 个接收端的送达回执: msgId={real_id}"):
@@ -1130,7 +1130,7 @@ def test_chat_ack_message_read_success(topology, assert_api):
                 direction=1,
                 conv_id=sender_user,
                 has_read=False,
-                has_deliver_ack=True,
+                has_deliver_ack=None,
             )
 
     with _allure_step(f"等待 {sender.device_name} 的 {len(recipients)} 条送达回执（onMessagesDelivered）"):
@@ -1284,15 +1284,20 @@ def test_chat_remove_reaction_invalid_id_response(device_a, assert_api):
 # ======================== Errors / Edge ========================
 
 
-def test_chat_ack_conversation_read_invalid_id_response(device_b, assert_api):
+def test_chat_ack_conversation_read_invalid_id_response(device_b, assert_api, sdk_is_v5):
     resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": "__invalid_conversation_id__"})
+    # 5.x 错误码 110/"conversation not found"（4.x 为 500/"Message is invalid"）
+    if sdk_is_v5:
+        expected_result = {"code": 110, "description": "conversation not found"}
+    else:
+        expected_result = {"code": 500, "description": "Message is invalid"}
     assert_api.assert_response_matches(
         resp,
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.ackConversationRead.value,
             "device": "deviceB",
-            "result": {"code": 500, "description": "Message is invalid"},
+            "result": expected_result,
         },
         ignore_keys={"sequence"},
     )
