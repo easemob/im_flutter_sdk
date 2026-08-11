@@ -19,7 +19,8 @@ def _wait_pin_event(device, *, msg_id, operation, timeout=30.0):
         if event:
             seen.append(event)
         data = (event or {}).get("data") or {}
-        if str(data.get("messageId")) == str(msg_id) and data.get("pinOperation") == operation:
+        operation_int = {"MessagePinOperation.Pin": 0, "MessagePinOperation.Unpin": 1}.get(operation, operation)
+        if str(data.get("msgId")) == str(msg_id) and data.get("pinOperation") == operation_int:
             return event
     pytest.fail(f"未收到消息置顶事件: msgId={msg_id}, operation={operation}, seen={seen}")
 
@@ -35,7 +36,8 @@ def _assert_no_pin_event(device, *, msg_id, operation, timeout=3.0):
         if event:
             seen.append(event)
         data = (event or {}).get("data") or {}
-        if str(data.get("messageId")) == str(msg_id) and data.get("pinOperation") == operation:
+        operation_int = {"MessagePinOperation.Pin": 0, "MessagePinOperation.Unpin": 1}.get(operation, operation)
+        if str(data.get("msgId")) == str(msg_id) and data.get("pinOperation") == operation_int:
             pytest.fail(f"操作者端不应收到消息置顶事件: msgId={msg_id}, operation={operation}, seen={seen}")
 
 
@@ -140,9 +142,9 @@ def test_chat_typed_message_pin_and_cross_user_unpin(
         else {"type": 7, "event": payload["event"], "params": payload["params"]}
     )
     if pin_actor == "sender":
-        direction, has_read, has_delivery, conv_id = 0, True, True, user_b
+        direction, has_read, has_delivery, conv_id = 0, True, False, user_b
     else:
-        direction, has_read, has_delivery, conv_id = 1, False, True, user_a
+        direction, has_read, has_delivery, conv_id = 1, False, False, user_a
     assert_api.assert_response_matches(
         target,
         expected={"msgId": real_id, "from": user_a, "to": user_b,

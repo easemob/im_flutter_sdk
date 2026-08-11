@@ -170,7 +170,8 @@ def _wait_server_conversation_projection(device, cmd: str, info: dict, user_b: s
     while time.monotonic() < deadline:
         resp = device.call("ChatManager", cmd, info=info)
         result = resp.get("result") or {}
-        projection = _project_server_conversations(result.get("list"), user_b) if cursor_result else _project_server_conversations(result, user_b)
+        # 5.0 移除 cursor 分页：会话查询返回纯 list（无 {list, cursor} dict）→ 统一按 list 处理
+        projection = _project_server_conversations(result, user_b)
         if projection:
             return resp, projection
         last_resp, last_projection = resp, projection
@@ -215,25 +216,21 @@ def test_chat_get_conversations_from_server_with_cursor_success(device_a, device
             "manager": "ChatManager",
             "cmd": Cmd.getConversationsFromServerWithCursor.value,
             "device": "deviceA",
-            "result": {
-                "cursor": result.get("cursor"),
-                "list": projected,
-            },
+            # 5.0 返回纯 list（无 {list, cursor} dict）
+            "result": projected,
         },
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.getConversationsFromServerWithCursor.value,
             "device": "deviceA",
-            "result": {
-                "cursor": "",
-                "list": [{"convId": "{{convId}}", "type": 0}],
-            },
+            "result": [{"convId": "{{convId}}", "type": 0}],
         },
         context={"convId": user_b},
         ignore_keys={"sequence"},
     )
 
 
+@pytest.mark.skip(reason="5.0 移除 cursor 分页（会话查询返回纯 list，无 pageSize 校验）")
 def test_chat_get_conversations_from_server_with_cursor_invalid_page_size_zero(device_a, assert_api):
     info = {"cursor": "", "pageSize": 0}
     resp = device_a.call(
@@ -256,6 +253,7 @@ def test_chat_get_conversations_from_server_with_cursor_invalid_page_size_zero(d
     )
 
 
+@pytest.mark.skip(reason="5.0 移除 cursor 分页（会话查询返回纯 list，无 pageSize 校验）")
 def test_chat_get_conversations_from_server_with_cursor_invalid_page_size_negative(device_a, assert_api):
     info = {"cursor": "", "pageSize": -1}
     resp = device_a.call(
@@ -369,15 +367,14 @@ def test_chat_get_pinned_conversations_from_server_with_cursor_success(device_a,
             "manager": "ChatManager",
             "cmd": Cmd.getPinnedConversationsFromServerWithCursor.value,
             "device": "deviceA",
-            "result": {
-                "cursor": "",
-                "list": [],
-            },
+            # 5.0 返回纯 list（无 {list, cursor} dict）
+            "result": [],
         },
         ignore_keys={"sequence"},
     )
 
 
+@pytest.mark.skip(reason="5.0 移除 cursor 分页（会话查询返回纯 list，无 pageSize 校验）")
 def test_chat_get_pinned_conversations_from_server_with_cursor_invalid_page_size_zero(device_a, assert_api):
     info = {"cursor": "", "pageSize": 0}
     resp = device_a.call(
@@ -391,15 +388,14 @@ def test_chat_get_pinned_conversations_from_server_with_cursor_invalid_page_size
             "manager": "ChatManager",
             "cmd": Cmd.getPinnedConversationsFromServerWithCursor.value,
             "device": "deviceA",
-            "result": {
-                "cursor": "",
-                "list": [],
-            },
+            # 5.0 返回纯 list（无 {list, cursor} dict）
+            "result": [],
         },
         ignore_keys={"sequence"},
     )
 
 
+@pytest.mark.skip(reason="5.0 移除 cursor 分页（会话查询返回纯 list，无 pageSize 校验）")
 def test_chat_get_pinned_conversations_from_server_with_cursor_invalid_page_size_negative(device_a, assert_api):
     info = {"cursor": "", "pageSize": -1}
     resp = device_a.call(
@@ -413,10 +409,8 @@ def test_chat_get_pinned_conversations_from_server_with_cursor_invalid_page_size
             "manager": "ChatManager",
             "cmd": Cmd.getPinnedConversationsFromServerWithCursor.value,
             "device": "deviceA",
-            "result": {
-                "cursor": "",
-                "list": [],
-            },
+            # 5.0 返回纯 list（无 {list, cursor} dict）
+            "result": [],
         },
         ignore_keys={"sequence"},
     )

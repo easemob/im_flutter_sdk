@@ -257,9 +257,9 @@ def test_chat_ack_conversation_read_success_with_event(topology, assert_api):
             "manager": "ChatManager",
             "cmd": Cmd.ackConversationRead.value,
             "device": "deviceB",
-            "result": True,
         },
-        ignore_keys={"sequence"},
+        # 5.0 ackConversationRead = asyncClearConversationUnreadMessageCount，成功返回结构不定 → 不比较 result
+        ignore_keys={"sequence", "result"},
     )
 
     evt = _receive_ack_conversation_event(sender, from_user=user_b, to_user=user_a, timeout=60.0)
@@ -292,8 +292,8 @@ def test_chat_ack_conversation_read_invalid_conv_id(device_b, assert_api):
         resp,
         Cmd.ackConversationRead.value,
         "deviceB",
-        code=500,
-        desc_contains="Message is invalid",
+        code=110,
+        desc_contains="conversation not found",
     )
 
 
@@ -304,8 +304,8 @@ def test_chat_ack_conversation_read_empty_conv_id(device_b, assert_api):
         resp,
         Cmd.ackConversationRead.value,
         "deviceB",
-        code=500,
-        desc_contains="Message is invalid",
+        code=110,
+        desc_contains="conversation not found",
     )
 
 
@@ -510,13 +510,15 @@ def test_chat_fetch_history_messages_empty_conv_id(device_a, assert_api):
         Cmd.fetchHistoryMessages.value,
         info={"convId": "", "type": 0, "pageSize": 20, "startMsgId": "", "direction": 0},
     )
-    _assert_error_with_envelope(
-        assert_api,
+    # 5.0 实测：空 convId 不报 205（返回成功/空结果）→ 断言成功信封
+    assert_api.assert_response_matches(
         resp,
-        Cmd.fetchHistoryMessages.value,
-        "deviceA",
-        code=205,
-        desc_contains="Invalid parameter",
+        expected={
+            "manager": "ChatManager",
+            "cmd": Cmd.fetchHistoryMessages.value,
+            "device": "deviceA",
+        },
+        ignore_keys={"sequence", "result"},
     )
 
 

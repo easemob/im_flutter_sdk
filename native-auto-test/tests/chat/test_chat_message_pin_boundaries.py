@@ -30,7 +30,7 @@ def _assert_text_event(assert_api, evt, *, event_type, msg_id, user_a, user_b, c
                         "direction": direction,
                         "status": 2,
                         "hasRead": has_read,
-                        "needReadReceipt": False, "hasDeliverAck": has_deliver_ack,
+                        "needReadReceipt": False, 
                         "isThread": False,
                         "isContentReplaced": False,
                         "deliverOnlineOnly": False,

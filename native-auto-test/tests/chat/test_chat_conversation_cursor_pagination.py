@@ -8,7 +8,12 @@ import pytest
 from src import Cmd
 from tests.chat._utils import build_text
 
-pytestmark = [pytest.mark.client, pytest.mark.chat]
+pytestmark = [
+    pytest.mark.client,
+    pytest.mark.chat,
+    # 5.0 移除 cursor 分页（会话查询返回纯 list，无 cursor/pageSize 语义）→ 整个文件 skip
+    pytest.mark.skip(reason="5.0 移除 cursor 分页（getConversationsFromServerWithCursor 等返回纯 list，无 cursor 语义）"),
+]
 
 
 def _assert_call(assert_api, response, *, manager, cmd, device, result):
@@ -73,7 +78,7 @@ def _assert_text_event(assert_api, event_type, message, *, msg_id, user_a, peer,
         expected={"type": "event", "eventType": event_type, "data": {"messages": [{
             "msgId": msg_id, "from": user_a, "to": peer, "convId": conv_id,
             "chatType": 0, "direction": direction, "status": 2,
-            "hasRead": has_read, "needReadReceipt": False, "hasDeliverAck": has_deliver_ack, "isThread": False, "isContentReplaced": False,
+            "hasRead": has_read, "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
             "deliverOnlineOnly": False,
             "body": {"type": 0, "content": content, "translations": {}},
         }]}},

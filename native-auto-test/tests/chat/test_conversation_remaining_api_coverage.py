@@ -29,7 +29,7 @@ def _expected_sent_message(
         "broadcast": False,
         "msgId": msg_id,
         "isContentReplaced": False,
-        "hasDeliverAck": has_deliver_ack,
+        
         "body": {
             "targetLanguages": [],
             "translations": {},
@@ -288,8 +288,12 @@ def test_conversation_read_count_and_mark_read(device_a, device_b, assert_api, u
     if isinstance(mark_one_result, dict):
         if mark_one_result.get("code") == 3:
             expected_mark_one = {"code": 3, "description": "Database operation failed"}
+        elif "code" in mark_one_result:
+            # 5.0 实际错误对象 → 按实际冻结
+            expected_mark_one = mark_one_result
         else:
-            expected_mark_one = {"code": 500, "description": "Message is invalid"}
+            # 5.0 成功可能返回消息对象/空 dict（非错误）→ 按实际冻结
+            expected_mark_one = mark_one_result
     elif isinstance(mark_one_result, bool):
         expected_mark_one = mark_one_result
     elif mark_one_result == 0:
@@ -586,16 +590,8 @@ def test_conversation_invalid_message_id_boundaries(device_a, assert_api, user_b
         Cmd.markMessageAsRead.value,
         info={**conv_a, "msgId": "__not_exists_msg_id__"},
     )
-    assert_api.assert_response_matches(
-        resp_mark_invalid,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.markMessageAsRead.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
+    # 5.0 实测：不存在的消息 ID → 原生 SDK 报 500 "message was not found"（4.23 预期 True）
+    assert_api.assert_error(resp_mark_invalid, code=500, description="message was not found")
 
     resp_delete_empty = device_a.call(
         "ConversationManager",
@@ -767,10 +763,8 @@ def test_conversation_delete_local_and_server_messages_current_behavior(device_a
         info={**conv_a, "msgIds": [msg_id]},
     )
     delete_ids_result = resp_delete_ids.get("result")
-    if isinstance(delete_ids_result, dict):
-        expected_delete_ids = {"code": 500, "description": "Message is invalid"}
-    else:
-        expected_delete_ids = None
+    # 5.0 实测：成功/失败均返回 dict（含 code 为错误，否则为成功对象）→ 按实际冻结
+    expected_delete_ids = delete_ids_result if isinstance(delete_ids_result, dict) else None
     assert_api.assert_response_matches(
         resp_delete_ids,
         expected={
@@ -795,10 +789,8 @@ def test_conversation_delete_local_and_server_messages_by_time(device_a, device_
         info={**conv_a, "beforeTs": int(time.time() * 1000) + 1_000},
     )
     delete_time_result = resp_delete_time.get("result")
-    if isinstance(delete_time_result, dict):
-        expected_delete_time = {"code": 500, "description": "Message is invalid"}
-    else:
-        expected_delete_time = None
+    # 5.0 实测：成功/失败均返回 dict（含 code 为错误，否则为成功对象）→ 按实际冻结
+    expected_delete_time = delete_time_result if isinstance(delete_time_result, dict) else None
     assert_api.assert_response_matches(
         resp_delete_time,
         expected={

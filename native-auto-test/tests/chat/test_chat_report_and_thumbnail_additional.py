@@ -31,7 +31,7 @@ def _assert_text_event(assert_api, event_type, message, *, msg_id, user_a, user_
         expected={"type": "event", "eventType": event_type, "data": {"messages": [{
             "msgId": msg_id, "from": user_a, "to": user_b, "convId": conv_id,
             "chatType": 0, "direction": direction, "status": 2,
-            "hasRead": has_read, "needReadReceipt": False, "hasDeliverAck": has_deliver_ack, "isThread": False, "isContentReplaced": False,
+            "hasRead": has_read, "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
             "deliverOnlineOnly": False,
             "body": {"type": 0, "content": content, "translations": {}},
         }]}},

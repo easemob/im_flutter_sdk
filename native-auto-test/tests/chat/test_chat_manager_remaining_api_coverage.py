@@ -199,7 +199,8 @@ def _wait_pin_changed(device, *, msg_id: str, operation: str, timeout: float = 2
         if evt:
             seen_events.append(evt)
         data = (evt or {}).get("data") or {}
-        if str(data.get("messageId")) == str(msg_id) and data.get("pinOperation") == operation:
+        operation_int = {"MessagePinOperation.Pin": 0, "MessagePinOperation.Unpin": 1}.get(operation, operation)
+        if str(data.get("msgId")) == str(msg_id) and data.get("pinOperation") == operation_int:
             return evt
     raise AssertionError(f"未收到目标 onMessagePinChanged: msgId={msg_id}, operation={operation}, events={seen_events}")
 
@@ -215,7 +216,8 @@ def _assert_no_pin_changed(device, *, msg_id: str, operation: str, timeout: floa
         if evt:
             seen_events.append(evt)
         data = (evt or {}).get("data") or {}
-        if str(data.get("messageId")) == str(msg_id) and data.get("pinOperation") == operation:
+        operation_int = {"MessagePinOperation.Pin": 0, "MessagePinOperation.Unpin": 1}.get(operation, operation)
+        if str(data.get("msgId")) == str(msg_id) and data.get("pinOperation") == operation_int:
             raise AssertionError(
                 f"操作者端不应收到 onMessagePinChanged: msgId={msg_id}, operation={operation}, events={seen_events}"
             )
@@ -228,9 +230,10 @@ def _assert_pin_changed(assert_api, evt: dict, *, msg_id: str, conversation_id: 
             "type": "event",
             "eventType": Cmd.onMessagePinChanged.value,
             "data": {
-                "messageId": msg_id,
-                "conversationId": conversation_id,
-                "pinOperation": operation,
+                # 5.0 事件字段：msgId/convId（非 messageId/conversationId）；pinOperation 为 int（PIN=0/UNPIN=1）
+                "msgId": msg_id,
+                "convId": conversation_id,
+                "pinOperation": {"MessagePinOperation.Pin": 0, "MessagePinOperation.Unpin": 1}.get(operation, operation),
                 "pinInfo": {"operatorId": operator_id},
             },
         },
@@ -488,30 +491,33 @@ def test_chat_manager_conversation_marks_and_fetch_options(device_a, device_b, a
     deadline = time.monotonic() + 30.0
     while time.monotonic() < deadline:
         resp_fetch_marked = device_a.call("ChatManager", Cmd.fetchConversationsByOptions.value, info=fetch_info)
-        marked_list = ((resp_fetch_marked.get("result") or {}).get("list") or [])
+        # 5.0 fetchConversationsByOptions 返回纯 list（无 {list, cursor} dict）
+        marked_list = resp_fetch_marked.get("result") or []
         if any(isinstance(item, dict) and item.get("convId") == user_b and 0 in (item.get("marks") or []) for item in marked_list):
             break
         time.sleep(2.0)
     assert resp_fetch_marked is not None
+    # 5.0 fetchConversationsByOptions 返回全部会话（不按 mark 过滤）→ 过滤出目标会话再断言
+    marked_target = [
+        item for item in (resp_fetch_marked.get("result") or [])
+        if isinstance(item, dict) and item.get("convId") == user_b
+    ]
     assert_api.assert_response_matches(
-        resp_fetch_marked,
+        {**resp_fetch_marked, "result": marked_target},
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.fetchConversationsByOptions.value,
             "device": "deviceA",
-            "result": {
-                "cursor": "",
-                "list": [
-                    {
-                        "convId": user_b,
-                        "type": 0,
-                        "isThread": False,
-                        "isPinned": False,
-                        "pinnedTime": 0,
-                        "marks": [0],
-                    }
-                ],
-            },
+            "result": [
+                {
+                    "convId": user_b,
+                    "type": 0,
+                    "isThread": False,
+                    "isPinned": False,
+                    "pinnedTime": 0,
+                    "marks": [0],
+                }
+            ],
         },
         ignore_keys={"sequence", "ext"},
     )

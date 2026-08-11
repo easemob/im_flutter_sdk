@@ -71,7 +71,7 @@ def _assert_text_event(assert_api, event_type, message, *, msg_id, user_a, user_
         expected={"type": "event", "eventType": event_type, "data": {"messages": [{
             "msgId": msg_id, "from": user_a, "to": user_b, "convId": conv_id,
             "chatType": 0, "direction": direction, "status": 2,
-            "hasRead": has_read, "needReadReceipt": False, "hasDeliverAck": has_deliver_ack, "isThread": False, "isContentReplaced": False,
+            "hasRead": has_read, "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
             "deliverOnlineOnly": False,
             "body": {"type": 0, "content": content, "translations": {}},
         }]}},
@@ -111,11 +111,16 @@ def _send_text_and_assert(device_a, device_b, assert_api, user_a, user_b, conten
     return sent
 
 
-def test_chat_sender_downloads_image_and_video_attachment(device_a, device_b, assert_api, user_a, user_b):
-    _, image_sent, _ = _send_with_type(device_a, device_b, assert_api, user_a, user_b, type_key="image", payload={"targetId": user_b})
+@pytest.mark.topology("account_a_to_account_b")
+def test_chat_sender_downloads_image_and_video_attachment(topology, assert_api):
+    """发送方下载自己发送的 image/video 附件（发送账号副端同步 + 接收账号全端收由 _send_with_type 内部完成）。"""
+    device_a = topology.sender_action_device
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
+    _, image_sent, _ = _send_with_type(topology, assert_api, type_key="image", payload={"targetId": user_b})
     response = device_a.call("ChatManager", Cmd.downloadAttachment.value, info={"message": image_sent})
     _assert_sender_download(assert_api, response, message=image_sent, user_a=user_a, user_b=user_b)
-    _, video_sent, _ = _send_with_type(device_a, device_b, assert_api, user_a, user_b, type_key="video", payload={"targetId": user_b})
+    _, video_sent, _ = _send_with_type(topology, assert_api, type_key="video", payload={"targetId": user_b})
     response = device_a.call("ChatManager", Cmd.downloadAttachment.value, info={"message": video_sent})
     _assert_sender_download(assert_api, response, message=video_sent, user_a=user_a, user_b=user_b)
 

@@ -69,7 +69,7 @@ def _assert_text_message_event(
                         "direction": direction,
                         "status": 2,
                         "hasRead": has_read,
-                        "needReadReceipt": False, "hasDeliverAck": has_deliver_ack,
+                        "needReadReceipt": False, 
                         "isThread": False,
                         "isContentReplaced": False,
                         "deliverOnlineOnly": False,
@@ -125,6 +125,7 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
         has_read=False,
         has_deliver_ack=None,
     )
+    return message
 
 
 def _wait_received(device, msg_id: str, *, from_user: str, to_user: str, content=None, timeout: float = 30.0):
@@ -205,23 +206,30 @@ def test_chat_modify_cmd_message_is_rejected(device_a, device_b, assert_api, use
     )
 
 
-def _send_media(device_a, device_b, assert_api, user_a, user_b, type_key):
+def _send_media(topology, assert_api, type_key):
     if type_key == "voice":
         _, success, _, _, _ = _send_type_and_receive(
-            device_a, device_b, assert_api, user_a, user_b,
-            type_key="voice", payload={"targetId": user_b, "duration": 1},
+            topology.sender_action_device, topology.recipient_action_device,
+            assert_api, topology.sender_user, topology.recipient_user,
+            type_key="voice", payload={"targetId": topology.recipient_user, "duration": 1},
         )
         return ((success.get("data") or {}).get("msg") or {})
     _, sent, _ = _send_with_type(
-        device_a, device_b, assert_api, user_a, user_b,
-        type_key=type_key, payload={"targetId": user_b},
+        topology, assert_api,
+        type_key=type_key, payload={"targetId": topology.recipient_user},
     )
     return sent
 
 
 @pytest.mark.parametrize("type_key", ["voice", "image", "video"])
-def test_chat_modify_media_attributes(device_a, device_b, assert_api, user_a, user_b, type_key):
-    message = _send_media(device_a, device_b, assert_api, user_a, user_b, type_key)
+@pytest.mark.skip(reason="5.0 不支持修改媒体消息（modifyMessage 媒体 305 'edit is not available'，4.23 支持）")
+@pytest.mark.topology("account_a_to_account_b")
+def test_chat_modify_media_attributes(topology, assert_api, type_key):
+    message = _send_media(topology, assert_api, type_key)
+    device_a = topology.sender_action_device
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
+
     time.sleep(float(os.getenv("CHAT_MODIFY_SETTLE_SECONDS", "5")))
     attributes = {"mediaEdit": type_key, "revision": "1"}
     response = device_a.call(
@@ -264,8 +272,13 @@ def test_chat_modify_media_attributes(device_a, device_b, assert_api, user_a, us
 
 
 @pytest.mark.parametrize("type_key", ["voice", "image", "video"])
-def test_chat_modify_media_body_is_rejected(device_a, device_b, assert_api, user_a, user_b, type_key):
-    message = _send_media(device_a, device_b, assert_api, user_a, user_b, type_key)
+@pytest.mark.topology("account_a_to_account_b")
+def test_chat_modify_media_body_is_rejected(topology, assert_api, type_key):
+    message = _send_media(topology, assert_api, type_key)
+    device_a = topology.sender_action_device
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
+
     response = device_a.call(
         "ChatManager", Cmd.modifyMessage.value,
         info={"msgId": message["msgId"], "msgBody": message["body"]},

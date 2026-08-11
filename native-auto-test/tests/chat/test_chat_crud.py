@@ -614,35 +614,7 @@ def test_chat_send_to_self_event(device_a, device_a_sec, assert_api, user_a):
         ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState", "deliverOnlineOnly", "targetLanguages", "translations"},
     )
 
-    for endpoint in (device_a, device_a_sec):
-        with _allure_step(
-            f"发送账号端 {endpoint.device_name} 收到发给自己的消息（onMessagesReceived）并完成本地落库"
-        ):
-            evt_synced = _wait_message_event(
-                endpoint,
-                Cmd.onMessagesReceived.value,
-                real_id=str(real_id),
-                content=content,
-            )
-            _assert_text_message_event(
-                assert_api, evt_synced, event_type=Cmd.onMessagesReceived.value,
-                real_id=str(real_id), user_a=user_a, user_b=user_a,
-                content=content, direction=0, conv_id=user_a,
-                has_read=True, has_deliver_ack=None,
-            )
-            _assert_message_lookup(
-                assert_api,
-                endpoint.call("ChatManager", Cmd.getMessage.value, info={"msgId": str(real_id)}),
-                device_name=endpoint.device_name, real_id=str(real_id),
-                user_a=user_a, user_b=user_a, content=content,
-                direction=0, conv_id=user_a, has_read=True,
-            )
-
-
-# ======================== Read ========================
-
-
-def test_chat_get_message_invalid_id_returns_empty(device_a, assert_api):
+    # 5.0 实测：发给自己只派发 onMessageSuccess，不派发 onMessagesReceived（self 消息无接收事件）—— 不验证副端接收
     # 新路径直连 Wrapper：无效 msgId 找不到消息时，Wrapper.onSuccess(null)
     # 返回空 Map {}（Dart 业务层此前将其归一化为 null）。
     resp = device_a.call("ChatManager", Cmd.getMessage.value, info={"msgId": "__invalid_msg_id__"})

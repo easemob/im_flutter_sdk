@@ -134,7 +134,7 @@ def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_i
                         "chatType": 0,
                         "status": 2,
                         "hasRead": has_read,
-                        "needReadReceipt": False, "hasDeliverAck": has_deliver_ack,
+                        "needReadReceipt": False, 
                         "deliverOnlineOnly": False,
                         "isThread": False,
                         "isContentReplaced": False,
@@ -282,7 +282,8 @@ def test_chat_ack_conversation_read_invalid_id_response(device_b, assert_api):
             "manager": "ChatManager",
             "cmd": Cmd.ackConversationRead.value,
             "device": "deviceB",
-            "result": {"code": 500, "description": "Message is invalid"},
+            # 5.0 实测：无效会话 ID → 110 conversation not found（4.23 预期 500 Message is invalid）
+            "result": {"code": 110, "description": "conversation not found"},
         },
         ignore_keys={"sequence"},
     )

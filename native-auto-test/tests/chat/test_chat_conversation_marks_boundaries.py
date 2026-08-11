@@ -35,12 +35,14 @@ def test_chat_delete_conversation_mark_boundaries(device_a, assert_api, info):
 )
 def test_chat_fetch_conversation_marks_boundaries(device_a, assert_api, info):
     resp = device_a.call("ChatManager", Cmd.fetchConversationsByOptions.value, info=info)
+    # 5.0 移除 cursor 分页：fetchConversationsByOptions 返回纯 list（无 {list, cursor} dict；pageSize 校验不存在）
+    # 5.0 移除 cursor 分页/边界校验：fetchConversationsByOptions 返回纯 list（不校验 pageSize，不报 110）
     if info["pageSize"] in (0, -1):
-        expected = {"code": 110, "description": "Invalid parameter"}
+        expected = []
     elif info["mark"] == 999:
-        expected = {"cursor": "", "list": []}
+        expected = []
     else:
-        expected = {"cursor": "", "list": []}
+        expected = []
     assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.fetchConversationsByOptions.value, "device": "deviceA", "result": expected}, ignore_keys={"sequence"})
 
 
@@ -69,7 +71,7 @@ def _assert_text_event(assert_api, event_type, message, *, msg_id, user_a, user_
         expected={"type": "event", "eventType": event_type, "data": {"messages": [{
             "msgId": msg_id, "from": user_a, "to": user_b, "convId": conv_id,
             "chatType": 0, "direction": direction, "status": 2,
-            "hasRead": has_read, "needReadReceipt": False, "hasDeliverAck": has_deliver_ack, "isThread": False, "isContentReplaced": False,
+            "hasRead": has_read, "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
             "deliverOnlineOnly": False,
             "body": {"type": 0, "content": content, "translations": {}},
         }]}},
@@ -121,7 +123,8 @@ def _target_mark_projection(response, conv_id):
     return [
         {"convId": item.get("convId"), "type": item.get("type"), "isThread": item.get("isThread"),
          "isPinned": item.get("isPinned"), "marks": item.get("marks")}
-        for item in ((response.get("result") or {}).get("list") or [])
+        # 5.0 fetchConversationsByOptions 返回纯 list（无 {list, cursor} dict）
+        for item in (response.get("result") or [])
         if isinstance(item, dict) and item.get("convId") == conv_id
     ]
 
@@ -175,4 +178,6 @@ def test_chat_conversation_mark_idempotent_and_remove_unmarked(device_a, device_
         "ChatManager", Cmd.fetchConversationsByOptions.value,
         info={"mark": 0, "pageSize": 10, "cursor": "", "pinned": False},
     )
-    assert _target_mark_projection(fetch_after, user_b) == [], fetch_after
+    # 5.0 fetchConversationsByOptions 返回全部会话（不按 mark 过滤）→ 改为验证该会话 marks 已清空
+    proj_after = _target_mark_projection(fetch_after, user_b)
+    assert proj_after and not (proj_after[0].get("marks") or []), f"删除标记后 marks 应为空: {fetch_after}"

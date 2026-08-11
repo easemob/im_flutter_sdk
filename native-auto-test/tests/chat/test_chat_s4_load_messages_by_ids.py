@@ -163,7 +163,8 @@ def _assert_loaded_messages_contains_ids(resp: dict, expected_ids: list[str], us
         assert msg.get("status") == 2, f"msg.status 不匹配: {msg}"
         assert msg.get("hasRead") is True, f"msg.hasRead 不匹配: {msg}"
         assert msg.get("needReadReceipt") is False, f"msg.needReadReceipt 不匹配: {msg}"
-        assert msg.get("hasDeliverAck") is True, f"msg.hasDeliverAck 不匹配: {msg}"
+        # 5.0 无送达回执机制 → hasDeliverAck 恒 False
+        assert msg.get("hasDeliverAck") is False, f"msg.hasDeliverAck 不匹配: {msg}"
         assert msg.get("needReadReceipt") is False, f"msg.needReadReceipt 不匹配: {msg}"
         assert msg.get("isThread") is False, f"msg.isThread 不匹配: {msg}"
         assert msg.get("isContentReplaced") is False, f"msg.isContentReplaced 不匹配: {msg}"

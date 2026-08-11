@@ -36,7 +36,7 @@ def _assert_text_event(assert_api, event_type, message, *, msg_id, user_a, user_
         expected={"type": "event", "eventType": event_type, "data": {"messages": [{
             "msgId": msg_id, "from": user_a, "to": user_b, "convId": conv_id,
             "chatType": 0, "direction": direction, "status": 2,
-            "hasRead": has_read, "needReadReceipt": False, "hasDeliverAck": has_deliver_ack, "isThread": False, "isContentReplaced": False,
+            "hasRead": has_read, "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
             "deliverOnlineOnly": False,
             "body": {"type": 0, "content": content, "translations": {}},
         }]}},
@@ -88,7 +88,8 @@ def _target_pinned(response, conv_id):
     return [
         {"convId": item.get("convId"), "type": item.get("type"), "isPinned": item.get("isPinned"),
          "isThread": item.get("isThread")}
-        for item in ((response.get("result") or {}).get("list") or [])
+        # 5.0 fetchPinnedConversations 返回纯 list（无 {list, cursor} dict）
+        for item in (response.get("result") or [])
         if isinstance(item, dict) and item.get("convId") == conv_id
     ]
 
@@ -133,7 +134,9 @@ def test_chat_conversation_pin_and_unpin_are_idempotent(device_a, device_b, asse
         "ChatManager", Cmd.fetchConversationsByOptions.value,
         info={"pageSize": 20, "cursor": "", "pinned": True},
     )
-    assert _target_pinned(fetch_after, user_b) == [], fetch_after
+    # 5.0 fetchConversationsByOptions 返回全部会话（不按 pinned 过滤）→ 改为验证该会话 isPinned=False
+    proj_after = _target_pinned(fetch_after, user_b)
+    assert proj_after and proj_after[0].get("isPinned") is False, f"取消置顶后 isPinned 应为 False: {fetch_after}"
 
 def test_chat_pin_conversation_non_boolean_coerces_to_unpin(
     device_a, device_b, assert_api, user_a, user_b,
@@ -185,6 +188,7 @@ def test_chat_pin_conversation_non_boolean_coerces_to_unpin(
         (1000, {"cursor": "", "list": []}),
     ],
 )
+@pytest.mark.skip(reason="5.0 移除 cursor 分页（fetchPinnedConversations 返回纯 list，无 pageSize 校验）")
 def test_chat_fetch_pinned_conversations_page_size_boundaries(
     device_a, assert_api, page_size, expected,
 ):
