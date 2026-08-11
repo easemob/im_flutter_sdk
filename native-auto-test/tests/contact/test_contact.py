@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import json
+from contextlib import nullcontext
 
 import pytest
 
@@ -12,6 +13,15 @@ from src import Cmd, ne
 from src.rest_api.contact_api import get_user_contacts
 from src.test_flow import ContactTestFlow
 from src.sdk_api.event_keys import ContactChangeEvent
+
+
+def _allure_step(name: str):
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext()
 
 
 pytestmark = [pytest.mark.client, pytest.mark.contact]
@@ -100,53 +110,65 @@ def test_contact_delete_contact_nonexistent_user(device_a, assert_api):
     assert_api.assert_error(resp, code=204, description="User does not exist")
 
 
-def test_friend_add_accept_and_list(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_friend_add_accept_and_list(topology, assert_api):
     """
-    设备 A 添加设备 B 为好友，B 同意好友申请，分别获取 A、B 好友列表、A删除好友。
+    发送账号添加接收账号为好友（申请回调接收账号全部在线端收到），接收端同意后
+    发送端收到同意回调，分别获取双方好友列表，最后发送端删除好友。
     """
-    _cleanup_friend_and_block(device_a, device_b, user_a, user_b)
-    # 1. 设备 A 添加设备 B 为好友（ContactManager.addContact）
-    resp_add = device_a.call(
-        "ContactManager",
-        Cmd.addContact.value,
-        info={"userId": user_b, "reason": "hello"},
-    )
+    sender = topology.sender_action_device
+    recipients = topology.recipient_devices
+    action_recipient = topology.recipient_action_device
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
+    _cleanup_friend_and_block(sender, action_recipient, user_a, user_b)
+    # 1. 发送端添加接收账号为好友（ContactManager.addContact）
+    with _allure_step(f"{sender.device_name} 向 {user_b} 发送好友申请"):
+        resp_add = sender.call(
+            "ContactManager",
+            Cmd.addContact.value,
+            info={"userId": user_b, "reason": "hello"},
+        )
     assert_api.assert_success(resp_add)
     print("登录响应:", json.dumps(resp_add))
     assert_api.assert_response_matches(
         resp_add,
         expected={"manager": "ContactManager", "cmd": Cmd.addContact.value, "device": "{{device}}", "result": "{{userId}}"},
-        context={"userId": user_b, "device": "deviceA"},
+        context={"userId": user_b, "device": sender.device_name},
         ignore_keys={"sequence"},
     )
-    # 1.1 设备 B 获取好友邀请回调
-    resp_invite = device_b.receive_message(
-        match_event_type=ContactChangeEvent.INVITED.value,
-        timeout=10.0,
-    )
-    assert resp_invite is not None, "设备 B 未收到好友邀请回调"
-    assert_api.assert_response_matches(
-        resp_invite,
-        expected={
-            "type": "event",
-            "eventType": ContactChangeEvent.INVITED.value,
-            "data": {"userId": "{{userId}}", "reason": "hello"},
-        },
-        context={"userId": user_a},
-        ignore_keys={"timestamp", "sequence"},
-    )
-    # 2. 设备 B 同意 A 的好友申请
-    resp_accept = device_b.call(
-        "ContactManager",
-        Cmd.acceptInvitation.value,
-        info={"userId": user_a},
-    )
+    # 1.1 接收账号全部在线端收到好友申请回调
+    for recipient in recipients:
+        with _allure_step(f"接收账号端 {recipient.device_name} 收到好友申请回调（INVITED）"):
+            resp_invite = recipient.receive_message(
+                match_event_type=ContactChangeEvent.INVITED.value,
+                timeout=10.0,
+            )
+            assert resp_invite is not None, f"{recipient.device_name} 未收到好友邀请回调"
+            assert_api.assert_response_matches(
+                resp_invite,
+                expected={
+                    "type": "event",
+                    "eventType": ContactChangeEvent.INVITED.value,
+                    "data": {"userId": "{{userId}}", "reason": "hello"},
+                },
+                context={"userId": user_a},
+                ignore_keys={"timestamp", "sequence"},
+            )
+    # 2. 接收账号动作端同意好友申请
+    with _allure_step(f"{action_recipient.device_name} 同意好友申请（acceptInvitation）"):
+        resp_accept = action_recipient.call(
+            "ContactManager",
+            Cmd.acceptInvitation.value,
+            info={"userId": user_a},
+        )
     assert_api.assert_success(resp_accept)
-    # 2.1 设备 A 会收到 onFriendRequestAccepted 回调
-    resp_accepted = device_a.receive_message(
-        match_event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
-        timeout=10.0,
-    )
+    # 2.1 发送端收到同意回调
+    with _allure_step(f"{sender.device_name} 收到同意回调（INVITATION_ACCEPTED）"):
+        resp_accepted = sender.receive_message(
+            match_event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
+            timeout=10.0,
+        )
     assert_api.assert_response_matches(
         resp_accepted,
         expected={
@@ -157,8 +179,8 @@ def test_friend_add_accept_and_list(device_a, device_b, assert_api, user_a, user
         context={"userId": user_b},
         ignore_keys={"timestamp"},
     )
-    # 2.2 设备 A 收到 CONTACT_ADD 回调
-    resp_contact_add_a = device_a.receive_message(
+    # 2.2 发送端收到 CONTACT_ADD 回调
+    resp_contact_add_a = sender.receive_message(
         match_event_type=ContactChangeEvent.CONTACT_ADD.value,
         timeout=10.0,
     )
@@ -172,8 +194,8 @@ def test_friend_add_accept_and_list(device_a, device_b, assert_api, user_a, user
         context={"userId": user_b},
         ignore_keys={"timestamp"},
     )
-    # 3. 设备 A 获取好友列表
-    resp_list_a = device_a.call(
+    # 3. 发送端获取好友列表
+    resp_list_a = sender.call(
         "ContactManager",
         Cmd.getAllContactsFromServer.value,
         info={},
@@ -184,28 +206,29 @@ def test_friend_add_accept_and_list(device_a, device_b, assert_api, user_a, user
         expected={
             "manager": "ContactManager",
             "cmd": Cmd.getAllContactsFromServer.value,
-            "device": "deviceA",
+            "device": sender.device_name,
             "result": [user_b],
         },
         ignore_keys={"sequence"},
     )
-    # 4. 设备 B 获取好友列表
-    resp_list_b = device_b.call(
+    # 4. 接收账号动作端获取好友列表
+    resp_list_b = action_recipient.call(
         "ContactManager",
         Cmd.getAllContactsFromServer.value,
         info={},
     )
     assert_api.assert_success(resp_list_b)
     assert user_a in assert_api.get_result(resp_list_b), f"B 好友列表未包含 A: {resp_list_b}"
-    # 5. 设备 A 删除好友 B
-    result = device_a.call(
-        "ContactManager",
-        Cmd.deleteContact.value,
-        info={"userId": user_b, "keepConversation": True},
-    )
+    # 5. 发送端删除好友
+    with _allure_step(f"{sender.device_name} 删除好友 {user_b}"):
+        result = sender.call(
+            "ContactManager",
+            Cmd.deleteContact.value,
+            info={"userId": user_b, "keepConversation": True},
+        )
     assert_api.assert_success(result)
-    # 5.1 设备 A 收到 CONTACT_DELETE 回调
-    resp_contact_delete_a = device_a.receive_message(
+    # 5.1 发送端收到 CONTACT_DELETE 回调
+    resp_contact_delete_a = sender.receive_message(
         match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
         timeout=10.0,
     )
@@ -221,18 +244,25 @@ def test_friend_add_accept_and_list(device_a, device_b, assert_api, user_a, user
     )
 
 
-def test_friend_add_decline_and_verify_not_friends(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_friend_add_decline_and_verify_not_friends(topology, assert_api):
     """
-    A 添加 B 为好友，B 收到邀请后拒绝（declineInvitation）；
-    A 收到 onFriendRequestDeclined；双方好友列表均不应包含对方。
+    发送账号添加接收账号为好友（申请回调接收账号全部在线端收到），接收端拒绝后
+    发送端收到拒绝回调；双方好友列表均不应包含对方。
     """
-    _cleanup_friend_and_block(device_a, device_b, user_a, user_b)
-    # 1. A 添加 B
-    resp_add = device_a.call(
-        "ContactManager",
-        Cmd.addContact.value,
-        info={"userId": user_b, "reason": "decline_flow"},
-    )
+    sender = topology.sender_action_device
+    recipients = topology.recipient_devices
+    action_recipient = topology.recipient_action_device
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
+    _cleanup_friend_and_block(sender, action_recipient, user_a, user_b)
+    # 1. 发送端添加接收账号为好友
+    with _allure_step(f"{sender.device_name} 向 {user_b} 发送好友申请"):
+        resp_add = sender.call(
+            "ContactManager",
+            Cmd.addContact.value,
+            info={"userId": user_b, "reason": "decline_flow"},
+        )
     assert_api.assert_success(resp_add)
     assert_api.assert_response_matches(
         resp_add,
@@ -242,38 +272,42 @@ def test_friend_add_decline_and_verify_not_friends(device_a, device_b, assert_ap
             "device": "{{device}}",
             "result": "{{userId}}",
         },
-        context={"userId": user_b, "device": "deviceA"},
+        context={"userId": user_b, "device": sender.device_name},
         ignore_keys={"sequence"},
     )
-    # 2. B 收到好友邀请
-    resp_invite = device_b.receive_message(
-        match_event_type=ContactChangeEvent.INVITED.value,
-        timeout=10.0,
-    )
-    assert resp_invite is not None, "设备 B 未收到好友邀请回调"
-    assert_api.assert_response_matches(
-        resp_invite,
-        expected={
-            "type": "event",
-            "eventType": ContactChangeEvent.INVITED.value,
-            "data": {"userId": "{{userId}}", "reason": "decline_flow"},
-        },
-        context={"userId": user_a},
-        ignore_keys={"timestamp", "sequence"},
-    )
-    # 3. B 拒绝 A 的好友申请
-    resp_decline = device_b.call(
-        "ContactManager",
-        Cmd.declineInvitation.value,
-        info={"userId": user_a},
-    )
+    # 2. 接收账号全部在线端收到好友邀请
+    for recipient in recipients:
+        with _allure_step(f"接收账号端 {recipient.device_name} 收到好友申请回调（INVITED）"):
+            resp_invite = recipient.receive_message(
+                match_event_type=ContactChangeEvent.INVITED.value,
+                timeout=10.0,
+            )
+            assert resp_invite is not None, f"{recipient.device_name} 未收到好友邀请回调"
+            assert_api.assert_response_matches(
+                resp_invite,
+                expected={
+                    "type": "event",
+                    "eventType": ContactChangeEvent.INVITED.value,
+                    "data": {"userId": "{{userId}}", "reason": "decline_flow"},
+                },
+                context={"userId": user_a},
+                ignore_keys={"timestamp", "sequence"},
+            )
+    # 3. 接收账号动作端拒绝好友申请
+    with _allure_step(f"{action_recipient.device_name} 拒绝好友申请（declineInvitation）"):
+        resp_decline = action_recipient.call(
+            "ContactManager",
+            Cmd.declineInvitation.value,
+            info={"userId": user_a},
+        )
     assert_api.assert_success(resp_decline)
-    # 4. A 收到好友请求被拒绝回调
-    resp_declined = device_a.receive_message(
-        match_event_type=ContactChangeEvent.INVITATION_DECLINED.value,
-        timeout=10.0,
-    )
-    assert resp_declined is not None, "设备 A 未收到 onFriendRequestDeclined 回调"
+    # 4. 发送端收到好友请求被拒绝回调
+    with _allure_step(f"{sender.device_name} 收到拒绝回调（INVITATION_DECLINED）"):
+        resp_declined = sender.receive_message(
+            match_event_type=ContactChangeEvent.INVITATION_DECLINED.value,
+            timeout=10.0,
+        )
+    assert resp_declined is not None, "发送端未收到 onFriendRequestDeclined 回调"
     assert_api.assert_response_matches(
         resp_declined,
         expected={
@@ -285,7 +319,7 @@ def test_friend_add_decline_and_verify_not_friends(device_a, device_b, assert_ap
         ignore_keys={"timestamp", "sequence"},
     )
     # 5. 双方好友列表均不应包含对方（未成为好友）
-    resp_list_a = device_a.call(
+    resp_list_a = sender.call(
         "ContactManager",
         Cmd.getAllContactsFromServer.value,
         info={},
@@ -293,7 +327,7 @@ def test_friend_add_decline_and_verify_not_friends(device_a, device_b, assert_ap
     assert_api.assert_success(resp_list_a)
     assert user_b not in assert_api.get_result(resp_list_a), f"A 好友列表不应包含 B: {resp_list_a}"
 
-    resp_list_b = device_b.call(
+    resp_list_b = action_recipient.call(
         "ContactManager",
         Cmd.getAllContactsFromServer.value,
         info={},
@@ -457,6 +491,7 @@ def test_contact_remark_special_chars_length_101(device_a, device_b, assert_api,
     flow.delete_friend(device_a, user_b)
 
 
+@pytest.mark.skip(reason="5.0 getContact 为本地拉取（fetchContactFromLocal），本地 EMContact 不携带 remark（恒空）—— 备注保留/失效语义无法通过 getContact 验证；需服务端拉取 API（如有）")
 def test_contact_remark_not_preserved_after_delete_and_readd(device_a, device_b, assert_api, user_a, user_b):
     """
     A 删除 B 后再次添加并同意，先前备注一般不应保留（以服务端为准；此处断言与旧备注不同或为空）。
@@ -628,7 +663,8 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
                 "manager": "ContactManager",
                 "cmd": Cmd.fetchContacts.value,
                 "device": "deviceA",
-                "result": [{"userId": user_b, "remark": remark_for_fetch}],
+                # 5.0 fetchContacts 为本地全量拉取（EMContact 本地缓存不带 remark）→ 不验 remark
+                "result": [{"userId": user_b}],
             },
             ignore_keys={"sequence"},
         )
@@ -716,8 +752,9 @@ def test_contact_get_all_contact_ids(device_a, assert_api):
 # ---------- fetchContacts（异常：文档 pageSize ∈ [1,50]）----------
 
 
+@pytest.mark.skip(reason="5.0 移除分页拉联系人（fetchContacts 改为本地全量 asyncFetchAllContactsFromLocal，忽略 pageSize）—— pageSize 边界校验不存在，case 语义失效")
 def test_contact_fetch_contacts_page_size_zero(device_a, assert_api):
-    """fetchContacts：pageSize 为 0，超出允许范围，预期失败。"""
+    """fetchContacts：pageSize 为 0（5.0 已移除分页，忽略 pageSize）。"""
     resp = device_a.call(
         "ContactManager",
         Cmd.fetchContacts.value,
@@ -734,8 +771,9 @@ def test_contact_fetch_contacts_page_size_zero(device_a, assert_api):
         ignore_keys={"sequence"},
     )
 
+@pytest.mark.skip(reason="5.0 移除分页拉联系人（fetchContacts 本地全量，忽略 pageSize）—— 超出 50 的边界校验不存在")
 def test_contact_fetch_contacts_page_size_exceeds_50(device_a, assert_api):
-    """fetchContacts：pageSize 大于 50，超出允许范围，预期失败。"""
+    """fetchContacts：pageSize 大于 50（5.0 已移除分页，忽略 pageSize）。"""
     resp = device_a.call(
         "ContactManager",
         Cmd.fetchContacts.value,
@@ -748,8 +786,9 @@ def test_contact_fetch_contacts_page_size_exceeds_50(device_a, assert_api):
     )
 
 
+@pytest.mark.skip(reason="5.0 移除分页拉联系人（fetchContacts 本地全量，忽略 pageSize）—— 负数边界校验不存在")
 def test_contact_fetch_contacts_page_size_negative(device_a, assert_api):
-    """fetchContacts：pageSize 为负数，预期失败。"""
+    """fetchContacts：pageSize 为负数（5.0 已移除分页，忽略 pageSize）。"""
     resp = device_a.call(
         "ContactManager",
         Cmd.fetchContacts.value,

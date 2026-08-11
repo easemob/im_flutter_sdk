@@ -1,9 +1,20 @@
 """Group announcement API 正常用例（strict）。"""
 from __future__ import annotations
 
+from contextlib import nullcontext
+
 import pytest
 
 from src import Cmd
+
+
+def _allure_step(name: str):
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext()
 from tests.group.group_helpers import (
     assert_group_events,
     assert_no_group_event,
@@ -51,7 +62,8 @@ def _consume_direct_invite_events(device_a, device_b, assert_api, *, group_id: s
     )
 
 
-def test_group_owner_update_announcement_notifies_member(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_group_owner_update_announcement_notifies_member(device_a, device_b, device_b_sec, assert_api, user_a, user_b, topology):
     """
     前置：A 为群主，B 已入群且双方建群事件已消费。
     步骤：A 调用 updateGroupAnnouncement；B 等待公告变更事件；A 从服务端读取公告。
@@ -110,6 +122,16 @@ def test_group_owner_update_announcement_notifies_member(device_a, device_b, ass
             },
             ignore_keys={"timestamp", "sequence"},
         )
+        with _allure_step("接收账号副端 sec_b 同步验证收到事件"):
+            sec_events = collect_group_events(
+                sec_b,
+                expected_event_types={"onGroupAnnouncementChanged"},
+                group_id=group_id,
+                required_all_event_types={"onGroupAnnouncementChanged"},
+                timeout=10.0,
+            )
+            assert sec_events, f"{sec_b.device_name} 未收到公告变更事件: {sec_events}"
+
         assert_no_group_event(
             device_a,
             group_id=group_id,
@@ -136,7 +158,8 @@ def test_group_owner_update_announcement_notifies_member(device_a, device_b, ass
             destroy_group(device_a, assert_api, group_id, device_b=device_b)
 
 
-def test_group_admin_update_announcement_notifies_owner(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_group_admin_update_announcement_notifies_owner(device_a, device_a_sec, device_b, assert_api, user_a, user_b, topology):
     """
     前置：A 为群主、B 已入群；A 将 B 设置为管理员并消费管理员变更事件。
     步骤：管理员 B 调用 updateGroupAnnouncement；A 等待公告变更事件；A 拉取服务端公告。
@@ -226,6 +249,16 @@ def test_group_admin_update_announcement_notifies_owner(device_a, device_b, asse
             },
             ignore_keys={"timestamp", "sequence"},
         )
+        with _allure_step("发送账号副端 sec_a 同步验证收到事件"):
+            sec_events = collect_group_events(
+                sec_a,
+                expected_event_types={"onGroupAnnouncementChanged"},
+                group_id=group_id,
+                required_all_event_types={"onGroupAnnouncementChanged"},
+                timeout=10.0,
+            )
+            assert sec_events, f"{sec_a.device_name} 未收到公告变更事件: {sec_events}"
+
         assert_no_group_event(
             device_b,
             group_id=group_id,

@@ -1,9 +1,20 @@
 """Group members 正常链路。"""
 from __future__ import annotations
 
+from contextlib import nullcontext
+
 import pytest
 
 from src import Cmd, GroupChangeEvent
+
+
+def _allure_step(name: str):
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext()
 from tests.group.group_helpers import (
     assert_no_group_event,
     assert_group_events,
@@ -20,7 +31,9 @@ from tests.group.group_helpers import (
 pytestmark = [pytest.mark.client, pytest.mark.group, pytest.mark.agorachat1_4_0]
 
 
-def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b, topology):
+    """群主添加/移除成员：加入与移除事件同步到收发账号全部在线端。"""
     group_name = new_group_name("member")
     group_id = ""
     try:
@@ -31,6 +44,9 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
             group_name=group_name,
             invite_members=[],
         )
+
+        sec_b_devices = tuple(d for d in topology.recipient_devices if d is not topology.recipient_action_device)
+        sec_a_devices = tuple(d for d in topology.sender_devices if d is not topology.sender_action_device)
 
         resp_add = device_a.call(
             "GroupManager",
@@ -77,6 +93,28 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
             expected_member=user_b,
         )
 
+        for sec_b in sec_b_devices:
+            with _allure_step(f"接收账号副端 {sec_b.device_name} 同步验证收到事件"):
+                sec_add_events = collect_group_events(
+                    sec_b,
+                    expected_event_types=expected_add_events,
+                    group_id=group_id,
+                    allow_missing_group_id=True,
+                    required_all_event_types=required_add_events,
+                    timeout=10.0,
+                )
+                assert_group_events(
+                    assert_api,
+                    sec_add_events,
+                    expected_event_types=expected_add_events,
+                    group_id=group_id,
+                    allow_missing_group_id=True,
+                    required_all_event_types=required_add_events,
+                    expected_inviter=user_a,
+                    expected_member=user_b,
+                )
+
+
         owner_add_events = collect_group_events(
             device_a,
             expected_event_types={
@@ -84,7 +122,8 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
                 "onGroupMemberJoined",
             },
             group_id=group_id,
-            required_all_event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
+            # 5.0 只派发批量事件 onGroupMembersJoined（单成员事件不派发）
+            required_all_event_types={"onGroupMembersJoined"},
             timeout=10.0,
         )
         assert_group_events(
@@ -95,9 +134,34 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
                 "onGroupMemberJoined",
             },
             group_id=group_id,
-            required_all_event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
+            required_all_event_types={"onGroupMembersJoined"},
             expected_member=user_b,
         )
+
+        for sec_a in sec_a_devices:
+            with _allure_step(f"发送账号副端 {sec_a.device_name} 同步验证收到事件"):
+                owner_sec_add_events = collect_group_events(
+                    sec_a,
+                    expected_event_types={
+                        "onGroupMembersJoined",
+                        "onGroupMemberJoined",
+                    },
+                    group_id=group_id,
+                    required_all_event_types={"onGroupMembersJoined"},
+                    timeout=10.0,
+                )
+                assert_group_events(
+                    assert_api,
+                    owner_sec_add_events,
+                    expected_event_types={
+                        "onGroupMembersJoined",
+                        "onGroupMemberJoined",
+                    },
+                    group_id=group_id,
+                    required_all_event_types={"onGroupMembersJoined"},
+                    expected_member=user_b,
+                )
+
 
         resp_get_after_add = device_a.call(
             "GroupManager",
@@ -156,6 +220,27 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
             expected_member=user_b,
         )
 
+        for sec_b in sec_b_devices:
+            with _allure_step(f"接收账号副端 {sec_b.device_name} 同步验证收到事件"):
+                sec_remove_events = collect_group_events(
+                    sec_b,
+                    expected_event_types=expected_remove_events,
+                    group_id=group_id,
+                    allow_missing_group_id=True,
+                    required_all_event_types=required_remove_events,
+                    timeout=10.0,
+                )
+                assert_group_events(
+                    assert_api,
+                    sec_remove_events,
+                    expected_event_types=expected_remove_events,
+                    group_id=group_id,
+                    allow_missing_group_id=True,
+                    required_all_event_types=required_remove_events,
+                    expected_member=user_b,
+                )
+
+
         owner_remove_events = collect_group_events(
             device_a,
             expected_event_types={
@@ -163,7 +248,7 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
                 "onGroupMemberExited",
             },
             group_id=group_id,
-            required_all_event_types={"onGroupMembersExited", "onGroupMemberExited"},
+            required_all_event_types={"onGroupMembersExited"},
             timeout=10.0,
         )
         assert_group_events(
@@ -174,9 +259,34 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
                 "onGroupMemberExited",
             },
             group_id=group_id,
-            required_all_event_types={"onGroupMembersExited", "onGroupMemberExited"},
+            required_all_event_types={"onGroupMembersExited"},
             expected_member=user_b,
         )
+
+        for sec_a in sec_a_devices:
+            with _allure_step(f"发送账号副端 {sec_a.device_name} 同步验证收到事件"):
+                owner_sec_remove_events = collect_group_events(
+                    sec_a,
+                    expected_event_types={
+                        "onGroupMembersExited",
+                        "onGroupMemberExited",
+                    },
+                    group_id=group_id,
+                    required_all_event_types={"onGroupMembersExited"},
+                    timeout=10.0,
+                )
+                assert_group_events(
+                    assert_api,
+                    owner_sec_remove_events,
+                    expected_event_types={
+                        "onGroupMembersExited",
+                        "onGroupMemberExited",
+                    },
+                    group_id=group_id,
+                    required_all_event_types={"onGroupMembersExited"},
+                    expected_member=user_b,
+                )
+
 
         resp_get_after_remove = device_a.call(
             "GroupManager",
@@ -219,6 +329,8 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
             group_name=group_name,
             invite_members=[],
             style=3,
+            # 5.0 实测：建群默认 isMemberAllowToInvite=True（4.23 默认 False）
+            is_member_allow_to_invite=True,
         )
 
         resp_join = device_b.call("GroupManager", Cmd.joinPublicGroup.value, info={"groupId": group_id})
@@ -234,11 +346,12 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
         )
 
         joined_event_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
+        # 5.0 实测：成员加入只派发批量事件 onGroupMembersJoined（单成员事件不派发）
         owner_join_events = collect_group_events(
             device_a,
             expected_event_types=joined_event_types,
             group_id=group_id,
-            required_all_event_types=joined_event_types,
+            required_all_event_types={"onGroupMembersJoined"},
             timeout=10.0,
         )
         owner_join_by_type = {event["eventType"]: event for event in owner_join_events}
@@ -251,16 +364,16 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
             },
             ignore_keys={"timestamp", "sequence"},
         )
-        assert_api.assert_response_matches(
-            owner_join_by_type["onGroupMemberJoined"],
-            expected={
-                "type": "event",
-                "eventType": "onGroupMemberJoined",
-                "data": {"groupId": group_id, "member": user_b},
-            },
-            ignore_keys={"timestamp", "sequence"},
+        # 5.0 只派发批量事件（onGroupMembersJoined），无单成员事件 onGroupMemberJoined → 不再断言；
+        # 加入者 B 端 5.0 也会收到 onGroupMembersJoined（自身加入的端同步）→ 改为验证 B 收到
+        b_join_events = collect_group_events(
+            device_b,
+            expected_event_types=joined_event_types,
+            group_id=group_id,
+            required_all_event_types={"onGroupMembersJoined"},
+            timeout=10.0,
         )
-        assert_no_group_event(device_b, group_id=group_id, event_types=joined_event_types)
+        assert b_join_events, f"B 端未收到自身加入的批量事件: {b_join_events}"
 
         resp_after_join = device_a.call(
             "GroupManager",
@@ -276,6 +389,8 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
             owner=user_a,
             member_count_value=2,
             member_list_value=[user_b],
+            # 5.0 建群/查询服务端默认 isMemberAllowToInvite=True
+            is_member_allow_to_invite=True,
             is_member_only=False,
         )
 
@@ -292,11 +407,12 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
         )
 
         exited_event_types = {"onGroupMembersExited", "onGroupMemberExited"}
+        # 5.0 只派发批量事件 onGroupMembersExited（单成员事件不派发）
         owner_exit_events = collect_group_events(
             device_a,
             expected_event_types=exited_event_types,
             group_id=group_id,
-            required_all_event_types=exited_event_types,
+            required_all_event_types={"onGroupMembersExited"},
             timeout=10.0,
         )
         owner_exit_by_type = {event["eventType"]: event for event in owner_exit_events}
@@ -309,15 +425,7 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
             },
             ignore_keys={"timestamp", "sequence"},
         )
-        assert_api.assert_response_matches(
-            owner_exit_by_type["onGroupMemberExited"],
-            expected={
-                "type": "event",
-                "eventType": "onGroupMemberExited",
-                "data": {"groupId": group_id, "member": user_b},
-            },
-            ignore_keys={"timestamp", "sequence"},
-        )
+        # 5.0 只派发批量事件（onGroupMembersExited），无单成员事件 → 不再断言 onGroupMemberExited
         assert_no_group_event(device_b, group_id=group_id, event_types=exited_event_types)
 
         resp_after_leave = device_a.call(
@@ -334,6 +442,8 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
             owner=user_a,
             member_count_value=1,
             member_list_value=[],
+            # 5.0 群属性不随成员退出变化（建群时 style=3 决定 allowInvites）→ 仍为 True
+            is_member_allow_to_invite=True,
             is_member_only=False,
         )
     finally:
@@ -404,11 +514,12 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
         )
 
         expected_joined_events = {"onGroupMembersJoined", "onGroupMemberJoined"}
+        # 5.0 实测：批量加人只派发 onGroupMembersJoined（单成员事件不派发）→ required 用批量事件
         joined_events = collect_group_events(
             device_a,
             expected_event_types=expected_joined_events,
             group_id=group_id,
-            required_all_event_types={"onGroupMemberJoined"},
+            required_all_event_types={"onGroupMembersJoined"},
             timeout=10.0,
         )
         assert_group_events(
@@ -416,7 +527,7 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
             joined_events,
             expected_event_types=expected_joined_events,
             group_id=group_id,
-            required_all_event_types={"onGroupMemberJoined"},
+            required_all_event_types={"onGroupMembersJoined"},
         )
         joined_batch = [evt for evt in joined_events if evt.get("eventType") == "onGroupMembersJoined"]
         if joined_batch:

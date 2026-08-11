@@ -62,8 +62,8 @@ def _assert_message_event(assert_api, event_type, message, *, msg_id, user_a, us
         expected={"type": "event", "eventType": event_type, "data": {"messages": [{
             "msgId": msg_id, "from": user_a, "to": user_b, "convId": conv_id,
             "chatType": 0, "direction": direction, "status": 2,
-            "hasRead": has_read, "hasReadAck": False, "hasDeliverAck": has_deliver_ack,
-            "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+            "hasRead": has_read,
+            "isThread": False, "isContentReplaced": False,
             "deliverOnlineOnly": False, "body": body,
         }]}},
         ignore_keys={"timestamp", "sequence", "localTime", "serverTime", "broadcast", "onlineState",
@@ -81,7 +81,7 @@ def _text_message(device_a, device_b, assert_api, user_a, user_b, content):
         expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA",
                   "result": {"msgId": temp_id, "from": user_a, "to": user_b, "convId": user_b,
                              "chatType": 0, "direction": 0, "status": 0, "hasRead": True,
-                             "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
+                             "hasDeliverAck": False,
                              "isThread": False, "isContentReplaced": False,
                              "body": {"type": 0, "content": content}}},
         ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState",
@@ -108,12 +108,7 @@ def _text_message(device_a, device_b, assert_api, user_a, user_b, content):
         assert_api, Cmd.onMessagesReceived.value, received, msg_id=msg["msgId"], user_a=user_a, user_b=user_b,
         body=body, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True,
     )
-    delivered = _wait_message_list_event(device_a, Cmd.onMessagesDelivered.value, msg_id=msg["msgId"])
-    _assert_message_event(
-        assert_api, Cmd.onMessagesDelivered.value, delivered, msg_id=msg["msgId"], user_a=user_a, user_b=user_b,
-        body=body, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True,
-    )
-    return delivered
+    return msg
 
 
 def _custom_message(device_a, device_b, assert_api, user_a, user_b):
@@ -133,8 +128,8 @@ def _custom_message(device_a, device_b, assert_api, user_a, user_b):
         resp_send,
         expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA",
                   "result": {"msgId": temp_id, "from": user_a, "to": user_b, "convId": user_b,
-                             "chatType": 0, "direction": 0, "status": 1, "hasRead": True,
-                             "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
+                             "chatType": 0, "direction": 0,  "hasRead": True,
+                             "hasDeliverAck": False,
                              "isThread": False, "isContentReplaced": False, "body": body}},
         ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState", "deliverOnlineOnly"},
     )
@@ -160,12 +155,7 @@ def _custom_message(device_a, device_b, assert_api, user_a, user_b):
         assert_api, Cmd.onMessagesReceived.value, received, msg_id=msg["msgId"], user_a=user_a, user_b=user_b,
         body=body, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True,
     )
-    delivered = _wait_message_list_event(device_a, Cmd.onMessagesDelivered.value, msg_id=msg["msgId"])
-    _assert_message_event(
-        assert_api, Cmd.onMessagesDelivered.value, delivered, msg_id=msg["msgId"], user_a=user_a, user_b=user_b,
-        body=body, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True,
-    )
-    return delivered
+    return msg
 
 
 def _translate(device_a, assert_api, msg, languages):
@@ -182,8 +172,8 @@ def _expected_translated_message(msg, *, languages):
             "msgId": "{{msgId}}", "from": msg.get("from"), "to": msg.get("to"),
             "convId": msg.get("convId"), "chatType": msg.get("chatType"),
             "direction": msg.get("direction"), "status": msg.get("status"),
-            "hasRead": msg.get("hasRead"), "hasReadAck": msg.get("hasReadAck"),
-            "hasDeliverAck": msg.get("hasDeliverAck"), "needGroupAck": msg.get("needGroupAck"),
+            "hasRead": msg.get("hasRead"),
+            "hasDeliverAck": msg.get("hasDeliverAck"),
             "isThread": msg.get("isThread"), "isContentReplaced": msg.get("isContentReplaced"),
             "body": {**body, "targetLanguages": languages, "translations": {}},
         },

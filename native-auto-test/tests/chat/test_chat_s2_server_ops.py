@@ -43,7 +43,7 @@ def _wait_text_event(device, event_type: str, *, real_id: str, content: str, tim
     raise AssertionError(f"未收到目标消息事件: event={event_type}, msgId={real_id}, content={content}, events={seen}")
 
 
-def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_id: str, user_a: str, user_b: str, content: str, direction: int, conv_id: str, has_read: bool, has_deliver_ack: bool) -> None:
+def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_id: str, user_a: str, user_b: str, content: str, direction: int, conv_id: str, has_read: bool, has_deliver_ack: bool | None = None) -> None:
     assert_api.assert_response_matches(
         evt,
         expected={
@@ -60,7 +60,7 @@ def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_i
                         "direction": direction,
                         "status": 2,
                         "hasRead": has_read,
-                        "needReadReceipt": False, "hasDeliverAck": has_deliver_ack,
+                        "needReadReceipt": False,
                         "isThread": False,
                         "isContentReplaced": False,
                         "deliverOnlineOnly": False,
@@ -69,7 +69,7 @@ def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_i
                 ],
             },
         },
-        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "receiverList", "broadcast", "onlineState"},
+        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "receiverList", "broadcast", "onlineState", "hasDeliverAck"},
     )
 
 

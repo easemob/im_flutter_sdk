@@ -43,6 +43,10 @@ _MESSAGE_IGNORE_KEYS = {
     "thumbnailRemotePath",
     "thumbnailSecret",
     "messageList",
+    # 时序敏感状态位：5.0 发送响应 status=0（CREATE）、媒体 fileStatus/thumbnailStatus=0（上传中）
+    "status",
+    "fileStatus",
+    "thumbnailStatus",
 }
 
 
@@ -320,6 +324,8 @@ def _send_group_text_expect_error(
         "onlineState",
         "targetLanguages",
         "translations",
+        # 5.0 响应 status=0（CREATE），时序状态位忽略
+        "status",
     }
     assert_api.assert_response_matches(
         resp,
@@ -416,8 +422,12 @@ def _send_group_message(
     *,
     type_key: str,
     payload: dict,
+    sender_sec_devices=(),
+    recipient_sec_devices=(),
 ) -> str:
     _drain_devices(device_a, device_b)
+    for extra in (*sender_sec_devices, *recipient_sec_devices):
+        extra.drain_events(timeout=0.5)
     resp = device_a.call(
         "ChatManager",
         Cmd.sendMessage.value,
@@ -429,7 +439,13 @@ def _send_group_message(
     real_id = ((((success_evt.get("data") or {}).get("msg")) or {}).get("msgId"))
     assert real_id, f"群 {type_key} 消息成功事件未返回真实 msgId: {success_evt}"
     event_type = Cmd.onCmdMessagesReceived.value if type_key == "cmd" else Cmd.onMessagesReceived.value
+    # 发送账号副端同步（同账号其他在线端）
+    for sender_sec in sender_sec_devices:
+        _wait_received(sender_sec, event_type=event_type, real_id=real_id)
+    # 接收账号全部在线端接收
     received_evt = _wait_received(device_b, event_type=event_type, real_id=real_id)
+    for recipient_sec in recipient_sec_devices:
+        _wait_received(recipient_sec, event_type=event_type, real_id=real_id)
 
     _assert_group_message(
         assert_api,
@@ -468,8 +484,9 @@ def _send_group_message(
 
 
 @pytest.fixture
-def message_group(device_a, device_b, assert_api, user_a, user_b):
+def message_group(device_a, device_a_sec, device_b, device_b_sec, assert_api, user_a, user_b):
     _drain_devices(device_a, device_b)
+    device_b_sec.drain_events(timeout=0.5)
     group_id, _ = create_group(
         device_a,
         assert_api,
@@ -478,6 +495,7 @@ def message_group(device_a, device_b, assert_api, user_a, user_b):
         invite_members=[user_b],
     )
     time.sleep(float(os.getenv("GROUP_MESSAGE_MEMBER_SETTLE_SECONDS", "5")))
+    device_b_sec.drain_events(timeout=0.5)
     try:
         yield group_id
     finally:
@@ -488,15 +506,17 @@ def message_group(device_a, device_b, assert_api, user_a, user_b):
     "type_key",
     ["txt", "file", "image", "video", "voice", "location", "cmd", "custom"],
 )
+@pytest.mark.topology("account_a_to_account_b")
 def test_group_message_send_receive_by_type(
     device_a,
     device_b,
     assert_api,
     user_a,
     message_group,
+    topology,
     type_key,
 ):
-    """A 向包含 B 的群发送指定类型消息，严格校验同步响应、A 成功事件和 B 接收事件。"""
+    """A 向包含 B 的群发送指定类型消息：A 全部在线端同步、B 全部在线端接收。"""
     payload = _payload_for(type_key, message_group)
     _send_group_message(
         device_a,
@@ -506,17 +526,23 @@ def test_group_message_send_receive_by_type(
         message_group,
         type_key=type_key,
         payload=payload,
+        sender_sec_devices=tuple(d for d in topology.sender_devices if d is not topology.sender_action_device),
+        recipient_sec_devices=tuple(d for d in topology.recipient_devices if d is not topology.recipient_action_device),
     )
 
 
+@pytest.mark.topology("account_a_to_account_b")
 def test_group_message_send_receive_combine(
     device_a,
     device_b,
     assert_api,
     user_a,
     message_group,
+    topology,
 ):
-    """A 合并同群两条真实文本消息并发送，B 收到关联同一群会话的合并消息。"""
+    """A 合并同群两条真实文本消息并发送，B 全部在线端收到关联同一群会话的合并消息。"""
+    sender_sec = tuple(d for d in topology.sender_devices if d is not topology.sender_action_device)
+    recipient_sec = tuple(d for d in topology.recipient_devices if d is not topology.recipient_action_device)
     source_ids = []
     for index in range(2):
         payload = {"targetId": message_group, "content": f"combine-source-{index}-{uuid.uuid4().hex[:8]}"}
@@ -529,6 +555,8 @@ def test_group_message_send_receive_combine(
                 message_group,
                 type_key="txt",
                 payload=payload,
+                sender_sec_devices=sender_sec,
+                recipient_sec_devices=recipient_sec,
             )
         )
     payload = {
@@ -546,6 +574,8 @@ def test_group_message_send_receive_combine(
         message_group,
         type_key="combine",
         payload=payload,
+        sender_sec_devices=sender_sec,
+        recipient_sec_devices=recipient_sec,
     )
 
 
@@ -553,16 +583,8 @@ def test_group_message_ack_boundary_methods(device_a, assert_api):
     """非法群消息 ID 与群 ID 调用群回执 API，冻结当前真实同步返回。"""
     info = {"msgId": "__invalid_group_msg_id__", "group_id": "__invalid_group_id__"}
     resp_ack = device_a.call("ChatManager", Cmd.ackGroupMessageRead.value, info=info)
-    assert_api.assert_response_matches(
-        resp_ack,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.ackGroupMessageRead.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
+    # 5.0 实测：非法群消息 ID → 原生 SDK 报 500 "message was not found"（4.23 预期 True，5.0 拒绝）
+    assert_api.assert_error(resp_ack, code=500, description="message was not found")
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -811,12 +833,12 @@ def test_group_message_send_rejects_invalid_group_target(
 
 
 def _assert_owner_member_exited_events(device_a, assert_api, *, group_id: str, member: str) -> None:
-    event_types = {"onGroupMembersExited", "onGroupMemberExited"}
+    # 5.0 实测：成员退出只派发批量事件 onGroupMembersExited（无单成员 onGroupMemberExited）
     events = collect_group_events(
         device_a,
-        expected_event_types=event_types,
+        expected_event_types={"onGroupMembersExited", "onGroupMemberExited"},
         group_id=group_id,
-        required_all_event_types=event_types,
+        required_all_event_types={"onGroupMembersExited"},
         timeout=10.0,
     )
     by_type = {event["eventType"]: event for event in events}
@@ -826,15 +848,6 @@ def _assert_owner_member_exited_events(device_a, assert_api, *, group_id: str, m
             "type": "event",
             "eventType": "onGroupMembersExited",
             "data": {"groupId": group_id, "userIds": [member]},
-        },
-        ignore_keys={"timestamp", "sequence"},
-    )
-    assert_api.assert_response_matches(
-        by_type["onGroupMemberExited"],
-        expected={
-            "type": "event",
-            "eventType": "onGroupMemberExited",
-            "data": {"groupId": group_id, "member": member},
         },
         ignore_keys={"timestamp", "sequence"},
     )

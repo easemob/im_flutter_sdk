@@ -550,35 +550,43 @@ def test_chat_fetch_reaction_detail_oversize_page_size(device_a, device_b, asser
     )
 
 
-def test_chat_add_reaction_duplicate_reaction(device_a, device_b, assert_api, user_a, user_b):
-    """addReaction 重复添加同一 reaction；按被测端实际语义冻结。"""
+@pytest.mark.topology("account_a_to_account_b")
+def test_chat_add_reaction_duplicate_reaction(topology, assert_api):
+    """addReaction 重复添加同一 reaction；接收账号全部在线端收到 reaction 变更事件。"""
+    sender = topology.sender_action_device
+    recipients = topology.recipient_devices
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
     try:
-        device_a.drain_events()
-        device_b.drain_events()
+        for device in (sender, *recipients):
+            device.drain_events()
     except Exception:
         pass
 
-    real_id = _send_text_and_wait_received(
-        device_a, device_b, assert_api, user_a, user_b, "reaction-duplicate"
-    )
+    with _allure_step(f"{sender.device_name} 发送消息并等待接收端接收"):
+        real_id = _send_text_and_wait_received(
+            sender, recipients[0], assert_api, user_a, user_b, "reaction-duplicate"
+        )
     time.sleep(5)
 
     reaction = "👍"
-    resp_add_first = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})
+    with _allure_step(f"{sender.device_name} 添加 reaction（首次）"):
+        resp_add_first = sender.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})
     assert_api.assert_response_matches(
         resp_add_first,
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.addReaction.value,
-            "device": "deviceA",
+            "device": sender.device_name,
             "result": None,
         },
         ignore_keys={"sequence"},
     )
-    _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction, is_added_by_self=True)
-    _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction, is_added_by_self=False)
+    _assert_reaction_change_event(assert_api, sender, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction, is_added_by_self=True)
+    for recipient in recipients:
+        _assert_reaction_change_event(assert_api, recipient, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction, is_added_by_self=False)
 
-    resp_add_second = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})
+    resp_add_second = sender.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})
     assert_api.assert_response_matches(
         resp_add_second,
         expected={
@@ -591,19 +599,26 @@ def test_chat_add_reaction_duplicate_reaction(device_a, device_b, assert_api, us
     )
 
 
-def test_chat_remove_reaction_not_exists_reaction(device_a, device_b, assert_api, user_a, user_b):
-    """removeReaction 删除不存在的 reaction；按被测端实际语义冻结。"""
+@pytest.mark.topology("account_a_to_account_b")
+def test_chat_remove_reaction_not_exists_reaction(topology, assert_api):
+    """removeReaction 删除不存在的 reaction；接收账号全部在线端收到消息投递。"""
+    sender = topology.sender_action_device
+    recipients = topology.recipient_devices
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
     try:
-        device_a.drain_events()
-        device_b.drain_events()
+        for device in (sender, *recipients):
+            device.drain_events()
     except Exception:
         pass
 
-    real_id = _send_text_and_wait_received(
-        device_a, device_b, assert_api, user_a, user_b, "reaction-remove-not-exists"
-    )
+    with _allure_step(f"{sender.device_name} 发送消息并等待接收端接收"):
+        real_id = _send_text_and_wait_received(
+            sender, recipients[0], assert_api, user_a, user_b, "reaction-remove-not-exists"
+        )
 
-    resp = device_a.call("ChatManager", Cmd.removeReaction.value, info={"reaction": "👍", "msgId": real_id})
+    with _allure_step(f"{sender.device_name} 删除不存在的 reaction"):
+        resp = sender.call("ChatManager", Cmd.removeReaction.value, info={"reaction": "👍", "msgId": real_id})
     assert_api.assert_response_matches(
         resp,
         expected={

@@ -9,9 +9,20 @@ from __future__ import annotations
 import uuid
 import time
 
+from contextlib import nullcontext
+
 import pytest
 
-from src import Cmd, ne
+from src import Cmd
+
+
+def _allure_step(name: str):
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext(), ne
 from tests.chat._utils import build_text
 from tests.group.group_helpers import create_group, destroy_group, new_group_name
 
@@ -196,7 +207,11 @@ def _create_thread_context(device_a, device_b, assert_api, user_a: str, user_b: 
             time.sleep(1)
     thread = resp_create.get("result") or {}
     thread_id = thread.get("threadId") if isinstance(thread, dict) else None
-    assert isinstance(thread_id, str) and thread_id, f"createChatThread 未返回 threadId: {resp_create}"
+    if not isinstance(thread_id, str) or not thread_id:
+        # 305 = thread not open：测试 appKey 服务端未开通子区（thread）功能 → 外部前置不满足
+        if isinstance(thread, dict) and thread.get("code") == 305:
+            pytest.skip("测试 appKey 服务端未开通子区（thread）功能（createChatThread 305 thread not open）")
+        raise AssertionError(f"createChatThread 未返回 threadId: {resp_create}")
     assert_api.assert_response_matches(
         resp_create,
         expected={
@@ -498,8 +513,10 @@ def test_chat_thread_fetch_members_and_latest_message(device_a, device_b, assert
         _cleanup_thread_context(device_a, device_b, assert_api, context)
 
 
-def test_chat_thread_update_name_and_leave(device_a, device_b, assert_api, user_a, user_b):
-    """updateChatThreadSubject / leaveChatThread：更新子区名称后，B 退出子区并从已加入列表消失。"""
+@pytest.mark.topology("account_a_to_account_b")
+def test_chat_thread_update_name_and_leave(device_a, device_b, assert_api, user_a, user_b, topology):
+    """updateChatThreadSubject / leaveChatThread：更新子区名称后，收发账号全部在线端收到事件，B 退出子区。"""
+    thread_devices = (*topology.sender_devices, *topology.recipient_devices)
     context: dict = {}
     try:
         context = _create_thread_context(device_a, device_b, assert_api, user_a, user_b)
@@ -523,7 +540,7 @@ def test_chat_thread_update_name_and_leave(device_a, device_b, assert_api, user_
             ignore_keys={"sequence"},
         )
 
-        for device in (device_a, device_b):
+        with _allure_step("全部在线端验证收到子区事件"):
             update_evt = _wait_chat_thread_event(device, Cmd.onChatThreadUpdate.value, thread_id)
             _assert_thread_lifecycle_event(
                 assert_api,
@@ -537,6 +554,7 @@ def test_chat_thread_update_name_and_leave(device_a, device_b, assert_api, user_
                 parent_msg_id=context["parent_msg_id"],
                 create_at=0,
             )
+
 
         detail_resp = device_a.call(
             "ChatThreadManager",
@@ -594,8 +612,10 @@ def test_chat_thread_update_name_and_leave(device_a, device_b, assert_api, user_
         _cleanup_thread_context(device_a, device_b, assert_api, context)
 
 
-def test_chat_thread_destroy_event_received_by_group_member(device_a, device_b, assert_api, user_a, user_b):
-    """destroyChatThread：子区创建后由 owner 解散，群成员收到 onChatThreadDestroy 事件并携带子区信息。"""
+@pytest.mark.topology("account_a_to_account_b")
+def test_chat_thread_destroy_event_received_by_group_member(device_a, device_b, assert_api, user_a, user_b, topology):
+    """destroyChatThread：子区创建后由 owner 解散，收发账号全部在线端收到 onChatThreadDestroy 事件。"""
+    thread_devices = (*topology.sender_devices, *topology.recipient_devices)
     context: dict = {}
     try:
         context = _create_thread_context(device_a, device_b, assert_api, user_a, user_b)
@@ -617,7 +637,7 @@ def test_chat_thread_destroy_event_received_by_group_member(device_a, device_b, 
             ignore_keys={"sequence"},
         )
 
-        for device in (device_a, device_b):
+        with _allure_step("全部在线端验证收到子区事件"):
             destroy_evt = _wait_chat_thread_event(device, Cmd.onChatThreadDestroy.value, thread_id)
             _assert_thread_lifecycle_event(
                 assert_api,
@@ -631,6 +651,7 @@ def test_chat_thread_destroy_event_received_by_group_member(device_a, device_b, 
                 parent_msg_id=context["parent_msg_id"],
                 create_at=0,
             )
+
         context["thread_id"] = ""
     finally:
         _cleanup_thread_context(device_a, device_b, assert_api, context)

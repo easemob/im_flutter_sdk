@@ -3,13 +3,23 @@ from __future__ import annotations
 import os
 import time
 import uuid
+from contextlib import nullcontext
 
 import pytest
 
 from src import Cmd, gt
 from tests.chat._utils import build_text
+
+
+def _allure_step(name: str):
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext()
 from tests.chat.test_chat_message_types_and_delivery import _send_type_and_receive
-from tests.chat.test_chat_s423_message_callback_and_combine import _send_with_type
+from tests.chat.test_chat_message_callback_and_combine import _send_with_type
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
@@ -117,8 +127,15 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
     )
 
 
-
-def test_chat_modify_message_empty_id(device_a, assert_api):
+def _wait_received(device, msg_id: str, *, from_user: str, to_user: str, content=None, timeout: float = 30.0):
+    """等待接收端收到指定 msgId 的消息并返回消息对象。"""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        event = device.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=2)
+        for item in (((event or {}).get("data") or {}).get("messages") or []):
+            if isinstance(item, dict) and str(item.get("msgId")) == str(msg_id):
+                return item
+    raise AssertionError(f"接收端未收到消息: msgId={msg_id}, device={device.device_name}")
     response = device_a.call(
         "ChatManager", Cmd.modifyMessage.value,
         info={"msgId": "", "msgBody": {"type": 0, "content": "empty-id"}},
@@ -131,15 +148,26 @@ def test_chat_modify_message_empty_id(device_a, assert_api):
     )
 
 
-def test_chat_non_sender_cannot_modify_message(device_a, device_b, assert_api, user_a, user_b):
-    message = _send_text(device_a, device_b, assert_api, user_a, user_b, f"modify-other-{uuid.uuid4().hex[:6]}")
-    response = device_b.call(
-        "ChatManager", Cmd.modifyMessage.value,
-        info={"msgId": message["msgId"], "msgBody": {"type": 0, "content": "not-owner"}},
-    )
+@pytest.mark.topology("account_a_to_account_b")
+def test_chat_non_sender_cannot_modify_message(topology, assert_api):
+    """非发送者（接收账号端）尝试修改消息被拒绝（无权限）；发送投递到接收账号全部在线端。"""
+    sender = topology.sender_action_device
+    recipients = topology.recipient_devices
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
+    with _allure_step(f"{sender.device_name} 发送待修改文本消息"):
+        message = _send_text(sender, recipients[0], assert_api, user_a, user_b, f"modify-other-{uuid.uuid4().hex[:6]}")
+    for extra_recipient in recipients[1:]:
+        with _allure_step(f"接收账号端 {extra_recipient.device_name} 接收该消息"):
+            _wait_received(extra_recipient, message["msgId"], from_user=user_a, to_user=user_b, content=None)
+    with _allure_step(f"非发送者 {recipients[0].device_name} 尝试修改消息（应无权限）"):
+        response = recipients[0].call(
+            "ChatManager", Cmd.modifyMessage.value,
+            info={"msgId": message["msgId"], "msgBody": {"type": 0, "content": "not-owner"}},
+        )
     assert_api.assert_response_matches(
         response,
-        expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value, "device": "deviceB",
+        expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value, "device": recipients[0].device_name,
                   "result": {"code": 210, "description": "User has no permission for this operation"}},
         ignore_keys={"sequence"},
     )

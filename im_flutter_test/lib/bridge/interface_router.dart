@@ -31,6 +31,10 @@ class InterfaceRouter {
     final r = await TestControl.invoke('prepareDefaultMediaPath', {'type': mediaType});
     if (r is String && r.isNotEmpty) {
       body['localPath'] = r;
+      // 用例未给 displayName 时用素材文件名（媒体消息需要）
+      if (displayName.isEmpty) {
+        body['displayName'] = r.split('/').last;
+      }
     }
   }
 

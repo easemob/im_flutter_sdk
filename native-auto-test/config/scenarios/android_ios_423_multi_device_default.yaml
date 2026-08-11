@@ -36,16 +36,14 @@ devices:
     serial: EE7B2CEE-7E25-43E6-8B83-8CE432CBE97D
 
 topologies:
-  account_b_to_account_a:
-    sender: {account: account_b, action_device: device_b}
-    recipient: {account: account_a, action_device: device_a}
-
   account_a_to_account_b:
     sender:
       account: account_a
       action_device: device_a
       include_all_devices: true
     recipient: {account: account_b, action_device: device_b}
+
+    
 
 runner:
   start_emulators: false

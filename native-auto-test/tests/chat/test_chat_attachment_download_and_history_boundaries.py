@@ -7,7 +7,7 @@ import uuid
 import pytest
 
 from src import Cmd, ne
-from tests.chat.test_chat_s423_message_callback_and_combine import _send_with_type
+from tests.chat.test_chat_message_callback_and_combine import _send_with_type
 from tests.chat._utils import build_text
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]

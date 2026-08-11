@@ -676,7 +676,7 @@ def assert_group_snapshot(
         "isDisabled": False,
         "isAllMemberMuted": is_all_member_muted,
         "permissionType": permission_type,
-        "isMemberOnly": is_member_only,
+        # 5.0 移除 isMemberOnly 字段（wrapper 注释：5.0 移除 isMemberOnly 权限判断）
         "isMemberAllowToInvite": is_member_allow_to_invite,
         "messageBlocked": message_blocked,
     }
@@ -769,6 +769,7 @@ def create_group(
     invite_need_confirm: bool = False,
     expected_member_count: int | None = None,
     device_name: str = "deviceA",
+    is_member_allow_to_invite: bool | None = None,
 ):
     resp_create = device_a.call(
         "GroupManager",
@@ -797,7 +798,13 @@ def create_group(
         owner=owner,
         member_count_value=(1 + len(invite_members) if expected_member_count is None else expected_member_count),
         max_user_count_value=max_count,
-        is_member_allow_to_invite=(style == 1),
+        # 5.0: 允许成员邀请 = EMGroupConfigs.allowInvites = (style != 0)（style 1/2/3 允许，0 不允许）
+        # 快照返回的 isMemberAllowToInvite 由服务端按 allowInvites 决定；可显式传参覆盖
+        is_member_allow_to_invite=(
+            is_member_allow_to_invite
+            if is_member_allow_to_invite is not None
+            else (style != 0)
+        ),
         is_member_only=(style != 3),
         device=device_name,
     )

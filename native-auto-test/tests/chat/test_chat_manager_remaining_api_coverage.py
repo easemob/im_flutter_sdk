@@ -3,11 +3,21 @@ from __future__ import annotations
 import os
 import uuid
 import time
+from contextlib import nullcontext
 
 import pytest
 
 from src import Cmd, ge
 from tests.chat._utils import build_text
+
+
+def _allure_step(name: str):
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext()
 
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
@@ -325,57 +335,66 @@ def test_chat_manager_pin_unpin_and_fetch_pinned_messages(device_a, device_b, as
     )
 
 
-def test_chat_manager_recall_message_receiver_recalled_info_event(device_a, device_b, assert_api, user_a, user_b):
-    """recallMessage：发送方撤回已送达单聊消息，接收方收到 onMessagesRecalledInfo 事件并携带撤回消息 ID。"""
+@pytest.mark.topology("account_a_to_account_b")
+def test_chat_manager_recall_message_receiver_recalled_info_event(topology, assert_api):
+    """recallMessage：发送方撤回已送达单聊消息，接收账号全部在线端收到 onMessagesRecalledInfo 并携带撤回消息 ID。"""
+    sender = topology.sender_action_device
+    recipients = topology.recipient_devices
+    sender_user = topology.sender_user
+    recipient_user = topology.recipient_user
     content = f"chat-recall-event-{uuid.uuid4().hex[:8]}"
-    msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
+    with _allure_step(f"{sender.device_name} 发送待撤回文本消息"):
+        msg_id = _send_text_and_receive(sender, recipients[0], assert_api, sender_user, recipient_user, content)
     time.sleep(float(os.getenv("CHAT_RECALL_SETTLE_SECONDS", "5")))
 
-    resp = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
+    with _allure_step(f"{sender.device_name} 撤回该消息（recallMessage）"):
+        resp = sender.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
     assert_api.assert_response_matches(
         resp,
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.recallMessage.value,
-            "device": "deviceA",
+            "device": sender.device_name,
             "result": True,
         },
         ignore_keys={"sequence"},
     )
 
-    evt = device_b.receive_message(match_event_type=Cmd.onMessagesRecalledInfo.value, timeout=20.0)
-    assert_api.assert_response_matches(
-        evt,
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessagesRecalledInfo.value,
-            "data": {
-                "infos": [
-                    {
-                        "recallBy": user_a,
-                        "recallMsgId": msg_id,
-                        "convId": user_a,
-                        "msg": {
-                            "msgId": msg_id,
-                            "from": user_a,
-                            "to": user_b,
-                            "convId": user_a,
-                            "chatType": 0,
-                            "direction": 1,
-                            "status": 2,
-                            "hasRead": False,
-                            "needReadReceipt": False, "isThread": False,
-                            "isContentReplaced": False,
-                            "deliverOnlineOnly": False,
-                            "body": {"type": 0, "content": content},
-                        },
-                        "ext": "",
+    for recipient in recipients:
+        with _allure_step(f"接收账号端 {recipient.device_name} 收到撤回通知（onMessagesRecalledInfo）"):
+            evt = recipient.receive_message(match_event_type=Cmd.onMessagesRecalledInfo.value, timeout=20.0)
+            assert_api.assert_response_matches(
+                evt,
+                expected={
+                    "type": "event",
+                    "eventType": Cmd.onMessagesRecalledInfo.value,
+                    "data": {
+                        "infos": [
+                            {
+                                "recallBy": sender_user,
+                                "recallMsgId": msg_id,
+                                "convId": sender_user,
+                                "msg": {
+                                    "msgId": msg_id,
+                                    "from": sender_user,
+                                    "to": recipient_user,
+                                    "convId": sender_user,
+                                    "chatType": 0,
+                                    "direction": 1,
+                                    "status": 2,
+                                    "hasRead": False,
+                                    "needReadReceipt": False, "isThread": False,
+                                    "isContentReplaced": False,
+                                    "deliverOnlineOnly": False,
+                                    "body": {"type": 0, "content": content},
+                                },
+                                "ext": "",
+                            },
+                        ],
                     },
-                ],
-            },
-        },
-        ignore_keys={"timestamp", "serverTime", "localTime", "translations", "receiverList"},
-    )
+                },
+                ignore_keys={"timestamp", "serverTime", "localTime", "translations", "receiverList"},
+            )
 
 
 def test_chat_manager_send_to_non_friend_current_success_event(device_a, assert_api, user_a, user_c):

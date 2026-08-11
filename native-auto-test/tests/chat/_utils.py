@@ -73,9 +73,14 @@ def swt_to_send(info: dict) -> dict:
                 "remotePath": "", "fileSize": 0}
     elif type_key == "location":
         body = {"type": 3, "latitude": payload.get("latitude", 0), "longitude": payload.get("longitude", 0),
-                "address": payload.get("address", ""), "buildingName": ""}
+                "address": payload.get("address", ""), "buildingName": payload.get("buildingName", "")}
     elif type_key == "custom":
         body = {"type": 7, "event": payload.get("event", ""), "params": payload.get("params", {})}
+    elif type_key == "combine":
+        body = {"type": 8, "title": payload.get("title", ""), "summary": payload.get("summary", ""),
+                "compatibleText": payload.get("compatibleText", ""), "fileStatus": 0}
+        if payload.get("msgIds"):
+            body["messageList"] = list(payload["msgIds"])
     else:
         raise ValueError(f"unknown swt type: {type_key}")
     return {"to": to, "chatType": chat_type, "direction": 0, "deliverOnlineOnly": False, "body": body}

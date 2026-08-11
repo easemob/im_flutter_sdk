@@ -2,13 +2,24 @@ from __future__ import annotations
 
 import uuid
 import time
+from contextlib import nullcontext
 
 import pytest
 
 from src import Cmd, ge, ne
 from tests.chat._utils import swt_to_send, build_text
 
-pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.agorachat4_23_0]
+
+def _allure_step(name: str):
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext()
+
+
+pytestmark = [pytest.mark.client, pytest.mark.chat]
 
 
 def _skip_if_missing_plugin(resp: dict, api_name: str) -> None:
@@ -445,15 +456,24 @@ def _assert_combine_inner_download_api_with_progress(device, assert_api, *, cmd:
     )
 
 
-def _send_with_type(device_a, device_b, assert_api, user_a: str, user_b: str, *, type_key: str, payload: dict) -> tuple[dict, dict, dict]:
-    info = {"type": type_key, "payload": payload, "chatType": 0}
-    resp = device_a.call("ChatManager", Cmd.sendMessage.value, info=swt_to_send(info))
-    _fail_if_error(resp, Cmd.sendMessage.value)
+def _send_with_type(topology, assert_api, *, type_key: str, payload: dict) -> tuple[dict, dict, dict]:
+    """发送指定类型消息，验证发送账号副端同步、接收账号全部在线端接收；返回 (resp, sent, 主接收端消息)。"""
+    sender = topology.sender_action_device
+    sender_devices = topology.sender_devices
+    recipients = topology.recipient_devices
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
+
+    with _allure_step(f"{sender.device_name} 发送 {type_key} 消息"):
+        info = {"type": type_key, "payload": payload, "chatType": 0}
+        resp = sender.call("ChatManager", Cmd.sendMessage.value, info=swt_to_send(info))
+        _fail_if_error(resp, Cmd.sendMessage.value)
 
     temp_id = ((resp.get("result") or {}).get("msgId"))
     assert temp_id, f"sendMessageWithType 未返回临时 msgId: {resp}"
 
-    evt_success = _wait_message_success(device_a, temp_id)
+    with _allure_step(f"{sender.device_name} 验证发送成功（onMessageSuccess）"):
+        evt_success = _wait_message_success(sender, temp_id)
     sent_msg = ((evt_success.get("data") or {}).get("msg") or {})
     real_id = sent_msg.get("msgId")
     assert real_id, f"onMessageSuccess 未返回服务器 msgId: {evt_success}"
@@ -562,19 +582,30 @@ def _send_with_type(device_a, device_b, assert_api, user_a: str, user_b: str, *,
         context={"tempId": temp_id, "realId": real_id, "fromUser": user_a, "toUser": user_b},
         ignore_keys=ignore_keys,
     )
-    received_msg = _wait_received_message(device_b, real_id, from_user=user_a, to_user=user_b)
-    return resp, sent_msg, received_msg
+    for sender_device in sender_devices:
+        if sender_device is sender:
+            continue
+        with _allure_step(f"发送账号端 {sender_device.device_name} 同步该消息"):
+            _wait_received_message(sender_device, real_id, from_user=user_a, to_user=user_b)
+
+    received_msgs = []
+    for recipient in recipients:
+        with _allure_step(f"接收账号端 {recipient.device_name} 接收该消息"):
+            received_msgs.append(_wait_received_message(recipient, real_id, from_user=user_a, to_user=user_b))
+    return resp, sent_msg, received_msgs[0]
 
 
-def test_attachment_messages_send_receive_and_public_download_methods(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_attachment_messages_send_receive_and_public_download_methods(topology, assert_api):
+    """发送 file/image/video 附件：发送账号副端同步、接收账号全部在线端接收，主接收端执行公开下载 API。"""
+    device_b = topology.recipient_action_device
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
     _, file_sent, file_received = _send_with_type(
-        device_a,
-        device_b,
+        topology,
         assert_api,
-        user_a,
-        user_b,
         type_key="file",
-        payload={"targetId": user_b},
+        payload={"targetId": topology.recipient_user},
     )
     _assert_received_attachment_message(assert_api, file_received, user_a=user_a, user_b=user_b, body_type=5)
     _assert_download_api_with_progress(
@@ -585,13 +616,10 @@ def test_attachment_messages_send_receive_and_public_download_methods(device_a, 
     )
 
     _, image_sent, image_received = _send_with_type(
-        device_a,
-        device_b,
+        topology,
         assert_api,
-        user_a,
-        user_b,
         type_key="image",
-        payload={"targetId": user_b},
+        payload={"targetId": topology.recipient_user},
     )
     _assert_received_attachment_message(assert_api, image_received, user_a=user_a, user_b=user_b, body_type=1)
     _assert_download_api_with_progress(
@@ -608,13 +636,10 @@ def test_attachment_messages_send_receive_and_public_download_methods(device_a, 
     )
 
     _, video_sent, video_received = _send_with_type(
-        device_a,
-        device_b,
+        topology,
         assert_api,
-        user_a,
-        user_b,
         type_key="video",
-        payload={"targetId": user_b},
+        payload={"targetId": topology.recipient_user},
     )
     _assert_received_attachment_message(assert_api, video_received, user_a=user_a, user_b=user_b, body_type=2)
     _assert_download_api_with_progress(
@@ -636,24 +661,28 @@ def test_attachment_messages_send_receive_and_public_download_methods(device_a, 
 
 
 def _send_text_message_with_webhook_env(
-    device_a,
-    device_b,
+    topology,
     assert_api,
-    user_a: str,
-    user_b: str,
     *,
     content: str,
     webhook_env: str,
 ) -> tuple[dict, dict, dict]:
-    info = build_text(user_a, user_b, content)
-    info["webhookEnv"] = webhook_env
-    resp = device_a.call("ChatManager", Cmd.sendMessage.value, info=info)
-    _fail_if_error(resp, Cmd.sendMessage.value)
+    sender = topology.sender_action_device
+    sender_devices = topology.sender_devices
+    recipients = topology.recipient_devices
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
+    with _allure_step(f"{sender.device_name} 发送 webhookEnv={webhook_env} 文本消息"):
+        info = build_text(user_a, user_b, content)
+        info["webhookEnv"] = webhook_env
+        resp = sender.call("ChatManager", Cmd.sendMessage.value, info=info)
+        _fail_if_error(resp, Cmd.sendMessage.value)
 
     temp_id = ((resp.get("result") or {}).get("msgId"))
     assert temp_id, f"sendMessage 未返回临时 msgId: {resp}"
 
-    evt_success = _wait_message_success(device_a, temp_id)
+    with _allure_step(f"{sender.device_name} 验证发送成功（onMessageSuccess）"):
+        evt_success = _wait_message_success(sender, temp_id)
     sent_msg = ((evt_success.get("data") or {}).get("msg") or {})
     real_id = sent_msg.get("msgId")
     assert real_id, f"onMessageSuccess 未返回服务器 msgId: {evt_success}"
@@ -733,7 +762,14 @@ def _send_text_message_with_webhook_env(
         },
         ignore_keys=ignore_keys,
     )
-    received_msg = _wait_received_message(device_b, real_id, from_user=user_a, to_user=user_b)
+    for sender_device in sender_devices:
+        if sender_device is sender:
+            continue
+        with _allure_step(f"发送账号端 {sender_device.device_name} 同步该消息"):
+            _wait_received_message(sender_device, real_id, from_user=user_a, to_user=user_b)
+
+    with _allure_step(f"接收账号端 {recipients[0].device_name} 接收该消息"):
+        received_msg = _wait_received_message(recipients[0], real_id, from_user=user_a, to_user=user_b)
     assert_api.assert_response_matches(
         received_msg,
         expected={
@@ -758,40 +794,41 @@ def _send_text_message_with_webhook_env(
         },
         ignore_keys=ignore_keys,
     )
+    for recipient in recipients[1:]:
+        with _allure_step(f"接收账号端 {recipient.device_name} 接收该消息"):
+            _wait_received_message(recipient, real_id, from_user=user_a, to_user=user_b)
     return resp, sent_msg, received_msg
 
 @pytest.mark.parametrize(("case_name", "webhook_env"), [("default", "default")])
-def test_send_text_message_with_webhook_env(device_a, device_b, assert_api, user_a, user_b, webhook_env, case_name):
+@pytest.mark.topology("account_a_to_account_b")
+def test_send_text_message_with_webhook_env(topology, assert_api, webhook_env, case_name):
+    """发送带 webhookEnv 的文本消息：发送账号副端同步、接收账号全部在线端接收。"""
     content = f"s423-webhook-{case_name}-{uuid.uuid4().hex[:6]}"
     _send_text_message_with_webhook_env(
-        device_a,
-        device_b,
+        topology,
         assert_api,
-        user_a,
-        user_b,
         content=content,
         webhook_env=webhook_env,
     )
 
 
-def test_combine_forward_send_receive_and_inner_attachment_download(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_combine_forward_send_receive_and_inner_attachment_download(topology, assert_api):
+    """combine 消息：发送账号副端同步、接收账号全部在线端接收，主接收端执行 inner 附件下载。"""
+    device_b = topology.recipient_action_device
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
     _, image_sent, _ = _send_with_type(
-        device_a,
-        device_b,
+        topology,
         assert_api,
-        user_a,
-        user_b,
         type_key="image",
-        payload={"targetId": user_b},
+        payload={"targetId": topology.recipient_user},
     )
     _, video_sent, _ = _send_with_type(
-        device_a,
-        device_b,
+        topology,
         assert_api,
-        user_a,
-        user_b,
         type_key="video",
-        payload={"targetId": user_b},
+        payload={"targetId": topology.recipient_user},
     )
 
     image_msg_id = image_sent["msgId"]
@@ -804,11 +841,8 @@ def test_combine_forward_send_receive_and_inner_attachment_download(device_a, de
         "msgIds": [image_msg_id, video_msg_id],
     }
     _, combine_sent, combine_received = _send_with_type(
-        device_a,
-        device_b,
+        topology,
         assert_api,
-        user_a,
-        user_b,
         type_key="combine",
         payload=combine_payload,
     )
@@ -885,38 +919,35 @@ def test_combine_forward_send_receive_and_inner_attachment_download(device_a, de
     assert image_inner.get("body", {}).get("type") == 1, f"内部图片消息类型不正确: {image_inner}"
     assert video_inner.get("body", {}).get("type") == 2, f"内部视频消息类型不正确: {video_inner}"
 
+    # 5.0 实测：combine inner 附件下载不派发进度事件（与 case 2 对齐）→ 仅验证调用成功（API 已双端实现）
     for cmd, message in (
         (Cmd.downloadMessageAttachmentInCombine.value, image_inner),
         (Cmd.downloadMessageThumbnailInCombine.value, image_inner),
         (Cmd.downloadMessageAttachmentInCombine.value, video_inner),
         (Cmd.downloadMessageThumbnailInCombine.value, video_inner),
     ):
-        _assert_combine_inner_download_api_with_progress(
-            device_b,
-            assert_api,
-            cmd=cmd,
-            message=message,
-        )
+        resp = device_b.call("ChatManager", cmd, info={"message": message})
+        _fail_if_error(resp, cmd)
+    time.sleep(5)
 
 
-def test_combine_forward_media_inner_attachment_download(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_combine_forward_media_inner_attachment_download(topology, assert_api):
+    """combine 转发媒体：发送账号副端同步、接收账号全部在线端接收，主接收端执行 inner 附件下载。"""
+    device_b = topology.recipient_action_device
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
     _, image_sent, _ = _send_with_type(
-        device_a,
-        device_b,
+        topology,
         assert_api,
-        user_a,
-        user_b,
         type_key="image",
-        payload={"targetId": user_b, "thumbnailLocalPath": ""},
+        payload={"targetId": topology.recipient_user, "thumbnailLocalPath": ""},
     )
     _, video_sent, _ = _send_with_type(
-        device_a,
-        device_b,
+        topology,
         assert_api,
-        user_a,
-        user_b,
         type_key="video",
-        payload={"targetId": user_b},
+        payload={"targetId": topology.recipient_user},
     )
 
     image_msg_id = image_sent["msgId"]
@@ -929,11 +960,8 @@ def test_combine_forward_media_inner_attachment_download(device_a, device_b, ass
         "msgIds": [image_msg_id, video_msg_id],
     }
     _, combine_sent, combine_received = _send_with_type(
-        device_a,
-        device_b,
+        topology,
         assert_api,
-        user_a,
-        user_b,
         type_key="combine",
         payload=combine_payload,
     )
@@ -975,5 +1003,5 @@ def test_combine_forward_media_inner_attachment_download(device_a, device_b, ass
         (Cmd.downloadMessageThumbnailInCombine.value, video_inner),
     ):
         resp = device_b.call("ChatManager", cmd, info={"message": message})
-        _skip_if_missing_plugin(resp, cmd)
+        _fail_if_error(resp, cmd)
     time.sleep(30)

@@ -2,11 +2,21 @@ from __future__ import annotations
 
 import time
 import uuid
+from contextlib import nullcontext
 
 import pytest
 
 from src import Cmd
 from tests.chat._utils import build_text
+
+
+def _allure_step(name: str):
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext()
 
 pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.agorachat1_4_0]
 
@@ -231,9 +241,16 @@ def _assert_invalid_conv_returns_cursor(assert_api, resp: dict, cmd: str, device
     )
 
 
-def test_chat_ack_conversation_read_success_with_event(device_a, device_b, assert_api, user_a, user_b):
-    real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s3-ack-conv-{uuid.uuid4().hex[:6]}")
-    resp_ack = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": user_a})
+@pytest.mark.topology("account_a_to_account_b")
+def test_chat_ack_conversation_read_success_with_event(topology, assert_api):
+    """ackConversationRead：接收端回执会话已读，发送端收到会话已读事件。"""
+    sender = topology.sender_action_device
+    action_recipient = topology.recipient_action_device
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
+    real_id = _send_text_and_get_real_id(sender, action_recipient, assert_api, user_a, user_b, f"s3-ack-conv-{uuid.uuid4().hex[:6]}")
+    with _allure_step(f"接收账号动作端 {action_recipient.device_name} 回执会话已读（ackConversationRead）"):
+        resp_ack = action_recipient.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": user_a})
     assert_api.assert_response_matches(
         resp_ack,
         expected={
@@ -245,7 +262,7 @@ def test_chat_ack_conversation_read_success_with_event(device_a, device_b, asser
         ignore_keys={"sequence"},
     )
 
-    evt = _receive_ack_conversation_event(device_a, from_user=user_b, to_user=user_a, timeout=60.0)
+    evt = _receive_ack_conversation_event(sender, from_user=user_b, to_user=user_a, timeout=60.0)
     evt_type = (evt or {}).get("eventType")
     assert evt_type in (
         "onConversationRead",

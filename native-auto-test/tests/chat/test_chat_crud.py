@@ -552,9 +552,11 @@ def test_chat_send_and_received(topology, assert_api):
     with _allure_step("汇总：目标账号的全部在线端均收到同一服务端消息"):
         assert received_roles == list(topology.recipient_roles)
 
-def test_chat_send_to_self_event(device_a, assert_api, user_a):
+def test_chat_send_to_self_event(device_a, device_a_sec, assert_api, user_a):
+    """发消息给自己：发送账号两个在线端（device_a + device_a_sec）均收到并落库。"""
     try:
         device_a.drain_events()
+        device_a_sec.drain_events()
     except Exception:
         pass
     content = f"self-msg-{uuid.uuid4().hex[:6]}"
@@ -611,6 +613,30 @@ def test_chat_send_to_self_event(device_a, assert_api, user_a):
         context={"tempId": temp_id, "user": user_a, "content": content},
         ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState", "deliverOnlineOnly", "targetLanguages", "translations"},
     )
+
+    for endpoint in (device_a, device_a_sec):
+        with _allure_step(
+            f"发送账号端 {endpoint.device_name} 收到发给自己的消息（onMessagesReceived）并完成本地落库"
+        ):
+            evt_synced = _wait_message_event(
+                endpoint,
+                Cmd.onMessagesReceived.value,
+                real_id=str(real_id),
+                content=content,
+            )
+            _assert_text_message_event(
+                assert_api, evt_synced, event_type=Cmd.onMessagesReceived.value,
+                real_id=str(real_id), user_a=user_a, user_b=user_a,
+                content=content, direction=0, conv_id=user_a,
+                has_read=True, has_deliver_ack=None,
+            )
+            _assert_message_lookup(
+                assert_api,
+                endpoint.call("ChatManager", Cmd.getMessage.value, info={"msgId": str(real_id)}),
+                device_name=endpoint.device_name, real_id=str(real_id),
+                user_a=user_a, user_b=user_a, content=content,
+                direction=0, conv_id=user_a, has_read=True,
+            )
 
 
 # ======================== Read ========================

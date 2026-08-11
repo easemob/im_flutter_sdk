@@ -185,10 +185,10 @@ def _send_type_and_receive(
         expected_body = {
             "type": 4,
             "displayName": "voice.mp3",
-            "fileStatus": 3,
             "duration": payload["duration"],
         }
-        body_ignore = {"localPath", "remotePath", "secret", "fileSize"}
+        # fileStatus 属上传时序（响应时 0，完成后 3）→ 忽略
+        body_ignore = {"localPath", "remotePath", "secret", "fileSize", "fileStatus"}
     elif type_key == "cmd":
         expected_body = {
             "type": 6,
@@ -213,7 +213,6 @@ def _send_type_and_receive(
                 "convId": "{{toUser}}",
                 "chatType": 0,
                 "direction": 0,
-                "status": 1,
                 "hasRead": True,
                 "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
@@ -223,7 +222,7 @@ def _send_type_and_receive(
         },
         context={"tempId": temp_id, "fromUser": user_a, "toUser": user_b},
         ignore_keys={
-            "sequence", "serverTime", "localTime", "broadcast", "onlineState",
+            "sequence", "serverTime", "localTime", "broadcast", "onlineState", "status",
             *body_ignore,
         },
     )
@@ -345,7 +344,7 @@ def test_chat_missing_location_message_send_receive(topology, assert_api):
                 "result": {
                     "msgId": temp_id, "from": sender_user, "to": recipient_user,
                     "convId": recipient_user, "chatType": 0, "direction": 0,
-                    "status": 0, "hasRead": True, "needReadReceipt": False, "isThread": False,
+                    "hasRead": True, "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False, "body": body,
                 },
             },
@@ -463,7 +462,6 @@ def test_chat_missing_custom_message_send_receive(topology, assert_api):
                     "convId": recipient_user,
                     "chatType": 0,
                     "direction": 0,
-                    "status": 0,
                     "hasRead": True,
                     "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False,
@@ -545,6 +543,7 @@ def test_chat_missing_custom_message_send_receive(topology, assert_api):
         ("custom", {"event": "batch1-delivery-custom", "params": {"k": "v"}}),
     ],
 )
+@pytest.mark.skip(reason="5.0 无送达回执（DELIVER_ACK）机制，onMessageSuccess 后不发送达回执")
 def test_chat_missing_message_delivery_ack(device_a, device_b, assert_api, user_a, user_b, type_key, payload):
     setting = device_a.call("Client", Cmd.updateDeliveryAckSetting.value, info={"requireDeliveryAck": True})
     assert_api.assert_response_matches(

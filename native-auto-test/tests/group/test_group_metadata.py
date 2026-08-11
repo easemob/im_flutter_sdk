@@ -3,9 +3,20 @@ from __future__ import annotations
 
 import time
 
+from contextlib import nullcontext
+
 import pytest
 
-from src import Cmd, GroupChangeEvent
+from src import Cmd
+
+
+def _allure_step(name: str):
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext(), GroupChangeEvent
 from tests.group.group_helpers import (
     assert_group_events,
     assert_group_snapshot,
@@ -75,7 +86,9 @@ def _assert_no_specification_updated_event(device, *, group_id: str, timeout: fl
     assert not seen, f"操作者端不应收到规格变更回调: groupId={group_id}, seen={seen}"
 
 
-def test_group_update_subject(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_group_update_subject(device_a, device_b, device_b_sec, assert_api, user_a, user_b, topology):
+    """群主更新群名称：变更事件同步到群成员全部在线端。"""
     group_name = new_group_name("subject")
     group_id = ""
     new_subject = new_group_name("subject_new")
@@ -110,6 +123,15 @@ def test_group_update_subject(device_a, device_b, assert_api, user_a, user_b):
             expected_name="",
             expected_desc="auto-test group",
         )
+        with _allure_step("接收账号副端 sec_b 同步验证收到事件"):
+            _assert_specification_updated_event(
+                sec_b,
+                assert_api,
+                group_id=group_id,
+                expected_name="",
+                expected_desc="auto-test group",
+            )
+
         _assert_no_specification_updated_event(device_a, group_id=group_id)
 
         resp_local = device_a.call("GroupManager", Cmd.getGroupWithId.value, info={"groupId": group_id})
@@ -145,7 +167,9 @@ def test_group_update_subject(device_a, device_b, assert_api, user_a, user_b):
             destroy_group(device_a, assert_api, group_id, device_b=device_b)
 
 
-def test_group_update_description(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_group_update_description(device_a, device_b, device_b_sec, assert_api, user_a, user_b, topology):
+    """群主更新群描述：变更事件同步到群成员全部在线端。"""
     group_name = new_group_name("desc")
     group_id = ""
     new_desc = new_group_name("desc_new")
@@ -180,6 +204,15 @@ def test_group_update_description(device_a, device_b, assert_api, user_a, user_b
             expected_name=group_name,
             expected_desc="",
         )
+        with _allure_step("接收账号副端 sec_b 同步验证收到事件"):
+            _assert_specification_updated_event(
+                sec_b,
+                assert_api,
+                group_id=group_id,
+                expected_name=group_name,
+                expected_desc="",
+            )
+
         _assert_no_specification_updated_event(device_a, group_id=group_id)
 
         resp_local = device_a.call("GroupManager", Cmd.getGroupWithId.value, info={"groupId": group_id})

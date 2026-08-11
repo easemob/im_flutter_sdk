@@ -1,16 +1,27 @@
-name: android-500-multi-device-default
+# =============================================================
+# 场景：Android 5.0 多设备（2 账号 × 2 端 = 4 模拟器）
+# 拓扑模型：account_a → device_a/device_a_sec；account_b → device_b/device_b_sec
+# case 用 @pytest.mark.topology("account_a_to_account_b") 引用拓扑，
+# topology fixture 提供动作端 + 全部在线端供遍历（场景加端 case 不改）。
+# =============================================================
 
-# 账号 C 保留给现有群组 case 的 user_c；本场景不需要 C 的 Runner。
+name: android-500-multi-device-default
+# 场景名（--scenario 选择，Allure 显示）
+
 accounts:
+  # 逻辑用户：provision=rest 表示用 REST API 自动创建测试账号（跑完删除）
   account_a:
     provision: rest
   account_b:
     provision: rest
+  # account_c 保留给群组 case 的 user_c；本场景未配设备（无 Runner，不能登录）
   account_c:
     provision: rest
 
-# 模拟器由使用者预先启动。请只在首次配置时按 adb devices 的实际输出修改 serial。
 devices:
+  # 每个 device = 一个端（模拟器 + App 实例）；role 名即 case 的 fixture 名（device_a...）
+  # device_name: Allure 展示名 | platform: android/ios | sdk_version: 被测版本
+  # account: 登录账号（同 account = 多端在线）| serial: adb 序列号（只首次按 adb devices 改）
   device_a:
     device_name: deviceA
     platform: android
@@ -40,27 +51,21 @@ devices:
     serial: emulator-5560
 
 topologies:
-  account_b_to_account_a:
-    sender:
-      account: account_b
-      action_device: device_b
-    recipient:
-      account: account_a
-      # 接收账号的所有在线端都参与收消息断言；需要回执、已读等后续动作时由此端执行。
-      action_device: device_a
-
+  # 拓扑 = "发送方 → 接收方"链路；case 遍历 sender_devices/recipient_devices
   account_a_to_account_b:
     sender:
       account: account_a
-      action_device: device_a
-      include_all_devices: true
+      action_device: device_a          # 动作端：唯一调用 API 的端
+      include_all_devices: true        # true=包含发送账号全部端（验证多端同步）；
+                                       # false=只含动作端（默认，基础投递用）
     recipient:
       account: account_b
-      action_device: device_b
+      action_device: device_b          # 接收动作端：回执/已读等后续动作由它执行
+                                       #（接收端默认全端，无需写 include_all_devices）
 
 runner:
-  start_emulators: false
-  device_ready_timeout: 180
-  hello_timeout: 30
-  start_retry: 1
-  keep_device_alive: true
+  start_emulators: false       # false=模拟器预先手动启动；true=自动启动（需 avd）
+  device_ready_timeout: 180    # 设备/App 就绪等待秒数
+  hello_timeout: 30            # App 与本地 server 握手超时
+  start_retry: 1               # App 启动重试次数
+  keep_device_alive: true      # true=跑完保留模拟器（方便复跑）；false=跑完关闭
