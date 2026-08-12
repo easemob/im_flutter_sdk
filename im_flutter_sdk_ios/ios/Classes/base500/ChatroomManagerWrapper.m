@@ -413,7 +413,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:(aChatroom ? [aChatroom toJson] : nil)];
     }];
 }
 
@@ -428,7 +428,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:(aChatroom ? [aChatroom toJson] : nil)];
     }];
 }
 
@@ -445,7 +445,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:(aChatroom ? [aChatroom toJson] : nil)];
     }];
 }
 
@@ -462,7 +462,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:(aChatroom ? [aChatroom toJson] : nil)];
     }];
 }
 
@@ -479,7 +479,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:(aChatroom ? [aChatroom toJson] : nil)];
     }];
 }
 
@@ -496,7 +496,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:(aChatroom ? [aChatroom toJson] : nil)];
     }];
 }
 
@@ -513,7 +513,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:(aChatroomp ? [aChatroomp toJson] : nil)];
     }];
 }
 
@@ -530,7 +530,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:(aChatroom ? [aChatroom toJson] : nil)];
     }];
 }
 
@@ -549,7 +549,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:(aChatroom ? [aChatroom toJson] : nil)];
     }];
 }
 
@@ -566,7 +566,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:(aChatroom ? [aChatroom toJson] : nil)];
     }];
 }
 
@@ -596,6 +596,7 @@
                                                fromChatroom:roomId
                                                  completion:^(EMChatroom *aChatroom, EMError *aError)
       {
+        // 对齐 Android（updateObject(null)）：白名单操作成功返回 null（非 room）
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
@@ -608,6 +609,7 @@
     NSArray *ary = param[@"members"];
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.roomManager removeWhiteListMembers:ary fromChatroom:roomId completion:^(EMChatroom *aChatroom, EMError *aError) {
+        // 对齐 Android（updateObject(null)）：白名单操作成功返回 null（非 room）
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
@@ -901,7 +903,7 @@
     [ListenerHandle.sharedInstance addHandle:^{
         NSMutableDictionary *map = @{
             @"type":@"onRoomAnnouncementChanged",
-            @"groupId":aChatroom.chatroomId,
+            @"roomId":aChatroom.chatroomId,
         }.mutableCopy;
         if(aAnnouncement != nil) {
             map[@"announcement"] = aAnnouncement;

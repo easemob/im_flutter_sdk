@@ -236,8 +236,11 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
 
     private void loadMsgWithId(JSONObject params, String channelName, Result result) throws JSONException {
         String msgId = params.getString("msgId");
+        // cmd 语义 = 会话级（ConversationManager.loadMsgWithId，传 conv）→ Conversation.getMessage（对齐 iOS + cmd 归属）
+        ConversationParams conversationParams = new ConversationParams(params);
         asyncRunnable(()->{
-            EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
+            EMConversation conversation = conversationParams.getConversation();
+            EMMessage msg = conversation.getMessage(msgId);
             if(msg == null) {
                 onSuccess(result, channelName, null);
             }else {

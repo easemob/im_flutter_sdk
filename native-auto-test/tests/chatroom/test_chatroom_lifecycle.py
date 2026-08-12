@@ -106,9 +106,27 @@ def test_chatroom_fetch_room_info_with_members_from_server(device_a, device_b, a
         result = resp.get("result")
         assert isinstance(result, dict), f"fetchChatRoomInfoFromServer result 应为 dict: {resp}"
         members = result.get("memberList")
-        assert isinstance(members, list), f"fetchMembers=true 时 memberList 应为 list: {resp}"
-        assert user_a not in members, f"fetchMembers=true 的普通成员列表不应包含 owner: user_a={user_a}, members={members}"
-        assert user_b in members, f"memberList 缺少加入成员: user_b={user_b}, members={members}"
+        assert isinstance(members, list), f"fetchChatRoomInfoFromServer memberList 应为 list: {resp}"
+        # 5.0 fetchChatRoomFromServer 不带成员（fetchMembers 参数已移除，成员单独分页）→ memberList 为空
+        # 成员验证改用 fetchChatRoomMembers 分页拉取
+        members_resp = device_a.call(
+            "ChatRoomManager",
+            Cmd.fetchChatRoomMembers.value,
+            info={"roomId": room_id, "cursor": "", "pageSize": 20},
+        )
+        assert_api.assert_response_matches(
+            members_resp,
+            expected={
+                "manager": "ChatRoomManager",
+                "cmd": Cmd.fetchChatRoomMembers.value,
+                "device": "deviceA",
+                "result": {
+                    "cursor": "",
+                    "list": [user_b],
+                },
+            },
+            ignore_keys={"sequence"},
+        )
     finally:
         safe_delete_chatroom(room_id)
 

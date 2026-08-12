@@ -374,7 +374,8 @@ def test_chatroom_removed_and_destroyed_callbacks(device_a, device_b, assert_api
         removed_data = _event_data(removed_evt)
         assert removed_data.get("roomId") == room_id, f"成员被移除回调 roomId 不匹配: {removed_evt}"
         assert removed_data.get("participant") == user_b, f"成员被移除回调 participant 不匹配: {removed_evt}"
-        assert removed_data.get("reason"), f"成员被移除回调 reason 不能为空: {removed_evt}"
+        # 原生 reason 为 int（0 是合法移除原因枚举值）—— 只断存在，不断言 truthy
+        assert "reason" in removed_data, f"成员被移除回调缺少 reason 字段: {removed_evt}"
 
         _join_chatroom_as_b_and_wait_ready(device_b, assert_api, room_id)
         destroy_resp = device_a.call("ChatRoomManager", Cmd.destroyChatRoom.value, info={"roomId": room_id})

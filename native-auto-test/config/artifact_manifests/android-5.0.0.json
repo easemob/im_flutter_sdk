@@ -5,7 +5,7 @@
   "appVersion": "1.0.0",
   "wrapperCommit": "runtime",
   "nativeSdkSha256": "runtime",
-  "artifactSha256": "e75b23a8f19ff79073d05cbb3f681d2fe6af14713cc6d3936fdfe679a63d01f7",
+  "artifactSha256": "940ffb96a52ee5744deb74a4bb8550a6e58b7b317b535cb946a8a648660f4d41",
   "capabilities": [
     "ChatManager.ackConversationRead",
     "ChatManager.ackGroupMessageRead",

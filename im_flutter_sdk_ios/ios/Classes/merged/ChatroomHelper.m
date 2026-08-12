@@ -17,10 +17,10 @@
     ret[@"owner"] = self.owner;
     ret[@"maxUsers"] = @(self.maxOccupantsCount);
     ret[@"memberCount"] = @(self.occupantsCount);
-    ret[@"adminList"] = self.adminList;
-    ret[@"memberList"] = self.memberList;
-    ret[@"blockList"] = self.blacklist;
-    ret[@"muteList"] = self.muteList;
+    ret[@"adminList"] = self.adminList ?: @[];
+    ret[@"memberList"] = self.memberList ?: @[];
+    ret[@"blockList"] = self.blacklist ?: @[];
+    ret[@"muteList"] = self.muteList ?: @[];
     ret[@"isAllMemberMuted"] = @(self.isMuteAllMembers);
     ret[@"announcement"] = self.announcement;
     ret[@"permissionType"] = [NSNumber numberWithInteger:[EnumTools chatRoomPermissionTypeToInt:self.permissionType]];

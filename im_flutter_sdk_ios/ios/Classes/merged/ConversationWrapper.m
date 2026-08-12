@@ -480,6 +480,8 @@
 #pragma mark - load messages
 - (void)loadMsgWithId:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
 {
+    // cmd 语义 = 会话级（ConversationManager.loadMsgWithId，传 conv）→ Conversation 级 loadMessageWithId
+    // 无效 ID → iOS 原生 DB error code 3（vs Android Conversation.getMessage → null）—— 原生差异，给研发
     __weak typeof(self) weakSelf = self;
     NSString *msgId = param[@"msgId"];
     [self getConversationWithParam:param
