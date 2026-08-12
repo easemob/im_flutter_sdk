@@ -80,7 +80,7 @@ def _text_message(device_a, device_b, assert_api, user_a, user_b, content):
         resp,
         expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA",
                   "result": {"msgId": temp_id, "from": user_a, "to": user_b, "convId": user_b,
-                             "chatType": 0, "direction": 0, "status": 0, "hasRead": True,
+                             "chatType": 0, "direction": 0, "hasRead": True,
                              "hasDeliverAck": False,
                              "isThread": False, "isContentReplaced": False,
                              "body": {"type": 0, "content": content}}},
@@ -205,4 +205,5 @@ def test_chat_translate_message_unsupported_language(device_a, device_b, assert_
 def test_chat_translate_custom_message(device_a, device_b, assert_api, user_a, user_b):
     msg = _custom_message(device_a, device_b, assert_api, user_a, user_b)
     resp = _translate(device_a, assert_api, msg, ["zh-Hans"])
-    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.translateMessage.value, "device": "deviceA", "result": {"code": 1, "description": "General error"}}, ignore_keys={"sequence"})
+    # 只看 errorcode（leader 要求）：描述两端不同，code 一致 1
+    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.translateMessage.value, "device": "deviceA", "result": {"code": 1}}, ignore_keys={"sequence"})

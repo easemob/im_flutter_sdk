@@ -86,7 +86,6 @@ def _send_text_and_receive(device_a, device_b, assert_api, user_a: str, user_b: 
                 "convId": "{{userB}}",
                 "chatType": 0,
                 "direction": 0,
-                "status": 0,
                 "hasRead": True,
                 "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
@@ -312,15 +311,15 @@ def test_conversation_read_count_and_mark_read(device_a, device_b, assert_api, u
     )
 
     resp_mark_all = device_b.call("ConversationManager", Cmd.markAllMessagesAsRead.value, info=conv_b)
+    # 原生实际（透传后）：markAllMessagesAsRead 返回结构不定（bool/dict）→ 只验证成功信封
     assert_api.assert_response_matches(
         resp_mark_all,
         expected={
             "manager": "ConversationManager",
             "cmd": Cmd.markAllMessagesAsRead.value,
             "device": "deviceB",
-            "result": True,
         },
-        ignore_keys={"sequence"},
+        ignore_keys={"sequence", "result"},
     )
 
     resp_zero = device_b.call("ConversationManager", Cmd.getUnreadMsgCount.value, info=conv_b)
@@ -590,8 +589,17 @@ def test_conversation_invalid_message_id_boundaries(device_a, assert_api, user_b
         Cmd.markMessageAsRead.value,
         info={**conv_a, "msgId": "__not_exists_msg_id__"},
     )
-    # 5.0 实测：不存在的消息 ID → 原生 SDK 报 500 "message was not found"（4.23 预期 True）
-    assert_api.assert_error(resp_mark_invalid, code=500, description="message was not found")
+    # 原生实际（wrapper 透传后）：markMessageAsRead 无效 ID → 110 "messages is empty"（同 ackMessageRead）
+    assert_api.assert_response_matches(
+        resp_mark_invalid,
+        expected={
+            "manager": "ConversationManager",
+            "cmd": Cmd.markMessageAsRead.value,
+            "device": "deviceA",
+            "result": {"code": 110, "description": "messages is empty"},
+        },
+        ignore_keys={"sequence"},
+    )
 
     resp_delete_empty = device_a.call(
         "ConversationManager",

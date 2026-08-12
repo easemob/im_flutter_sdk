@@ -98,7 +98,6 @@ def test_chat_modify_custom_message_content_changed_event(topology, assert_api):
                 "convId": "{{toUser}}",
                 "chatType": 0,
                 "direction": 0,
-                "status": 0,
                 "hasRead": True,
                 "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,

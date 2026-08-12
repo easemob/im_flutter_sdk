@@ -394,7 +394,7 @@
     __weak typeof(self) weakSelf = self;
     NSArray *usernames = param[@"usernames"];
     [EMClient.sharedClient.contactManager saveBlackList:usernames completion:^(EMError * _Nullable aError) {
-        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:@(!aError)];
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:(aError == nil ? @YES : @NO)];
     }];
 }
 @end

@@ -711,7 +711,6 @@ def _send_text_message_with_webhook_env(
                 "convId": "{{toUser}}",
                 "chatType": 0,
                 "direction": 0,
-                "status": 0,
                 "hasRead": True,
                 "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,

@@ -1,5 +1,6 @@
 """Group 共享文件（群主/管理员正常链路 + 异常）。"""
 from __future__ import annotations
+from contextlib import nullcontext
 
 import pytest
 
@@ -15,6 +16,15 @@ from tests.group.group_helpers import (
 
 
 pytestmark = [pytest.mark.client, pytest.mark.group]
+
+
+def _allure_step(name: str):
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext()
 
 
 _NONEXISTENT_GROUP_ID = "nonexistent_group_999999"
@@ -132,7 +142,7 @@ def _assert_file_list_matches_event(
 
 def _upload_remove_and_assert_peer_events(
     operator_device,
-    observer_device,
+    observer_devices,
     assert_api,
     *,
     operator_device_name: str,
@@ -155,19 +165,22 @@ def _upload_remove_and_assert_peer_events(
         ignore_keys={"sequence"},
     )
 
-    added_events = collect_group_events(
-        observer_device,
-        expected_event_types={"onGroupSharedFileAdded"},
-        group_id=group_id,
-        required_all_event_types={"onGroupSharedFileAdded"},
-        timeout=20.0,
-    )
-    shared_file = _assert_shared_file_added_event(
-        assert_api,
-        added_events[0],
-        group_id=group_id,
-        owner=operator,
-    )
+    shared_file = None
+    with _allure_step("owner 账号全部在线端收到共享文件新增事件（onGroupSharedFileAdded）"):
+        for __d__ in observer_devices:
+            added_events = collect_group_events(
+                __d__,
+                expected_event_types={"onGroupSharedFileAdded"},
+                group_id=group_id,
+                required_all_event_types={"onGroupSharedFileAdded"},
+                timeout=20.0,
+            )
+            shared_file = _assert_shared_file_added_event(
+                assert_api,
+                added_events[0],
+                group_id=group_id,
+                owner=operator,
+            )
     assert_no_group_event(
         operator_device,
         group_id=group_id,
@@ -199,22 +212,24 @@ def _upload_remove_and_assert_peer_events(
         ignore_keys={"sequence"},
     )
 
-    deleted_events = collect_group_events(
-        observer_device,
-        expected_event_types={"onGroupSharedFileDeleted"},
-        group_id=group_id,
-        required_all_event_types={"onGroupSharedFileDeleted"},
-        timeout=10.0,
-    )
-    assert_api.assert_response_matches(
-        deleted_events[0],
-        expected={
-            "type": "event",
-            "eventType": "onGroupSharedFileDeleted",
-            "data": {"groupId": group_id, "fileId": file_id},
-        },
-        ignore_keys={"timestamp", "sequence"},
-    )
+    with _allure_step("owner 账号全部在线端收到共享文件删除事件（onGroupSharedFileDeleted）"):
+        for __d__ in observer_devices:
+            deleted_events = collect_group_events(
+                __d__,
+                expected_event_types={"onGroupSharedFileDeleted"},
+                group_id=group_id,
+                required_all_event_types={"onGroupSharedFileDeleted"},
+                timeout=10.0,
+            )
+            assert_api.assert_response_matches(
+                deleted_events[0],
+                expected={
+                    "type": "event",
+                    "eventType": "onGroupSharedFileDeleted",
+                    "data": {"groupId": group_id, "fileId": file_id},
+                },
+                ignore_keys={"timestamp", "sequence"},
+            )
     assert_no_group_event(
         operator_device,
         group_id=group_id,
@@ -290,20 +305,18 @@ def test_group_owner_upload_remove_shared_file_notifies_member(
             )
 
 
+@pytest.mark.topology("account_a_to_account_b")
 def test_group_admin_upload_remove_shared_file_notifies_owner(
     device_a,
     device_b,
     assert_api,
     user_a,
     user_b,
+    topology,
 ):
-    """
-    前置：A 为群主、B 已入群；A 将 B 提升为管理员并消费双方管理员变更事件窗口。
-    步骤：管理员 B 不传 filePath 上传 Android 本地默认素材；群主 A 接收新增事件；B 拉取
-    文件列表并删除；A 接收删除事件；B 再次拉取列表。
-    预期与断言：管理员具备上传/删除权限；同步响应、文件字段、跨接口 fileId 关联和最终
-    空列表与群主场景一致；观察者 A 收到两类事件，操作者 B 不收到同类事件。
-    """
+    """管理员 B 上传/删除共享文件：新增/删除事件同步到 owner 账号（A）全部在线端；B 全端收管理员提升事件。"""
+    senders = topology.sender_devices
+    recipients = topology.recipient_devices
     group_id = ""
     try:
         group_id, _ = create_group(
@@ -336,30 +349,34 @@ def test_group_admin_upload_remove_shared_file_notifies_owner(
             },
             ignore_keys={"sequence", "result"},
         )
-        admin_events = collect_group_events(
-            device_b,
-            expected_event_types={"onGroupAdminAdded"},
-            group_id=group_id,
-            required_all_event_types={"onGroupAdminAdded"},
-            timeout=10.0,
-        )
-        assert_group_events(
-            assert_api,
-            admin_events,
-            expected_event_types={"onGroupAdminAdded"},
-            group_id=group_id,
-            required_all_event_types={"onGroupAdminAdded"},
-            expected_member=user_b,
-        )
-        assert_no_group_event(
-            device_a,
-            group_id=group_id,
-            event_types={"onGroupAdminAdded"},
-        )
+        with _allure_step("B 账号全部在线端收到管理员提升事件（onGroupAdminAdded）"):
+            for __d__ in recipients:
+                admin_events = collect_group_events(
+                    __d__,
+                    expected_event_types={"onGroupAdminAdded"},
+                    group_id=group_id,
+                    required_all_event_types={"onGroupAdminAdded"},
+                    timeout=10.0,
+                )
+                assert_group_events(
+                    assert_api,
+                    admin_events,
+                    expected_event_types={"onGroupAdminAdded"},
+                    group_id=group_id,
+                    required_all_event_types={"onGroupAdminAdded"},
+                    expected_member=user_b,
+                )
+        with _allure_step("A 账号全部在线端不收到管理员提升事件"):
+            for __d__ in senders:
+                assert_no_group_event(
+                    __d__,
+                    group_id=group_id,
+                    event_types={"onGroupAdminAdded"},
+                )
 
         _upload_remove_and_assert_peer_events(
             device_b,
-            device_a,
+            senders,
             assert_api,
             operator_device_name="deviceB",
             group_id=group_id,

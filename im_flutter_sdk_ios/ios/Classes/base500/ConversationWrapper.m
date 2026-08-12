@@ -263,9 +263,13 @@
 }
 
 - (void)markMessageAsRead:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    // iOS 5.0 移除会话级已读标记（改用消息级 sendMessageReadReceipts）
-    NSError *err = [NSError errorWithDomain:@"im_flutter_sdk" code:110 userInfo:@{NSLocalizedDescriptionKey:@"not supported in iOS 5.0"}];
-    [self wrapperCallBack:result channelName:aChannelName error:err object:nil];
+    // 5.0 改用消息级 sendMessageReadReceipts（与 Android asyncSendMessageReadReceipts 一致）
+    __weak typeof(self) weakSelf = self;
+    NSString *msgId = param[@"msgId"];
+    EMChatMessage *msg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msgId];
+    [EMClient.sharedClient.chatManager sendMessageReadReceipts:msg ? @[msg] : @[] completion:^(EMError * _Nullable error) {
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:error object:nil];
+    }];
 }
 
 - (void)syncConversationExt:(NSDictionary *)param
@@ -289,9 +293,12 @@
                   channelName:(NSString *)aChannelName
                        result:(FlutterResult)result
 {
-    // iOS 5.0 移除会话级已读标记（改用消息级 sendMessageReadReceipts）
-    NSError *err = [NSError errorWithDomain:@"im_flutter_sdk" code:110 userInfo:@{NSLocalizedDescriptionKey:@"not supported in iOS 5.0"}];
-    [self wrapperCallBack:result channelName:aChannelName error:err object:nil];
+    // 5.0 改用 clearConversationUnreadMessageCount（与 Android asyncClearConversationUnreadMessageCount 一致）
+    __weak typeof(self) weakSelf = self;
+    NSString *convId = param[@"convId"];
+    [EMClient.sharedClient.chatManager clearConversationUnreadMessageCount:convId completion:^(EMError * _Nullable error) {
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:error object:nil];
+    }];
 }
 
 - (void)insertMessage:(NSDictionary *)param
@@ -310,7 +317,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error
-                           object:@(!error)];
+                           object:(error == nil ? @YES : @NO)];
     }];
 }
 
@@ -330,7 +337,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error
-                           object:@(!error)];
+                           object:(error == nil ? @YES : @NO)];
     }];
 }
 
@@ -346,20 +353,14 @@
         EMChatMessage *msg = [EMChatMessage fromJson:msgDict];
         
         EMError *error = nil;
+        // 【透传原生】不本地拦截（dbMsg nil 也继续）
         EMChatMessage *dbMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
-        if(dbMsg == nil) {
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:[EMError errorWithDescription:@"The message is invalid." code:EMErrorMessageInvalid]
-                               object:nil];
-            return;
-        }
        [Helper mergeMessage:msg withDBMessage:dbMsg];
        [conversation updateMessageChange:dbMsg error:&error];
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error
-                           object:@(!error)];
+                           object:(error == nil ? @YES : @NO)];
     }];
 }
 
@@ -409,7 +410,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error
-                           object:@(!error)];
+                           object:(error == nil ? @YES : @NO)];
     }];
 }
 
@@ -427,7 +428,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:nil
-                           object:@(!error)];
+                           object:(error == nil ? @YES : @NO)];
     }];
 }
 
@@ -442,7 +443,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error
-                           object:@(!error)];
+                           object:(error == nil ? @YES : @NO)];
     }];
 }
 
@@ -457,7 +458,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error
-                           object:@(!error)];
+                           object:(error == nil ? @YES : @NO)];
     }];
 }
 

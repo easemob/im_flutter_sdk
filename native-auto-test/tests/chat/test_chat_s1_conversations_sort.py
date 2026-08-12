@@ -45,7 +45,6 @@ def _send_text_and_get_real_id(
                 "convId": to_user,
                 "chatType": 0,
                 "direction": 0,
-                "status": 0,
                 "hasRead": True,
                 "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,

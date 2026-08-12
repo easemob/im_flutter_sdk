@@ -109,7 +109,8 @@ def _assert_failed_send_envelopes(
             "data": {
                 "msgId": temp_id,
                 "msg": {**message, "status": 3, "body": error_body},
-                "error": {"code": error_code, "description": error_description},
+                # 只看 errorcode（leader 要求）：描述两端不同，code 一致
+                "error": {"code": error_code},
             },
         },
         ignore_keys=ignore_keys,

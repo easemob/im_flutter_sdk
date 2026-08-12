@@ -22,7 +22,6 @@ base:
   - ChatManager.downloadMessageThumbnailInCombine
   - ChatManager.downloadThumbnail
   - ChatManager.fetchConversationsByOptions
-  - ChatManager.fetchConversationsFromServerWithPage
   - ChatManager.fetchHistoryMessages
   - ChatManager.fetchHistoryMessagesByOptions
   - ChatManager.fetchPinnedMessages
@@ -32,12 +31,9 @@ base:
   - ChatManager.filterConversationsFromDB
   - ChatManager.getConversation
   - ChatManager.getConversationsByType
-  - ChatManager.getConversationsFromServer
-  - ChatManager.getConversationsFromServerWithCursor
   - ChatManager.getGroupMessageReadReceipts
   - ChatManager.getMessage
   - ChatManager.getMessageCount
-  - ChatManager.getPinnedConversationsFromServerWithCursor
   - ChatManager.getThreadConversation
   - ChatManager.getUnreadMessageCount
   - ChatManager.importMessages
@@ -225,7 +221,6 @@ base:
   - GroupManager.getGroupWithId
   - GroupManager.getJoinedGroups
   - GroupManager.getJoinedGroupsFromServer
-  - GroupManager.getPublicGroupsFromServer
   - GroupManager.getUsers
   - GroupManager.inviterUser
   - GroupManager.isMemberInGroupMuteList

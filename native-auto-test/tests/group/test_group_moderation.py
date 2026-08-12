@@ -1,5 +1,6 @@
 """Group moderation API（按当前稳定语义合并）。"""
 from __future__ import annotations
+from contextlib import nullcontext
 
 import pytest
 
@@ -15,6 +16,15 @@ from tests.group.group_helpers import (
 
 
 pytestmark = [pytest.mark.client, pytest.mark.group, pytest.mark.agorachat1_4_0]
+
+
+def _allure_step(name: str):
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext()
 
 
 _NONEXISTENT_GROUP_ID = "nonexistent_group_999999"
@@ -34,7 +44,10 @@ def _group_state(device_a, assert_api, group_id: str):
     return resp
 
 
-def test_group_block_unblock_members_success(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_group_block_unblock_members_success(device_a, device_b, assert_api, user_a, user_b, topology):
+    """群主封禁/解封成员：移除事件同步到接收账号全部在线端。"""
+    recipients = topology.recipient_devices
     group_id = ""
     group_name = new_group_name("mod_block")
     try:
@@ -51,28 +64,29 @@ def test_group_block_unblock_members_success(device_a, device_b, assert_api, use
             expected={"manager": "GroupManager", "cmd": Cmd.blockMembers.value, "device": "deviceA", "result": True},
             ignore_keys={"sequence"},
         )
-        removed_events = collect_group_events(
-            device_b,
-            expected_event_types={
-                GroupChangeEvent.ON_USER_REMOVED.value,
-                "onGroupUserRemoved",
-            },
-            group_id=group_id,
-            allow_missing_group_id=True,
-            required_all_event_types={"onGroupUserRemoved"},
-            timeout=10.0,
-        )
-        assert_group_events(
-            assert_api,
-            removed_events,
-            expected_event_types={
-                GroupChangeEvent.ON_USER_REMOVED.value,
-                "onGroupUserRemoved",
-            },
-            group_id=group_id,
-            allow_missing_group_id=True,
-            required_all_event_types={"onGroupUserRemoved"},
-        )
+        for device in recipients:
+            removed_events = collect_group_events(
+                device,
+                expected_event_types={
+                    GroupChangeEvent.ON_USER_REMOVED.value,
+                    "onGroupUserRemoved",
+                },
+                group_id=group_id,
+                allow_missing_group_id=True,
+                required_all_event_types={"onGroupUserRemoved"},
+                timeout=10.0,
+            )
+            assert_group_events(
+                assert_api,
+                removed_events,
+                expected_event_types={
+                    GroupChangeEvent.ON_USER_REMOVED.value,
+                    "onGroupUserRemoved",
+                },
+                group_id=group_id,
+                allow_missing_group_id=True,
+                required_all_event_types={"onGroupUserRemoved"},
+            )
         assert_group_snapshot(
             assert_api,
             _group_state(device_a, assert_api, group_id),
@@ -122,7 +136,10 @@ def test_group_block_members_non_member(device_a, assert_api, user_a, user_b):
             destroy_group(device_a, assert_api, group_id)
 
 
-def test_group_mute_unmute_members_success(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_group_mute_unmute_members_success(device_a, device_b, assert_api, user_a, user_b, topology):
+    """群主禁言/解禁成员：禁言列表变更事件同步到接收账号全部在线端。"""
+    recipients = topology.recipient_devices
     group_id = ""
     group_name = new_group_name("mod_mute")
     try:
@@ -138,27 +155,28 @@ def test_group_mute_unmute_members_success(device_a, device_b, assert_api, user_
             member_count_value=2,
             mute_list_value=[user_b],
         )
-        mute_events = collect_group_events(
-            device_b,
-            expected_event_types={
-                GroupChangeEvent.ON_MUTE_LIST_ADDED.value,
-                "onGroupMuteListAdded",
-            },
-            group_id=group_id,
-            required_all_event_types={"onGroupMuteListAdded"},
-            timeout=10.0,
-        )
-        assert_group_events(
-            assert_api,
-            mute_events,
-            expected_event_types={
-                GroupChangeEvent.ON_MUTE_LIST_ADDED.value,
-                "onGroupMuteListAdded",
-            },
-            group_id=group_id,
-            required_all_event_types={"onGroupMuteListAdded"},
-            expected_member=user_b,
-        )
+        for device in recipients:
+            mute_events = collect_group_events(
+                device,
+                expected_event_types={
+                    GroupChangeEvent.ON_MUTE_LIST_ADDED.value,
+                    "onGroupMuteListAdded",
+                },
+                group_id=group_id,
+                required_all_event_types={"onGroupMuteListAdded"},
+                timeout=10.0,
+            )
+            assert_group_events(
+                assert_api,
+                mute_events,
+                expected_event_types={
+                    GroupChangeEvent.ON_MUTE_LIST_ADDED.value,
+                    "onGroupMuteListAdded",
+                },
+                group_id=group_id,
+                required_all_event_types={"onGroupMuteListAdded"},
+                expected_member=user_b,
+            )
         resp_unmute = device_a.call("GroupManager", Cmd.unMuteMembers.value, info={"groupId": group_id, "members": [user_b]})
         assert_group_snapshot(
             assert_api,
@@ -170,33 +188,37 @@ def test_group_mute_unmute_members_success(device_a, device_b, assert_api, user_
             member_count_value=2,
             mute_list_value=[],
         )
-        unmute_events = collect_group_events(
-            device_b,
-            expected_event_types={
-                GroupChangeEvent.ON_MUTE_LIST_REMOVED.value,
-                "onGroupMuteListRemoved",
-            },
-            group_id=group_id,
-            required_all_event_types={"onGroupMuteListRemoved"},
-            timeout=10.0,
-        )
-        assert_group_events(
-            assert_api,
-            unmute_events,
-            expected_event_types={
-                GroupChangeEvent.ON_MUTE_LIST_REMOVED.value,
-                "onGroupMuteListRemoved",
-            },
-            group_id=group_id,
-            required_all_event_types={"onGroupMuteListRemoved"},
-            expected_member=user_b,
-        )
+        for device in recipients:
+            unmute_events = collect_group_events(
+                device,
+                expected_event_types={
+                    GroupChangeEvent.ON_MUTE_LIST_REMOVED.value,
+                    "onGroupMuteListRemoved",
+                },
+                group_id=group_id,
+                required_all_event_types={"onGroupMuteListRemoved"},
+                timeout=10.0,
+            )
+            assert_group_events(
+                assert_api,
+                unmute_events,
+                expected_event_types={
+                    GroupChangeEvent.ON_MUTE_LIST_REMOVED.value,
+                    "onGroupMuteListRemoved",
+                },
+                group_id=group_id,
+                required_all_event_types={"onGroupMuteListRemoved"},
+                expected_member=user_b,
+            )
     finally:
         if group_id:
             destroy_group(device_a, assert_api, group_id)
 
 
-def test_group_mute_all_unmute_all_success(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_group_mute_all_unmute_all_success(device_a, device_b, assert_api, user_a, user_b, topology):
+    """群主全员禁言/解禁：状态变更事件同步到接收账号全部在线端。"""
+    recipients = topology.recipient_devices
     group_id = ""
     group_name = new_group_name("mod_mute_all")
     try:
@@ -214,28 +236,29 @@ def test_group_mute_all_unmute_all_success(device_a, device_b, assert_api, user_
         )
         # SDK muteAllMembers 可能不向成员推送 onAllGroupMemberMuteStateChanged 事件
         # （群主 API 调用成功且返回 isAllMemberMuted=true 即可确认功能正确）
-        mute_all_events = collect_group_events(
-            device_b,
-            expected_event_types={
-                GroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED.value,
-                "onGroupAllMemberMuteStateChanged",
-            },
-            group_id=group_id,
-            allow_missing_group_id=True,
-            required_all_event_types=set(),
-            timeout=5.0,
-        )
-        assert_group_events(
-            assert_api,
-            mute_all_events,
-            expected_event_types={
-                GroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED.value,
-                "onGroupAllMemberMuteStateChanged",
-            },
-            group_id=group_id,
-            allow_missing_group_id=True,
-            required_all_event_types=set(),
-        )
+        for device in recipients:
+            mute_all_events = collect_group_events(
+                device,
+                expected_event_types={
+                    GroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED.value,
+                    "onGroupAllMemberMuteStateChanged",
+                },
+                group_id=group_id,
+                allow_missing_group_id=True,
+                required_all_event_types=set(),
+                timeout=5.0,
+            )
+            assert_group_events(
+                assert_api,
+                mute_all_events,
+                expected_event_types={
+                    GroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED.value,
+                    "onGroupAllMemberMuteStateChanged",
+                },
+                group_id=group_id,
+                allow_missing_group_id=True,
+                required_all_event_types=set(),
+            )
         resp_unmute_all = device_a.call("GroupManager", Cmd.unMuteAllMembers.value, info={"groupId": group_id})
         assert_group_snapshot(
             assert_api,
@@ -247,34 +270,38 @@ def test_group_mute_all_unmute_all_success(device_a, device_b, assert_api, user_
             member_count_value=2,
             is_all_member_muted=False,
         )
-        unmute_all_events = collect_group_events(
-            device_b,
-            expected_event_types={
-                GroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED.value,
-                "onGroupAllMemberMuteStateChanged",
-            },
-            group_id=group_id,
-            allow_missing_group_id=True,
-            required_all_event_types=set(),
-            timeout=5.0,
-        )
-        assert_group_events(
-            assert_api,
-            unmute_all_events,
-            expected_event_types={
-                GroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED.value,
-                "onGroupAllMemberMuteStateChanged",
-            },
-            group_id=group_id,
-            allow_missing_group_id=True,
-            required_all_event_types=set(),
-        )
+        for device in recipients:
+            unmute_all_events = collect_group_events(
+                device,
+                expected_event_types={
+                    GroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED.value,
+                    "onGroupAllMemberMuteStateChanged",
+                },
+                group_id=group_id,
+                allow_missing_group_id=True,
+                required_all_event_types=set(),
+                timeout=5.0,
+            )
+            assert_group_events(
+                assert_api,
+                unmute_all_events,
+                expected_event_types={
+                    GroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED.value,
+                    "onGroupAllMemberMuteStateChanged",
+                },
+                group_id=group_id,
+                allow_missing_group_id=True,
+                required_all_event_types=set(),
+            )
     finally:
         if group_id:
             destroy_group(device_a, assert_api, group_id)
 
 
-def test_group_add_remove_white_list_success(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_group_add_remove_white_list_success(device_a, device_b, assert_api, user_a, user_b, topology):
+    """群主添加/移除白名单：白名单变更事件同步到接收账号全部在线端。"""
+    recipients = topology.recipient_devices
     group_id = ""
     group_name = new_group_name("mod_white")
     try:
@@ -285,54 +312,56 @@ def test_group_add_remove_white_list_success(device_a, device_b, assert_api, use
             expected={"manager": "GroupManager", "cmd": Cmd.addWhiteList.value, "device": "deviceA", "result": True},
             ignore_keys={"sequence"},
         )
-        add_white_events = collect_group_events(
-            device_b,
-            expected_event_types={
-                GroupChangeEvent.ON_WHITE_LIST_ADDED.value,
-                "onGroupWhiteListAdded",
-            },
-            group_id=group_id,
-            required_all_event_types={"onGroupWhiteListAdded"},
-            timeout=10.0,
-        )
-        assert_group_events(
-            assert_api,
-            add_white_events,
-            expected_event_types={
-                GroupChangeEvent.ON_WHITE_LIST_ADDED.value,
-                "onGroupWhiteListAdded",
-            },
-            group_id=group_id,
-            required_all_event_types={"onGroupWhiteListAdded"},
-            expected_member=user_b,
-        )
+        for device in recipients:
+            add_white_events = collect_group_events(
+                device,
+                expected_event_types={
+                    GroupChangeEvent.ON_WHITE_LIST_ADDED.value,
+                    "onGroupWhiteListAdded",
+                },
+                group_id=group_id,
+                required_all_event_types={"onGroupWhiteListAdded"},
+                timeout=10.0,
+            )
+            assert_group_events(
+                assert_api,
+                add_white_events,
+                expected_event_types={
+                    GroupChangeEvent.ON_WHITE_LIST_ADDED.value,
+                    "onGroupWhiteListAdded",
+                },
+                group_id=group_id,
+                required_all_event_types={"onGroupWhiteListAdded"},
+                expected_member=user_b,
+            )
         resp_remove = device_a.call("GroupManager", Cmd.removeWhiteList.value, info={"groupId": group_id, "members": [user_b]})
         assert_api.assert_response_matches(
             resp_remove,
             expected={"manager": "GroupManager", "cmd": Cmd.removeWhiteList.value, "device": "deviceA", "result": True},
             ignore_keys={"sequence"},
         )
-        remove_white_events = collect_group_events(
-            device_b,
-            expected_event_types={
-                GroupChangeEvent.ON_WHITE_LIST_REMOVED.value,
-                "onGroupWhiteListRemoved",
-            },
-            group_id=group_id,
-            required_all_event_types={"onGroupWhiteListRemoved"},
-            timeout=10.0,
-        )
-        assert_group_events(
-            assert_api,
-            remove_white_events,
-            expected_event_types={
-                GroupChangeEvent.ON_WHITE_LIST_REMOVED.value,
-                "onGroupWhiteListRemoved",
-            },
-            group_id=group_id,
-            required_all_event_types={"onGroupWhiteListRemoved"},
-            expected_member=user_b,
-        )
+        for device in recipients:
+            remove_white_events = collect_group_events(
+                device,
+                expected_event_types={
+                    GroupChangeEvent.ON_WHITE_LIST_REMOVED.value,
+                    "onGroupWhiteListRemoved",
+                },
+                group_id=group_id,
+                required_all_event_types={"onGroupWhiteListRemoved"},
+                timeout=10.0,
+            )
+            assert_group_events(
+                assert_api,
+                remove_white_events,
+                expected_event_types={
+                    GroupChangeEvent.ON_WHITE_LIST_REMOVED.value,
+                    "onGroupWhiteListRemoved",
+                },
+                group_id=group_id,
+                required_all_event_types={"onGroupWhiteListRemoved"},
+                expected_member=user_b,
+            )
     finally:
         if group_id:
             destroy_group(device_a, assert_api, group_id)

@@ -38,7 +38,6 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                 "convId": user_b,
                 "chatType": 0,
                 "direction": 0,
-                "status": 0,
                 "hasRead": True,
                 "needReadReceipt": False,
                 "isThread": False,

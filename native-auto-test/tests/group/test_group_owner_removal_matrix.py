@@ -1,5 +1,6 @@
 """Group 群主转让、权限迁移与成员移除矩阵。"""
 from __future__ import annotations
+from contextlib import nullcontext
 
 import pytest
 
@@ -16,6 +17,15 @@ from tests.group.group_helpers import (
 
 
 pytestmark = [pytest.mark.client, pytest.mark.group]
+
+
+def _allure_step(name: str):
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext()
 
 
 def _fetch_group(
@@ -80,6 +90,19 @@ def _assert_owner_changed(assert_api, event: dict, *, group_id: str,
     )
 
 
+def _assert_exited_events(assert_api, events: list[dict], group_id: str, user_id: str) -> None:
+    by_type = {event["eventType"]: event for event in events}
+    assert_api.assert_response_matches(
+        by_type["onGroupMembersExited"],
+        expected={
+            "type": "event",
+            "eventType": "onGroupMembersExited",
+            "data": {"groupId": group_id, "userIds": [user_id]},
+        },
+        ignore_keys={"timestamp", "sequence"},
+    )
+
+
 def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
     logout = device.call("Client", Cmd.logout.value, info={"unbindToken": False})
     assert_api.assert_response_matches(
@@ -121,14 +144,18 @@ def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
     device.drain_events()
 
 
+@pytest.mark.topology("account_a_to_account_b")
 def test_group_transfer_owner_to_admin_normalizes_roles(
     device_a,
     device_b,
     assert_api,
     user_a,
     user_b,
+    topology,
 ):
-    """A 将群主转让给管理员 B 后，B 成为 owner，A 成为普通成员，adminList 清空。"""
+    """A 将群主转让给管理员 B：owner 变更事件同步到 A、B 账号全部在线端；B 成 owner，A 成普通成员。"""
+    senders = topology.sender_devices
+    recipients = topology.recipient_devices
     group_id = ""
     group_name = new_group_name("owner_to_admin")
     owner_is_b = False
@@ -162,24 +189,28 @@ def test_group_transfer_owner_to_admin_normalizes_roles(
         assert result.get("adminList") == [], response
         owner_is_b = True
 
-        events_a = collect_group_events(
-            device_a,
-            expected_event_types={"onGroupOwnerChanged"},
-            group_id=group_id,
-            required_all_event_types={"onGroupOwnerChanged"},
-            timeout=10.0,
-        )
-        events_b = collect_group_events(
-            device_b,
-            expected_event_types={"onGroupOwnerChanged"},
-            group_id=group_id,
-            required_all_event_types={"onGroupOwnerChanged"},
-            timeout=10.0,
-        )
-        _assert_owner_changed(assert_api, events_a[0], group_id=group_id,
-                              new_owner=user_b, old_owner=user_a)
-        _assert_owner_changed(assert_api, events_b[0], group_id=group_id,
-                              new_owner=user_b, old_owner=user_a)
+        with _allure_step("A 账号全部在线端收到 owner 变更事件（onGroupOwnerChanged）"):
+            for __d__ in senders:
+                events = collect_group_events(
+                    __d__,
+                    expected_event_types={"onGroupOwnerChanged"},
+                    group_id=group_id,
+                    required_all_event_types={"onGroupOwnerChanged"},
+                    timeout=10.0,
+                )
+                _assert_owner_changed(assert_api, events[0], group_id=group_id,
+                                      new_owner=user_b, old_owner=user_a)
+        with _allure_step("B 账号全部在线端收到 owner 变更事件（onGroupOwnerChanged）"):
+            for __d__ in recipients:
+                events = collect_group_events(
+                    __d__,
+                    expected_event_types={"onGroupOwnerChanged"},
+                    group_id=group_id,
+                    required_all_event_types={"onGroupOwnerChanged"},
+                    timeout=10.0,
+                )
+                _assert_owner_changed(assert_api, events[0], group_id=group_id,
+                                      new_owner=user_b, old_owner=user_a)
         _fetch_group(
             device_b,
             assert_api,
@@ -207,6 +238,7 @@ def test_group_transfer_owner_to_admin_normalizes_roles(
         pytest.param("empty", 600, id="empty"),
     ],
 )
+@pytest.mark.topology("account_a_to_account_b")
 def test_group_transfer_owner_target_boundaries(
     device_a,
     device_b,
@@ -216,8 +248,10 @@ def test_group_transfer_owner_target_boundaries(
     user_c,
     target_kind,
     expected_code,
+    topology,
 ):
-    """转让给当前 owner 幂等成功；其他无效目标返回稳定错误且 owner 不变。"""
+    recipients = topology.recipient_devices
+    """转让给当前 owner 幂等成功；其他无效目标返回稳定错误且 owner 不变；接收账号全部在线端不触发 owner 变更事件。"""
     group_id = ""
     group_name = new_group_name(f"owner_invalid_{target_kind}")
     target = {
@@ -257,11 +291,12 @@ def test_group_transfer_owner_target_boundaries(
             members=[user_b],
             device_name="deviceA",
         )
-        assert_no_group_event(
-            device_b,
-            group_id=group_id,
-            event_types={"onGroupOwnerChanged"},
-        )
+        for __d__ in recipients:
+            assert_no_group_event(
+                __d__,
+                group_id=group_id,
+                event_types={"onGroupOwnerChanged"},
+            )
     finally:
         if group_id:
             destroy_group(device_a, assert_api, group_id, device_b=device_b)
@@ -367,14 +402,18 @@ def test_group_non_member_cannot_transfer_ownership(
             destroy_group(device_a, assert_api, group_id, device_b=device_b)
 
 
+@pytest.mark.topology("account_a_to_account_b")
 def test_group_transfer_then_new_owner_removes_former_owner(
     device_a,
     device_b,
     assert_api,
     user_a,
     user_b,
+    topology,
 ):
-    """A 转让给 B 后，A 失去 owner 权限，B 可以将原群主 A 移出群。"""
+    """A 转让给 B 后 A 失去 owner 权限：owner 变更事件同步到 A、B 全部在线端；B 移除原群主 A 的事件同步到 A 全部在线端。"""
+    senders = topology.sender_devices
+    recipients = topology.recipient_devices
     group_id = ""
     group_name = new_group_name("remove_former_owner")
     owner_is_b = False
@@ -396,20 +435,24 @@ def test_group_transfer_then_new_owner_removes_former_owner(
         assert isinstance(transfer.get("result"), dict), transfer
         assert transfer["result"].get("owner") == user_b, transfer
         owner_is_b = True
-        collect_group_events(
-            device_a,
-            expected_event_types={"onGroupOwnerChanged"},
-            group_id=group_id,
-            required_all_event_types={"onGroupOwnerChanged"},
-            timeout=10.0,
-        )
-        collect_group_events(
-            device_b,
-            expected_event_types={"onGroupOwnerChanged"},
-            group_id=group_id,
-            required_all_event_types={"onGroupOwnerChanged"},
-            timeout=10.0,
-        )
+        with _allure_step("A 账号全部在线端消费 owner 变更事件"):
+            for __d__ in senders:
+                collect_group_events(
+                    __d__,
+                    expected_event_types={"onGroupOwnerChanged"},
+                    group_id=group_id,
+                    required_all_event_types={"onGroupOwnerChanged"},
+                    timeout=10.0,
+                )
+        with _allure_step("B 账号全部在线端消费 owner 变更事件"):
+            for __d__ in recipients:
+                collect_group_events(
+                    __d__,
+                    expected_event_types={"onGroupOwnerChanged"},
+                    group_id=group_id,
+                    required_all_event_types={"onGroupOwnerChanged"},
+                    timeout=10.0,
+                )
 
         former_owner_attempt = device_a.call(
             "GroupManager",
@@ -424,22 +467,24 @@ def test_group_transfer_then_new_owner_removes_former_owner(
             info={"groupId": group_id, "members": [user_a]},
         )
         _assert_true(assert_api, remove, cmd=Cmd.removeMembers.value, device="deviceB")
-        removed_events = collect_group_events(
-            device_a,
-            expected_event_types={"onGroupUserRemoved"},
-            group_id=group_id,
-            required_all_event_types={"onGroupUserRemoved"},
-            timeout=10.0,
-        )
-        assert_api.assert_response_matches(
-            removed_events[0],
-            expected={
-                "type": "event",
-                "eventType": "onGroupUserRemoved",
-                "data": {"groupId": group_id, "groupName": group_name},
-            },
-            ignore_keys={"timestamp", "sequence"},
-        )
+        with _allure_step("A 账号全部在线端收到被移除事件（onGroupUserRemoved）"):
+            for __d__ in senders:
+                removed_events = collect_group_events(
+                    __d__,
+                    expected_event_types={"onGroupUserRemoved"},
+                    group_id=group_id,
+                    required_all_event_types={"onGroupUserRemoved"},
+                    timeout=10.0,
+                )
+                assert_api.assert_response_matches(
+                    removed_events[0],
+                    expected={
+                        "type": "event",
+                        "eventType": "onGroupUserRemoved",
+                        "data": {"groupId": group_id, "groupName": group_name},
+                    },
+                    ignore_keys={"timestamp", "sequence"},
+                )
         _fetch_group(
             device_b,
             assert_api,
@@ -457,14 +502,17 @@ def test_group_transfer_then_new_owner_removes_former_owner(
             destroy_group(device_a, assert_api, group_id, device_b=device_b)
 
 
+@pytest.mark.topology("account_a_to_account_b")
 def test_group_remove_current_owner_is_ignored(
     device_a,
     device_b,
     assert_api,
     user_a,
     user_b,
+    topology,
 ):
-    """removeMembers 单独传当前群主时返回成功，但 owner 和成员状态不变。"""
+    recipients = topology.recipient_devices
+    """removeMembers 单独传当前群主返回成功但状态不变；接收账号全部在线端不触发移除事件。"""
     group_id = ""
     group_name = new_group_name("remove_current_owner")
     try:
@@ -493,24 +541,28 @@ def test_group_remove_current_owner_is_ignored(
             members=[user_b],
             device_name="deviceA",
         )
-        assert_no_group_event(
-            device_b,
-            group_id=group_id,
-            event_types={"onGroupUserRemoved", "onGroupMembersExited", "onGroupMemberExited"},
-        )
+        for __d__ in recipients:
+            assert_no_group_event(
+                __d__,
+                group_id=group_id,
+                event_types={"onGroupUserRemoved", "onGroupMembersExited", "onGroupMemberExited"},
+            )
     finally:
         if group_id:
             destroy_group(device_a, assert_api, group_id, device_b=device_b)
 
 
+@pytest.mark.topology("account_a_to_account_b")
 def test_group_owner_removes_admin_success(
     device_a,
     device_b,
     assert_api,
     user_a,
     user_b,
+    topology,
 ):
-    """管理员仍是可由群主移除的群成员。"""
+    recipients = topology.recipient_devices
+    """管理员仍可由群主移除：移除事件同步到接收账号全部在线端。"""
     group_id = ""
     group_name = new_group_name("remove_admin_member")
     try:
@@ -537,22 +589,23 @@ def test_group_owner_removes_admin_success(
             info={"groupId": group_id, "members": [user_b]},
         )
         _assert_true(assert_api, response, cmd=Cmd.removeMembers.value, device="deviceA")
-        removed_events = collect_group_events(
-            device_b,
-            expected_event_types={"onGroupUserRemoved"},
-            group_id=group_id,
-            required_all_event_types={"onGroupUserRemoved"},
-            timeout=10.0,
-        )
-        assert_api.assert_response_matches(
-            removed_events[0],
-            expected={
-                "type": "event",
-                "eventType": "onGroupUserRemoved",
-                "data": {"groupId": group_id, "groupName": group_name},
-            },
-            ignore_keys={"timestamp", "sequence"},
-        )
+        for __d__ in recipients:
+            removed_events = collect_group_events(
+                __d__,
+                expected_event_types={"onGroupUserRemoved"},
+                group_id=group_id,
+                required_all_event_types={"onGroupUserRemoved"},
+                timeout=10.0,
+            )
+            assert_api.assert_response_matches(
+                removed_events[0],
+                expected={
+                    "type": "event",
+                    "eventType": "onGroupUserRemoved",
+                    "data": {"groupId": group_id, "groupName": group_name},
+                },
+                ignore_keys={"timestamp", "sequence"},
+            )
         _fetch_group(
             device_a,
             assert_api,
@@ -569,6 +622,7 @@ def test_group_owner_removes_admin_success(
             destroy_group(device_a, assert_api, group_id)
 
 
+@pytest.mark.topology("account_a_to_account_b")
 @pytest.mark.parametrize("make_admin", [False, True], ids=["member", "admin"])
 def test_group_remove_other_member_permission_by_role(
     device_a,
@@ -578,8 +632,11 @@ def test_group_remove_other_member_permission_by_role(
     user_b,
     user_c,
     make_admin,
+    topology,
 ):
-    """普通成员无权移除其他成员，管理员按原生真实权限可以移除普通成员。"""
+    """普通成员无权移除其他成员；管理员移除普通成员：退出事件同步到 owner 与操作管理员账号全部在线端。"""
+    senders = topology.sender_devices
+    recipients = topology.recipient_devices
     group_id = ""
     group_name = new_group_name(f"remove_unauthorized_{int(make_admin)}")
     try:
@@ -608,31 +665,26 @@ def test_group_remove_other_member_permission_by_role(
         if make_admin:
             _assert_true(assert_api, response, cmd=Cmd.removeMembers.value, device="deviceB")
             joined_event_types = {"onGroupMembersExited", "onGroupMemberExited"}
-            owner_events = collect_group_events(
-                device_a,
-                expected_event_types=joined_event_types,
-                group_id=group_id,
-                required_all_event_types=joined_event_types,
-                timeout=10.0,
-            )
-            admin_events = collect_group_events(
-                device_b,
-                expected_event_types=joined_event_types,
-                group_id=group_id,
-                required_all_event_types=joined_event_types,
-                timeout=10.0,
-            )
-            for events in (owner_events, admin_events):
-                by_type = {event["eventType"]: event for event in events}
-                assert_api.assert_response_matches(
-                    by_type["onGroupMembersExited"],
-                    expected={
-                        "type": "event",
-                        "eventType": "onGroupMembersExited",
-                        "data": {"groupId": group_id, "userIds": [user_c]},
-                    },
-                    ignore_keys={"timestamp", "sequence"},
-                )
+            with _allure_step("owner 账号全部在线端收到成员退出事件"):
+                for __d__ in senders:
+                    owner_events = collect_group_events(
+                        __d__,
+                        expected_event_types=joined_event_types,
+                        group_id=group_id,
+                        required_all_event_types=joined_event_types,
+                        timeout=10.0,
+                    )
+                    _assert_exited_events(assert_api, owner_events, group_id, user_c)
+            with _allure_step("操作管理员账号全部在线端收到成员退出事件"):
+                for __d__ in recipients:
+                    admin_events = collect_group_events(
+                        __d__,
+                        expected_event_types=joined_event_types,
+                        group_id=group_id,
+                        required_all_event_types=joined_event_types,
+                        timeout=10.0,
+                    )
+                    _assert_exited_events(assert_api, admin_events, group_id, user_c)
             _fetch_group(
                 device_a,
                 assert_api,
@@ -662,14 +714,18 @@ def test_group_remove_other_member_permission_by_role(
             destroy_group(device_a, assert_api, group_id, device_b=device_b)
 
 
+@pytest.mark.topology("account_a_to_account_b")
 def test_group_owner_must_transfer_before_leaving(
     device_a,
     device_b,
     assert_api,
     user_a,
     user_b,
+    topology,
 ):
-    """当前群主不能退群；转让给 B 后，原群主 A 可以正常退出。"""
+    """当前群主不能退群：owner 变更事件同步到 A、B 全部在线端；原群主 A 退出后的成员退出事件同步到 B 全部在线端。"""
+    senders = topology.sender_devices
+    recipients = topology.recipient_devices
     group_id = ""
     group_name = new_group_name("owner_leave_after_transfer")
     owner_is_b = False
@@ -696,43 +752,40 @@ def test_group_owner_must_transfer_before_leaving(
         )
         assert isinstance(transfer.get("result"), dict), transfer
         owner_is_b = True
-        collect_group_events(
-            device_a,
-            expected_event_types={"onGroupOwnerChanged"},
-            group_id=group_id,
-            required_all_event_types={"onGroupOwnerChanged"},
-            timeout=10.0,
-        )
-        collect_group_events(
-            device_b,
-            expected_event_types={"onGroupOwnerChanged"},
-            group_id=group_id,
-            required_all_event_types={"onGroupOwnerChanged"},
-            timeout=10.0,
-        )
+        with _allure_step("A 账号全部在线端消费 owner 变更事件"):
+            for __d__ in senders:
+                collect_group_events(
+                    __d__,
+                    expected_event_types={"onGroupOwnerChanged"},
+                    group_id=group_id,
+                    required_all_event_types={"onGroupOwnerChanged"},
+                    timeout=10.0,
+                )
+        with _allure_step("B 账号全部在线端消费 owner 变更事件"):
+            for __d__ in recipients:
+                collect_group_events(
+                    __d__,
+                    expected_event_types={"onGroupOwnerChanged"},
+                    group_id=group_id,
+                    required_all_event_types={"onGroupOwnerChanged"},
+                    timeout=10.0,
+                )
         former_owner_leave = device_a.call(
             "GroupManager",
             Cmd.leaveGroup.value,
             info={"groupId": group_id},
         )
         _assert_true(assert_api, former_owner_leave, cmd=Cmd.leaveGroup.value, device="deviceA")
-        exited_events = collect_group_events(
-            device_b,
-            expected_event_types={"onGroupMembersExited", "onGroupMemberExited"},
-            group_id=group_id,
-            required_all_event_types={"onGroupMembersExited", "onGroupMemberExited"},
-            timeout=10.0,
-        )
-        by_type = {event["eventType"]: event for event in exited_events}
-        assert_api.assert_response_matches(
-            by_type["onGroupMembersExited"],
-            expected={
-                "type": "event",
-                "eventType": "onGroupMembersExited",
-                "data": {"groupId": group_id, "userIds": [user_a]},
-            },
-            ignore_keys={"timestamp", "sequence"},
-        )
+        with _allure_step("B 账号全部在线端收到成员退出事件"):
+            for __d__ in recipients:
+                exited_events = collect_group_events(
+                    __d__,
+                    expected_event_types={"onGroupMembersExited", "onGroupMemberExited"},
+                    group_id=group_id,
+                    required_all_event_types={"onGroupMembersExited", "onGroupMemberExited"},
+                    timeout=10.0,
+                )
+                _assert_exited_events(assert_api, exited_events, group_id, user_a)
         _fetch_group(
             device_b,
             assert_api,
@@ -750,6 +803,7 @@ def test_group_owner_must_transfer_before_leaving(
             destroy_group(device_a, assert_api, group_id, device_b=device_b)
 
 
+@pytest.mark.topology("account_a_to_account_b")
 def test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_member(
     device_a,
     device_b,
@@ -757,8 +811,10 @@ def test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_membe
     user_a,
     user_b,
     user_c,
+    topology,
 ):
-    """混合批量请求返回成功，只移除有效普通成员并忽略 owner 与非成员。"""
+    recipients = topology.recipient_devices
+    """批量移除忽略 owner/非成员、移除有效成员：移除事件同步到接收账号全部在线端。"""
     group_id = ""
     group_name = new_group_name("remove_mixed_owner")
     try:
@@ -777,22 +833,23 @@ def test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_membe
             info={"groupId": group_id, "members": [user_a, user_b, user_c]},
         )
         _assert_true(assert_api, response, cmd=Cmd.removeMembers.value, device="deviceA")
-        removed_events = collect_group_events(
-            device_b,
-            expected_event_types={"onGroupUserRemoved"},
-            group_id=group_id,
-            required_all_event_types={"onGroupUserRemoved"},
-            timeout=10.0,
-        )
-        assert_api.assert_response_matches(
-            removed_events[0],
-            expected={
-                "type": "event",
-                "eventType": "onGroupUserRemoved",
-                "data": {"groupId": group_id, "groupName": group_name},
-            },
-            ignore_keys={"timestamp", "sequence"},
-        )
+        for __d__ in recipients:
+            removed_events = collect_group_events(
+                __d__,
+                expected_event_types={"onGroupUserRemoved"},
+                group_id=group_id,
+                required_all_event_types={"onGroupUserRemoved"},
+                timeout=10.0,
+            )
+            assert_api.assert_response_matches(
+                removed_events[0],
+                expected={
+                    "type": "event",
+                    "eventType": "onGroupUserRemoved",
+                    "data": {"groupId": group_id, "groupName": group_name},
+                },
+                ignore_keys={"timestamp", "sequence"},
+            )
         _fetch_group(
             device_a,
             assert_api,

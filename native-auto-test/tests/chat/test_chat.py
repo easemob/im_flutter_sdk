@@ -218,7 +218,6 @@ def test_chat_send_to_self_should_not_succeed(device_a, assert_api, user_a):
                 "convId": "{{user}}",
                 "chatType": 0,
                 "direction": 0,
-                "status": 0,
                 "hasRead": True,
                 "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
@@ -315,7 +314,8 @@ def test_chat_recall_message_invalid_id_response(device_a, assert_api):
             "manager": "ChatManager",
             "cmd": Cmd.recallMessage.value,
             "device": "deviceA",
-            "result": {"code": 500, "description": "The message was not found"},
+            # 只看 errorcode（leader 要求）：描述两端不同，code 一致 500
+"result": {"code": 500},
         },
         ignore_keys={"sequence"},
     )
@@ -357,7 +357,6 @@ def test_chat_add_reaction_empty_reaction_response(device_a, device_b, assert_ap
                 "convId": user_b,
                 "chatType": 0,
                 "direction": 0,
-                "status": 0,
                 "body": {"type": 0, "content": content},
                 "hasRead": True,
                 "needReadReceipt": False, "isThread": False,

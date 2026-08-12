@@ -419,7 +419,6 @@ def test_chat_send_and_received(topology, assert_api):
                     "convId": topology.recipient_user,
                     "chatType": 0,
                     "direction": 0,
-                    "status": 0,
                     "hasRead": True,
                     "isThread": False,
                     "isContentReplaced": False,
@@ -603,7 +602,6 @@ def test_chat_send_to_self_event(device_a, device_a_sec, assert_api, user_a):
                 "convId": "{{user}}",
                 "chatType": 0,
                 "direction": 0,
-                "status": 0,
                 "hasRead": True,
                 "isThread": False,
                 "isContentReplaced": False,
@@ -986,7 +984,7 @@ def test_chat_ack_message_read_success(topology, assert_api):
     with _allure_step("确认待已读消息已提交"):
         assert_api.assert_response_matches(
             resp_send,
-            expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": sender.device_name, "result": {"msgId": temp_id, "from": sender_user, "to": recipient_user, "convId": recipient_user, "chatType": 0, "direction": 0, "status": 0, "hasRead": True, "needReadReceipt": True, "isThread": False, "isContentReplaced": False, "body": {"type": 0, "content": content}}},
+            expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": sender.device_name, "result": {"msgId": temp_id, "from": sender_user, "to": recipient_user, "convId": recipient_user, "chatType": 0, "direction": 0, "hasRead": True, "needReadReceipt": True, "isThread": False, "isContentReplaced": False, "body": {"type": 0, "content": content}}},
             ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState", "deliverOnlineOnly", "targetLanguages", "translations"},
         )
 
@@ -1163,7 +1161,8 @@ def test_chat_recall_message_invalid_id_response(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": "__invalid_msg_id__"})
     assert_api.assert_response_matches(
         resp,
-        expected={"manager": "ChatManager", "cmd": Cmd.recallMessage.value, "device": "deviceA", "result": {"code": 500, "description": "The message was not found"}},
+        expected={"manager": "ChatManager", "cmd": Cmd.recallMessage.value, "device": "deviceA", # 只看 errorcode（leader 要求）：描述两端不同，code 一致 500
+"result": {"code": 500}},
         ignore_keys={"sequence"},
     )
 

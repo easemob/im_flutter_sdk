@@ -1,5 +1,6 @@
 // 5.0 兼容辅助类实现
 #import "ChatManagerCompat5.h"
+#import "ConversationHelper.h"
 
 @implementation ChatCompat5
 
@@ -26,12 +27,13 @@
 }
 
 + (void)asyncFetchGroupMessageAcks:(id)chatManager msgId:(NSString *)msgId groupId:(NSString *)groupId startAckId:(NSString *)startAckId pageSize:(int)pageSize completion:(void (^)(EMCursorResult * _Nullable, EMError * _Nullable, int))completion {
-    EMChatMessage *msg = [chatManager getMessageWithMessageId:msgId];
-    [chatManager getGroupMessageReadReceipts:msg ? @[msg] : @[]
-                                  completion:^(NSArray<EMMessageReadReceipt *> * _Nullable aReceipts, EMError * _Nullable aError) {
-        EMCursorResult *result = [[EMCursorResult alloc] init];
-        result.list = aReceipts;
-        if (completion) completion(result, aError, (int)aReceipts.count);
+    // 对齐 names 表：分页获取群消息已读回执（asyncFetchGroupMessageReadUsersFromServer ↔ Android asyncFetchGroupMessageReadReceipts）
+    [chatManager asyncFetchGroupMessageReadUsersFromServer:msgId
+                                                   groupId:groupId
+                                             readReceiptId:startAckId
+                                                  pageSize:pageSize
+                                                completion:^(EMCursorResult<EMGroupReadReceipt *> * _Nullable aResult, EMError * _Nullable aError, int totalCount) {
+        if (completion) completion(aResult, aError, totalCount);
     }];
 }
 
@@ -47,23 +49,38 @@
 }
 
 + (void)getConversationsFromServer:(id)chatManager completion:(void (^)(NSArray * _Nullable, EMError * _Nullable))completion {
+    // 5.0 移除拉取接口，改用本地会话列表（与 Android 一致：getAllConversationsBySort）
     if (completion) completion([chatManager getAllConversations], nil);
 }
 
 + (void)getConversationsFromServerByPage:(id)chatManager pageNum:(int)pageNum pageSize:(int)pageSize completion:(void (^)(NSArray<EMConversation *> * _Nullable, EMError * _Nullable))completion {
+    // 5.0 移除拉取接口，改用本地会话列表（与 Android 一致）
     if (completion) completion([chatManager getAllConversations], nil);
 }
 
-+ (void)getConversationsFromServerWithCursor:(id)chatManager cursor:(NSString *)cursor pageSize:(int)pageSize completion:(void (^)(EMCursorResult * _Nullable, EMError * _Nullable))completion {
-    [self notSupported:^(EMError *e) { if (completion) completion(nil, e); }];
++ (void)getConversationsFromServerWithCursor:(id)chatManager cursor:(NSString *)cursor pageSize:(int)pageSize completion:(void (^)(NSArray * _Nullable, EMError * _Nullable))completion {
+    // 5.0 移除拉取接口，改用本地会话列表（与 Android 一致：返回纯 list，无 cursor 语义）
+    if (completion) completion([self localConversationsToJson:chatManager], nil);
 }
 
-+ (void)getConversationsFromServerWithCursor:(id)chatManager cursor:(NSString *)cursor filter:(id)filter completion:(void (^)(EMCursorResult * _Nullable, EMError * _Nullable))completion {
-    [self notSupported:^(EMError *e) { if (completion) completion(nil, e); }];
++ (void)getConversationsFromServerWithCursor:(id)chatManager cursor:(NSString *)cursor filter:(id)filter completion:(void (^)(NSArray * _Nullable, EMError * _Nullable))completion {
+    // 5.0 移除拉取接口，改用本地会话列表（与 Android 一致）
+    if (completion) completion([self localConversationsToJson:chatManager], nil);
 }
 
-+ (void)getPinnedConversationsFromServerWithCursor:(id)chatManager cursor:(NSString *)cursor pageSize:(int)pageSize completion:(void (^)(EMCursorResult * _Nullable, EMError * _Nullable))completion {
-    [self notSupported:^(EMError *e) { if (completion) completion(nil, e); }];
++ (void)getPinnedConversationsFromServerWithCursor:(id)chatManager cursor:(NSString *)cursor pageSize:(int)pageSize completion:(void (^)(NSArray * _Nullable, EMError * _Nullable))completion {
+    // 5.0 移除拉取接口，改用本地会话列表（与 Android 一致）
+    if (completion) completion([self localConversationsToJson:chatManager], nil);
+}
+
+// 本地会话 → JSON dict 列表（供桥接序列化；原生 EMConversation 对象无法直接过 JSON 序列化）
++ (NSArray *)localConversationsToJson:(id)chatManager {
+    NSArray *list = [chatManager getAllConversations];
+    NSMutableArray *result = [NSMutableArray array];
+    for (EMConversation *conv in list) {
+        [result addObject:[conv toJson]];
+    }
+    return result;
 }
 
 + (void)reportMessage:(id)chatManager msgId:(NSString *)msgId tag:(NSString *)tag reason:(NSString *)reason completion:(void (^)(EMError * _Nullable))completion {

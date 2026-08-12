@@ -56,7 +56,16 @@ private final class TestControlBridge {
     default: assetName = "bigPic.jpg"
     }
     DispatchQueue.global().async {
-      guard let bundlePath = Bundle.main.path(forResource: assetName, ofType: nil, inDirectory: "flutter_assets/assets/media"),
+      // iOS 新 Flutter 打包：素材在 App.framework/flutter_assets（Bundle.main 是 Runner.app 根，找不到）
+      var assetPath: String?
+      if let p = Bundle.main.path(forResource: assetName, ofType: nil, inDirectory: "flutter_assets/assets/media") {
+        assetPath = p
+      } else if let frameworks = Bundle.main.privateFrameworksPath,
+                let appBundle = Bundle(path: frameworks + "/App.framework"),
+                let p = appBundle.path(forResource: assetName, ofType: nil, inDirectory: "flutter_assets/assets/media") {
+        assetPath = p
+      }
+      guard let bundlePath = assetPath,
             let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
         result(FlutterError(code: "prepare_default_media_path", message: "asset not found: \(assetName)", details: nil))
         return
@@ -81,7 +90,7 @@ private final class TestControlBridge {
       "wrapperCommit": argument("runnerWrapperCommit"),
       "nativeSdkSha256": argument("runnerNativeSdkSha256"),
       "platform": "ios",
-      "sdkVersion": "4.24.0",
+      "sdkVersion": "5.0.0",
       "appVersion": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0",
       "topic": argument("runnerTopic"),
       "webSocketBaseUrl": argument("runnerWsBaseUrl"),

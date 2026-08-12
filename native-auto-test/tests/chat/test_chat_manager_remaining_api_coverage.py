@@ -45,7 +45,6 @@ def _send_text_and_receive(device_a, device_b, assert_api, user_a: str, user_b: 
                 "convId": user_b,
                 "chatType": 0,
                 "direction": 0,
-                "status": 0,
                 "hasRead": True,
                 "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
@@ -424,7 +423,6 @@ def test_chat_manager_send_to_non_friend_current_success_event(device_a, assert_
                 "convId": user_c,
                 "chatType": 0,
                 "direction": 0,
-                "status": 0,
                 "hasRead": True,
                 "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
@@ -540,7 +538,9 @@ def test_chat_manager_conversation_marks_and_fetch_options(device_a, device_b, a
 
 
 def test_chat_manager_message_count_and_search_options_boundaries(device_a, assert_api, user_a):
-    """getMessageCount/searchMsgsByOptions：校验全量消息计数返回数值，以及 count=0 搜索边界返回空列表。"""
+    """getMessageCount/searchMsgsByOptions：校验全量消息计数返回数值，以及 count=0 搜索边界返回空列表。
+    前置清理本地残留消息（避免全量跑时前面 case 的数据影响 count=0 边界断言）。"""
+    device_a.call("ChatManager", Cmd.deleteAllMessageAndConversation.value, info={"clearServerData": False})
     resp_count = device_a.call("ChatManager", Cmd.getMessageCount.value, info={})
     assert_api.assert_response_matches(
         resp_count,

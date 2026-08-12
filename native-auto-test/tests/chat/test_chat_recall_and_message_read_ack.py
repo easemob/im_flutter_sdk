@@ -38,11 +38,12 @@ def _send_typed(device_a, device_b, assert_api, user_a, user_b, type_key, payloa
 
 def test_chat_missing_recall_empty_message_id(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": ""})
-    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.recallMessage.value, "device": "deviceA", "result": {"code": 500, "description": "The message was not found"}}, ignore_keys={"sequence"})
+    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.recallMessage.value, "device": "deviceA", # 只看 errorcode（leader 要求）：描述两端不同，code 一致 500
+"result": {"code": 500}}, ignore_keys={"sequence"})
 
 
 @pytest.mark.parametrize("info", [{"msgId": "", "to": "test0714user1"}, {"msgId": "__invalid_msg_id__", "to": ""}, {"msgId": "__invalid_msg_id__", "to": "__invalid_user__"}])
 def test_chat_missing_ack_message_read_boundaries(device_b, assert_api, info):
     resp = device_b.call("ChatManager", Cmd.ackMessageRead.value, info=info)
-    # 5.0 ackMessageRead 走 asyncSendMessageReadReceipts，需要本地消息；无效 msgId → 500
-    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.ackMessageRead.value, "device": "deviceB", "result": {"code": 500, "description": "The message was not found"}}, ignore_keys={"sequence"})
+    # 5.0 ackMessageRead 走 asyncSendMessageReadReceipts；原生实际：两端一致 110 "messages is empty"
+    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.ackMessageRead.value, "device": "deviceB", "result": {"code": 110, "description": "messages is empty"}}, ignore_keys={"sequence"})

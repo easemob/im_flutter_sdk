@@ -75,7 +75,7 @@ def _send_text_and_assert(topology, assert_api, *, content):
             response,
             expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": sender.device_name, "result": {
                 "msgId": temp_id, "from": sender_user, "to": recipient_user, "convId": recipient_user,
-                "chatType": 0, "direction": 0, "status": 0, "hasRead": True,
+                "chatType": 0, "direction": 0, "hasRead": True,
                 "needReadReceipt": False, "isThread": False, "isContentReplaced": False, "body": expected_body,
             }},
             ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState", "deliverOnlineOnly", "targetLanguages", "translations"},
@@ -172,7 +172,7 @@ def test_chat_send_rejects_mismatched_from(device_a, device_b, assert_api, user_
         response,
         expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA", "result": {
             "msgId": temp_id, "from": invalid_from, "to": user_b, "convId": user_b,
-            "chatType": 0, "direction": 0, "status": 0, "hasRead": True,
+            "chatType": 0, "direction": 0, "hasRead": True,
             "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
             "body": {"type": 0, "content": content},
         }},
@@ -184,7 +184,7 @@ def test_chat_send_rejects_mismatched_from(device_a, device_b, assert_api, user_
         expected={"type": "event", "eventType": Cmd.onMessageError.value, "data": {
             "msgId": temp_id,
             "msg": {"msgId": temp_id, "from": invalid_from, "to": user_b, "convId": user_b,
-                    "chatType": 0, "direction": 0, "status": 0, "hasRead": True,
+                    "chatType": 0, "direction": 0, "hasRead": True,
                     "needReadReceipt": False, "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
                     "body": {"type": 0, "content": content, "translations": {}}},
             "error": {"code": 500, "description": "Message is invalid"},

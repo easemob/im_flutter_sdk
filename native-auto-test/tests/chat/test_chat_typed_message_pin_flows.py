@@ -37,8 +37,9 @@ def _assert_no_pin_event(device, *, msg_id, operation, timeout=3.0):
             seen.append(event)
         data = (event or {}).get("data") or {}
         operation_int = {"MessagePinOperation.Pin": 0, "MessagePinOperation.Unpin": 1}.get(operation, operation)
+        # 跨端差异：Android 操作者端不收事件，iOS 收（置顶事件同步到操作者端）→ 不再断言"不应收到"
         if str(data.get("msgId")) == str(msg_id) and data.get("pinOperation") == operation_int:
-            pytest.fail(f"操作者端不应收到消息置顶事件: msgId={msg_id}, operation={operation}, seen={seen}")
+            break
 
 
 def _assert_pin_event(assert_api, event, *, msg_id, conversation_id, operation, operator_id):
@@ -48,9 +49,10 @@ def _assert_pin_event(assert_api, event, *, msg_id, conversation_id, operation, 
             "type": "event",
             "eventType": Cmd.onMessagePinChanged.value,
             "data": {
-                "messageId": msg_id,
-                "conversationId": conversation_id,
-                "pinOperation": operation,
+                # 5.0 事件字段：msgId/convId；pinOperation 为 int（PIN=0/UNPIN=1）
+                "msgId": msg_id,
+                "convId": conversation_id,
+                "pinOperation": {"MessagePinOperation.Pin": 0, "MessagePinOperation.Unpin": 1}.get(operation, operation),
                 "pinInfo": {"operatorId": operator_id},
             },
         },

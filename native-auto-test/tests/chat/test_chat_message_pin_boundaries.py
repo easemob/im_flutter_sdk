@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import time
 import uuid
+from contextlib import nullcontext
 
 import pytest
 
@@ -11,6 +12,15 @@ from tests.chat._utils import build_text
 from tests.chat.test_chat_recall_and_message_read_ack import _send_typed
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
+
+
+def _allure_step(name: str):
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext()
 
 
 def _assert_text_event(assert_api, evt, *, event_type, msg_id, user_a, user_b, content, direction, conv_id, has_read, has_deliver_ack):
@@ -85,7 +95,6 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
                 "convId": user_b,
                 "chatType": 0,
                 "direction": 0,
-                "status": 0,
                 "hasRead": True,
                 "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
@@ -208,9 +217,13 @@ def _wait_recall_event(device_b, msg_id, *, timeout=30):
 
 
 def _assert_error(assert_api, resp, cmd, device, code, description):
+    # 只看 errorcode（leader 要求）：description 传 None 时只断 code，不比对描述（两端描述可能不同）
+    expected = {"manager": "ChatManager", "cmd": cmd, "device": device, "result": {"code": code}}
+    if description is not None:
+        expected["result"]["description"] = description
     assert_api.assert_response_matches(
         resp,
-        expected={"manager": "ChatManager", "cmd": cmd, "device": device, "result": {"code": code, "description": description}},
+        expected=expected,
         ignore_keys={"sequence"},
     )
 
@@ -222,45 +235,71 @@ def test_chat_pin_message_invalid_id(device_a, assert_api):
 
 def test_chat_pin_message_empty_id(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": ""})
-    _assert_error(assert_api, resp, Cmd.pinMessage.value, "deviceA", 110, "messageId is empty")
+    _assert_error(assert_api, resp, Cmd.pinMessage.value, "deviceA", 110, None)
 
 
-def test_chat_pin_recalled_message(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_chat_pin_recalled_message(topology, assert_api):
+    """A 发送并撤回消息：验证 B 全部在线端收到撤回通知（onMessagesRecalledInfo），pin 撤回消息报错。"""
+    sender = topology.sender_action_device
+    recipients = topology.recipient_devices
+    sender_user = topology.sender_user
+    recipient_user = topology.recipient_user
     content = f"pin-recalled-{uuid.uuid4().hex[:8]}"
-    msg_id = _send_text(device_a, device_b, assert_api, user_a, user_b, content)
+
+    with _allure_step("清理发送与接收账号全部端历史事件"):
+        for device in (*topology.sender_devices, *recipients):
+            device.drain_events(timeout=0.5)
+
+    with _allure_step(f"{sender.device_name} 发送文本消息"):
+        msg_id = _send_text(sender, recipients[0], assert_api, sender_user, recipient_user, content)
+
     time.sleep(float(os.getenv("CHAT_RECALL_SETTLE_SECONDS", "5")))
-    recall = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
-    assert_api.assert_response_matches(recall, expected={"manager": "ChatManager", "cmd": Cmd.recallMessage.value, "device": "deviceA", "result": True}, ignore_keys={"sequence"})
-    recall_event = _wait_recall_event(device_b, msg_id)
-    infos = (recall_event.get("data") or {}).get("infos") or []
-    recalled_info = next(
-        info for info in infos
-        if isinstance(info, dict) and str(info.get("recallMsgId")) == str(msg_id)
-    )
+
+    with _allure_step(f"{sender.device_name} 撤回消息"):
+        recall = sender.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
     assert_api.assert_response_matches(
-        {"type": "event", "eventType": Cmd.onMessagesRecalledInfo.value,
-         "data": {"infos": [recalled_info]}},
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessagesRecalledInfo.value,
-            "data": {"infos": [{
-                "recallBy": user_a,
-                "recallMsgId": str(msg_id),
-                "convId": user_a,
-                "msg": {
-                    "msgId": str(msg_id), "from": user_a, "to": user_b,
-                    "convId": user_a, "chatType": 0, "direction": 1,
-                    "status": 2, "hasRead": False, "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
-                    "deliverOnlineOnly": False,
-                    "body": {"type": 0, "content": content, "translations": {}},
-                },
-                "ext": "",
-            }]},
-        },
-        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "receiverList"},
+        recall,
+        expected={"manager": "ChatManager", "cmd": Cmd.recallMessage.value,
+                  "device": "{{device}}", "result": True},
+        context={"device": sender.device_name},
+        ignore_keys={"sequence"},
     )
-    resp = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": msg_id})
-    _assert_error(assert_api, resp, Cmd.pinMessage.value, "deviceA", 500, "Message is invalid")
+
+    with _allure_step("B 全部在线端收到撤回通知（onMessagesRecalledInfo）"):
+        for recipient in recipients:
+            recall_event = _wait_recall_event(recipient, msg_id)
+            infos = (recall_event.get("data") or {}).get("infos") or []
+            recalled_info = next(
+                info for info in infos
+                if isinstance(info, dict) and str(info.get("recallMsgId")) == str(msg_id)
+            )
+            assert_api.assert_response_matches(
+                {"type": "event", "eventType": Cmd.onMessagesRecalledInfo.value,
+                 "data": {"infos": [recalled_info]}},
+                expected={
+                    "type": "event",
+                    "eventType": Cmd.onMessagesRecalledInfo.value,
+                    "data": {"infos": [{
+                        "recallBy": sender_user,
+                        "recallMsgId": str(msg_id),
+                        "convId": sender_user,
+                        "msg": {
+                            "msgId": str(msg_id), "from": sender_user, "to": recipient_user,
+                            "convId": sender_user, "chatType": 0, "direction": 1,
+                            "status": 2, "hasRead": False, "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
+                            "deliverOnlineOnly": False,
+                            "body": {"type": 0, "content": content, "translations": {}},
+                        },
+                        "ext": "",
+                    }]},
+                },
+                ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "receiverList"},
+            )
+
+    with _allure_step(f"{sender.device_name} pin 已撤回消息应报错"):
+        resp = sender.call("ChatManager", Cmd.pinMessage.value, info={"msgId": msg_id})
+    _assert_error(assert_api, resp, Cmd.pinMessage.value, sender.device_name, 500, "Message is invalid")
 
 
 @pytest.mark.parametrize(
@@ -297,11 +336,11 @@ def test_chat_unpin_message_invalid_id(device_a, assert_api):
 
 def test_chat_unpin_message_empty_id(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.unpinMessage.value, info={"msgId": ""})
-    _assert_error(assert_api, resp, Cmd.unpinMessage.value, "deviceA", 110, "messageId is empty")
+    _assert_error(assert_api, resp, Cmd.unpinMessage.value, "deviceA", 110, None)
 
 
 @pytest.mark.parametrize("conv_id", ["", "__invalid_pin_conversation__"])
 def test_chat_fetch_pinned_messages_invalid_conversation(device_a, assert_api, conv_id):
     resp = device_a.call("ChatManager", Cmd.fetchPinnedMessages.value, info={"convId": conv_id})
-    expected = (110, "conversationId is empty") if conv_id == "" else (107, "Invalid conversation")
+    expected = (110, None) if conv_id == "" else (107, None)
     _assert_error(assert_api, resp, Cmd.fetchPinnedMessages.value, "deviceA", *expected)

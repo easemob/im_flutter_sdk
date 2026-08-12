@@ -49,6 +49,7 @@
 
 #pragma mark - FlutterPlugin
 
+
 - (void)handleMethodCall:(FlutterMethodCall*)call
                   result:(FlutterResult)result {
     if ([ChatSendMessage isEqualToString:call.method]) {
@@ -360,7 +361,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!aError)];
+                           object:(aError == nil ? @YES : @NO)];
     }];
 }
 
@@ -376,7 +377,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!aError)];
+                           object:(aError == nil ? @YES : @NO)];
     }];
 }
 
@@ -391,7 +392,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!aError)];
+                           object:nil];
     }];
 }
 
@@ -401,15 +402,8 @@
     __weak typeof(self) weakSelf = self;
     NSString *msgId = param[@"msgId"];
     NSString *ext = param[@"ext"];
+    // 【透传原生】不本地拦截（无效消息也调原生）
     EMChatMessage *msg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msgId];
-    if (!msg) {
-        EMError *error = [EMError errorWithDescription:@"The message was not found" code:EMErrorMessageInvalid];
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:error
-                           object:@(!error)];
-        return;
-    }
     [EMClient.sharedClient.chatManager recallMessageWithMessageId:msgId
                                                               ext:ext
                                                        completion:^(EMError *aError)
@@ -417,7 +411,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!aError)];
+                           object:(aError == nil ? @YES : @NO)];
     }];
 }
 
@@ -474,7 +468,7 @@
     [weakSelf wrapperCallBack:result
                   channelName:aChannelName
                         error:error
-                       object:@(!error)];
+                       object:nil];
 }
 
 - (void)getUnreadMessageCount:(NSDictionary *)param
@@ -500,13 +494,7 @@
     __weak typeof(self) weakSelf = self;
     EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
     EMChatMessage *dbMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
-    if(dbMsg == nil) {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:[EMError errorWithDescription:@"The message is invalid." code:EMErrorMessageInvalid]
-                           object:nil];
-        return;
-    }
+    // 【透传原生】不本地拦截（dbMsg nil 也继续）
     [Helper mergeMessage:msg withDBMessage:dbMsg];
     [EMClient.sharedClient.chatManager updateMessage:dbMsg
                                           completion:^(EMChatMessage *aMessage, EMError *aError)
@@ -533,7 +521,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!aError)];
+                           object:(aError == nil ? @YES : @NO)];
     }];
 }
 
@@ -662,7 +650,43 @@
 - (void)downloadBigImage:(NSDictionary *)param
              channelName:(NSString *)aChannelName
                   result:(FlutterResult)result {
-    [self downloadAttachment:param channelName:aChannelName result:result];
+    // 对齐 names 表：下载大图 = downloadBigImageAttachment（不是普通 downloadMessageAttachment）
+    __weak typeof(self) weakSelf = self;
+    __block EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
+    EMChatMessage *tmpMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
+    [EMClient.sharedClient.chatManager downloadBigImageAttachment:tmpMsg
+                                                         progress:^(int progress)
+     {
+        [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
+                                    arguments:@{
+            @"progress":@(progress),
+            @"localId": msg.messageId
+        }];
+    } completion:^(EMChatMessage *message, EMError *error)
+     {
+        if (error) {
+            NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusFailed message:message thumbnail:NO];
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageError
+                                        arguments:@{
+                @"error":[error toJson],
+                @"localId": msg.messageId,
+                @"message":msgDict
+            }];
+        }else {
+            NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusSucceed message:message thumbnail:NO];
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageSuccess
+                                        arguments:@{
+                @"message":msgDict,
+                @"localId": msg.messageId
+            }];
+        }
+    }];
+    
+    NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusDownloading message:msg thumbnail:NO];
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:msgDict];
 }
 
 - (void)downloadThumbnail:(NSDictionary *)param
@@ -811,7 +835,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!aError)];
+                           object:(aError == nil ? @YES : @NO)];
     }];
 }
 
@@ -860,16 +884,10 @@
     int pageSize = [param[@"pageSize"] intValue];
     NSString *ackId = param[@"ack_id"];
     __weak typeof(self) weakSelf = self;
+    // 【透传原生】不本地校验（无效消息/非群也调原生）
     EMChatMessage *msg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msgId];
     EMError *e = nil;
     do {
-        e = [EMError errorWithDescription:@"Invalid message" code:EMErrorMessageInvalid];
-        if (msg == nil) {
-            break;
-        }
-        if (msg.chatType != EMChatTypeGroupChat || msg.groupReadReceiptCount <= 0) {
-            break;
-        }
         e = nil;
     } while (NO);
     if (e != nil) {
@@ -931,7 +949,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!aError)];
+                           object:nil];
     }];
 }
 
@@ -945,7 +963,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error
-                           object:@(!error)];
+                           object:nil];
     }];
 }
 
@@ -1058,6 +1076,9 @@
         EMCursorResult *cursorResult = nil;
         if (error == nil && reaction != nil) {
             cursorResult = [EMCursorResult cursorResultWithList:@[reaction] andCursor:cursor];
+        } else if (error == nil) {
+            // invalid 但成功（原生无 error、reaction nil）→ 空结果（对齐 Android {list:[], cursor:''}）
+            cursorResult = [EMCursorResult cursorResultWithList:@[] andCursor:@""];
         }
         
         [weakSelf wrapperCallBack:result
@@ -1079,7 +1100,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error
-                           object:@(!error)];
+                           object:(error == nil ? @YES : @NO)];
     }];
 }
 
@@ -1120,24 +1141,10 @@
     NSString *convId = param[@"convId"];
     EMConversationType type = [EnumTools conversationTypeFromInt:[param[@"type"] intValue]];
     
-    if(!EMClient.sharedClient.isLoggedIn) {
-        EMError *e = [EMError errorWithDescription:@"Not login" code:EMErrorUserNotLogin];
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:e
-                           object:@(!e)];
-        return;
-    }
+    // 【透传原生】不本地检查登录（原生处理）
     
     
-    if(convId == nil || convId.length == 0 || msgIds.count == 0 || type == EMConversationTypeChatRoom) {
-        EMError *e = [EMError errorWithDescription:@"Invalid parameter" code:EMErrorInvalidParam];
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:e
-                           object:@(!e)];
-        return;
-    }
+    // 【透传原生】不本地参数校验（原生处理）
     
     
     EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:convId type:type createIfNotExist:YES];
@@ -1146,7 +1153,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!aError)];
+                           object:nil];
     }];
 }
 
@@ -1158,30 +1165,16 @@
     EMConversationType type = [EnumTools conversationTypeFromInt:[param[@"type"] intValue]];
     long timestamp = [param[@"timestamp"] longValue];
     
-    if(!EMClient.sharedClient.isLoggedIn) {
-        EMError *e = [EMError errorWithDescription:@"Not login" code:EMErrorUserNotLogin];
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:e
-                           object:@(!e)];
-        return;
-    }
+    // 【透传原生】不本地检查登录（原生处理）
     
-    if(convId == nil || convId.length == 0 || type == EMConversationTypeChatRoom || timestamp <= 0) {
-        EMError *e = [EMError errorWithDescription:@"Invalid parameter" code:EMErrorInvalidParam];
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:e
-                           object:@(!e)];
-        return;
-    }
+    // 【透传原生】不本地参数校验（原生处理）
     
     EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:convId type:type createIfNotExist:YES];
     [conversation removeMessagesFromServerWithTimeStamp:timestamp completion:^(EMError * _Nullable aError) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!aError)];
+                           object:nil];
     }];
 }
 
@@ -1191,11 +1184,12 @@
     __weak typeof(self) weakSelf = self;
     NSString *cursor = param[@"cursor"];
     int pageSize = [param[@"pageSize"] intValue];
-    [ChatCompat5 getConversationsFromServerWithCursor:EMClient.sharedClient.chatManager cursor:cursor pageSize:pageSize completion:^(EMCursorResult<EMConversation *> * _Nullable ret, EMError * _Nullable error) {
+    [ChatCompat5 getConversationsFromServerWithCursor:EMClient.sharedClient.chatManager cursor:cursor pageSize:pageSize completion:^(NSArray * _Nullable ret, EMError * _Nullable error) {
+        // 5.0 返回纯 list（与 Android 一致，无 cursor 语义）
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error
-                           object:[ret toJson]];
+                           object:ret];
     }];
 }
 
@@ -1205,11 +1199,12 @@
     __weak typeof(self) weakSelf = self;
     NSString *cursor = param[@"cursor"];
     int pageSize = [param[@"pageSize"] intValue];
-    [ChatCompat5 getPinnedConversationsFromServerWithCursor:EMClient.sharedClient.chatManager cursor:cursor pageSize:pageSize completion:^(EMCursorResult<EMConversation *> * _Nullable ret, EMError * _Nullable error) {
+    [ChatCompat5 getPinnedConversationsFromServerWithCursor:EMClient.sharedClient.chatManager cursor:cursor pageSize:pageSize completion:^(NSArray * _Nullable ret, EMError * _Nullable error) {
+        // 5.0 返回纯 list（与 Android 一致）
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error
-                           object:[ret toJson]];
+                           object:ret];
     }];
 }
 
@@ -1220,7 +1215,7 @@
     NSString *convId = param[@"convId"];
     BOOL isPinned = [param[@"isPinned"] boolValue];
     [EMClient.sharedClient.chatManager pinConversation:convId isPinned:isPinned completionBlock:^(EMError * _Nullable error) {
-        [weakSelf wrapperCallBack:result channelName:aChannelName error:error object:@(!error)];
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:error object:nil];
     }];
 }
 
@@ -1303,11 +1298,11 @@
     NSInteger pageSize = [EMConversationFilter pageSize:param];
     // 如果是获取pin消息，则调用获取pin message 相关api
     if(isPinned) {
-        [ChatCompat5 getPinnedConversationsFromServerWithCursor:EMClient.sharedClient.chatManager cursor:cursor pageSize:pageSize completion:^(EMCursorResult<EMConversation *> * _Nullable ret, EMError * _Nullable error) {
+        [ChatCompat5 getPinnedConversationsFromServerWithCursor:EMClient.sharedClient.chatManager cursor:cursor pageSize:pageSize completion:^(NSArray * _Nullable ret, EMError * _Nullable error) {
             [weakSelf wrapperCallBack:result
                           channelName:aChannelName
                                 error:error
-                               object:[ret toJson]];
+                               object:ret];
         }];
         return;
     }
@@ -1315,21 +1310,21 @@
     // 如果是mark相关，则调用mark相关api
     if(isMark){
         EMConversationFilter *filter = [EMConversationFilter fromJson: param];
-        [ChatCompat5 getConversationsFromServerWithCursor:EMClient.sharedClient.chatManager cursor:cursor filter:filter completion:^(EMCursorResult<EMConversation *> * _Nullable ret, EMError * _Nullable error) {
+        [ChatCompat5 getConversationsFromServerWithCursor:EMClient.sharedClient.chatManager cursor:cursor filter:filter completion:^(NSArray * _Nullable ret, EMError * _Nullable error) {
             [weakSelf wrapperCallBack:result
                           channelName:aChannelName
                                 error:error
-                               object:[ret toJson]];
+                               object:ret];
         }];
         return;
     }
     
     // 既不是pin，又不是mark，则直接分页获取
-    [ChatCompat5 getConversationsFromServerWithCursor:EMClient.sharedClient.chatManager cursor:cursor pageSize:pageSize completion:^(EMCursorResult<EMConversation *> * _Nullable ret, EMError * _Nullable error) {
+    [ChatCompat5 getConversationsFromServerWithCursor:EMClient.sharedClient.chatManager cursor:cursor pageSize:pageSize completion:^(NSArray * _Nullable ret, EMError * _Nullable error) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error
-                           object:[ret toJson]];
+                           object:ret];
     }];
     
 }
@@ -1443,6 +1438,23 @@
     }
     
     [self.channel invokeMethod:ChatOnMessagesRead arguments:list];
+}
+
+// 5.0 新回调（替代 4.x messagesDidRead）：收到已读回执列表
+- (void)onMessageReadReceipts:(NSArray<EMMessageReadReceipt *> *)aReceipts {
+    NSMutableArray *list = [NSMutableArray array];
+    for (EMMessageReadReceipt *receipt in aReceipts) {
+        EMChatMessage *msg = [EMClient.sharedClient.chatManager getMessageWithMessageId:receipt.messageId];
+        if (msg) {
+            NSDictionary *json = [msg toJson];
+            [list addObject:json];
+            [self.messageChannel invokeMethod:ChatOnMessageReadAck
+                                    arguments:json];
+        }
+    }
+    if (list.count > 0) {
+        [self.channel invokeMethod:ChatOnMessagesRead arguments:list];
+    }
 }
 
 - (void)messagesDidDeliver:(NSArray *)aMessages {
@@ -1715,7 +1727,7 @@
         if (conv) [convs addObject:conv];
     }
     [EMClient.sharedClient.chatManager deleteConversations:convs isDeleteMessages:deleteMessages completion:^(EMError * _Nullable aError) {
-        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:@(!aError)];
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:nil];
     }];
 }
 

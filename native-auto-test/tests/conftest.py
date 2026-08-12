@@ -967,7 +967,8 @@ def _scenario_is_v5(phase1_scenario) -> bool:
     if phase1_scenario is None:
         return False
     for role in phase1_scenario.roles.values():
-        if role.platform == "android" and role.sdk_version:
+        # 5.x 统一 token 登录（Android/iOS 都是）—— 平台不限 android
+        if role.platform in ("android", "ios") and role.sdk_version:
             major = str(role.sdk_version).split(".")[0]
             if major.isdigit() and int(major) >= 5:
                 return True
@@ -2083,6 +2084,30 @@ def pytest_sessionstart(session):
         web_runner = Path(__file__).resolve().parent.parent / "web_runner"
         subprocess.run([npm, "install"], cwd=web_runner, check=True)
         subprocess.run([npm, "run", "build"], cwd=web_runner, check=True)
+
+    if any(role.platform == "ios" for role in scenario.roles.values()):
+        # iOS：先由 merge_ios_sdk.sh 生成 merged（基线 base500 + 版本差异），再 flutter build ios --simulator
+        # （pod install 由 flutter build 自动执行；iOS manifest 用 runtime 占位，无需刷新 hash）
+        import shutil
+        import subprocess
+
+        flutter_test = Path(__file__).resolve().parent.parent.parent / "im_flutter_test"
+        flutter = os.getenv("FLUTTER_BIN") or shutil.which("flutter")
+        if not flutter:
+            raise RuntimeError("flutter not found; set FLUTTER_BIN")
+        merge_script = (
+            Path(__file__).resolve().parent.parent.parent
+            / "im_flutter_sdk" / "scripts" / "merge_ios_sdk.sh"
+        )
+        if merge_script.is_file():
+            subprocess.run(["bash", str(merge_script)], cwd=merge_script.parent, check=True)
+        else:
+            print(f"[build] merge_ios_sdk.sh 不存在，跳过 merged 生成: {merge_script}")
+        subprocess.run(
+            [flutter, "build", "ios", "--simulator"],
+            cwd=flutter_test,
+            check=True,
+        )
 
 
 def _refresh_artifact_hash(flavor: str, flutter_test: Path) -> None:

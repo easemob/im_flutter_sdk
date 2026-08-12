@@ -78,12 +78,8 @@ public class PushManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void updatePushNickname(JSONObject params, String channelName,  Result result) throws JSONException {
+        // 【透传原生】不本地检查登录（原生处理）
         String username = EMClient.getInstance().getCurrentUser();
-        if (username == null || username.isEmpty()) {
-            HyphenateException e = new HyphenateException(EMError.USER_NOT_LOGIN,"User not login");
-            onError(result, e);
-            return;
-        }
 
         String nickname = params.getString("nickname");
         EMClient.getInstance().pushManager().asyncUpdatePushNickname(nickname, new EMWrapperCallBack(result, channelName, true));

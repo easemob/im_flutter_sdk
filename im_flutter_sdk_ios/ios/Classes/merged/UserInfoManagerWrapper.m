@@ -69,12 +69,8 @@
 
 - (void)updateOwnUserInfo:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
+    // 【透传原生】不本地检查登录（原生处理）
     NSString *usenrame = EMClient.sharedClient.currentUsername;
-    if (usenrame == nil) {
-        EMError *error = [EMError errorWithDescription:@"User not login" code:EMErrorUserNotLogin];
-        [weakSelf wrapperCallBack:result channelName:aChannelName error:error object:nil];
-        return;
-    }
     
     EMUserInfo *userInfo = [EMUserInfo fromJson:param];
     userInfo.userId = usenrame;
@@ -199,27 +195,27 @@
 }
 
 - (void)getUserInfoWithUserIds:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    // 对齐 names 表：本地批量获取 = getUserInfoByIds（不是服务端 fetchUserInfoById）
     __weak typeof(self) weakSelf = self;
-    [EMClient.sharedClient.userInfoManager fetchUserInfoById:param[@"userIds"] completion:^(NSDictionary<NSString *,EMUserInfo *> * _Nullable aUserDatas, EMError * _Nullable aError) {
-        NSMutableDictionary *map = [NSMutableDictionary dictionary];
-        [aUserDatas enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, EMUserInfo * _Nonnull obj, BOOL * _Nonnull stop) {
-            map[key] = [obj toJson];
-        }];
-        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:map];
+    NSDictionary<NSString *, EMUserInfo *> *aUserDatas = [EMClient.sharedClient.userInfoManager getUserInfoByIds:param[@"userIds"]];
+    NSMutableDictionary *map = [NSMutableDictionary dictionary];
+    [aUserDatas enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, EMUserInfo * _Nonnull obj, BOOL * _Nonnull stop) {
+        map[key] = [obj toJson];
     }];
+    [weakSelf wrapperCallBack:result channelName:aChannelName error:nil object:map];
 }
 
 - (void)subscribeUsersInfo:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.userInfoManager subscribeUsersInfo:param[@"userIds"] completion:^(EMError * _Nullable aError) {
-        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:@(!aError)];
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:nil];
     }];
 }
 
 - (void)unsubscribeUsersInfo:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.userInfoManager unsubscribeUsersInfo:param[@"userIds"] completion:^(EMError * _Nullable aError) {
-        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:@(!aError)];
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:nil];
     }];
 }
 

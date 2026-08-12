@@ -9,7 +9,11 @@ from src import Cmd
 from tests.group.group_helpers import create_group, destroy_group, new_group_name
 
 
-pytestmark = [pytest.mark.client, pytest.mark.group]
+pytestmark = [
+    pytest.mark.client,
+    pytest.mark.group,
+    pytest.mark.skip(reason="5.0 移除服务端拉公开群（getPublicGroupsFromServer 改本地群列表，无分页/cursor 语义）"),
+]
 
 
 def _assert_public_groups_result(result: object, *, resp: dict) -> None:

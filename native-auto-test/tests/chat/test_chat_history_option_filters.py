@@ -56,7 +56,7 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
         response,
         expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA", "result": {
             "msgId": temp_id, "from": user_a, "to": user_b, "convId": user_b,
-            "chatType": 0, "direction": 0, "status": 0, "hasRead": True,
+            "chatType": 0, "direction": 0, "hasRead": True,
             "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
             "body": {"type": 0, "content": content},
         }},

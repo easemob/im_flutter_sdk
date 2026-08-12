@@ -179,6 +179,7 @@ def _wait_server_conversation_projection(device, cmd: str, info: dict, user_b: s
     return last_resp or {}, last_projection
 
 
+@pytest.mark.skip(reason="5.0 移除服务端拉会话（改用本地列表，无服务端/分页语义）")
 def test_chat_get_conversations_from_server_success(device_a, device_b, assert_api, user_a, user_b):
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-get-server-{uuid.uuid4().hex[:6]}")
     resp, projected = _wait_server_conversation_projection(device_a, Cmd.getConversationsFromServer.value, {}, user_b)
@@ -200,6 +201,7 @@ def test_chat_get_conversations_from_server_success(device_a, device_b, assert_a
     )
 
 
+@pytest.mark.skip(reason="5.0 移除服务端拉会话（改用本地列表，无服务端/分页语义）")
 def test_chat_get_conversations_from_server_with_cursor_success(device_a, device_b, assert_api, user_a, user_b):
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-get-server-cursor-{uuid.uuid4().hex[:6]}")
     info = {"cursor": "", "pageSize": 20}
@@ -231,6 +233,7 @@ def test_chat_get_conversations_from_server_with_cursor_success(device_a, device
 
 
 @pytest.mark.skip(reason="5.0 移除 cursor 分页（会话查询返回纯 list，无 pageSize 校验）")
+@pytest.mark.skip(reason="5.0 移除服务端拉会话（改用本地列表，无服务端/分页语义）")
 def test_chat_get_conversations_from_server_with_cursor_invalid_page_size_zero(device_a, assert_api):
     info = {"cursor": "", "pageSize": 0}
     resp = device_a.call(
@@ -254,6 +257,7 @@ def test_chat_get_conversations_from_server_with_cursor_invalid_page_size_zero(d
 
 
 @pytest.mark.skip(reason="5.0 移除 cursor 分页（会话查询返回纯 list，无 pageSize 校验）")
+@pytest.mark.skip(reason="5.0 移除服务端拉会话（改用本地列表，无服务端/分页语义）")
 def test_chat_get_conversations_from_server_with_cursor_invalid_page_size_negative(device_a, assert_api):
     info = {"cursor": "", "pageSize": -1}
     resp = device_a.call(
@@ -276,6 +280,7 @@ def test_chat_get_conversations_from_server_with_cursor_invalid_page_size_negati
     )
 
 
+@pytest.mark.skip(reason="5.0 移除服务端拉会话（改用本地列表，无服务端/分页语义）")
 def test_chat_fetch_conversations_from_server_with_page_success(device_a, device_b, assert_api, user_a, user_b):
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-fetch-page-{uuid.uuid4().hex[:6]}")
     resp, projected = _wait_server_conversation_projection(
@@ -302,6 +307,7 @@ def test_chat_fetch_conversations_from_server_with_page_success(device_a, device
     )
 
 
+@pytest.mark.skip(reason="5.0 移除服务端拉会话（改用本地列表，无服务端/分页语义）")
 def test_chat_fetch_conversations_from_server_with_page_invalid_page_num_zero(device_a, device_b, assert_api, user_a, user_b):
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-fetch-page-num0-{uuid.uuid4().hex[:6]}")
     resp, projected = _wait_server_conversation_projection(
@@ -328,6 +334,7 @@ def test_chat_fetch_conversations_from_server_with_page_invalid_page_num_zero(de
     )
 
 
+@pytest.mark.skip(reason="5.0 移除服务端拉会话（改用本地列表，无服务端/分页语义）")
 def test_chat_fetch_conversations_from_server_with_page_invalid_page_size_zero(device_a, device_b, assert_api, user_a, user_b):
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-fetch-page-size0-{uuid.uuid4().hex[:6]}")
     resp, projected = _wait_server_conversation_projection(
@@ -354,6 +361,7 @@ def test_chat_fetch_conversations_from_server_with_page_invalid_page_size_zero(d
     )
 
 
+@pytest.mark.skip(reason="5.0 移除服务端拉会话（改用本地列表，无服务端/分页语义）")
 def test_chat_get_pinned_conversations_from_server_with_cursor_success(device_a, assert_api):
     info = {"cursor": "", "pageSize": 20}
     resp = device_a.call(
@@ -367,14 +375,14 @@ def test_chat_get_pinned_conversations_from_server_with_cursor_success(device_a,
             "manager": "ChatManager",
             "cmd": Cmd.getPinnedConversationsFromServerWithCursor.value,
             "device": "deviceA",
-            # 5.0 返回纯 list（无 {list, cursor} dict）
-            "result": [],
+            # 5.0 返回纯 list（本地缓存，数量不定）→ 只断言成功 + list
         },
-        ignore_keys={"sequence"},
+        ignore_keys={"sequence", "result"},
     )
 
 
 @pytest.mark.skip(reason="5.0 移除 cursor 分页（会话查询返回纯 list，无 pageSize 校验）")
+@pytest.mark.skip(reason="5.0 移除服务端拉会话（改用本地列表，无服务端/分页语义）")
 def test_chat_get_pinned_conversations_from_server_with_cursor_invalid_page_size_zero(device_a, assert_api):
     info = {"cursor": "", "pageSize": 0}
     resp = device_a.call(
@@ -388,14 +396,14 @@ def test_chat_get_pinned_conversations_from_server_with_cursor_invalid_page_size
             "manager": "ChatManager",
             "cmd": Cmd.getPinnedConversationsFromServerWithCursor.value,
             "device": "deviceA",
-            # 5.0 返回纯 list（无 {list, cursor} dict）
-            "result": [],
+            # 5.0 返回纯 list（本地缓存，数量不定）→ 只断言成功 + list
         },
-        ignore_keys={"sequence"},
+        ignore_keys={"sequence", "result"},
     )
 
 
 @pytest.mark.skip(reason="5.0 移除 cursor 分页（会话查询返回纯 list，无 pageSize 校验）")
+@pytest.mark.skip(reason="5.0 移除服务端拉会话（改用本地列表，无服务端/分页语义）")
 def test_chat_get_pinned_conversations_from_server_with_cursor_invalid_page_size_negative(device_a, assert_api):
     info = {"cursor": "", "pageSize": -1}
     resp = device_a.call(
@@ -409,10 +417,9 @@ def test_chat_get_pinned_conversations_from_server_with_cursor_invalid_page_size
             "manager": "ChatManager",
             "cmd": Cmd.getPinnedConversationsFromServerWithCursor.value,
             "device": "deviceA",
-            # 5.0 返回纯 list（无 {list, cursor} dict）
-            "result": [],
+            # 5.0 返回纯 list（本地缓存，数量不定）→ 只断言成功 + list
         },
-        ignore_keys={"sequence"},
+        ignore_keys={"sequence", "result"},
     )
 
 

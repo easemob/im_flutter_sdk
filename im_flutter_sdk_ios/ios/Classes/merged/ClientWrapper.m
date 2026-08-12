@@ -245,14 +245,47 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     } else if ([ChatGetRTCTokenInfoWithChannelName isEqualToString:call.method]) {
         [self getRTCTokenInfoWithChannelName:call.arguments channelName:call.method result:result];
     } else if ([ChatNotifyTokenExpired isEqualToString:call.method] ||
-               [ChatSendFCMTokenToServer isEqualToString:call.method] ||
-               [ChatSendHonorPushTokenToServer isEqualToString:call.method] ||
-               [ChatGetUserIdsWithRTCUids isEqualToString:call.method]) {
+               [ChatSendHonorPushTokenToServer isEqualToString:call.method]) {
         [self notSupported:call.arguments channelName:call.method result:result];
+    } else if ([ChatGetUserIdsWithRTCUids isEqualToString:call.method]) {
+        // 对齐 names 表：RTC UID→用户 ID = getUserIdByRTCUIds（两端原生都有，之前误 notSupported）
+        [self getUserIdsWithRTCUids:call.arguments channelName:call.method result:result];
+    } else if ([ChatSendFCMTokenToServer isEqualToString:call.method]) {
+        // 语义等价透传（leader：iOS bindFCMToken 与 Android sendFCMTokenToServer 等价）—— 不拦截
+        [self sendFCMTokenToServer:call.arguments channelName:call.method result:result];
     }
     else {
         [super handleMethodCall:call result:result];
     }
+}
+
+
+// 语义等价透传：iOS bindFCMToken（与 Android sendFCMTokenToServer 等价，leader 口径）
+- (void)sendFCMTokenToServer:(NSDictionary *)param
+                channelName:(NSString *)aChannelName
+                     result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *token = param[@"token"];
+    [EMClient.sharedClient bindFCMToken:token completion:^(EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:nil];
+    }];
+}
+
+// 对齐 names 表：RTC UID→用户 ID（两端原生都有：iOS getUserIdByRTCUIds / Android asyncGetUserIdsWithRTCUids）
+- (void)getUserIdsWithRTCUids:(NSDictionary *)param
+                  channelName:(NSString *)aChannelName
+                       result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSArray *uids = param[@"uIds"];
+    [EMClient.sharedClient getUserIdByRTCUIds:uids completion:^(NSDictionary<NSNumber *, NSString *> * _Nullable accountInfos, EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:accountInfos];
+    }];
 }
 
 
@@ -357,7 +390,8 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     NSString *username = param[@"userId"];
     NSString *password = param[@"password"];
     // 5.0 移除注册 API（createAccount 不再支持）
-    NSError *err = [NSError errorWithDomain:@"im_flutter_sdk" code:110 userInfo:@{NSLocalizedDescriptionKey:@"not supported in iOS 5.0"}];
+    // 注意：必须用 EMError（wrapperCallBack 调 [error toJson]，NSError 无该方法会崩溃）
+    EMError *err = [EMError errorWithDescription:@"not supported in iOS 5.0" code:110];
     [weakSelf wrapperCallBack:result channelName:aChannelName error:err object:nil];
 }
 
@@ -389,7 +423,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!aError)];
+                           object:nil];
     }];
 }
 
@@ -400,7 +434,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     [weakSelf wrapperCallBack:result
                   channelName:aChannelName
                         error:aError
-                       object:@(!aError)];
+                       object:(aError == nil ? @YES : @NO)];
 }
 
 
@@ -889,7 +923,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     [weakSelf wrapperCallBack:result
                   channelName:aChannelName
                         error:aError
-                       object:@(!aError)];
+                       object:(aError == nil ? @YES : @NO)];
 #endif
 }
 
@@ -907,7 +941,8 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 
 // iOS 5.0 无以下 API（Android 有），返回不支持
 - (void)notSupported:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    NSError *err = [NSError errorWithDomain:@"im_flutter_sdk" code:110 userInfo:@{NSLocalizedDescriptionKey:@"not supported in iOS 5.0"}];
+    // 注意：必须用 EMError（wrapperCallBack 调 [error toJson]，NSError 无该方法会崩溃）
+    EMError *err = [EMError errorWithDescription:@"not supported in iOS 5.0" code:110];
     [self wrapperCallBack:result channelName:aChannelName error:err object:nil];
 }
 

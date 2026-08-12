@@ -190,8 +190,9 @@
 - (NSDictionary *)toJson {
     NSMutableDictionary *ret = [[super toJson] mutableCopy];
     ret[@"content"] = self.text;
-    ret[@"targetLanguages"] = self.targetLanguages;
-    ret[@"translations"] = self.translations;
+    // 完整输出（原生有 translations/targetLanguages 属性）：nil 时输出空值，避免 ObjC dict[key]=nil 移除 key
+    ret[@"targetLanguages"] = self.targetLanguages ?: @[];
+    ret[@"translations"] = self.translations ?: @{};
     return ret;
 }
 
@@ -405,7 +406,7 @@
     NSMutableDictionary *ret = [[super toJson] mutableCopy];
     ret[@"thumbnailLocalPath"] = self.thumbnailLocalPath;
     ret[@"thumbnailRemotePath"] = self.thumbnailRemotePath;
-    ret[@"thumbnailSecret"] = self.thumbnailSecretKey;
+    ret[@"thumbnailSecret"] = self.thumbnailSecretKey ?: @"";
     ret[@"thumbnailStatus"] = [NSNumber numberWithInteger:[EnumTools downloadStatusToInt:self.thumbnailDownloadStatus]];
     ret[@"fileStatus"] = [NSNumber numberWithInteger:[EnumTools downloadStatusToInt:self.downloadStatus]];
     ret[@"width"] = @(self.size.width);
@@ -454,7 +455,7 @@
     ret[@"secret"] = self.secretKey;
     ret[@"remotePath"] = self.remotePath;
     ret[@"thumbnailRemotePath"] = self.thumbnailRemotePath;
-    ret[@"thumbnailSecretKey"] = self.thumbnailSecretKey;
+    ret[@"thumbnailSecret"] = self.thumbnailSecretKey ?: @"";
     ret[@"thumbnailStatus"] = [NSNumber numberWithInteger:[EnumTools downloadStatusToInt:self.thumbnailDownloadStatus]];
     ret[@"width"] = @(self.thumbnailSize.width);
     ret[@"height"] = @(self.thumbnailSize.height);

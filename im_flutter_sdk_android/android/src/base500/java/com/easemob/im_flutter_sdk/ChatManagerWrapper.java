@@ -217,37 +217,34 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
 
     private void ackMessageRead(JSONObject params, String channelName, Result result) throws JSONException {
         // 5.0 改为 asyncSendMessageReadReceipts(List<EMMessage>)
+        // 【临时探测】透传原生（不拦截 null）：看 Android 原生对无效消息的真实返回
         String msgId = params.getString("msgId");
         asyncRunnable(() -> {
                 EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
+                List<EMMessage> msgs = new ArrayList<>();
                 if (msg != null) {
                     // 5.0 asyncSendMessageReadReceipts 要求 isNeedReadReceipt=true，否则跳过
                     msg.setIsNeedReadReceipt(true);
-                    List<EMMessage> msgs = new ArrayList<>();
                     msgs.add(msg);
-                    EMClient.getInstance().chatManager().asyncSendMessageReadReceipts(msgs, new EMWrapperCallBack(result, channelName, true));
-                } else {
-                    onError(result, new HyphenateException(500, "The message was not found"));
                 }
+                // 临时：空列表也透传原生（原逻辑 null 时 wrapper 自己造 500）
+                EMClient.getInstance().chatManager().asyncSendMessageReadReceipts(msgs, new EMWrapperCallBack(result, channelName, msg != null));
 
         });
     }
 
     private void ackGroupMessageRead(JSONObject params, String channelName, Result result) throws JSONException {
-        // 5.0 改为 asyncSendMessageReadReceipts(List<EMMessage>)
+        // 5.0 改为 asyncSendMessageReadReceipts(List<EMMessage>)；【透传原生】不本地拦截
         String msgId = params.getString("msgId");
         asyncRunnable(()->{
                 EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
+                List<EMMessage> msgs = new ArrayList<>();
                 if (msg != null) {
                     // 5.0 asyncSendMessageReadReceipts 要求 isNeedReadReceipt=true，否则跳过
                     msg.setIsNeedReadReceipt(true);
-                    List<EMMessage> msgs = new ArrayList<>();
                     msgs.add(msg);
-                    EMClient.getInstance().chatManager().asyncSendMessageReadReceipts(msgs, new EMWrapperCallBack(result, channelName, true));
-                } else {
-                    onError(result, new HyphenateException(500, "The message was not found"));
                 }
-
+                EMClient.getInstance().chatManager().asyncSendMessageReadReceipts(msgs, new EMWrapperCallBack(result, channelName, msg != null));
         });
     }
 
@@ -270,13 +267,10 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
         }
         asyncRunnable(() -> {
             try {
+                // 【透传原生】不本地拦截：原生对无效消息的真实返回
                 EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
-                if (msg != null) {
-                    EMClient.getInstance().chatManager().recallMessage(msg, ext);
-                    onSuccess(result, channelName, true);
-                }else {
-                    onError(result, new HyphenateException(500, "The message was not found"));
-                }
+                EMClient.getInstance().chatManager().recallMessage(msg, ext);
+                onSuccess(result, channelName, true);
             } catch (HyphenateException e) {
                 onError(result, e);
             }
@@ -374,12 +368,9 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void updateChatMessage(JSONObject params, String channelName, Result result) throws JSONException {
+        // 【透传原生】不本地拦截（dbMsg 为 null 也继续，原生处理）
         EMMessage msg = MessageHelper.fromJson(params.getJSONObject("message"));
         EMMessage dbMsg = EMClient.getInstance().chatManager().getMessage(msg.getMsgId());
-        if(dbMsg == null) {
-            onError(result, new HyphenateException(500, "The message is invalid."));
-            return;
-        }
         HelpTool.mergeMessage(msg, dbMsg);
         asyncRunnable(() -> {
             EMClient.getInstance().chatManager().updateMessage(dbMsg);
@@ -500,12 +491,9 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void downloadMessage(JSONObject params, String channelName, Result result, boolean isThumbnail, String nativeMethodName) throws JSONException {
+        // 【透传原生】不本地拦截（msg null 也继续，原生处理）
         EMMessage tempMsg = MessageHelper.fromJson(params.getJSONObject("message"));
         final EMMessage msg = EMClient.getInstance().chatManager().getMessage(tempMsg.getMsgId());
-        if (msg == null) {
-            onError(result, new HyphenateException(500, "The message was not found"));
-            return;
-        }
         EMCallBack downloadCallback = new EMWrapperCallBack(result, channelName, null) {
             @Override
             public void onSuccess() {

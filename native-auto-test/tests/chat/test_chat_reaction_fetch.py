@@ -229,7 +229,6 @@ def _send_text_and_wait_received(device_a, device_b, assert_api, user_a: str, us
                 "convId": user_b,
                 "chatType": 0,
                 "direction": 0,
-                "status": 0,
                 "hasRead": True,
                 "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
@@ -305,7 +304,7 @@ def test_chat_reaction_change_event_received_by_sender(topology, assert_api):
                 "result": {
                     "msgId": str(temp_id), "from": sender_user, "to": recipient_user,
                     "convId": recipient_user, "chatType": 0, "direction": 0,
-                    "status": 0, "hasRead": True, "needReadReceipt": False,  "isThread": False,
+                    "hasRead": True, "needReadReceipt": False,  "isThread": False,
                     "isContentReplaced": False, "body": {"type": 0, "content": content},
                 },
             },

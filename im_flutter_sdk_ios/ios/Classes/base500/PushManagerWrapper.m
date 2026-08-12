@@ -137,24 +137,8 @@
                     result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
 
-    if(!EMClient.sharedClient.isLoggedIn) {
-        EMError *e = [EMError errorWithDescription:@"Not login" code:EMErrorUserNotLogin];
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:e
-                           object:@(!e)];
-        return;
-    }
-
+    // 【透传原生】不本地检查登录/参数（原生处理）
     NSString *nickname = param[@"nickname"];
-    if (!nickname || [nickname length] == 0) {
-        EMError *e = [EMError errorWithDescription:@"Invalid parameter" code:EMErrorUserIllegalArgument];
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:e
-                           object:@(!e)];
-        return;
-    }
 
     [EMClient.sharedClient.pushManager updatePushDisplayName:nickname
                                                   completion:^(NSString * _Nonnull aDisplayName, EMError * _Nonnull aError)
@@ -180,7 +164,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!aError)];
+                           object:(aError == nil ? @YES : @NO)];
     }];
 }
 

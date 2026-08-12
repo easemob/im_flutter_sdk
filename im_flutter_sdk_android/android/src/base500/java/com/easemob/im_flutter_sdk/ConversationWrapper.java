@@ -103,14 +103,13 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
         // 5.0 改为 asyncSendMessageReadReceipts(List<EMMessage>)
         String msgId = params.getString("msgId");
         asyncRunnable(()->{
+            // 【透传原生】不本地拦截
             EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
+            List<EMMessage> msgs = new ArrayList<>();
             if (msg != null) {
-                List<EMMessage> msgs = new ArrayList<>();
                 msgs.add(msg);
-                EMClient.getInstance().chatManager().asyncSendMessageReadReceipts(msgs, new EMWrapperCallBack(result, channelName, null));
-            } else {
-                onError(result, new HyphenateException(500, "The message was not found"));
             }
+            EMClient.getInstance().chatManager().asyncSendMessageReadReceipts(msgs, new EMWrapperCallBack(result, channelName, null));
         });
     }
 
@@ -190,13 +189,9 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
         long endTs = params.getLong("endTs");
         asyncRunnable(()->{
             EMConversation conversation = conversationParams.getConversation();
+            // 【透传原生】原生返回值直接透传（不转错误）
             boolean success = conversation.removeMessages(startTs, endTs);
-            if (success) {
-                onSuccess(result, channelName, true);
-            }else {
-                HyphenateException e = new HyphenateException(3, "Database operation error");
-                onError(result, e);
-            }
+            onSuccess(result, channelName, success);
         });
     }
 
@@ -228,12 +223,9 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
 
     private void updateConversationMessage(JSONObject params, String channelName, Result result) throws JSONException {
         ConversationParams conversationParams = new ConversationParams(params);
+        // 【透传原生】不本地拦截
         EMMessage msg = MessageHelper.fromJson(params.getJSONObject("msg"));
         EMMessage dbMsg = EMClient.getInstance().chatManager().getMessage(msg.getMsgId());
-        if(dbMsg == null) {
-            onError(result, new HyphenateException(500, "The message is invalid."));
-            return;
-        }
         HelpTool.mergeMessage(msg, dbMsg);
         asyncRunnable(()->{
             EMConversation conversation = conversationParams.getConversation();

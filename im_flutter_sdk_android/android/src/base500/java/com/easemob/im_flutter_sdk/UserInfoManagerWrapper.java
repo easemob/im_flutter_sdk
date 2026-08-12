@@ -43,11 +43,8 @@ public class UserInfoManagerWrapper extends Wrapper implements MethodCallHandler
 
 
     private void fetchOwnInfo(String channelName, Result result) {
+        // 【透传原生】不本地检查登录（原生处理）
         String currentUser = EMClient.getInstance().getCurrentUser();
-        if (currentUser == null || currentUser.isEmpty()) {
-            onError(result, new HyphenateException(201, "User not login"));
-            return;
-        }
         EMClient.getInstance().userInfoManager().fetchUserInfoByUserId(
                 new String[]{currentUser},
                 new EMValueWrapperCallBack<Map<String, EMUserInfo>>(
@@ -67,11 +64,8 @@ public class UserInfoManagerWrapper extends Wrapper implements MethodCallHandler
     }
 
     private void updateOwnUserInfo(JSONObject param, String channelName, Result result) {
+        // 【透传原生】不本地检查登录（原生处理）
         String currentUser = EMClient.getInstance().getCurrentUser();
-        if (currentUser == null) {
-            onError(result, new HyphenateException(201, "User not login"));
-            return;
-        }
 
         EMUserInfo info = userInfoFromJson(param);
         info.setUserId(currentUser);

@@ -243,7 +243,7 @@ def _assert_invalid_conv_returns_cursor(assert_api, resp: dict, cmd: str, device
 
 @pytest.mark.topology("account_a_to_account_b")
 def test_chat_ack_conversation_read_success_with_event(topology, assert_api):
-    """ackConversationRead：接收端回执会话已读，发送端收到会话已读事件。"""
+    """ackConversationRead：接收端回执会话已读（5.0 清未读数，两端均不发 onConversationRead 事件）。"""
     sender = topology.sender_action_device
     action_recipient = topology.recipient_action_device
     user_a = topology.sender_user
@@ -262,27 +262,9 @@ def test_chat_ack_conversation_read_success_with_event(topology, assert_api):
         ignore_keys={"sequence", "result"},
     )
 
-    evt = _receive_ack_conversation_event(sender, from_user=user_b, to_user=user_a, timeout=60.0)
-    evt_type = (evt or {}).get("eventType")
-    assert evt_type in (
-        "onConversationRead",
-        Cmd.onConversationHasRead.value,
-        Cmd.onMessagesRead.value,
-        Cmd.onMessageReadAck.value,
-    ), f"unexpected eventType for ackConversationRead: {evt!r}"
-    assert_api.assert_response_matches(
-        evt,
-        expected={
-            "type": "event",
-            "eventType": "{{eventType}}",
-            "data": {
-                "from": "{{fromUser}}",
-                "to": "{{toUser}}",
-            },
-        },
-        context={"eventType": evt_type, "fromUser": user_b, "toUser": user_a},
-        ignore_keys={"timestamp", "sequence", "serverTime", "localTime"},
-    )
+    # 5.0 原生：ackConversationRead = asyncClearConversationUnreadMessageCount（清未读数）
+    # 不发 onConversationRead 已读事件（Android/iOS 两端一致）→ 不验证已读事件
+    pass
 
 
 def test_chat_ack_conversation_read_invalid_conv_id(device_b, assert_api):

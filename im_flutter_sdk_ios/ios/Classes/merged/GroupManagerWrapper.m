@@ -394,7 +394,8 @@
 - (void)getPublicGroupsFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     // iOS 5.0 移除 getPublicGroupsFromServerWithCursor；该能力暂不提供
-    NSError *err = [NSError errorWithDomain:@"im_flutter_sdk" code:110 userInfo:@{NSLocalizedDescriptionKey:@"not supported in iOS 5.0"}];
+    // 注意：必须用 EMError（wrapperCallBack 调 [error toJson]，NSError 无该方法会崩溃）
+    EMError *err = [EMError errorWithDescription:@"not supported in iOS 5.0" code:110];
     [weakSelf wrapperCallBack:result channelName:aChannelName error:err object:nil];
 }
 
@@ -806,10 +807,11 @@
         
     } completion:^(EMGroupSharedFile *aSharedFile, EMError *aError)
      {
+        // 透传原生文件对象（对齐 Android EMValueCallBack<EMMucSharedFile>）
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!aError)];
+                           object:(aSharedFile ? [aSharedFile toJson] : nil)];
     }];
 }
 
@@ -833,7 +835,7 @@
     [self wrapperCallBack:result
               channelName:aChannelName
                     error:nil
-                   object:@(YES)];
+                   object:nil];
 }
 
 - (void)removeGroupSharedFile:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
@@ -845,7 +847,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!aError)];
+                           object:(aError == nil ? @YES : @NO)];
     }];
 }
 
@@ -1568,7 +1570,7 @@
 - (void)updateGroupNamecard:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager updateGroupNamecard:param[@"groupId"] namecard:param[@"namecard"] completion:^(EMError * _Nullable error) {
-        [weakSelf wrapperCallBack:result channelName:aChannelName error:error object:@(!error)];
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:error object:nil];
     }];
 }
 
@@ -1601,7 +1603,7 @@
 - (void)setMemberAttributesFromGroup:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager setMemberAttribute:param[@"groupId"] userId:param[@"userId"] attributes:param[@"attributes"] completion:^(EMError * _Nullable error) {
-        [weakSelf wrapperCallBack:result channelName:aChannelName error:error object:@(!error)];
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:error object:nil];
     }];
 }
 @end

@@ -98,7 +98,7 @@ def _send_and_wait_server_conversation(device_a, device_b, assert_api, *, user_a
         response,
         expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA", "result": {
             "msgId": temp_id, "from": user_a, "to": peer, "convId": peer,
-            "chatType": 0, "direction": 0, "status": 0, "hasRead": True,
+            "chatType": 0, "direction": 0, "hasRead": True,
             "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
             "body": {"type": 0, "content": content},
         }},

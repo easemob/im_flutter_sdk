@@ -240,7 +240,8 @@
 
 - (void)createChatroom:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     // 5.0 移除聊天室创建/销毁 API
-    NSError *err = [NSError errorWithDomain:@"im_flutter_sdk" code:110 userInfo:@{NSLocalizedDescriptionKey:@"not supported in iOS 5.0"}];
+    // 注意：必须用 EMError（wrapperCallBack 调 [error toJson]，NSError 无该方法会崩溃）
+    EMError *err = [EMError errorWithDescription:@"not supported in iOS 5.0" code:110];
     [self wrapperCallBack:result channelName:aChannelName error:err object:nil];
 }
 
@@ -258,7 +259,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!!aChatroom)];
+                           object:(aChatroom ? [aChatroom toJson] : nil)];
     }];
 }
 
@@ -279,7 +280,8 @@
 
 - (void)destroyChatRoom:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     // 5.0 移除聊天室创建/销毁 API
-    NSError *err = [NSError errorWithDomain:@"im_flutter_sdk" code:110 userInfo:@{NSLocalizedDescriptionKey:@"not supported in iOS 5.0"}];
+    // 注意：必须用 EMError（wrapperCallBack 调 [error toJson]，NSError 无该方法会崩溃）
+    EMError *err = [EMError errorWithDescription:@"not supported in iOS 5.0" code:110];
     [self wrapperCallBack:result channelName:aChannelName error:err object:nil];
 }
 
@@ -581,7 +583,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!aError)];
+                           object:(aError == nil ? @YES : @NO)];
     }];
 }
 
@@ -648,7 +650,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!aError)];
+                           object:(aChatroom ? [aChatroom toJson] : nil)];
     }];
 }
 
@@ -661,7 +663,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:@(!aError)];
+                           object:(aChatroom ? [aChatroom toJson] : nil)];
     }];
 }
 
@@ -1033,28 +1035,28 @@
 - (void)setChatroomAttribute:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.roomManager setChatroomAttribute:param[@"roomId"] key:param[@"key"] value:param[@"value"] autoDelete:[param[@"autoDelete"] boolValue] completionBlock:^(EMError * _Nullable aError) {
-        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:@(!aError)];
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:nil];
     }];
 }
 
 - (void)setChatroomAttributeForced:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.roomManager setChatroomAttributeForced:param[@"roomId"] key:param[@"key"] value:param[@"value"] autoDelete:[param[@"autoDelete"] boolValue] completionBlock:^(EMError * _Nullable aError) {
-        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:@(!aError)];
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:nil];
     }];
 }
 
 - (void)removeChatRoomAttributeFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.roomManager removeChatroomAttribute:param[@"roomId"] key:param[@"key"] completionBlock:^(EMError * _Nullable aError) {
-        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:@(!aError)];
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:nil];
     }];
 }
 
 - (void)removeChatRoomAttributeFromServerForced:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.roomManager removeChatroomAttributeForced:param[@"roomId"] key:param[@"key"] completionBlock:^(EMError * _Nullable aError) {
-        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:@(!aError)];
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:nil];
     }];
 }
 
@@ -1069,13 +1071,13 @@
     // 5.0 同步方法
     EMError *error = nil;
     [EMClient.sharedClient.roomManager leaveChatroom:param[@"roomId"] error:&error];
-    [self wrapperCallBack:result channelName:aChannelName error:error object:@(!error)];
+    [self wrapperCallBack:result channelName:aChannelName error:error object:(error == nil ? @YES : @NO)];
 }
 
 - (void)updateChatRoomAnnouncement:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.roomManager updateChatroomAnnouncementWithId:param[@"roomId"] announcement:param[@"announcement"] completion:^(EMChatroom * _Nullable aChatroom, EMError * _Nullable aError) {
-        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:@(!aError)];
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:(aError == nil ? @YES : @NO)];
     }];
 }
 @end
