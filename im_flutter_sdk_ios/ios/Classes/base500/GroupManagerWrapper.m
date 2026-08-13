@@ -573,10 +573,11 @@
                                             fromGroup:param[@"groupId"]
                                            completion:^(EMGroup *aGroup, EMError *aError)
      {
+        // 对齐 Android（EMWrapperCallBack true）：removeMembers 成功返回 true（原生带 aGroup 但丢弃，按协议成功标志）
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:@(YES)];
     }];
     
 }
@@ -650,10 +651,11 @@
     [EMClient.sharedClient.groupManager destroyGroup:param[@"groupId"]
                                     finishCompletion:^(EMError *aError)
      {
+        // 对齐 Android（EMWrapperCallBack true）：destroyGroup 成功返回 true
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:@(YES)];
         
     }];
 }

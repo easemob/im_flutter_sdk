@@ -11,6 +11,7 @@ from tests.chatroom.chatroom_helpers import assert_join_chatroom_response, creat
 pytestmark = [pytest.mark.client, pytest.mark.chatroom, pytest.mark.agorachat1_4_0]
 
 
+@pytest.mark.skip(reason="5.0 移除客户端 createChatRoom（残留，聊天室由服务端创建）")
 def test_chatroom_create_room_via_sdk_without_permission(device_a, assert_api):
     room_name = f"sdk_create_{uuid4().hex[:8]}"
     room_desc = f"sdk_desc_{uuid4().hex[:8]}"
@@ -131,6 +132,7 @@ def test_chatroom_fetch_room_info_with_members_from_server(device_a, device_b, a
         safe_delete_chatroom(room_id)
 
 
+@pytest.mark.skip(reason="5.0 移除客户端 destroyChatRoom（残留，聊天室由服务端销毁）")
 def test_chatroom_destroy_room_success(device_a, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="destroy", desc_prefix="destroy")
     resp = device_a.call("ChatRoomManager", Cmd.destroyChatRoom.value, info={"roomId": room_id})
@@ -148,17 +150,8 @@ def test_chatroom_destroy_room_success(device_a, assert_api, user_a):
 
 def test_chatroom_fetch_room_info_from_server_after_destroy(device_a, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="destroy_fetch", desc_prefix="destroy_fetch")
-    resp_destroy = device_a.call("ChatRoomManager", Cmd.destroyChatRoom.value, info={"roomId": room_id})
-    assert_api.assert_response_matches(
-        resp_destroy,
-        expected={
-            "manager": "ChatRoomManager",
-            "cmd": Cmd.destroyChatRoom.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
+    # 5.0 客户端 destroyChatRoom 移除 → REST 服务端销毁
+    safe_delete_chatroom(room_id)
 
     resp_fetch = device_a.call("ChatRoomManager", Cmd.fetchChatRoomInfoFromServer.value, info={"roomId": room_id})
     assert_api.assert_error(resp_fetch, code=700, description="do not find this group")

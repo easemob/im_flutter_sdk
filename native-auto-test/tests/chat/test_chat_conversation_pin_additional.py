@@ -76,7 +76,7 @@ def _prepare_conversation(device_a, device_b, assert_api, user_a, user_b):
     )
     deadline = time.monotonic() + 60
     while time.monotonic() < deadline:
-        conversations = device_a.call("ChatManager", Cmd.getConversationsFromServer.value, info={})
+        conversations = device_a.call("ChatManager", Cmd.loadAllConversations.value, info={})
         if any(isinstance(item, dict) and item.get("convId") == user_b
                for item in (conversations.get("result") or [])):
             return
@@ -108,13 +108,13 @@ def test_chat_conversation_pin_and_unpin_are_idempotent(device_a, device_b, asse
             ignore_keys={"sequence"},
         )
     fetch = device_a.call(
-        "ChatManager", Cmd.fetchConversationsByOptions.value,
+        "ChatManager", Cmd.loadAllConversations.value,
         info={"pageSize": 20, "cursor": "", "pinned": True},
     )
     assert_api.assert_response_matches(
         {"manager": fetch.get("manager"), "cmd": fetch.get("cmd"), "device": fetch.get("device"),
          "result": {"target": _target_pinned(fetch, user_b)}},
-        expected={"manager": "ChatManager", "cmd": Cmd.fetchConversationsByOptions.value,
+        expected={"manager": "ChatManager", "cmd": Cmd.loadAllConversations.value,
                   "device": "deviceA", "result": {"target": [{"convId": user_b,
                   "type": 0, "isPinned": True, "isThread": False}]}},
         ignore_keys={"sequence"},
@@ -131,7 +131,7 @@ def test_chat_conversation_pin_and_unpin_are_idempotent(device_a, device_b, asse
             ignore_keys={"sequence"},
         )
     fetch_after = device_a.call(
-        "ChatManager", Cmd.fetchConversationsByOptions.value,
+        "ChatManager", Cmd.loadAllConversations.value,
         info={"pageSize": 20, "cursor": "", "pinned": True},
     )
     # 5.0 fetchConversationsByOptions 返回全部会话（不按 pinned 过滤）→ 改为验证该会话 isPinned=False
@@ -189,16 +189,17 @@ def test_chat_pin_conversation_non_boolean_coerces_to_unpin(
     ],
 )
 @pytest.mark.skip(reason="5.0 移除 cursor 分页（fetchPinnedConversations 返回纯 list，无 pageSize 校验）")
+@pytest.mark.skip(reason="5.0 移除 fetchConversationsByOptions 分页边界（残留）")
 def test_chat_fetch_pinned_conversations_page_size_boundaries(
     device_a, assert_api, page_size, expected,
 ):
     response = device_a.call(
-        "ChatManager", Cmd.fetchConversationsByOptions.value,
+        "ChatManager", Cmd.loadAllConversations.value,
         info={"pageSize": page_size, "cursor": "", "pinned": True},
     )
     assert_api.assert_response_matches(
         response,
-        expected={"manager": "ChatManager", "cmd": Cmd.fetchConversationsByOptions.value,
+        expected={"manager": "ChatManager", "cmd": Cmd.loadAllConversations.value,
                   "device": "deviceA", "result": expected},
         ignore_keys={"sequence"},
     )

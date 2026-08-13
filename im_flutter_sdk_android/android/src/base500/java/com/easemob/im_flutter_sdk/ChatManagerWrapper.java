@@ -1065,11 +1065,6 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             }
 
             @Override
-            public void onReadReceiptForGroupMessageUpdated() {
-                post(() -> channel.invokeMethod(MethodKey.onReadAckForGroupMessageUpdated, null));
-            }
-
-            @Override
             public void onReactionChanged(List<EMMessageReactionChange> messageReactionChangeList) {
                 ArrayList<Map<String, Object>> list = new ArrayList<>();
                 for (EMMessageReactionChange change : messageReactionChangeList) {

@@ -46,7 +46,7 @@ def test_group_create_group_empty_name(device_a, assert_api, user_a):
                 "avatarUrl": "",
                 "groupId": ne(""),
                 "memberCount": 1,
-                "isMemberOnly": True,
+                "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
                 "muteList": [],
                 "isMemberAllowToInvite": False,
                 "messageBlocked": False,
@@ -140,7 +140,7 @@ def test_group_create_group_optional_fields_empty(device_a, assert_api, user_a, 
                 "avatarUrl": expected_avatar,
                 "groupId": ne(""),
                 "memberCount": expected_member_count,
-                "isMemberOnly": True,
+                "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
                 "muteList": [],
                 "isMemberAllowToInvite": False,
                 "messageBlocked": False,
@@ -198,12 +198,12 @@ def test_group_create_group_max_count_less_than_invite_members(device_a, assert_
         (
             "group_name_too_long_256",
             {"groupName": "g" * 256},
-            {"code": 300, "description": "Server is unreachable"},
+            None,  # 5.0 实测：群名 256 字符被原生接受（创建成功），不再报 300
         ),
         (
             "group_name_too_long_512",
             {"groupName": "g" * 512},
-            {"code": 300, "description": "Server is unreachable"},
+            None,  # 5.0 实测：群名 512 字符被原生接受（创建成功），不再报 300
         ),
         ("group_name_control_chars", {"groupName": "cg_ctrl_\x01\x02"}, None),
         ("avatar_url_not_url", {"avatarUrl": "abc"}, None),
@@ -257,7 +257,7 @@ def test_group_create_group_name_and_avatar_abnormal_inputs(
                 "avatarUrl": expected_avatar,
                 "groupId": ne(""),
                 "memberCount": 1,
-                "isMemberOnly": True,
+                "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
                 "muteList": [],
                 "isMemberAllowToInvite": False,
                 "messageBlocked": False,
@@ -359,7 +359,7 @@ def test_group_create_group_desc_reason_options_abnormal_inputs(
                 "avatarUrl": "",
                 "groupId": ne(""),
                 "memberCount": expected_member_count,
-                "isMemberOnly": True,
+                "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
                 "muteList": [],
                 "isMemberAllowToInvite": False,
                 "messageBlocked": False,
@@ -448,7 +448,7 @@ def test_group_create_group_invite_members_abnormal_inputs(
                 "avatarUrl": "",
                 "groupId": ne(""),
                 "memberCount": 1 + len(set(resolved_invite_members)),
-                "isMemberOnly": True,
+                "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
                 "muteList": [],
                 "isMemberAllowToInvite": False,
                 "messageBlocked": False,
@@ -530,7 +530,7 @@ def test_group_create_group_text_fields_additional_inputs(
                 "avatarUrl": "",
                 "groupId": ne(""),
                 "memberCount": 1,
-                "isMemberOnly": True,
+                "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
                 "muteList": [],
                 "isMemberAllowToInvite": False,
                 "messageBlocked": False,

@@ -25,6 +25,7 @@ def test_group_get_joined_groups_with_extra_info_fields(device_a, assert_api):
     )
 
 
+@pytest.mark.skip(reason="5.0 移除 getJoinedGroupsFromServer（残留，改本地 getJoinedGroups）")
 def test_group_get_joined_groups_from_server_with_extra_info_fields(device_a, assert_api):
     resp = device_a.call(
         "GroupManager",

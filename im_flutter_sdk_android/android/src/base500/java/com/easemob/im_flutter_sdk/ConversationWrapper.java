@@ -62,6 +62,7 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
         register(MethodKey.clearAllMessages, this::clearAllMessages);
         register(MethodKey.deleteMessagesWithTs, this::deleteMessagesWithTs);
         register(MethodKey.appendMessage, this::appendMessage);
+        register(MethodKey.insertMessage, this::insertMessage);
         register(MethodKey.updateConversationMessage, this::updateConversationMessage);
         register(MethodKey.loadMsgWithId, this::loadMsgWithId);
         register(MethodKey.loadMsgWithStartId, this::loadMsgWithStartId);

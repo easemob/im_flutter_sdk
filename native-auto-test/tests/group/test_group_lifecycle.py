@@ -64,7 +64,7 @@ def test_group_create_group(device_a, device_b, assert_api, user_a, user_b):
                 "onGroupMemberJoined",
             },
             group_id=group_id,
-            required_all_event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
+            required_all_event_types={"onGroupMembersJoined"},  # 5.0 只派发批量事件（无单数 onGroupMemberJoined）
             timeout=10.0,
         )
         assert_group_events(
@@ -75,7 +75,7 @@ def test_group_create_group(device_a, device_b, assert_api, user_a, user_b):
                 "onGroupMemberJoined",
             },
             group_id=group_id,
-            required_all_event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
+            required_all_event_types={"onGroupMembersJoined"},  # 5.0 只派发批量事件（无单数 onGroupMemberJoined）
             expected_member=user_b,
         )
     finally:

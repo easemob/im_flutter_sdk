@@ -59,22 +59,56 @@ public class Wrapper implements MethodChannel.MethodCallHandler {
   /** 统一命令分发：解析参数 -> 查注册表 -> 分发；未注册命令返回 notImplemented。 */
   @Override
   public void onMethodCall(MethodCall call, MethodChannel.Result result) {
+    // 全局防重复提交：同一个 MethodChannel.Result 只允许提交一次（success/error/notImplemented）
+    // 原生回调重复 / wrapper 提前返回 + 回调双提交 → 第二次忽略（防 "Reply already submitted" 崩溃）
+    final MethodChannel.Result once = new OnceResult(result);
     final JSONObject param;
     try {
       param = argumentsToJSONObject(call.arguments);
     } catch (JSONException e) {
-      replyJsonOrRuntimeError(result, e);
+      replyJsonOrRuntimeError(once, e);
       return;
     }
     CmdHandler handler = handlers.get(call.method);
     if (handler != null) {
       try {
-        handler.handle(param, call.method, result);
+        handler.handle(param, call.method, once);
       } catch (Exception e) {
-        replyJsonOrRuntimeError(result, e);
+        replyJsonOrRuntimeError(once, e);
       }
     } else {
-      result.notImplemented();
+      once.notImplemented();
+    }
+  }
+
+  /** 包装 MethodChannel.Result：只允许一次 success/error/notImplemented。 */
+    private static class OnceResult implements MethodChannel.Result {
+    private final MethodChannel.Result delegate;
+    private final java.util.concurrent.atomic.AtomicBoolean submitted = new java.util.concurrent.atomic.AtomicBoolean(false);
+
+    OnceResult(MethodChannel.Result delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public void success(Object result) {
+      if (submitted.compareAndSet(false, true)) {
+        delegate.success(result);
+      }
+    }
+
+    @Override
+    public void error(String code, String message, Object details) {
+      if (submitted.compareAndSet(false, true)) {
+        delegate.error(code, message, details);
+      }
+    }
+
+    @Override
+    public void notImplemented() {
+      if (submitted.compareAndSet(false, true)) {
+        delegate.notImplemented();
+      }
     }
   }
 

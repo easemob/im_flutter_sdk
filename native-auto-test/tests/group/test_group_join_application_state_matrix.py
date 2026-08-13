@@ -37,10 +37,13 @@ def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
         device=device_name,
         result=True,
     )
+    # 5.0 统一 token 登录：密码需先 REST 换 token（loginWithToken 接受 token，直接传密码被拒 202）
+    from src.rest_api.user_api import fetch_user_token
+    _tok = fetch_user_token(user_id, "1").get("access_token", "")
     login = device.call(
         "Client",
         Cmd.login.value,
-        info={"userId": user_id, "pwdOrToken": "1", "isPassword": True},
+        info={"userId": user_id, "pwdOrToken": _tok, "isPassword": False},
     )
     _assert_call(
         assert_api,
@@ -98,6 +101,8 @@ def _fetch_group(
         member_count_value=member_count,
         admin_list_value=admins,
         permission_type=permission_type,
+        # 5.0: style=2（公开需审批）→ allowInvites=true（原生 isMemberAllowToInvite=True）
+        is_member_allow_to_invite=True,
         device=device_name,
     )
     assert_group_members_exact(response, members, err_prefix="入群申请服务端快照")
@@ -341,7 +346,6 @@ def test_group_duplicate_join_application_keeps_single_pending_request(
             event_type="onGroupRequestToJoinDeclined",
             data={
                 "groupId": group_id,
-                "groupName": None,
                 "decliner": user_a,
                 "reason": "cleanup",
                 "applicant": user_b,
@@ -448,8 +452,7 @@ def test_group_join_application_cannot_be_processed_twice(
                 event_type=first_event_type,
                 data={
                     "groupId": group_id,
-                    "groupName": None,
-                    "decliner": user_a,
+                        "decliner": user_a,
                     "reason": "first-decline",
                     "applicant": user_b,
                 },
@@ -617,8 +620,7 @@ def test_group_join_application_processing_permission_by_role(
                     event_type=event_type,
                     data={
                         "groupId": group_id,
-                        "groupName": None,
-                        "decliner": user_b,
+                                "decliner": user_b,
                         "reason": "role-decline",
                         "applicant": user_c,
                     },

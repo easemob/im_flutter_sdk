@@ -21,7 +21,6 @@ base:
   - ChatManager.downloadMessageAttachmentInCombine
   - ChatManager.downloadMessageThumbnailInCombine
   - ChatManager.downloadThumbnail
-  - ChatManager.fetchConversationsByOptions
   - ChatManager.fetchHistoryMessages
   - ChatManager.fetchHistoryMessagesByOptions
   - ChatManager.fetchPinnedMessages
@@ -72,6 +71,7 @@ base:
   - ChatRoomManager.fetchChatRoomMuteList
   - ChatRoomManager.fetchChatRoomWhiteListFromServer
   - ChatRoomManager.fetchPublicChatRoomsFromServer
+  - ChatRoomManager.isMemberInChatRoomMuteList
   - ChatRoomManager.isMemberInChatRoomWhiteListFromServer
   - ChatRoomManager.joinChatRoom
   - ChatRoomManager.leaveChatRoom
@@ -80,6 +80,7 @@ base:
   - ChatRoomManager.removeChatRoomAdmin
   - ChatRoomManager.removeChatRoomAttributeFromServer
   - ChatRoomManager.removeChatRoomAttributeFromServerForced
+  - ChatRoomManager.removeChatRoomAttributes
   - ChatRoomManager.removeChatRoomMembers
   - ChatRoomManager.removeMembersFromChatRoomWhiteList
   - ChatRoomManager.setChatRoomAttributes
@@ -124,9 +125,17 @@ base:
   - Client.sendFCMTokenToServer
   - Client.sendHonorPushTokenToServer
   - Client.setDataSyncType
-  - Client.startCallback
+  - Client.updateAutoAcceptGroupInvitationSetting
+  - Client.updateAutoDownloadAttachmentThumbnailSetting
+  - Client.updateDeleteMessageWhenLeaveRoomSetting
+  - Client.updateDeleteMessagesWhenLeaveGroupSetting
   - Client.updateDeliveryAckSetting
   - Client.updateLoginExtensionInfo
+  - Client.updateMessagesReceiveCallbackIncludeSendSetting
+  - Client.updateRegradeMessagesSetting
+  - Client.updateRoomOwnerCanLeaveSetting
+  - Client.updateSortMessageByServerTimeSetting
+  - Client.updateUsingHttpsOnlySetting
   - Client.uploadLog
   - ContactManager.acceptInvitation
   - ContactManager.addContact
@@ -134,10 +143,8 @@ base:
   - ContactManager.declineInvitation
   - ContactManager.deleteContact
   - ContactManager.fetchAllContacts
-  - ContactManager.fetchContacts
   - ContactManager.getAllContacts
   - ContactManager.getAllContactsFromDB
-  - ContactManager.getAllContactsFromServer
   - ContactManager.getBlockListFromDB
   - ContactManager.getBlockListFromServer
   - ContactManager.getContact
@@ -159,6 +166,7 @@ base:
   - ConversationManager.getLatestMessage
   - ConversationManager.getLatestMessageFromOthers
   - ConversationManager.getUnreadMsgCount
+  - ConversationManager.insertMessage
   - ConversationManager.loadMsgWithId
   - ConversationManager.loadMsgWithKeywords
   - ConversationManager.loadMsgWithMsgType
@@ -200,7 +208,6 @@ base:
   - GroupManager.getGroupWhiteListFromServer
   - GroupManager.getGroupWithId
   - GroupManager.getJoinedGroups
-  - GroupManager.getJoinedGroupsFromServer
   - GroupManager.getUsers
   - GroupManager.inviterUser
   - GroupManager.isMemberInGroupMuteList
@@ -265,7 +272,6 @@ base:
   - UserInfoManager.unsubscribeUsersInfo
   - UserInfoManager.updateOwnUserInfo
   - UserInfoManager.updateOwnUserInfoWithType
-
 ios_only_native:
 - applicationDidEnterBackground
 - applicationWillEnterForeground
@@ -282,25 +288,15 @@ ios_only_native:
 - unRegisterPushKitTokenWithCompletion
 versions:
   4.24.0:
-    removed:
+    removed: []
+    added:
     - ChatManager.reportMessage
     - ChatRoomManager.createChatRoom
     - ChatRoomManager.destroyChatRoom
     - ChatRoomManager.getAllChatRooms
     - Client.createAccount
     - Client.loginWithAgoraToken
-    - Client.updateAutoAcceptGroupInvitationSetting
-    - Client.updateAutoDownloadAttachmentThumbnailSetting
-    - Client.updateDeleteMessageWhenLeaveRoomSetting
-    - Client.updateDeleteMessagesWhenLeaveGroupSetting
-    - Client.updateMessagesReceiveCallbackIncludeSendSetting
-    - Client.updateRegradeMessagesSetting
     - Client.updateRequireAckSetting
-    - Client.updateRoomOwnerCanLeaveSetting
-    - Client.updateSortMessageByServerTimeSetting
-    - Client.updateUsingHttpsOnlySetting
-    - ConversationManager.insertMessage
-    added:
     - ChatManager.cleanConversationsMemoryCache
     - ChatManager.deleteConversations
     - ChatManager.filterConversationsFromDB

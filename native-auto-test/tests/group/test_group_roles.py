@@ -231,7 +231,7 @@ def test_group_update_owner_success(device_a, device_b, assert_api, user_a, user
         assert owner_result.get("groupId") == group_id, f"updateGroupOwner groupId 不匹配: {resp_update_owner}"
         assert owner_result.get("owner") == user_b, f"updateGroupOwner owner 不匹配: {resp_update_owner}"
         assert owner_result.get("memberCount") == 2, f"updateGroupOwner memberCount 不匹配: {resp_update_owner}"
-        assert owner_result.get("isMemberOnly") is True, f"updateGroupOwner isMemberOnly 不匹配: {resp_update_owner}"
+        assert owner_result.get("isPublic") is False, f"updateGroupOwner isMemberOnly 不匹配: {resp_update_owner}"
 
         owner_changed_events = collect_group_events(
             device_b,
@@ -301,7 +301,7 @@ def test_group_update_owner_success(device_a, device_b, assert_api, user_a, user
         assert owner_back_result.get("groupId") == group_id, f"owner 回切 groupId 不匹配: {resp_owner_back}"
         assert owner_back_result.get("owner") == user_a, f"owner 回切 owner 不匹配: {resp_owner_back}"
         assert owner_back_result.get("memberCount") == 2, f"owner 回切 memberCount 不匹配: {resp_owner_back}"
-        assert owner_back_result.get("isMemberOnly") is True, f"owner 回切 isMemberOnly 不匹配: {resp_owner_back}"
+        assert owner_back_result.get("isPublic") is False, f"owner 回切 isMemberOnly 不匹配: {resp_owner_back}"
 
         owner_back_a_events = collect_group_events(
             device_a,

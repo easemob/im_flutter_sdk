@@ -5,7 +5,7 @@ from contextlib import nullcontext
 
 import pytest
 
-from src import Cmd
+from src import Cmd, GroupChangeEvent
 
 
 def _allure_step(name: str):
@@ -101,10 +101,10 @@ def test_group_invitation_explicit_accept_when_auto_accept_disabled(
             required_all_event_types={"onGroupInvitationReceived"},
             timeout=10.0,
         )
-        with _allure_step("接收账号副端 sec_b 同步验证收到事件"):
+        with _allure_step("接收账号副端 device_b_sec 同步验证收到事件"):
             sec_events = collect_group_events(
 
-                sec_b,
+                device_b_sec,
                 expected_event_types={
                     GroupChangeEvent.ON_INVITATION_RECEIVED.value,
                     "onGroupInvitationReceived",
@@ -113,7 +113,7 @@ def test_group_invitation_explicit_accept_when_auto_accept_disabled(
                 required_all_event_types={"onGroupInvitationReceived"},
                 timeout=10.0,
             )
-            assert sec_events, f"{sec_b.device_name} 未收到事件: {sec_events}"
+            assert sec_events, f"{device_b_sec.device_name} 未收到事件: {sec_events}"
 
         _assert_exact_group_event(
             assert_api,
@@ -148,7 +148,6 @@ def test_group_invitation_explicit_accept_when_auto_accept_disabled(
         accepted_event_types = {
             "onGroupInvitationAccepted",
             "onGroupMembersJoined",
-            "onGroupMemberJoined",
         }
         accepted_events = collect_group_events(
             device_a,
@@ -170,14 +169,8 @@ def test_group_invitation_explicit_accept_when_auto_accept_disabled(
             event_type="onGroupMembersJoined",
             data={"groupId": group_id, "userIds": [user_b]},
         )
-        _assert_exact_group_event(
-            assert_api,
-            accepted_by_type["onGroupMemberJoined"],
-            event_type="onGroupMemberJoined",
-            data={"groupId": group_id, "member": user_b},
-        )
-        # B 接受邀请入群后，B 端会收到成员加入事件（onGroupMembersJoined/
-        # onGroupMemberJoined），但不会收到"邀请被接受"通知（那是发给邀请方 A 的）。
+        # B 接受邀请入群后，B 端会收到成员加入事件（onGroupMembersJoined），
+        # 但不会收到"邀请被接受"通知（那是发给邀请方 A 的）。
         assert_no_group_event(
             device_b,
             group_id=group_id,
@@ -245,7 +238,7 @@ def test_group_invitation_explicit_decline_when_auto_accept_disabled(
     group_id = ""
     group_name = new_group_name("invite_explicit_decline")
     decline_reason = "explicit-decline"
-    joined_event_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
+    joined_event_types = {"onGroupMembersJoined"}  # 5.0 只派发批量事件
     try:
         resp_option = device_b.call(
             "Client",
@@ -279,16 +272,16 @@ def test_group_invitation_explicit_decline_when_auto_accept_disabled(
             required_all_event_types={"onGroupInvitationReceived"},
             timeout=10.0,
         )
-        with _allure_step("接收账号副端 sec_b 同步验证收到事件"):
+        with _allure_step("接收账号副端 device_b_sec 同步验证收到事件"):
             sec_events = collect_group_events(
 
-                sec_b,
+                device_b_sec,
                 expected_event_types={"onGroupInvitationReceived"},
                 group_id=group_id,
                 required_all_event_types={"onGroupInvitationReceived"},
                 timeout=10.0,
             )
-            assert sec_events, f"{sec_b.device_name} 未收到事件: {sec_events}"
+            assert sec_events, f"{device_b_sec.device_name} 未收到事件: {sec_events}"
 
         _assert_exact_group_event(
             assert_api,
@@ -439,16 +432,18 @@ def test_group_invitation_auto_accept_when_confirmation_required(
             required_all_event_types={"onGroupAutoAcceptInvitation"},
             timeout=10.0,
         )
-        with _allure_step("接收账号副端 sec_b 同步验证收到事件"):
+        with _allure_step("接收账号副端 device_b_sec 同步验证收到事件"):
+            # 5.0 实测：onGroupAutoAcceptInvitation 只回投到设置账号的主端，不同步副端；
+            # 副端通过成员加入事件 onGroupMembersJoined（广播到全部在线端）验证 auto-accept 生效。
             sec_events = collect_group_events(
 
-                sec_b,
-                expected_event_types={"onGroupAutoAcceptInvitation"},
+                device_b_sec,
+                expected_event_types={"onGroupMembersJoined"},
                 group_id=group_id,
-                required_all_event_types={"onGroupAutoAcceptInvitation"},
+                required_all_event_types={"onGroupMembersJoined"},
                 timeout=10.0,
             )
-            assert sec_events, f"{sec_b.device_name} 未收到事件: {sec_events}"
+            assert sec_events, f"{device_b_sec.device_name} 未收到成员加入事件: {sec_events}"
 
         _assert_exact_group_event(
             assert_api,
@@ -460,7 +455,6 @@ def test_group_invitation_auto_accept_when_confirmation_required(
         owner_event_types = {
             "onGroupInvitationAccepted",
             "onGroupMembersJoined",
-            "onGroupMemberJoined",
         }
         owner_events = collect_group_events(
             device_a,
@@ -482,13 +476,9 @@ def test_group_invitation_auto_accept_when_confirmation_required(
             event_type="onGroupMembersJoined",
             data={"groupId": group_id, "userIds": [user_b]},
         )
-        _assert_exact_group_event(
-            assert_api,
-            owner_by_type["onGroupMemberJoined"],
-            event_type="onGroupMemberJoined",
-            data={"groupId": group_id, "member": user_b},
-        )
-        assert_no_group_event(device_b, group_id=group_id, event_types=owner_event_types)
+        # 邀请被接受通知只发给邀请方 A；B 端不应收到 onGroupInvitationAccepted
+        # （B 端会收到 onGroupMembersJoined，故只对邀请接受事件断言 no-event）
+        assert_no_group_event(device_b, group_id=group_id, event_types={"onGroupInvitationAccepted"})
 
         resp_server = device_a.call(
             "GroupManager",
@@ -511,7 +501,7 @@ def test_group_invitation_auto_accept_when_confirmation_required(
 
 
 @pytest.mark.topology("account_a_to_account_b")
-def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api, user_a, user_b):
+def test_group_request_to_join_and_accept_success(device_a, device_b, device_b_sec, assert_api, user_a, user_b):
     """成员申请入群并由群主同意：申请/同意事件同步到收发账号全部在线端。"""
     group_id = ""
     group_name = new_group_name("public_need_approval")
@@ -595,10 +585,10 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
             required_all_event_types={"onGroupRequestToJoinAccepted"},
             timeout=10.0,
         )
-        with _allure_step("接收账号副端 sec_b 同步验证收到事件"):
+        with _allure_step("接收账号副端 device_b_sec 同步验证收到事件"):
             sec_events = collect_group_events(
 
-                sec_b,
+                device_b_sec,
                 expected_event_types={
                     GroupChangeEvent.ON_REQUEST_TO_JOIN_ACCEPTED.value,
                     GroupChangeEvent.ON_MEMBER_JOINED.value,
@@ -611,7 +601,7 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
                 required_all_event_types={"onGroupRequestToJoinAccepted"},
                 timeout=10.0,
             )
-            assert sec_events, f"{sec_b.device_name} 未收到事件: {sec_events}"
+            assert sec_events, f"{device_b_sec.device_name} 未收到事件: {sec_events}"
 
         assert_group_events(
             assert_api,
@@ -629,7 +619,7 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
             expected_member=user_b,
         )
 
-        owner_joined_event_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
+        owner_joined_event_types = {"onGroupMembersJoined"}  # 5.0 只派发批量事件
         owner_joined_events = collect_group_events(
             device_a,
             expected_event_types=owner_joined_event_types,
@@ -643,12 +633,6 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
             owner_joined_by_type["onGroupMembersJoined"],
             event_type="onGroupMembersJoined",
             data={"groupId": group_id, "userIds": [user_b]},
-        )
-        _assert_exact_group_event(
-            assert_api,
-            owner_joined_by_type["onGroupMemberJoined"],
-            event_type="onGroupMemberJoined",
-            data={"groupId": group_id, "member": user_b},
         )
         assert_no_group_event(device_b, group_id=group_id, event_types=owner_joined_event_types)
 
@@ -666,6 +650,8 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
             owner=user_a,
             member_count_value=2,
             member_list_value=[user_b],
+            # style=2 审批群：原生 allowInvites=true → isMemberAllowToInvite=True
+            is_member_allow_to_invite=True,
         )
     finally:
         if group_id:
@@ -673,7 +659,7 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
 
 
 @pytest.mark.topology("account_a_to_account_b")
-def test_group_request_to_join_and_decline_success(device_a, device_b, assert_api, user_a, user_b):
+def test_group_request_to_join_and_decline_success(device_a, device_b, device_b_sec, assert_api, user_a, user_b):
     """成员申请入群并由群主拒绝：申请/拒绝事件同步到收发账号全部在线端。"""
     group_id = ""
     group_name = new_group_name("public_need_decline")
@@ -755,10 +741,10 @@ def test_group_request_to_join_and_decline_success(device_a, device_b, assert_ap
             required_all_event_types={"onGroupRequestToJoinDeclined"},
             timeout=10.0,
         )
-        with _allure_step("接收账号副端 sec_b 同步验证收到事件"):
+        with _allure_step("接收账号副端 device_b_sec 同步验证收到事件"):
             sec_events = collect_group_events(
 
-                sec_b,
+                device_b_sec,
                 expected_event_types={
                     GroupChangeEvent.ON_REQUEST_TO_JOIN_DECLINED.value,
                     "onGroupRequestToJoinDeclined",
@@ -769,7 +755,7 @@ def test_group_request_to_join_and_decline_success(device_a, device_b, assert_ap
                 required_all_event_types={"onGroupRequestToJoinDeclined"},
                 timeout=10.0,
             )
-            assert sec_events, f"{sec_b.device_name} 未收到事件: {sec_events}"
+            assert sec_events, f"{device_b_sec.device_name} 未收到事件: {sec_events}"
 
         assert_group_events(
             assert_api,
@@ -785,7 +771,7 @@ def test_group_request_to_join_and_decline_success(device_a, device_b, assert_ap
             expected_member=user_b,
         )
 
-        joined_event_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
+        joined_event_types = {"onGroupMembersJoined"}  # 5.0 只派发批量事件
         assert_no_group_event(device_a, group_id=group_id, event_types=joined_event_types)
         assert_no_group_event(device_b, group_id=group_id, event_types=joined_event_types)
         server = device_a.call(
@@ -802,6 +788,8 @@ def test_group_request_to_join_and_decline_success(device_a, device_b, assert_ap
             owner=user_a,
             member_count_value=1,
             member_list_value=[],
+            # style=2 审批群：原生 allowInvites=true → isMemberAllowToInvite=True
+            is_member_allow_to_invite=True,
         )
     finally:
         if group_id:

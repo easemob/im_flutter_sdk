@@ -47,17 +47,17 @@ def _consume_direct_invite_events(device_a, device_b, assert_api, *, group_id: s
     )
     owner_events = collect_group_events(
         device_a,
-        expected_event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
+        expected_event_types={"onGroupMembersJoined"},  # 5.0 只派发批量事件
         group_id=group_id,
-        required_all_event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
+        required_all_event_types={"onGroupMembersJoined"},  # 5.0 只派发批量事件（无单数 onGroupMemberJoined）
         timeout=10.0,
     )
     assert_group_events(
         assert_api,
         owner_events,
-        expected_event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
+        expected_event_types={"onGroupMembersJoined"},  # 5.0 只派发批量事件
         group_id=group_id,
-        required_all_event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
+        required_all_event_types={"onGroupMembersJoined"},  # 5.0 只派发批量事件（无单数 onGroupMemberJoined）
         expected_member=user_b,
     )
 
@@ -124,13 +124,13 @@ def test_group_owner_update_announcement_notifies_member(device_a, device_b, dev
         )
         with _allure_step("接收账号副端 sec_b 同步验证收到事件"):
             sec_events = collect_group_events(
-                sec_b,
+                device_b_sec,
                 expected_event_types={"onGroupAnnouncementChanged"},
                 group_id=group_id,
                 required_all_event_types={"onGroupAnnouncementChanged"},
                 timeout=10.0,
             )
-            assert sec_events, f"{sec_b.device_name} 未收到公告变更事件: {sec_events}"
+            assert sec_events, f"{device_b_sec.device_name} 未收到公告变更事件: {sec_events}"
 
         assert_no_group_event(
             device_a,
@@ -251,13 +251,13 @@ def test_group_admin_update_announcement_notifies_owner(device_a, device_a_sec, 
         )
         with _allure_step("发送账号副端 sec_a 同步验证收到事件"):
             sec_events = collect_group_events(
-                sec_a,
+                device_a_sec,
                 expected_event_types={"onGroupAnnouncementChanged"},
                 group_id=group_id,
                 required_all_event_types={"onGroupAnnouncementChanged"},
                 timeout=10.0,
             )
-            assert sec_events, f"{sec_a.device_name} 未收到公告变更事件: {sec_events}"
+            assert sec_events, f"{device_a_sec.device_name} 未收到公告变更事件: {sec_events}"
 
         assert_no_group_event(
             device_b,

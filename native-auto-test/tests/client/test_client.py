@@ -69,10 +69,12 @@ def test_login_then_receive_offline_sync_event(device_a, assert_api, user_a):
         pass
 
     # 3) 重新登录同一用户
+    from src.rest_api.user_api import fetch_user_token
+    _tok = fetch_user_token(user_a, "1").get("access_token", "")
     resp = device_a.call(
         "Client",
         Cmd.login.value,
-        info={"userId": user_a, "pwdOrToken": "1", "isPassword": True},
+        info={"userId": user_a, "pwdOrToken": _tok, "isPassword": False},
     )
     print("登录响应:", json.dumps(resp))
     assert_api.assert_success(resp)

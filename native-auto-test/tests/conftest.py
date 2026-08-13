@@ -51,6 +51,11 @@ from src.orchestrator import (
 )
 from src.ws import ManagedWebSocketServer
 
+# 测试支撑 cmd（非 SDK API，不参与 capability 检查）
+# startCallback：wrapper 事件转发开关（AGENTS.md 测试支撑协议）
+_TEST_SUPPORT_CMDS = frozenset({"startCallback"})
+
+
 # 未配置 REST 用户管理时的回退账号（仅当不创建用户时使用）
 SESSION_FALLBACK_USER_A = "test0318user1"
 SESSION_FALLBACK_USER_B = "test0318user2"
@@ -284,13 +289,17 @@ def _session_login(
     所有 test_* cases 执行前调用一次：deviceA 以 user_a、deviceB 以 user_b 登录，并清空该连接上的回调。
     """
     def _do_login():
+        # 5.0 统一 token 登录：密码先 REST 换 token（直接传密码被拒 202）
+        from src.rest_api.user_api import fetch_user_token
+        _tok_a = fetch_user_token(user_a, password).get("access_token", "")
+        _tok_b = fetch_user_token(user_b, password).get("access_token", "")
         ra = device_a.call(
             "Client", Cmd.login.value,
-            info={"userId": user_a, "pwdOrToken": password, "isPassword": True},
+            info={"userId": user_a, "pwdOrToken": _tok_a, "isPassword": False},
         )
         rb = device_b.call(
             "Client", Cmd.login.value,
-            info={"userId": user_b, "pwdOrToken": password, "isPassword": True},
+            info={"userId": user_b, "pwdOrToken": _tok_b, "isPassword": False},
         )
         return ra, rb
 
@@ -311,27 +320,7 @@ def _session_login(
 
     with _allure_step("Session 登录"):
         has_rest_token = bool(get_rest_auth_token())
-        # 仅在未配置 REST token 时，走 WS createAccount 预创建
-        if not has_rest_token:
-            try:
-                _, _, user_c = _test_usernames()
-                for uid in (user_a, user_b, user_c):
-                    create_resp = device_a.call(
-                        "Client",
-                        Cmd.createAccount.value,
-                        info={"userId": uid, "password": password},
-                    )
-                    _attach_request_response_allure(
-                        "WS createAccount warmup",
-                        {
-                            "manager": "Client",
-                            "cmd": Cmd.createAccount.value,
-                            "info": {"userId": uid, "password": "***"},
-                        },
-                        create_resp,
-                    )
-            except Exception:
-                pass
+        # 5.0 移除客户端 createAccount（残留）—— 用户预创建仅走 REST（无 REST token 时无法注册，跳过）
         def _is_transient_login_failure(r: dict) -> bool:
             result = r.get("result")
             if not isinstance(result, dict):
@@ -364,31 +353,7 @@ def _session_login(
             _logout_before_retry()
             time.sleep(float(attempt))
 
-        # 仅在未配置 REST token 时，允许 WS createAccount 兜底
-        if (not has_rest_token) and (_need_create_user(resp_a) or _need_create_user(resp_b)):
-            try:
-                for uid in (user_a, user_b):
-                    create_resp = device_a.call(
-                        "Client",
-                        Cmd.createAccount.value,
-                        info={"userId": uid, "password": password},
-                    )
-                    _attach_request_response_allure(
-                        "WS createAccount fallback",
-                        {"manager": "Client", "cmd": Cmd.createAccount.value, "info": {"userId": uid, "password": "***"}},
-                        create_resp,
-                    )
-                # user_c 也补齐，避免后续 group/member 场景再触发不存在
-                try:
-                    _, _, user_c = _test_usernames()
-                    device_a.call("Client", Cmd.createAccount.value, info={"userId": user_c, "password": password})
-                except Exception:
-                    pass
-                resp_a, resp_b = _do_login()
-            except Exception:
-                # fallback 失败时沿用原登录结果，由下方统一报错
-                pass
-
+        # 5.0 移除客户端 createAccount（残留）—— 用户预创建仅走 REST，无 REST token 时无法注册
         def _ok(r: dict) -> bool:
             res = r.get("result")
             # 成功条件：
@@ -997,13 +962,16 @@ def _login_one(device, user_id: str, password: str, use_token: bool = False) -> 
                     info={"userId": user_id, "pwdOrToken": token, "isPassword": False},
                 )
             else:
+                # 5.0 统一 token 登录：密码先 REST 换 token（直接传密码被拒 202）
+                from src.rest_api.user_api import fetch_user_token
+                _tok = fetch_user_token(user_id, password).get("access_token", "")
                 response = device.call(
                     "Client",
                     Cmd.login.value,
                     info={
                         "userId": user_id,
-                        "pwdOrToken": password,
-                        "isPassword": True,
+                        "pwdOrToken": _tok,
+                        "isPassword": False,
                     },
                 )
         except TimeoutError:
@@ -1048,40 +1016,7 @@ def global_login_logout(
     roles = sorted(required_device_roles)
     devices = {role: device_pool.get(role) for role in roles}
 
-    if devices and not get_rest_auth_token():
-        creator = next(iter(devices.values()))
-        accounts_to_create = {
-            _account_slot(role, phase1_scenario)
-            for role in roles
-            if (
-                phase1_scenario is None
-                or _account_slot(role, phase1_scenario)
-                not in phase1_scenario.accounts
-                or phase1_scenario.accounts[
-                    _account_slot(role, phase1_scenario)
-                ].provision == "rest"
-            )
-        }
-        for slot in sorted(accounts_to_create):
-            try:
-                creator.call(
-                    "Client",
-                    Cmd.createAccount.value,
-                    info={
-                    "userId": created_test_users[slot],
-                        "password": (
-                            phase1_scenario.accounts[slot].password
-                            if (
-                                phase1_scenario is not None
-                                and slot in phase1_scenario.accounts
-                            )
-                            else SESSION_PWD
-                        ),
-                    },
-                )
-            except Exception:
-                pass
-
+    # 5.0 移除客户端 createAccount（残留）—— 无 REST token 时不再 WS 预创建用户
     with _allure_step("Session 按需登录"):
         _v5 = _scenario_is_v5(phase1_scenario)
         for role, device in devices.items():
@@ -1254,6 +1189,9 @@ class _DeviceChannelWrapper:
 
     def require_capability(self, manager: str, cmd: str) -> None:
         if manager == "TestControl":
+            return
+        # 测试支撑 cmd（startCallback 等，非 SDK API）不参与 capability 检查
+        if cmd in _TEST_SUPPORT_CMDS:
             return
         runner_info = self._conn.runner_info
         if self._resolver is not None:

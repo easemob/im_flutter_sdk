@@ -19,25 +19,9 @@ pytestmark = [pytest.mark.client, pytest.mark.contact]
 def test_contact_get_all_contacts_from_db_after_server_sync(
     device_a, device_b, assert_api, user_a, user_b
 ):
-    """getAllContactsFromDB/getAllContactIds：同步服务端好友后，从本地 DB 获取好友 ID 列表；Dart getAllContactIds 复用同一 native cmd。"""
+    """getAllContactsFromDB：建立好友后，从本地 DB 获取好友 ID 列表（5.0 本地读取；原 getAllContactsFromServer 服务端拉取已移除）。"""
     flow = ContactTestFlow(assert_api)
     flow.establish_friends(device_a, device_b, user_a, user_b, reason="local_contacts_db")
-
-    sync_resp = device_a.call(
-        "ContactManager",
-        Cmd.getAllContactsFromServer.value,
-        info={},
-    )
-    assert_api.assert_response_matches(
-        sync_resp,
-        expected={
-            "manager": "ContactManager",
-            "cmd": Cmd.getAllContactsFromServer.value,
-            "device": "deviceA",
-            "result": [user_b],
-        },
-        ignore_keys={"sequence"},
-    )
 
     local_resp = device_a.call(
         "ContactManager",

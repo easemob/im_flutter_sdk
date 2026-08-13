@@ -444,7 +444,7 @@ def assert_group_event_data_fields(
     if event_type_value in mute_list_events:
         _assert_list_field_contains_user(
             data,
-            ("members", "muted", "muteList"),
+            ("members", "muted", "mutes", "muteList"),  # 5.0 两端事件字段为 mutes
             field_label="muteList",
             expected_member=expected_member,
             evt=evt,

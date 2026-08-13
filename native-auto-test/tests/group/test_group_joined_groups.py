@@ -28,21 +28,23 @@ def _joined_group_expected(
     owner: str,
     permission_type: int,
     member_count: int,
+    member_list: list[str] | None = None,
 ) -> dict:
     return {
         "owner": owner,
         "ext": "auto-ext",
         "permissionType": permission_type,
+        "joinApprovalRequired": False,  # 私有群 style=0 → 无需审批（wrapper 透传原生）
         "isAllMemberMuted": False,
         "adminList": [],
         "avatarUrl": "",
         "groupId": group_id,
         "memberCount": member_count,
-        "isMemberOnly": True,
+        "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
         "muteList": [],
         "isMemberAllowToInvite": False,
         "messageBlocked": False,
-        "memberList": [],
+        "memberList": member_list or [],
         "blockList": [],
         "name": group_name,
         "maxUserCount": 200,
@@ -87,7 +89,7 @@ def _assert_both_joined_lists(
     group_id: str,
     expected_group: dict | None,
 ) -> None:
-    for cmd in (Cmd.getJoinedGroups.value, Cmd.getJoinedGroupsFromServer.value):
+    for cmd in (Cmd.getJoinedGroups.value,):  # 5.0 移除 getJoinedGroupsFromServer（残留），仅本地 getJoinedGroups
         _assert_joined_target(
             device,
             assert_api,
@@ -141,7 +143,7 @@ def test_group_get_joined_groups_local_contains_created_group(device_a, assert_a
 def test_group_get_joined_groups_from_server_contains_created_group(device_a, assert_api, user_a):
     """
     前置：A 已登录且尚未创建本 case 的目标群。
-    步骤：A 创建私有群，随后调用服务端 getJoinedGroupsFromServer 并按 groupId 投影。
+    步骤：A 创建私有群，随后调用本地 getJoinedGroups 并按 groupId 投影（5.0 移除服务端拉取）。
     预期与断言：目标群存在，owner 与 name 等于创建上下文；接口信封和列表对象结构合法。
     """
     group_name = new_group_name("joined_server")
@@ -154,22 +156,22 @@ def test_group_get_joined_groups_from_server_contains_created_group(device_a, as
             group_name=group_name,
             invite_members=[],
         )
-        resp = device_a.call("GroupManager", Cmd.getJoinedGroupsFromServer.value, info={})
+        resp = device_a.call("GroupManager", Cmd.getJoinedGroups.value, info={})
         groups = assert_group_list_response(
             assert_api,
             resp,
-            cmd=Cmd.getJoinedGroupsFromServer.value,
+            cmd=Cmd.getJoinedGroups.value,
             device="deviceA",
         )
         matched = find_group_in_list(groups, group_id)
         assert matched is not None, (
-            f"getJoinedGroupsFromServer 未包含新建群: groupId={group_id}, resp={resp}"
+            f"getJoinedGroups 未包含新建群: groupId={group_id}, resp={resp}"
         )
         assert matched.get("owner") == user_a, (
-            f"getJoinedGroupsFromServer owner 不匹配: expected={user_a}, actual={matched}"
+            f"getJoinedGroups owner 不匹配: expected={user_a}, actual={matched}"
         )
         assert matched.get("name") == group_name, (
-            f"getJoinedGroupsFromServer name 不匹配: expected={group_name}, actual={matched}"
+            f"getJoinedGroups name 不匹配: expected={group_name}, actual={matched}"
         )
     finally:
         if group_id:
@@ -211,6 +213,7 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
             owner=user_a,
             permission_type=0,
             member_count=2,
+            member_list=[user_b],
         )
 
         initial_member_events = collect_group_events(
@@ -226,7 +229,7 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
             event_type="onGroupAutoAcceptInvitation",
             data={"groupId": group_id, "inviter": user_a, "inviteMessage": ""},
         )
-        joined_event_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
+        joined_event_types = {"onGroupMembersJoined"}  # 5.0 只派发批量事件
         initial_owner_events = collect_group_events(
             device_a,
             expected_event_types=joined_event_types,
@@ -278,7 +281,7 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
             event_type="onGroupUserRemoved",
             data={"groupId": group_id, "groupName": group_name},
         )
-        exited_event_types = {"onGroupMembersExited", "onGroupMemberExited"}
+        exited_event_types = {"onGroupMembersExited"}  # 5.0 只派发批量事件
         removed_owner_events = collect_group_events(
             device_a,
             expected_event_types=exited_event_types,

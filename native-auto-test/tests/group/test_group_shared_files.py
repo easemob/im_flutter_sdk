@@ -4,7 +4,7 @@ from contextlib import nullcontext
 
 import pytest
 
-from src import Cmd
+from src import Cmd, ne
 from tests.group.group_helpers import (
     assert_group_events,
     assert_no_group_event,
@@ -58,7 +58,7 @@ def _consume_direct_invite_events(
         ignore_keys={"timestamp", "sequence"},
     )
 
-    owner_event_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
+    owner_event_types = {"onGroupMembersJoined"}  # 5.0 只派发批量事件
     owner_events = collect_group_events(
         owner_device,
         expected_event_types=owner_event_types,
@@ -160,7 +160,10 @@ def _upload_remove_and_assert_peer_events(
             "manager": "GroupManager",
             "cmd": Cmd.uploadGroupSharedFile.value,
             "device": operator_device_name,
-            "result": True,
+            "result": {
+                "fileId": ne(""),
+                "fileName": ne(""),
+            },
         },
         ignore_keys={"sequence"},
     )
@@ -288,7 +291,7 @@ def test_group_owner_upload_remove_shared_file_notifies_member(
         )
         _upload_remove_and_assert_peer_events(
             device_b,
-            device_a,
+            [device_a],
             assert_api,
             operator_device_name="deviceB",
             group_id=group_id,

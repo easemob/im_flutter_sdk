@@ -29,7 +29,7 @@ def ensure_friends(device_a, device_b, assert_api, user_a, user_b):
         raise last_exc
 
     def _contact_list(device):
-        return _call_with_retry(device, "ContactManager", Cmd.getAllContactsFromServer.value, {})
+        return _call_with_retry(device, "ContactManager", Cmd.getAllContactsFromDB.value, {})
 
     def _friend_ready(timeout: float = 30.0) -> tuple[bool, list[tuple[dict, dict]]]:
         deadline = time.monotonic() + timeout

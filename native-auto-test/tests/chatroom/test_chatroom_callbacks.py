@@ -378,8 +378,8 @@ def test_chatroom_removed_and_destroyed_callbacks(device_a, device_b, assert_api
         assert "reason" in removed_data, f"成员被移除回调缺少 reason 字段: {removed_evt}"
 
         _join_chatroom_as_b_and_wait_ready(device_b, assert_api, room_id)
-        destroy_resp = device_a.call("ChatRoomManager", Cmd.destroyChatRoom.value, info={"roomId": room_id})
-        _assert_success_envelope(assert_api, destroy_resp, cmd=Cmd.destroyChatRoom.value, device="deviceA")
+        # 5.0 客户端 destroyChatRoom 移除 → REST 服务端销毁（客户端仍应收到 onRoomDestroyed 事件）
+        safe_delete_chatroom(room_id)
         destroyed_evt = _first_chatroom_event(
             device_b,
             room_id=room_id,

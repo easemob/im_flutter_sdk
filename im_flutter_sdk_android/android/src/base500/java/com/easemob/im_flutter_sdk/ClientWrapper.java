@@ -165,28 +165,8 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void getCurrentDeviceId(JSONObject param, String channelName, Result result) throws JSONException {
-        asyncRunnable(()->{
-            // 手动构建 Map 对象，避免 EMDeviceInfo 只读属性问题
-            Map<String, Object> deviceInfo = new HashMap<>();
-            deviceInfo.put("deviceName", "");
-            deviceInfo.put("resource", "");
-
-            Context context = EMClient.getInstance().getContext();
-
-            String deviceUuid = "";
-            if (context != null) {
-                try {
-                    DeviceUuidFactory factory = new DeviceUuidFactory(context);
-                    deviceUuid = factory.getDeviceUuid().toString();
-                } catch (Exception e) {
-                    // 获取失败时使用空字符串
-                }
-            }
-
-            deviceInfo.put("deviceUUID", deviceUuid);
-
-            onSuccess(result, channelName, deviceInfo);
-        });
+        // 5.0 新构建：透传原生 EMClient.getDeviceInfo()（返回 hid/os/os-version；不再手动造 DeviceUuidFactory）
+        asyncRunnable(() -> onSuccess(result, channelName, EMClient.getInstance().getDeviceInfo()));
     }
 
     private void isLoggedInBefore(JSONObject param, String channelName, Result result) throws JSONException {
@@ -514,7 +494,8 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     }
     private void acceptInvitationAlways(JSONObject param, String channelName, Result result) throws JSONException {
         boolean acceptInvitationAlways = param.getBoolean("acceptInvitationAlways");
-        EMClient.getInstance().getOptions().setAutoAcceptGroupInvitation(acceptInvitationAlways);
+        // 好友邀请自动接受（与 iOS autoAcceptFriendInvitation 对应；之前误用群邀请 setAutoAcceptGroupInvitation）
+        EMClient.getInstance().getOptions().setAcceptInvitationAlways(acceptInvitationAlways);
         asyncRunnable(()-> onSuccess(result, channelName, null));
     }
 

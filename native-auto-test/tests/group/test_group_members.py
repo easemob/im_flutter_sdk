@@ -345,7 +345,7 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
             ignore_keys={"sequence"},
         )
 
-        joined_event_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
+        joined_event_types = {"onGroupMembersJoined"}  # 5.0 只派发批量事件
         # 5.0 实测：成员加入只派发批量事件 onGroupMembersJoined（单成员事件不派发）
         owner_join_events = collect_group_events(
             device_a,
@@ -513,7 +513,7 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
             ignore_keys={"sequence"},
         )
 
-        expected_joined_events = {"onGroupMembersJoined", "onGroupMemberJoined"}
+        expected_joined_events = {"onGroupMembersJoined"}  # 5.0 只派发批量事件
         # 5.0 实测：批量加人只派发 onGroupMembersJoined（单成员事件不派发）→ required 用批量事件
         joined_events = collect_group_events(
             device_a,

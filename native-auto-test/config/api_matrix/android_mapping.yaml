@@ -460,6 +460,14 @@ apis:
     native: getConversation
     protocol: getConversation
     mapping: identical
+  - manager: ConversationManager
+    native: getConversation
+    protocol: getConversationAvatar
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: getConversationName
+    mapping: derived
   - manager: ChatManager
     native: getConversationsByType
     protocol: getConversationsByType
@@ -616,6 +624,10 @@ apis:
     native: getUserInfoWithUserIds
     protocol: getUserInfoWithUserIds
     mapping: identical
+  - manager: GroupManager
+    native: getGroupFromServer
+    protocol: getUsers
+    mapping: derived
   - manager: MessageManager
     native: null
     protocol: groupAckCount
@@ -640,6 +652,10 @@ apis:
     native: isConnected
     protocol: isConnected
     mapping: identical
+  - manager: Client
+    native: null
+    protocol: isDatabaseOpened
+    mapping: unimplemented_or_unknown
   - manager: Client
     native: null
     protocol: isLoggedInBefore
@@ -707,6 +723,10 @@ apis:
   - manager: ChatManager
     native: asyncLoadMessages
     protocol: loadMessagesWithIds
+    mapping: derived
+  - manager: ConversationManager
+    native: getConversation
+    protocol: loadMsgWithId
     mapping: derived
   - manager: ConversationManager
     native: getMessage
@@ -1343,19 +1363,19 @@ apis:
     protocol: null
     mapping: listener_api
 
+  # 原生 API 未在协议层实现（mapping=unknown 待人工确认：改名 or 未实现）:
   - manager: ChatManager
     native: downloadBigImage
-    protocol: downloadBigImage
-    mapping: derived
+    protocol: null
+    mapping: unknown
   - manager: ChatManager
     native: getAllConversations
-    protocol: loadAllConversations
-    mapping: derived
+    protocol: null
+    mapping: unknown
   - manager: ChatRoomManager
-    native: unBlockChatRoomMembers
-    protocol: unBlockChatRoomMembers
-    mapping: identical
-  # 原生 API 未在协议层实现（mapping=unknown 待人工确认：改名 or 未实现）:
+    native: asyncUnBlockChatRoomMembers
+    protocol: null
+    mapping: unknown
 
 events:
   - listener: com.hyphenate.EMChatRoomChangeListener
@@ -1504,20 +1524,28 @@ events:
     mapping: identical
   - listener: com.hyphenate.EMConnectionListener
     native: onDataSyncFinish
-    protocol: null
-    mapping: unforwarded
+    protocol: onDataSyncFinish
+    mapping: identical
   - listener: com.hyphenate.EMConnectionListener
-    native: onDataSyncStart
-    protocol: null
-    mapping: unforwarded
-  - listener: com.hyphenate.EMConnectionListener
-    native: onDatabaseOpened
+    native: onDataSyncFinish
     protocol: onTokenDidExpire
     mapping: renamed
   - listener: com.hyphenate.EMConnectionListener
-    native: onDatabaseOpened
-    protocol: onTokenWillExpire
+    native: onDataSyncStart
+    protocol: onDataSyncFinish
     mapping: renamed
+  - listener: com.hyphenate.EMConnectionListener
+    native: onDataSyncStart
+    protocol: onDataSyncStart
+    mapping: identical
+  - listener: com.hyphenate.EMConnectionListener
+    native: onDatabaseOpened
+    protocol: onDataSyncStart
+    mapping: renamed
+  - listener: com.hyphenate.EMConnectionListener
+    native: onDatabaseOpened
+    protocol: onDatabaseOpened
+    mapping: identical
   - listener: com.hyphenate.EMConnectionListener
     native: onDisconnected
     protocol: onUserDidForbidByServer

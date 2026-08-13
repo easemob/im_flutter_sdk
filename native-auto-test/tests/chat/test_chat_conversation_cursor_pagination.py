@@ -27,9 +27,12 @@ def _assert_call(assert_api, response, *, manager, cmd, device, result):
 def _switch_user(device, assert_api, *, device_name, user_id):
     logout = device.call("Client", Cmd.logout.value, info={"unbindToken": False})
     _assert_call(assert_api, logout, manager="Client", cmd=Cmd.logout.value, device=device_name, result=True)
+    # 5.0 统一 token 登录：密码需先 REST 换 token（直接传密码被拒 202）
+    from src.rest_api.user_api import fetch_user_token
+    _tok = fetch_user_token(user_id, "1").get("access_token", "")
     login = device.call(
         "Client", Cmd.login.value,
-        info={"userId": user_id, "pwdOrToken": "1", "isPassword": True},
+        info={"userId": user_id, "pwdOrToken": _tok, "isPassword": False},
     )
     _assert_call(assert_api, login, manager="Client", cmd=Cmd.login.value, device=device_name, result=user_id)
     callback = device.call("Client", Cmd.startCallback.value, info={})
@@ -38,7 +41,7 @@ def _switch_user(device, assert_api, *, device_name, user_id):
 
 
 def _ensure_friend(device_a, device_b, assert_api, *, user_a, peer):
-    contacts = device_a.call("ContactManager", Cmd.getAllContactsFromServer.value, info={})
+    contacts = device_a.call("ContactManager", Cmd.getAllContactsFromDB.value, info={})
     if peer in (contacts.get("result") or []):
         return
     add = device_a.call(
@@ -118,7 +121,7 @@ def _send_and_wait_server_conversation(device_a, device_b, assert_api, *, user_a
     )
     deadline = time.monotonic() + 60
     while time.monotonic() < deadline:
-        conversations = device_a.call("ChatManager", Cmd.getConversationsFromServer.value, info={})
+        conversations = device_a.call("ChatManager", Cmd.loadAllConversations.value, info={})
         if any(isinstance(item, dict) and item.get("convId") == peer
                for item in (conversations.get("result") or [])):
             return
@@ -136,6 +139,7 @@ def _page_projection(response):
     ]
 
 
+@pytest.mark.skip(reason="5.0 移除服务端拉会话/options cursor 分页（fetchConversationsByOptions 残留）")
 def test_chat_conversation_pinned_and_marked_cursor_pagination(
     device_a, device_b, assert_api, user_a, user_b, user_c,
 ):
@@ -161,7 +165,7 @@ def test_chat_conversation_pinned_and_marked_cursor_pagination(
         deadline = time.monotonic() + 30
         pinned_by_peer = {}
         while time.monotonic() < deadline:
-            conversations = device_a.call("ChatManager", Cmd.getConversationsFromServer.value, info={})
+            conversations = device_a.call("ChatManager", Cmd.loadAllConversations.value, info={})
             pinned_by_peer = {
                 item.get("convId"): item
                 for item in (conversations.get("result") or [])

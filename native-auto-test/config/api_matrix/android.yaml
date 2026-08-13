@@ -21,7 +21,6 @@ base:
   - ChatManager.downloadMessageAttachmentInCombine
   - ChatManager.downloadMessageThumbnailInCombine
   - ChatManager.downloadThumbnail
-  - ChatManager.fetchConversationsByOptions
   - ChatManager.fetchHistoryMessages
   - ChatManager.fetchHistoryMessagesByOptions
   - ChatManager.fetchPinnedMessages
@@ -134,7 +133,6 @@ base:
   - Client.sendFCMTokenToServer
   - Client.sendHonorPushTokenToServer
   - Client.setDataSyncType
-  - Client.startCallback
   - Client.updateAutoAcceptGroupInvitationSetting
   - Client.updateAutoDownloadAttachmentThumbnailSetting
   - Client.updateDeleteMessageWhenLeaveRoomSetting
@@ -153,10 +151,8 @@ base:
   - ContactManager.declineInvitation
   - ContactManager.deleteContact
   - ContactManager.fetchAllContacts
-  - ContactManager.fetchContacts
   - ContactManager.getAllContacts
   - ContactManager.getAllContactsFromDB
-  - ContactManager.getAllContactsFromServer
   - ContactManager.getBlockListFromDB
   - ContactManager.getBlockListFromServer
   - ContactManager.getContact
@@ -178,6 +174,7 @@ base:
   - ConversationManager.getLatestMessage
   - ConversationManager.getLatestMessageFromOthers
   - ConversationManager.getUnreadMsgCount
+  - ConversationManager.insertMessage
   - ConversationManager.loadMsgWithId
   - ConversationManager.loadMsgWithKeywords
   - ConversationManager.loadMsgWithMsgType
@@ -220,7 +217,6 @@ base:
   - GroupManager.getGroupWhiteListFromServer
   - GroupManager.getGroupWithId
   - GroupManager.getJoinedGroups
-  - GroupManager.getJoinedGroupsFromServer
   - GroupManager.getUsers
   - GroupManager.inviterUser
   - GroupManager.isMemberInGroupMuteList
@@ -308,4 +304,3 @@ versions:
     - Client.createAccount
     - Client.loginWithAgoraToken
     - Client.updateRequireAckSetting
-    - ConversationManager.insertMessage

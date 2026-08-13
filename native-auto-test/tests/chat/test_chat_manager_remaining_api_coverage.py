@@ -244,7 +244,7 @@ def _wait_conversation_on_server(device, *, conv_id: str, timeout: float = 60.0)
     seen_responses = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        resp = device.call("ChatManager", Cmd.getConversationsFromServer.value, info={})
+        resp = device.call("ChatManager", Cmd.loadAllConversations.value, info={})
         seen_responses.append(resp)
         result = resp.get("result")
         if isinstance(result, list):
@@ -488,7 +488,7 @@ def test_chat_manager_conversation_marks_and_fetch_options(device_a, device_b, a
     resp_fetch_marked = None
     deadline = time.monotonic() + 30.0
     while time.monotonic() < deadline:
-        resp_fetch_marked = device_a.call("ChatManager", Cmd.fetchConversationsByOptions.value, info=fetch_info)
+        resp_fetch_marked = device_a.call("ChatManager", Cmd.loadAllConversations.value, info=fetch_info)
         # 5.0 fetchConversationsByOptions 返回纯 list（无 {list, cursor} dict）
         marked_list = resp_fetch_marked.get("result") or []
         if any(isinstance(item, dict) and item.get("convId") == user_b and 0 in (item.get("marks") or []) for item in marked_list):
@@ -504,7 +504,7 @@ def test_chat_manager_conversation_marks_and_fetch_options(device_a, device_b, a
         {**resp_fetch_marked, "result": marked_target},
         expected={
             "manager": "ChatManager",
-            "cmd": Cmd.fetchConversationsByOptions.value,
+            "cmd": Cmd.loadAllConversations.value,
             "device": "deviceA",
             "result": [
                 {

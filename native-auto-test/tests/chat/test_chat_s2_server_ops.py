@@ -179,20 +179,20 @@ def _wait_server_conversation_projection(device, cmd: str, info: dict, user_b: s
     return last_resp or {}, last_projection
 
 
-@pytest.mark.skip(reason="5.0 移除服务端拉会话（改用本地列表，无服务端/分页语义）")
 def test_chat_get_conversations_from_server_success(device_a, device_b, assert_api, user_a, user_b):
+    """5.0 会话改本地读取（loadAllConversations）：发消息后本地会话列表含目标会话（原服务端拉取已移除）。"""
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-get-server-{uuid.uuid4().hex[:6]}")
-    resp, projected = _wait_server_conversation_projection(device_a, Cmd.getConversationsFromServer.value, {}, user_b)
+    resp, projected = _wait_server_conversation_projection(device_a, Cmd.loadAllConversations.value, {}, user_b)
     assert_api.assert_response_matches(
         {
             "manager": "ChatManager",
-            "cmd": Cmd.getConversationsFromServer.value,
+            "cmd": Cmd.loadAllConversations.value,
             "device": "deviceA",
             "result": projected,
         },
         expected={
             "manager": "ChatManager",
-            "cmd": Cmd.getConversationsFromServer.value,
+            "cmd": Cmd.loadAllConversations.value,
             "device": "deviceA",
             "result": [{"convId": "{{convId}}", "type": 0}],
         },
@@ -528,6 +528,7 @@ def test_chat_remove_messages_from_server_with_ts_missing_conv_id(device_a):
     assert_error(resp, code=-1, description="MissingPluginException")
 
 
+@pytest.mark.skip(reason="5.0 移除 reportMessage（残留）")
 def test_chat_report_message_success(device_a, device_b, assert_api, user_a, user_b):
     real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-report-{uuid.uuid4().hex[:6]}")
     resp = device_a.call(
@@ -538,6 +539,7 @@ def test_chat_report_message_success(device_a, device_b, assert_api, user_a, use
     _assert_chat_response(assert_api, resp, Cmd.reportMessage.value, "deviceA", True)
 
 
+@pytest.mark.skip(reason="5.0 移除 reportMessage（残留）")
 def test_chat_report_message_invalid_msg_id(device_a):
     resp = device_a.call(
         "ChatManager",
@@ -548,6 +550,7 @@ def test_chat_report_message_invalid_msg_id(device_a):
 
 
 @pytest.mark.skip(reason="必填缺失类 case 暂缓；当前端易返回 MissingPlugin 非被测端语义")
+@pytest.mark.skip(reason="5.0 移除 reportMessage（残留）")
 def test_chat_report_message_missing_tag(device_a):
     resp = device_a.call(
         "ChatManager",
@@ -558,6 +561,7 @@ def test_chat_report_message_missing_tag(device_a):
 
 
 @pytest.mark.skip(reason="必填缺失类 case 暂缓；当前端易返回 MissingPlugin 非被测端语义")
+@pytest.mark.skip(reason="5.0 移除 reportMessage（残留）")
 def test_chat_report_message_missing_reason(device_a):
     resp = device_a.call(
         "ChatManager",

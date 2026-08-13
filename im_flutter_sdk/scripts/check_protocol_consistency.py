@@ -72,7 +72,7 @@ def main() -> None:
     print()
 
     # 合理差异：5.0 removed（MethodKey 预埋、清单不含）
-    removed_cmds = {'createAccount', 'createChatRoom', 'destroyChatRoom', 'getAllChatRooms', 'insertMessage', 'loginWithAgoraToken', 'reportMessage', 'updateRequireAckSetting'}
+    removed_cmds = {'createAccount', 'createChatRoom', 'destroyChatRoom', 'getAllChatRooms', 'loginWithAgoraToken', 'reportMessage', 'updateRequireAckSetting'}
 
     # A. Android vs iOS（核心协议名应一致）
     only_and = and_api - ios_api - removed_cmds

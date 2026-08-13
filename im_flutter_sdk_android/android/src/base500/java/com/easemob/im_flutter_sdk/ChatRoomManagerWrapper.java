@@ -420,7 +420,8 @@ public class ChatRoomManagerWrapper extends Wrapper implements MethodChannel.Met
                 result, channelName) {
             @Override
             public void onSuccess(EMChatRoom object) {
-                updateObject(null);
+                // 透传原生返回的 room（对齐 room 类操作；之前 updateObject(null) 是造 null）
+                ChatRoomManagerWrapper.this.onSuccess(result, channelName, ChatRoomHelper.toJson(object));
             }
         };
 
@@ -439,7 +440,8 @@ public class ChatRoomManagerWrapper extends Wrapper implements MethodChannel.Met
                 result, channelName) {
             @Override
             public void onSuccess(EMChatRoom object) {
-                updateObject(null);
+                // 透传原生返回的 room（对齐 room 类操作；之前 updateObject(null) 是造 null）
+                ChatRoomManagerWrapper.this.onSuccess(result, channelName, ChatRoomHelper.toJson(object));
             }
         };
 

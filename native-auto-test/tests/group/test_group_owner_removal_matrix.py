@@ -115,10 +115,13 @@ def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
         },
         ignore_keys={"sequence"},
     )
+    # 5.0 统一 token 登录：密码需先 REST 换 token（loginWithToken 接受 token，直接传密码被拒 202）
+    from src.rest_api.user_api import fetch_user_token
+    _tok = fetch_user_token(user_id, "1").get("access_token", "")
     login = device.call(
         "Client",
         Cmd.login.value,
-        info={"userId": user_id, "pwdOrToken": "1", "isPassword": True},
+        info={"userId": user_id, "pwdOrToken": _tok, "isPassword": False},
     )
     assert_api.assert_response_matches(
         login,
@@ -189,17 +192,10 @@ def test_group_transfer_owner_to_admin_normalizes_roles(
         assert result.get("adminList") == [], response
         owner_is_b = True
 
-        with _allure_step("A 账号全部在线端收到 owner 变更事件（onGroupOwnerChanged）"):
-            for __d__ in senders:
-                events = collect_group_events(
-                    __d__,
-                    expected_event_types={"onGroupOwnerChanged"},
-                    group_id=group_id,
-                    required_all_event_types={"onGroupOwnerChanged"},
-                    timeout=10.0,
-                )
-                _assert_owner_changed(assert_api, events[0], group_id=group_id,
-                                      new_owner=user_b, old_owner=user_a)
+        # 5.0 事件流向：onGroupOwnerChanged 只发新 owner（B）端；A 端（原 owner）只收
+        # onMultiDeviceGroupEvent（多设备同步）—— 不再断言 A 端群变更事件
+        for __d__ in senders:
+            __d__.drain_events()
         with _allure_step("B 账号全部在线端收到 owner 变更事件（onGroupOwnerChanged）"):
             for __d__ in recipients:
                 events = collect_group_events(
@@ -435,15 +431,10 @@ def test_group_transfer_then_new_owner_removes_former_owner(
         assert isinstance(transfer.get("result"), dict), transfer
         assert transfer["result"].get("owner") == user_b, transfer
         owner_is_b = True
-        with _allure_step("A 账号全部在线端消费 owner 变更事件"):
-            for __d__ in senders:
-                collect_group_events(
-                    __d__,
-                    expected_event_types={"onGroupOwnerChanged"},
-                    group_id=group_id,
-                    required_all_event_types={"onGroupOwnerChanged"},
-                    timeout=10.0,
-                )
+        # 5.0 事件流向：onGroupOwnerChanged 只发新 owner（B）端；A 端（原 owner）只收
+        # onMultiDeviceGroupEvent（多设备同步）—— 不再断言 A 端群变更事件
+        for __d__ in senders:
+            __d__.drain_events()
         with _allure_step("B 账号全部在线端消费 owner 变更事件"):
             for __d__ in recipients:
                 collect_group_events(
@@ -664,7 +655,7 @@ def test_group_remove_other_member_permission_by_role(
         )
         if make_admin:
             _assert_true(assert_api, response, cmd=Cmd.removeMembers.value, device="deviceB")
-            joined_event_types = {"onGroupMembersExited", "onGroupMemberExited"}
+            joined_event_types = {"onGroupMembersExited"}  # 5.0 只派发批量事件（无单数 onGroupMemberExited）
             with _allure_step("owner 账号全部在线端收到成员退出事件"):
                 for __d__ in senders:
                     owner_events = collect_group_events(
@@ -752,15 +743,10 @@ def test_group_owner_must_transfer_before_leaving(
         )
         assert isinstance(transfer.get("result"), dict), transfer
         owner_is_b = True
-        with _allure_step("A 账号全部在线端消费 owner 变更事件"):
-            for __d__ in senders:
-                collect_group_events(
-                    __d__,
-                    expected_event_types={"onGroupOwnerChanged"},
-                    group_id=group_id,
-                    required_all_event_types={"onGroupOwnerChanged"},
-                    timeout=10.0,
-                )
+        # 5.0 事件流向：onGroupOwnerChanged 只发新 owner（B）端；A 端（原 owner）只收
+        # onMultiDeviceGroupEvent（多设备同步）—— 不再断言 A 端群变更事件
+        for __d__ in senders:
+            __d__.drain_events()
         with _allure_step("B 账号全部在线端消费 owner 变更事件"):
             for __d__ in recipients:
                 collect_group_events(
@@ -782,7 +768,7 @@ def test_group_owner_must_transfer_before_leaving(
                     __d__,
                     expected_event_types={"onGroupMembersExited", "onGroupMemberExited"},
                     group_id=group_id,
-                    required_all_event_types={"onGroupMembersExited", "onGroupMemberExited"},
+                    required_all_event_types={"onGroupMembersExited"},  # 5.0 只派发批量事件（无单数 onGroupMemberExited）
                     timeout=10.0,
                 )
                 _assert_exited_events(assert_api, exited_events, group_id, user_a)

@@ -56,6 +56,15 @@ class InterfaceRouter {
       case 'ContactManager':
         return Client.instance.contactManager.callNativeMethod(cmd, info);
       case 'GroupManager':
+        // uploadGroupSharedFile：case 未传 filePath 时填默认素材路径（prepareDefaultMediaPath type=file）
+        if (cmd == 'uploadGroupSharedFile' && info is Map && (info['filePath'] ?? '').toString().isEmpty) {
+          return TestControl.invoke('prepareDefaultMediaPath', {'type': 'file'}).then((r) {
+            if (r is String && r.isNotEmpty) {
+              info['filePath'] = r;
+            }
+            return Client.instance.groupManager.callNativeMethod(cmd, info);
+          });
+        }
         return Client.instance.groupManager.callNativeMethod(cmd, info);
       case 'ChatRoomManager':
         return Client.instance.chatRoomManager.callNativeMethod(cmd, info);

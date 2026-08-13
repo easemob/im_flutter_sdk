@@ -32,7 +32,9 @@
     
     if (self.settings != nil) {
         ret[@"maxUserCount"] = @(self.settings.maxUsers);
-        ret[@"isMemberOnly"] = @([self isMemberOnly]);
+        // 5.0 移除 isMemberOnly（4.x 字段）—— 群类型用 isPublic/isJoinApprovalRequired
+        ret[@"isPublic"] = @(self.isPublic);
+        ret[@"joinApprovalRequired"] = @(self.settings.joinApprovalRequired);
         ret[@"isMemberAllowToInvite"] = @([self isMemberAllowToInvite]);
         ret[@"ext"] = self.settings.ext;
     }
@@ -68,7 +70,10 @@
     options.maxUsers = [dict[@"maxCount"] intValue];
     options.ext = dict[@"ext"];
     options.IsInviteNeedConfirm = [dict[@"inviteNeedConfirm"] boolValue];
-    options.isPublic = [dict[@"style"] intValue] >= 2;
+    // 5.0: style 枚举(0-3) → isPublic/joinApprovalRequired/allowInvites 布尔（对齐 Android GroupOptionsHelper）
+    options.isPublic = [dict[@"style"] intValue] >= 2;            // style 2/3
+    options.allowInvites = [dict[@"style"] intValue] > 0;         // style 1/2/3（补：之前漏，isMemberAllowToInvite 恒 false）
+    options.joinApprovalRequired = [dict[@"style"] intValue] == 2; // style 2（补）
     return options;
 }
 

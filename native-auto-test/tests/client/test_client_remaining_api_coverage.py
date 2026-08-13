@@ -97,14 +97,14 @@ def test_client_current_token_and_device_id(device_a, assert_api):
             "manager": "Client",
             "cmd": Cmd.getCurrentDeviceId.value,
             "device": "deviceA",
-            "result": {"resource": "", "deviceName": ""},
+            # 5.0 两端返回结构不同：Android getDeviceInfo{hid,os,os-version} / iOS getDeviceConfig{resource,deviceUUID,deviceName}
+            # → 只断 result 非空 dict
         },
-        ignore_keys={"sequence", "deviceUUID"},
+        ignore_keys={"sequence", "resource", "deviceName", "deviceUUID", "hid", "os", "os-version"},
     )
     device_info = device_id_resp.get("result")
     assert isinstance(device_info, dict)
-    assert isinstance(device_info.get("deviceUUID"), str)
-    assert device_info["deviceUUID"], "getCurrentDeviceId 应返回非空 deviceUUID"
+    assert device_info, "getCurrentDeviceId 应返回非空设备信息"
 
 
 def test_client_compress_logs_returns_path(device_a, assert_api):
@@ -123,6 +123,7 @@ def test_client_compress_logs_returns_path(device_a, assert_api):
     assert resp["result"], "compressLogs 应返回非空路径字符串"
 
 
+@pytest.mark.skip(reason="5.0 移除客户端 createAccount（残留，注册走 REST）")
 def test_client_create_account_empty_user_boundary(device_a, assert_api):
     """createAccount：空 userId/password 边界，冻结真实模拟器参数校验错误，不创建新账号。"""
     resp = device_a.call(
@@ -156,7 +157,6 @@ def test_client_create_account_empty_user_boundary(device_a, assert_api):
             Cmd.updateAutoDownloadAttachmentThumbnailSetting.value,
             {"autoDownloadThumbnail": True},
         ),
-        (Cmd.updateRequireAckSetting.value, {"requireAck": True}),
         (Cmd.updateDeliveryAckSetting.value, {"requireDeliveryAck": True}),
         (
             Cmd.updateSortMessageByServerTimeSetting.value,

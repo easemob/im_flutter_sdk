@@ -34,14 +34,15 @@ def test_chat_delete_conversation_mark_boundaries(device_a, assert_api, info):
         {"mark": 0, "pageSize": 10, "cursor": "__invalid_cursor__", "pinned": False},
     ],
 )
+@pytest.mark.skip(reason="5.0 移除 fetchConversationsByOptions（残留，本地全量无分页/options 校验）")
 def test_chat_fetch_conversation_marks_boundaries(device_a, assert_api, info):
-    resp = device_a.call("ChatManager", Cmd.fetchConversationsByOptions.value, info=info)
+    resp = device_a.call("ChatManager", Cmd.loadAllConversations.value, info=info)
     # 5.0 原生：fetchConversationsByOptions 本地全量返回（不校验 pageSize/不报 110）→ 断言成功 + 纯 list
     result = resp.get("result")
     assert isinstance(result, list), f"fetchConversationsByOptions result 应为 list（5.0 本地全量）: {resp}"
     assert_api.assert_response_matches(
         {**resp, "result": []},
-        expected={"manager": "ChatManager", "cmd": Cmd.fetchConversationsByOptions.value, "device": "deviceA", "result": []},
+        expected={"manager": "ChatManager", "cmd": Cmd.loadAllConversations.value, "device": "deviceA", "result": []},
         ignore_keys={"sequence"},
     )
 
@@ -111,7 +112,7 @@ def _ensure_server_conversation(device_a, device_b, assert_api, user_a, user_b):
     )
     deadline = time.monotonic() + 60
     while time.monotonic() < deadline:
-        response = device_a.call("ChatManager", Cmd.getConversationsFromServer.value, info={})
+        response = device_a.call("ChatManager", Cmd.loadAllConversations.value, info={})
         if any(isinstance(item, dict) and item.get("convId") == user_b
                for item in (response.get("result") or [])):
             return
@@ -147,7 +148,7 @@ def test_chat_conversation_mark_idempotent_and_remove_unmarked(device_a, device_
     deadline = time.monotonic() + 30
     while time.monotonic() < deadline:
         fetch = device_a.call(
-            "ChatManager", Cmd.fetchConversationsByOptions.value,
+            "ChatManager", Cmd.loadAllConversations.value,
             info={"mark": 0, "pageSize": 10, "cursor": "", "pinned": False},
         )
         projection = _target_mark_projection(fetch, user_b)
@@ -158,7 +159,7 @@ def test_chat_conversation_mark_idempotent_and_remove_unmarked(device_a, device_
     assert_api.assert_response_matches(
         {"manager": fetch.get("manager"), "cmd": fetch.get("cmd"), "device": fetch.get("device"),
          "result": {"target": projection}},
-        expected={"manager": "ChatManager", "cmd": Cmd.fetchConversationsByOptions.value,
+        expected={"manager": "ChatManager", "cmd": Cmd.loadAllConversations.value,
                   "device": "deviceA", "result": {"target": [{"convId": user_b, "type": 0,
                   "isThread": False, "isPinned": False, "marks": [0]}]}},
         ignore_keys={"sequence"},
@@ -175,7 +176,7 @@ def test_chat_conversation_mark_idempotent_and_remove_unmarked(device_a, device_
             ignore_keys={"sequence"},
         )
     fetch_after = device_a.call(
-        "ChatManager", Cmd.fetchConversationsByOptions.value,
+        "ChatManager", Cmd.loadAllConversations.value,
         info={"mark": 0, "pageSize": 10, "cursor": "", "pinned": False},
     )
     # 5.0 fetchConversationsByOptions 返回全部会话（不按 mark 过滤）→ 改为验证该会话 marks 已清空

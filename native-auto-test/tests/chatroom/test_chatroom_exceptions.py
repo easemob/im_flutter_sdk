@@ -21,6 +21,7 @@ def test_chatroom_fetch_room_info_nonexistent(device_a, assert_api):
     assert_api.assert_error(resp, code=700, description="do not find this group")
 
 
+@pytest.mark.skip(reason="5.0 移除客户端 destroyChatRoom（残留）")
 def test_chatroom_destroy_room_nonexistent(device_a, assert_api):
     room_id = _nonexistent_room_id()
     resp = device_a.call("ChatRoomManager", Cmd.destroyChatRoom.value, info={"roomId": room_id})
@@ -95,6 +96,7 @@ def test_chatroom_fetch_members_empty_room_id(device_a, assert_api):
     assert_api.assert_error(resp, code=700, description=None)
 
 
+@pytest.mark.skip(reason="5.0 移除客户端 destroyChatRoom（残留）")
 def test_chatroom_destroy_room_empty_id(device_a, assert_api):
     resp = device_a.call("ChatRoomManager", Cmd.destroyChatRoom.value, info={"roomId": ""})
     # 只看 errorcode（描述两端不同: "Chatroom id is invalid" vs "Chat room ID is invalid"）

@@ -28,6 +28,32 @@
 - 实测确认：iOS invalid 返回 `{"success": true, "result": {}}`（成功、无 error、result 空）→ wrapper 原先 `cursorResult = nil` → `[nil toJson]` → 缺 list/cursor；补空结构后输出 `{list:[], cursor:""}`。
 - 若要求原生对齐：研发可让 iOS 原生 invalid 返回空 `EMMessageReaction` 结构（同 Android `EMCursorResult`）。
 
+### getCurrentDeviceId（两端原生 API 不同 + 语义不等价）
+
+| 端 | 原生 API | 返回 | 处理 |
+|---|---|---|---|
+| Android | `EMClient.getDeviceInfo()`（5.0 新构建） | `{hid(用户ID), os, os-version}`（用户/系统信息） | 透传原生（原 wrapper 手动造 DeviceUuidFactory —— 已改为调原生）|
+| iOS | `EMClient.getDeviceConfig:` | `{resource, deviceUUID, deviceName}`（设备配置） | 透传原生 |
+
+- 协议 `getCurrentDeviceId`（官方遗留名，不准确）—— 两端原生【没有语义一致对应】：
+  - Android = 用户/系统信息（hid/os/os-version，不是设备 ID；原生无"当前设备 UUID"方法）
+  - iOS = 设备配置（resource/deviceUUID/deviceName）
+- wrapper：两端都透传原生（不再造）—— 返回结构不同 → case 只断"result 非空 dict"
+- 文档（protocol-android-ios-5.0-pure-native-map.md）标注：该移出"仅 iOS"段（Android 有 getDeviceInfo 原生）→ "名称可映射，但语义或行为不完全等价"段
+- 若要求原生对齐：研发可让两端返回同一语义（设备 ID/信息）
+
+### 移除类空 members（removeChatRoomMembers / unMute / unBlock / removeWhiteList）
+
+| 端 | 原生行为 | 处理 |
+|---|---|---|
+| Android | 移除类空 members → 【无本地校验】→ 发服务端 → 服务端不可达时慢响应（>60s）/ 最终 300 "Server is unreachable"（WS-DUMP 确认） | 透传（wrapper 无问题）|
+| iOS | 未验证 | — |
+
+- 原生校验覆盖【不一致】：添加类空（addWhiteList/mute/block）→ native 层本地校验（110/602，快）；移除类空 → 不发本地校验（发服务端 → 慢/300）
+- 定层：原生 SDK 缺陷（移除类空应本地校验 110 "usernames is null or empty!"，同添加类）—— 非环境（其他操作网络通）、非 wrapper（透传）
+- case：4 个移除类空 case 期望 300（之前实测网络错误记）—— 原生补校验后 case 期望应改 110（同添加类）
+- 给研发：Android 移除类空 members 补本地校验（110）
+
 ## 原生行为差异（待研发，透传实测：Android 单独跑通过=行为基准 / iOS 单独跑失败）
 
 ### deleteRemoteConversation（空 convId）
@@ -113,15 +139,25 @@
 - 透传实测：Android 空 map 返回 110（case 通过）；iOS 空 map 返回 303（Unknown server error，服务端）。
 - 两端原生/服务端行为不同（110 vs 303），wrapper 均透传——非 wrapper 问题。
 
-### 聊天室操作返回（room vs null）—— wrapper 已修
+### 群自动接受邀请事件（onGroupAutoAcceptInvitation 只回投主端）
 
-| 操作 | Android wrapper 返回 | iOS wrapper 处理 |
+| 端 | 原生 API / event | 行为 |
 |---|---|---|
-| changeOwner / changeSubject / changeDesc / addAdmin / removeAdmin / removeMembers / block / unblock / mute / unmute | `onSuccess(room toJson)`（返回原生 room） | **已修**：透传原生 `aChatroom toJson`（之前 object:nil 漏透传）|
-| addMembersToChatRoomWhiteList / removeMembersFromChatRoomWhiteList | `updateObject(null)`（返回 null） | **已修**：object:nil（之前误透传 room，已对齐 Android null）|
+| Android | `EMGroupChangeListener.onAutoAcceptInvitationFromGroup`（wrapper 转发 onGroupAutoAcceptInvitation） | B 设 autoAcceptGroupInvitation=true 后接受邀请：**B 主端收到** onGroupAutoAcceptInvitation；**B 副端（同账号另一设备）收不到**（只有 onGroupInvitationReceived + onGroupMembersJoined）|  
+| iOS | 未验证 | — |
 
-- wrapper 差异（非原生）：iOS 操作返回与 Android 对齐（room 类操作透传原生 room；whiteList 类返回 null）。
-- 原生均返回 `EMChatroom`（completion/同步返回），差异在两端 wrapper 的返回策略（Android room/null 分操作），iOS 已对齐。
+- 透传实测（Android WS-DUMP，run-f2506d85eb56）：B 主端 eventId=7 收到 `onGroupAutoAcceptInvitation{groupId, inviter, inviteMessage}`；B 副端全程无该事件（但收到 onGroupMembersJoined）。
+- 定层：原生事件派发行为（auto-accept 事件不同步副端；成员加入事件会广播到全部在线端）—— 非 wrapper（wrapper 转发正常）。
+- case：副端不再期待 auto-accept 事件，改由成员加入事件验证 auto-accept 生效。
+- 若要求原生对齐：研发确认 auto-accept 回执是否应同步到同账号全部在线端（同 onGroupMembersJoined）。
+
+### 环境说明：空 members 成员管理（服务端不可达慢响应）
+
+| 场景 | 现象 | 定层 |
+|---|---|---|
+| removeChatRoomMembers / unMute / unBlock / removeWhiteList（空 members） | 响应 >60s（服务端不可达 → SDK 重试）→ pytest 30s 超时 | 环境/服务端（原生最终返回 300 "Server is unreachable"，WS-DUMP 确认）|
+
+- 非 SDK 逻辑（原生响应 300 正确）；服务端不可达时 SDK 重试导致响应极慢（>60s，不可控）—— 非原生差异，非 wrapper。
 
 ## 相关文件
 

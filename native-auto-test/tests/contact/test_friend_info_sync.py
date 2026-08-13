@@ -55,7 +55,7 @@ def test_friend_info_auto_sync_after_login(device_a, device_b, assert_api, user_
             device_a.call(
                 "Client",
                 Cmd.login.value,
-                info={"userId": user_a, "pwdOrToken": "1", "isPassword": True},
+                info={"userId": user_a, "pwdOrToken": _token_for(user_a), "isPassword": False},
             )
         )
         _wait_friend_sync_events(device_a)
@@ -63,13 +63,19 @@ def test_friend_info_auto_sync_after_login(device_a, device_b, assert_api, user_
             device_b.call(
                 "Client",
                 Cmd.login.value,
-                info={"userId": user_b, "pwdOrToken": "1", "isPassword": True},
+                info={"userId": user_b, "pwdOrToken": _token_for(user_b), "isPassword": False},
             )
         )
         _wait_friend_sync_events(device_b)
     finally:
-        device_a.call("Client", Cmd.login.value, info={"userId": user_a, "pwdOrToken": "1", "isPassword": True})
-        device_b.call("Client", Cmd.login.value, info={"userId": user_b, "pwdOrToken": "1", "isPassword": True})
+        device_a.call("Client", Cmd.login.value, info={"userId": user_a, "pwdOrToken": _token_for(user_a), "isPassword": False})
+        device_b.call("Client", Cmd.login.value, info={"userId": user_b, "pwdOrToken": _token_for(user_b), "isPassword": False})
+
+def _token_for(user: str) -> str:
+    """5.0 统一 token 登录：密码先 REST 换 token。"""
+    from src.rest_api.user_api import fetch_user_token
+    return fetch_user_token(user, "1").get("access_token", "")
+
 
 def test_friend_info_sync_on_peer_metadata_change(device_a, device_b, assert_api, user_a, user_b):
     """

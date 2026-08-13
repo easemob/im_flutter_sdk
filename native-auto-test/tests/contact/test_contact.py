@@ -197,7 +197,7 @@ def test_friend_add_accept_and_list(topology, assert_api):
     # 3. 发送端获取好友列表
     resp_list_a = sender.call(
         "ContactManager",
-        Cmd.getAllContactsFromServer.value,
+        Cmd.getAllContactsFromDB.value,
         info={},
     )
     assert_api.assert_success(resp_list_a)
@@ -205,7 +205,7 @@ def test_friend_add_accept_and_list(topology, assert_api):
         resp_list_a,
         expected={
             "manager": "ContactManager",
-            "cmd": Cmd.getAllContactsFromServer.value,
+            "cmd": Cmd.getAllContactsFromDB.value,
             "device": sender.device_name,
             "result": [user_b],
         },
@@ -214,7 +214,7 @@ def test_friend_add_accept_and_list(topology, assert_api):
     # 4. 接收账号动作端获取好友列表
     resp_list_b = action_recipient.call(
         "ContactManager",
-        Cmd.getAllContactsFromServer.value,
+        Cmd.getAllContactsFromDB.value,
         info={},
     )
     assert_api.assert_success(resp_list_b)
@@ -321,7 +321,7 @@ def test_friend_add_decline_and_verify_not_friends(topology, assert_api):
     # 5. 双方好友列表均不应包含对方（未成为好友）
     resp_list_a = sender.call(
         "ContactManager",
-        Cmd.getAllContactsFromServer.value,
+        Cmd.getAllContactsFromDB.value,
         info={},
     )
     assert_api.assert_success(resp_list_a)
@@ -329,7 +329,7 @@ def test_friend_add_decline_and_verify_not_friends(topology, assert_api):
 
     resp_list_b = action_recipient.call(
         "ContactManager",
-        Cmd.getAllContactsFromServer.value,
+        Cmd.getAllContactsFromDB.value,
         info={},
     )
     assert_api.assert_success(resp_list_b)
@@ -591,10 +591,9 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
     device_a, device_b, assert_api, user_a, user_b
 ):
     """
-    加好友并设置备注后：getAllContactsFromServer 同步服务端；
-    再验证 fetchAllContacts、fetchContacts（分页）、fetchAllContactIds；
-    最后验证 getContact、getAllContacts、getAllContactIds（本地）。
-    与环信文档一致：需先从服务端获取好友列表后，本地才有数据。
+    加好友并设置备注后：getAllContactsFromDB 本地读取；
+    再验证 fetchAllContacts（本地好友）、getContact、getAllContacts（本地）。
+    5.0 移除 fetchContacts 分页拉取（残留），不再覆盖。
     """
     flow = ContactTestFlow(assert_api)
     flow.establish_friends(device_a, device_b, user_a, user_b, reason="fetch_contacts_api")
@@ -618,14 +617,14 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
 
     resp_sync = device_a.call(
         "ContactManager",
-        Cmd.getAllContactsFromServer.value,
+        Cmd.getAllContactsFromDB.value,
         info={},
     )
     assert_api.assert_response_matches(
         resp_sync,
         expected={
             "manager": "ContactManager",
-            "cmd": Cmd.getAllContactsFromServer.value,
+            "cmd": Cmd.getAllContactsFromDB.value,
             "device": "deviceA",
             "result": [user_b],
         },
@@ -648,39 +647,6 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
         },
         ignore_keys={"sequence"},
     )
-
-    # fetchContacts：分页（桥接可能返回 list 或 EMCursorResult 字典）
-    resp_page = device_a.call(
-        "ContactManager",
-        Cmd.fetchContacts.value,
-        info={"cursor": "", "pageSize": 20},
-    )
-    page_body = resp_page.get("result")
-    if isinstance(page_body, list):
-        assert_api.assert_response_matches(
-            resp_page,
-            expected={
-                "manager": "ContactManager",
-                "cmd": Cmd.fetchContacts.value,
-                "device": "deviceA",
-                # 5.0 fetchContacts 为本地全量拉取（EMContact 本地缓存不带 remark）→ 不验 remark
-                "result": [{"userId": user_b}],
-            },
-            ignore_keys={"sequence"},
-        )
-    else:
-        assert_api.assert_response_matches(
-            resp_page,
-            expected={
-                "manager": "ContactManager",
-                "cmd": Cmd.fetchContacts.value,
-                "device": "deviceA",
-                "result": {
-                    "list": [{"userId": user_b, "remark": remark_for_fetch}],
-                },
-            },
-            ignore_keys={"sequence", "cursor"},
-        )
 
     # getContact：本地单个好友
     resp_get_one = device_a.call(
@@ -719,6 +685,7 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
     flow.delete_friend(device_a, user_b)
 
 
+@pytest.mark.skip(reason="5.0 移除 fetchContacts/fetchAllContactIds/getAllContactIds（残留，无分页拉联系人）")
 def test_contact_fetch_all_contact_ids(device_a, assert_api):
     resp = device_a.call("ContactManager", Cmd.fetchAllContactIds.value, info={})
     assert_api.assert_response_matches(
@@ -753,6 +720,7 @@ def test_contact_get_all_contact_ids(device_a, assert_api):
 
 
 @pytest.mark.skip(reason="5.0 移除分页拉联系人（fetchContacts 改为本地全量 asyncFetchAllContactsFromLocal，忽略 pageSize）—— pageSize 边界校验不存在，case 语义失效")
+@pytest.mark.skip(reason="5.0 移除 fetchContacts/fetchAllContactIds/getAllContactIds（残留，无分页拉联系人）")
 def test_contact_fetch_contacts_page_size_zero(device_a, assert_api):
     """fetchContacts：pageSize 为 0（5.0 已移除分页，忽略 pageSize）。"""
     resp = device_a.call(
@@ -772,6 +740,7 @@ def test_contact_fetch_contacts_page_size_zero(device_a, assert_api):
     )
 
 @pytest.mark.skip(reason="5.0 移除分页拉联系人（fetchContacts 本地全量，忽略 pageSize）—— 超出 50 的边界校验不存在")
+@pytest.mark.skip(reason="5.0 移除 fetchContacts/fetchAllContactIds/getAllContactIds（残留，无分页拉联系人）")
 def test_contact_fetch_contacts_page_size_exceeds_50(device_a, assert_api):
     """fetchContacts：pageSize 大于 50（5.0 已移除分页，忽略 pageSize）。"""
     resp = device_a.call(
@@ -787,6 +756,7 @@ def test_contact_fetch_contacts_page_size_exceeds_50(device_a, assert_api):
 
 
 @pytest.mark.skip(reason="5.0 移除分页拉联系人（fetchContacts 本地全量，忽略 pageSize）—— 负数边界校验不存在")
+@pytest.mark.skip(reason="5.0 移除 fetchContacts/fetchAllContactIds/getAllContactIds（残留，无分页拉联系人）")
 def test_contact_fetch_contacts_page_size_negative(device_a, assert_api):
     """fetchContacts：pageSize 为负数（5.0 已移除分页，忽略 pageSize）。"""
     resp = device_a.call(
@@ -849,7 +819,7 @@ def test_contact_block_list_flow_then_unblock_restores_friend(
         resp_friends_a_blocked,
         expected={
             "manager": "ContactManager",
-            "cmd": Cmd.getAllContactsFromServer.value,
+            "cmd": Cmd.getAllContactsFromDB.value,
             "device": "deviceA",
             "result": [user_b],
         },
@@ -868,7 +838,7 @@ def test_contact_block_list_flow_then_unblock_restores_friend(
         resp_friends_a_after,
         expected={
             "manager": "ContactManager",
-            "cmd": Cmd.getAllContactsFromServer.value,
+            "cmd": Cmd.getAllContactsFromDB.value,
             "device": "deviceA",
             "result": [user_b],
         },

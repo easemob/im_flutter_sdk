@@ -583,8 +583,8 @@ def test_group_message_ack_boundary_methods(device_a, assert_api):
     """非法群消息 ID 与群 ID 调用群回执 API，冻结当前真实同步返回。"""
     info = {"msgId": "__invalid_group_msg_id__", "group_id": "__invalid_group_id__"}
     resp_ack = device_a.call("ChatManager", Cmd.ackGroupMessageRead.value, info=info)
-    # 5.0 实测：非法群消息 ID → 原生 SDK 报 500 "message was not found"（4.23 预期 True，5.0 拒绝）
-    assert_api.assert_error(resp_ack, code=500, description="message was not found")
+    # 5.0 实测：非法 msgId → 本地 getMessage 为 null → asyncSendMessageReadReceipts([]) → 原生 110 "messages is empty"
+    assert_api.assert_error(resp_ack, code=110, description="messages is empty")
 
 
 @pytest.mark.topology("account_a_to_account_b")

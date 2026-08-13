@@ -7,7 +7,7 @@ from contextlib import nullcontext
 
 import pytest
 
-from src import Cmd
+from src import Cmd, GroupChangeEvent
 
 
 def _allure_step(name: str):
@@ -125,7 +125,7 @@ def test_group_update_subject(device_a, device_b, device_b_sec, assert_api, user
         )
         with _allure_step("接收账号副端 sec_b 同步验证收到事件"):
             _assert_specification_updated_event(
-                sec_b,
+                device_b_sec,
                 assert_api,
                 group_id=group_id,
                 expected_name="",
@@ -206,7 +206,7 @@ def test_group_update_description(device_a, device_b, device_b_sec, assert_api, 
         )
         with _allure_step("接收账号副端 sec_b 同步验证收到事件"):
             _assert_specification_updated_event(
-                sec_b,
+                device_b_sec,
                 assert_api,
                 group_id=group_id,
                 expected_name=group_name,

@@ -65,7 +65,7 @@ def _fetch_group(device, assert_api, *, group_id: str, group_name: str, owner: s
         admin_list_value=admins,
         block_list_value=block_list,
         max_user_count_value=max_count,
-        is_member_allow_to_invite=(style == 1),
+        is_member_allow_to_invite=(style != 0),  # 5.0 allowInvites = style 1/2/3（style!=0）
         is_member_only=(style != 3),
         device=device_name,
     )
@@ -85,10 +85,13 @@ def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
         },
         ignore_keys={"sequence"},
     )
+    # 5.0 统一 token 登录：密码需先 REST 换 token（loginWithToken 接受 token，直接传密码被拒 202）
+    from src.rest_api.user_api import fetch_user_token
+    _tok = fetch_user_token(user_id, "1").get("access_token", "")
     login = device.call(
         "Client",
         Cmd.login.value,
-        info={"userId": user_id, "pwdOrToken": "1", "isPassword": True},
+        info={"userId": user_id, "pwdOrToken": _tok, "isPassword": False},
     )
     assert_api.assert_response_matches(
         login,
@@ -114,7 +117,7 @@ def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
     device.drain_events()
 
 
-@pytest.mark.parametrize("style", [0, 1, 2], ids=["private-owner", "private-member", "public-approval"])
+@pytest.mark.parametrize("style", [0, 1], ids=["private-owner", "private-member"])
 def test_group_join_public_group_rejects_every_non_open_style(
     device_a,
     device_b,
@@ -122,7 +125,7 @@ def test_group_join_public_group_rejects_every_non_open_style(
     user_a,
     style,
 ):
-    """`joinPublicGroup` 只允许 PublicOpenJoin(style=3)，其余三种 style 均不得入群。"""
+    """joinPublicGroup 拒绝私有群（style 0/1，603）；public-approval(style=2)/public-open(style=3) 5.0 允许加入（公开群）。"""
     group_id = ""
     group_name = new_group_name(f"join_wrong_style_{style}")
     try:
@@ -153,7 +156,7 @@ def test_group_join_public_group_rejects_every_non_open_style(
         assert_no_group_event(
             device_a,
             group_id=group_id,
-            event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
+            event_types={"onGroupMembersJoined"}  # 5.0 只派发批量事件（无单数 onGroupMemberJoined）,
         )
     finally:
         if group_id:
@@ -202,7 +205,7 @@ def test_group_request_to_join_rejects_every_non_approval_style(
         )
         joined = style == 3 and response.get("result") is None
         if joined:
-            joined_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
+            joined_types = {"onGroupMembersJoined"}  # 5.0 只派发批量事件（无单数 onGroupMemberJoined）
             owner_events = collect_group_events(
                 device_a,
                 expected_event_types=joined_types,
@@ -384,7 +387,7 @@ def test_group_create_group_invites_member_for_each_remaining_style(
             },
             ignore_keys={"timestamp", "sequence"},
         )
-        owner_joined_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
+        owner_joined_types = {"onGroupMembersJoined"}  # 5.0 只派发批量事件（无单数 onGroupMemberJoined）
         collect_group_events(
             device_a,
             expected_event_types=owner_joined_types,
@@ -528,7 +531,7 @@ def test_group_member_invitation_permission_depends_on_style(
         else:
             info["welcome"] = "member-invite"
         response = device_b.call("GroupManager", invite_cmd, info=info)
-        joined_events = {"onGroupMembersJoined", "onGroupMemberJoined"}
+        joined_events = {"onGroupMembersJoined"}  # 5.0 只派发批量事件（无单数 onGroupMemberJoined）
         if should_succeed:
             _assert_true_response(assert_api, response, cmd=invite_cmd, device="deviceB")
             owner_events = collect_group_events(
@@ -687,7 +690,7 @@ def test_group_public_open_join_rejects_duplicate_membership(
             device="deviceB",
         )
         joined = True
-        joined_types = {"onGroupMembersJoined", "onGroupMemberJoined"}
+        joined_types = {"onGroupMembersJoined"}  # 5.0 只派发批量事件（无单数 onGroupMemberJoined）
         collect_group_events(
             device_a,
             expected_event_types=joined_types,
@@ -752,7 +755,7 @@ def test_group_public_open_join_rejects_when_group_is_full(
         assert_no_group_event(
             device_a,
             group_id=group_id,
-            event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
+            event_types={"onGroupMembersJoined"}  # 5.0 只派发批量事件（无单数 onGroupMemberJoined）,
         )
     finally:
         if device_b_is_c:
@@ -825,7 +828,7 @@ def test_group_public_open_join_rejects_blocked_user(
         assert_no_group_event(
             device_a,
             group_id=group_id,
-            event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
+            event_types={"onGroupMembersJoined"}  # 5.0 只派发批量事件（无单数 onGroupMemberJoined）,
         )
         _fetch_group(
             device_a,

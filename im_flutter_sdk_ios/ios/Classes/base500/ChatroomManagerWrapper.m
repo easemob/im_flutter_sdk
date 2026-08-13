@@ -596,11 +596,11 @@
                                                fromChatroom:roomId
                                                  completion:^(EMChatroom *aChatroom, EMError *aError)
       {
-        // 对齐 Android（updateObject(null)）：白名单操作成功返回 null（非 room）
+        // 透传原生返回的 room（对齐 Android wrapper 已改透传）
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:(aChatroom ? [aChatroom toJson] : nil)];
     }] ;
 }
 
@@ -609,11 +609,11 @@
     NSArray *ary = param[@"members"];
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.roomManager removeWhiteListMembers:ary fromChatroom:roomId completion:^(EMChatroom *aChatroom, EMError *aError) {
-        // 对齐 Android（updateObject(null)）：白名单操作成功返回 null（非 room）
+        // 透传原生返回的 room（对齐 Android wrapper 已改透传）
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:(aChatroom ? [aChatroom toJson] : nil)];
     }];
 }
 

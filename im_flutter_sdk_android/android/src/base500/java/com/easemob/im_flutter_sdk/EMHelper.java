@@ -230,6 +230,9 @@ class GroupHelper {
         CommonUtil.putObjectToMap(data, "permissionType", EnumTools.groupPermissionTypeToInt(group.getGroupPermissionType()));
         CommonUtil.putObjectToMap(data, "maxUserCount", group.getMaxUserCount());
         CommonUtil.putObjectToMap(data, "isMemberAllowToInvite", group.isMemberAllowToInvite());
+        // 5.0 群类型三布尔：isPublic / joinApprovalRequired / allowInvites（isMemberOnly 已移除）
+        CommonUtil.putObjectToMap(data, "isPublic", group.isPublic());
+        CommonUtil.putObjectToMap(data, "joinApprovalRequired", group.isJoinApprovalRequired());
         CommonUtil.putObjectToMap(data, "ext", group.getExtension());
         return data;
     }

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from src import Cmd
+from src import Cmd, ne
 from tests.chatroom.chatroom_helpers import create_chatroom_or_skip, safe_delete_chatroom
 from tests.chatroom.test_chatroom_management_basics import _join_chatroom_as_b
 
@@ -289,13 +289,14 @@ def test_chatroom_member_management_nonexistent_user(device_a, assert_api, user_
         payload = {"roomId": room_id, **info}
         resp = device_a.call("ChatRoomManager", cmd, info=payload)
         if expected is None:
+            # whiteList 等幂等成功操作：原生返回 room（wrapper 透传）—— 断言 result 非 None（room 存在）
             assert_api.assert_response_matches(
                 resp,
                 expected={
                     "manager": "ChatRoomManager",
                     "cmd": cmd,
                     "device": "deviceA",
-                    "result": None,
+                    "result": ne(None),
                 },
                 ignore_keys={"sequence"},
             )

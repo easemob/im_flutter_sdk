@@ -234,8 +234,7 @@ def test_group_invitation_wrong_inviter_does_not_consume_pending(
             required_all_event_types={
                 "onGroupInvitationAccepted",
                 "onGroupMembersJoined",
-                "onGroupMemberJoined",
-            },
+            },  # 5.0 只派发批量事件（无单数 onGroupMemberJoined）
             timeout=10.0,
         )
         by_type = {event["eventType"]: event for event in accepted_events}
@@ -319,8 +318,7 @@ def test_group_invitation_cannot_be_processed_twice(
                 required_all_event_types={
                     "onGroupInvitationAccepted",
                     "onGroupMembersJoined",
-                    "onGroupMemberJoined",
-                },
+                },  # 5.0 只发复数事件
                 timeout=10.0,
             )
         else:
@@ -335,7 +333,7 @@ def test_group_invitation_cannot_be_processed_twice(
             assert_no_group_event(
                 device_a,
                 group_id=group_id,
-                event_types={"onGroupMembersJoined", "onGroupMemberJoined"},
+                event_types={"onGroupMembersJoined"},  # 5.0 只派发批量事件
             )
 
         second_cmd = (

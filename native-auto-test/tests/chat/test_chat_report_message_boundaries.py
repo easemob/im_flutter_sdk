@@ -81,6 +81,9 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
     return real_id
 
 
+
+pytestmark = [pytest.mark.skip(reason="5.0 移除 reportMessage（残留）")]
+
 def test_chat_report_text_message_success(device_a, device_b, assert_api, user_a, user_b):
     content = f"report-text-{uuid.uuid4().hex[:8]}"
     msg_id = _send_text(device_a, device_b, assert_api, user_a, user_b, content)
