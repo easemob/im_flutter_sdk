@@ -1950,19 +1950,25 @@ def upgrade_runner(
     if phase1_environment is None or phase1_scenario is None:
         pytest.skip("upgrade_runner requires --scenario and --manage-runners")
     role = phase1_scenario.roles["device_a"]
-    old_artifact = phase1_environment.artifact_for("device_a")
+    catalog = EnvironmentManager(
+        _resolve_repo_path(
+            str(request.config.getoption("--scenario")),
+            folder="config/scenarios",
+        ),
+        _resolve_repo_path(str(request.config.getoption("--artifacts"))),
+        web_socket_base_url=ws_runtime.base_url,
+        topics={},
+    ).artifact_catalog
+    # 硬编码 4.23 → 5.0 覆盖安装（不依赖 scenario device_a 版本）
+    old_artifact = next(
+        artifact
+        for (platform, version), artifact in catalog.items()
+        if platform == "android" and version == "4.23.0"
+    )
     new_artifact = next(
         artifact
-        for (platform, version), artifact in EnvironmentManager(
-            _resolve_repo_path(
-                str(request.config.getoption("--scenario")),
-                folder="config/scenarios",
-            ),
-            _resolve_repo_path(str(request.config.getoption("--artifacts"))),
-            web_socket_base_url=ws_runtime.base_url,
-            topics={},
-        ).artifact_catalog.items()
-        if platform == "android" and version == "4.14.0"
+        for (platform, version), artifact in catalog.items()
+        if platform == "android" and version == "5.0.0"
     )
     return UpgradeRunner(
         device=phase1_environment.device_for("device_a"),

@@ -39,75 +39,269 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
 
     GroupManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
-        registerAll();
-        applyVersionOverrides();
         registerEaseListener();
     }
 
     @Override
-    protected void registerAll() {
-        register(MethodKey.getGroupWithId, this::getGroupWithId);
-        register(MethodKey.getJoinedGroups, this::getJoinedGroups);
-        register(MethodKey.getJoinedGroupsFromServer, this::getJoinedGroupsFromServer);
-        register(MethodKey.getPublicGroupsFromServer, this::getPublicGroupsFromServer);
-        register(MethodKey.createGroup, this::createGroup);
-        register(MethodKey.getGroupSpecificationFromServer, this::getGroupSpecificationFromServer);
-        register(MethodKey.getGroupMemberListFromServer, this::getGroupMemberListFromServer);
-        register(MethodKey.getGroupMuteListFromServer, this::getGroupMuteListFromServer);
-        register(MethodKey.getGroupWhiteListFromServer, this::getGroupWhiteListFromServer);
-        register(MethodKey.isMemberInWhiteListFromServer, this::isMemberInWhiteListFromServer);
-        register(MethodKey.getGroupFileListFromServer, this::getGroupFileListFromServer);
-        register(MethodKey.getGroupAnnouncementFromServer, this::getGroupAnnouncementFromServer);
-        register(MethodKey.getGroupBlockListFromServer, this::getGroupBlockListFromServer);
-        register(MethodKey.addMembers, this::addMembers);
-        register(MethodKey.inviterUser, this::inviterUser);
-        register(MethodKey.removeMembers, this::removeMembers);
-        register(MethodKey.blockMembers, this::blockMembers);
-        register(MethodKey.unblockMembers, this::unblockMembers);
-        register(MethodKey.updateGroupSubject, this::updateGroupSubject);
-        register(MethodKey.updateDescription, this::updateDescription);
-        register(MethodKey.leaveGroup, this::leaveGroup);
-        register(MethodKey.destroyGroup, this::destroyGroup);
-        register(MethodKey.blockGroup, this::blockGroup);
-        register(MethodKey.unblockGroup, this::unblockGroup);
-        register(MethodKey.updateGroupOwner, this::updateGroupOwner);
-        register(MethodKey.addAdmin, this::addAdmin);
-        register(MethodKey.removeAdmin, this::removeAdmin);
-        register(MethodKey.muteMembers, this::muteMembers);
-        register(MethodKey.unMuteMembers, this::unMuteMembers);
-        register(MethodKey.muteAllMembers, this::muteAllMembers);
-        register(MethodKey.unMuteAllMembers, this::unMuteAllMembers);
-        register(MethodKey.addWhiteList, this::addWhiteList);
-        register(MethodKey.removeWhiteList, this::removeWhiteList);
-        register(MethodKey.uploadGroupSharedFile, this::uploadGroupSharedFile);
-        register(MethodKey.downloadGroupSharedFile, this::downloadGroupSharedFile);
-        register(MethodKey.removeGroupSharedFile, this::removeGroupSharedFile);
-        register(MethodKey.updateGroupAnnouncement, this::updateGroupAnnouncement);
-        register(MethodKey.updateGroupExt, this::updateGroupExt);
-        register(MethodKey.joinPublicGroup, this::joinPublicGroup);
-        register(MethodKey.requestToJoinPublicGroup, this::requestToJoinPublicGroup);
-        register(MethodKey.acceptJoinApplication, this::acceptJoinApplication);
-        register(MethodKey.declineJoinApplication, this::declineJoinApplication);
-        register(MethodKey.acceptInvitationFromGroup, this::acceptInvitationFromGroup);
-        register(MethodKey.declineInvitationFromGroup, this::declineInvitationFromGroup);
-        register(MethodKey.setMemberAttributesFromGroup, this::setMemberAttributes);
-        register(MethodKey.removeMemberAttributesFromGroup, this::removeMemberAttributes);
-        register(MethodKey.fetchMemberAttributesFromGroup, this::fetchMemberAttributes);
-        register(MethodKey.fetchMembersAttributesFromGroup, this::fetchMembersAttributes);
-        register(MethodKey.fetchJoinedGroupCount, this::fetchJoinedGroupCount);
-        register(MethodKey.clearAllGroupsFromDB, this::clearAllGroupsFromDB);
-        register(MethodKey.isMemberInGroupMuteList, this::isMemberInGroupMuteList);
-        register(MethodKey.fetchGroupMembersInfo, this::fetchGroupMembersInfo);
-        register(MethodKey.updateGroupAvatar, this::updateGroupAvatar);
-        register(MethodKey.updateGroupConfigs, this::updateGroupConfigs);
-        register(MethodKey.updateGroupExtension, this::updateGroupExtension);
-        register(MethodKey.blockUser, this::blockUser);
-        register(MethodKey.unblockUser, this::unblockUser);
-        register(MethodKey.fetchGroupBlackList, this::fetchGroupBlackList);
-        register(MethodKey.getGroupNamecard, this::getGroupNamecard);
-        register(MethodKey.removeUserFromGroup, this::removeUserFromGroup);
-        register(MethodKey.updateGroupNamecard, this::updateGroupNamecard);
-        register(MethodKey.getUsers, this::getUsers);
+    protected boolean dispatchMethodCall(
+            String method,
+            JSONObject params,
+            MethodChannel.Result result
+    ) throws Exception {
+        if (MethodKey.getGroupWithId.equals(method)) {
+            getGroupWithId(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getJoinedGroups.equals(method)) {
+            getJoinedGroups(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getJoinedGroupsFromServer.equals(method)) {
+            getJoinedGroupsFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getPublicGroupsFromServer.equals(method)) {
+            getPublicGroupsFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.createGroup.equals(method)) {
+            createGroup(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getGroupSpecificationFromServer.equals(method)) {
+            getGroupSpecificationFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getGroupMemberListFromServer.equals(method)) {
+            getGroupMemberListFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getGroupMuteListFromServer.equals(method)) {
+            getGroupMuteListFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getGroupWhiteListFromServer.equals(method)) {
+            getGroupWhiteListFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.isMemberInWhiteListFromServer.equals(method)) {
+            isMemberInWhiteListFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getGroupFileListFromServer.equals(method)) {
+            getGroupFileListFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getGroupAnnouncementFromServer.equals(method)) {
+            getGroupAnnouncementFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getGroupBlockListFromServer.equals(method)) {
+            getGroupBlockListFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.addMembers.equals(method)) {
+            addMembers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.inviterUser.equals(method)) {
+            inviterUser(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeMembers.equals(method)) {
+            removeMembers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.blockMembers.equals(method)) {
+            blockMembers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.unblockMembers.equals(method)) {
+            unblockMembers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateGroupSubject.equals(method)) {
+            updateGroupSubject(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateDescription.equals(method)) {
+            updateDescription(params, method, result);
+            return true;
+        }
+        else if (MethodKey.leaveGroup.equals(method)) {
+            leaveGroup(params, method, result);
+            return true;
+        }
+        else if (MethodKey.destroyGroup.equals(method)) {
+            destroyGroup(params, method, result);
+            return true;
+        }
+        else if (MethodKey.blockGroup.equals(method)) {
+            blockGroup(params, method, result);
+            return true;
+        }
+        else if (MethodKey.unblockGroup.equals(method)) {
+            unblockGroup(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateGroupOwner.equals(method)) {
+            updateGroupOwner(params, method, result);
+            return true;
+        }
+        else if (MethodKey.addAdmin.equals(method)) {
+            addAdmin(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeAdmin.equals(method)) {
+            removeAdmin(params, method, result);
+            return true;
+        }
+        else if (MethodKey.muteMembers.equals(method)) {
+            muteMembers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.unMuteMembers.equals(method)) {
+            unMuteMembers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.muteAllMembers.equals(method)) {
+            muteAllMembers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.unMuteAllMembers.equals(method)) {
+            unMuteAllMembers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.addWhiteList.equals(method)) {
+            addWhiteList(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeWhiteList.equals(method)) {
+            removeWhiteList(params, method, result);
+            return true;
+        }
+        else if (MethodKey.uploadGroupSharedFile.equals(method)) {
+            uploadGroupSharedFile(params, method, result);
+            return true;
+        }
+        else if (MethodKey.downloadGroupSharedFile.equals(method)) {
+            downloadGroupSharedFile(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeGroupSharedFile.equals(method)) {
+            removeGroupSharedFile(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateGroupAnnouncement.equals(method)) {
+            updateGroupAnnouncement(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateGroupExt.equals(method)) {
+            updateGroupExt(params, method, result);
+            return true;
+        }
+        else if (MethodKey.joinPublicGroup.equals(method)) {
+            joinPublicGroup(params, method, result);
+            return true;
+        }
+        else if (MethodKey.requestToJoinPublicGroup.equals(method)) {
+            requestToJoinPublicGroup(params, method, result);
+            return true;
+        }
+        else if (MethodKey.acceptJoinApplication.equals(method)) {
+            acceptJoinApplication(params, method, result);
+            return true;
+        }
+        else if (MethodKey.declineJoinApplication.equals(method)) {
+            declineJoinApplication(params, method, result);
+            return true;
+        }
+        else if (MethodKey.acceptInvitationFromGroup.equals(method)) {
+            acceptInvitationFromGroup(params, method, result);
+            return true;
+        }
+        else if (MethodKey.declineInvitationFromGroup.equals(method)) {
+            declineInvitationFromGroup(params, method, result);
+            return true;
+        }
+        else if (MethodKey.setMemberAttributesFromGroup.equals(method)) {
+            setMemberAttributes(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeMemberAttributesFromGroup.equals(method)) {
+            removeMemberAttributes(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchMemberAttributesFromGroup.equals(method)) {
+            fetchMemberAttributes(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchMembersAttributesFromGroup.equals(method)) {
+            fetchMembersAttributes(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchMemberAllAttributes.equals(method)) {
+            fetchMemberAllAttributes(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchJoinedGroupCount.equals(method)) {
+            fetchJoinedGroupCount(params, method, result);
+            return true;
+        }
+        else if (MethodKey.clearAllGroupsFromDB.equals(method)) {
+            clearAllGroupsFromDB(params, method, result);
+            return true;
+        }
+        else if (MethodKey.isMemberInGroupMuteList.equals(method)) {
+            isMemberInGroupMuteList(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchGroupMembersInfo.equals(method)) {
+            fetchGroupMembersInfo(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateGroupAvatar.equals(method)) {
+            updateGroupAvatar(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateGroupConfigs.equals(method)) {
+            updateGroupConfigs(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateGroupExtension.equals(method)) {
+            updateGroupExtension(params, method, result);
+            return true;
+        }
+        else if (MethodKey.blockUser.equals(method)) {
+            blockUser(params, method, result);
+            return true;
+        }
+        else if (MethodKey.unblockUser.equals(method)) {
+            unblockUser(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchGroupBlackList.equals(method)) {
+            fetchGroupBlackList(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getGroupNamecard.equals(method)) {
+            getGroupNamecard(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeUserFromGroup.equals(method)) {
+            removeUserFromGroup(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateGroupNamecard.equals(method)) {
+            updateGroupNamecard(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getUsers.equals(method)) {
+            getUsers(params, method, result);
+            return true;
+        }
+
+        return super.dispatchMethodCall(method, params, result);
     }
 
 
@@ -835,6 +1029,19 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
         EMClient.getInstance().groupManager().asyncFetchGroupMembersAttributes(groupId, userIds, keys, callback);
     }
 
+    private void fetchMemberAllAttributes(JSONObject param, String channelName, Result result) throws JSONException {
+        String groupId = param.getString("groupId");
+        String userId = param.getString("userId");
+        // 【透传原生】5.0 asyncFetchGroupMemberAllAttributes(groupId, userId) 拉取单成员全部自定义属性
+        EMValueWrapperCallBack callback = new EMValueWrapperCallBack<Map<String, Map<String, String>>>(result, channelName) {
+            @Override
+            public void onSuccess(Map<String, Map<String, String>> object) {
+                updateObject(object);
+            }
+        };
+        EMClient.getInstance().groupManager().asyncFetchGroupMemberAllAttributes(groupId, userId, callback);
+    }
+
 
     private void fetchJoinedGroupCount(JSONObject param, String channelName, Result result) throws JSONException {
         EMClient.getInstance().groupManager().asyncGetJoinedGroupsCountFromServer(new EMValueWrapperCallBack<Integer>( result, channelName) {
@@ -1178,6 +1385,22 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
                             }
                             if (attribute != null) {
                                 data.put("attributes", attribute);
+                            }
+                            post(() -> channel.invokeMethod(MethodKey.onGroupChanged, data));
+                        }
+                );
+            }
+
+            @Override
+            public void onUserGroupNamecardUpdated(String groupId, String userId, String namecard) {
+                ListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onUserGroupNamecardUpdated");
+                            data.put("groupId", groupId);
+                            data.put("userId", userId);
+                            if (namecard != null) {
+                                data.put("namecard", namecard);
                             }
                             post(() -> channel.invokeMethod(MethodKey.onGroupChanged, data));
                         }

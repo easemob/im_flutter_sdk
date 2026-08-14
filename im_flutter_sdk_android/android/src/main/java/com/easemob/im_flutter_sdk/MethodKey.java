@@ -122,6 +122,8 @@ public class MethodKey {
 
     static final String onMessageReactionDidChange = "messageReactionDidChange";
     static final String onMessageContentChanged = "onMessageContentChanged";
+    /// 5.0 EMMessageListener.onMessageChanged（本地消息变更回调）
+    static final String onMessageChanged = "onMessageChanged";
 
 
     /// EMMessage listener
@@ -247,6 +249,8 @@ public class MethodKey {
     static final String removeMemberAttributesFromGroup = "removeMemberAttributesFromGroup";
     static final String fetchMemberAttributesFromGroup = "fetchMemberAttributesFromGroup";
     static final String fetchMembersAttributesFromGroup = "fetchMembersAttributesFromGroup";
+    /// 5.0 EMGroupManager.asyncFetchGroupMemberAllAttributes（拉取单成员全部属性）
+    static final String fetchMemberAllAttributes = "fetchMemberAllAttributes";
     static final String fetchJoinedGroupCount = "fetchJoinedGroupCount";
 
     /// EMGroupManagerListener
@@ -287,6 +291,16 @@ public class MethodKey {
 
     /// EMPresenceManagerListener
     static final String onPresenceStatusChanged = "onPresenceStatusChanged";
+
+    /// EMContactListener.onContactInfoUpdate（好友信息更新）
+    static final String onContactInfoUpdate = "onContactInfoUpdate";
+
+    /// EMGroupChangeListener.onUserGroupNamecardUpdated（群成员名片更新）
+    static final String onUserGroupNamecardUpdated = "onUserGroupNamecardUpdated";
+
+    /// EMUserInfoManagerListener（用户信息更新）
+    static final String onSelfUserInfoUpdate = "onSelfUserInfoUpdate";
+    static final String onUserInfoUpdate = "onUserInfoUpdate";
 
     /// EMChatThreadManager methods
     static final String fetchChatThreadDetail = "fetchChatThreadDetail";

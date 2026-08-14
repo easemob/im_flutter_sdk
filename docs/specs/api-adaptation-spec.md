@@ -7,6 +7,8 @@
   - 2) 命名统一：以 Android 端命名为基准统一 Dart 与 iOS；保持 `MethodKey`/`Channel`/`Event` 三侧一致。
   - 3) Wrapper 修改：
     - Android：在 `im_flutter_sdk_android/android/src/.../Wrapper*.java` 增加/调整对应方法与回调派发；确保序列化字段与 Dart 模型一致。
+      - API 命令统一由公共 `Wrapper.onMethodCall` 完成参数转换、异常处理与 `OnceResult` 防重复回复；各 Manager 仅在 `dispatchMethodCall` 中用显式 `if/else` 映射 `MethodKey`，未知命令返回 `false` 交由公共入口回复 `notImplemented`。
+      - 原生事件监听仍由各 Manager 的 `registerEaseListener` / `unRegisterEaseListener` 维护，不属于 API 命令分发；调整 API 路由时不得删除或改写事件监听生命周期。
     - iOS：在 `im_flutter_sdk_ios/ios/Classes/*Helper.m` 或 `*Wrapper.m` 同步实现，使用与 Android 一致的方法名和参数键。
   - 4) Dart 对齐：
     - 方法 key：`lib/src/internal/chat_method_keys.dart` 与原生保持一一对应。

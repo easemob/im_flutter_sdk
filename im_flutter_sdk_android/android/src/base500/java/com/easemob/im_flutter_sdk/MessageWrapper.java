@@ -17,16 +17,32 @@ import io.flutter.plugin.common.MethodChannel;
 public class MessageWrapper extends Wrapper implements MethodChannel.MethodCallHandler {
     public MessageWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
-        registerAll();
-        applyVersionOverrides();
     }
 
     @Override
-    protected void registerAll() {
-        register(MethodKey.getReactionList, this::reactionList);
-        register(MethodKey.groupAckCount, this::getAckCount);
-        register(MethodKey.getChatThread, this::getChatThread);
-        register(MethodKey.getPinInfo, this::getPinInfo);
+    protected boolean dispatchMethodCall(
+            String method,
+            JSONObject params,
+            MethodChannel.Result result
+    ) throws Exception {
+        if (MethodKey.getReactionList.equals(method)) {
+            reactionList(params, method, result);
+            return true;
+        }
+        else if (MethodKey.groupAckCount.equals(method)) {
+            getAckCount(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getChatThread.equals(method)) {
+            getChatThread(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getPinInfo.equals(method)) {
+            getPinInfo(params, method, result);
+            return true;
+        }
+
+        return super.dispatchMethodCall(method, params, result);
     }
 
     private void reactionList(JSONObject params, String channelName, MethodChannel.Result result) throws JSONException {

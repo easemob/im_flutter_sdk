@@ -25,18 +25,37 @@ public class PresenceManagerWrapper extends Wrapper implements MethodChannel.Met
 
     PresenceManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
-        registerAll();
-        applyVersionOverrides();
         registerEaseListener();
     }
 
     @Override
-    protected void registerAll() {
-        register(MethodKey.presenceWithDescription, this::publishPresenceWithDescription);
-        register(MethodKey.presenceSubscribe, this::subscribe);
-        register(MethodKey.presenceUnsubscribe, this::unsubscribe);
-        register(MethodKey.fetchPresenceStatus, this::fetchPresenceStatus);
-        register(MethodKey.fetchSubscribedMembersWithPageNum, this::fetchSubscribedMembersWithPageNum);
+    protected boolean dispatchMethodCall(
+            String method,
+            JSONObject params,
+            Result result
+    ) throws Exception {
+        if (MethodKey.presenceWithDescription.equals(method)) {
+            publishPresenceWithDescription(params, method, result);
+            return true;
+        }
+        else if (MethodKey.presenceSubscribe.equals(method)) {
+            subscribe(params, method, result);
+            return true;
+        }
+        else if (MethodKey.presenceUnsubscribe.equals(method)) {
+            unsubscribe(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchPresenceStatus.equals(method)) {
+            fetchPresenceStatus(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchSubscribedMembersWithPageNum.equals(method)) {
+            fetchSubscribedMembersWithPageNum(params, method, result);
+            return true;
+        }
+
+        return super.dispatchMethodCall(method, params, result);
     }
 
     private void publishPresenceWithDescription(JSONObject params, String channelName, Result result) throws JSONException {

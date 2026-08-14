@@ -45,68 +45,231 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
 
     ChatManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
-        registerAll();
-        applyVersionOverrides();
         messageChannel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "com.chat.im/chat_message", JSONMethodCodec.INSTANCE);
         registerEaseListener();
     }
 
 
     @Override
-    protected void registerAll() {
-        register(MethodKey.sendMessage, this::sendMessage);
-        register(MethodKey.resendMessage, this::resendMessage);
-        register(MethodKey.ackMessageRead, this::ackMessageRead);
-        register(MethodKey.ackGroupMessageRead, this::ackGroupMessageRead);
-        register(MethodKey.ackConversationRead, this::ackConversationRead);
-        register(MethodKey.recallMessage, this::recallMessage);
-        register(MethodKey.getConversation, this::getConversation);
-        register(MethodKey.getThreadConversation, this::getThreadConversation);
-        register(MethodKey.markAllChatMsgAsRead, this::markAllChatMsgAsRead);
-        register(MethodKey.getUnreadMessageCount, this::getUnreadMessageCount);
-        register(MethodKey.updateChatMessage, this::updateChatMessage);
-        register(MethodKey.downloadAttachment, this::downloadAttachment);
-        register(MethodKey.downloadBigImage, this::downloadBigImage);
-        register(MethodKey.downloadThumbnail, this::downloadThumbnail);
-        register(MethodKey.downloadMessageAttachmentInCombine, this::downloadMessageAttachmentInCombine);
-        register(MethodKey.downloadMessageThumbnailInCombine, this::downloadMessageThumbnailInCombine);
-        register(MethodKey.importMessages, this::importMessages);
-        register(MethodKey.loadAllConversations, this::loadAllConversations);
-        register(MethodKey.getConversationsFromServer, this::getConversationsFromServer);
-        register(MethodKey.deleteConversation, this::deleteConversation);
-        register(MethodKey.fetchHistoryMessages, this::fetchHistoryMessages);
-        register(MethodKey.fetchHistoryMessagesByOptions, this::fetchHistoryMessagesByOptions);
-        register(MethodKey.searchChatMsgFromDB, this::searchChatMsgFromDB);
-        register(MethodKey.getMessage, this::getMessage);
-        register(MethodKey.asyncFetchGroupAcks, this::asyncFetchGroupMessageAckFromServer);
-        register(MethodKey.deleteRemoteConversation, this::deleteRemoteConversation);
-        register(MethodKey.deleteMessagesBeforeTimestamp, this::deleteMessagesBefore);
-        register(MethodKey.translateMessage, this::translateMessage);
-        register(MethodKey.fetchSupportedLanguages, this::fetchSupportedLanguages);
-        register(MethodKey.addReaction, this::addReaction);
-        register(MethodKey.removeReaction, this::removeReaction);
-        register(MethodKey.fetchReactionList, this::fetchReactionList);
-        register(MethodKey.fetchReactionDetail, this::fetchReactionDetail);
-        register(MethodKey.reportMessage, this::reportMessage);
-        register(MethodKey.fetchConversationsFromServerWithPage, this::getConversationsFromServerWithPage);
-        register(MethodKey.removeMessagesFromServerWithMsgIds, this::removeMessagesFromServerWithMsgIds);
-        register(MethodKey.removeMessagesFromServerWithTs, this::removeMessagesFromServerWithTs);
-        register(MethodKey.getConversationsFromServerWithCursor, this::getConversationsFromServerWithCursor);
-        register(MethodKey.getPinnedConversationsFromServerWithCursor, this::getPinnedConversationsFromServerWithCursor);
-        register(MethodKey.pinConversation, this::pinConversation);
-        register(MethodKey.modifyMessage, this::modifyMessage);
-        register(MethodKey.downloadAndParseCombineMessage, this::downloadAndParseCombineMessage);
-        register(MethodKey.addRemoteAndLocalConversationsMark, this::addRemoteAndLocalConversationsMark);
-        register(MethodKey.deleteRemoteAndLocalConversationsMark, this::deleteRemoteAndLocalConversationsMark);
-        register(MethodKey.fetchConversationsByOptions, this::fetchConversationsByOptions);
-        register(MethodKey.deleteAllMessageAndConversation, this::deleteAllMessageAndConversation);
-        register(MethodKey.pinMessage, this::pinMessage);
-        register(MethodKey.unpinMessage, this::unpinMessage);
-        register(MethodKey.fetchPinnedMessages, this::fetchPinnedMessages);
-        register(MethodKey.searchMsgsByOptions, this::searchMsgByOptions);
-        register(MethodKey.getMessageCount, this::getMessageCount);
-        register(MethodKey.loadConversationMessagesWithKeyword, this::loadConversationMessagesWithKeyword);
-        register(MethodKey.loadMessagesWithIds, this::loadMessagesWithIds);
+    protected boolean dispatchMethodCall(
+            String method,
+            JSONObject params,
+            MethodChannel.Result result
+    ) throws Exception {
+        if (MethodKey.sendMessage.equals(method)) {
+            sendMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.resendMessage.equals(method)) {
+            resendMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.ackMessageRead.equals(method)) {
+            ackMessageRead(params, method, result);
+            return true;
+        }
+        else if (MethodKey.ackGroupMessageRead.equals(method)) {
+            ackGroupMessageRead(params, method, result);
+            return true;
+        }
+        else if (MethodKey.ackConversationRead.equals(method)) {
+            ackConversationRead(params, method, result);
+            return true;
+        }
+        else if (MethodKey.recallMessage.equals(method)) {
+            recallMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getConversation.equals(method)) {
+            getConversation(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getThreadConversation.equals(method)) {
+            getThreadConversation(params, method, result);
+            return true;
+        }
+        else if (MethodKey.markAllChatMsgAsRead.equals(method)) {
+            markAllChatMsgAsRead(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getUnreadMessageCount.equals(method)) {
+            getUnreadMessageCount(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateChatMessage.equals(method)) {
+            updateChatMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.downloadAttachment.equals(method)) {
+            downloadAttachment(params, method, result);
+            return true;
+        }
+        else if (MethodKey.downloadBigImage.equals(method)) {
+            downloadBigImage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.downloadThumbnail.equals(method)) {
+            downloadThumbnail(params, method, result);
+            return true;
+        }
+        else if (MethodKey.downloadMessageAttachmentInCombine.equals(method)) {
+            downloadMessageAttachmentInCombine(params, method, result);
+            return true;
+        }
+        else if (MethodKey.downloadMessageThumbnailInCombine.equals(method)) {
+            downloadMessageThumbnailInCombine(params, method, result);
+            return true;
+        }
+        else if (MethodKey.importMessages.equals(method)) {
+            importMessages(params, method, result);
+            return true;
+        }
+        else if (MethodKey.loadAllConversations.equals(method)) {
+            loadAllConversations(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getConversationsFromServer.equals(method)) {
+            getConversationsFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.deleteConversation.equals(method)) {
+            deleteConversation(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchHistoryMessages.equals(method)) {
+            fetchHistoryMessages(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchHistoryMessagesByOptions.equals(method)) {
+            fetchHistoryMessagesByOptions(params, method, result);
+            return true;
+        }
+        else if (MethodKey.searchChatMsgFromDB.equals(method)) {
+            searchChatMsgFromDB(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getMessage.equals(method)) {
+            getMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.asyncFetchGroupAcks.equals(method)) {
+            asyncFetchGroupMessageAckFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.deleteRemoteConversation.equals(method)) {
+            deleteRemoteConversation(params, method, result);
+            return true;
+        }
+        else if (MethodKey.deleteMessagesBeforeTimestamp.equals(method)) {
+            deleteMessagesBefore(params, method, result);
+            return true;
+        }
+        else if (MethodKey.translateMessage.equals(method)) {
+            translateMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchSupportedLanguages.equals(method)) {
+            fetchSupportedLanguages(params, method, result);
+            return true;
+        }
+        else if (MethodKey.addReaction.equals(method)) {
+            addReaction(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeReaction.equals(method)) {
+            removeReaction(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchReactionList.equals(method)) {
+            fetchReactionList(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchReactionDetail.equals(method)) {
+            fetchReactionDetail(params, method, result);
+            return true;
+        }
+        else if (MethodKey.reportMessage.equals(method)) {
+            reportMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchConversationsFromServerWithPage.equals(method)) {
+            getConversationsFromServerWithPage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeMessagesFromServerWithMsgIds.equals(method)) {
+            removeMessagesFromServerWithMsgIds(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeMessagesFromServerWithTs.equals(method)) {
+            removeMessagesFromServerWithTs(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getConversationsFromServerWithCursor.equals(method)) {
+            getConversationsFromServerWithCursor(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getPinnedConversationsFromServerWithCursor.equals(method)) {
+            getPinnedConversationsFromServerWithCursor(params, method, result);
+            return true;
+        }
+        else if (MethodKey.pinConversation.equals(method)) {
+            pinConversation(params, method, result);
+            return true;
+        }
+        else if (MethodKey.modifyMessage.equals(method)) {
+            modifyMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.downloadAndParseCombineMessage.equals(method)) {
+            downloadAndParseCombineMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.addRemoteAndLocalConversationsMark.equals(method)) {
+            addRemoteAndLocalConversationsMark(params, method, result);
+            return true;
+        }
+        else if (MethodKey.deleteRemoteAndLocalConversationsMark.equals(method)) {
+            deleteRemoteAndLocalConversationsMark(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchConversationsByOptions.equals(method)) {
+            fetchConversationsByOptions(params, method, result);
+            return true;
+        }
+        else if (MethodKey.deleteAllMessageAndConversation.equals(method)) {
+            deleteAllMessageAndConversation(params, method, result);
+            return true;
+        }
+        else if (MethodKey.pinMessage.equals(method)) {
+            pinMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.unpinMessage.equals(method)) {
+            unpinMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchPinnedMessages.equals(method)) {
+            fetchPinnedMessages(params, method, result);
+            return true;
+        }
+        else if (MethodKey.searchMsgsByOptions.equals(method)) {
+            searchMsgByOptions(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getMessageCount.equals(method)) {
+            getMessageCount(params, method, result);
+            return true;
+        }
+        else if (MethodKey.loadConversationMessagesWithKeyword.equals(method)) {
+            loadConversationMessagesWithKeyword(params, method, result);
+            return true;
+        }
+        else if (MethodKey.loadMessagesWithIds.equals(method)) {
+            loadMessagesWithIds(params, method, result);
+            return true;
+        }
+
+        return super.dispatchMethodCall(method, params, result);
     }
 
 

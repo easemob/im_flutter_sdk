@@ -20,11 +20,6 @@ import io.flutter.plugin.common.MethodChannel;
 
 public class Wrapper implements MethodChannel.MethodCallHandler {
 
-  /** 命令处理器：接收 JSON 参数、channel 名、Result 回调。 */
-  public interface CmdHandler {
-    void handle(JSONObject param, String channelName, MethodChannel.Result result) throws Exception;
-  }
-
   private static final String CHANNEL_PREFIX = "com.chat.im/";
 
   private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
@@ -42,23 +37,12 @@ public class Wrapper implements MethodChannel.MethodCallHandler {
   public FlutterPlugin.FlutterPluginBinding binging;
   public MethodChannel channel;
 
-  /** 命令注册表：cmd 字符串 -> 处理器。子类在 registerAll() 中填充。 */
-  protected final Map<String, CmdHandler> handlers = new HashMap<>();
-
-  /** 注册单个命令处理器。 */
-  protected void register(String cmd, CmdHandler handler) {
-    handlers.put(cmd, handler);
-  }
-
-  /** 注册当前 SDK 基线的命令表。基线子类实现；版本增量子类通过 applyVersionOverrides() 覆盖。 */
-  protected void registerAll() {}
-
-  /** 版本增量钩子：更高版本 SDK 在此覆盖/删除/新增命令。默认空操作。 */
-  protected void applyVersionOverrides() {}
-
-  /** 统一命令分发：解析参数 -> 查注册表 -> 分发；未注册命令返回 notImplemented。 */
+  /**
+   * 统一安全入口：每次调用只解析一次参数、只创建一个 OnceResult，再交给子类显式分发。
+   * 子类只覆盖 dispatchMethodCall，避免绕过防重复提交与统一异常处理。
+   */
   @Override
-  public void onMethodCall(MethodCall call, MethodChannel.Result result) {
+  public final void onMethodCall(MethodCall call, MethodChannel.Result result) {
     // 全局防重复提交：同一个 MethodChannel.Result 只允许提交一次（success/error/notImplemented）
     // 原生回调重复 / wrapper 提前返回 + 回调双提交 → 第二次忽略（防 "Reply already submitted" 崩溃）
     final MethodChannel.Result once = new OnceResult(result);
@@ -69,20 +53,28 @@ public class Wrapper implements MethodChannel.MethodCallHandler {
       replyJsonOrRuntimeError(once, e);
       return;
     }
-    CmdHandler handler = handlers.get(call.method);
-    if (handler != null) {
-      try {
-        handler.handle(param, call.method, once);
-      } catch (Exception e) {
-        replyJsonOrRuntimeError(once, e);
+    try {
+      if (!dispatchMethodCall(call.method, param, once)) {
+        once.notImplemented();
       }
-    } else {
-      once.notImplemented();
+    } catch (Exception e) {
+      replyJsonOrRuntimeError(once, e);
     }
   }
 
+  /**
+   * 子类的 API 路由入口。返回 true 表示命令已处理，false 由公共入口回复 notImplemented。
+   */
+  protected boolean dispatchMethodCall(
+      String method,
+      JSONObject param,
+      MethodChannel.Result result
+  ) throws Exception {
+    return false;
+  }
+
   /** 包装 MethodChannel.Result：只允许一次 success/error/notImplemented。 */
-    private static class OnceResult implements MethodChannel.Result {
+  private static class OnceResult implements MethodChannel.Result {
     private final MethodChannel.Result delegate;
     private final java.util.concurrent.atomic.AtomicBoolean submitted = new java.util.concurrent.atomic.AtomicBoolean(false);
 

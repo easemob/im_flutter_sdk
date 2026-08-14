@@ -243,6 +243,7 @@ class Cmd(str, Enum):
     removeMemberAttributesFromGroup = "removeMemberAttributesFromGroup"
     fetchMemberAttributesFromGroup = "fetchMemberAttributesFromGroup"
     fetchMembersAttributesFromGroup = "fetchMembersAttributesFromGroup"
+    fetchMemberAllAttributes = "fetchMemberAllAttributes"
     fetchJoinedGroupCount = "fetchJoinedGroupCount"
     onGroupChanged = "onGroupChanged"
 

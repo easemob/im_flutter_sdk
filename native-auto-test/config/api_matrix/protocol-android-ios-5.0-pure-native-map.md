@@ -238,13 +238,14 @@ API
 | Group.removeMemberAttributesFromGroup | EMGroupManager.asyncSetGroupMemberAttributes | IEMGroupManager.setMemberAttribute:userId:attributes:completion: |
 | Group.fetchMemberAttributesFromGroup | EMGroupManager.asyncFetchGroupMemberAllAttributes | IEMGroupManager.fetchMemberAttribute:userId:completion: |
 | Group.fetchMembersAttributesFromGroup | EMGroupManager.asyncFetchGroupMembersAttributes | IEMGroupManager.fetchMembersAttributes:userIds:keys:completion: |
+| Group.fetchMemberAllAttributes | EMGroupManager.asyncFetchGroupMemberAllAttributes | —（iOS 原生 fetchMemberAttribute:userId: 语义对应但返回结构不同：Android {userId:{k:v}} vs iOS {k:v}；iOS 侧未适配） |
 | Group.fetchJoinedGroupCount | EMGroupManager.asyncGetJoinedGroupsCountFromServer | IEMGroupManager.getJoinedGroupsCountFromServerWithCompletion: |
 | Group.clearAllGroupsFromDB | EMGroupManager.cleanAllGroupsFromLocal | IEMGroupManager.cleanAllGroupsFromDB |
 | Group.isMemberInGroupMuteList | EMGroupManager.asyncCheckIfInMuteList | IEMGroupManager.isMemberInMuteListFromServerWithGroupId:completion: |
 | Group.fetchGroupMembersInfo | EMGroupManager.asyncFetchGroupMembersInfo | IEMGroupManager.fetchGroupMemberInfoListFromServerWithGroupId:cursor:limit:completion: |
 | Group.updateGroupAvatar | EMGroupManager.changeGroupAvatar / EMGroupManager.asyncChangeGroupAvatar | IEMGroupManager.updateGroupAvatar:groupId:completion: |
-| Group.updateGroupConfigs | EMGroupManager.updateGroupConfigs / EMGroupManager.asyncUpdateGroupConfigs | IEMGroupManager.updateGroupWithId:types:configs:completion: |
-| Group.updateGroupExtension | EMGroupManager.updateGroupExtension / EMGroupManager.asyncUpdateGroupExtension | IEMGroupManager.updateGroupExtWithId:ext:completion: |
+| Group.updateGroupConfigs | EMGroupManager.updateGroupConfigs / EMGroupManager.asyncUpdateGroupConfigs | IEMGroupManager.updateGroupWithId:types:configs:completion: |（协议未收录：Android wrapper 预埋、无 Dart/Python/case 调用方；iOS 未实现）|
+| Group.updateGroupExtension | EMGroupManager.updateGroupExtension / EMGroupManager.asyncUpdateGroupExtension | IEMGroupManager.updateGroupExtWithId:ext:completion: |（协议规范名=updateGroupExt；本行与 updateGroupExt 重复，Android 预埋残留）|
 | Group.blockUser | EMGroupManager.blockUser / EMGroupManager.asyncBlockUser | IEMGroupManager.blockMembers:fromGroup:completion: |
 | Group.unblockUser | EMGroupManager.unblockUser / EMGroupManager.asyncUnblockUser | IEMGroupManager.unblockMembers:fromGroup:completion: |
 | Group.fetchGroupBlackList | EMGroupManager.fetchGroupBlackList / EMGroupManager.asyncFetchGroupBlackList | IEMGroupManager.getGroupBlacklistFromServerWithId:pageNumber:pageSize:completion: |
@@ -286,8 +287,8 @@ API
 | Chatroom.removeChatRoomAttributeFromServer | EMChatRoomManager.asyncRemoveChatRoomAttributeFromServer | IEMChatroomManager.removeChatroomAttribute:key:completionBlock: |
 | Chatroom.removeChatRoomAttributeFromServerForced | EMChatRoomManager.asyncRemoveChatRoomAttributeFromServerForced | IEMChatroomManager.removeChatroomAttributeForced:key:completionBlock: |
 | Contact.getAllContactIds | EMContactManager.getContactsFromLocal | IEMContactManager.getContacts |
-| ChatManager.sendMessageWithType | EMMessage.createSendMessage / EMChatManager.sendMessage | EMChatMessage.initWithConversationID:body:ext: / IEMChatManager.sendMessage:progress:completion: |
-| ChatManager.getAllConversationsBySort | EMChatManager.getAllConversationsBySort | IEMChatManager.getAllConversations: |
+| ChatManager.sendMessageWithType | EMMessage.createSendMessage / EMChatManager.sendMessage | EMChatMessage.initWithConversationID:body:ext: / IEMChatManager.sendMessage:progress:completion: |（测试支撑增量：wrapper/Dart 层组合分发 sendXxxMessage，非 5.0 原生 cmd）|
+| ChatManager.getAllConversationsBySort | EMChatManager.getAllConversationsBySort | IEMChatManager.getAllConversations: |（能力并入 ChatManager.loadAllConversations：wrapper 内部调 getAllConversationsBySort，无独立协议）|
 
 统一协议 API：仅 Android 5.0 有对应公开能力
 
@@ -507,7 +508,11 @@ Event
 | Chatroom.onChatRoomChanged/onRoomSpecificationChanged | EMChatRoomChangeListener.onSpecificationChanged | EMChatroomManagerDelegate.chatroomSpecificationDidUpdate: |
 | Chatroom.onChatRoomChanged/onRoomAttributesDidUpdated | EMChatRoomChangeListener.onAttributesUpdate | EMChatroomManagerDelegate.chatroomAttributesDidUpdated:attributeMap:from: |
 | Chatroom.onChatRoomChanged/onRoomAttributesDidRemoved | EMChatRoomChangeListener.onAttributesRemoved | EMChatroomManagerDelegate.chatroomAttributesDidRemoved:attributes:from: |
-| ChatManager.onMessageChanged | EMMessageListener.onMessageChanged | EMChatManagerDelegate.messageStatusDidChange:error: / messageAttachmentStatusDidChange:error: |
+| ChatManager.onMessageChanged | EMMessageListener.onMessageChanged | EMChatManagerDelegate.messageStatusDidChange:error: / messageAttachmentStatusDidChange:error: |（Android=本地消息对象变更；iOS=发送/附件状态变更，近似映射） |
+| Contact.onContactInfoUpdate | EMContactListener.onContactInfoUpdate | EMContactManagerDelegate.onFriendInfoChanged: |
+| Group.onUserGroupNamecardUpdated | EMGroupChangeListener.onUserGroupNamecardUpdated | EMGroupManagerDelegate.onUserGroupNamecardChanged:userId:namecard: |
+| UserInfo.onSelfUserInfoUpdate | EMUserInfoManagerListener.onSelfUserInfoUpdate | EMUserInfoManagerDelegate.onSelfUserInfoUpdate: |
+| UserInfo.onUserInfoUpdate | EMUserInfoManagerListener.onUserInfoUpdate | EMUserInfoManagerDelegate.onUserInfoUpdate: |
 | ChatManager.onMessageProgress | EMCallBack.onProgress | IEMChatManager.sendMessage:progress:completion: |
 
 统一协议 Event：仅 Android 5.0 有对应公开事件
@@ -537,11 +542,7 @@ Event
 
 | 模块.统一协议 Event | Android 5.0 原生 Event | iOS 5.0 原生 Event |
 |---|---|---|
-| Contact.— | EMContactListener.onContactInfoUpdate | EMContactManagerDelegate.onFriendInfoChanged: |
-| UserInfo.— | EMUserInfoManagerListener.onSelfUserInfoUpdate | EMUserInfoManagerDelegate.onSelfUserInfoUpdate: |
-| UserInfo.— | EMUserInfoManagerListener.onUserInfoUpdate | EMUserInfoManagerDelegate.onUserInfoUpdate: |
-| Client.— | EMLogListener.onLog | EMLogDelegate.logDidOutput: |
-| Group.— | EMGroupChangeListener.onUserGroupNamecardUpdated | EMGroupManagerDelegate.onUserGroupNamecardChanged:userId:namecard: |
+| Contact.— | EMLogListener.onLog | EMLogDelegate.logDidOutput: |
 
 原生 Event 未进统一协议：Android-only
 

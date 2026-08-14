@@ -8,7 +8,6 @@ from src.tools.assertions import get_result
 from tests.chat._utils import build_text
 
 
-@pytest.mark.skip(reason="MissingPlugin: searchChatMsgFromDB 未在当前集成端实现")
 def test_chat_search_chat_msg_from_db_success(device_a, device_b, assert_api, user_a, user_b):
     """发送带唯一关键词的文本；按关键词本地搜索应命中。"""
     try:

@@ -193,8 +193,8 @@ def test_chat_get_unread_count_positive_then_zero(device_a, device_b, assert_api
             "manager": "ChatManager",
             "cmd": Cmd.markAllChatMsgAsRead.value,
             "device": "deviceB",
-            # 5.0 asyncClearAllConversationUnreadMessageCount 成功返回 null（4.23 预期 True）
-            "result": None,
+            # 5.0 wrapper 对齐官方 4.x 语义：成功回调返回 true
+            "result": True,
         },
         ignore_keys={"sequence"},
     )
@@ -220,8 +220,8 @@ def test_chat_get_unread_count_positive_then_zero(device_a, device_b, assert_api
             "manager": "ChatManager",
             "cmd": Cmd.markAllChatMsgAsRead.value,
             "device": "deviceB",
-            # 5.0 asyncClearAllConversationUnreadMessageCount 成功返回 null（4.23 预期 True）
-            "result": None,
+            # 5.0 wrapper 对齐官方 4.x 语义：成功回调返回 true
+            "result": True,
         },
         ignore_keys={"sequence"},
     )
@@ -238,8 +238,8 @@ def test_chat_mark_all_as_read_idempotent(device_b, assert_api):
             "manager": "ChatManager",
             "cmd": Cmd.markAllChatMsgAsRead.value,
             "device": "deviceB",
-            # 5.0 asyncClearAllConversationUnreadMessageCount 成功返回 null（4.23 预期 True）
-            "result": None,
+            # 5.0 wrapper 对齐官方 4.x 语义：成功回调返回 true
+            "result": True,
         },
         ignore_keys={"sequence"},
     )
@@ -251,8 +251,8 @@ def test_chat_mark_all_as_read_idempotent(device_b, assert_api):
             "manager": "ChatManager",
             "cmd": Cmd.markAllChatMsgAsRead.value,
             "device": "deviceB",
-            # 5.0 asyncClearAllConversationUnreadMessageCount 成功返回 null（4.23 预期 True）
-            "result": None,
+            # 5.0 wrapper 对齐官方 4.x 语义：成功回调返回 true
+            "result": True,
         },
         ignore_keys={"sequence"},
     )

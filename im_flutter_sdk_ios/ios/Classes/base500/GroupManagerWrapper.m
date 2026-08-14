@@ -1472,6 +1472,24 @@
     }];
 }
 
+- (void)onUserGroupNamecardChanged:(NSString *)groupId
+                            userId:(NSString *)userId
+                          namecard:(NSString *)namecard{
+    __weak typeof(self) weakSelf = self;
+    [ListenerHandle.sharedInstance addHandle:^{
+        NSMutableDictionary *map = [NSMutableDictionary dictionaryWithDictionary:@{
+            @"type": @"onUserGroupNamecardUpdated",
+            @"groupId": groupId,
+            @"userId": userId,
+        }];
+        if (namecard != nil) {
+            map[@"namecard"] = namecard;
+        }
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                             arguments:map];
+    }];
+}
+
 - (void)groupSpecificationDidUpdate:(EMGroup *)aGroup {
     __weak typeof(self) weakSelf = self;
     [ListenerHandle.sharedInstance addHandle:^{

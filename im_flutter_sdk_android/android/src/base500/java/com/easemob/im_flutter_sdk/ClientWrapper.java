@@ -53,8 +53,6 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
     ClientWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
-        registerAll();
-        applyVersionOverrides();
     }
 
     public void sendDataToFlutter(final Map data) {
@@ -65,42 +63,161 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     }
 
     @Override
-    protected void registerAll() {
-        register(MethodKey.init, this::init);
-        register(MethodKey.login, this::login);
-        register(MethodKey.logout, this::logout);
-        register(MethodKey.changeAppKey, this::changeAppKey);
-        register(MethodKey.uploadLog, this::uploadLog);
-        register(MethodKey.compressLogs, this::compressLogs);
-        register(MethodKey.getLoggedInDevicesFromServer, this::getLoggedInDevicesFromServer);
-        register(MethodKey.kickDevice, this::kickDevice);
-        register(MethodKey.kickAllDevices, this::kickAllDevices);
-        register(MethodKey.isLoggedInBefore, this::isLoggedInBefore);
-        register(MethodKey.getCurrentUser, this::getCurrentUser);
-        register(MethodKey.getToken, this::getToken);
-        register(MethodKey.getCurrentDeviceId, this::getCurrentDeviceId);
-        register(MethodKey.isConnected, this::isConnected);
-        register(MethodKey.isDatabaseOpened, this::isDatabaseOpened);
-        register(MethodKey.renewToken, this::renewToken);
-        register(MethodKey.startCallback, this::startCallback);
-        register(MethodKey.updateUsingHttpsOnlySetting, this::updateUsingHttpsOnlySetting);
-        register(MethodKey.updateLoginExtensionInfo, this::updateLoginExtensionInfo);
-        register(MethodKey.updateDeleteMessagesWhenLeaveGroupSetting, this::updateDeleteMessagesWhenLeaveGroupSetting);
-        register(MethodKey.updateDeleteMessageWhenLeaveRoomSetting, this::updateDeleteMessageWhenLeaveRoomSetting);
-        register(MethodKey.updateRoomOwnerCanLeaveSetting, this::updateRoomOwnerCanLeaveSetting);
-        register(MethodKey.updateAutoAcceptGroupInvitationSetting, this::updateAutoAcceptGroupInvitationSetting);
-        register(MethodKey.acceptInvitationAlways, this::acceptInvitationAlways);
-        register(MethodKey.updateAutoDownloadAttachmentThumbnailSetting, this::updateAutoDownloadAttachmentThumbnailSetting);
-        register(MethodKey.updateDeliveryAckSetting, this::updateDeliveryAckSetting);
-        register(MethodKey.updateSortMessageByServerTimeSetting, this::updateSortMessageByServerTimeSetting);
-        register(MethodKey.updateMessagesReceiveCallbackIncludeSendSetting, this::updateMessagesReceiveCallbackIncludeSendSetting);
-        register(MethodKey.updateRegradeMessagesSetting, this::updateRegradeMessagesSetting);
-        register(MethodKey.changeAppId, this::changeAppId);
-        register(MethodKey.notifyTokenExpired, this::notifyTokenExpired);
-        register(MethodKey.sendFCMTokenToServer, this::sendFCMTokenToServer);
-        register(MethodKey.sendHonorPushTokenToServer, this::sendHonorPushTokenToServer);
-        register(MethodKey.getRTCTokenInfoWithChannelName, this::getRTCTokenInfoWithChannelName);
-        register(MethodKey.getUserIdsWithRTCUids, this::getUserIdsWithRTCUids);
+    protected boolean dispatchMethodCall(
+            String method,
+            JSONObject params,
+            Result result
+    ) throws Exception {
+        if (MethodKey.init.equals(method)) {
+            init(params, method, result);
+            return true;
+        }
+        else if (MethodKey.login.equals(method)) {
+            login(params, method, result);
+            return true;
+        }
+        else if (MethodKey.logout.equals(method)) {
+            logout(params, method, result);
+            return true;
+        }
+        else if (MethodKey.changeAppKey.equals(method)) {
+            changeAppKey(params, method, result);
+            return true;
+        }
+        else if (MethodKey.uploadLog.equals(method)) {
+            uploadLog(params, method, result);
+            return true;
+        }
+        else if (MethodKey.compressLogs.equals(method)) {
+            compressLogs(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getLoggedInDevicesFromServer.equals(method)) {
+            getLoggedInDevicesFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.kickDevice.equals(method)) {
+            kickDevice(params, method, result);
+            return true;
+        }
+        else if (MethodKey.kickAllDevices.equals(method)) {
+            kickAllDevices(params, method, result);
+            return true;
+        }
+        else if (MethodKey.isLoggedInBefore.equals(method)) {
+            isLoggedInBefore(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getCurrentUser.equals(method)) {
+            getCurrentUser(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getToken.equals(method)) {
+            getToken(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getCurrentDeviceId.equals(method)) {
+            getCurrentDeviceId(params, method, result);
+            return true;
+        }
+        else if (MethodKey.isConnected.equals(method)) {
+            isConnected(params, method, result);
+            return true;
+        }
+        else if (MethodKey.isDatabaseOpened.equals(method)) {
+            isDatabaseOpened(params, method, result);
+            return true;
+        }
+        else if (MethodKey.setDataSyncType.equals(method)) {
+            setDataSyncType(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getDataSyncType.equals(method)) {
+            getDataSyncType(params, method, result);
+            return true;
+        }
+        else if (MethodKey.renewToken.equals(method)) {
+            renewToken(params, method, result);
+            return true;
+        }
+        else if (MethodKey.startCallback.equals(method)) {
+            startCallback(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateUsingHttpsOnlySetting.equals(method)) {
+            updateUsingHttpsOnlySetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateLoginExtensionInfo.equals(method)) {
+            updateLoginExtensionInfo(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateDeleteMessagesWhenLeaveGroupSetting.equals(method)) {
+            updateDeleteMessagesWhenLeaveGroupSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateDeleteMessageWhenLeaveRoomSetting.equals(method)) {
+            updateDeleteMessageWhenLeaveRoomSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateRoomOwnerCanLeaveSetting.equals(method)) {
+            updateRoomOwnerCanLeaveSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateAutoAcceptGroupInvitationSetting.equals(method)) {
+            updateAutoAcceptGroupInvitationSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.acceptInvitationAlways.equals(method)) {
+            acceptInvitationAlways(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateAutoDownloadAttachmentThumbnailSetting.equals(method)) {
+            updateAutoDownloadAttachmentThumbnailSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateDeliveryAckSetting.equals(method)) {
+            updateDeliveryAckSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateSortMessageByServerTimeSetting.equals(method)) {
+            updateSortMessageByServerTimeSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateMessagesReceiveCallbackIncludeSendSetting.equals(method)) {
+            updateMessagesReceiveCallbackIncludeSendSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateRegradeMessagesSetting.equals(method)) {
+            updateRegradeMessagesSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.changeAppId.equals(method)) {
+            changeAppId(params, method, result);
+            return true;
+        }
+        else if (MethodKey.notifyTokenExpired.equals(method)) {
+            notifyTokenExpired(params, method, result);
+            return true;
+        }
+        else if (MethodKey.sendFCMTokenToServer.equals(method)) {
+            sendFCMTokenToServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.sendHonorPushTokenToServer.equals(method)) {
+            sendHonorPushTokenToServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getRTCTokenInfoWithChannelName.equals(method)) {
+            getRTCTokenInfoWithChannelName(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getUserIdsWithRTCUids.equals(method)) {
+            getUserIdsWithRTCUids(params, method, result);
+            return true;
+        }
+
+        return super.dispatchMethodCall(method, params, result);
     }
 
 
@@ -182,6 +299,20 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
     private void isDatabaseOpened(JSONObject param, String channelName, Result result) throws JSONException{
         asyncRunnable(()-> onSuccess(result, channelName, EMClient.getInstance().isDatabaseOpened()));
+    }
+
+    private void setDataSyncType(JSONObject param, String channelName, Result result) throws JSONException {
+        int mask = param.getInt("dataSyncType");
+        EMClient.getInstance().getOptions().setDataSyncType(EMOptions.EMDataSyncType.fromNativeMask(mask));
+        asyncRunnable(()-> onSuccess(result, channelName, null));
+    }
+
+    private void getDataSyncType(JSONObject param, String channelName, Result result) throws JSONException {
+        asyncRunnable(()-> {
+            java.util.EnumSet<EMOptions.EMDataSyncType> types = EMClient.getInstance().getOptions().getDataSyncType();
+            int mask = types == null ? 0 : EMOptions.EMDataSyncType.toNativeMask(types);
+            onSuccess(result, channelName, mask);
+        });
     }
 
     private void uploadLog(JSONObject param, String channelName, Result result) throws JSONException {
@@ -588,4 +719,3 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
                 });
     }
 }
-

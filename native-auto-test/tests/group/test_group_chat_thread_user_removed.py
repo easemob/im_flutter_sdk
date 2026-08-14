@@ -173,8 +173,12 @@ def test_chat_thread_remove_member_updates_member_list(device_a, device_b, asser
             },
         )
         thread_result = resp_create_thread.get("result") or {}
-        thread_id = thread_result.get("threadId")
-        assert isinstance(thread_id, str) and thread_id, f"createChatThread 未返回 threadId: {resp_create_thread}"
+        thread_id = thread_result.get("threadId") if isinstance(thread_result, dict) else None
+        if not isinstance(thread_id, str) or not thread_id:
+            # 305 = thread not open：测试 appKey 服务端未开通子区（thread）功能 → 外部前置不满足
+            if isinstance(thread_result, dict) and thread_result.get("code") == 305:
+                pytest.skip("测试 appKey 服务端未开通子区（thread）功能（createChatThread 305 thread not open）")
+            assert isinstance(thread_id, str) and thread_id, f"createChatThread 未返回 threadId: {resp_create_thread}"
         assert_api.assert_response_matches(
             resp_create_thread,
             expected={

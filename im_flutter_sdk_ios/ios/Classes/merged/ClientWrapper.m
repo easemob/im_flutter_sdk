@@ -178,6 +178,16 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
                               channelName:call.method
                                    result:result];
     }
+    else if ([ChatSetDataSyncType isEqualToString:call.method]){
+        [self setDataSyncType:call.arguments
+                  channelName:call.method
+                       result:result];
+    }
+    else if ([ChatGetDataSyncType isEqualToString:call.method]){
+        [self getDataSyncType:call.arguments
+                  channelName:call.method
+                       result:result];
+    }
     else if ([ChatUpdateLoginExtensionInfo isEqualToString:call.method]){
         [self updateLoginExtensionInfo:call.arguments
                            channelName:call.method
@@ -757,6 +767,31 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
                   channelName:aChannelName
                         error:nil
                        object:nil];
+}
+
+- (void)setDataSyncType:(NSDictionary *)param
+            channelName:(NSString *)aChannelName
+                 result:(FlutterResult)result
+{
+    __weak typeof(self)weakSelf = self;
+    // 【透传原生】dataSyncType 位掩码（NS_OPTIONS），与 Android EMDataSyncType.toNativeMask 对齐
+    NSInteger mask = [param[@"dataSyncType"] integerValue];
+    EMClient.sharedClient.options.dataSyncType = mask;
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
+}
+
+- (void)getDataSyncType:(NSDictionary *)param
+            channelName:(NSString *)aChannelName
+                 result:(FlutterResult)result
+{
+    __weak typeof(self)weakSelf = self;
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:@(EMClient.sharedClient.options.dataSyncType)];
 }
 
 - (void)updateLoginExtensionInfo:(NSDictionary *)param

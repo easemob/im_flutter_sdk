@@ -28,11 +28,12 @@ def test_chatroom_destroy_room_nonexistent(device_a, assert_api):
     assert_api.assert_error(resp, code=700, description="do not find this group")
 
 
-def test_chatroom_join_room_nonexistent_current_behavior(device_b, assert_api):
+def test_chatroom_join_room_nonexistent(device_b, assert_api):
     room_id = _nonexistent_room_id()
     resp = device_b.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
-    # 两端实测均为 303 "Unknown server error"（服务端）—— 705 是 4.x 语义，已过时
-    assert_api.assert_error(resp, code=303, description="Unknown server error")
+    # 官网/官方契约：join 不存在的聊天室应返回 705 CHATROOM_NOT_EXIST
+    # （5.0 服务端实测返回 303 "Unknown server error" —— 服务端缺陷，待研发修）
+    assert_api.assert_error(resp, code=705, description="Chat room does not exist")
 
 
 def test_chatroom_join_room_empty_id(device_b, assert_api):

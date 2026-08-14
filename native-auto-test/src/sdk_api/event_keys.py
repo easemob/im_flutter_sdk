@@ -13,6 +13,7 @@ class ContactChangeEvent(str, Enum):
     INVITED = "onContactInvited"
     INVITATION_ACCEPTED = "onFriendRequestAccepted"
     INVITATION_DECLINED = "onFriendRequestDeclined"
+    CONTACT_INFO_UPDATE = "onContactInfoUpdate"
 
 
 class ChatRoomEvent(str, Enum):
@@ -64,6 +65,18 @@ class GroupChangeEvent(str, Enum):
     ON_SPECIFICATION_DID_UPDATE = "onGroupSpecificationDidUpdate"
     ON_STATE_CHANGED = "onGroupStateChanged"
     ON_ATTRIBUTES_CHANGED_OF_MEMBER = "onGroupAttributesChangedOfMember"
+    ON_USER_GROUPNAMECARD_UPDATED = "onUserGroupNamecardUpdated"
+
+
+class UserInfoChangeEvent(str, Enum):
+    """用户信息更新事件，对应 EMUserInfoManagerListener。"""
+
+    ON_SELF_USER_INFO_UPDATE = "onSelfUserInfoUpdate"
+    ON_USER_INFO_UPDATE = "onUserInfoUpdate"
+
+
+# 消息本地变更事件（5.0 EMMessageListener.onMessageChanged）
+MESSAGE_CHANGED = "onMessageChanged"
 
 
 # 所有 eventType 字符串的集合，便于判断某字符串是否为已知回调事件
@@ -71,4 +84,6 @@ ALL_EVENT_VALUES = frozenset(
     [e.value for e in ContactChangeEvent]
     + [e.value for e in ChatRoomEvent]
     + [e.value for e in GroupChangeEvent]
+    + [e.value for e in UserInfoChangeEvent]
+    + [MESSAGE_CHANGED]
 )

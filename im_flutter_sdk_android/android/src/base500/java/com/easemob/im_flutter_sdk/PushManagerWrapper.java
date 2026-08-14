@@ -6,6 +6,7 @@ import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMPushConfigs;
 import com.hyphenate.chat.EMPushManager;
 import com.hyphenate.chat.EMPushManager.DisplayStyle;
+import com.hyphenate.push.EMPushConfig;
 import com.hyphenate.chat.EMSilentModeParam;
 import com.hyphenate.chat.EMSilentModeResult;
 import com.hyphenate.exceptions.HyphenateException;
@@ -28,32 +29,96 @@ public class PushManagerWrapper extends Wrapper implements MethodCallHandler {
 
     PushManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
-        registerAll();
-        applyVersionOverrides();
     }
 
     @Override
-    protected void registerAll() {
-        register(MethodKey.getImPushConfig, this::getImPushConfig);
-        register(MethodKey.getImPushConfigFromServer, this::getImPushConfigFromServer);
-        register(MethodKey.updatePushNickname, this::updatePushNickname);
-        register(MethodKey.updateImPushStyle, this::updateImPushStyle);
-        register(MethodKey.updateHMSPushToken, this::updateHMSPushToken);
-        register(MethodKey.updateFCMPushToken, this::updateFCMPushToken);
-        register(MethodKey.reportPushAction, this::reportPushAction);
-        register(MethodKey.setConversationSilentMode, this::setConversationSilentMode);
-        register(MethodKey.removeConversationSilentMode, this::removeConversationSilentMode);
-        register(MethodKey.fetchConversationSilentMode, this::fetchConversationSilentMode);
-        register(MethodKey.setSilentModeForAll, this::setSilentModeForAll);
-        register(MethodKey.fetchSilentModeForAll, this::fetchSilentModeForAll);
-        register(MethodKey.fetchSilentModeForConversations, this::fetchSilentModeForConversations);
-        register(MethodKey.setPreferredNotificationLanguage, this::setPreferredNotificationLanguage);
-        register(MethodKey.fetchPreferredNotificationLanguage, this::fetchPreferredNotificationLanguage);
-        register(MethodKey.getPushTemplate, this::getPushTemplate);
-        register(MethodKey.getPushConfigsFromServer, this::getPushConfigsFromServer);
-        register(MethodKey.setPushTemplate, this::setPushTemplate);
-        register(MethodKey.syncSilentModels, this::syncSilentModels);
-        register(MethodKey.bindDeviceToken, this::bindDeviceToken);
+    protected boolean dispatchMethodCall(
+            String method,
+            JSONObject params,
+            Result result
+    ) throws Exception {
+        if (MethodKey.getImPushConfig.equals(method)) {
+            getImPushConfig(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getImPushConfigFromServer.equals(method)) {
+            getImPushConfigFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updatePushNickname.equals(method)) {
+            updatePushNickname(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateImPushStyle.equals(method)) {
+            updateImPushStyle(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateHMSPushToken.equals(method)) {
+            updateHMSPushToken(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateFCMPushToken.equals(method)) {
+            updateFCMPushToken(params, method, result);
+            return true;
+        }
+        else if (MethodKey.reportPushAction.equals(method)) {
+            reportPushAction(params, method, result);
+            return true;
+        }
+        else if (MethodKey.setConversationSilentMode.equals(method)) {
+            setConversationSilentMode(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeConversationSilentMode.equals(method)) {
+            removeConversationSilentMode(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchConversationSilentMode.equals(method)) {
+            fetchConversationSilentMode(params, method, result);
+            return true;
+        }
+        else if (MethodKey.setSilentModeForAll.equals(method)) {
+            setSilentModeForAll(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchSilentModeForAll.equals(method)) {
+            fetchSilentModeForAll(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchSilentModeForConversations.equals(method)) {
+            fetchSilentModeForConversations(params, method, result);
+            return true;
+        }
+        else if (MethodKey.setPreferredNotificationLanguage.equals(method)) {
+            setPreferredNotificationLanguage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchPreferredNotificationLanguage.equals(method)) {
+            fetchPreferredNotificationLanguage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getPushTemplate.equals(method)) {
+            getPushTemplate(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getPushConfigsFromServer.equals(method)) {
+            getPushConfigsFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.setPushTemplate.equals(method)) {
+            setPushTemplate(params, method, result);
+            return true;
+        }
+        else if (MethodKey.syncSilentModels.equals(method)) {
+            syncSilentModels(params, method, result);
+            return true;
+        }
+        else if (MethodKey.bindDeviceToken.equals(method)) {
+            bindDeviceToken(params, method, result);
+            return true;
+        }
+
+        return super.dispatchMethodCall(method, params, result);
     }
 
 
@@ -102,7 +167,12 @@ public class PushManagerWrapper extends Wrapper implements MethodCallHandler {
 
     private void updateFCMPushToken(JSONObject params, String channelName,  Result result) throws JSONException {
         String token = params.getString("token");
-        String fcmKey = EMClient.getInstance().getOptions().getPushConfig().getFcmSenderId();
+        // pushConfig 未配置时为 null：透传空 fcmKey 给原生，由原生校验（空 notifierName → 110）；避免 NPE
+        String fcmKey = "";
+        EMPushConfig config = EMClient.getInstance().getOptions().getPushConfig();
+        if (config != null) {
+            fcmKey = config.getFcmSenderId();
+        }
         EMClient.getInstance().pushManager().bindDeviceToken(fcmKey, token, new EMWrapperCallBack(result, channelName, null));
     }
 

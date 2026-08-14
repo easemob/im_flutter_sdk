@@ -140,7 +140,7 @@ def test_group_get_joined_groups_local_contains_created_group(device_a, assert_a
             destroy_group(device_a, assert_api, group_id)
 
 
-def test_group_get_joined_groups_from_server_contains_created_group(device_a, assert_api, user_a):
+def test_group_get_joined_groups_contains_created_group(device_a, assert_api, user_a):
     """
     前置：A 已登录且尚未创建本 case 的目标群。
     步骤：A 创建私有群，随后调用本地 getJoinedGroups 并按 groupId 投影（5.0 移除服务端拉取）。

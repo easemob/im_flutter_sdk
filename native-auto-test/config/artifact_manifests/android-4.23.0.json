@@ -1,11 +1,11 @@
 {
-  "artifactId": "android-4.23.0-59555b3",
+  "artifactId": "android-4.23.0-47b57a7",
   "platform": "android",
   "sdkVersion": "4.23.0",
   "appVersion": "1.0.0",
   "wrapperCommit": "8387ff63455c+worktree.c6001add",
   "nativeSdkSha256": "4630a0e04cb9cce0caf0e50afa087b5e57856b1fcc0a43a7bbfdf01c2c6d6c88",
-  "artifactSha256": "59555b362f1ec67dba96764b5214b0c6af1e350a9986b729394c20ff05e13832",
+  "artifactSha256": "47b57a76172b23e66469eace0e33b584e7fb0f44b2eed96aa0bf4b29fb5f3c3f",
   "capabilities": [
     "ChatManager.ackConversationRead",
     "ChatManager.ackGroupMessageRead",
@@ -214,6 +214,7 @@
     "GroupManager.fetchGroupBlackList",
     "GroupManager.fetchGroupMembersInfo",
     "GroupManager.fetchJoinedGroupCount",
+    "GroupManager.fetchMemberAllAttributes",
     "GroupManager.fetchMemberAttributesFromGroup",
     "GroupManager.fetchMembersAttributesFromGroup",
     "GroupManager.getGroupAnnouncementFromServer",

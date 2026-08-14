@@ -8,6 +8,7 @@ from typing import Any, Protocol
 
 from .android_device import AndroidDevice
 from .config import Artifact, RoleSpec
+from ..rest_api.user_api import fetch_user_token
 
 
 class DeviceChannel(Protocol):
@@ -86,6 +87,58 @@ class UpgradeRunner:
 
     def run_message_retention(self, marker: str | None = None) -> UpgradeResult:
         value = marker or f"upgrade-{uuid.uuid4().hex}"
+
+        def _launch_and_login(artifact, *, expect_sdk_version: str) -> dict[str, Any]:
+            self.device.launch(
+                artifact,
+                runner_id=self.role.runner_id,
+                device_name=self.role.device_name,
+                topic=self.topic,
+                web_socket_base_url=self.web_socket_base_url,
+                run_id=self.run_id,
+                logical_device=self.role.role,
+                artifact_id=artifact.artifact_id,
+                wrapper_commit=artifact.wrapper_commit,
+                native_sdk_sha256=artifact.native_sdk_sha256,
+                managed_web_socket=self.managed_web_socket,
+            )
+            hello = self.channel.wait_for_hello(
+                expected_sdk_version=expect_sdk_version,
+                expected_runner_id=self.role.runner_id,
+                expected_device_name=self.role.device_name,
+                expected_platform=self.role.platform,
+                timeout=self.startup_timeout,
+            )
+            token = fetch_user_token(self.user_id, self.password).get("access_token", "")
+            # 覆盖安装后新 App 的 WS runner 注册有波动（kill → 重连 → 注册），
+            # "Runner is not registered" 时等 2s 重试，直到注册稳定。
+            login_response = {}
+            for attempt in range(5):
+                login_response = self.channel.call(
+                    "Client",
+                    "login",
+                    info={
+                        "userId": self.user_id,
+                        "pwdOrToken": token,
+                        "isPassword": False,
+                    },
+                )
+                if "Runner is not registered" in str(login_response):
+                    time.sleep(2)
+                    continue
+                break
+            if login_response.get("result") != self.user_id:
+                raise AssertionError(
+                    f"login failed: {json.dumps(login_response)}"
+                )
+            return hello
+
+        # ① 先装 4.23 旧 App + 启动 + 登录（真实"旧版本写数据"前提）
+        self.device.install(self.old_artifact, replace=True)
+        time.sleep(3)
+        _launch_and_login(self.old_artifact, expect_sdk_version=self.old_artifact.sdk_version)
+
+        # ② 4.23 写标记消息（本地 DB 持久化 marker）
         create_response = self.channel.call(
             "TestControl",
             "createUpgradeMessage",
@@ -97,46 +150,14 @@ class UpgradeRunner:
                 f"old SDK did not persist upgrade message: {json.dumps(old_snapshot)}"
             )
 
+        # ③ 覆盖安装 5.0 + 启动 + 登录
         self.channel.clear_runner_info()
         install_output = self.device.install(self.new_artifact, replace=True)
         # Android may restore the old task briefly after `adb install -r`
         # returns. Let the package-update transition finish before the explicit
         # force-stop/start so the new runner extras win deterministically.
         time.sleep(3)
-        self.device.launch(
-            self.new_artifact,
-            runner_id=self.role.runner_id,
-            device_name=self.role.device_name,
-            topic=self.topic,
-            web_socket_base_url=self.web_socket_base_url,
-            run_id=self.run_id,
-            logical_device=self.role.role,
-            artifact_id=self.new_artifact.artifact_id,
-            wrapper_commit=self.new_artifact.wrapper_commit,
-            native_sdk_sha256=self.new_artifact.native_sdk_sha256,
-            managed_web_socket=self.managed_web_socket,
-        )
-        hello = self.channel.wait_for_hello(
-            expected_sdk_version=self.new_artifact.sdk_version,
-            expected_runner_id=self.role.runner_id,
-            expected_device_name=self.role.device_name,
-            expected_platform=self.role.platform,
-            timeout=self.startup_timeout,
-        )
-        login_response = self.channel.call(
-            "Client",
-            "login",
-            info={
-                "userId": self.user_id,
-                "pwdOrToken": self.password,
-                "isPassword": True,
-            },
-        )
-        login_result = login_response.get("result")
-        if login_result != self.user_id:
-            raise AssertionError(
-                f"login after upgrade failed: {json.dumps(login_response)}"
-            )
+        hello = _launch_and_login(self.new_artifact, expect_sdk_version=self.new_artifact.sdk_version)
         new_snapshot = _result(
             self.channel.call(
                 "TestControl",
@@ -154,13 +175,14 @@ class UpgradeRunner:
             )
         # P0-07 requires more than opening the local DB: after network recovery,
         # prove that the upgraded SDK can complete one real server operation.
+        # 用 fetchHistoryMessages 拉升级前保存消息的会话历史（两端矩阵都有，且同时验证消息保留）
         post_upgrade_sync = self.channel.call(
-            "ContactManager",
-            "getAllContactsFromServer",
-            info={},
+            "ChatManager",
+            "fetchHistoryMessages",
+            info={"convId": "phase1-upgrade", "type": 0, "pageSize": 20, "startMsgId": "", "direction": 0},
         )
         sync_result = post_upgrade_sync.get("result")
-        if not isinstance(sync_result, list):
+        if not isinstance(sync_result, dict) or not isinstance(sync_result.get("list"), list):
             raise AssertionError(
                 "post-upgrade online sync failed: "
                 f"{json.dumps(post_upgrade_sync)}"

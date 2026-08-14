@@ -695,7 +695,6 @@ def test_chat_fetch_history_by_options_invalid_conversation(device_a, assert_api
     )
 
 
-@pytest.mark.skip(reason="MissingPlugin: searchChatMsgFromDB 未在当前集成端实现")
 def test_chat_search_chat_msg_from_db_success(device_a, device_b, assert_api, user_a, user_b):
     keyword = f"kw-{uuid.uuid4().hex[:6]}"
     _ = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, keyword))
@@ -1233,13 +1232,13 @@ def test_chat_add_reaction_empty_reaction_response(topology, assert_api):
 # ======================== Attachments (invalid) ========================
 
 
-@pytest.mark.skip(reason="message 对象入参 API 暂缓；避免 MissingPlugin 非被测端语义")
+@pytest.mark.skip(reason="原生缺陷：无效 msgId 下载原生 NPE（getMessage=null → 原生无校验 NPE；官方应 400/500）。传参已修正为完整 message 对象，等原生补校验后启用")
 def test_chat_download_attachment_invalid_id_response(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.downloadAttachment.value, info={"msgId": "__invalid_msg_id__"})
+    resp = device_a.call("ChatManager", Cmd.downloadAttachment.value, info={"message": {"msgId": "__invalid_msg_id__", "from": "u", "to": "v", "chatType": 0, "direction": 0, "body": {"type": 1, "localPath": "", "remoteUrl": "", "secret": ""}}})
     assert_api.assert_error(resp, code=500, description="Message is invalid")
 
 
-@pytest.mark.skip(reason="message 对象入参 API 暂缓；避免 MissingPlugin 非被测端语义")
+@pytest.mark.skip(reason="原生缺陷：无效 msgId 下载原生 NPE（getMessage=null → 原生无校验 NPE；官方应 400/500）。传参已修正为完整 message 对象，等原生补校验后启用")
 def test_chat_download_thumbnail_invalid_id_response(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.downloadThumbnail.value, info={"msgId": "__invalid_msg_id__"})
+    resp = device_a.call("ChatManager", Cmd.downloadThumbnail.value, info={"message": {"msgId": "__invalid_msg_id__", "from": "u", "to": "v", "chatType": 0, "direction": 0, "body": {"type": 1, "localPath": "", "remoteUrl": "", "secret": ""}}})
     assert_api.assert_error(resp, code=500, description="Message is invalid")

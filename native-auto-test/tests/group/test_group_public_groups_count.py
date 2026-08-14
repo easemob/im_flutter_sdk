@@ -12,7 +12,6 @@ from tests.group.group_helpers import create_group, destroy_group, new_group_nam
 pytestmark = [
     pytest.mark.client,
     pytest.mark.group,
-    pytest.mark.skip(reason="5.0 移除服务端拉公开群（getPublicGroupsFromServer 改本地群列表，无分页/cursor 语义）"),
 ]
 
 
@@ -59,6 +58,7 @@ def test_group_fetch_joined_group_count_success(device_a, assert_api):
     assert result >= 0, f"fetchJoinedGroupCount result 应>=0: {resp}"
 
 
+@pytest.mark.skip(reason="5.0 移除服务端拉公开群（getPublicGroupsFromServer 残留，无公开群列表）")
 def test_group_get_public_groups_from_server_success(device_a, assert_api):
     """
     前置：A 已登录，公开群列表允许包含共享环境已有数据。
@@ -83,6 +83,7 @@ def test_group_get_public_groups_from_server_success(device_a, assert_api):
     _assert_public_groups_result(result, resp=resp)
 
 
+@pytest.mark.skip(reason="5.0 移除服务端拉公开群（getPublicGroupsFromServer 残留，无公开群列表）")
 def test_group_public_groups_cursor_paginates_two_created_groups(
     device_a,
     assert_api,

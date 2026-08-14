@@ -71,6 +71,7 @@ static NSString *const ChatFetchContacts = @"fetchContacts";
 
 #pragma mark - EMContactDelegate
 static NSString *const ChatOnContactChanged = @"onContactChanged";
+static NSString *const ChatOnContactInfoUpdate = @"onContactInfoUpdate";
 
 #pragma mark - EMChatManagerWrapper
 static NSString *const ChatSendMessage = @"sendMessage";
@@ -271,6 +272,7 @@ static NSString *const ChatFetchMembersAttributesFromGroup = @"fetchMembersAttri
 static NSString *const ChatFetchJoinedGroupCount = @"fetchJoinedGroupCount";
 
 static NSString *const ChatOnGroupChanged = @"onGroupChanged";
+static NSString *const ChatOnUserGroupNamecardUpdated = @"onUserGroupNamecardUpdated";
 
 #pragma mark - EMPushManagerWrapper
 static NSString *const ChatGetImPushConfig = @"getImPushConfig";
@@ -311,6 +313,10 @@ static NSString *const ChatFetchPresenceStatus = @"fetchPresenceStatus";
 
 #pragma mark - EMPresenceManagerDelegate
 static NSString *const ChatOnPresenceStatusChanged = @"onPresenceStatusChanged";
+
+#pragma mark - EMUserInfoManagerDelegate
+static NSString *const ChatOnSelfUserInfoUpdate = @"onSelfUserInfoUpdate";
+static NSString *const ChatOnUserInfoUpdate = @"onUserInfoUpdate";
 
 #pragma mark - EMChatThreadManager methods
 static NSString *const ChatFetchChatThreadDetail = @"fetchChatThreadDetail";
@@ -361,6 +367,8 @@ static NSString *const ChatConversationDeleteServerMessageWithTime = @"conversat
 static NSString *const ChatSearchMsgsByOptions = @"searchMsgsByOptions";
 static NSString *const ChatSyncSilentModels = @"syncSilentModels";
 static NSString *const ChatClearAllGroupsFromDB = @"clearAllGroupsFromDB";
+static NSString *const ChatSetDataSyncType = @"setDataSyncType";
+static NSString *const ChatGetDataSyncType = @"getDataSyncType";
 static NSString *const ChatUpdateUsingHttpsOnlySetting =
     @"updateUsingHttpsOnlySetting";
 static NSString *const ChatUpdateLoginExtensionInfo = @"updateLoginExtensionInfo";

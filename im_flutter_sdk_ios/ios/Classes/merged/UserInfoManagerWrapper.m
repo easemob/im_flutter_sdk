@@ -9,8 +9,9 @@
 #import "ClientWrapper.h"
 #import "MethodKeys.h"
 #import "UserInfoHelper.h"
+#import "ListenerHandle.h"
 
-@interface UserInfoManagerWrapper ()
+@interface UserInfoManagerWrapper () <EMUserInfoManagerDelegate>
 
 @end
 
@@ -19,8 +20,28 @@
     
     if(self = [super initWithChannelName:aChannelName
                            registrar:registrar]) {
+        [EMClient.sharedClient.userInfoManager addDelegate:self delegateQueue:nil];
     }
     return self;
+}
+
+#pragma mark - EMUserInfoManagerDelegate
+- (void)onSelfUserInfoUpdate:(EMUserInfo * _Nonnull)aUserInfo {
+    __weak typeof(self) weakSelf = self;
+    [ListenerHandle.sharedInstance addHandle:^{
+        [weakSelf.channel invokeMethod:ChatOnSelfUserInfoUpdate arguments:[aUserInfo toJson]];
+    }];
+}
+
+- (void)onUserInfoUpdate:(NSDictionary<NSString *, EMUserInfo *> * _Nonnull)aUserInfos {
+    __weak typeof(self) weakSelf = self;
+    [ListenerHandle.sharedInstance addHandle:^{
+        NSMutableArray *list = [NSMutableArray array];
+        for (EMUserInfo *info in aUserInfos.allValues) {
+            [list addObject:[info toJson]];
+        }
+        [weakSelf.channel invokeMethod:ChatOnUserInfoUpdate arguments:list];
+    }];
 }
 
 

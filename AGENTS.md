@@ -11,6 +11,7 @@
 - 统一命名：若 Android/iOS/Dart 命名不一致，以 Android 为准；Dart 与 iOS 对齐。
 - 依赖切换：不使用 IM_USE_LOCAL_DEPS 等开关；通过编辑构建文件进行“手动切换”，脚本仅在获得确认后代改。
 - 文档先行：任何操作前先阅读/更新规范：
+  - 自动化与多版本统一入口（Wrapper、Scenario/API Matrix、构建与 pytest）：native-auto-test/README.md
   - 依赖切换规范：docs/specs/dependency-spec.md
   - API 适配规范：docs/specs/api-adaptation-spec.md
   - 升级流程规范：docs/specs/upgrade-flow.md

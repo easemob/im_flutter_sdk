@@ -26,8 +26,6 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
 
     ConversationWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
-        registerAll();
-        applyVersionOverrides();
     }
 
     /**
@@ -50,35 +48,125 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
     }
 
     @Override
-    protected void registerAll() {
-        register(MethodKey.getUnreadMsgCount, this::getUnreadMsgCount);
-        register(MethodKey.markAllMessagesAsRead, this::markAllMessagesAsRead);
-        register(MethodKey.markMessageAsRead, this::markMessageAsRead);
-        register(MethodKey.syncConversationExt, this::syncConversationExt);
-        register(MethodKey.removeMessage, this::removeMessage);
-        register(MethodKey.deleteMessageByIds, this::deleteMessageByIds);
-        register(MethodKey.getLatestMessage, this::getLatestMessage);
-        register(MethodKey.getLatestMessageFromOthers, this::getLatestMessageFromOthers);
-        register(MethodKey.clearAllMessages, this::clearAllMessages);
-        register(MethodKey.deleteMessagesWithTs, this::deleteMessagesWithTs);
-        register(MethodKey.appendMessage, this::appendMessage);
-        register(MethodKey.insertMessage, this::insertMessage);
-        register(MethodKey.updateConversationMessage, this::updateConversationMessage);
-        register(MethodKey.loadMsgWithId, this::loadMsgWithId);
-        register(MethodKey.loadMsgWithStartId, this::loadMsgWithStartId);
-        register(MethodKey.loadMsgWithKeywords, this::loadMsgWithKeywords);
-        register(MethodKey.loadMsgWithMsgType, this::loadMsgWithMsgType);
-        register(MethodKey.loadMsgWithTime, this::loadMsgWithTime);
-        register(MethodKey.messageCount, this::messageCount);
-        register(MethodKey.removeMsgFromServerWithTimeStamp, this::removeMsgFromServerWithTimeStamp);
-        register(MethodKey.pinnedMessages, this::pinnedMessages);
-        register(MethodKey.conversationRemindType, this::remindType);
-        register(MethodKey.conversationSearchMsgsByOptions, this::searchMsgByOptions);
-        register(MethodKey.getConversationName, this::getConversationName);
-        register(MethodKey.getConversationAvatar, this::getConversationAvatar);
-        register(MethodKey.conversationGetLocalMessageCount, this::getLocalMessageCount);
-        register(MethodKey.conversationDeleteServerMessageWithIds, this::deleteLocalAndServerMessages);
-        register(MethodKey.conversationDeleteServerMessageWithTime, this::deleteLocalAndServerMessagesByTime);
+    protected boolean dispatchMethodCall(
+            String method,
+            JSONObject params,
+            Result result
+    ) throws Exception {
+        if (MethodKey.getUnreadMsgCount.equals(method)) {
+            getUnreadMsgCount(params, method, result);
+            return true;
+        }
+        else if (MethodKey.markAllMessagesAsRead.equals(method)) {
+            markAllMessagesAsRead(params, method, result);
+            return true;
+        }
+        else if (MethodKey.markMessageAsRead.equals(method)) {
+            markMessageAsRead(params, method, result);
+            return true;
+        }
+        else if (MethodKey.syncConversationExt.equals(method)) {
+            syncConversationExt(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeMessage.equals(method)) {
+            removeMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.deleteMessageByIds.equals(method)) {
+            deleteMessageByIds(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getLatestMessage.equals(method)) {
+            getLatestMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getLatestMessageFromOthers.equals(method)) {
+            getLatestMessageFromOthers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.clearAllMessages.equals(method)) {
+            clearAllMessages(params, method, result);
+            return true;
+        }
+        else if (MethodKey.deleteMessagesWithTs.equals(method)) {
+            deleteMessagesWithTs(params, method, result);
+            return true;
+        }
+        else if (MethodKey.appendMessage.equals(method)) {
+            appendMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.insertMessage.equals(method)) {
+            insertMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateConversationMessage.equals(method)) {
+            updateConversationMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.loadMsgWithId.equals(method)) {
+            loadMsgWithId(params, method, result);
+            return true;
+        }
+        else if (MethodKey.loadMsgWithStartId.equals(method)) {
+            loadMsgWithStartId(params, method, result);
+            return true;
+        }
+        else if (MethodKey.loadMsgWithKeywords.equals(method)) {
+            loadMsgWithKeywords(params, method, result);
+            return true;
+        }
+        else if (MethodKey.loadMsgWithMsgType.equals(method)) {
+            loadMsgWithMsgType(params, method, result);
+            return true;
+        }
+        else if (MethodKey.loadMsgWithTime.equals(method)) {
+            loadMsgWithTime(params, method, result);
+            return true;
+        }
+        else if (MethodKey.messageCount.equals(method)) {
+            messageCount(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeMsgFromServerWithTimeStamp.equals(method)) {
+            removeMsgFromServerWithTimeStamp(params, method, result);
+            return true;
+        }
+        else if (MethodKey.pinnedMessages.equals(method)) {
+            pinnedMessages(params, method, result);
+            return true;
+        }
+        else if (MethodKey.conversationRemindType.equals(method)) {
+            remindType(params, method, result);
+            return true;
+        }
+        else if (MethodKey.conversationSearchMsgsByOptions.equals(method)) {
+            searchMsgByOptions(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getConversationName.equals(method)) {
+            getConversationName(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getConversationAvatar.equals(method)) {
+            getConversationAvatar(params, method, result);
+            return true;
+        }
+        else if (MethodKey.conversationGetLocalMessageCount.equals(method)) {
+            getLocalMessageCount(params, method, result);
+            return true;
+        }
+        else if (MethodKey.conversationDeleteServerMessageWithIds.equals(method)) {
+            deleteLocalAndServerMessages(params, method, result);
+            return true;
+        }
+        else if (MethodKey.conversationDeleteServerMessageWithTime.equals(method)) {
+            deleteLocalAndServerMessagesByTime(params, method, result);
+            return true;
+        }
+
+        return super.dispatchMethodCall(method, params, result);
     }
 
 
@@ -96,7 +184,7 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
         ConversationParams conversationParams = new ConversationParams(params);
         asyncRunnable(()->{
             EMConversation conversation = conversationParams.getConversation();
-            EMClient.getInstance().chatManager().asyncClearConversationUnreadMessageCount(conversation.conversationId(), new EMWrapperCallBack(result, channelName, null));
+            EMClient.getInstance().chatManager().asyncClearConversationUnreadMessageCount(conversation.conversationId(), new EMWrapperCallBack(result, channelName, true));
         });
     }
 
@@ -110,7 +198,7 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
             if (msg != null) {
                 msgs.add(msg);
             }
-            EMClient.getInstance().chatManager().asyncSendMessageReadReceipts(msgs, new EMWrapperCallBack(result, channelName, null));
+            EMClient.getInstance().chatManager().asyncSendMessageReadReceipts(msgs, new EMWrapperCallBack(result, channelName, true));
         });
     }
 

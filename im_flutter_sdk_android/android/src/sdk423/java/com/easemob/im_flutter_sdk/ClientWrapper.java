@@ -51,8 +51,6 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
     ClientWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
-        registerAll();
-        applyVersionOverrides();
     }
 
     public void sendDataToFlutter(final Map data) {
@@ -63,39 +61,141 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     }
 
     @Override
-    protected void registerAll() {
-        register(MethodKey.init, this::init);
-        register(MethodKey.createAccount, this::createAccount);
-        register(MethodKey.login, this::login);
-        register(MethodKey.logout, this::logout);
-        register(MethodKey.changeAppKey, this::changeAppKey);
-        register(MethodKey.uploadLog, this::uploadLog);
-        register(MethodKey.compressLogs, this::compressLogs);
-        register(MethodKey.getLoggedInDevicesFromServer, this::getLoggedInDevicesFromServer);
-        register(MethodKey.kickDevice, this::kickDevice);
-        register(MethodKey.kickAllDevices, this::kickAllDevices);
-        register(MethodKey.isLoggedInBefore, this::isLoggedInBefore);
-        register(MethodKey.getCurrentUser, this::getCurrentUser);
-        register(MethodKey.loginWithAgoraToken, this::loginWithAgoraToken);
-        register(MethodKey.getToken, this::getToken);
-        register(MethodKey.getCurrentDeviceId, this::getCurrentDeviceId);
-        register(MethodKey.isConnected, this::isConnected);
-        register(MethodKey.renewToken, this::renewToken);
-        register(MethodKey.startCallback, this::startCallback);
-        register(MethodKey.updateUsingHttpsOnlySetting, this::updateUsingHttpsOnlySetting);
-        register(MethodKey.updateLoginExtensionInfo, this::updateLoginExtensionInfo);
-        register(MethodKey.updateDeleteMessagesWhenLeaveGroupSetting, this::updateDeleteMessagesWhenLeaveGroupSetting);
-        register(MethodKey.updateDeleteMessageWhenLeaveRoomSetting, this::updateDeleteMessageWhenLeaveRoomSetting);
-        register(MethodKey.updateRoomOwnerCanLeaveSetting, this::updateRoomOwnerCanLeaveSetting);
-        register(MethodKey.updateAutoAcceptGroupInvitationSetting, this::updateAutoAcceptGroupInvitationSetting);
-        register(MethodKey.acceptInvitationAlways, this::acceptInvitationAlways);
-        register(MethodKey.updateAutoDownloadAttachmentThumbnailSetting, this::updateAutoDownloadAttachmentThumbnailSetting);
-        register(MethodKey.updateRequireAckSetting, this::updateRequireAckSetting);
-        register(MethodKey.updateDeliveryAckSetting, this::updateDeliveryAckSetting);
-        register(MethodKey.updateSortMessageByServerTimeSetting, this::updateSortMessageByServerTimeSetting);
-        register(MethodKey.updateMessagesReceiveCallbackIncludeSendSetting, this::updateMessagesReceiveCallbackIncludeSendSetting);
-        register(MethodKey.updateRegradeMessagesSetting, this::updateRegradeMessagesSetting);
-        register(MethodKey.changeAppId, this::changeAppId);
+    protected boolean dispatchMethodCall(
+            String method,
+            JSONObject params,
+            Result result
+    ) throws Exception {
+        if (MethodKey.init.equals(method)) {
+            init(params, method, result);
+            return true;
+        }
+        else if (MethodKey.createAccount.equals(method)) {
+            createAccount(params, method, result);
+            return true;
+        }
+        else if (MethodKey.login.equals(method)) {
+            login(params, method, result);
+            return true;
+        }
+        else if (MethodKey.logout.equals(method)) {
+            logout(params, method, result);
+            return true;
+        }
+        else if (MethodKey.changeAppKey.equals(method)) {
+            changeAppKey(params, method, result);
+            return true;
+        }
+        else if (MethodKey.uploadLog.equals(method)) {
+            uploadLog(params, method, result);
+            return true;
+        }
+        else if (MethodKey.compressLogs.equals(method)) {
+            compressLogs(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getLoggedInDevicesFromServer.equals(method)) {
+            getLoggedInDevicesFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.kickDevice.equals(method)) {
+            kickDevice(params, method, result);
+            return true;
+        }
+        else if (MethodKey.kickAllDevices.equals(method)) {
+            kickAllDevices(params, method, result);
+            return true;
+        }
+        else if (MethodKey.isLoggedInBefore.equals(method)) {
+            isLoggedInBefore(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getCurrentUser.equals(method)) {
+            getCurrentUser(params, method, result);
+            return true;
+        }
+        else if (MethodKey.loginWithAgoraToken.equals(method)) {
+            loginWithAgoraToken(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getToken.equals(method)) {
+            getToken(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getCurrentDeviceId.equals(method)) {
+            getCurrentDeviceId(params, method, result);
+            return true;
+        }
+        else if (MethodKey.isConnected.equals(method)) {
+            isConnected(params, method, result);
+            return true;
+        }
+        else if (MethodKey.renewToken.equals(method)) {
+            renewToken(params, method, result);
+            return true;
+        }
+        else if (MethodKey.startCallback.equals(method)) {
+            startCallback(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateUsingHttpsOnlySetting.equals(method)) {
+            updateUsingHttpsOnlySetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateLoginExtensionInfo.equals(method)) {
+            updateLoginExtensionInfo(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateDeleteMessagesWhenLeaveGroupSetting.equals(method)) {
+            updateDeleteMessagesWhenLeaveGroupSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateDeleteMessageWhenLeaveRoomSetting.equals(method)) {
+            updateDeleteMessageWhenLeaveRoomSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateRoomOwnerCanLeaveSetting.equals(method)) {
+            updateRoomOwnerCanLeaveSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateAutoAcceptGroupInvitationSetting.equals(method)) {
+            updateAutoAcceptGroupInvitationSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.acceptInvitationAlways.equals(method)) {
+            acceptInvitationAlways(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateAutoDownloadAttachmentThumbnailSetting.equals(method)) {
+            updateAutoDownloadAttachmentThumbnailSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateRequireAckSetting.equals(method)) {
+            updateRequireAckSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateDeliveryAckSetting.equals(method)) {
+            updateDeliveryAckSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateSortMessageByServerTimeSetting.equals(method)) {
+            updateSortMessageByServerTimeSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateMessagesReceiveCallbackIncludeSendSetting.equals(method)) {
+            updateMessagesReceiveCallbackIncludeSendSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateRegradeMessagesSetting.equals(method)) {
+            updateRegradeMessagesSetting(params, method, result);
+            return true;
+        }
+        else if (MethodKey.changeAppId.equals(method)) {
+            changeAppId(params, method, result);
+            return true;
+        }
+
+        return super.dispatchMethodCall(method, params, result);
     }
 
 
@@ -607,4 +707,3 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
         });
     }
 }
-

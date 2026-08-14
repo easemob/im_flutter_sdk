@@ -48,7 +48,8 @@ def main() -> None:
     # 1. Android 协议名（MethodKey.java 值，兼容多行）
     and_keys = extract_method_key_values(AND_METHOD_KEY)
     # 2. iOS 协议名（MethodKeys.h 值）
-    ios_keys = extract(IOS_METHOD_KEYS, r'static NSString \*const \w+ = @"([^"]+)"')
+    # iOS 协议名（MethodKeys.h 值；容忍多空格/多行定义）
+    ios_keys = extract(IOS_METHOD_KEYS, r'static NSString \*const \w+\s*=\s*@"([^"]+)"')
     # 3. Python cmd（cmd_keys.py 值）
     py_cmds = extract(PY_CMD_KEYS, r'= "([a-zA-Z]\w+)"')
     # 4. Android yaml

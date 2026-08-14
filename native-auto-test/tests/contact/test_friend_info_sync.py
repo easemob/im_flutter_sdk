@@ -1,12 +1,10 @@
 """
 好友信息同步（Friend Info Sync）测试：
 
-用例 1：登录后自动同步好友信息，收到 onFriendStartSync / onFriendSyncFinished 回调。
-用例 2：登录后，修改设备 B（user_b）的用户属性；设备 A 收到上述两类回调；随后在 A 侧拉取 user_b 的用户信息，包含 addTimestamp 字段。
+5.0 原生已移除 onFriendStartSync / onFriendSyncFailed / onFriendSyncFinished 回调（4.24 有、5.0 删，iOS wrapper 死代码已删）。
+本文件仅保留：修改设备 B 用户属性后，A 侧拉取 B 的用户信息（userId/remark/updatedAt）校验。
 
-说明：
-- 本文件仅关注「好友信息同步」回调与拉取校验；好友关系建立/删除复用 ContactTestFlow。
-- 事件字符串 onFriendStartSync / onFriendSyncFinished 直接按服务端回调匹配，不依赖本仓库的枚举。
+说明：好友关系建立/删除复用 ContactTestFlow。
 """
 from __future__ import annotations
 
@@ -22,69 +20,13 @@ from src.rest_api.user_api import update_user_metadata
 pytestmark = [pytest.mark.client, pytest.mark.contact]
 
 
-FRIEND_START_SYNC = "onFriendStartSync"
-FRIEND_SYNC_FINISHED = "onFriendSyncFinished"
-
-
-def _wait_friend_sync_events(device, *, start_timeout: float = 10.0, finish_timeout: float = 20.0):
-    """等待一轮好友信息同步的开始与结束事件；返回 (start_evt, finish_evt)。"""
-    start_evt = device.receive_message(match_event_type=FRIEND_START_SYNC, timeout=start_timeout)
-    assert start_evt is not None, "未收到 onFriendStartSync 回调"
-    finish_evt = device.receive_message(match_event_type=FRIEND_SYNC_FINISHED, timeout=finish_timeout)
-    assert finish_evt is not None, "未收到 onFriendSyncFinished 回调"
-    return start_evt, finish_evt
-
-
-@pytest.mark.xfail(strict=True, reason="当前实测重新登录后未稳定派发 onFriendStartSync/onFriendSyncFinished，待 SDK/服务端确认。")
-def test_friend_info_auto_sync_after_login(device_a, device_b, assert_api, user_a, user_b):
-    """
-    用例 1：设备 A/B 重新登录，可自动触发好友信息同步两阶段回调。
-    步骤：
-      2) A logout → login；
-      3) A 收到 onFriendStartSync 与 onFriendSyncFinished。
-    清理：删除好友关系。
-    """
-    # 重新登录以触发一次同步；先清理残留事件，避免噪音
-    try:
-        assert_api.assert_success(device_a.call("Client", Cmd.logout.value, info={"unbindToken": False}))
-        assert_api.assert_success(device_b.call("Client", Cmd.logout.value, info={"unbindToken": False}))
-        device_a.drain_events(timeout=1.0)
-        device_b.drain_events(timeout=1.0)
-
-        assert_api.assert_success(
-            device_a.call(
-                "Client",
-                Cmd.login.value,
-                info={"userId": user_a, "pwdOrToken": _token_for(user_a), "isPassword": False},
-            )
-        )
-        _wait_friend_sync_events(device_a)
-        assert_api.assert_success(
-            device_b.call(
-                "Client",
-                Cmd.login.value,
-                info={"userId": user_b, "pwdOrToken": _token_for(user_b), "isPassword": False},
-            )
-        )
-        _wait_friend_sync_events(device_b)
-    finally:
-        device_a.call("Client", Cmd.login.value, info={"userId": user_a, "pwdOrToken": _token_for(user_a), "isPassword": False})
-        device_b.call("Client", Cmd.login.value, info={"userId": user_b, "pwdOrToken": _token_for(user_b), "isPassword": False})
-
-def _token_for(user: str) -> str:
-    """5.0 统一 token 登录：密码先 REST 换 token。"""
-    from src.rest_api.user_api import fetch_user_token
-    return fetch_user_token(user, "1").get("access_token", "")
-
-
 def test_friend_info_sync_on_peer_metadata_change(device_a, device_b, assert_api, user_a, user_b):
     """
-    用例 2：设备 B 修改用户属性后，设备 A 收到好友信息同步回调；同步完成后在 A 侧拉取 B 的用户信息应包含 addTimestamp 字段。
+    修改设备 B 的用户属性后，在 A 侧拉取 B 的用户信息校验（userId/remark/updatedAt）。
     步骤：
       1) A 与 B 建立好友；
       2) 通过 REST 修改 B 的昵称（或任一元数据字段）；
-      3) A 收到 onFriendStartSync 与 onFriendSyncFinished；
-      4) A 调用 UserInfoManager.fetchUserInfoById 拉取 B，断言存在 addTimestamp。
+      3) A 调用 getContact 拉取 B，断言 userId/remark/updatedAt。
     清理：删除好友关系。
     """
     flow = ContactTestFlow(assert_api)
@@ -98,8 +40,6 @@ def test_friend_info_sync_on_peer_metadata_change(device_a, device_b, assert_api
     new_nick = f"nick-{int(time.time())}"
     update_user_metadata(user_b, {"nickname": new_nick})
 
-    # A 收到好友信息同步的开始与结束回调
-    # _wait_friend_sync_events(device_a, start_timeout=20.0, finish_timeout=30.0)
 
     # 同步完成后，A 拉取 B 的用户信息；根据实际返回断言关键字段（userId、nickName）
     content_after_readd = device_a.call(

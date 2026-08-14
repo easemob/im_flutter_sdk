@@ -27,25 +27,65 @@ public class ChatThreadManagerWrapper extends Wrapper implements MethodChannel.M
 
     public ChatThreadManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
-        registerAll();
-        applyVersionOverrides();
         registerEaseListener();
     }
 
     @Override
-    protected void registerAll() {
-        register(MethodKey.fetchChatThreadDetail, this::fetchChatThreadDetail);
-        register(MethodKey.fetchJoinedChatThreads, this::fetchJoinedChatThreads);
-        register(MethodKey.fetchChatThreadsWithParentId, this::fetchChatThreadsWithParentId);
-        register(MethodKey.fetchJoinedChatThreadsWithParentId, this::fetchJoinedChatThreadsWithParentId);
-        register(MethodKey.fetchChatThreadMember, this::fetchChatThreadMember);
-        register(MethodKey.fetchLastMessageWithChatThreads, this::fetchLastMessageWithChatThreads);
-        register(MethodKey.removeMemberFromChatThread, this::removeMemberFromChatThread);
-        register(MethodKey.updateChatThreadSubject, this::updateChatThreadSubject);
-        register(MethodKey.createChatThread, this::createChatThread);
-        register(MethodKey.joinChatThread, this::joinChatThread);
-        register(MethodKey.leaveChatThread, this::leaveChatThread);
-        register(MethodKey.destroyChatThread, this::destroyChatThread);
+    protected boolean dispatchMethodCall(
+            String method,
+            JSONObject params,
+            MethodChannel.Result result
+    ) throws Exception {
+        if (MethodKey.fetchChatThreadDetail.equals(method)) {
+            fetchChatThreadDetail(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchJoinedChatThreads.equals(method)) {
+            fetchJoinedChatThreads(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchChatThreadsWithParentId.equals(method)) {
+            fetchChatThreadsWithParentId(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchJoinedChatThreadsWithParentId.equals(method)) {
+            fetchJoinedChatThreadsWithParentId(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchChatThreadMember.equals(method)) {
+            fetchChatThreadMember(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchLastMessageWithChatThreads.equals(method)) {
+            fetchLastMessageWithChatThreads(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeMemberFromChatThread.equals(method)) {
+            removeMemberFromChatThread(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateChatThreadSubject.equals(method)) {
+            updateChatThreadSubject(params, method, result);
+            return true;
+        }
+        else if (MethodKey.createChatThread.equals(method)) {
+            createChatThread(params, method, result);
+            return true;
+        }
+        else if (MethodKey.joinChatThread.equals(method)) {
+            joinChatThread(params, method, result);
+            return true;
+        }
+        else if (MethodKey.leaveChatThread.equals(method)) {
+            leaveChatThread(params, method, result);
+            return true;
+        }
+        else if (MethodKey.destroyChatThread.equals(method)) {
+            destroyChatThread(params, method, result);
+            return true;
+        }
+
+        return super.dispatchMethodCall(method, params, result);
     }
 
 

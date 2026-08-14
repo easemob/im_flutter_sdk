@@ -179,8 +179,8 @@ def _wait_server_conversation_projection(device, cmd: str, info: dict, user_b: s
     return last_resp or {}, last_projection
 
 
-def test_chat_get_conversations_from_server_success(device_a, device_b, assert_api, user_a, user_b):
-    """5.0 会话改本地读取（loadAllConversations）：发消息后本地会话列表含目标会话（原服务端拉取已移除）。"""
+def test_chat_load_all_conversations_contains_target_conversation(device_a, device_b, assert_api, user_a, user_b):
+    """5.0 会话改本地读取（loadAllConversations）：发消息后本地会话列表含目标会话（原 getConversationsFromServer 服务端拉取已移除）。"""
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-get-server-{uuid.uuid4().hex[:6]}")
     resp, projected = _wait_server_conversation_projection(device_a, Cmd.loadAllConversations.value, {}, user_b)
     assert_api.assert_response_matches(

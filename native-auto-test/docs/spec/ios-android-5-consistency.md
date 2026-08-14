@@ -159,6 +159,31 @@
 
 - 非 SDK 逻辑（原生响应 300 正确）；服务端不可达时 SDK 重试导致响应极慢（>60s，不可控）—— 非原生差异，非 wrapper。
 
+### 送达回执（onMessageDelivered：原生回调在，服务端不发送 DELIVER_ACK）
+
+| 端 | 原生 API / event | 行为 |
+|---|---|---|
+| Android | `EMMessageListener.onMessageDelivered(List<EMMessage>)`（javap 存在）+ wrapper 转发（ChatManagerWrapper:1247）+ Dart key `onMessagesDelivered` | **服务端不发送 DELIVER_ACK**：离线投递场景实测 60s 未收到（events=[]）；在线场景现有测试实证不触发（设置 requireDeliveryAck 也不触发）|
+| iOS | 未验证 | — |
+
+- 5.0 原生回调**保留**（javap 实证）、wrapper 转发正常、Dart key 存在 —— 但服务端不再发送送达回执（DELIVER_ACK），实测不触发。
+- 官方 5.0 API 变更文档（第 7 节）只列了已读回执迁移（`onMessageRead` → `onMessageReadReceipts`），**未列送达回执变更** —— 文档遗漏（送达回执实际不可用）。
+- 测试：送达回执 case skip（对齐现有测试）；官方 e2e_test 离线测试的 `onMessagesDelivered` 部分已删除/skip。
+- 待研发：确认服务端是否下线 DELIVER_ACK 机制，并在 API 变更文档补充说明。
+
+### 群组已知原生缺陷（skip 记录，2026-08-14 实证）
+
+以下 case 设计完整（步骤+预期按规范），因原生缺陷 skip 等待修复；本次逐一去 skip 验证，缺陷均仍存在：
+
+| case（skip） | 原生缺陷（实证） | 建议 |
+|---|---|---|
+| invitation_state_matrix ×2 | 邀请处理**未校验 inviter**：错误 inviter 能 accept/decline 并消耗邀请，正确 inviter 随后无法处理（expected=错误 inviter 不得处理，actual=已处理） | 原生补 inviter 校验 |
+| join_application admin-accept | 群主 admin 接受申请时被**报为 group owner**（owner 字段错误） | 原生修正角色上报 |
+| join_requests decline | `declineInvitationFromGroup` 拒绝后邀请方**收不到 onInvitationDeclined 事件**（actual=[]，服务端成员仍 1） | 原生补拒绝事件派发 |
+| style public-open | `requestToJoinPublicGroup` 对 PublicOpenJoin 群**自动入群**（不等待审批） | 契约确认 |
+| style private-owner-admin ×2 | style 0（PrivateOnlyOwnerInvite）**管理员也能邀请**（expected=603 invite is not allowed，actual=成功入群） | 原生补权限校验 |
+| member_count_local（偶发） | `addMembers` 后本地 `memberCount` 与服务端不同步（3 次跑 1 次复现，local_before≠server） | 原生确认本地人数同步时机 |
+
 ## 相关文件
 
 ```

@@ -2,6 +2,7 @@ package com.easemob.im_flutter_sdk;
 
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMUserInfo;
+import com.hyphenate.chat.EMUserInfoManagerListener;
 import com.hyphenate.exceptions.HyphenateException;
 
 import org.json.JSONArray;
@@ -22,22 +23,95 @@ public class UserInfoManagerWrapper extends Wrapper implements MethodCallHandler
 
     UserInfoManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
-        registerAll();
-        applyVersionOverrides();
+        registerEaseListener();
+    }
+
+    private EMUserInfoManagerListener userInfoManagerListener;
+
+    private void registerEaseListener() {
+        if (userInfoManagerListener != null) {
+            EMClient.getInstance().userInfoManager().removeUserInfoManagerListener(userInfoManagerListener);
+        }
+        userInfoManagerListener = new EMUserInfoManagerListener() {
+            @Override
+            public void onSelfUserInfoUpdate(EMUserInfo info) {
+                ListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            post(() -> channel.invokeMethod(MethodKey.onSelfUserInfoUpdate, userInfoToJson(info)));
+                        }
+                );
+            }
+
+            @Override
+            public void onUserInfoUpdate(List<EMUserInfo> users) {
+                ListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            List<Map<String, Object>> list = new ArrayList<>();
+                            if (users != null) {
+                                for (EMUserInfo info : users) {
+                                    list.add(userInfoToJson(info));
+                                }
+                            }
+                            post(() -> channel.invokeMethod(MethodKey.onUserInfoUpdate, list));
+                        }
+                );
+            }
+        };
+        EMClient.getInstance().userInfoManager().addUserInfoManagerListener(userInfoManagerListener);
+    }
+
+    public void unRegisterEaseListener() {
+        EMClient.getInstance().userInfoManager().removeUserInfoManagerListener(userInfoManagerListener);
     }
 
     @Override
-    protected void registerAll() {
-        register(MethodKey.updateOwnUserInfo, this::updateOwnUserInfo);
-        register(MethodKey.updateOwnUserInfoWithType, this::updateOwnUserInfoWithType);
-        register(MethodKey.fetchUserInfoById, this::fetchUserInfoById);
-        register(MethodKey.fetchUserInfoByIdWithType, this::fetchUserInfoByIdWithType);
-        register(MethodKey.fetchOwnInfo, (params, channelName, result) -> fetchOwnInfo(channelName, result));
-        register(MethodKey.getUserInfoWithUserId, this::getUserInfoWithUserId);
-        register(MethodKey.getUserInfoWithUserIds, this::getUserInfoWithUserIds);
-        register(MethodKey.subscribeUsersInfo, this::subscribeUsersInfo);
-        register(MethodKey.unsubscribeUsersInfo, this::unsubscribeUsersInfo);
-        register(MethodKey.fetchSubscribedUsers, this::fetchSubscribedUsers);
+    protected boolean dispatchMethodCall(
+            String method,
+            JSONObject params,
+            Result result
+    ) throws Exception {
+        if (MethodKey.updateOwnUserInfo.equals(method)) {
+            updateOwnUserInfo(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateOwnUserInfoWithType.equals(method)) {
+            updateOwnUserInfoWithType(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchUserInfoById.equals(method)) {
+            fetchUserInfoById(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchUserInfoByIdWithType.equals(method)) {
+            fetchUserInfoByIdWithType(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchOwnInfo.equals(method)) {
+            fetchOwnInfo(method, result);
+            return true;
+        }
+        else if (MethodKey.getUserInfoWithUserId.equals(method)) {
+            getUserInfoWithUserId(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getUserInfoWithUserIds.equals(method)) {
+            getUserInfoWithUserIds(params, method, result);
+            return true;
+        }
+        else if (MethodKey.subscribeUsersInfo.equals(method)) {
+            subscribeUsersInfo(params, method, result);
+            return true;
+        }
+        else if (MethodKey.unsubscribeUsersInfo.equals(method)) {
+            unsubscribeUsersInfo(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchSubscribedUsers.equals(method)) {
+            fetchSubscribedUsers(params, method, result);
+            return true;
+        }
+
+        return super.dispatchMethodCall(method, params, result);
     }
 
 

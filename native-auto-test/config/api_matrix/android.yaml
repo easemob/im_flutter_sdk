@@ -207,6 +207,7 @@ base:
   - GroupManager.fetchJoinedGroupCount
   - GroupManager.fetchMemberAttributesFromGroup
   - GroupManager.fetchMembersAttributesFromGroup
+  - GroupManager.fetchMemberAllAttributes
   - GroupManager.getGroupAnnouncementFromServer
   - GroupManager.getGroupBlockListFromServer
   - GroupManager.getGroupFileListFromServer

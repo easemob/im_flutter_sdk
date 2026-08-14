@@ -32,46 +32,149 @@ public class ChatRoomManagerWrapper extends Wrapper implements MethodChannel.Met
 
     ChatRoomManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
-        registerAll();
-        applyVersionOverrides();
         registerEaseListener();
     }
 
     @Override
-    protected void registerAll() {
-        register(MethodKey.joinChatRoom, this::joinChatRoom);
-        register(MethodKey.leaveChatRoom, this::leaveChatRoom);
-        register(MethodKey.fetchPublicChatRoomsFromServer, this::fetchPublicChatRoomsFromServer);
-        register(MethodKey.fetchChatRoomInfoFromServer, this::fetchChatRoomInfoFromServer);
-        register(MethodKey.getChatRoom, this::getChatRoom);
-        register(MethodKey.getAllChatRooms, this::getAllChatRooms);
-        register(MethodKey.createChatRoom, this::createChatRoom);
-        register(MethodKey.destroyChatRoom, this::destroyChatRoom);
-        register(MethodKey.changeChatRoomSubject, this::changeChatRoomSubject);
-        register(MethodKey.changeChatRoomDescription, this::changeChatRoomDescription);
-        register(MethodKey.fetchChatRoomMembers, this::fetchChatRoomMembers);
-        register(MethodKey.muteChatRoomMembers, this::muteChatRoomMembers);
-        register(MethodKey.unMuteChatRoomMembers, this::unMuteChatRoomMembers);
-        register(MethodKey.changeChatRoomOwner, this::changeChatRoomOwner);
-        register(MethodKey.addChatRoomAdmin, this::addChatRoomAdmin);
-        register(MethodKey.removeChatRoomAdmin, this::removeChatRoomAdmin);
-        register(MethodKey.fetchChatRoomMuteList, this::fetchChatRoomMuteList);
-        register(MethodKey.removeChatRoomMembers, this::removeChatRoomMembers);
-        register(MethodKey.blockChatRoomMembers, this::blockChatRoomMembers);
-        register(MethodKey.unBlockChatRoomMembers, this::unBlockChatRoomMembers);
-        register(MethodKey.fetchChatRoomBlockList, this::fetchChatRoomBlockList);
-        register(MethodKey.updateChatRoomAnnouncement, this::updateChatRoomAnnouncement);
-        register(MethodKey.fetchChatRoomAnnouncement, this::fetchChatRoomAnnouncement);
-        register(MethodKey.addMembersToChatRoomWhiteList, this::addMembersToChatRoomWhiteList);
-        register(MethodKey.removeMembersFromChatRoomWhiteList, this::removeMembersFromChatRoomWhiteList);
-        register(MethodKey.isMemberInChatRoomWhiteListFromServer, this::isMemberInChatRoomWhiteListFromServer);
-        register(MethodKey.fetchChatRoomWhiteListFromServer, this::fetchChatRoomWhiteListFromServer);
-        register(MethodKey.muteAllChatRoomMembers, this::muteAllChatRoomsMembers);
-        register(MethodKey.unMuteAllChatRoomMembers, this::unMuteAllChatRoomsMembers);
-        register(MethodKey.fetchChatRoomAttributes, this::fetchChatRoomAttributes);
-        register(MethodKey.setChatRoomAttributes, this::setChatRoomAttributes);
-        register(MethodKey.removeChatRoomAttributes, this::removeChatRoomAttributes);
-        register(MethodKey.isMemberInChatRoomMuteList, this::isMemberInChatRoomMuteList);
+    protected boolean dispatchMethodCall(
+            String method,
+            JSONObject params,
+            MethodChannel.Result result
+    ) throws Exception {
+        if (MethodKey.joinChatRoom.equals(method)) {
+            joinChatRoom(params, method, result);
+            return true;
+        }
+        else if (MethodKey.leaveChatRoom.equals(method)) {
+            leaveChatRoom(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchPublicChatRoomsFromServer.equals(method)) {
+            fetchPublicChatRoomsFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchChatRoomInfoFromServer.equals(method)) {
+            fetchChatRoomInfoFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getChatRoom.equals(method)) {
+            getChatRoom(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getAllChatRooms.equals(method)) {
+            getAllChatRooms(params, method, result);
+            return true;
+        }
+        else if (MethodKey.createChatRoom.equals(method)) {
+            createChatRoom(params, method, result);
+            return true;
+        }
+        else if (MethodKey.destroyChatRoom.equals(method)) {
+            destroyChatRoom(params, method, result);
+            return true;
+        }
+        else if (MethodKey.changeChatRoomSubject.equals(method)) {
+            changeChatRoomSubject(params, method, result);
+            return true;
+        }
+        else if (MethodKey.changeChatRoomDescription.equals(method)) {
+            changeChatRoomDescription(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchChatRoomMembers.equals(method)) {
+            fetchChatRoomMembers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.muteChatRoomMembers.equals(method)) {
+            muteChatRoomMembers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.unMuteChatRoomMembers.equals(method)) {
+            unMuteChatRoomMembers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.changeChatRoomOwner.equals(method)) {
+            changeChatRoomOwner(params, method, result);
+            return true;
+        }
+        else if (MethodKey.addChatRoomAdmin.equals(method)) {
+            addChatRoomAdmin(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeChatRoomAdmin.equals(method)) {
+            removeChatRoomAdmin(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchChatRoomMuteList.equals(method)) {
+            fetchChatRoomMuteList(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeChatRoomMembers.equals(method)) {
+            removeChatRoomMembers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.blockChatRoomMembers.equals(method)) {
+            blockChatRoomMembers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.unBlockChatRoomMembers.equals(method)) {
+            unBlockChatRoomMembers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchChatRoomBlockList.equals(method)) {
+            fetchChatRoomBlockList(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateChatRoomAnnouncement.equals(method)) {
+            updateChatRoomAnnouncement(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchChatRoomAnnouncement.equals(method)) {
+            fetchChatRoomAnnouncement(params, method, result);
+            return true;
+        }
+        else if (MethodKey.addMembersToChatRoomWhiteList.equals(method)) {
+            addMembersToChatRoomWhiteList(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeMembersFromChatRoomWhiteList.equals(method)) {
+            removeMembersFromChatRoomWhiteList(params, method, result);
+            return true;
+        }
+        else if (MethodKey.isMemberInChatRoomWhiteListFromServer.equals(method)) {
+            isMemberInChatRoomWhiteListFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchChatRoomWhiteListFromServer.equals(method)) {
+            fetchChatRoomWhiteListFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.muteAllChatRoomMembers.equals(method)) {
+            muteAllChatRoomsMembers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.unMuteAllChatRoomMembers.equals(method)) {
+            unMuteAllChatRoomsMembers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchChatRoomAttributes.equals(method)) {
+            fetchChatRoomAttributes(params, method, result);
+            return true;
+        }
+        else if (MethodKey.setChatRoomAttributes.equals(method)) {
+            setChatRoomAttributes(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeChatRoomAttributes.equals(method)) {
+            removeChatRoomAttributes(params, method, result);
+            return true;
+        }
+        else if (MethodKey.isMemberInChatRoomMuteList.equals(method)) {
+            isMemberInChatRoomMuteList(params, method, result);
+            return true;
+        }
+
+        return super.dispatchMethodCall(method, params, result);
     }
 
 

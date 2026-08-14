@@ -357,34 +357,14 @@
     }];
 }
 
-/// 与 Hyphenate EMContactManagerDelegate 一致：无参数（见 EMContactManagerDelegate.h）
-- (void)onFriendStartSync {
-    __weak typeof(self) weakSelf = self;
-    [ListenerHandle.sharedInstance addHandle:^{
-        NSDictionary *map = @{ @"type": @"onFriendStartSync" };
-        [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
-    }];
-}
-
-- (void)onFriendSyncFailed {
-    __weak typeof(self) weakSelf = self;
-    [ListenerHandle.sharedInstance addHandle:^{
-        NSDictionary *map = @{ @"type": @"onFriendSyncFailed" };
-        [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
-    }];
-}
-/// 同步结束；成功时 error 为 nil，失败时非 nil。Dart 侧 [EMContactChangeEvent.FRIEND_SYNC_FINISHED] 对应 type 为 onFriendSyncFinished
-- (void)onFriendSyncFinished:(EMError *)error {
+- (void)onFriendInfoChanged:(EMContact * _Nonnull)contact {
     __weak typeof(self) weakSelf = self;
     [ListenerHandle.sharedInstance addHandle:^{
         NSMutableDictionary *map = [NSMutableDictionary dictionaryWithDictionary:@{
-            @"type": @"onFriendSyncFinished",
+            @"type": @"onContactInfoUpdate",
         }];
-        if (error != nil) {
-            map[@"error"] = @{
-                @"code": @(error.code),
-                @"description": error.errorDescription ?: @"",
-            };
+        if (contact != nil) {
+            map[@"contact"] = [contact toJson];
         }
         [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
     }];

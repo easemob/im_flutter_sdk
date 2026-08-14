@@ -1,10 +1,129 @@
 # Flutter SDK API 自动化测试（Cases 端）
 
-通过 WebSocket 与 Flutter demo 端通信，对环信 Flutter SDK 的 API 做自动化测试。Flutter 端需连接**同一 WebSocket 服务**且使用**相同 topic**。
+通过 WebSocket 与 Flutter Runner 通信，对原生 SDK API 做自动化测试。默认的
+`--ws-mode managed` 会由 pytest 启动本地 WebSocket Server，并按
+`runId + runnerId + requestId` 路由，不需要手工配置 topic。
+
+## 团队与 AI Agent 速查
+
+进行原生 SDK 升级、Wrapper 适配、Scenario/API Matrix 配置或 pytest 回归前先读本节。
+
+### 调用链与配置职责
+
+```text
+pytest → Scenario → Artifact → API Matrix → im_flutter_test
+       → interface.callNativeMethod → Wrapper → 原生 SDK
+```
+
+| 文件/目录 | 作用 |
+|---|---|
+| `config/scenarios/*.yaml` | 选择账号、设备、平台、SDK 版本和拓扑 |
+| `config/artifacts.yaml` | 将 `platform + sdk_version` 映射到 APK/Runner、flavor 和 manifest |
+| `config/api_matrix/*.yaml` | 定义各版本支持的 `Manager.cmd`；unsupported 在调用前 skip |
+| `config/artifact_manifests/*.json` | 记录 SDK/Wrapper/Artifact 身份和 capability |
+| `im_flutter_test/` | 被测 Runner 与 WebSocket/Event 桥接 |
+| `im_flutter_sdk_android/`、`im_flutter_sdk_ios/` | 统一协议到原生 SDK 的 Wrapper |
+
+case 不写平台或版本判断；版本由 Scenario 的 `sdk_version` 决定。账号默认按 pytest
+session 创建和清理，编排器只启动本次 case fixture/topology 实际需要的设备。
+
+### Android 版本基线（重要）
+
+当前 Java 合并关系：
+
+```text
+sdk500 = base500
+sdk501 = base500 + sdk501 相对 5.0 的累计差异
+sdk502 = base500 + sdk502 相对 5.0 的累计差异
+```
+
+flavor 使用“主版本 + 两位 minor”：5.0 → `sdk500`、5.1 → `sdk501`、
+5.2 → `sdk502`。`sdk502` 不会自动继承 `sdk501`。如果 5.1 新增 C，5.2
+保留 C 并新增 D，`sdk502` 的差异 Wrapper 必须同时包含 C 和 D。通常复制
+`sdk501` 的差异文件到 `sdk502`，再按 5.2 修改。每个版本目录还要放该版本完整 JAR 和 so。
+
+API Matrix 与代码不同，按版本顺序做增量：
+
+```yaml
+versions:
+  5.1.0:
+    added: [ChatManager.apiC]
+  5.2.0:
+    added: [ChatManager.apiD]
+    removed: []
+```
+
+因此 5.2 的 Matrix 能力集合会自动包含 C 和 D。
+
+### Wrapper 规则
+
+- API 使用 `dispatchMethodCall + if/else`，禁止恢复 `register/registerAll`。
+- 不覆盖公共 `Wrapper.onMethodCall`；已处理分支必须 `return true`。
+- 同一调用只能回复一次；未知命令交给 `super` 返回 `notImplemented`。
+- Event 不走 API 路由；`registerEaseListener/unRegisterEaseListener` 必须成对。
+- 不用本地 API 冒充服务端 API，也不伪造原生不存在的成功结果。
+- Matrix supported 但 Wrapper 未路由：修 Wrapper；Wrapper 已实现但 Matrix 未收录：修 Matrix。
+
+### 新版本接入清单
+
+1. 对比上一版本的原生 API、Event、参数、模型和错误码。
+2. 新建 `sdkXXX`，放完整 JAR/so 和“相对 base500 的累计差异 Wrapper”。
+3. 在 Android `build.gradle` 增加 flavor、SourceSet 和依赖。
+4. 适配 API 的 if/else 路由以及 Event 注册、移除和 payload。
+5. 更新 API Matrix（相对上一版本的 `added/removed/changed`）。
+6. 更新 `artifacts.yaml`、artifact manifest 和 Scenario。
+7. 构建新版本及旧基线；先跑受影响单例，再跑模块回归。
+
+真实且需要向 App 开发者公开的能力才修改发布 SDK/interface/iOS；仅测试便利逻辑放
+`im_flutter_test`。
+
+### 最小运行命令
+
+```bash
+# 仓库根目录：构建 Runner
+cd im_flutter_test
+flutter build apk --flavor sdk500 --debug
+
+# 复用 artifacts.yaml 指向的已有 APK（不加 --build）
+cd ../native-auto-test
+.venv/bin/python -m pytest -q \
+  tests/chat/test_xxx.py::test_xxx \
+  --scenario android_500_multi_device_default -s
+
+# Wrapper/JAR/so 有变化时：先构建 Scenario 所需 flavor，再安装并运行
+.venv/bin/python -m pytest -q \
+  tests/chat/test_xxx.py::test_xxx \
+  --scenario android_500_multi_device_default --build -s
+
+# 发现模式；确认输出后去掉两个环境变量严格复跑
+CASES_DISCOVER=1 WS_DEBUG=1 .venv/bin/python -m pytest -q \
+  tests/chat/test_xxx.py::test_xxx \
+  --scenario android_500_multi_device_default -s
+```
+
+Scenario 可传文件名（省略 `.yaml`）或完整路径。完整环境准备、报告和多端运行方式见
+本文后续章节。
+
+`--build` 在 pytest session 开始前读取 Scenario：Android 对每个不同的
+`sdk_version` 执行对应 flavor 的 `flutter build apk --debug`，并刷新 Android
+artifact manifest 的 APK hash；Web 会执行 npm 构建。iOS 当前执行默认
+`merge_ios_sdk.sh` 后构建模拟器，非默认 iOS flavor 应先手工完成对应 merge。
+不加 `--build` 则直接复用 `artifacts.yaml` 指向的现有产物并执行 hash 校验。
+改过 Wrapper、JAR、so 或 Runner 后使用 `--build`；只重复跑 case 时通常不加。
+
+提交前至少执行：
+
+```bash
+# 仓库根目录
+im_flutter_sdk/scripts/speckit.sh check
+python3 im_flutter_sdk/scripts/check_protocol_consistency.py
+im_flutter_sdk/scripts/check_wrapper_diffs.sh
+git diff --check
+```
 
 ## Android 多版本 MVP
 
-正式版本管理以 Android SDK 4.23.0 为基线：
+正式版本管理以 Android SDK 5.0.0 为基线：
 
 - 自动选择或启动两个模拟器；
 - 按 scenario 安装对应 flavor APK；
@@ -21,7 +140,7 @@
 `im_flutter_sdk_interface`，不经过 `im_flutter_sdk` Dart 业务层。
 4.10/4.14 仅用于 MVP 的历史覆盖安装机制验证，使用独立 legacy API Matrix。
 
-完整矩阵：
+完整矩阵（脚本默认先构建所需 APK）：
 
 ```bash
 NATIVE_TEST_AVD_A=Pixel_5 \
@@ -29,16 +148,10 @@ NATIVE_TEST_AVD_B=Pixel_5_2 \
 python scripts/run_phase1_matrix.py
 ```
 
-只使用已构建 APK：
+完整矩阵只复用已构建 APK：
 
 ```bash
 python scripts/run_phase1_matrix.py --no-build
-```
-
-使用 `config.yaml` 中的远端 relay：
-
-```bash
-python scripts/run_phase1_matrix.py --external-relay
 ```
 
 版本由 `config/scenarios/*.yaml` 决定，普通 case 中不写版本判断。
@@ -58,32 +171,91 @@ python scripts/run_phase1_matrix.py --external-relay
 - **成功响应**：原请求体带回 `result`，去掉 `info`，即含 `cmd`、`manager`、`result`。
 - **失败响应**：`{ "success": false, "error": { "code", "description" }, "id"? }`。
 
+## 快速开始（从零到第一条用例）
+
+> 跑测试**不需要 Flutter**（复用已有构建产物，pytest 直接 `adb install` 安装 APK）；
+> 只有构建/改动测试 App（wrapper、桥接、新事件转发）才需要 Flutter。
+
+### 1. 环境依赖（分层）
+
+**必备（只跑测试）**
+
+- Python 3.9+，创建虚拟环境并装依赖：
+  ```bash
+  python3 -m venv .venv
+  .venv/bin/pip install -r requirements.txt
+  ```
+- Android SDK `platform-tools`（`adb`，用于安装 APK / 断网控制），确认 `adb devices` 可用
+- 4 台 Android 模拟器（AVD）：`Pixel_5_2`、`Pixel_5_3`、`Pixel_5_5`、`Pixel_5_6`
+- 已有构建产物：`config/artifacts.yaml` 指向的 APK（如 `im_flutter_test/build/app/outputs/flutter-apk/app-sdk500-debug.apk`）；
+  产物不存在时首次需先构建（见下）
+
+**可选（构建 / 开发测试 App）**
+
+- Flutter ≥ 3.3（Dart ≥ 3.5.4，本仓库验证于 Flutter 3.24.5）
+- Android SDK（构建 APK）／ Xcode（iOS 模拟器场景，AVD 名 `iosa/iosb/iosc/iosd`）
+
+### 2. 启动模拟器
+
+```bash
+$ANDROID_SDK/emulator/emulator -avd Pixel_5_2 -no-snapshot -no-boot-anim &
+$ANDROID_SDK/emulator/emulator -avd Pixel_5_3 -no-snapshot -no-boot-anim &
+$ANDROID_SDK/emulator/emulator -avd Pixel_5_5 -no-snapshot -no-boot-anim &
+$ANDROID_SDK/emulator/emulator -avd Pixel_5_6 -no-snapshot -no-boot-anim &
+adb wait-for-device
+```
+
+> **首次需核对 scenario 的设备序列号**：`config/scenarios/android_500_multi_device_default.yaml`
+> 里的 `serial`（默认 `emulator-5554/5556/5558/5560`）按本机 `adb devices` 的
+> 实际序列号核对；不一致时改 yaml（模拟器默认从 5554 开始分配，通常一致）。
+> serial 对不上会报 `AndroidEnvironmentError: configured serial ... is not online`。
+
+### 3. 配置（首次）
+
+```bash
+cp config.yaml.template config.yaml
+```
+
+### 4. 跑第一条用例
+
+```bash
+# 复用已有 APK（不加 --build）
+.venv/bin/python -m pytest --scenario android_500_multi_device_default \
+  tests/group/test_group_metadata.py::test_group_update_subject -q
+
+# 产物不存在 / 改过 Wrapper 后：先构建再装（加 --build）
+.venv/bin/python -m pytest --build --scenario android_500_multi_device_default \
+  tests/group/test_group_metadata.py::test_group_update_subject -q
+```
+
+期望输出：`1 passed`（模拟器在线、APK 安装成功、服务端可达时）。
+
 ## 环境
 
-- Python 3.9+
-- 安装依赖：`pip install -r requirements.txt`
+- Python 3.9+（推荐 venv，见上）
+- 跑测试：Android SDK `platform-tools`（adb）+ 模拟器 + 已有 APK；构建需 Flutter（见快速开始）
 
 ## 配置
 
 `cp config.yaml.template config.yaml`
-- `websocket.base_url`：WS 服务地址（与 Flutter 端一致）。
-- `websocket.default_topic`：默认 topic（与 Flutter 端 `IMWebSocketBridge.instance.start(topic: '...')` 一致）。
-- 多端测试时可在 `topics` 下为不同 device 配置不同 topic。
+- 使用 Scenario（推荐）时默认是 managed WebSocket，本地 Server、Runner 地址和路由由 pytest 自动管理。
+- managed 多端测试不要配置或修改 topic，也不要重写 `ws_topic/ws_device` fixture。
 
 ## 运行用例
 
 ```bash
-# 运行全部用例
-pytest
+# 使用 managed WebSocket 运行全部用例
+pytest --scenario android_500_multi_device_default
 
 # 只跑 Client 相关
-pytest -m client
+pytest -m client --scenario android_500_multi_device_default
 
 # 生成 HTML 报告
-pytest --html=out/report.html --self-contained-html
+pytest --scenario android_500_multi_device_default \
+  --html=out/report.html --self-contained-html
 
-# 指定 topic（覆盖 config 中的 default_topic 需在代码里通过 fixture 或环境变量扩展，当前以 config 为准）
-pytest tests/test_client.py -v
+# 单文件
+pytest tests/test_client.py --scenario android_500_multi_device_default -v
 ```
 
 ## 报告
@@ -95,30 +267,31 @@ pytest tests/test_client.py -v
   allure serve out/allure-results
   ```
   **报告中会输出：**
-  - **请求**：每次 `api.call` 的请求体（manager、cmd、info、topic、device 等）以 JSON 附件挂在对应 step 下。
+  - **请求**：每次 `api.call` 的请求体和路由上下文（manager、cmd、info、device、runId/runnerId/requestId；外部模式另含 topic）以 JSON 附件挂在对应 step 下。
   - **响应**：该次调用的完整响应 JSON 附件。
   - **比对结果**：调用 `assert_response_matches` 时，会附加「预期响应」「实际响应」「比对结果」；不一致时为「比对结果（差异）」并列出缺少/多出/值不同的字段。
 
-## 多端测试（多 topic）
+## 多端测试（Scenario + managed WebSocket）
 
-- 在 `config.yaml` 中配置 `topics.device_1`、`topics.device_2` 等。
-- 在 `conftest.py` 中为不同测试或参数化提供不同 `ws_device`（或重写 `ws_topic` fixture），即可在不同 topic 上跑同一套用例，实现多端测试。
+- 在 `config/scenarios/*.yaml` 的 `devices` 声明设备/账号，在 `topologies` 声明发送端和接收端。
+- case 使用设备 fixture 或 `@pytest.mark.topology("...")` 声明需要的角色；编排器只启动这些 Runner。
+- pytest 自动启动一个 managed WebSocket Server，并通过 Runner Hello 注册和三元 ID 精确路由；多设备之间不靠不同 topic 隔离。
 
 ## 项目结构
 
 ```
-flutter-auto-test/
-├── config.yaml           # WebSocket 与 topic 配置
+native-auto-test/
+├── config.yaml           # IM/REST 配置；外部 WS 模式配置
 ├── pyproject.toml
 ├── requirements.txt
 ├── pytest.ini
 ├── src/
 │   ├── config.py         # 读取 config.yaml
-│   ├── ws_client.py     # WebSocket 请求/响应、多 topic
+│   ├── tools/ws_client.py # WebSocket 请求/响应
 │   ├── assertions.py    # 成功/失败、result 断言
 │   └── response_match.py # 预期 JSON 比对、占位符、忽略时间戳
 └── tests/
-    ├── conftest.py      # api、assert_api、ws_topic 等 fixture
+    ├── conftest.py      # Scenario、Runner、API、能力门禁等 fixture
     ├── test_client.py   # Client 登录/登出等
     └── test_client_init.py
 ```

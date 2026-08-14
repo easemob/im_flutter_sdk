@@ -10,10 +10,10 @@ from tests.group.test_group_public_groups_count import _assert_public_groups_res
 pytestmark = [
     pytest.mark.client,
     pytest.mark.group,
-    pytest.mark.skip(reason="5.0 移除服务端拉公开群（getPublicGroupsFromServer 改本地群列表，无分页/cursor 语义）"),
 ]
 
 
+@pytest.mark.skip(reason="5.0 移除服务端拉公开群（getPublicGroupsFromServer 残留，无公开群列表）")
 @pytest.mark.parametrize(
     ("page_num", "page_size"),
     [

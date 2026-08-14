@@ -564,9 +564,12 @@ def test_chat_fetch_history_messages_by_options_empty_conv_id(device_a, assert_a
         Cmd.fetchHistoryMessagesByOptions.value,
         info={"convId": "", "type": 0, "pageSize": 20, "cursor": ""},
     )
-    _assert_invalid_conv_returns_cursor(
+    # 5.0 实测：空 convId → 原生 110 "Invalid parameter"（本地校验；非空无效 convId 才返回空 cursor）
+    _assert_error_with_envelope(
         assert_api,
         resp,
         Cmd.fetchHistoryMessagesByOptions.value,
         "deviceA",
+        code=110,
+        desc_contains="Invalid parameter",
     )

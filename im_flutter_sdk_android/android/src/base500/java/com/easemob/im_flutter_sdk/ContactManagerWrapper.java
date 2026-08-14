@@ -26,30 +26,85 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
 
     ContactManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
-        registerAll();
-        applyVersionOverrides();
         registerEaseListener();
     }
 
     @Override
-    protected void registerAll() {
-        register(MethodKey.addContact, this::addContact);
-        register(MethodKey.deleteContact, this::deleteContact);
-        register(MethodKey.getAllContactsFromServer, this::getAllContactsFromServer);
-        register(MethodKey.getAllContactsFromDB, this::getAllContactsFromDB);
-        register(MethodKey.addUserToBlockList, this::addUserToBlockList);
-        register(MethodKey.removeUserFromBlockList, this::removeUserFromBlockList);
-        register(MethodKey.getBlockListFromServer, this::getBlockListFromServer);
-        register(MethodKey.getBlockListFromDB, this::getBlockListFromDB);
-        register(MethodKey.acceptInvitation, this::acceptInvitation);
-        register(MethodKey.declineInvitation, this::declineInvitation);
-        register(MethodKey.getSelfIdsOnOtherPlatform, this::getSelfIdsOnOtherPlatform);
-        register(MethodKey.getAllContacts, this::getAllContacts);
-        register(MethodKey.setContactRemark, this::setContactRemark);
-        register(MethodKey.getContact, this::getContact);
-        register(MethodKey.fetchAllContacts, this::fetchAllContacts);
-        register(MethodKey.fetchContacts, this::fetchContacts);
-        register(MethodKey.saveBlackList, this::saveBlackList);
+    protected boolean dispatchMethodCall(
+            String method,
+            JSONObject params,
+            Result result
+    ) throws Exception {
+        if (MethodKey.addContact.equals(method)) {
+            addContact(params, method, result);
+            return true;
+        }
+        else if (MethodKey.deleteContact.equals(method)) {
+            deleteContact(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getAllContactsFromServer.equals(method)) {
+            getAllContactsFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getAllContactsFromDB.equals(method)) {
+            getAllContactsFromDB(params, method, result);
+            return true;
+        }
+        else if (MethodKey.addUserToBlockList.equals(method)) {
+            addUserToBlockList(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeUserFromBlockList.equals(method)) {
+            removeUserFromBlockList(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getBlockListFromServer.equals(method)) {
+            getBlockListFromServer(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getBlockListFromDB.equals(method)) {
+            getBlockListFromDB(params, method, result);
+            return true;
+        }
+        else if (MethodKey.acceptInvitation.equals(method)) {
+            acceptInvitation(params, method, result);
+            return true;
+        }
+        else if (MethodKey.declineInvitation.equals(method)) {
+            declineInvitation(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getSelfIdsOnOtherPlatform.equals(method)) {
+            getSelfIdsOnOtherPlatform(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getAllContacts.equals(method)) {
+            getAllContacts(params, method, result);
+            return true;
+        }
+        else if (MethodKey.setContactRemark.equals(method)) {
+            setContactRemark(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getContact.equals(method)) {
+            getContact(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchAllContacts.equals(method)) {
+            fetchAllContacts(params, method, result);
+            return true;
+        }
+        else if (MethodKey.fetchContacts.equals(method)) {
+            fetchContacts(params, method, result);
+            return true;
+        }
+        else if (MethodKey.saveBlackList.equals(method)) {
+            saveBlackList(params, method, result);
+            return true;
+        }
+
+        return super.dispatchMethodCall(method, params, result);
     }
 
 
@@ -311,6 +366,20 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
                             Map<String, Object> data = new HashMap<>();
                             data.put("type", "onFriendRequestDeclined");
                             data.put("userId", userName);
+                            post(() -> channel.invokeMethod(MethodKey.onContactChanged, data));
+                        }
+                );
+            }
+
+            @Override
+            public void onContactInfoUpdate(EMContact contact) {
+                ListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onContactInfoUpdate");
+                            if (contact != null) {
+                                data.put("contact", ContactHelper.toJson(contact));
+                            }
                             post(() -> channel.invokeMethod(MethodKey.onContactChanged, data));
                         }
                 );
