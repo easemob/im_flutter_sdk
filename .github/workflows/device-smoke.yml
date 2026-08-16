@@ -1,0 +1,102 @@
+name: Flutter Device Smoke
+
+on:
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flutter-device-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: 3.47.0
+
+jobs:
+  android:
+    name: Android no-login Presence smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Java
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Run no-login smoke on Android emulator
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            mkdir -p artifacts
+            cd im_flutter_sdk/example
+            flutter pub get
+            set -o pipefail
+            flutter test integration_test/no_login_presence_test.dart -d emulator-5554 2>&1 | tee ../../artifacts/android-no-login-smoke.log
+
+      - name: Upload Android smoke log
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: flutter-device-smoke-android-${{ github.run_id }}
+          path: artifacts/android-no-login-smoke.log
+          if-no-files-found: warn
+          retention-days: 7
+
+  ios:
+    name: iOS no-login Presence smoke
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Run no-login smoke on iOS simulator
+        run: |
+          mkdir -p artifacts
+          simulator_udid="$(./tool/ci/boot_ios_simulator.sh)"
+          echo "Using iOS simulator $simulator_udid"
+          cd im_flutter_sdk/example
+          flutter pub get
+          set -o pipefail
+          flutter test integration_test/no_login_presence_test.dart -d "$simulator_udid" 2>&1 | tee ../../artifacts/ios-no-login-smoke.log
+
+      - name: Collect iOS diagnostics after failure
+        if: failure()
+        run: xcrun simctl diagnose --output artifacts/ios-sim-diagnose.tar.gz
+
+      - name: Upload iOS smoke evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: flutter-device-smoke-ios-${{ github.run_id }}
+          path: |
+            artifacts/ios-no-login-smoke.log
+            artifacts/ios-sim-diagnose.tar.gz
+          if-no-files-found: warn
+          retention-days: 7

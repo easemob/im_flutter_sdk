@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'im_flutter_sdk_ios'
-  s.version          = '4.15.2'
+  s.version          = '4.19.2'
   s.summary          = 'A new flutter plugin project.'
   s.description      = <<-DESC
 A new flutter plugin project.
@@ -24,4 +24,3 @@ A new flutter plugin project.
   s.ios.deployment_target = '12.0'
 
 end
-

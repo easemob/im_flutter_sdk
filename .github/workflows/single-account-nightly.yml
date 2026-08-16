@@ -1,0 +1,132 @@
+name: Flutter Single Account Nightly
+
+on:
+  schedule:
+    - cron: '0 20 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flutter-single-account-nightly
+  cancel-in-progress: false
+
+env:
+  FLUTTER_VERSION: 3.47.0
+
+jobs:
+  android:
+    name: Android login and local database
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    environment: flutter-single-account
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Java
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Prepare protected test configuration
+        env:
+          E2E_APP_KEY: ${{ secrets.E2E_APP_KEY }}
+          E2E_USER_ID: ${{ secrets.E2E_USER_ID }}
+          E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+        run: |
+          ./tool/ci/write_e2e_dart_defines.sh "$RUNNER_TEMP/flutter-single-account.json"
+          echo "E2E_CONFIG_PATH=$RUNNER_TEMP/flutter-single-account.json" >> "$GITHUB_ENV"
+
+      - name: Run login and local database suite on Android emulator
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            mkdir -p artifacts
+            cd im_flutter_sdk/example
+            flutter pub get
+            set -o pipefail
+            flutter test integration_test/single_account_local_test.dart -d emulator-5554 --dart-define-from-file="$E2E_CONFIG_PATH" 2>&1 | tee ../../artifacts/android-single-account.log
+
+      - name: Remove protected test configuration
+        if: always()
+        run: rm -f "${E2E_CONFIG_PATH:-$RUNNER_TEMP/flutter-single-account.json}"
+
+      - name: Upload Android Nightly log
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: flutter-single-account-android-${{ github.run_id }}
+          path: artifacts/android-single-account.log
+          if-no-files-found: warn
+          retention-days: 7
+
+  ios:
+    name: iOS login and local database
+    needs: android
+    if: ${{ always() }}
+    runs-on: macos-latest
+    timeout-minutes: 50
+    environment: flutter-single-account
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Prepare protected test configuration
+        env:
+          E2E_APP_KEY: ${{ secrets.E2E_APP_KEY }}
+          E2E_USER_ID: ${{ secrets.E2E_USER_ID }}
+          E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+        run: |
+          ./tool/ci/write_e2e_dart_defines.sh "$RUNNER_TEMP/flutter-single-account.json"
+          echo "E2E_CONFIG_PATH=$RUNNER_TEMP/flutter-single-account.json" >> "$GITHUB_ENV"
+
+      - name: Run login and local database suite on iOS simulator
+        run: |
+          mkdir -p artifacts
+          simulator_udid="$(./tool/ci/boot_ios_simulator.sh)"
+          echo "Using iOS simulator $simulator_udid"
+          cd im_flutter_sdk/example
+          flutter pub get
+          set -o pipefail
+          flutter test integration_test/single_account_local_test.dart -d "$simulator_udid" --dart-define-from-file="$E2E_CONFIG_PATH" 2>&1 | tee ../../artifacts/ios-single-account.log
+
+      - name: Collect iOS diagnostics after failure
+        if: failure()
+        run: xcrun simctl diagnose --output artifacts/ios-sim-diagnose.tar.gz
+
+      - name: Remove protected test configuration
+        if: always()
+        run: rm -f "${E2E_CONFIG_PATH:-$RUNNER_TEMP/flutter-single-account.json}"
+
+      - name: Upload iOS Nightly evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: flutter-single-account-ios-${{ github.run_id }}
+          path: |
+            artifacts/ios-single-account.log
+            artifacts/ios-sim-diagnose.tar.gz
+          if-no-files-found: warn
+          retention-days: 7

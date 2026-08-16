@@ -1181,8 +1181,6 @@ enum ConversationMarkType {
   Type19,
 }
 
-
-
 extension EMGroupPermissionTypeExtension on EMGroupPermissionType {
   static EMGroupPermissionType values(int type) {
     return EMGroupPermissionType.values[type + 1];

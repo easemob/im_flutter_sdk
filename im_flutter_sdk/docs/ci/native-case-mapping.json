@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "nativeBaseline": "easemob/im-auto-test@5dd5015e60385ca2dff171bca42d83543671bc07",
+  "cases": [
+    {
+      "id": "FL-APP-001",
+      "priority": "P0",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": ["EMClient.init", "EMClient.isLoginBefore"],
+      "platforms": ["android", "ios"],
+      "assertions": ["Native plugin registers and initializes while logged out"],
+      "testFile": "example/integration_test/no_login_presence_test.dart"
+    },
+    {
+      "id": "FL-PRESENCE-001",
+      "priority": "P0",
+      "origin": "native-shared",
+      "sourceCases": ["wayang.TestCase.在线状态::Presence SDK API Without Login/publishPresence"],
+      "flutterApis": ["EMPresenceManager.publishPresence"],
+      "platforms": ["android", "ios"],
+      "assertions": ["Logged-out call throws EMError code 201"],
+      "testFile": "example/integration_test/no_login_presence_test.dart"
+    },
+    {
+      "id": "FL-PRESENCE-002",
+      "priority": "P0",
+      "origin": "native-shared",
+      "sourceCases": ["wayang.TestCase.在线状态::Presence SDK API Without Login/fetchPresenceStatus"],
+      "flutterApis": ["EMPresenceManager.fetchPresenceStatus"],
+      "platforms": ["android", "ios"],
+      "assertions": ["Logged-out call throws EMError code 201"],
+      "testFile": "example/integration_test/no_login_presence_test.dart"
+    },
+    {
+      "id": "FL-PRESENCE-003",
+      "priority": "P0",
+      "origin": "native-shared",
+      "sourceCases": ["wayang.TestCase.在线状态::Presence SDK API Without Login/subscribe"],
+      "flutterApis": ["EMPresenceManager.subscribe"],
+      "platforms": ["android", "ios"],
+      "assertions": ["Logged-out call throws EMError code 201"],
+      "testFile": "example/integration_test/no_login_presence_test.dart"
+    },
+    {
+      "id": "FL-PRESENCE-004",
+      "priority": "P0",
+      "origin": "native-shared",
+      "sourceCases": ["wayang.TestCase.在线状态::Presence SDK API Without Login/unsubscribe"],
+      "flutterApis": ["EMPresenceManager.unsubscribe"],
+      "platforms": ["android", "ios"],
+      "assertions": ["Logged-out call throws EMError code 201"],
+      "testFile": "example/integration_test/no_login_presence_test.dart"
+    },
+    {
+      "id": "FL-PRESENCE-005",
+      "priority": "P0",
+      "origin": "native-shared",
+      "sourceCases": ["wayang.TestCase.在线状态::Presence SDK API Without Login/fetchSubscribedMembers"],
+      "flutterApis": ["EMPresenceManager.fetchSubscribedMembers"],
+      "platforms": ["android", "ios"],
+      "assertions": ["Logged-out call throws EMError code 201"],
+      "testFile": "example/integration_test/no_login_presence_test.dart"
+    },
+    {
+      "id": "FL-AUTH-001",
+      "priority": "P0",
+      "origin": "native-shared",
+      "sourceCases": [
+        "wayang.TestCase.登录注册::常规登录/case1",
+        "wayang.TestCase.登录注册::查询当前用户",
+        "wayang.TestCase.登录注册::登出"
+      ],
+      "flutterApis": [
+        "EMClient.loginWithPassword",
+        "EMClient.getCurrentUserId",
+        "EMClient.isConnected",
+        "EMClient.isLoginBefore",
+        "EMClient.getAccessToken",
+        "EMClient.logout"
+      ],
+      "platforms": ["android", "ios"],
+      "assertions": ["Login succeeds and native client state matches the configured user"],
+      "testFile": "example/integration_test/single_account_local_test.dart"
+    },
+    {
+      "id": "FL-CONV-001",
+      "priority": "P1",
+      "origin": "native-shared",
+      "sourceCases": [
+        "wayang.TestCase.会话::获取会话",
+        "wayang.TestCase.会话::获取所有会话",
+        "wayang.TestCase.会话::会话扩展",
+        "wayang.TestCase.会话::删除会话"
+      ],
+      "flutterApis": ["EMChatManager.getConversation", "EMChatManager.loadAllConversations", "EMConversation.setExt", "EMChatManager.deleteConversation"],
+      "platforms": ["android", "ios"],
+      "assertions": ["Conversation lifecycle and extension persist in the local database"],
+      "testFile": "example/integration_test/single_account_local_test.dart"
+    },
+    {
+      "id": "FL-CONV-002",
+      "priority": "P1",
+      "origin": "native-shared",
+      "sourceCases": ["wayang.TestCase.会话::插入消息", "wayang.TestCase.会话::未读数和已读", "wayang.TestCase.会话::最新消息"],
+      "flutterApis": ["EMConversation.insertMessage", "EMConversation.messagesCount", "EMConversation.unreadCount", "EMConversation.markMessageAsRead", "EMConversation.markAllMessagesAsRead", "EMConversation.latestMessage", "EMConversation.lastReceivedMessage"],
+      "platforms": ["android", "ios"],
+      "assertions": ["Inserted messages update count, latest message, and read state"],
+      "testFile": "example/integration_test/single_account_local_test.dart"
+    },
+    {
+      "id": "FL-CONV-003",
+      "priority": "P1",
+      "origin": "native-shared",
+      "sourceCases": ["wayang.TestCase.会话::追加消息", "wayang.TestCase.会话::更新消息", "wayang.TestCase.会话::删除消息"],
+      "flutterApis": ["EMConversation.appendMessage", "EMConversation.updateMessage", "EMConversation.loadMessage", "EMConversation.deleteMessage"],
+      "platforms": ["android", "ios"],
+      "assertions": ["Append, update, lookup, and removal are reflected in the local database"],
+      "testFile": "example/integration_test/single_account_local_test.dart"
+    },
+    {
+      "id": "FL-CONV-004",
+      "priority": "P1",
+      "origin": "native-shared",
+      "sourceCases": ["wayang.TestCase.会话::消息上下翻页"],
+      "flutterApis": ["EMConversation.loadMessages"],
+      "platforms": ["android", "ios"],
+      "assertions": ["Up and down pagination return the expected adjacent messages"],
+      "testFile": "example/integration_test/single_account_local_test.dart"
+    },
+    {
+      "id": "FL-CONV-005",
+      "priority": "P1",
+      "origin": "native-shared",
+      "sourceCases": ["wayang.TestCase.会话::关键字搜索", "wayang.TestCase.会话::类型和条件搜索", "wayang.TestCase.会话::时间范围和本地消息数"],
+      "flutterApis": ["EMConversation.loadMessagesWithKeyword", "EMConversation.loadMessagesWithMsgType", "EMConversation.searchMsgsByOptions", "EMConversation.loadMessagesFromTime", "EMConversation.getLocalMessageCount"],
+      "platforms": ["android", "ios"],
+      "assertions": ["Local search filters by content, type, sender, and timestamp"],
+      "testFile": "example/integration_test/single_account_local_test.dart"
+    },
+    {
+      "id": "FL-CONV-006",
+      "priority": "P1",
+      "origin": "native-shared",
+      "sourceCases": ["wayang.TestCase.会话::按消息ID删除", "wayang.TestCase.会话::按时间删除", "wayang.TestCase.会话::删除全部消息"],
+      "flutterApis": ["EMConversation.deleteMessageByIds", "EMConversation.deleteMessagesWithTs", "EMConversation.deleteAllMessages"],
+      "platforms": ["android", "ios"],
+      "assertions": ["Local deletion by id, timestamp, and all removes only the selected data"],
+      "testFile": "example/integration_test/single_account_local_test.dart"
+    }
+  ]
+}
