@@ -540,7 +540,7 @@ class EMClient {
 
     try {
       _options = options;
-      EMLog.v('init: $options');
+      EMLog.v('init');
       await Client.instance
           .callNativeMethod(ChatMethodKeys.init, options.toJson());
       _currentUserId = await getCurrentUserId();
@@ -573,7 +573,7 @@ class EMClient {
   /// ~end
   Future<void> createAccount(String userId, String password) async {
     try {
-      EMLog.v('create account: $userId : $password');
+      EMLog.v('create account: $userId');
       Map req = {'userId': userId, 'password': password};
       Map result = await Client.instance
           .callNativeMethod(ChatMethodKeys.createAccount, req);
@@ -623,7 +623,7 @@ class EMClient {
     bool isPassword = true,
   ]) async {
     try {
-      EMLog.v('login: $userId : $pwdOrToken, isPassword: $isPassword');
+      EMLog.v('login: $userId, isPassword: $isPassword');
       Map req = {
         'userId': userId,
         'pwdOrToken': pwdOrToken,
@@ -666,7 +666,7 @@ class EMClient {
   /// ~end
   Future<void> loginWithAgoraToken(String userId, String agoraToken) async {
     try {
-      return login(userId, agoraToken, false);
+      return await login(userId, agoraToken, false);
     } catch (e) {
       rethrow;
     }
@@ -704,7 +704,7 @@ class EMClient {
   ) async {
     try {
       // ignore: deprecated_member_use_from_same_package
-      return login(userId, token, false);
+      return await login(userId, token, false);
     } catch (e) {
       rethrow;
     }
@@ -742,7 +742,7 @@ class EMClient {
   ) async {
     try {
       // ignore: deprecated_member_use_from_same_package
-      return login(userId, password, true);
+      return await login(userId, password, true);
     } catch (e) {
       rethrow;
     }
@@ -835,7 +835,7 @@ class EMClient {
   /// ~end
   Future<bool> changeAppKey({required String newAppKey}) async {
     try {
-      EMLog.v('changeAppKey: $newAppKey');
+      EMLog.v('changeAppKey');
       Map req = {'appKey': newAppKey};
       Map result = await Client.instance
           .callNativeMethod(ChatMethodKeys.changeAppKey, req);
