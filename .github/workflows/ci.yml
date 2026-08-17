@@ -21,7 +21,7 @@ env:
 jobs:
   quality:
     name: Quality and contracts
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: Check out source
@@ -48,7 +48,7 @@ jobs:
 
   android-build:
     name: Android debug build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Check out source
@@ -76,8 +76,10 @@ jobs:
 
   ios-build:
     name: iOS simulator build
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

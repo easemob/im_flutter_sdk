@@ -18,7 +18,7 @@ env:
 jobs:
   android:
     name: Android login and local database
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 50
     environment: flutter-single-account
     steps:
@@ -79,8 +79,10 @@ jobs:
     name: iOS login and local database
     needs: android
     if: ${{ always() }}
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 50
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     environment: flutter-single-account
     steps:
       - name: Check out source
