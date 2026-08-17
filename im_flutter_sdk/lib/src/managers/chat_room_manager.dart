@@ -1518,6 +1518,7 @@ class EMChatRoomManager {
     }
   }
 
+
   /// ~english
   /// Checks whether the current user is on the chatroom mute list.
   ///

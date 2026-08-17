@@ -16,7 +16,6 @@ class GroupMemberInfo {
   /// 群成员用户 ID。
   /// ~end
   final String userId;
-
   /// ~english
   /// The timestamp when the user joined the group.
   /// ~end
@@ -25,7 +24,6 @@ class GroupMemberInfo {
   /// 用户加入群组的时间戳。
   /// ~end
   final int joinedTs;
-
   /// ~english
   /// The role of the group member.
   /// ~end
@@ -34,7 +32,6 @@ class GroupMemberInfo {
   /// 群成员角色。
   /// ~end
   final EMGroupPermissionType role;
-
   /// ~english
   /// Creates a group member info.
   /// ~end

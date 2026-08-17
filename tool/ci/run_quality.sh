@@ -17,11 +17,27 @@ for package in "${packages[@]}"; do
   )
 done
 
-dart format --output=none --set-exit-if-changed \
-  "$repo_root/im_flutter_sdk/lib" \
-  "$repo_root/im_flutter_sdk/test" \
-  "$repo_root/im_flutter_sdk/tool" \
-  "$repo_root/im_flutter_sdk/example/integration_test"
+format_base="${FORMAT_BASE_SHA:-}"
+if [[ -z "$format_base" || "$format_base" =~ ^0+$ ]] || \
+  ! git -C "$repo_root" cat-file -e "${format_base}^{commit}" 2>/dev/null; then
+  format_base="$(git -C "$repo_root" rev-parse HEAD^ 2>/dev/null || true)"
+fi
+
+format_files=()
+if [[ -n "$format_base" ]]; then
+  while IFS= read -r file; do
+    [[ -n "$file" ]] && format_files+=("$repo_root/$file")
+  done < <(
+    git -C "$repo_root" diff --name-only --diff-filter=ACMR \
+      "$format_base" -- '*.dart'
+  )
+fi
+
+if (( ${#format_files[@]} > 0 )); then
+  dart format --output=none --set-exit-if-changed "${format_files[@]}"
+else
+  echo "No changed Dart files require format checking."
+fi
 
 for package in "${packages[@]}"; do
   (

@@ -1922,609 +1922,611 @@ class EMChatManager {
     }
   }
 
-  /// ~english
-  /// Gets all languages supported by the translation service.
-  ///
-  /// **Return** The supported languages.
-  ///
-  /// **Throws** A description of the exception. See [EMError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 查询翻译服务支持的语言。
-  ///
-  /// **Return** 翻译服务支持的语言列表。
-  ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
-  /// ~end
 
-  Future<List<EMTranslateLanguage>> fetchSupportedLanguages() async {
-    try {
-      Map result = await Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.fetchSupportLanguages);
-      EMError.hasErrorFromResult(result);
-      List<EMTranslateLanguage> list = [];
-      result[ChatMethodKeys.fetchSupportLanguages]?.forEach((element) {
-        list.add(EMTranslateLanguage.fromJson(element));
-      });
-      return list;
-    } catch (e) {
-      rethrow;
-    }
+/// ~english
+/// Gets all languages supported by the translation service.
+///
+/// **Return** The supported languages.
+///
+/// **Throws** A description of the exception. See [EMError].
+/// ~end
+///
+/// ~chinese
+/// 查询翻译服务支持的语言。
+///
+/// **Return** 翻译服务支持的语言列表。
+///
+/// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+/// ~end
+
+Future<List<EMTranslateLanguage>> fetchSupportedLanguages() async {
+  try {
+    Map result = await Client.instance.chatManager
+        .callNativeMethod(ChatMethodKeys.fetchSupportLanguages);
+    EMError.hasErrorFromResult(result);
+    List<EMTranslateLanguage> list = [];
+    result[ChatMethodKeys.fetchSupportLanguages]?.forEach((element) {
+      list.add(EMTranslateLanguage.fromJson(element));
+    });
+    return list;
+  } catch (e) {
+    rethrow;
   }
+}
 
-  @Deprecated('Use [fetchConversationsByOptions] instead')
+@Deprecated('Use [fetchConversationsByOptions] instead')
 
-  /// ~english
-  /// Gets the list of pinned conversations from the server with pagination.
-  ///
-  /// The SDK returns the pinned conversations in the reverse chronological order of their pinning.
-  ///
-  /// Param [cursor] The position from which to start getting data. If this parameter is not set, the SDK retrieves conversations from the latest pinned one.
-  ///
-  /// Param [pageSize] The number of conversations that you expect to get on each page. The value range is [1,50].
-  ///
-  /// **Return** The pinned conversation list of the current user.
-  ///
-  /// **Throws** A description of the exception. See [EMError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 分页从服务器获取置顶会话。
-  ///
-  /// SDK 按照会话的置顶时间的倒序返回会话列表。
-  ///
-  /// Param [cursor] 查询的开始位置，如不传， SDK 从最新置顶的会话开始查询。
-  ///
-  /// Param [pageSize] 每页期望返回的会话数量。取值范围为 [1,50]。
-  ///
-  /// **Return** 当前用户的置顶会话列表。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
-  /// ~end
-  Future<EMCursorResult<EMConversation>> fetchPinnedConversations({
-    String? cursor,
-    int pageSize = 20,
-  }) async {
-    try {
-      Map map = {
-        "pageSize": pageSize,
-      };
-      map.putIfNotNull('cursor', cursor);
-      Map result = await Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.getPinnedConversationsFromServerWithCursor,
-        map,
-      );
-      EMError.hasErrorFromResult(result);
-      return EMCursorResult.fromJson(
-          result[ChatMethodKeys.getPinnedConversationsFromServerWithCursor],
-          dataItemCallback: (map) {
-        return EMConversation.fromJson(map);
-      });
-    } catch (e) {
-      rethrow;
-    }
+/// ~english
+/// Gets the list of pinned conversations from the server with pagination.
+///
+/// The SDK returns the pinned conversations in the reverse chronological order of their pinning.
+///
+/// Param [cursor] The position from which to start getting data. If this parameter is not set, the SDK retrieves conversations from the latest pinned one.
+///
+/// Param [pageSize] The number of conversations that you expect to get on each page. The value range is [1,50].
+///
+/// **Return** The pinned conversation list of the current user.
+///
+/// **Throws** A description of the exception. See [EMError].
+/// ~end
+///
+/// ~chinese
+/// 分页从服务器获取置顶会话。
+///
+/// SDK 按照会话的置顶时间的倒序返回会话列表。
+///
+/// Param [cursor] 查询的开始位置，如不传， SDK 从最新置顶的会话开始查询。
+///
+/// Param [pageSize] 每页期望返回的会话数量。取值范围为 [1,50]。
+///
+/// **Return** 当前用户的置顶会话列表。
+///
+/// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+/// ~end
+Future<EMCursorResult<EMConversation>> fetchPinnedConversations({
+  String? cursor,
+  int pageSize = 20,
+}) async {
+  try {
+    Map map = {
+      "pageSize": pageSize,
+    };
+    map.putIfNotNull('cursor', cursor);
+    Map result = await Client.instance.chatManager.callNativeMethod(
+      ChatMethodKeys.getPinnedConversationsFromServerWithCursor,
+      map,
+    );
+    EMError.hasErrorFromResult(result);
+    return EMCursorResult.fromJson(
+        result[ChatMethodKeys.getPinnedConversationsFromServerWithCursor],
+        dataItemCallback: (map) {
+      return EMConversation.fromJson(map);
+    });
+  } catch (e) {
+    rethrow;
   }
+}
 
-  /// ~english
-  /// Sets whether to pin a conversation.
-  ///
-  /// Param [conversationId] The conversation ID.
-  ///
-  /// Param [isPinned]  Whether to pin a conversation:
-  /// - true: Pin the conversation.
-  /// - false: Unpin the conversation.
-  ///
-  /// **Throws** A description of the exception. See [EMError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 设置是否置顶会话。
-  ///
-  /// Param [conversationId] 会话 ID。
-  ///
-  /// Param [isPinned] 是否置顶会话：
-  /// - true: 置顶会话。
-  /// - false: 取消置顶会话。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
-  /// ~end
+/// ~english
+/// Sets whether to pin a conversation.
+///
+/// Param [conversationId] The conversation ID.
+///
+/// Param [isPinned]  Whether to pin a conversation:
+/// - true: Pin the conversation.
+/// - false: Unpin the conversation.
+///
+/// **Throws** A description of the exception. See [EMError].
+/// ~end
+///
+/// ~chinese
+/// 设置是否置顶会话。
+///
+/// Param [conversationId] 会话 ID。
+///
+/// Param [isPinned] 是否置顶会话：
+/// - true: 置顶会话。
+/// - false: 取消置顶会话。
+///
+/// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+/// ~end
 
-  Future<void> pinConversation(
-      {required String conversationId, required bool isPinned}) async {
-    try {
-      Map map = {
-        'convId': conversationId,
-        'isPinned': isPinned,
-      };
+Future<void> pinConversation(
+    {required String conversationId, required bool isPinned}) async {
+  try {
+    Map map = {
+      'convId': conversationId,
+      'isPinned': isPinned,
+    };
 
-      Map result = await Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.pinConversation,
-        map,
-      );
-      EMError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
-    }
+    Map result = await Client.instance.chatManager.callNativeMethod(
+      ChatMethodKeys.pinConversation,
+      map,
+    );
+    EMError.hasErrorFromResult(result);
+  } catch (e) {
+    rethrow;
   }
+}
 
-  /// ~english
-  /// Modifies a message.
-  ///
-  /// After this method is called to modify a message, both the local message and the message on the server are modified.
-  ///
-  /// This method can only modify a text message in one-to-one chats or group chats, but not in chat rooms.
-  ///
-  /// Param [messageId] The ID of the message to modify.
-  ///
-  /// Param [msgBody]  The modified message body [EMMessageBody], only [EMTextMessageBody] and [EMCustomMessageBody] are supported.
-  ///
-  /// Param [attributes] The custom attributes of the message.
-  ///
-  /// **Return** The modified message.
-  ///
-  /// **Throws** A description of the exception. See [EMError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 修改消息内容。
-  ///
-  /// 调用该方法修改消息内容后，本地和服务端的消息均会修改。
-  ///
-  /// 只能调用该方法修改单聊和群聊中的文本消息，不能修改聊天室消息。
-  ///
-  /// Param [messageId] 消息实例 ID。
-  ///
-  /// Param [msgBody] 息体实例 [EMMessageBody], 只支持 [EMTextMessageBody], [EMCustomMessageBody]。
-  ///
-  /// Param [attributes] 消息的扩展字段
-  ///
-  /// **Return** 修改后的消息实例。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
-  /// ~end
+/// ~english
+/// Modifies a message.
+///
+/// After this method is called to modify a message, both the local message and the message on the server are modified.
+///
+/// This method can only modify a text message in one-to-one chats or group chats, but not in chat rooms.
+///
+/// Param [messageId] The ID of the message to modify.
+///
+/// Param [msgBody]  The modified message body [EMMessageBody], only [EMTextMessageBody] and [EMCustomMessageBody] are supported.
+///
+/// Param [attributes] The custom attributes of the message.
+///
+/// **Return** The modified message.
+///
+/// **Throws** A description of the exception. See [EMError].
+/// ~end
+///
+/// ~chinese
+/// 修改消息内容。
+///
+/// 调用该方法修改消息内容后，本地和服务端的消息均会修改。
+///
+/// 只能调用该方法修改单聊和群聊中的文本消息，不能修改聊天室消息。
+///
+/// Param [messageId] 消息实例 ID。
+///
+/// Param [msgBody] 息体实例 [EMMessageBody], 只支持 [EMTextMessageBody], [EMCustomMessageBody]。
+///
+/// Param [attributes] 消息的扩展字段
+///
+/// **Return** 修改后的消息实例。
+///
+/// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+/// ~end
 
-  Future<EMMessage> modifyMessage({
-    required String messageId,
-    EMMessageBody? msgBody,
-    Map<String, dynamic>? attributes,
-  }) async {
-    try {
-      Map map = {'msgId': messageId};
-      map.putIfNotNull('msgBody', msgBody?.toJson());
-      map.putIfNotNull('attributes', attributes);
+Future<EMMessage> modifyMessage({
+  required String messageId,
+  EMMessageBody? msgBody,
+  Map<String, dynamic>? attributes,
+}) async {
+  try {
+    Map map = {'msgId': messageId};
+    map.putIfNotNull('msgBody', msgBody?.toJson());
+    map.putIfNotNull('attributes', attributes);
 
-      Map result = await Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.modifyMessage,
-        map,
-      );
-      EMError.hasErrorFromResult(result);
-      return EMMessage.fromJson(result[ChatMethodKeys.modifyMessage]);
-    } catch (e) {
-      rethrow;
-    }
+    Map result = await Client.instance.chatManager.callNativeMethod(
+      ChatMethodKeys.modifyMessage,
+      map,
+    );
+    EMError.hasErrorFromResult(result);
+    return EMMessage.fromJson(result[ChatMethodKeys.modifyMessage]);
+  } catch (e) {
+    rethrow;
   }
+}
 
-  /// ~english
-  /// Gets the details of a combined message.
-  ///
-  /// Param [message] The combined message.
-  ///
-  /// **Return** The list of original messages included in the combined message.
-  ///
-  /// **Throws** A description of the exception. See [EMError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 获取合并消息的详情。
-  ///
-  /// Param [message] 合并消息。
-  ///
-  /// **Return** 合并消息包含的原始消息列表。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
-  /// ~end
+/// ~english
+/// Gets the details of a combined message.
+///
+/// Param [message] The combined message.
+///
+/// **Return** The list of original messages included in the combined message.
+///
+/// **Throws** A description of the exception. See [EMError].
+/// ~end
+///
+/// ~chinese
+/// 获取合并消息的详情。
+///
+/// Param [message] 合并消息。
+///
+/// **Return** 合并消息包含的原始消息列表。
+///
+/// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+/// ~end
 
-  Future<List<EMMessage>> fetchCombineMessageDetail({
-    required EMMessage message,
-  }) async {
-    try {
-      Map map = {
-        'message': message.toJson(),
-      };
+Future<List<EMMessage>> fetchCombineMessageDetail({
+  required EMMessage message,
+}) async {
+  try {
+    Map map = {
+      'message': message.toJson(),
+    };
 
-      Map result = await Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.downloadAndParseCombineMessage,
-        map,
-      );
+    Map result = await Client.instance.chatManager.callNativeMethod(
+      ChatMethodKeys.downloadAndParseCombineMessage,
+      map,
+    );
 
-      EMError.hasErrorFromResult(result);
-      List<EMMessage> messages = [];
-      List list = result[ChatMethodKeys.downloadAndParseCombineMessage];
-      for (var element in list) {
-        messages.add(EMMessage.fromJson(element));
-      }
-      return messages;
-    } catch (e) {
-      rethrow;
+    EMError.hasErrorFromResult(result);
+    List<EMMessage> messages = [];
+    List list = result[ChatMethodKeys.downloadAndParseCombineMessage];
+    for (var element in list) {
+      messages.add(EMMessage.fromJson(element));
     }
+    return messages;
+  } catch (e) {
+    rethrow;
   }
+}
 
-  ///
-  /// ~english
-  /// Marks conversations.
-  ///
-  /// This method marks conversations both locally and on the server.
-  ///
-  /// Param [conversationIds] The list of conversation IDs to mark.
-  ///
-  /// Param [mark] The mark to add for the conversations. See [ConversationMarkType].
-  ///
-  /// **Throws** A description of the exception. See [EMError].
-  ///
-  /// ~end
-  ///
-  /// ~chinese
-  /// 标记会话。
-  ///
-  /// 调用该方法会同时为本地和服务器端的会话添加标记。
-  ///
-  /// Param [conversationIds] 要标记的会话 ID 列表。
-  ///
-  /// Param [mark] 要添加的会话标记，详见 [ConversationMarkType]。
-  ///
-  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
-  ///
-  /// ~end
+///
+/// ~english
+/// Marks conversations.
+///
+/// This method marks conversations both locally and on the server.
+///
+/// Param [conversationIds] The list of conversation IDs to mark.
+///
+/// Param [mark] The mark to add for the conversations. See [ConversationMarkType].
+///
+/// **Throws** A description of the exception. See [EMError].
+///
+/// ~end
+///
+/// ~chinese
+/// 标记会话。
+///
+/// 调用该方法会同时为本地和服务器端的会话添加标记。
+///
+/// Param [conversationIds] 要标记的会话 ID 列表。
+///
+/// Param [mark] 要添加的会话标记，详见 [ConversationMarkType]。
+///
+/// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+///
+/// ~end
 
-  Future<void> addRemoteAndLocalConversationsMark({
-    required List<String> conversationIds,
-    required ConversationMarkType mark,
-  }) async {
-    try {
-      Map map = {
-        'convIds': conversationIds,
-        'mark': mark.index,
-      };
+Future<void> addRemoteAndLocalConversationsMark({
+  required List<String> conversationIds,
+  required ConversationMarkType mark,
+}) async {
+  try {
+    Map map = {
+      'convIds': conversationIds,
+      'mark': mark.index,
+    };
 
-      Map result = await Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.addRemoteAndLocalConversationsMark,
-        map,
-      );
-      EMError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
+    Map result = await Client.instance.chatManager.callNativeMethod(
+      ChatMethodKeys.addRemoteAndLocalConversationsMark,
+      map,
+    );
+    EMError.hasErrorFromResult(result);
+  } catch (e) {
+    rethrow;
+  }
+}
+
+/// ~english
+/// Unmarks conversations.
+///
+/// This method unmarks conversations both locally and on the server.
+///
+/// Param [conversationIds] The list of conversation IDs to unmark.
+/// Param [mark] The conversation mark to remove. See [ConversationMarkType].
+/// ~end
+///
+/// ~chinese
+/// 取消标记会话。
+///
+/// 本地和服务端取消标记会话。
+///
+/// Param [conversationIds] 要取消标记的会话 ID 列表。
+/// Param [mark] 要移除的会话标记，详见 [ConversationMarkType]。
+/// ~end
+
+Future<void> deleteRemoteAndLocalConversationsMark({
+  required List<String> conversationIds,
+  required ConversationMarkType mark,
+}) async {
+  try {
+    Map map = {
+      'convIds': conversationIds,
+      'mark': mark.index,
+    };
+
+    Map result = await Client.instance.chatManager.callNativeMethod(
+      ChatMethodKeys.deleteRemoteAndLocalConversationsMark,
+      map,
+    );
+
+    EMError.hasErrorFromResult(result);
+  } catch (e) {
+    rethrow;
+  }
+}
+
+/// ~english
+/// Gets conversations from the server by conversation filter options.
+///
+/// Param [options] The conversation filter options. See [ConversationFetchOptions].
+/// Returns The list of retrieved conversations.
+/// Throws A description of the exception. See [EMError].
+/// ~end
+/// ~chinese
+/// 根据会话过滤选项获取服务端的会话。
+/// Param [options] 会话过滤选项, 详见 [ConversationFetchOptions]。
+/// Returns 会话列表。
+/// Throws 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+/// ~end
+
+Future<EMCursorResult<EMConversation>> fetchConversationsByOptions({
+  required ConversationFetchOptions options,
+}) async {
+  try {
+    Map req = options.toJson();
+    Map result = await Client.instance.chatManager
+        .callNativeMethod(ChatMethodKeys.fetchConversationsByOptions, req);
+    EMError.hasErrorFromResult(result);
+    return EMCursorResult<EMConversation>.fromJson(
+        result[ChatMethodKeys.fetchConversationsByOptions],
+        dataItemCallback: (value) {
+      return EMConversation.fromJson(value);
+    });
+  } catch (e) {
+    rethrow;
+  }
+}
+
+/// ~english
+/// Clears all conversations and all messages in them.
+/// Param [clearServerData] Whether to clear all conversations and all messages in them on the server.
+/// - true: Yes. All conversations and all messages in them will be cleared on the server side.
+///   The current user cannot retrieve messages and conversations from the server, while this has no impact on other users.
+/// - (Default) false：No. All local conversations and all messages in them will be cleared, while those on the server remain.
+/// ~end
+///
+/// ~chinese
+/// 清空所有会话和会话中的所有消息。
+/// Param [clearServerData] 是否删除服务端所有会话及其消息：
+/// - true: 是。服务端的所有会话及其消息会被清除，当前用户无法再从服务端拉取消息和会话，其他用户不受影响。
+/// - （默认）false: 否。只清除本地所有会话及其消息，服务端的会话及其消息仍保留。
+/// ~end
+
+Future<void> deleteAllMessageAndConversation(
+    {bool clearServerData = false}) async {
+  try {
+    Map result = await Client.instance.chatManager
+        .callNativeMethod(ChatMethodKeys.deleteAllMessageAndConversation, {
+      'clearServerData': clearServerData,
+    });
+    EMError.hasErrorFromResult(result);
+  } catch (e) {
+    rethrow;
+  }
+}
+
+/// ~english
+/// Pins a message.
+/// Param [messageId] The message ID.
+///
+/// Throws A description of the exception. See [EMError].
+/// ~end
+///
+/// ~chinese
+/// 置顶消息。
+/// Param [messageId] 消息 ID。
+///
+/// Throws 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+/// ~end
+
+Future<void> pinMessage({required String messageId}) async {
+  try {
+    Map map = {'msgId': messageId};
+    Map result = await Client.instance.chatManager.callNativeMethod(
+      ChatMethodKeys.pinMessage,
+      map,
+    );
+    EMError.hasErrorFromResult(result);
+  } catch (e) {
+    rethrow;
+  }
+}
+
+/// ~english
+/// Unpins a message.
+///
+/// Param [messageId] The message ID.
+///
+/// Throws A description of the exception. See [EMError].
+/// ~end
+/// ~chinese
+/// 取消置顶消息。
+///
+/// Param [messageId] 消息 ID。
+///
+/// Throws 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+/// ~end
+
+Future<void> unpinMessage({required String messageId}) async {
+  try {
+    Map map = {'msgId': messageId};
+    Map result = await Client.instance.chatManager.callNativeMethod(
+      ChatMethodKeys.unpinMessage,
+      map,
+    );
+    EMError.hasErrorFromResult(result);
+  } catch (e) {
+    rethrow;
+  }
+}
+
+/// ~english
+/// Gets the list of pinned messages from the server.
+///
+/// Param [conversationId] The conversation ID.
+/// Returns The list of pinned messages.
+/// Throws A description of the exception. See [EMError].
+/// ~end
+/// ~chinese
+/// 从服务端获取置顶消息。
+///
+/// Param [conversationId] 会话 ID。
+/// Returns 置顶消息列表。
+/// Throws 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+/// ~end
+
+Future<List<EMMessage>> fetchPinnedMessages(
+    {required String conversationId}) async {
+  try {
+    Map map = {'convId': conversationId};
+    Map result = await Client.instance.chatManager.callNativeMethod(
+      ChatMethodKeys.fetchPinnedMessages,
+      map,
+    );
+    EMError.hasErrorFromResult(result);
+    List<EMMessage> messages = [];
+    List list = result[ChatMethodKeys.fetchPinnedMessages];
+    for (var element in list) {
+      messages.add(EMMessage.fromJson(element));
     }
+    return messages;
+  } catch (e) {
+    rethrow;
   }
-
-  /// ~english
-  /// Unmarks conversations.
-  ///
-  /// This method unmarks conversations both locally and on the server.
-  ///
-  /// Param [conversationIds] The list of conversation IDs to unmark.
-  /// Param [mark] The conversation mark to remove. See [ConversationMarkType].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 取消标记会话。
-  ///
-  /// 本地和服务端取消标记会话。
-  ///
-  /// Param [conversationIds] 要取消标记的会话 ID 列表。
-  /// Param [mark] 要移除的会话标记，详见 [ConversationMarkType]。
-  /// ~end
-
-  Future<void> deleteRemoteAndLocalConversationsMark({
-    required List<String> conversationIds,
-    required ConversationMarkType mark,
-  }) async {
-    try {
-      Map map = {
-        'convIds': conversationIds,
-        'mark': mark.index,
-      };
-
-      Map result = await Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.deleteRemoteAndLocalConversationsMark,
-        map,
-      );
-
-      EMError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Gets conversations from the server by conversation filter options.
-  ///
-  /// Param [options] The conversation filter options. See [ConversationFetchOptions].
-  /// Returns The list of retrieved conversations.
-  /// Throws A description of the exception. See [EMError].
-  /// ~end
-  /// ~chinese
-  /// 根据会话过滤选项获取服务端的会话。
-  /// Param [options] 会话过滤选项, 详见 [ConversationFetchOptions]。
-  /// Returns 会话列表。
-  /// Throws 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
-  /// ~end
-
-  Future<EMCursorResult<EMConversation>> fetchConversationsByOptions({
-    required ConversationFetchOptions options,
-  }) async {
-    try {
-      Map req = options.toJson();
-      Map result = await Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.fetchConversationsByOptions, req);
-      EMError.hasErrorFromResult(result);
-      return EMCursorResult<EMConversation>.fromJson(
-          result[ChatMethodKeys.fetchConversationsByOptions],
-          dataItemCallback: (value) {
-        return EMConversation.fromJson(value);
-      });
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Clears all conversations and all messages in them.
-  /// Param [clearServerData] Whether to clear all conversations and all messages in them on the server.
-  /// - true: Yes. All conversations and all messages in them will be cleared on the server side.
-  ///   The current user cannot retrieve messages and conversations from the server, while this has no impact on other users.
-  /// - (Default) false：No. All local conversations and all messages in them will be cleared, while those on the server remain.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 清空所有会话和会话中的所有消息。
-  /// Param [clearServerData] 是否删除服务端所有会话及其消息：
-  /// - true: 是。服务端的所有会话及其消息会被清除，当前用户无法再从服务端拉取消息和会话，其他用户不受影响。
-  /// - （默认）false: 否。只清除本地所有会话及其消息，服务端的会话及其消息仍保留。
-  /// ~end
-
-  Future<void> deleteAllMessageAndConversation(
-      {bool clearServerData = false}) async {
-    try {
-      Map result = await Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.deleteAllMessageAndConversation, {
-        'clearServerData': clearServerData,
-      });
-      EMError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Pins a message.
-  /// Param [messageId] The message ID.
-  ///
-  /// Throws A description of the exception. See [EMError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 置顶消息。
-  /// Param [messageId] 消息 ID。
-  ///
-  /// Throws 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
-  /// ~end
-
-  Future<void> pinMessage({required String messageId}) async {
-    try {
-      Map map = {'msgId': messageId};
-      Map result = await Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.pinMessage,
-        map,
-      );
-      EMError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Unpins a message.
-  ///
-  /// Param [messageId] The message ID.
-  ///
-  /// Throws A description of the exception. See [EMError].
-  /// ~end
-  /// ~chinese
-  /// 取消置顶消息。
-  ///
-  /// Param [messageId] 消息 ID。
-  ///
-  /// Throws 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
-  /// ~end
-
-  Future<void> unpinMessage({required String messageId}) async {
-    try {
-      Map map = {'msgId': messageId};
-      Map result = await Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.unpinMessage,
-        map,
-      );
-      EMError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Gets the list of pinned messages from the server.
-  ///
-  /// Param [conversationId] The conversation ID.
-  /// Returns The list of pinned messages.
-  /// Throws A description of the exception. See [EMError].
-  /// ~end
-  /// ~chinese
-  /// 从服务端获取置顶消息。
-  ///
-  /// Param [conversationId] 会话 ID。
-  /// Returns 置顶消息列表。
-  /// Throws 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
-  /// ~end
-
-  Future<List<EMMessage>> fetchPinnedMessages(
-      {required String conversationId}) async {
-    try {
-      Map map = {'convId': conversationId};
-      Map result = await Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.fetchPinnedMessages,
-        map,
-      );
-      EMError.hasErrorFromResult(result);
-      List<EMMessage> messages = [];
-      List list = result[ChatMethodKeys.fetchPinnedMessages];
-      for (var element in list) {
-        messages.add(EMMessage.fromJson(element));
-      }
-      return messages;
-    } catch (e) {
-      rethrow;
-    }
-  }
+}
 
 // 481
 
-  /// ~english
-  /// Loads messages with the specified keyword from the local database.
-  ///
-  /// Param [options]  search options, see [MessageSearchOptions].
-  ///
-  /// **Returns** The list of retrieved messages.
-  ///
-  /// **Throws** A description of the exception. See [EMError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 通过类型从数据库获取消息。
-  ///
-  /// Param [options] 搜索配置项, 详情查看 [MessageSearchOptions].
-  ///
-  /// **Return** 消息列表。
-  ///
-  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
-  /// ~end
+/// ~english
+/// Loads messages with the specified keyword from the local database.
+///
+/// Param [options]  search options, see [MessageSearchOptions].
+///
+/// **Returns** The list of retrieved messages.
+///
+/// **Throws** A description of the exception. See [EMError].
+/// ~end
+///
+/// ~chinese
+/// 通过类型从数据库获取消息。
+///
+/// Param [options] 搜索配置项, 详情查看 [MessageSearchOptions].
+///
+/// **Return** 消息列表。
+///
+/// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+/// ~end
 
-  Future<List<EMMessage>> searchMsgsByOptions(
-      MessageSearchOptions options) async {
-    try {
-      Map req = {};
-      req['ts'] = options.ts;
-      req['count'] = options.count;
-      req['direction'] = options.direction.index;
-      req.putIfNotNull("from", options.from);
-      req['types'] = options.types.map((e) => e.index).toList();
-      Map result = await Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.searchMsgsByOptions, req);
-      EMError.hasErrorFromResult(result);
-      List<EMMessage> messages = [];
-      List list = result[ChatMethodKeys.searchMsgsByOptions];
-      for (var element in list) {
-        messages.add(EMMessage.fromJson(element));
-      }
-      return messages;
-    } catch (e) {
-      rethrow;
+Future<List<EMMessage>> searchMsgsByOptions(
+    MessageSearchOptions options) async {
+  try {
+    Map req = {};
+    req['ts'] = options.ts;
+    req['count'] = options.count;
+    req['direction'] = options.direction.index;
+    req.putIfNotNull("from", options.from);
+    req['types'] = options.types.map((e) => e.index).toList();
+    Map result = await Client.instance.chatManager
+        .callNativeMethod(ChatMethodKeys.searchMsgsByOptions, req);
+    EMError.hasErrorFromResult(result);
+    List<EMMessage> messages = [];
+    List list = result[ChatMethodKeys.searchMsgsByOptions];
+    for (var element in list) {
+      messages.add(EMMessage.fromJson(element));
     }
+    return messages;
+  } catch (e) {
+    rethrow;
   }
+}
 
-  /// ~english
-  /// Get the message count from db.
-  ///
-  /// **Returns** The message count in db.
-  ///
-  /// **Throws** A description of the exception. See [EMError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 获取数据库中的消息总数。
-  ///
-  /// **Return** 数据库中的消息总数。
-  ///
-  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError].
-  /// ~end
-  Future<int> getAllMessageCount() async {
-    try {
-      Map result = await Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.getMessageCount);
-      EMError.hasErrorFromResult(result);
-      if (result.containsKey(ChatMethodKeys.getMessageCount)) {
-        return result[ChatMethodKeys.getMessageCount];
-      } else {
-        return 0;
-      }
-    } catch (e) {
-      rethrow;
-    }
-  }
 
-  /// ~english
-  /// Loads messages with the specified keyword from the local database,
-  /// returning a map containing conversation IDs and message ID arrays.
-  ///
-  /// Param [keyword]      The search keyword, nil means ignore.
-  /// Param [timestamp]    The starting Unix timestamp in milliseconds.
-  ///                      Negative means fetch from the latest message.
-  /// Param [sender]       The message sender, nil means ignore.
-  /// Param [direction]    Message search direction, see [EMSearchDirection].
-  ///                      - Up: Reverse order by timestamp.
-  ///                      - Down: Chronological order by timestamp.
-  /// Param [scope]        Message search scope, see [MessageSearchScope].
-  ///
-  /// **Returns** A map where key is conversation ID, value is message ID list.
-  ///
-  /// **Throws** Exception description, see [EMError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 通过关键词从本地数据库中获取消息，返回包含会话 ID 与消息 ID 数组的 Map。
-  /// SDK 按时间顺序返回消息。
-  ///
-  /// Param [keyword]      搜索关键词，nil 表示忽略该参数。
-  /// Param [timestamp]    搜索起始 Unix 时间戳，单位毫秒。
-  ///                     为负数时从最新消息向前获取。
-  /// Param [sender]       消息发送方，nil 表示忽略该参数。
-  /// Param [direction]    消息搜索方向，详见 [EMSearchDirection]。
-  ///                     - Up：按时间戳逆序获取。
-  ///                     - Down：按时间戳顺序获取。
-  /// Param [scope]        消息搜索范围，详见 [MessageSearchScope]。
-  ///
-  /// **Return**  Map，key 为会话 ID，value 为消息 ID 列表。
-  ///
-  /// **Throws** 异常描述，详见 [EMError]。
-  /// ~end
-  Future<Map<String, List<String>>> loadConversationMessagesWithKeyword({
-    String? keyword,
-    int timestamp = -1,
-    String? sender,
-    EMSearchDirection direction = EMSearchDirection.Up,
-    MessageSearchScope scope = MessageSearchScope.All,
-  }) async {
-    try {
-      Map req = {};
-      req.putIfNotNull("keyword", keyword);
-      req["timestamp"] = timestamp;
-      req.putIfNotNull("sender", sender);
-      req["direction"] = direction.index;
-      req["scope"] = scope.index;
-      Map result = await Client.instance.chatManager.callNativeMethod(
-          ChatMethodKeys.loadConversationMessagesWithKeyword, req);
-      EMError.hasErrorFromResult(result);
-      Map<String, List<String>> resultMap = {};
-      Map? data = result[ChatMethodKeys.loadConversationMessagesWithKeyword];
-      if (data != null) {
-        data.forEach((key, value) {
-          resultMap[key] = List<String>.from(value);
-        });
-      }
-      return resultMap;
-    } catch (e) {
-      rethrow;
+/// ~english
+/// Get the message count from db.
+///
+/// **Returns** The message count in db.
+///
+/// **Throws** A description of the exception. See [EMError].
+/// ~end
+///
+/// ~chinese
+/// 获取数据库中的消息总数。
+///
+/// **Return** 数据库中的消息总数。
+///
+/// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError].
+/// ~end
+Future<int> getAllMessageCount() async {
+  try {
+    Map result = await Client.instance.chatManager
+        .callNativeMethod(ChatMethodKeys.getMessageCount);
+    EMError.hasErrorFromResult(result);
+    if (result.containsKey(ChatMethodKeys.getMessageCount)) {
+      return result[ChatMethodKeys.getMessageCount];
+    } else {
+      return 0;
     }
+  } catch (e) {
+    rethrow;
   }
+}
+
+/// ~english
+/// Loads messages with the specified keyword from the local database,
+/// returning a map containing conversation IDs and message ID arrays.
+///
+/// Param [keyword]      The search keyword, nil means ignore.
+/// Param [timestamp]    The starting Unix timestamp in milliseconds.
+///                      Negative means fetch from the latest message.
+/// Param [sender]       The message sender, nil means ignore.
+/// Param [direction]    Message search direction, see [EMSearchDirection].
+///                      - Up: Reverse order by timestamp.
+///                      - Down: Chronological order by timestamp.
+/// Param [scope]        Message search scope, see [MessageSearchScope].
+///
+/// **Returns** A map where key is conversation ID, value is message ID list.
+///
+/// **Throws** Exception description, see [EMError].
+/// ~end
+///
+/// ~chinese
+/// 通过关键词从本地数据库中获取消息，返回包含会话 ID 与消息 ID 数组的 Map。
+/// SDK 按时间顺序返回消息。
+///
+/// Param [keyword]      搜索关键词，nil 表示忽略该参数。
+/// Param [timestamp]    搜索起始 Unix 时间戳，单位毫秒。
+///                     为负数时从最新消息向前获取。
+/// Param [sender]       消息发送方，nil 表示忽略该参数。
+/// Param [direction]    消息搜索方向，详见 [EMSearchDirection]。
+///                     - Up：按时间戳逆序获取。
+///                     - Down：按时间戳顺序获取。
+/// Param [scope]        消息搜索范围，详见 [MessageSearchScope]。
+///
+/// **Return**  Map，key 为会话 ID，value 为消息 ID 列表。
+///
+/// **Throws** 异常描述，详见 [EMError]。
+/// ~end
+Future<Map<String, List<String>>> loadConversationMessagesWithKeyword({
+  String? keyword,
+  int timestamp = -1,
+  String? sender,
+  EMSearchDirection direction = EMSearchDirection.Up,
+  MessageSearchScope scope = MessageSearchScope.All,
+}) async {
+  try {
+    Map req = {};
+    req.putIfNotNull("keyword", keyword);
+    req["timestamp"] = timestamp;
+    req.putIfNotNull("sender", sender);
+    req["direction"] = direction.index;
+    req["scope"] = scope.index;
+    Map result = await Client.instance.chatManager.callNativeMethod(
+        ChatMethodKeys.loadConversationMessagesWithKeyword, req);
+    EMError.hasErrorFromResult(result);
+    Map<String, List<String>> resultMap = {};
+    Map? data = result[ChatMethodKeys.loadConversationMessagesWithKeyword];
+    if (data != null) {
+      data.forEach((key, value) {
+        resultMap[key] = List<String>.from(value);
+      });
+    }
+    return resultMap;
+  } catch (e) {
+    rethrow;
+  }
+}
 }
 
 class MessageCallBackManager {
