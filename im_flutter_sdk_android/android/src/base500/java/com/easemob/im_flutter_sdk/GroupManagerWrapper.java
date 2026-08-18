@@ -827,13 +827,9 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
             savePath = param.getString("savePath");
         }
 
-        // 5.0 asyncDownloadGroupSharedFile 回调改为 EMCallBack
+        // 5.0 asyncDownloadGroupSharedFile 回调改为 EMCallBack（EMWrapperCallBack 为唯一提交点）
         EMClient.getInstance().groupManager().asyncDownloadGroupSharedFile(groupId, fileId, savePath,
                 new EMWrapperCallBack(result, channelName, null));
-
-        post(()->{
-            onSuccess(result, channelName, true);
-        });
     }
 
     private void removeGroupSharedFile(JSONObject param, String channelName, Result result) throws JSONException {

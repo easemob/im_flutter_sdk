@@ -183,7 +183,7 @@ def test_chat_ack_message_read_success_with_event(topology, assert_api):
                         "direction": 0,
                         "status": 2,
                         "hasRead": True,
-                        "needReadReceipt": True, "isThread": False,
+                        "needReadReceipt": True, "isPeerRead": True, "isThread": False,
                         "isContentReplaced": False,
                         "deliverOnlineOnly": False,
                         "body": {"type": 0, "content": "{{content}}", "translations": {}},

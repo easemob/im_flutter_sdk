@@ -134,13 +134,15 @@ def _send_type_and_receive(
     *,
     type_key: str,
     payload: dict,
+    need_read_receipt: bool = False,
 ):
     device_a.drain_events()
     device_b.drain_events()
     resp = device_a.call(
         "ChatManager",
         Cmd.sendMessage.value,
-        info=swt_to_send({"type": type_key, "payload": payload, "chatType": 0}),
+        info=swt_to_send({"type": type_key, "payload": payload, "chatType": 0,
+                            "needReadReceipt": need_read_receipt}),
     )
     for device in (device_a, device_b):
         setting = device.call("Client", Cmd.updateDeliveryAckSetting.value, info={"requireDeliveryAck": True})
@@ -186,9 +188,10 @@ def _send_type_and_receive(
             "type": 4,
             "displayName": "voice.mp3",
             "duration": payload["duration"],
+            # voice 发送响应 fileStatus 实测 0（发送方本地态）→ 锁 0
+            "fileStatus": 0,
         }
-        # fileStatus 属上传时序（响应时 0，完成后 3）→ 忽略
-        body_ignore = {"localPath", "remotePath", "secret", "fileSize", "fileStatus"}
+        body_ignore = {"localPath", "remotePath", "secret", "fileSize"}
     elif type_key == "cmd":
         expected_body = {
             "type": 6,
@@ -214,7 +217,7 @@ def _send_type_and_receive(
                 "chatType": 0,
                 "direction": 0,
                 "hasRead": True,
-                "needReadReceipt": False, "isThread": False,
+                "needReadReceipt": need_read_receipt, "isThread": False,
                 "isContentReplaced": False,
                 "deliverOnlineOnly": False,
                 "body": expected_body,
@@ -243,7 +246,7 @@ def _send_type_and_receive(
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "needReadReceipt": False, "hasDeliverAck": sent.get("hasDeliverAck"),
+                    "needReadReceipt": need_read_receipt, "hasDeliverAck": sent.get("hasDeliverAck"),
                     "isThread": False,
                     "isContentReplaced": False,
                     "deliverOnlineOnly": False,
@@ -286,7 +289,7 @@ def _send_type_and_receive(
                     "direction": 1,
                     "status": 2,
                     "hasRead": False,
-                    "needReadReceipt": False, "isThread": False,
+                    "needReadReceipt": need_read_receipt, "isThread": False,
                     "isContentReplaced": False,
                     "deliverOnlineOnly": False,
                     "body": receive_expected_body,
@@ -543,7 +546,6 @@ def test_chat_missing_custom_message_send_receive(topology, assert_api):
         ("custom", {"event": "batch1-delivery-custom", "params": {"k": "v"}}),
     ],
 )
-@pytest.mark.skip(reason="5.0 无送达回执（DELIVER_ACK）机制，onMessageSuccess 后不发送达回执")
 def test_chat_missing_message_delivery_ack(device_a, device_b, assert_api, user_a, user_b, type_key, payload):
     setting = device_a.call("Client", Cmd.updateDeliveryAckSetting.value, info={"requireDeliveryAck": True})
     assert_api.assert_response_matches(
@@ -566,5 +568,6 @@ def test_chat_missing_message_delivery_ack(device_a, device_b, assert_api, user_
         user_b,
         type_key=type_key,
         payload=payload,
+        need_read_receipt=True,
     )
     return real_id

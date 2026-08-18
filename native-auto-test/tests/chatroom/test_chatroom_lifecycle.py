@@ -72,8 +72,9 @@ def test_chatroom_fetch_room_info_with_members_from_server(device_a, device_b, a
 
         resp = device_a.call(
             "ChatRoomManager",
+            # 5.0 fetchChatRoomFromServer 只保留单参数（成员单独 fetchChatRoomMembers）→ 去 4.23 fetchMembers 残留
             Cmd.fetchChatRoomInfoFromServer.value,
-            info={"roomId": room_id, "fetchMembers": True},
+            info={"roomId": room_id},
         )
         assert_api.assert_response_matches(
             resp,

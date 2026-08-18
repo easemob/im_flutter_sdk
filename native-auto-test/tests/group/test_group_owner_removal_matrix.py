@@ -43,7 +43,7 @@ def _fetch_group(
     response = device.call(
         "GroupManager",
         Cmd.getGroupSpecificationFromServer.value,
-        info={"groupId": group_id, "fetchMembers": True},
+        info={"groupId": group_id},
     )
     assert_group_snapshot(
         assert_api,

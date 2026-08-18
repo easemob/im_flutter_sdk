@@ -451,13 +451,11 @@ Event
 | Message.onMessageReadAck | EMMessageListener.onMessageReadReceipts | EMChatManagerDelegate.onMessageReadReceipts: |
 | ChatManager.onMessagesDelivered | EMMessageListener.onMessageDelivered | EMChatManagerDelegate.messagesDidDeliver: |
 | Message.onMessageDeliveryAck | EMMessageListener.onMessageDelivered | EMChatManagerDelegate.messagesDidDeliver: |
-| ChatManager.onReadAckForGroupMessageUpdated | EMMessageListener.onReadReceiptForGroupMessageUpdated | EMChatManagerDelegate.groupMessageReadReceiptsHasChanged |
 | ChatManager.messageReactionDidChange | EMMessageListener.onReactionChanged | EMChatManagerDelegate.messageReactionDidChange: |
 | ChatManager.onMessageContentChanged | EMMessageListener.onMessageContentChanged | EMChatManagerDelegate.onMessageContentChanged:operatorId:operationTime: |
 | ChatManager.onMessagePinChanged | EMMessageListener.onMessagePinChanged | EMChatManagerDelegate.onMessagePinChanged:conversationId:operation:pinInfo: |
 | ChatManager.onMessagesRecalledInfo | EMMessageListener.onMessageRecalledWithExt | EMChatManagerDelegate.messagesInfoDidRecall: |
 | ChatManager.onConversationUpdate | EMConversationListener.onConversationUpdate | EMConversationDelegate.conversationListDidUpdate: |
-| ChatManager.onMessagesRecalled | EMMessageListener.onMessageRecalledWithExt | EMChatManagerDelegate.messagesInfoDidRecall: |
 | Message.onMessageProgressUpdate | EMCallBack.onProgress | IEMChatManager.sendMessage:progress:completion: |
 | Message.onMessageSuccess | EMCallBack.onSuccess | IEMChatManager.sendMessage:progress:completion: |
 | Message.onMessageError | EMCallBack.onError | IEMChatManager.sendMessage:progress:completion: |
@@ -531,8 +529,6 @@ Event
 | 模块.统一协议 Event | Android 5.0 原生 Event | iOS 5.0 原生 Event |
 |---|---|---|
 | Client.onSendDataToFlutter | — | — |
-| ChatManager.onGroupMessageRead | — | — |
-| ChatManager.onConversationHasRead | — | — |
 
 统一协议 Event：语义待确认
 

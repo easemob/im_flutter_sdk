@@ -169,7 +169,6 @@ def test_group_update_avatar_success(device_a, assert_api, user_a):
                 "permissionType",
                 "isAllMemberMuted",
                 "isDisabled",
-                "isMemberOnly",
                 "announcement",
                 "sharedFiles",
                 "options",

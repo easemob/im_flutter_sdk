@@ -3,9 +3,28 @@ from __future__ import annotations
 import time
 
 from src import Cmd, GroupChangeEvent
+from src.tools.group_capacity import get_group_create_max_count
 
 # 群组事件名已统一为 onGroupXxx（Android/iOS Wrapper 与 Python
 # GroupChangeEvent 枚举一致），Case 硬编码也已对齐，无需归一化。
+
+
+def build_group_options(
+    *,
+    style: int = 0,
+    max_count: int | None = None,
+    invite_need_confirm: bool = False,
+    ext: str = "auto-ext",
+) -> dict:
+    """构造 Group options；未显式指定容量时采用当前运行场景。"""
+    if max_count is None:
+        max_count = get_group_create_max_count()
+    return {
+        "style": style,
+        "maxCount": max_count,
+        "inviteNeedConfirm": invite_need_confirm,
+        "ext": ext,
+    }
 
 
 def new_group_name(prefix: str = "auto_group") -> str:
@@ -655,10 +674,11 @@ def assert_group_snapshot(
     mute_list_value: list[str] | None = None,
     allow_list_value: list[str] | None = None,
     is_member_allow_to_invite: bool = False,
+    is_public: bool = False,
+    join_approval_required: bool = False,
     is_all_member_muted: bool = False,
     message_blocked: bool = False,
     permission_type: int = 2,
-    is_member_only: bool = True,
     device: str = "deviceA",
 ) -> None:
     expected_result = {
@@ -676,7 +696,8 @@ def assert_group_snapshot(
         "isDisabled": False,
         "isAllMemberMuted": is_all_member_muted,
         "permissionType": permission_type,
-        # 5.0 移除 isMemberOnly 字段（wrapper 注释：5.0 移除 isMemberOnly 权限判断）
+        "isPublic": is_public,
+        "joinApprovalRequired": join_approval_required,
         "isMemberAllowToInvite": is_member_allow_to_invite,
         "messageBlocked": message_blocked,
     }
@@ -798,14 +819,15 @@ def create_group(
         owner=owner,
         member_count_value=(1 + len(invite_members) if expected_member_count is None else expected_member_count),
         max_user_count_value=max_count,
-        # 5.0: 允许成员邀请 = EMGroupConfigs.allowInvites = (style != 0)（style 1/2/3 允许，0 不允许）
+        # 官方迁移表 6.1：仅 style=1（PrivateMemberCanInvite）allowInvites=true；style 0/2/3 → false
         # 快照返回的 isMemberAllowToInvite 由服务端按 allowInvites 决定；可显式传参覆盖
         is_member_allow_to_invite=(
             is_member_allow_to_invite
             if is_member_allow_to_invite is not None
-            else (style != 0)
+            else (style == 1)
         ),
-        is_member_only=(style != 3),
+        is_public=style in (2, 3),
+        join_approval_required=style == 2,
         device=device_name,
     )
     return gid, resp_create

@@ -148,11 +148,14 @@ public class Wrapper implements MethodChannel.MethodCallHandler {
 
   public void onSuccess(MethodChannel.Result result, String channelName, Object object) {
     post(()-> {
-      Map<String, Object> data = new HashMap<>();
-      if (object != null) {
+      if (object == null) {
+        // object=null（无返回）→ 提交真 null（对齐 Dart 业务层归一化语义；此前空 Map {} 靠 response_match None=={} 兼容）
+        result.success(null);
+      } else {
+        Map<String, Object> data = new HashMap<>();
         data.put(channelName, object);
+        result.success(data);
       }
-      result.success(data);
     });
   }
 

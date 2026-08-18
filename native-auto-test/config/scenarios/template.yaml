@@ -1,0 +1,67 @@
+# =============================================================
+# Scenario 模板（copy 本文件到 config/scenarios/ 改名即用）
+# 场景名 = 文件名（--scenario 传文件名省略 .yaml）；name 只是 Allure 显示名
+# 首次使用：改 devices 的 serial（按 adb devices）+ rest_api 相关（见 config.yaml）
+# =============================================================
+
+name: my-scenario                # Allure 显示名（可任意，与文件名无关）
+
+accounts:
+  # 逻辑账号；case 里 user_a/user_b/user_c 对应 account_a/b/c
+  # provision=rest：用 REST 自动创建测试账号（跑完删除）
+  account_a:
+    provision: rest
+  account_b:
+    provision: rest
+  # account_c:
+  #   provision: rest            # 三账号场景再加（需配套设备）
+
+devices:
+  # 每个 device = 一个端（模拟器 + App）；role 名 = case 的 fixture 名
+  # 同 account = 多端在线（同账号双端同步）；serial 按 adb devices 实际改
+  device_a:
+    device_name: deviceA
+    platform: android            # android / ios / web
+    sdk_version: 5.0.0           # 对应 artifacts.yaml 的产物版本
+    account: account_a
+    serial: emulator-5554
+
+  device_a_sec:
+    device_name: deviceASec
+    platform: android
+    sdk_version: 5.0.0
+    account: account_a           # 同账号第二端（验证多端同步）
+    serial: emulator-5556
+
+  device_b:
+    device_name: deviceB
+    platform: android
+    sdk_version: 5.0.0
+    account: account_b
+    serial: emulator-5558
+
+  device_b_sec:
+    device_name: deviceBSec
+    platform: android
+    sdk_version: 5.0.0
+    account: account_b
+    serial: emulator-5560
+
+topologies:
+  # 具名拓扑；case 用 @pytest.mark.topology("account_a_to_account_b") 引用
+  # case 遍历 sender_devices/recipient_devices（场景增减端 case 不改）
+  account_a_to_account_b:
+    sender:
+      account: account_a
+      action_device: device_a    # 动作端：唯一调用 API 的端
+      include_all_devices: true  # true=含发送账号全部端（验证多端同步）；false=只含动作端
+    recipient:
+      account: account_b
+      action_device: device_b    # 接收动作端：回执/已读等后续动作由它执行（接收端默认全端）
+
+runner:
+  start_emulators: false         # true=自动启动模拟器（需 avd）；false=预先手动启动
+  device_ready_timeout: 180      # 设备/App 就绪等待秒数
+  hello_timeout: 30              # App 与本地 server 握手超时
+  start_retry: 1                 # App 启动重试次数
+  keep_device_alive: true        # true=跑完保留模拟器（方便复跑）

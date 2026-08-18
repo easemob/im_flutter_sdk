@@ -369,15 +369,17 @@ def test_chat_get_pinned_conversations_from_server_with_cursor_success(device_a,
         Cmd.getPinnedConversationsFromServerWithCursor.value,
         info=info,
     )
+    # 5.0 返回纯 list（本地缓存，数量不定）→ 锁类型，不整体忽略 result
+    pinned_result = resp.get("result")
+    assert isinstance(pinned_result, list), f"getPinned 返回非 list: {resp}"
     assert_api.assert_response_matches(
         resp,
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.getPinnedConversationsFromServerWithCursor.value,
             "device": "deviceA",
-            # 5.0 返回纯 list（本地缓存，数量不定）→ 只断言成功 + list
         },
-        ignore_keys={"sequence", "result"},
+        ignore_keys={"sequence"},
     )
 
 
@@ -390,15 +392,17 @@ def test_chat_get_pinned_conversations_from_server_with_cursor_invalid_page_size
         Cmd.getPinnedConversationsFromServerWithCursor.value,
         info=info,
     )
+    # 5.0 返回纯 list（本地缓存，数量不定）→ 锁类型，不整体忽略 result
+    pinned_result = resp.get("result")
+    assert isinstance(pinned_result, list), f"getPinned 返回非 list: {resp}"
     assert_api.assert_response_matches(
         resp,
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.getPinnedConversationsFromServerWithCursor.value,
             "device": "deviceA",
-            # 5.0 返回纯 list（本地缓存，数量不定）→ 只断言成功 + list
         },
-        ignore_keys={"sequence", "result"},
+        ignore_keys={"sequence"},
     )
 
 
@@ -411,15 +415,17 @@ def test_chat_get_pinned_conversations_from_server_with_cursor_invalid_page_size
         Cmd.getPinnedConversationsFromServerWithCursor.value,
         info=info,
     )
+    # 5.0 返回纯 list（本地缓存，数量不定）→ 锁类型，不整体忽略 result
+    pinned_result = resp.get("result")
+    assert isinstance(pinned_result, list), f"getPinned 返回非 list: {resp}"
     assert_api.assert_response_matches(
         resp,
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.getPinnedConversationsFromServerWithCursor.value,
             "device": "deviceA",
-            # 5.0 返回纯 list（本地缓存，数量不定）→ 只断言成功 + list
         },
-        ignore_keys={"sequence", "result"},
+        ignore_keys={"sequence"},
     )
 
 

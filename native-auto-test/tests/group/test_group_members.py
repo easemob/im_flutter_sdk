@@ -166,7 +166,7 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
         resp_get_after_add = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
-            info={"groupId": group_id, "fetchMembers": True},
+            info={"groupId": group_id},
         )
         assert_group_snapshot(
             assert_api,
@@ -291,7 +291,7 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
         resp_get_after_remove = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
-            info={"groupId": group_id, "fetchMembers": True},
+            info={"groupId": group_id},
         )
         assert_group_snapshot(
             assert_api,
@@ -309,146 +309,121 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
             destroy_group(device_a, assert_api, group_id)
 
 
-def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_group_join_and_leave_public_group(topology, assert_api):
     """
-    前置：A/B 已登录，B 不是目标群成员。
-    步骤：
-    1. A 使用 PublicOpenJoin 对应的真实枚举 style=3 创建公开群。
-    2. B 调用 joinPublicGroup，A/B 分别收集真实加入事件并由 A 拉取服务端成员快照。
-    3. B 调用 leaveGroup，A/B 分别收集真实退出事件并再次拉取服务端快照。
-    预期与断言：join/leave 同步响应成功；加入后 memberCount=2 且包含 B，退出后
-    memberCount=1 且不包含 B；双方事件类型和 data 字段按 discovery ADB 日志收紧。
+    多端拓扑：A 建 PublicOpenJoin 公开群，B 加入/退出；成员事件同步到 A 全部在线端，A 全部端查询成员快照一致。
     """
+    sender = topology.sender_action_device
+    joiner = topology.recipient_action_device
+    owner_user = topology.sender_user
+    member_user = topology.recipient_user
+
     group_name = new_group_name("public")
     group_id = ""
     try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=group_name,
-            invite_members=[],
-            style=3,
-            # 5.0 实测：建群默认 isMemberAllowToInvite=True（4.23 默认 False）
-            is_member_allow_to_invite=True,
-        )
+        with _allure_step(f"{sender.device_name} 建 PublicOpenJoin 公开群"):
+            group_id, _ = create_group(
+                sender,
+                assert_api,
+                owner=owner_user,
+                group_name=group_name,
+                invite_members=[],
+                style=3,
+                # 官方迁移表 6.1：仅 style=1 allowInvites=true；style=3（公开自由加入）→ false
+                is_member_allow_to_invite=False,
+            )
 
-        resp_join = device_b.call("GroupManager", Cmd.joinPublicGroup.value, info={"groupId": group_id})
-        assert_api.assert_response_matches(
-            resp_join,
-            expected={
-                "manager": "GroupManager",
-                "cmd": Cmd.joinPublicGroup.value,
-                "device": "deviceB",
-                "result": None,
-            },
-            ignore_keys={"sequence"},
-        )
+        with _allure_step(f"{joiner.device_name} 加入公开群"):
+            resp_join = joiner.call("GroupManager", Cmd.joinPublicGroup.value, info={"groupId": group_id})
+        with _allure_step("确认加入请求已提交"):
+            assert_api.assert_response_matches(
+                resp_join,
+                expected={
+                    "manager": "GroupManager",
+                    "cmd": Cmd.joinPublicGroup.value,
+                    "device": joiner.device_name,
+                    "result": None,
+                },
+                ignore_keys={"sequence"},
+            )
 
         joined_event_types = {"onGroupMembersJoined"}  # 5.0 只派发批量事件
-        # 5.0 实测：成员加入只派发批量事件 onGroupMembersJoined（单成员事件不派发）
-        owner_join_events = collect_group_events(
-            device_a,
-            expected_event_types=joined_event_types,
-            group_id=group_id,
-            required_all_event_types={"onGroupMembersJoined"},
-            timeout=10.0,
-        )
-        owner_join_by_type = {event["eventType"]: event for event in owner_join_events}
-        assert_api.assert_response_matches(
-            owner_join_by_type["onGroupMembersJoined"],
-            expected={
-                "type": "event",
-                "eventType": "onGroupMembersJoined",
-                "data": {"groupId": group_id, "userIds": [user_b]},
-            },
-            ignore_keys={"timestamp", "sequence"},
-        )
-        # 5.0 只派发批量事件（onGroupMembersJoined），无单成员事件 onGroupMemberJoined → 不再断言；
-        # 加入者 B 端 5.0 也会收到 onGroupMembersJoined（自身加入的端同步）→ 改为验证 B 收到
-        b_join_events = collect_group_events(
-            device_b,
-            expected_event_types=joined_event_types,
-            group_id=group_id,
-            required_all_event_types={"onGroupMembersJoined"},
-            timeout=10.0,
-        )
-        assert b_join_events, f"B 端未收到自身加入的批量事件: {b_join_events}"
+        with _allure_step("A 全部在线端收到成员加入事件"):
+            for endpoint in topology.sender_devices:
+                owner_join_events = collect_group_events(
+                    endpoint,
+                    expected_event_types=joined_event_types,
+                    group_id=group_id,
+                    required_all_event_types={"onGroupMembersJoined"},
+                    timeout=10.0,
+                )
+                owner_join_by_type = {event["eventType"]: event for event in owner_join_events}
+                assert_api.assert_response_matches(
+                    owner_join_by_type["onGroupMembersJoined"],
+                    expected={
+                        "type": "event",
+                        "eventType": "onGroupMembersJoined",
+                        "data": {"groupId": group_id, "members": [member_user]},
+                    },
+                    ignore_keys={"timestamp", "sequence"},
+                )
+        with _allure_step("A 全部在线端查询成员快照均含 B（账号级服务端状态一致）"):
+            for endpoint in topology.sender_devices:
+                members_resp = endpoint.call(
+                    "GroupManager",
+                    Cmd.getGroupMemberListFromServer.value,
+                    info={"groupId": group_id, "pageSize": 20, "cursor": ""},
+                )
+                member_ids = [m.get("member") for m in (members_resp.get("result") or {}).get("list", [])]
+                assert member_user in member_ids, f"加入后成员快照缺少 B: member_user={member_user}, members={member_ids}"
 
-        resp_after_join = device_a.call(
-            "GroupManager",
-            Cmd.getGroupSpecificationFromServer.value,
-            info={"groupId": group_id},
-        )
-        assert_group_snapshot(
-            assert_api,
-            resp_after_join,
-            cmd=Cmd.getGroupSpecificationFromServer.value,
-            group_id=group_id,
-            group_name=group_name,
-            owner=user_a,
-            member_count_value=2,
-            member_list_value=[user_b],
-            # 5.0 建群/查询服务端默认 isMemberAllowToInvite=True
-            is_member_allow_to_invite=True,
-            is_member_only=False,
-        )
+        with _allure_step(f"{joiner.device_name} 退出公开群"):
+            resp_leave = joiner.call("GroupManager", Cmd.leaveGroup.value, info={"groupId": group_id})
+        with _allure_step("确认退出请求已提交"):
+            assert_api.assert_response_matches(
+                resp_leave,
+                expected={
+                    "manager": "GroupManager",
+                    "cmd": Cmd.leaveGroup.value,
+                    "device": joiner.device_name,
+                    "result": None,
+                },
+                ignore_keys={"sequence"},
+            )
 
-        resp_leave = device_b.call("GroupManager", Cmd.leaveGroup.value, info={"groupId": group_id})
-        assert_api.assert_response_matches(
-            resp_leave,
-            expected={
-                "manager": "GroupManager",
-                "cmd": Cmd.leaveGroup.value,
-                "device": "deviceB",
-                "result": True,
-            },
-            ignore_keys={"sequence"},
-        )
-
-        exited_event_types = {"onGroupMembersExited", "onGroupMemberExited"}
-        # 5.0 只派发批量事件 onGroupMembersExited（单成员事件不派发）
-        owner_exit_events = collect_group_events(
-            device_a,
-            expected_event_types=exited_event_types,
-            group_id=group_id,
-            required_all_event_types={"onGroupMembersExited"},
-            timeout=10.0,
-        )
-        owner_exit_by_type = {event["eventType"]: event for event in owner_exit_events}
-        assert_api.assert_response_matches(
-            owner_exit_by_type["onGroupMembersExited"],
-            expected={
-                "type": "event",
-                "eventType": "onGroupMembersExited",
-                "data": {"groupId": group_id, "userIds": [user_b]},
-            },
-            ignore_keys={"timestamp", "sequence"},
-        )
-        # 5.0 只派发批量事件（onGroupMembersExited），无单成员事件 → 不再断言 onGroupMemberExited
-        assert_no_group_event(device_b, group_id=group_id, event_types=exited_event_types)
-
-        resp_after_leave = device_a.call(
-            "GroupManager",
-            Cmd.getGroupSpecificationFromServer.value,
-            info={"groupId": group_id},
-        )
-        assert_group_snapshot(
-            assert_api,
-            resp_after_leave,
-            cmd=Cmd.getGroupSpecificationFromServer.value,
-            group_id=group_id,
-            group_name=group_name,
-            owner=user_a,
-            member_count_value=1,
-            member_list_value=[],
-            # 5.0 群属性不随成员退出变化（建群时 style=3 决定 allowInvites）→ 仍为 True
-            is_member_allow_to_invite=True,
-            is_member_only=False,
-        )
+        with _allure_step("A 全部在线端收到成员退出事件"):
+            for endpoint in topology.sender_devices:
+                owner_leave_events = collect_group_events(
+                    endpoint,
+                    expected_event_types={"onGroupMemberExited"},
+                    group_id=group_id,
+                    required_all_event_types={"onGroupMemberExited"},
+                    timeout=10.0,
+                )
+                owner_leave_by_type = {event["eventType"]: event for event in owner_leave_events}
+                assert_api.assert_response_matches(
+                    owner_leave_by_type["onGroupMemberExited"],
+                    expected={
+                        "type": "event",
+                        "eventType": "onGroupMemberExited",
+                        "data": {"groupId": group_id, "member": member_user},
+                    },
+                    ignore_keys={"timestamp", "sequence"},
+                )
+        with _allure_step("A 全部在线端查询成员快照均不含 B"):
+            for endpoint in topology.sender_devices:
+                members_resp = endpoint.call(
+                    "GroupManager",
+                    Cmd.getGroupMemberListFromServer.value,
+                    info={"groupId": group_id, "pageSize": 20, "cursor": ""},
+                )
+                member_ids = [m.get("member") for m in (members_resp.get("result") or {}).get("list", [])]
+                assert member_user not in member_ids, f"退出后成员快照仍含 B: member_user={member_user}, members={member_ids}"
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id)
+            destroy_group(sender, assert_api, group_id)
+
 
 
 def test_group_join_public_group_rejects_private_member_invite_group(

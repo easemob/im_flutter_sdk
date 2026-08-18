@@ -52,7 +52,7 @@ def _fetch_group(device, assert_api, *, group_id: str, group_name: str, owner: s
     response = device.call(
         "GroupManager",
         Cmd.getGroupSpecificationFromServer.value,
-        info={"groupId": group_id, "fetchMembers": True},
+        info={"groupId": group_id},
     )
     assert_group_snapshot(
         assert_api,
@@ -65,8 +65,9 @@ def _fetch_group(device, assert_api, *, group_id: str, group_name: str, owner: s
         admin_list_value=admins,
         block_list_value=block_list,
         max_user_count_value=max_count,
-        is_member_allow_to_invite=(style != 0),  # 5.0 allowInvites = style 1/2/3（style!=0）
-        is_member_only=(style != 3),
+        is_member_allow_to_invite=(style == 1),  # 5.0 allowInvites 仅 style=1
+        is_public=style in (2, 3),
+        join_approval_required=style == 2,
         device=device_name,
     )
     assert_group_members_exact(response, members, err_prefix="服务端群成员快照")

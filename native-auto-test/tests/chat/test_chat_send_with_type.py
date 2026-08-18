@@ -257,6 +257,8 @@ def _assert_send_success_and_events(topology, assert_api, *, content: str, targe
                     "convId": "{{toUser}}",
                     "chatType": 0,
                     "direction": 0,
+                    # text 发送响应 status 实测 0（CREATE）
+                    "status": 0,
                     "deliverOnlineOnly": False,
                     "hasRead": True,
                     "needReadReceipt": False, "isThread": False,
@@ -267,7 +269,6 @@ def _assert_send_success_and_events(topology, assert_api, *, content: str, targe
             context={"tempId": resp_temp_id, "fromUser": sender_user, "toUser": recipient_user, "content": content},
             ignore_keys={
                 "sequence",
-                "status",
                 "serverTime",
                 "localTime",
                 "broadcast",

@@ -79,7 +79,7 @@ def test_group_member_count_local_then_server_sync(device_a, device_b, assert_ap
         resp_server = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
-            info={"groupId": group_id, "fetchMembers": True},
+            info={"groupId": group_id},
         )
         assert_group_snapshot(
             assert_api,

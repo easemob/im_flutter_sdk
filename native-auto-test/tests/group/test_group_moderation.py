@@ -31,7 +31,7 @@ _NONEXISTENT_GROUP_ID = "nonexistent_group_999999"
 
 
 def _group_state(device_a, assert_api, group_id: str):
-    resp = device_a.call("GroupManager", Cmd.getGroupSpecificationFromServer.value, info={"groupId": group_id, "fetchMembers": True})
+    resp = device_a.call("GroupManager", Cmd.getGroupSpecificationFromServer.value, info={"groupId": group_id})
     assert_api.assert_response_matches(
         resp,
         expected={

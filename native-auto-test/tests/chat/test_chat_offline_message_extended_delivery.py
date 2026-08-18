@@ -6,6 +6,11 @@ import time
 
 import pytest
 
+# 5.0：hasDeliverAck = isDelivered()（值场景相关：离线收、下载后均不恒定）→ 统一进 ignore
+_DELIVERY_SKIP_KEYS = {"hasDeliverAck"}
+# 5.0 送达回执需发送时标记 needReadReceipt=true（否则服务端不发送达确认）→ 接收/断言需忽略默认 False 锁值
+_DELIVERY_FLAG_KEYS = {"needReadReceipt"}
+
 from src import Cmd
 from src.test_flow.offline_test_flow import (
     login_preserving_offline_events,
@@ -32,28 +37,28 @@ _TYPED_DELIVERY_CASES = [
     pytest.param(
         "file",
         {"targetId": "{{userB}}"},
-        {"type": 5, "displayName": "bigPic.jpg", "fileStatus": 3},
+        {"type": 5, "displayName": "bigPic.jpg", "fileStatus": 0},
         _MEDIA_DYNAMIC_KEYS,
         id="file",
     ),
     pytest.param(
         "image",
         {"targetId": "{{userB}}", "thumbnailLocalPath": ""},
-        {"type": 1, "displayName": "bigPic.jpg", "fileStatus": 3},
+        {"type": 1, "displayName": "bigPic.jpg", "fileStatus": 0},
         _MEDIA_DYNAMIC_KEYS,
         id="image",
     ),
     pytest.param(
         "video",
         {"targetId": "{{userB}}", "thumbnailLocalPath": ""},
-        {"type": 2, "displayName": "video.mov", "fileStatus": 3, "duration": 0},
+        {"type": 2, "displayName": "video.mov", "fileStatus": 0, "duration": 0},
         _MEDIA_DYNAMIC_KEYS,
         id="video",
     ),
     pytest.param(
         "voice",
         {"targetId": "{{userB}}", "duration": 1},
-        {"type": 4, "displayName": "voice.mp3", "fileStatus": 3, "duration": 1},
+        {"type": 4, "displayName": "voice.mp3", "fileStatus": 0, "duration": 1},
         _MEDIA_DYNAMIC_KEYS,
         id="voice",
     ),
@@ -97,7 +102,8 @@ _OFFLINE_DOWNLOAD_CASES = [
     pytest.param(
         "file",
         {"targetId": "{{userB}}"},
-        {"type": 5, "displayName": "bigPic.jpg", "fileStatus": 3},
+        {"type": 5, "displayName": "bigPic.jpg", "fileStatus": 0},
+        {"type": 5, "displayName": "bigPic.jpg", "fileStatus": 0},
         {"type": 5, "displayName": "bigPic.jpg", "fileStatus": 3},
         [Cmd.downloadAttachment.value],
         id="file-attachment",
@@ -105,7 +111,8 @@ _OFFLINE_DOWNLOAD_CASES = [
     pytest.param(
         "image",
         {"targetId": "{{userB}}", "thumbnailLocalPath": ""},
-        {"type": 1, "displayName": "bigPic.jpg", "fileStatus": 3},
+        {"type": 1, "displayName": "bigPic.jpg", "fileStatus": 0},
+        {"type": 1, "displayName": "bigPic.jpg", "fileStatus": 0},
         {"type": 1, "displayName": "bigPic.jpg", "fileStatus": 3},
         [Cmd.downloadAttachment.value, Cmd.downloadThumbnail.value],
         id="image-attachment-thumbnail",
@@ -113,7 +120,8 @@ _OFFLINE_DOWNLOAD_CASES = [
     pytest.param(
         "video",
         {"targetId": "{{userB}}", "thumbnailLocalPath": ""},
-        {"type": 2, "displayName": "video.mov", "fileStatus": 3, "duration": 0},
+        {"type": 2, "displayName": "video.mov", "fileStatus": 0, "duration": 0},
+        {"type": 2, "displayName": "video.mov", "fileStatus": 0, "duration": 0},
         {"type": 2, "displayName": "video.mov", "fileStatus": 3, "duration": 0},
         [Cmd.downloadAttachment.value, Cmd.downloadThumbnail.value],
         id="video-attachment-thumbnail",
@@ -121,7 +129,8 @@ _OFFLINE_DOWNLOAD_CASES = [
     pytest.param(
         "voice",
         {"targetId": "{{userB}}", "duration": 1},
-        {"type": 4, "displayName": "voice.mp3", "fileStatus": 3, "duration": 1},
+        {"type": 4, "displayName": "voice.mp3", "fileStatus": 0, "duration": 1},
+        {"type": 4, "displayName": "voice.mp3", "fileStatus": 0, "duration": 1},
         {"type": 4, "displayName": "voice.mp3", "fileStatus": 0, "duration": 1},
         [Cmd.downloadAttachment.value],
         id="voice-attachment",
@@ -140,6 +149,51 @@ def _body_for_case(type_key: str, payload: dict, expected_body: dict, marker: st
         body["event"] = f"{expected_body['event']}-{marker}"
         payload["event"] = body["event"]
     return body
+
+
+def _assert_delivered_message(
+    assert_api,
+    event: dict,
+    *,
+    real_id: str,
+    user_a: str,
+    user_b: str,
+    body: dict,
+    ignore_keys: set[str],
+) -> None:
+    # 5.0：hasReadAck/needGroupAck 无此字段（已删）；送达回执需 needReadReceipt=true；实证字段值：
+    # needReadReceipt=True、isPeerRead=False（��达时对方未读）、readReceiptCount=0、hasDeliverAck=True
+    assert_api.assert_response_matches(
+        event,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessagesDelivered.value,
+            "data": {
+                "messages": [
+                    {
+                        "msgId": real_id,
+                        "from": user_a,
+                        "to": user_b,
+                        "convId": user_b,
+                        "chatType": 0,
+                        "direction": 0,
+                        "status": 2,
+                        "hasRead": True,
+                        "hasDeliverAck": True,
+                        "needReadReceipt": True,
+                        "isPeerRead": False,
+                        "readReceiptCount": 0,
+                        "isThread": False,
+                        "isContentReplaced": False,
+                        "deliverOnlineOnly": False,
+                        "body": body,
+                    }
+                ]
+            },
+        },
+        # 发送方消息 body.fileStatus 实测恒 0（官方 4.x 锁 3，5.0 状态机变化已记录）→ 锁 0（body 参数已为 0）
+        ignore_keys=ignore_keys,
+    )
 
 
 def _message_from_event(event: dict, *, real_id: str) -> dict:
@@ -191,15 +245,13 @@ def _assert_download_response(
                 "direction": 1,
                 "status": 2,
                 "hasRead": False,
-                "hasReadAck": False,
-                "hasDeliverAck": True,
-                "needGroupAck": False,
                 "isThread": False,
                 "isContentReplaced": False,
                 "body": body,
             },
         },
-        ignore_keys=_MEDIA_DYNAMIC_KEYS | {"sequence"},
+        # 5.0：hasReadAck/needGroupAck 无此字段（已删）；hasDeliverAck=isDelivered() 下载后仍 False（场景相关）→ ignore
+        ignore_keys=_MEDIA_DYNAMIC_KEYS | {"sequence", "hasDeliverAck"},
     )
 
 
@@ -228,9 +280,6 @@ def _assert_download_success_event(
                     "direction": 1,
                     "status": 2,
                     "hasRead": False,
-                    "hasReadAck": False,
-                    "hasDeliverAck": True,
-                    "needGroupAck": False,
                     "isThread": False,
                     "isContentReplaced": False,
                     "deliverOnlineOnly": False,
@@ -238,11 +287,11 @@ def _assert_download_success_event(
                 },
             },
         },
-        ignore_keys=_MEDIA_DYNAMIC_KEYS,
+        # 5.0：hasReadAck/needGroupAck 无此字段；hasDeliverAck 下载后仍 False（场景相关）→ ignore
+        ignore_keys=_MEDIA_DYNAMIC_KEYS | {"hasDeliverAck"},
     )
 
 
-@pytest.mark.skip(reason="5.0 无送达回执机制（onMessagesDelivered 不触发，已实证）—— 送达回执验证无意义")
 @pytest.mark.parametrize(("type_key", "payload_template", "expected_body", "ignore_keys"), _TYPED_DELIVERY_CASES)
 def test_chat_offline_typed_delivery_ack_after_recipient_login(
     device_a,
@@ -255,14 +304,20 @@ def test_chat_offline_typed_delivery_ack_after_recipient_login(
     expected_body,
     ignore_keys,
 ):
-    """B 离线时的类型消息仅在重登接收后触发 A 的真实送达回执。"""
+    """B 离线时的类型消息仅在重登接收后触发 A 的真实送达回执（需发送标记 needReadReceipt）。"""
     marker = uuid.uuid4().hex[:8]
     payload = {
         key: (user_b if value == "{{userB}}" else value)
         for key, value in payload_template.items()
     }
     body = _body_for_case(type_key, payload, expected_body, marker)
-    received_body = {**body, "fileStatus": 0} if type_key == "voice" else body
+    # 发送侧媒体状态与接收侧离线回放状态不同；location/custom 不包含 fileStatus。
+    if type_key in {"file", "image", "video"}:
+        received_body = {**body, "fileStatus": 3}
+    elif type_key == "voice":
+        received_body = {**body, "fileStatus": 0}
+    else:
+        received_body = body
     try:
         _prepare_offline_friend(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
         _, real_id, _ = _assert_send_response_and_success(
@@ -275,6 +330,7 @@ def test_chat_offline_typed_delivery_ack_after_recipient_login(
             response_body=body,
             success_body=body,
             ignore_keys=ignore_keys,
+            need_read_receipt=True,
         )
         login_preserving_offline_events(device_b, assert_api, device_name="deviceB", user_id=user_b)
         received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id)
@@ -286,7 +342,7 @@ def test_chat_offline_typed_delivery_ack_after_recipient_login(
             user_a=user_a,
             user_b=user_b,
             body=received_body,
-            ignore_keys=ignore_keys,
+            ignore_keys=ignore_keys | _DELIVERY_FLAG_KEYS,
         )
         delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id)
         _assert_delivered_message(
@@ -303,7 +359,14 @@ def test_chat_offline_typed_delivery_ack_after_recipient_login(
 
 
 @pytest.mark.parametrize(
-    ("type_key", "payload_template", "sent_body", "received_body", "download_cmds"),
+    (
+        "type_key",
+        "payload_template",
+        "response_body",
+        "success_body",
+        "received_body",
+        "download_cmds",
+    ),
     _OFFLINE_DOWNLOAD_CASES,
 )
 def test_chat_offline_received_media_downloads_after_recipient_login(
@@ -314,7 +377,8 @@ def test_chat_offline_received_media_downloads_after_recipient_login(
     user_b,
     type_key,
     payload_template,
-    sent_body,
+    response_body,
+    success_body,
     received_body,
     download_cmds,
 ):
@@ -332,8 +396,8 @@ def test_chat_offline_received_media_downloads_after_recipient_login(
             payload=payload,
             user_a=user_a,
             user_b=user_b,
-            response_body=sent_body,
-            success_body=sent_body,
+            response_body=response_body,
+            success_body=success_body,
             ignore_keys=_MEDIA_DYNAMIC_KEYS,
         )
         login_preserving_offline_events(
@@ -380,9 +444,7 @@ def test_chat_offline_received_media_downloads_after_recipient_login(
                         "sequence",
                         "status",
                         "hasRead",
-                        "hasReadAck",
                         "hasDeliverAck",
-                        "needGroupAck",
                         "isThread",
                         "isContentReplaced",
                         "deliverOnlineOnly",
@@ -438,7 +500,6 @@ def test_chat_offline_received_media_downloads_after_recipient_login(
         _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
 
 
-@pytest.mark.skip(reason="5.0 无送达回执机制（onMessagesDelivered 不触发，已实证）—— 送达回执验证无意义")
 def test_chat_offline_combine_delivery_ack_after_recipient_login(
     device_a,
     device_b,
@@ -446,7 +507,7 @@ def test_chat_offline_combine_delivery_ack_after_recipient_login(
     user_a,
     user_b,
 ):
-    """真实源消息组成 combine；B 离线重登接收后 A 才收到送达回执。"""
+    """真实源消息组成 combine；B 离线重登接收后 A 才收到送达回执（源消息与 combine 均需标记 needReadReceipt）。"""
     marker = uuid.uuid4().hex[:8]
     title = f"offline-delivery-combine-{marker}"
     summary = "offline combine delivery summary"
@@ -465,6 +526,7 @@ def test_chat_offline_combine_delivery_ack_after_recipient_login(
                 user_b=user_b,
                 response_body={"type": 0, "content": content},
                 success_body={"type": 0, "content": content, "translations": {}},
+                need_read_receipt=True,
             )
             received_source = _wait_message_event(
                 device_b, Cmd.onMessagesReceived.value, real_id=source_id
@@ -477,6 +539,7 @@ def test_chat_offline_combine_delivery_ack_after_recipient_login(
                 user_a=user_a,
                 user_b=user_b,
                 body={"type": 0, "content": content, "translations": {}},
+                ignore_keys=_DELIVERY_FLAG_KEYS,
             )
             _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=source_id)
             source_ids.append(source_id)
@@ -501,7 +564,7 @@ def test_chat_offline_combine_delivery_ack_after_recipient_login(
                 "title": title,
                 "summary": summary,
                 "compatibleText": compatible_text,
-                "fileStatus": 3,
+                "fileStatus": 0,
             },
             success_body={
                 "type": 8,
@@ -511,6 +574,7 @@ def test_chat_offline_combine_delivery_ack_after_recipient_login(
                 "fileStatus": 1,
             },
             ignore_keys=_COMBINE_DYNAMIC_KEYS,
+            need_read_receipt=True,
         )
         login_preserving_offline_events(
             device_b, assert_api, device_name="deviceB", user_id=user_b
@@ -533,7 +597,7 @@ def test_chat_offline_combine_delivery_ack_after_recipient_login(
             user_a=user_a,
             user_b=user_b,
             body=received_body,
-            ignore_keys=_COMBINE_DYNAMIC_KEYS,
+            ignore_keys=_COMBINE_DYNAMIC_KEYS | _DELIVERY_FLAG_KEYS,
         )
         delivered = _wait_message_event(
             device_a, Cmd.onMessagesDelivered.value, real_id=real_id
@@ -565,7 +629,8 @@ def test_chat_offline_text_automatic_translation_after_recipient_login(
     user_b,
 ):
     """带 targetLanguages 的文本在 B 离线期间发送，重登后保留真实翻译结果。"""
-    suffix = uuid.uuid4().hex[:8]
+    # 翻译引擎会把内容中的英文后缀转大写（实测）→ 后缀用数字保证翻译结果可预测
+    suffix = str(int(time.time_ns() % 100000000))
     content = f"offline-translation-{suffix}"
     body = {
         "type": 0,
@@ -715,7 +780,7 @@ def test_chat_offline_mixed_backlog_local_state_after_recipient_login(
             response_body={"type": 0, "content": text_body["content"]},
             success_body=text_body,
         )
-        messages.append((text_id, text_body, _MESSAGE_DYNAMIC_KEYS))
+        messages.append((text_id, text_body, _MESSAGE_DYNAMIC_KEYS | _DELIVERY_SKIP_KEYS))
         _, location_id, _ = _assert_send_response_and_success(
             device_a,
             assert_api,
@@ -726,7 +791,7 @@ def test_chat_offline_mixed_backlog_local_state_after_recipient_login(
             response_body=location_body,
             success_body=location_body,
         )
-        messages.append((location_id, location_body, _MESSAGE_DYNAMIC_KEYS))
+        messages.append((location_id, location_body, _MESSAGE_DYNAMIC_KEYS | _DELIVERY_SKIP_KEYS))
         _, custom_id, _ = _assert_send_response_and_success(
             device_a,
             assert_api,
@@ -737,7 +802,7 @@ def test_chat_offline_mixed_backlog_local_state_after_recipient_login(
             response_body=custom_body,
             success_body=custom_body,
         )
-        messages.append((custom_id, custom_body, _MESSAGE_DYNAMIC_KEYS))
+        messages.append((custom_id, custom_body, _MESSAGE_DYNAMIC_KEYS | _DELIVERY_SKIP_KEYS))
         _, combine_id, _ = _assert_send_response_and_success(
             device_a,
             assert_api,
@@ -751,11 +816,11 @@ def test_chat_offline_mixed_backlog_local_state_after_recipient_login(
             },
             user_a=user_a,
             user_b=user_b,
-            response_body={**combine_sender_body, "fileStatus": 3},
+            response_body={**combine_sender_body, "fileStatus": 0},
             success_body=combine_sender_body,
             ignore_keys=_COMBINE_DYNAMIC_KEYS,
         )
-        messages.append((combine_id, combine_received_body, _COMBINE_DYNAMIC_KEYS))
+        messages.append((combine_id, combine_received_body, _COMBINE_DYNAMIC_KEYS | _DELIVERY_SKIP_KEYS))
         expected_by_id = {
             message_id: {
                 "msgId": message_id,
@@ -766,9 +831,6 @@ def test_chat_offline_mixed_backlog_local_state_after_recipient_login(
                 "direction": 1,
                 "status": 2,
                 "hasRead": False,
-                "hasReadAck": False,
-                "hasDeliverAck": True,
-                "needGroupAck": False,
                 "isThread": False,
                 "isContentReplaced": False,
                 "deliverOnlineOnly": False,
@@ -805,7 +867,7 @@ def test_chat_offline_mixed_backlog_local_state_after_recipient_login(
                     "eventType": Cmd.onMessagesReceived.value,
                     "data": {"messages": [expected_by_id[mid] for mid in actual_ids]},
                 },
-                ignore_keys=_COMBINE_DYNAMIC_KEYS,
+                ignore_keys=_COMBINE_DYNAMIC_KEYS | _DELIVERY_SKIP_KEYS,
             )
             pending.difference_update(target_ids)
         assert pending == set(), f"B 上线后缺少混合离线消息: {sorted(pending)}"

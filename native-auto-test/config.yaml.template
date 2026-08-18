@@ -1,31 +1,34 @@
-# 默认由 native-auto-test 自动启动 WS；无需配置 base_url/topic。
+# =============================================================
+# native-auto-test 配置文件（copy 为 config.yaml 后按需修改）
+# 必配项：rest_api（base_url + auth_token）+ sdk_options.app_key
+# websocket：managed 模式默认即可，topic 由框架按 runId/逻辑设备自动生成，不用配置
+# =============================================================
+
+# WebSocket：默认 managed（native-auto-test 自动启动本地 WS server）
 websocket:
   mode: managed
   bind_host: "0.0.0.0"
-  port: 0
+  port: 0                 # 0=自动分配端口
   connect_timeout: 10
   response_timeout: 30
-
-# 兼容旧外部 relay 时改为 external；topic 由框架按 runId/逻辑设备生成。
+# 兼容旧外部 relay 时才改 external + base_url（一般不使用）
 # websocket:
 #   mode: external
 #   base_url: "ws://host:port/iov/websocket/dual"
 
-# REST 用户管理（创建/删除用户，用于 presence 等用例的临时账号）
+# REST 用户管理（【必配】创建/删除测试账号；presence/好友等 case 需要）
 rest_api:
   base_url: "http://a1.easemob.com/your_org_name/your_app_name"
   auth_token: "Bearer Token"
-  verify_ssl: false  # 临时绕过证书校验（仅测试环境使用）
+  verify_ssl: false        # 仅测试环境临时绕过证书校验
 
-# Flutter SDK EMOptions 配置（与 main.dart 中 EMOptions.withAppKey 参数一一对应）
-# 脚本 sync_sdk_config.py 会读取此节并生成 Dart 配置文件注入到 Flutter example 中
+# Flutter SDK EMOptions 配置（【必配 app_key】与 im_flutter_test 被测 App 的 appKey 对应）
+# 脚本 sync_sdk_config.py 会读取此节生成 Dart 配置注入被测 App
 sdk_options:
   app_key: "your_org_name#your_app_name"
   # rest_server: "https://a1-hsb.easemob.com"
   # im_server: "42.193.118.34"
   # im_port: 6717
-  # web_socket_server: "im-api-new-hsb.easemob.com"
-  # web_socket_port: 80
   auto_login: true
   debug_mode: true
   enable_dns_config: true

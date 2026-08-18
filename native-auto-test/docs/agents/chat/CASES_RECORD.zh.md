@@ -106,7 +106,7 @@
 
 正常 cases
 31. `tests/chat/test_chat_crud.py::test_chat_ack_message_read_success`
-   场景拓扑：B 发消息后，A 主/副端均收到；A 主端回执已读，B 断言 `onMessagesRead`。冻结同步响应 `result=True` 与发送方已读事件；本轮 Android 4.23 真实设备通过。
+   场景拓扑：B 发消息后，A 主/副端均收到；A 主端回执已读，B 断言 `onMessagesRead`。5.0 使用 `needReadReceipt` 表示请求已读回执、`isPeerRead` 表示对方是否已读；当前修改待 Android 5.0 实机回归。
 32. `tests/chat/test_chat_ack_read_strict.py::test_chat_ack_message_read_success_with_event`
    已读回执成功后按当前 Android 实测冻结同步响应 `result=True`，并补充校验发送方已读事件。
 33. `tests/chat/test_chat_s3_non_message_ops.py::test_chat_ack_conversation_read_success_with_event`

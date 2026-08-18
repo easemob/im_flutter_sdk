@@ -120,7 +120,6 @@ base:
   - Client.kickDevice
   - Client.login
   - Client.logout
-  - Client.onDatabaseOpened
   - Client.renewToken
   - Client.sendFCMTokenToServer
   - Client.sendHonorPushTokenToServer

@@ -938,7 +938,7 @@ def test_group_message_send_rejects_non_member_states(
         snapshot = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
-            info={"groupId": group_id, "fetchMembers": True},
+            info={"groupId": group_id},
         )
         assert_group_snapshot(
             assert_api,

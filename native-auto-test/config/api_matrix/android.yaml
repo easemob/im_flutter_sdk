@@ -126,9 +126,6 @@ base:
   - Client.login
   - Client.logout
   - Client.notifyTokenExpired
-  - Client.onDataSyncFinish
-  - Client.onDataSyncStart
-  - Client.onDatabaseOpened
   - Client.renewToken
   - Client.sendFCMTokenToServer
   - Client.sendHonorPushTokenToServer

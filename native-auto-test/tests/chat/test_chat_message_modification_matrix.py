@@ -222,7 +222,6 @@ def _send_media(topology, assert_api, type_key):
 
 
 @pytest.mark.parametrize("type_key", ["voice", "image", "video"])
-@pytest.mark.skip(reason="5.0 不支持修改媒体消息（modifyMessage 媒体 305 'edit is not available'，4.23 支持）")
 @pytest.mark.topology("account_a_to_account_b")
 def test_chat_modify_media_attributes(topology, assert_api, type_key):
     message = _send_media(topology, assert_api, type_key)
@@ -287,5 +286,85 @@ def test_chat_modify_media_body_is_rejected(topology, assert_api, type_key):
         response,
         expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value, "device": "deviceA",
                   "result": {"code": 111, "description": "Unsupported operation"}},
+        ignore_keys={"sequence"},
+    )
+
+
+def _wait_changed(device, *, msg_id, timeout=30.0):
+    """等待消息修改事件（onMessageContentChanged）。"""
+    deadline = time.monotonic() + timeout
+    seen = []
+    while time.monotonic() < deadline:
+        event = device.receive_message(match_event_type=Cmd.onMessageContentChanged.value, timeout=2)
+        if event:
+            seen.append(event)
+        message = ((event or {}).get("data") or {}).get("message") or {}
+        if str(message.get("msgId")) == str(msg_id):
+            return event
+    pytest.fail(f"未收到消息修改事件: msgId={msg_id}, seen={seen}")
+
+
+@pytest.mark.parametrize("mode", ["body", "attributes", "body-and-attributes"])
+def test_chat_modify_text_body_and_attributes(device_a, device_b, assert_api, user_a, user_b, mode):
+    """官方结构移植：modifyMessage 修改正文/属性/两者。当前环境实测 305（edit not available，待研发）。"""
+    old_content = f"modify-text-old-{uuid.uuid4().hex[:6]}"
+    message = _send_text(device_a, device_b, assert_api, user_a, user_b, old_content)
+    time.sleep(float(os.getenv("CHAT_MODIFY_SETTLE_SECONDS", "5")))
+    new_content = f"modify-text-new-{uuid.uuid4().hex[:6]}"
+    attributes = {"editMode": mode, "revision": "1"}
+    info = {"msgId": message["msgId"]}
+    if mode != "attributes":
+        info["msgBody"] = {"type": 0, "content": new_content}
+    if mode != "body":
+        info["attributes"] = attributes
+    response = device_a.call("ChatManager", Cmd.modifyMessage.value, info=info)
+    expected_content = old_content if mode == "attributes" else new_content
+    expected_result = {
+        "msgId": message["msgId"], "from": user_a, "to": user_b, "convId": user_b,
+        "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
+        # 5.0：hasReadAck/needGroupAck 无；未设 flag → hasDeliverAck 恒 False
+        "hasDeliverAck": False, "needReadReceipt": False, "isPeerRead": False,
+        "isThread": False, "isContentReplaced": False,
+        "body": {"type": 0, "content": expected_content, "operatorId": user_a,
+                 "operatorTime": gt(0), "operatorCount": gt(0)},
+    }
+    if mode != "body":
+        expected_result["attributes"] = attributes
+    assert_api.assert_response_matches(
+        response,
+        expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value,
+                  "device": "deviceA", "result": expected_result},
+        ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState",
+                     "deliverOnlineOnly", "targetLanguages", "translations"},
+    )
+    event = _wait_changed(device_b, msg_id=message["msgId"])
+    expected_received = {
+        "msgId": message["msgId"], "from": user_a, "to": user_b, "convId": user_a,
+        "chatType": 0, "direction": 1, "status": 2, "hasRead": False,
+        "hasDeliverAck": False, "needReadReceipt": False, "isPeerRead": False,
+        "isThread": False, "isContentReplaced": False,
+        "body": {"type": 0, "content": expected_content},
+    }
+    if mode != "body":
+        expected_received["attributes"] = attributes
+    assert_api.assert_response_matches(
+        event,
+        expected={"type": "event", "eventType": Cmd.onMessageContentChanged.value,
+                  "data": {"message": expected_received, "operatorId": user_a, "operationTime": gt(0)}},
+        ignore_keys={"timestamp", "sequence", "localTime", "serverTime", "broadcast", "onlineState",
+                     "deliverOnlineOnly", "targetLanguages", "translations", "receiverList"},
+    )
+
+
+def test_chat_modify_message_empty_id(device_a, assert_api):
+    """官方结构移植：modifyMessage 空 msgId → 错误。"""
+    response = device_a.call(
+        "ChatManager", Cmd.modifyMessage.value,
+        info={"msgId": "", "msgBody": {"type": 0, "content": "empty-id"}},
+    )
+    assert_api.assert_response_matches(
+        response,
+        expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value,
+                  "device": "deviceA", "result": {"code": 1, "description": "messageId is empty"}},
         ignore_keys={"sequence"},
     )

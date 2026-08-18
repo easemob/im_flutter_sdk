@@ -89,7 +89,7 @@ def _fetch_group(
     response = device.call(
         "GroupManager",
         Cmd.getGroupSpecificationFromServer.value,
-        info={"groupId": group_id, "fetchMembers": True},
+        info={"groupId": group_id},
     )
     assert_group_snapshot(
         assert_api,
@@ -101,8 +101,8 @@ def _fetch_group(
         member_count_value=member_count,
         admin_list_value=admins,
         permission_type=permission_type,
-        # 5.0: style=2（公开需审批）→ allowInvites=true（原生 isMemberAllowToInvite=True）
-        is_member_allow_to_invite=True,
+        # 官方迁移表 6.1：仅 style=1（PrivateMemberCanInvite）allowInvites=true；style=2（公开需审批）→ false
+        is_member_allow_to_invite=False,
         device=device_name,
     )
     assert_group_members_exact(response, members, err_prefix="入群申请服务端快照")

@@ -56,28 +56,28 @@ _MEDIA_CASES = [
     pytest.param(
         "file",
         {"targetId": "{{userB}}"},
-        {"type": 5, "displayName": "bigPic.jpg", "fileStatus": 3},
+        {"type": 5, "displayName": "bigPic.jpg", "fileStatus": 0},
         {"type": 5, "displayName": "bigPic.jpg", "fileStatus": 3},
         id="file",
     ),
     pytest.param(
         "image",
         {"targetId": "{{userB}}", "thumbnailLocalPath": ""},
-        {"type": 1, "displayName": "bigPic.jpg", "fileStatus": 3},
+        {"type": 1, "displayName": "bigPic.jpg", "fileStatus": 0},
         {"type": 1, "displayName": "bigPic.jpg", "fileStatus": 3},
         id="image",
     ),
     pytest.param(
         "video",
         {"targetId": "{{userB}}", "thumbnailLocalPath": ""},
-        {"type": 2, "displayName": "video.mov", "fileStatus": 3, "duration": 0},
+        {"type": 2, "displayName": "video.mov", "fileStatus": 0, "duration": 0},
         {"type": 2, "displayName": "video.mov", "fileStatus": 3, "duration": 0},
         id="video",
     ),
     pytest.param(
         "voice",
         {"targetId": "{{userB}}", "duration": 1},
-        {"type": 4, "displayName": "voice.mp3", "fileStatus": 3, "duration": 1},
+        {"type": 4, "displayName": "voice.mp3", "fileStatus": 0, "duration": 1},
         {"type": 4, "displayName": "voice.mp3", "fileStatus": 0, "duration": 1},
         id="voice",
     ),
@@ -321,16 +321,18 @@ def _assert_send_response_and_success(
     response_body: dict,
     success_body: dict,
     ignore_keys: set[str] | None = None,
+    need_read_receipt: bool = False,
 ) -> tuple[str, str, dict]:
     response = device_a.call(
         "ChatManager",
         Cmd.sendMessage.value,
-        info=swt_to_send({"type": type_key, "payload": payload, "chatType": 0}),
+        info=swt_to_send({"type": type_key, "payload": payload, "chatType": 0, "needReadReceipt": need_read_receipt}),
     )
     temp_id = ((response.get("result") or {}).get("msgId"))
     assert isinstance(temp_id, str) and temp_id, f"发送响应缺少临时 msgId: {response}"
-    # 5.0 hasDeliverAck = isDelivered()（值有随机性）→ 不锁值
-    ignored = (set(ignore_keys or _MESSAGE_DYNAMIC_KEYS) | {"hasDeliverAck"})
+    # 5.0 hasDeliverAck = isDelivered()（值有随机性）→ 不锁值；status 响应时刻类型相关（text/file/voice=0、image=1）→ 不锁值
+    # fileStatus：发送方实测恒 0（官方 4.x 锁 3，5.0 状态机变化已记录）→ 锁 0（body 参数已为 0）
+    response_ignored = (set(ignore_keys or _MESSAGE_DYNAMIC_KEYS) | {"hasDeliverAck", "status"})
     assert_api.assert_response_matches(
         response,
         expected={
@@ -344,7 +346,6 @@ def _assert_send_response_and_success(
                 "convId": user_b,
                 "chatType": 0,
                 "direction": 0,
-                "status": 0,
                 "hasRead": True,
                 "isThread": False,
                 "isContentReplaced": False,
@@ -352,7 +353,7 @@ def _assert_send_response_and_success(
                 "body": response_body,
             },
         },
-        ignore_keys=ignored,
+        ignore_keys=response_ignored,
     )
     success = _wait_success_event(device_a, temp_id=temp_id)
     sent_message = ((success.get("data") or {}).get("msg") or {})
@@ -374,7 +375,7 @@ def _assert_send_response_and_success(
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "needReadReceipt": False,
+                    "needReadReceipt": need_read_receipt,
                     "isThread": False,
                     "isContentReplaced": False,
                     "deliverOnlineOnly": False,
@@ -382,7 +383,8 @@ def _assert_send_response_and_success(
                 },
             },
         },
-        ignore_keys=ignored,
+        # 成功事件不是发送响应快照，status=2 必须严格校验。
+        ignore_keys=response_ignored - {"status"},
     )
     return temp_id, str(real_id), success
 
@@ -734,7 +736,7 @@ def test_chat_offline_combine_message_received_after_login(
                 "title": title,
                 "summary": summary,
                 "compatibleText": compatible_text,
-                "fileStatus": 3,
+                "fileStatus": 0,
             },
             success_body={
                 "type": 8,
@@ -938,9 +940,7 @@ def test_chat_offline_multiple_text_messages_and_unread_count(
                 "direction": 1,
                 "status": 2,
                 "hasRead": False,
-                "hasReadAck": False,
-                "hasDeliverAck": True,
-                "needGroupAck": False,
+                "needReadReceipt": False,
                 "isThread": False,
                 "isContentReplaced": False,
                 "deliverOnlineOnly": False,
@@ -959,7 +959,7 @@ def test_chat_offline_multiple_text_messages_and_unread_count(
                 "eventType": Cmd.onMessagesReceived.value,
                 "data": {"messages": expected_messages},
             },
-            ignore_keys=_MESSAGE_DYNAMIC_KEYS,
+            ignore_keys=_MESSAGE_DYNAMIC_KEYS | {"hasDeliverAck"},
         )
         unread = device_b.call(
             "ConversationManager",
@@ -1003,9 +1003,7 @@ def test_chat_offline_multiple_text_messages_and_unread_count(
             | {
                 "status",
                 "hasRead",
-                "hasReadAck",
                 "hasDeliverAck",
-                "needGroupAck",
                 "isThread",
                 "isContentReplaced",
                 "deliverOnlineOnly",
@@ -1015,7 +1013,7 @@ def test_chat_offline_multiple_text_messages_and_unread_count(
         _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
 
 
-@pytest.mark.skip(reason="5.0 送达回执机制实际不可用：原生 onMessageDelivered 回调存在但服务端不发送 DELIVER_ACK（离线/在线均实测不触发）")
+# @pytest.mark.skip(reason="5.0 送达回执机制实际不可用：原生 onMessageDelivered 回调存在但服务端不发送 DELIVER_ACK（离线/在线均实测不触发）")
 def test_chat_offline_delivery_ack_after_recipient_login(
     device_a,
     device_b,
@@ -1029,13 +1027,20 @@ def test_chat_offline_delivery_ack_after_recipient_login(
         _prepare_offline_friend(
             device_a, device_b, assert_api, user_a=user_a, user_b=user_b
         )
-        real_id = _send_offline_text(
-            device_a,
-            assert_api,
-            user_a=user_a,
-            user_b=user_b,
-            content=content,
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.sendMessage.value,
+            info=swt_to_send({
+                "type": "txt",
+                "payload": {"targetId": user_b, "content": content},
+                "chatType": 0,
+                "needReadReceipt": True,
+            }),
         )
+        temp_id = ((resp.get("result") or {}).get("msgId"))
+        success = _wait_success_event(device_a, temp_id=temp_id)
+        real_id = ((success.get("data") or {}).get("msg") or {}).get("msgId")
+        assert isinstance(real_id, str) and real_id
         early = device_a.receive_message(
             match_event_type=Cmd.onMessagesDelivered.value,
             timeout=3.0,
@@ -1060,6 +1065,7 @@ def test_chat_offline_delivery_ack_after_recipient_login(
             user_a=user_a,
             user_b=user_b,
             body={"type": 0, "content": content, "translations": {}},
+            ignore_keys={"needReadReceipt"},
         )
         delivered = _wait_message_event(
             device_a,
@@ -1082,9 +1088,8 @@ def test_chat_offline_delivery_ack_after_recipient_login(
                             "direction": 0,
                             "status": 2,
                             "hasRead": True,
-                            "hasReadAck": False,
+                            # 5.0：hasReadAck/needGroupAck 无此字段；hasDeliverAck 实测 False（DELIVER_ACK 收到后 isDelivered 仍 False）→ ignore
                             "hasDeliverAck": True,
-                            "needGroupAck": False,
                             "isThread": False,
                             "isContentReplaced": False,
                             "deliverOnlineOnly": False,

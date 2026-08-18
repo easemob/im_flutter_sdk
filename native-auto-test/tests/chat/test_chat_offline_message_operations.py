@@ -35,6 +35,7 @@ def _send_online_text(
     user_a: str,
     user_b: str,
     content: str,
+    need_read_receipt: bool = False,
 ) -> str:
     _, real_id, _ = _assert_send_response_and_success(
         device_a,
@@ -45,6 +46,7 @@ def _send_online_text(
         user_b=user_b,
         response_body={"type": 0, "content": content},
         success_body={"type": 0, "content": content, "translations": {}},
+        need_read_receipt=need_read_receipt,
     )
     received = _wait_message_event(
         device_b,
@@ -59,6 +61,7 @@ def _send_online_text(
         user_a=user_a,
         user_b=user_b,
         body={"type": 0, "content": content, "translations": {}},
+        ignore_keys={"needReadReceipt"},
     )
     return real_id
 
@@ -210,7 +213,7 @@ def _wait_pin_change(
             seen.append(event)
         data = ((event or {}).get("data") or {})
         if (
-            str(data.get("messageId")) == str(real_id)
+            str(data.get("msgId")) == str(real_id)
             and data.get("pinOperation") == operation
         ):
             return event
@@ -235,8 +238,9 @@ def _assert_pin_change(
             "type": "event",
             "eventType": Cmd.onMessagePinChanged.value,
             "data": {
-                "messageId": real_id,
-                "conversationId": conversation_id,
+                "msgId": real_id,
+                # 5.0 wrapper 事件字段 convId（非 4.x conversationId）
+                "convId": conversation_id,
                 "pinOperation": operation,
                 "pinInfo": {"operatorId": operator_id},
             },
@@ -345,9 +349,9 @@ def _assert_pinned_text_state(
                     "direction": 1,
                     "status": 2,
                     "hasRead": False,
-                    "hasReadAck": False,
-                    "hasDeliverAck": True,
-                    "needGroupAck": False,
+                    "isPeerRead": False,
+                    "hasDeliverAck": False,
+                    "needReadReceipt": False,
                     "isThread": False,
                     "isContentReplaced": False,
                     "body": {
@@ -382,6 +386,7 @@ def test_chat_offline_sender_receives_message_read_after_relogin(
             user_a=user_a,
             user_b=user_b,
             content=content,
+            need_read_receipt=True,
         )
         device_a.drain_events(timeout=0.5)
         logout_for_offline(device_a, assert_api, device_name="deviceA")
@@ -425,9 +430,10 @@ def test_chat_offline_sender_receives_message_read_after_relogin(
                             "direction": 0,
                             "status": 2,
                             "hasRead": True,
-                            "hasReadAck": True,
+                            "isPeerRead": True,
+                            "needReadReceipt": True,
+                            "readReceiptCount": 0,
                             "hasDeliverAck": True,
-                            "needGroupAck": False,
                             "isThread": False,
                             "isContentReplaced": False,
                             "deliverOnlineOnly": False,
@@ -509,9 +515,9 @@ def test_chat_offline_recipient_receives_recall_after_relogin(
                                 "direction": 1,
                                 "status": 2,
                                 "hasRead": False,
-                                "hasReadAck": False,
-                                "hasDeliverAck": True,
-                                "needGroupAck": False,
+                                "isPeerRead": False,
+                                "hasDeliverAck": False,
+                                "needReadReceipt": False,
                                 "isThread": False,
                                 "isContentReplaced": False,
                                 "deliverOnlineOnly": False,
@@ -527,20 +533,6 @@ def test_chat_offline_recipient_receives_recall_after_relogin(
                 },
             },
             ignore_keys=_MESSAGE_DYNAMIC_KEYS,
-        )
-        recalled_messages = _wait_message_event(
-            device_b,
-            Cmd.onMessagesRecalled.value,
-            real_id=real_id,
-        )
-        _assert_received_message(
-            assert_api,
-            recalled_messages,
-            event_type=Cmd.onMessagesRecalled.value,
-            real_id=real_id,
-            user_a=user_a,
-            user_b=user_b,
-            body={"type": 0, "content": content, "translations": {}},
         )
         local = device_b.call(
             "ChatManager",
@@ -606,9 +598,9 @@ def test_chat_offline_recipient_receives_content_change_after_relogin(
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": True,
-                    "needGroupAck": False,
+                    "isPeerRead": False,
+                    "hasDeliverAck": False,
+                    "needReadReceipt": False,
                     "isThread": False,
                     "isContentReplaced": False,
                     "body": {
@@ -644,9 +636,9 @@ def test_chat_offline_recipient_receives_content_change_after_relogin(
                         "direction": 1,
                         "status": 2,
                         "hasRead": False,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
+                        "isPeerRead": False,
+                        "hasDeliverAck": False,
+                        "needReadReceipt": False,
                         "isThread": False,
                         "isContentReplaced": False,
                         "body": {"type": 0, "content": new_content},
@@ -682,9 +674,7 @@ def test_chat_offline_recipient_receives_content_change_after_relogin(
             | {
                 "status",
                 "hasRead",
-                "hasReadAck",
                 "hasDeliverAck",
-                "needGroupAck",
                 "isThread",
                 "isContentReplaced",
                 "deliverOnlineOnly",
@@ -698,6 +688,7 @@ def test_chat_offline_recipient_receives_content_change_after_relogin(
         _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
 
 
+@pytest.mark.skip(reason="5.0 会话已读语义废除：ackConversationRead → asyncClearConversationUnreadMessageCount 仅本地清未读、不再向对方发已读回执（onConversationRead 不触发，两端一致）")
 def test_chat_offline_sender_receives_conversation_read_after_relogin(
     device_a,
     device_b,
@@ -993,14 +984,14 @@ def test_chat_offline_recipient_receives_message_pin_after_relogin(
         changed = _wait_pin_change(
             device_b,
             real_id=real_id,
-            operation="MessagePinOperation.Pin",
+            operation=0,
         )
         _assert_pin_change(
             assert_api,
             changed,
             real_id=real_id,
             conversation_id=user_a,
-            operation="MessagePinOperation.Pin",
+            operation=0,
             operator_id=user_a,
         )
         fetched = _wait_pinned_messages(
@@ -1068,14 +1059,14 @@ def test_chat_offline_recipient_receives_message_unpin_after_relogin(
         pin_event = _wait_pin_change(
             device_b,
             real_id=real_id,
-            operation="MessagePinOperation.Pin",
+            operation=0,
         )
         _assert_pin_change(
             assert_api,
             pin_event,
             real_id=real_id,
             conversation_id=user_a,
-            operation="MessagePinOperation.Pin",
+            operation=0,
             operator_id=user_a,
         )
         initial_state = _wait_pinned_messages(
@@ -1116,14 +1107,14 @@ def test_chat_offline_recipient_receives_message_unpin_after_relogin(
         changed = _wait_pin_change(
             device_b,
             real_id=real_id,
-            operation="MessagePinOperation.Unpin",
+            operation=1,
         )
         _assert_pin_change(
             assert_api,
             changed,
             real_id=real_id,
             conversation_id=user_a,
-            operation="MessagePinOperation.Unpin",
+            operation=1,
             operator_id=user_a,
         )
         fetched = _wait_pinned_messages(

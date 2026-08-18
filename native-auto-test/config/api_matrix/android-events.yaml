@@ -1,0 +1,75 @@
+# 统一协议 Event 清单（Android 5.0 wrapper 实际转发）
+# 来源：im_flutter_sdk_android base500 wrapper invokeMethod 全量提取
+# 用途：测试开发查事件名、矩阵对齐、能力透明；不参与 capability 检查（receive_message 不校验）
+sdk_version: 5.0.0
+
+events:
+  ChatManager:
+    - onMessagesReceived
+    - onMessageSuccess
+    - onMessageError
+    - onMessagesRead
+    - onMessageReadAck
+    - onMessagesDelivered
+    - onMessagesRecalledInfo
+    - onMessageContentChanged
+    - onMessagePinChanged
+    - onMessageReactionDidChange
+    - onMessageChanged
+    - onCmdMessagesReceived
+    - onStreamMessagesReceived
+    - onConversationUpdate
+    - onMessageProgressUpdate
+    - onMessageDeliveryAck
+
+  Client:
+    - onConnected
+    - onDisconnected
+    - onDataSyncStart
+    - onDataSyncFinish
+    - onDatabaseOpened
+    - onOfflineMessageSyncStart
+    - onOfflineMessageSyncFinish
+    - onTokenWillExpire
+    - onTokenDidExpire
+    - onUserAuthenticationFailed
+    - onUserDidChangePassword
+    - onUserDidForbidByServer
+    - onUserDidLoginFromOtherDevice
+    - onUserDidLoginTooManyDevice
+    - onUserDidRemoveFromServer
+    - onUserKickedByOtherDevice
+    - onAppActiveNumberReachLimit
+    - onMultiDeviceContactEvent
+    - onMultiDeviceGroupEvent
+    - onMultiDeviceRemoveMessagesEvent
+    - onMultiDevicesConversationEvent
+    - onMultiDeviceThreadEvent
+    - onSendDataToFlutter
+
+  ContactManager:
+    - onContactChanged        # typed：data.type = onContactAdded / onContactDeleted / onContactInvited / onFriendRequestAccepted / onFriendRequestDeclined / onContactInfoUpdate
+
+  GroupManager:
+    - onGroupChanged          # typed：data.type = onGroupInvitationReceived / onGroupInvitationAccepted / onGroupInvitationDeclined / onGroupRequestToJoinReceived / onGroupRequestToJoinAccepted / onGroupRequestToJoinDeclined / onGroupAutoAcceptInvitation / onGroupDestroyed / onGroupMemberJoined / onGroupMemberExited / onGroupUserRemoved / onGroupAdminAdded / onGroupAdminRemoved / onGroupOwnerChanged / onGroupMuteListAdded / onGroupMuteListRemoved / onGroupWhiteListAdded / onGroupWhiteListRemoved / onGroupAllMemberMuteStateChanged / onGroupAnnouncementChanged / onGroupSharedFileAdded / onGroupSharedFileDeleted / onGroupSpecificationDidUpdate / onGroupAttributesChangedOfMember / onGroupStateChanged / onUserGroupNamecardUpdated
+
+  ChatRoomManager:
+    - onChatRoomChanged       # typed：data.type = onRoomMemberJoined / onRoomMemberExited / onRoomAdminAdded / onRoomAdminRemoved / onRoomOwnerChanged / onRoomAllMemberMuteStateChanged / onRoomAnnouncementChanged / onRoomSpecificationChanged / onRoomWhiteListAdded / onRoomWhiteListRemoved / onRoomMuteListAdded / onRoomMuteListRemoved / onRoomAttributesUpdated / onRoomAttributesDidRemoved / onRoomDestroyed / onRoomRemovedFromChatRoom
+
+  PresenceManager:
+    - onPresenceStatusChanged
+
+  ChatThreadManager:
+    - onChatThreadCreate
+    - onChatThreadUpdate
+    - onChatThreadDestroy
+    - onUserKickOutOfChatThread
+
+  UserInfoManager:
+    - onSelfUserInfoUpdate
+    - onUserInfoUpdate
+
+  PushManager: []
+
+# 原生监听器有但 wrapper 未独立转发的（wrapper 遗漏，待补/记录）：
+# - EMConnectionListener.onLogout（wrapper 仅映射 206/220 → onUserDidLoginFromOtherDevice，其他 errorCode 不转发独立 onLogout）

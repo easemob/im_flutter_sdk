@@ -39,8 +39,17 @@
                  object:(NSObject *)aObj
 {
     if (result) {
+        if (aObj == nil && error == nil) {
+            // 无返回（object=nil 且无错误）→ 提交真 null（对齐 Android 基类 onSuccess；此前提交空字典）
+            easemob_dispatch_main_async_safe(^(){
+                result(nil);
+            });
+            return;
+        }
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-        dic[@"error"] = [error toJson];
+        if (error) {
+            dic[@"error"] = [error toJson];
+        }
         if (aObj) {
             dic[aChannelName] = aObj;
         }

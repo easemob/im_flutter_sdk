@@ -590,6 +590,6 @@ def test_group_get_group_from_server_nonexistent(device_a, assert_api):
     resp = device_a.call(
         "GroupManager",
         Cmd.getGroupSpecificationFromServer.value,
-        info={"groupId": _NONEXISTENT_GROUP_ID, "fetchMembers": True},
+        info={"groupId": _NONEXISTENT_GROUP_ID},
     )
     assert_api.assert_error(resp, code=600, description="do not find this group")

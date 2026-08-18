@@ -1,0 +1,79 @@
+# 统一协议 Event 清单（iOS 5.0 wrapper 实际转发）
+# 来源：im_flutter_sdk_ios base500 wrapper invokeMethod 全量提取
+# 用途：测试开发查事件名、矩阵对齐、能力透明；不参与 capability 检查（receive_message 不校验）
+# 注：iOS 与 Android 事件差异见文末标注
+sdk_version: 5.0.0
+
+events:
+  ChatManager:
+    - onMessagesReceived
+    - onMessageSuccess
+    - onMessageError
+    - onMessagesRead
+    - onMessageReadAck
+    - onMessagesDelivered
+    - onMessagesRecalledInfo          # 5.0 唯一撤回事件（messagesInfoDidRecall）
+    - onMessageContentChanged
+    - onMessagePinChanged
+    - onMessageReactionDidChange
+    - onMessageChanged
+    - onCmdMessagesReceived
+    - onStreamMessagesReceived
+    - onConversationUpdate
+    - onMessageProgressUpdate
+    - onMessageDeliveryAck
+    - onReadAckForGroupMessageUpdated    # iOS 有转发（原生 groupMessageReadReceiptsHasChanged，协议 4.x 名）；Android 5.0 无此回调（javap 实证，已移除）
+
+  Client:
+    - onConnected
+    - onDisconnected
+    - onDatabaseOpened
+    - onDataSyncStart               # 2026-08-17 补转发（5.0 原生 syncDataStartWithType:）
+    - onDataSyncFinish              # 2026-08-17 补转发（5.0 原生 syncDataFinished:type:）
+    - onOfflineMessageSyncStart
+    - onOfflineMessageSyncFinish
+    - onTokenWillExpire
+    - onTokenDidExpire
+    - onAppActiveNumberReachLimit
+    - onUserAuthenticationFailed
+    - onUserDidChangePassword
+    - onUserDidForbidByServer
+    - onUserDidLoginFromOtherDevice
+    - onUserDidLoginTooManyDevice
+    - onUserDidRemoveFromServer
+    - onUserKickedByOtherDevice
+    - onMultiDeviceContactEvent
+    - onMultiDeviceGroupEvent
+    - onMultiDeviceRemoveMessagesEvent
+    - onMultiDevicesConversationEvent
+    - onMultiDeviceThreadEvent
+    - onSendDataToFlutter
+
+  ContactManager:
+    - onContactChanged        # typed：data.type = onContactAdded / onContactDeleted / onContactInvited / onFriendRequestAccepted / onFriendRequestDeclined / onContactInfoUpdate
+
+  GroupManager:
+    - onGroupChanged          # typed：data.type = 同 android（onGroupInvitationReceived / onGroupMembersJoined / onGroupOwnerChanged / onUserGroupNamecardUpdated 等）
+
+  ChatRoomManager:
+    - onChatRoomChanged       # typed：data.type = onRoomMemberJoined / onRoomAdminAdded / onRoomOwnerChanged / onRoomAttributesUpdated / onRoomDestroyed / onRoomRemovedFromChatRoom 等
+
+  PresenceManager:
+    - onPresenceStatusChanged
+
+  ChatThreadManager:
+    - onChatThreadCreate
+    - onChatThreadUpdate
+    - onChatThreadDestroy
+    - onUserKickOutOfChatThread
+
+  UserInfoManager:
+    - onSelfUserInfoUpdate
+    - onUserInfoUpdate
+
+  PushManager: []
+
+# ⚠️ iOS vs Android 事件差异（2026-08-17 处理后）：
+# 1. ✅ 已删 iOS 3 个 4.x 死代码转发（onMessagesRecalled / onGroupMessageRead / onConversationHasRead —— 5.0 原生无对应回调）
+# 2. ✅ 已补 iOS onDataSyncStart/onDataSyncFinish（原生 syncDataStartWithType:/syncDataFinished:type: 有，之前漏转发）
+# 3. 原生 EMConnectionListener.onLogout 两端均无独立转发（Android 仅映射 206/220 → onUserDidLoginFromOtherDevice）

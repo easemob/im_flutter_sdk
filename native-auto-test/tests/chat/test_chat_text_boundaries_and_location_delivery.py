@@ -193,7 +193,6 @@ def test_chat_send_rejects_mismatched_from(device_a, device_b, assert_api, user_
     )
 
 
-@pytest.mark.skip(reason="5.0 无送达回执机制（onMessagesDelivered 不触发，已实证）—— 送达回执验证无意义")
 def test_chat_location_message_delivery_ack(device_a, device_b, assert_api, user_a, user_b):
     payload = {
         "targetId": user_b, "latitude": 30.2741, "longitude": 120.1551,
@@ -201,14 +200,33 @@ def test_chat_location_message_delivery_ack(device_a, device_b, assert_api, user
     }
     _, _, _, _, real_id = _send_type_and_receive(
         device_a, device_b, assert_api, user_a, user_b, type_key="location", payload=payload,
+        need_read_receipt=True,
     )
-    event = _wait_delivery_event(device_a, real_id=real_id)
+    # 5.0 送达回执需发送标记 needReadReceipt=true（服务端才发 DELIVER_ACK）
+    event = None
+    deadline = time.monotonic() + 30.0
+    while time.monotonic() < deadline:
+        evt = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=3.0)
+        if evt and any(
+            str(m.get("msgId")) == str(real_id)
+            for m in ((evt.get("data") or {}).get("messages") or [])
+        ):
+            event = evt
+            break
+    assert event is not None, f"未收到送达回执 msgId={real_id}"
+    # 同一 msgId 重复出现不是合法的批量行为，必须暴露为失败，不能通过过滤首条掩盖。
+    matched = [
+        m for m in ((event.get("data") or {}).get("messages") or [])
+        if isinstance(m, dict) and str(m.get("msgId")) == str(real_id)
+    ]
+    assert len(matched) == 1, f"送达事件目标消息重复或缺失: msgId={real_id}, matched={matched}, event={event}"
     assert_api.assert_response_matches(
-        event,
+        {"type": "event", "eventType": event.get("eventType"), "data": {"messages": matched}},
         expected={"type": "event", "eventType": event.get("eventType"), "data": {"messages": [{
             "msgId": real_id, "from": user_a, "to": user_b, "convId": user_b,
             "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
-            "needReadReceipt": False, "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
+            "needReadReceipt": True, "isPeerRead": False, "readReceiptCount": 0, "hasDeliverAck": True,
+            "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
             "body": {"type": 3, "latitude": payload["latitude"], "longitude": payload["longitude"],
                      "address": payload["address"], "buildingName": payload["buildingName"]},
         }]}},

@@ -788,64 +788,79 @@ def test_contact_add_user_to_block_list_nonexistent(device_a, assert_api):
     assert_api.assert_error(resp, code=204, description="User does not exist")
 
 
+@pytest.mark.topology("account_a_to_account_b")
 def test_contact_block_list_flow_then_unblock_restores_friend(
-    device_a, device_b, assert_api, user_a, user_b
+    topology, assert_api
 ):
     """
-    A 加 B、B 同意后：A 拉黑 B → A 黑名单含 B，A 好友列表不含 B，B 好友列表仍含 A；
-    A 取消拉黑后，A 好友列表再次含 B。
+    多端拓扑：A 拉黑 B → A 全部端黑名单含 B、好友列表不含 B，B 全部端好友列表仍含 A；A 取消拉黑后好友恢复。
     """
-    _cleanup_friend_and_block(device_a, device_b, user_a, user_b)
+    sender = topology.sender_action_device
+    recipients = topology.recipient_devices
+    owner_user = topology.sender_user
+    member_user = topology.recipient_user
+
+    _cleanup_friend_and_block(sender, topology.recipient_action_device, owner_user, member_user)
     flow = ContactTestFlow(assert_api)
-    flow.establish_friends(device_a, device_b, user_a, user_b, reason="blocklist_flow")
-    flow.add_to_block_list(device_a, user_b)
+    with _allure_step(f"{sender.device_name} 与 B 建立好友"):
+        flow.establish_friends(sender, topology.recipient_action_device, owner_user, member_user, reason="blocklist_flow")
+    with _allure_step(f"{sender.device_name} 拉黑 {member_user}"):
+        flow.add_to_block_list(sender, member_user)
 
-    resp_block = flow.get_block_list(device_a)
-    assert_api.assert_success(resp_block)
-    assert_api.assert_response_matches(
-        resp_block,
-        expected={
-            "manager": "ContactManager",
-            "cmd": Cmd.getBlockListFromServer.value,
-            "device": "deviceA",
-            "result": [user_b],
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("A 全部在线端黑名单均含 B（账号级服务端状态一致）"):
+        for endpoint in topology.sender_devices:
+            resp_block = flow.get_block_list(endpoint)
+            assert_api.assert_success(resp_block)
+            assert_api.assert_response_matches(
+                resp_block,
+                expected={
+                    "manager": "ContactManager",
+                    "cmd": Cmd.getBlockListFromServer.value,
+                    "device": endpoint.device_name,
+                    "result": [member_user],
+                },
+                ignore_keys={"sequence"},
+            )
+    with _allure_step("A 全部在线端好友列表均不含 B"):
+        for endpoint in topology.sender_devices:
+            resp_friends_a_blocked = flow.get_all_contacts_from_db(endpoint)
+            assert_api.assert_success(resp_friends_a_blocked)
+            assert_api.assert_response_matches(
+                resp_friends_a_blocked,
+                expected={
+                    "manager": "ContactManager",
+                    "cmd": Cmd.getAllContactsFromDB.value,
+                    "device": endpoint.device_name,
+                    "result": [member_user],
+                },
+                ignore_keys={"sequence"},
+            )
+    with _allure_step("B 全部在线端好友列表仍含 A"):
+        for endpoint in recipients:
+            resp_friends_b = flow.get_all_contacts_from_db(endpoint)
+            assert_api.assert_success(resp_friends_b)
+            assert owner_user in assert_api.get_result(resp_friends_b), f"B 好友列表未包含 A: {resp_friends_b}"
 
-    resp_friends_a_blocked = flow.get_all_contacts_from_server(device_a)
-    assert_api.assert_success(resp_friends_a_blocked)
-    assert_api.assert_response_matches(
-        resp_friends_a_blocked,
-        expected={
-            "manager": "ContactManager",
-            "cmd": Cmd.getAllContactsFromDB.value,
-            "device": "deviceA",
-            "result": [user_b],
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step(f"{sender.device_name} 取消拉黑 {member_user}"):
+        assert_api.assert_success(flow.remove_from_block_list(sender, member_user))
 
-    resp_friends_b = flow.get_all_contacts_from_server(device_b)
-    assert_api.assert_success(resp_friends_b)
-    assert user_a in assert_api.get_result(resp_friends_b), f"B 好友列表未包含 A: {resp_friends_b}"
+    with _allure_step("A 全部在线端好友列表恢复含 B"):
+        for endpoint in topology.sender_devices:
+            resp_friends_a_after = flow.get_all_contacts_from_db(endpoint)
+            assert_api.assert_success(resp_friends_a_after)
+            assert_api.assert_response_matches(
+                resp_friends_a_after,
+                expected={
+                    "manager": "ContactManager",
+                    "cmd": Cmd.getAllContactsFromDB.value,
+                    "device": endpoint.device_name,
+                    "result": [member_user],
+                },
+                ignore_keys={"sequence"},
+            )
 
-    assert_api.assert_success(flow.remove_from_block_list(device_a, user_b))
+    flow.delete_friend(sender, member_user)
 
-    resp_friends_a_after = flow.get_all_contacts_from_server(device_a)
-    assert_api.assert_success(resp_friends_a_after)
-    assert_api.assert_response_matches(
-        resp_friends_a_after,
-        expected={
-            "manager": "ContactManager",
-            "cmd": Cmd.getAllContactsFromDB.value,
-            "device": "deviceA",
-            "result": [user_b],
-        },
-        ignore_keys={"sequence"},
-    )
-
-    flow.delete_friend(device_a, user_b)
 
 
 def test_contact_remove_from_block_list_when_not_blocked(

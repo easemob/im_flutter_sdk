@@ -257,9 +257,10 @@ def test_chat_ack_conversation_read_success_with_event(topology, assert_api):
             "manager": "ChatManager",
             "cmd": Cmd.ackConversationRead.value,
             "device": "deviceB",
+            # wrapper asyncClearConversationUnreadMessageCount 构造 true（对齐官方 4.x 语义）
+            "result": True,
         },
-        # 5.0 ackConversationRead = asyncClearConversationUnreadMessageCount，成功返回结构不定 → 不比较 result
-        ignore_keys={"sequence", "result"},
+        ignore_keys={"sequence"},
     )
 
     # 5.0 原生：ackConversationRead = asyncClearConversationUnreadMessageCount（清未读数）
@@ -492,15 +493,16 @@ def test_chat_fetch_history_messages_empty_conv_id(device_a, assert_api):
         Cmd.fetchHistoryMessages.value,
         info={"convId": "", "type": 0, "pageSize": 20, "startMsgId": "", "direction": 0},
     )
-    # 5.0 实测：空 convId 不报 205（返回成功/空结果）→ 断言成功信封
+    # 5.0 实测：空 convId → 110 "Invalid parameter"（官方 4.x 空 convId 行为不同）→ 断言 110
     assert_api.assert_response_matches(
         resp,
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.fetchHistoryMessages.value,
             "device": "deviceA",
+            "result": {"code": 110, "description": "Invalid parameter"},
         },
-        ignore_keys={"sequence", "result"},
+        ignore_keys={"sequence"},
     )
 
 

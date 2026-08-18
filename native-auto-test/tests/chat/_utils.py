@@ -83,4 +83,8 @@ def swt_to_send(info: dict) -> dict:
             body["messageList"] = list(payload["msgIds"])
     else:
         raise ValueError(f"unknown swt type: {type_key}")
-    return {"to": to, "chatType": chat_type, "direction": 0, "deliverOnlineOnly": False, "body": body}
+    result = {"to": to, "chatType": chat_type, "direction": 0, "deliverOnlineOnly": False, "body": body}
+    if info.get("needReadReceipt"):
+        # 5.0 已读回执契约：消息需标记 isNeedReadReceipt=true 接收方才回执
+        result["needReadReceipt"] = True
+    return result

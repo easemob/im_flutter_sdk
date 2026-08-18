@@ -171,6 +171,20 @@
 - 测试：送达回执 case skip（对齐现有测试）；官方 e2e_test 离线测试的 `onMessagesDelivered` 部分已删除/skip。
 - 待研发：确认服务端是否下线 DELIVER_ACK 机制，并在 API 变更文档补充说明。
 
+### 消息状态字段 status / fileStatus（5.0 原生状态机变化）
+
+| 位置 | 4.x | 5.0 实测 | 说明 |
+|---|---|---|---|
+| 发送响应 status | 1（INPROGRESS）| 混合：text/file/voice/combine=0（CREATE）、image/video/cmd=1（INPROGRESS）| 5.0 发送流程重构：文本创建即返回 CREATE，媒体上传/cmd 返回时进行中 |
+| 发送响应 fileStatus | 3（PENDING）| 0（DOWNLOADING）| 5.0 响应时刻文件标记上传中 |
+| success 事件 fileStatus | 3 | 1（SUCCESSED）| 5.0 上传完成=SUCCESSED=1 |
+| 接收事件 fileStatus | 3（voice=0）| 3（voice=0）| 两端一致 |
+
+- `status` = 原生 `EMMessage.Status` 枚举转 int（EMHelper 596 行，纯透传）；`fileStatus` = 原生 `EMDownloadStatus.ordinal()`（EMHelper 871 行 + EnumTools ordinal，纯透传）—— **均非 wrapper 构造**（javap 实证枚举：DOWNLOADING=0/SUCCESSED=1/FAILED=2/PENDING=3，4.x/5.0 相同）。
+- 差异 = **原生 SDK 5.0 状态机变化**（发送流程/文件上传状态管理重构）；4.x 官方 e2e 断言锁的是 4.x 实测值。
+- 测试处理：发送响应 status/fileStatus **ignore**（响应时刻快照，验证发送成功看事件 status=2）；**success 事件 fileStatus 断言 1**（上传完成 SUCCESSED，核心）；事件 status 断言 **2**（核心）；接收事件 fileStatus 断言 3/voice=0（一致）。
+- 待研发：确认 5.0 发送响应时刻 status 的 0/1 分布是否符合契约（文本 CREATE=0、媒体上传 INPROGRESS=1）。
+
 ### 群组已知原生缺陷（skip 记录，2026-08-14 实证）
 
 以下 case 设计完整（步骤+预期按规范），因原生缺陷 skip 等待修复；本次逐一去 skip 验证，缺陷均仍存在：

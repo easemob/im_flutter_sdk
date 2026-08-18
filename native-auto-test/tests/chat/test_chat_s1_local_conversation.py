@@ -40,6 +40,20 @@ def _wait_text_event(device, event_type: str, *, real_id: str, content: str, tim
     raise AssertionError(f"未收到目标消息事件: event={event_type}, msgId={real_id}, content={content}, events={seen}")
 
 
+def _clean_user_b_conversation(device_a, user_b: str) -> None:
+    """前置清理：删除 user_b 本地会话，保证 deleteConversation/loadAllConversations 起点干净
+    （session 内账号复用，前序 case 残留会导致 deleteConversation 返回值随会话存在性变化）。"""
+    try:
+        device_a.call(
+            "ChatManager",
+            Cmd.deleteConversation.value,
+            info={"convId": user_b, "deleteMessages": True},
+        )
+        device_a.drain_events(timeout=0.5)
+    except Exception:
+        pass
+
+
 def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user_b: str, content: str) -> str:
     try:
         device_a.drain_events()
@@ -262,6 +276,7 @@ def test_chat_mark_all_as_read_idempotent(device_b, assert_api):
 
 
 def test_chat_load_all_conversations_contains_then_not_contains(device_a, device_b, assert_api, user_a, user_b):
+    _clean_user_b_conversation(device_a, user_b)
     _ = device_a.call(
         "ChatManager",
         Cmd.deleteConversation.value,
@@ -337,6 +352,7 @@ def test_chat_load_all_conversations_contains_then_not_contains(device_a, device
 
 
 def test_chat_delete_conversation_existing_then_not_found(device_a, device_b, assert_api, user_a, user_b):
+    _clean_user_b_conversation(device_a, user_b)
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s1-del-conv-{uuid.uuid4().hex[:6]}")
 
     resp_delete = device_a.call(
@@ -355,6 +371,7 @@ def test_chat_delete_conversation_existing_then_not_found(device_a, device_b, as
 
 
 def test_chat_delete_conversation_nonexistent_returns_bool(device_a, assert_api):
+    _clean_user_b_conversation(device_a, "__nonexistent_conv__")
     resp = device_a.call(
         "ChatManager",
         Cmd.deleteConversation.value,

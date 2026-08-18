@@ -287,12 +287,9 @@ def test_conversation_read_count_and_mark_read(device_a, device_b, assert_api, u
     if isinstance(mark_one_result, dict):
         if mark_one_result.get("code") == 3:
             expected_mark_one = {"code": 3, "description": "Database operation failed"}
-        elif "code" in mark_one_result:
-            # 5.0 实际错误对象 → 按实际冻结
-            expected_mark_one = mark_one_result
         else:
-            # 5.0 成功可能返回消息对象/空 dict（非错误）→ 按实际冻结
-            expected_mark_one = mark_one_result
+            # 对齐官方：错误 dict 固定 500（Message is invalid）；bool 分支官方亦自证（true/false 明确）
+            expected_mark_one = {"code": 500, "description": "Message is invalid"}
     elif isinstance(mark_one_result, bool):
         expected_mark_one = mark_one_result
     elif mark_one_result == 0:
@@ -311,15 +308,16 @@ def test_conversation_read_count_and_mark_read(device_a, device_b, assert_api, u
     )
 
     resp_mark_all = device_b.call("ConversationManager", Cmd.markAllMessagesAsRead.value, info=conv_b)
-    # 原生实际（透传后）：markAllMessagesAsRead 返回结构不定（bool/dict）→ 只验证成功信封
+    # wrapper 5.0 构造 true（EMWrapperCallBack object=true，对齐官方 4.x 语义）
     assert_api.assert_response_matches(
         resp_mark_all,
         expected={
             "manager": "ConversationManager",
             "cmd": Cmd.markAllMessagesAsRead.value,
             "device": "deviceB",
+            "result": True,
         },
-        ignore_keys={"sequence", "result"},
+        ignore_keys={"sequence"},
     )
 
     resp_zero = device_b.call("ConversationManager", Cmd.getUnreadMsgCount.value, info=conv_b)
@@ -771,8 +769,9 @@ def test_conversation_delete_local_and_server_messages_current_behavior(device_a
         info={**conv_a, "msgIds": [msg_id]},
     )
     delete_ids_result = resp_delete_ids.get("result")
-    # 5.0 实测：成功/失败均返回 dict（含 code 为错误，否则为成功对象）→ 按实际冻结
-    expected_delete_ids = delete_ids_result if isinstance(delete_ids_result, dict) else None
+    # 5.0：removeMessagesFromServer 成功 → wrapper 基类 object=null 提交真 null（已改基类）
+    # （官方 4.x 冻结 500 是官方环境删除失败；5.0 删除成功返回 null）
+    expected_delete_ids = None
     assert_api.assert_response_matches(
         resp_delete_ids,
         expected={
@@ -797,8 +796,8 @@ def test_conversation_delete_local_and_server_messages_by_time(device_a, device_
         info={**conv_a, "beforeTs": int(time.time() * 1000) + 1_000},
     )
     delete_time_result = resp_delete_time.get("result")
-    # 5.0 实测：成功/失败均返回 dict（含 code 为错误，否则为成功对象）→ 按实际冻结
-    expected_delete_time = delete_time_result if isinstance(delete_time_result, dict) else None
+    # 5.0：删除成功 → null（同 WithIds）
+    expected_delete_time = None
     assert_api.assert_response_matches(
         resp_delete_time,
         expected={

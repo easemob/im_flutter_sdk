@@ -16,7 +16,7 @@ def _allure_step(name: str):
 
         return allure.step(name)
     except ImportError:
-        return nullcontext(), GroupChangeEvent
+        return nullcontext()
 from tests.group.group_helpers import (
     assert_group_events,
     assert_group_snapshot,
@@ -150,7 +150,7 @@ def test_group_update_subject(device_a, device_b, device_b_sec, assert_api, user
         resp_server = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
-            info={"groupId": group_id, "fetchMembers": True},
+            info={"groupId": group_id},
         )
         assert_group_snapshot(
             assert_api,
@@ -232,7 +232,7 @@ def test_group_update_description(device_a, device_b, device_b_sec, assert_api, 
         resp_server = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
-            info={"groupId": group_id, "fetchMembers": True},
+            info={"groupId": group_id},
         )
         assert_group_snapshot(
             assert_api,

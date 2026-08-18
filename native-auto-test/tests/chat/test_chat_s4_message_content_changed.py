@@ -221,13 +221,7 @@ def test_chat_modify_custom_message_content_changed_event(topology, assert_api):
             },
         )
     modify_result = resp_modify.get("result") or {}
-    if modify_result.get("code") == 305:
-        with _allure_step("跳过：当前 SDK/服务端不支持 modifyMessage"):
-            pytest.skip(
-                "ChatManager.modifyMessage 当前不可用："
-                f"code={modify_result.get('code')}, "
-                f"description={modify_result.get('description')!r}"
-            )
+    # 305（edit not available）不再运行时 skip —— 直接走下方断言 FAILED 暴露真实行为（待研发）
     _assert_response_step(
         assert_api,
         "确认消息内容已修改",

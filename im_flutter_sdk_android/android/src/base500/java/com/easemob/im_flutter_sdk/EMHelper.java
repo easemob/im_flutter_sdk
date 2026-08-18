@@ -289,7 +289,8 @@ class GroupOptionsHelper {
         int style = json.getInt("style");
         options.isPublic = (style == 2 || style == 3);
         options.joinApprovalRequired = (style == 2);
-        options.allowInvites = (style == 1 || style == 2 || style == 3);
+        // 官方迁移表 6.1 + 官方 e2e 断言：仅 style=1（PrivateMemberCanInvite）成员可邀请（allowInvites=true）
+        options.allowInvites = (style == 1);
         return options;
     }
 
@@ -589,6 +590,9 @@ class MessageHelper {
         data.put("to", message.getTo());
         // 5.0 以 needReadReceipt 为准（单聊群聊统一，替代 4.x hasReadAck/needGroupAck）
         data.put("needReadReceipt", message.isNeedReadReceipt());
+        // 5.0：isAcked→isPeerRead（单聊对方是否已读）、groupAckCount→readReceiptCount（群已读数）
+        data.put("isPeerRead", message.isPeerRead());
+        data.put("readReceiptCount", message.readReceiptCount());
         data.put("hasDeliverAck", message.isDelivered());
         data.put("deliverOnlineOnly", message.isDeliverOnlineOnly());
         data.put("localTime", message.localTime());

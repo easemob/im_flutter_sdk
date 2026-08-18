@@ -77,21 +77,25 @@ class EMWrapperCallBack implements EMCallBack {
     @Override
     public void onSuccess() {
         submitOnce(() -> {
-            Map<String, Object> data = new HashMap<>();
-            if (object != null) {
+            if (object == null) {
+                result.success(null);  // 无返回 → 真 null（对齐基类 onSuccess）
+            } else {
+                Map<String, Object> data = new HashMap<>();
                 data.put(channelName, object);
+                result.success(data);
             }
-            result.success(data);
         });
     }
 
     public void updateObject(Object object) {
         submitOnce(()-> {
-            Map<String, Object> data = new HashMap<>();
-            if (object != null) {
+            if (object == null) {
+                result.success(null);  // 无返回 → 真 null
+            } else {
+                Map<String, Object> data = new HashMap<>();
                 data.put(channelName, object);
+                result.success(data);
             }
-            result.success(data);
         });
     }
 

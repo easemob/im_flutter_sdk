@@ -22,7 +22,7 @@ def _allure_step(name: str):
 
         return allure.step(name)
     except ImportError:
-        return nullcontext(), ne
+        return nullcontext()
 from tests.chat._utils import build_text
 from tests.group.group_helpers import create_group, destroy_group, new_group_name
 

@@ -4,6 +4,70 @@
 `--ws-mode managed` 会由 pytest 启动本地 WebSocket Server，并按
 `runId + runnerId + requestId` 路由，不需要手工配置 topic。
 
+> **写 case 必读**：`skills/im-sdk-test-case-design/SKILL.md`（Case 类型选择：普通 API vs 多端拓扑；
+> 断言规范；Allure 步骤；改造现有 Case 规则）。设计、实现或审查用例前先读它。
+
+## 快速开始（从零到第一条用例）
+
+> 跑测试**不需要 Flutter**（复用已有构建产物，pytest 直接 `adb install` 安装 APK）；
+> 只有构建/改动测试 App（wrapper、桥接、新事件转发）才需要 Flutter。
+
+### 1. 环境依赖（分层）
+
+**必备（只跑测试）**
+
+- Python 3.9+，创建虚拟环境并装依赖：
+  ```bash
+  python3 -m venv .venv
+  .venv/bin/pip install -r requirements.txt
+  ```
+- Android SDK `platform-tools`（`adb`，用于安装 APK / 断网控制），确认 `adb devices` 可用
+- 4 台 Android 模拟器（AVD 名按本机 `emulator -list-avds` 的实际名字，对应 scenario 默认 serial 5554/5556/5558/5560）
+- 已有构建产物：`config/artifacts.yaml`
+指向的 APK（如 `im_flutter_test/build/app/outputs/flutter-apk/app-sdk500-debug.apk`）；
+  产物不存在时首次需先构建（见下）
+
+**可选（构建 / 开发测试 App）**
+
+- Flutter ≥ 3.3（Dart ≥ 3.5.4，本仓库验证于 Flutter 3.24.5）
+- Android SDK（构建 APK）／ Xcode（iOS 模拟器场景，AVD 名 `iosa/iosb/iosc/iosd`）
+
+### 2. 启动模拟器
+
+```bash
+# AVD 名按本机 emulator -list-avds 的实际名字（4 台，启动后 serial 依次为 5554/5556/5558/5560）
+$ANDROID_SDK/emulator/emulator -avd <AVD_A> -no-snapshot -no-boot-anim &
+$ANDROID_SDK/emulator/emulator -avd <AVD_B> -no-snapshot -no-boot-anim &
+$ANDROID_SDK/emulator/emulator -avd <AVD_C> -no-snapshot -no-boot-anim &
+$ANDROID_SDK/emulator/emulator -avd <AVD_D> -no-snapshot -no-boot-anim &
+adb wait-for-device
+```
+
+> **首次需核对 scenario 的设备序列号**：`config/scenarios/android_500_multi_device_default.yaml`
+> 里的 `serial`（默认 `emulator-5554/5556/5558/5560`）按本机 `adb devices` 的
+> 实际序列号核对；不一致时改 yaml（模拟器默认从 5554 开始分配，通常一致）。
+> serial 对不上会报 `AndroidEnvironmentError: configured serial ... is not online`。
+
+### 3. 配置（首次）
+
+```bash
+cp config.yaml.template config.yaml
+```
+
+### 4. 跑第一条用例
+
+```bash
+# 复用已有 APK（不加 --build）
+.venv/bin/python -m pytest --scenario android_500_multi_device_default \
+  tests/group/test_group_metadata.py::test_group_update_subject -q
+
+# 产物不存在 / 改过 Wrapper 后：先构建再装（加 --build）
+.venv/bin/python -m pytest --build --scenario android_500_multi_device_default \
+  tests/group/test_group_metadata.py::test_group_update_subject -q
+```
+
+期望输出：`1 passed`（模拟器在线、APK 安装成功、服务端可达时）。
+
 ## 团队与 AI Agent 速查
 
 进行原生 SDK 升级、Wrapper 适配、Scenario/API Matrix 配置或 pytest 回归前先读本节。
@@ -104,6 +168,50 @@ CASES_DISCOVER=1 WS_DEBUG=1 .venv/bin/python -m pytest -q \
 Scenario 可传文件名（省略 `.yaml`）或完整路径。完整环境准备、报告和多端运行方式见
 本文后续章节。
 
+## Scenario 配置模板（config/scenarios/*.yaml）
+
+**场景名 = yaml 文件名**（`--scenario` 传文件名省略 `.yaml` → `config/scenarios/{文件名}.yaml`）；
+`name` 字段只是 Allure 显示名，可任意。`android_500_multi_device_default` 只是现有示例，
+新建场景 copy 模板改以下四段即可。模板参考：`config/scenarios/android_500_multi_device_default.yaml`。
+
+```yaml
+name: my-scenario                # Allure 显示名（与文件名无关，可任意）
+
+accounts:                        # 逻辑账号（case 里 user_a/user_b/user_c 对应）
+  account_a: { provision: rest }  # provision=rest 用 REST 自动创建测试账号（跑完删除）
+  account_b: { provision: rest }
+
+ devices:                        # 每台设备一个 role；role 名 = case 的 fixture 名
+  device_a:                      # device_a/device_a_sec/device_b/device_b_sec...
+    device_name: deviceA          # Allure 展示名
+    platform: android             # android / ios / web
+    sdk_version: 5.0.0            # 对应 artifacts.yaml 的产物版本
+    account: account_a            # 同 account = 多端在线（同账号双端）
+    serial: emulator-5554         # adb 序列号（首次按 adb devices 改）
+
+ topologies:                     # 具名拓扑，case 用 @pytest.mark.topology("名字") 引用
+  account_a_to_account_b:
+    sender:
+      account: account_a
+      action_device: device_a     # 动作端：唯一调用 API 的端
+      include_all_devices: true   # true=含发送账号全部端（验证多端同步）
+    recipient:
+      account: account_b
+      action_device: device_b     # 接收动作端：回执/已读等后续动作
+
+ runner:                         # Runner 启动控制
+  start_emulators: false          # true=自动启动（需 avd）；false=预先手动启动
+  device_ready_timeout: 180
+  hello_timeout: 30
+  start_retry: 1
+  keep_device_alive: true
+```
+
+新建场景步骤：copy `android_500_multi_device_default.yaml` → 改 `name`/`devices`
+（serial 按 adb devices、platform/sdk_version 按目标）/`topologies`/`runner` →
+存 `config/scenarios/新名.yaml` → `--scenario 新名` 运行。多账号同场再加 `account_c`
+（需配套设备，见三账号规划）。
+
 `--build` 在 pytest session 开始前读取 Scenario：Android 对每个不同的
 `sdk_version` 执行对应 flavor 的 `flutter build apk --debug`，并刷新 Android
 artifact manifest 的 APK hash；Web 会执行 npm 构建。iOS 当前执行默认
@@ -170,65 +278,6 @@ python scripts/run_phase1_matrix.py --no-build
 - **请求**：`{ "manager", "cmd", "info", "id"? | "sequence"? }`，可选 `type`、`objId`、`device`（多端）。
 - **成功响应**：原请求体带回 `result`，去掉 `info`，即含 `cmd`、`manager`、`result`。
 - **失败响应**：`{ "success": false, "error": { "code", "description" }, "id"? }`。
-
-## 快速开始（从零到第一条用例）
-
-> 跑测试**不需要 Flutter**（复用已有构建产物，pytest 直接 `adb install` 安装 APK）；
-> 只有构建/改动测试 App（wrapper、桥接、新事件转发）才需要 Flutter。
-
-### 1. 环境依赖（分层）
-
-**必备（只跑测试）**
-
-- Python 3.9+，创建虚拟环境并装依赖：
-  ```bash
-  python3 -m venv .venv
-  .venv/bin/pip install -r requirements.txt
-  ```
-- Android SDK `platform-tools`（`adb`，用于安装 APK / 断网控制），确认 `adb devices` 可用
-- 4 台 Android 模拟器（AVD）：`Pixel_5_2`、`Pixel_5_3`、`Pixel_5_5`、`Pixel_5_6`
-- 已有构建产物：`config/artifacts.yaml` 指向的 APK（如 `im_flutter_test/build/app/outputs/flutter-apk/app-sdk500-debug.apk`）；
-  产物不存在时首次需先构建（见下）
-
-**可选（构建 / 开发测试 App）**
-
-- Flutter ≥ 3.3（Dart ≥ 3.5.4，本仓库验证于 Flutter 3.24.5）
-- Android SDK（构建 APK）／ Xcode（iOS 模拟器场景，AVD 名 `iosa/iosb/iosc/iosd`）
-
-### 2. 启动模拟器
-
-```bash
-$ANDROID_SDK/emulator/emulator -avd Pixel_5_2 -no-snapshot -no-boot-anim &
-$ANDROID_SDK/emulator/emulator -avd Pixel_5_3 -no-snapshot -no-boot-anim &
-$ANDROID_SDK/emulator/emulator -avd Pixel_5_5 -no-snapshot -no-boot-anim &
-$ANDROID_SDK/emulator/emulator -avd Pixel_5_6 -no-snapshot -no-boot-anim &
-adb wait-for-device
-```
-
-> **首次需核对 scenario 的设备序列号**：`config/scenarios/android_500_multi_device_default.yaml`
-> 里的 `serial`（默认 `emulator-5554/5556/5558/5560`）按本机 `adb devices` 的
-> 实际序列号核对；不一致时改 yaml（模拟器默认从 5554 开始分配，通常一致）。
-> serial 对不上会报 `AndroidEnvironmentError: configured serial ... is not online`。
-
-### 3. 配置（首次）
-
-```bash
-cp config.yaml.template config.yaml
-```
-
-### 4. 跑第一条用例
-
-```bash
-# 复用已有 APK（不加 --build）
-.venv/bin/python -m pytest --scenario android_500_multi_device_default \
-  tests/group/test_group_metadata.py::test_group_update_subject -q
-
-# 产物不存在 / 改过 Wrapper 后：先构建再装（加 --build）
-.venv/bin/python -m pytest --build --scenario android_500_multi_device_default \
-  tests/group/test_group_metadata.py::test_group_update_subject -q
-```
-
-期望输出：`1 passed`（模拟器在线、APK 安装成功、服务端可达时）。
 
 ## 环境
 
@@ -346,6 +395,7 @@ assert_api.assert_response_matches(actual, expected, ignore_keys={"requestId"})
 ```
 
 
+```python
 from src import gt, lt, ne, ge, le, eq
 assert_api.assert_response_matches(
     resp_status,
@@ -365,42 +415,15 @@ assert_api.assert_response_matches(
     context={"publisher": USER_A},
     ignore_keys={"statusDetails"},
 )
+```
 
 ## Repo-local Skills
 
-This repository includes Codex skills under `skills/` following the create-skill guidelines:
+- `skills/im-sdk-test-case-design` — **写/改 case 的权威规范**（Case 类型、拓扑、断言、Allure；先读 `SKILL.md`）。
+- `skills/im-rest-users` — REST 用户管理（自动建/删账号；pytest 已自动使用，手动调试可选）。
 
-- `skills/im-ws` — WebSocket request/response and event listening helpers.
-  - Scripts: `scripts/ws_call.py`, `scripts/ws_wait.py`
-- `skills/im-rest-users` — REST user provisioning helpers.
-  - Scripts: `scripts/create_users.py`, `scripts/delete_user.py`
-- `skills/im-contact-flow` — High-level contact flows built on WS.
-  - Scripts: `scripts/contact_flow.py`
-
-Usage examples can be found in each skill's `SKILL.md`. Make sure `config.yaml` is configured before using them.
-
-## Make Tasks
-
-- Show help
-  - `make help`
-- WebSocket
-  - Call once: `make ws-call MANAGER=ContactManager CMD=addContact INFO='{"userId":"u2"}' [DEVICE=device_a]`
-  - Call and wait for event: `make ws-call MANAGER=ContactManager CMD=addContact INFO='{"userId":"u2"}' EVENT=CONTACT_INVITED`
-  - Wait for first matching event: `make ws-wait EVENT=CONTACT_INVITED [DEVICE=device_b] [TIMEOUT=15]`
-- REST users
-  - Create: `make create-users USERS='uA uB' [PASSWORD=1]`
-  - Create from file: `make create-users FROM_FILE=users.json`
-  - Delete: `make delete-user USERNAME=uA`
-- Contact flow
-  - Establish friends: `make contact-establish INITIATOR_DEVICE=device_a PEER_DEVICE=device_b USER_A=uA USER_B=uB [REASON=flow]`
-  - Delete friend: `make contact-delete INITIATOR_DEVICE=device_a FRIEND_USER_ID=uB [KEEP_CONVERSATION=1]`
-  - Block/Unblock: `make contact-block DEVICE=device_a USER_ID=uB` / `make contact-unblock DEVICE=device_a USER_ID=uB`
-
-Tips
-- JSON 参数请用单引号包裹（避免 shell 转义）。
-- 运行前确保 `config.yaml` 配置正确；REST 需 `rest_api.base_url` 与 `rest_api.auth_token`。
-- 校验技能目录：`make skills-validate`。
-
+```bash
 pytest -q tests -s --alluredir=out/allure-results
 allure generate out/allure-results -o out/allure-report --clean
 open out/allure-report/index.html
+```

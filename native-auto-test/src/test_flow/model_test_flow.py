@@ -63,9 +63,9 @@ class ContactTestFlow:
             timeout=10.0,
         )
 
-    def get_all_contacts_from_server(self, device: Any) -> dict[str, Any]:
-        """拉取指定 device 的好友列表原始响应，由用例层 assert_response_matches。"""
-        return device.call("ContactManager", Cmd.getAllContactsFromServer.value, info={})
+    def get_all_contacts_from_db(self, device: Any) -> dict[str, Any]:
+        """读取指定 device 的 5.0 本地好友列表原始响应。"""
+        return device.call("ContactManager", Cmd.getAllContactsFromDB.value, info={})
 
     def get_block_list(self, device: Any) -> dict[str, Any]:
         """拉取指定 device 的黑名单原始响应，由用例层 assert_response_matches。"""

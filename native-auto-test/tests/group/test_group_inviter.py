@@ -78,7 +78,7 @@ def test_group_inviter_user_success(device_a, device_b, assert_api, user_a, user
         resp_group = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
-            info={"groupId": group_id, "fetchMembers": True},
+            info={"groupId": group_id},
         )
         result = resp_group.get("result")
         assert isinstance(result, dict), f"getGroupSpecificationFromServer result 非 dict: {resp_group}"

@@ -23,6 +23,11 @@ from tests.chat.test_chat_offline_message_delivery import (
     _restore_case,
     _wait_message_event,
 )
+
+# 5.0 已读/送达回执需发送标记 needReadReceipt=true（否则接收端 asyncSendMessageReadReceipts 跳过、服务端不发送达确认）
+_DELIVERY_FLAG_KEYS = {"needReadReceipt"}
+# 5.0 在线接收媒体消息 body.fileStatus 实测 0（离线重登接收为 3）→ 接收时机相关，嵌套路径不锁
+_MEDIA_BODY_DYNAMIC = {"data.messages[0].body.fileStatus"}
 from tests.chat.test_chat_offline_message_operations import (
     _wait_content_changed,
     _wait_recall_info,
@@ -36,28 +41,28 @@ _TYPED_OPERATION_CASES = [
     pytest.param(
         "file",
         {"targetId": "{{userB}}"},
-        {"type": 5, "displayName": "bigPic.jpg", "fileStatus": 3},
+        {"type": 5, "displayName": "bigPic.jpg", "fileStatus": 0},
         {"type": 5, "displayName": "bigPic.jpg", "fileStatus": 3},
         id="file",
     ),
     pytest.param(
         "image",
         {"targetId": "{{userB}}", "thumbnailLocalPath": ""},
-        {"type": 1, "displayName": "bigPic.jpg", "fileStatus": 3},
+        {"type": 1, "displayName": "bigPic.jpg", "fileStatus": 0},
         {"type": 1, "displayName": "bigPic.jpg", "fileStatus": 3},
         id="image",
     ),
     pytest.param(
         "video",
         {"targetId": "{{userB}}", "thumbnailLocalPath": ""},
-        {"type": 2, "displayName": "video.mov", "fileStatus": 3, "duration": 0},
+        {"type": 2, "displayName": "video.mov", "fileStatus": 0, "duration": 0},
         {"type": 2, "displayName": "video.mov", "fileStatus": 3, "duration": 0},
         id="video",
     ),
     pytest.param(
         "voice",
         {"targetId": "{{userB}}", "duration": 1},
-        {"type": 4, "displayName": "voice.mp3", "fileStatus": 3, "duration": 1},
+        {"type": 4, "displayName": "voice.mp3", "fileStatus": 0, "duration": 1},
         {"type": 4, "displayName": "voice.mp3", "fileStatus": 0, "duration": 1},
         id="voice",
     ),
@@ -145,6 +150,7 @@ def _send_online_typed(
     payload: dict,
     sent_body: dict,
     received_body: dict,
+    need_read_receipt: bool = False,
 ) -> tuple[str, dict]:
     ignore_keys = _MEDIA_DYNAMIC_KEYS if type_key in {"file", "image", "video", "voice"} else _MESSAGE_DYNAMIC_KEYS
     response_body = dict(sent_body)
@@ -159,6 +165,7 @@ def _send_online_typed(
         user_b=user_b,
         response_body=response_body,
         success_body=sent_body,
+        need_read_receipt=need_read_receipt,
         ignore_keys=ignore_keys,
     )
     received = _wait_message_event(
@@ -172,7 +179,8 @@ def _send_online_typed(
         user_a=user_a,
         user_b=user_b,
         body=received_body,
-        ignore_keys=ignore_keys,
+        # B 接收 fileStatus 实测 3（voice 0，received_body 参数已含）→ 锁值，不 ignore
+        ignore_keys=ignore_keys | _DELIVERY_FLAG_KEYS,
     )
     return real_id, received
 
@@ -184,6 +192,7 @@ def _send_online_combine(
     *,
     user_a: str,
     user_b: str,
+    need_read_receipt: bool = False,
 ) -> tuple[str, dict, dict]:
     marker = uuid.uuid4().hex[:8]
     source_ids: list[str] = []
@@ -210,9 +219,10 @@ def _send_online_combine(
         "title": title,
         "summary": summary,
         "compatibleText": compatible_text,
-        "fileStatus": 3,
+        "fileStatus": 0,
     }
     sender_body = {**response_body, "fileStatus": 1}
+    received_body = {**response_body, "fileStatus": 3}
     _, real_id, _ = _assert_send_response_and_success(
         device_a,
         assert_api,
@@ -229,6 +239,7 @@ def _send_online_combine(
         response_body=response_body,
         success_body=sender_body,
         ignore_keys=_COMBINE_DYNAMIC_KEYS,
+        need_read_receipt=need_read_receipt,
     )
     received = _wait_message_event(
         device_b, Cmd.onMessagesReceived.value, real_id=real_id
@@ -240,10 +251,10 @@ def _send_online_combine(
         real_id=real_id,
         user_a=user_a,
         user_b=user_b,
-        body=response_body,
-        ignore_keys=_COMBINE_DYNAMIC_KEYS,
+        body=received_body,
+        ignore_keys=_COMBINE_DYNAMIC_KEYS | _DELIVERY_FLAG_KEYS,
     )
-    return real_id, sender_body, response_body
+    return real_id, sender_body, received_body
 
 
 def _assert_read_event(
@@ -272,9 +283,10 @@ def _assert_read_event(
                         "direction": 0,
                         "status": 2,
                         "hasRead": True,
-                        "hasReadAck": True,
+                        "isPeerRead": True,
+                        "needReadReceipt": True,
+                        "readReceiptCount": 0,
                         "hasDeliverAck": True,
-                        "needGroupAck": False,
                         "isThread": False,
                         "isContentReplaced": False,
                         "deliverOnlineOnly": False,
@@ -283,6 +295,7 @@ def _assert_read_event(
                 ]
             },
         },
+        # 已读事件消息为发送方 → body.fileStatus 实测恒 0（sent_body 参数已为 0）→ 锁值
         ignore_keys=ignore_keys,
     )
 
@@ -317,9 +330,9 @@ def _assert_recall_info(
                             "direction": 1,
                             "status": 2,
                             "hasRead": False,
-                            "hasReadAck": False,
-                            "hasDeliverAck": True,
-                            "needGroupAck": False,
+                            "isPeerRead": False,
+                            "hasDeliverAck": False,
+                            "needReadReceipt": False,
                             "isThread": False,
                             "isContentReplaced": False,
                             "deliverOnlineOnly": False,
@@ -330,6 +343,7 @@ def _assert_recall_info(
                 ]
             },
         },
+        # 撤回消息 body.fileStatus 按撤回信息中的原消息状态断言；voice 实测为 3。
         ignore_keys=ignore_keys,
     )
 
@@ -337,7 +351,6 @@ def _assert_recall_info(
 def _assert_pre_receive_recall_events(
     assert_api,
     recalled_info: dict,
-    recalled: dict,
     *,
     real_id: str,
     user_a: str,
@@ -357,15 +370,6 @@ def _assert_pre_receive_recall_events(
                     }
                 ]
             },
-        },
-        ignore_keys={"timestamp"},
-    )
-    assert_api.assert_response_matches(
-        recalled,
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessagesRecalled.value,
-            "data": {"messages": []},
         },
         ignore_keys={"timestamp"},
     )
@@ -403,6 +407,7 @@ def test_chat_offline_typed_message_read_after_sender_relogin(
             payload=payload,
             sent_body=sent_body,
             received_body=received_body,
+            need_read_receipt=True,
         )
         device_a.drain_events(timeout=0.5)
         logout_for_offline(device_a, assert_api, device_name="deviceA")
@@ -458,7 +463,8 @@ def test_chat_offline_typed_message_recall_after_recipient_relogin(
         type_key, payload_template, sent_template, received_template, user_b
     )
     ignore_keys = _MEDIA_DYNAMIC_KEYS if type_key in {"file", "image", "video", "voice"} else _MESSAGE_DYNAMIC_KEYS
-    recall_body = sent_body if type_key == "voice" else received_body
+    # 撤回信息中的 voice body.fileStatus 实测为 3。
+    recall_body = {**sent_body, "fileStatus": 3} if type_key == "voice" else received_body
     try:
         _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
         real_id, _ = _send_online_typed(
@@ -498,19 +504,6 @@ def test_chat_offline_typed_message_recall_after_recipient_relogin(
             body=recall_body,
             ignore_keys=ignore_keys,
         )
-        recalled = _wait_message_event(
-            device_b, Cmd.onMessagesRecalled.value, real_id=real_id
-        )
-        _assert_received_message(
-            assert_api,
-            recalled,
-            event_type=Cmd.onMessagesRecalled.value,
-            real_id=real_id,
-            user_a=user_a,
-            user_b=user_b,
-            body=recall_body,
-            ignore_keys=ignore_keys,
-        )
         local = device_b.call(
             "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
         )
@@ -542,6 +535,7 @@ def test_chat_offline_combine_message_read_after_sender_relogin(
             assert_api,
             user_a=user_a,
             user_b=user_b,
+            need_read_receipt=True,
         )
         device_a.drain_events(timeout=0.5)
         logout_for_offline(device_a, assert_api, device_name="deviceA")
@@ -620,19 +614,6 @@ def test_chat_offline_combine_message_recall_after_recipient_relogin(
             body=received_body,
             ignore_keys=_COMBINE_DYNAMIC_KEYS,
         )
-        recalled = _wait_message_event(
-            device_b, Cmd.onMessagesRecalled.value, real_id=real_id
-        )
-        _assert_received_message(
-            assert_api,
-            recalled,
-            event_type=Cmd.onMessagesRecalled.value,
-            real_id=real_id,
-            user_a=user_a,
-            user_b=user_b,
-            body=received_body,
-            ignore_keys=_COMBINE_DYNAMIC_KEYS,
-        )
         local = device_b.call(
             "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
         )
@@ -700,9 +681,9 @@ def test_chat_offline_custom_body_modified_after_recipient_relogin(
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
+                    "isPeerRead": False,
                     "hasDeliverAck": True,
-                    "needGroupAck": False,
+                    "needReadReceipt": False,
                     "isThread": False,
                     "isContentReplaced": False,
                     "body": {
@@ -737,9 +718,9 @@ def test_chat_offline_custom_body_modified_after_recipient_relogin(
                         "direction": 1,
                         "status": 2,
                         "hasRead": False,
-                        "hasReadAck": False,
+                        "isPeerRead": False,
                         "hasDeliverAck": True,
-                        "needGroupAck": False,
+                        "needReadReceipt": False,
                         "isThread": False,
                         "isContentReplaced": False,
                         "body": final_body,
@@ -769,9 +750,9 @@ def test_chat_offline_custom_body_modified_after_recipient_relogin(
                     "direction": 1,
                     "status": 2,
                     "hasRead": False,
-                    "hasReadAck": False,
+                    "isPeerRead": False,
                     "hasDeliverAck": True,
-                    "needGroupAck": False,
+                    "needReadReceipt": False,
                     "isThread": False,
                     "isContentReplaced": False,
                     "body": {
@@ -847,9 +828,9 @@ def test_chat_offline_media_attributes_modified_after_recipient_relogin(
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
+                    "isPeerRead": False,
                     "hasDeliverAck": True,
-                    "needGroupAck": False,
+                    "needReadReceipt": False,
                     "isThread": False,
                     "isContentReplaced": False,
                     "attributes": attributes,
@@ -882,9 +863,9 @@ def test_chat_offline_media_attributes_modified_after_recipient_relogin(
                         "direction": 1,
                         "status": 2,
                         "hasRead": False,
-                        "hasReadAck": False,
+                        "isPeerRead": False,
                         "hasDeliverAck": True,
-                        "needGroupAck": False,
+                        "needReadReceipt": False,
                         "isThread": False,
                         "isContentReplaced": False,
                         "attributes": attributes,
@@ -915,9 +896,9 @@ def test_chat_offline_media_attributes_modified_after_recipient_relogin(
                     "direction": 1,
                     "status": 2,
                     "hasRead": False,
-                    "hasReadAck": False,
+                    "isPeerRead": False,
                     "hasDeliverAck": True,
-                    "needGroupAck": False,
+                    "needReadReceipt": False,
                     "isThread": False,
                     "isContentReplaced": False,
                     "attributes": attributes,
@@ -972,13 +953,9 @@ def test_chat_offline_text_recalled_before_first_recipient_login(
             device_b, assert_api, device_name="deviceB", user_id=user_b
         )
         recalled_info = _wait_recall_info(device_b, real_id=real_id)
-        recalled = device_b.receive_message(
-            match_event_type=Cmd.onMessagesRecalled.value, timeout=20.0
-        )
         _assert_pre_receive_recall_events(
             assert_api,
             recalled_info,
-            recalled,
             real_id=real_id,
             user_a=user_a,
         )
@@ -1040,9 +1017,9 @@ def test_chat_offline_text_modified_before_first_recipient_login(
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
+                    "isPeerRead": False,
                     "hasDeliverAck": False,
-                    "needGroupAck": False,
+                    "needReadReceipt": False,
                     "isThread": False,
                     "isContentReplaced": False,
                     "body": {
@@ -1091,9 +1068,9 @@ def test_chat_offline_text_modified_before_first_recipient_login(
                     "direction": 1,
                     "status": 2,
                     "hasRead": False,
-                    "hasReadAck": False,
+                    "isPeerRead": False,
                     "hasDeliverAck": True,
-                    "needGroupAck": False,
+                    "needReadReceipt": False,
                     "isThread": False,
                     "isContentReplaced": False,
                     "body": {

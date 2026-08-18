@@ -453,3 +453,5 @@ static NSString *const ChatGetConversationName = @"getConversationName";
 static NSString *const ChatGetConversationAvatar = @"getConversationAvatar";
 static NSString *const ChatGetUsers = @"getUsers";
 static NSString *const ChatOnDatabaseOpened = @"onDatabaseOpened";
+static NSString *const ChatOnDataSyncStart = @"onDataSyncStart";
+static NSString *const ChatOnDataSyncFinish = @"onDataSyncFinish";

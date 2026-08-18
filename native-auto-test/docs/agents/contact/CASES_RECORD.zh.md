@@ -53,19 +53,19 @@
 12. `tests/contact/test_contact.py::test_contact_delete_contact_nonexistent_user`
     删除不存在用户，验证目标不存在类错误语义。
 
-## getAllContactsFromServer
+## getAllContactsFromDB
 
 正常 cases
 13. `tests/contact/test_contact.py::test_friend_add_accept_and_list`
-    好友同意后拉取服务端好友列表，验证列表包含目标好友。
+    好友同意后读取本地好友列表，验证列表包含目标好友。
 14. `tests/contact/test_contact.py::test_friend_add_decline_and_verify_not_friends`
-    好友拒绝后拉取服务端好友列表，验证列表不包含目标用户。
+    好友拒绝后读取本地好友列表，验证列表不包含目标用户。
 15. `tests/contact/test_contact.py::test_contact_block_list_flow_then_unblock_restores_friend`
-    黑名单切换链路中拉取服务端好友列表，验证状态切换一致。
+    黑名单切换链路中读取本地好友列表，验证状态切换一致。
 
 异常 cases
 16. 无（当前测试集中未单独覆盖该 API 的错误入参）。
-    该 API 当前主要用于状态链路校验，异常参数场景待补充。
+    该 API 当前主要用于本地状态链路校验，异常参数场景待补充。
 
 ## getContact
 
@@ -133,7 +133,7 @@
 
 正常 cases
 36. `tests/contact/test_friend_info_sync.py::test_friend_info_sync_on_peer_metadata_change`
-    对端元数据变化后拉取好友信息，验证同步字段可读取；重新登录自动同步回调暂缓记录见 `CASES_DEFERRED.zh.md`。
+    对端元数据变化后拉取好友信息，验证同步字段可读取。
 
 异常 cases
 37. 无（当前专项未定义独立错误入参路径）。
@@ -143,7 +143,7 @@
 
 正常 cases
 38. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_all_contacts_from_db_after_server_sync`
-    建立好友并调用 `getAllContactsFromServer` 同步后，直接调用 `getAllContactsFromDB`，冻结实测本地 DB 返回好友 ID 列表 `[user_b]` 的语义；Dart 公开方法 `getAllContactIds` 复用同一 native cmd，因此该链路同步覆盖 `getAllContactIds`。
+    建立好友后直接调用 `getAllContactsFromDB`，冻结实测本地 DB 返回好友 ID 列表 `[user_b]` 的语义；Dart 公开方法 `getAllContactIds` 复用同一 native cmd，因此该链路同步覆盖 `getAllContactIds`。
 
 异常 cases
 39. 无（该 API 无入参，当前以有数据本地读取链路覆盖；空本地缓存场景后续可作为边界补充）。
@@ -166,5 +166,15 @@
 异常 cases
 43. 无（该 API 无入参，且多平台同时登录需要额外可控设备会话；当前先覆盖单端登录下的稳定返回）。
 
+## 5.0 Client 数据同步事件
+
+正常 cases
+44. `tests/contact/test_friend_info_sync.py::test_contact_data_sync_events_after_relogin`
+    设置 `dataSyncType=CONTACTS(2)` 后重新登录，验证 `onDataSyncStart` 和
+    `onDataSyncFinish` 到达，且完成事件无错误。
+
+异常 cases
+45. 无（该专项只验证 5.0 原生同步事件的正常链路）。
+
 ## 统计
-- 当前记录 case 条目总数：`43`
+- 当前记录 case 条目总数：`45`

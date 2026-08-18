@@ -14,7 +14,7 @@ def _allure_step(name: str):
 
         return allure.step(name)
     except ImportError:
-        return nullcontext(), GroupChangeEvent
+        return nullcontext()
 from tests.group.group_helpers import (
     assert_group_events,
     assert_no_group_event,
@@ -650,8 +650,10 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, device_b_s
             owner=user_a,
             member_count_value=2,
             member_list_value=[user_b],
-            # style=2 审批群：原生 allowInvites=true → isMemberAllowToInvite=True
-            is_member_allow_to_invite=True,
+            # 官方迁移表 6.1：style=2（公开需审批）allowInvites=false
+            is_member_allow_to_invite=False,
+            is_public=True,
+            join_approval_required=True,
         )
     finally:
         if group_id:
@@ -788,8 +790,10 @@ def test_group_request_to_join_and_decline_success(device_a, device_b, device_b_
             owner=user_a,
             member_count_value=1,
             member_list_value=[],
-            # style=2 审批群：原生 allowInvites=true → isMemberAllowToInvite=True
-            is_member_allow_to_invite=True,
+            # 官方迁移表 6.1：style=2（公开需审批）allowInvites=false
+            is_member_allow_to_invite=False,
+            is_public=True,
+            join_approval_required=True,
         )
     finally:
         if group_id:

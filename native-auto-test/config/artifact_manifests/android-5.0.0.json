@@ -5,7 +5,7 @@
   "appVersion": "1.0.0",
   "wrapperCommit": "runtime",
   "nativeSdkSha256": "runtime",
-  "artifactSha256": "0816df2a89469a2c08764d5acae8b2fd84d02679b1f1321516fa906ac1fee1c9",
+  "artifactSha256": "51544fe2128aac8c85f07b61328b545a5707a7c8780f4d6cda4601ecccff1a61",
   "capabilities": [
     "ChatManager.ackConversationRead",
     "ChatManager.ackGroupMessageRead",
@@ -131,9 +131,6 @@
     "Client.login",
     "Client.logout",
     "Client.notifyTokenExpired",
-    "Client.onDataSyncFinish",
-    "Client.onDataSyncStart",
-    "Client.onDatabaseOpened",
     "Client.renewToken",
     "Client.sendFCMTokenToServer",
     "Client.sendHonorPushTokenToServer",
