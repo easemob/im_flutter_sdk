@@ -71,7 +71,7 @@ def assert_error(resp: dict[str, Any], code: int | None = None, description: str
         return
     err = get_error(resp)
     if code is not None and err.get("code") != code:
-        pytest.fail(f"Expected error code {code}, got {err.get(code)}")
+        pytest.fail(f"Expected error code {code}, got {err.get('code')}")
     if description is not None and description not in str(err.get("description", "")):
         pytest.fail(f"Expected error description containing {description}, got {err}")
 

@@ -5,7 +5,12 @@ import uuid
 import pytest
 
 from src import Cmd, ne
-from tests.chatroom.chatroom_helpers import assert_join_chatroom_response, create_chatroom_or_skip, safe_delete_chatroom
+from tests.chatroom.chatroom_helpers import (
+    _allure_step,
+    assert_join_chatroom_response,
+    create_chatroom_or_skip,
+    safe_delete_chatroom,
+)
 
 
 pytestmark = [pytest.mark.client, pytest.mark.chatroom, pytest.mark.agorachat4_23_0]
@@ -155,7 +160,7 @@ def test_chatroom_add_fetch_remove_white_list_success(topology, assert_api):
 
 def _join_chatroom_as_b(device_b, assert_api, room_id: str) -> None:
     join_resp = device_b.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
-    assert_join_chatroom_response(assert_api, join_resp, device="deviceB", room_id=room_id)
+    assert_join_chatroom_response(assert_api, join_resp, device=device_b.device_name, room_id=room_id)
 
 
 def _assert_list_response(assert_api, resp: dict, *, cmd: str, device: str) -> list:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import nullcontext
 import time
 import uuid
 
@@ -7,6 +8,16 @@ from src import Cmd, ChatRoomEvent
 from src.tools.response_match import gt
 import pytest
 from src.rest_api.chatroom_api import create_chat_room, delete_chat_room
+
+
+def _allure_step(name: str):
+    """Return an Allure step when available, otherwise a no-op context manager."""
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext()
 
 
 def new_chatroom_name(prefix: str = "chatroom") -> str:
@@ -108,7 +119,14 @@ def chatroom_manager_call(device, cmd: str, info: dict | None = None, *, manager
     return device.call(manager, cmd, info=info or {})
 
 
-def assert_join_chatroom_response(assert_api, resp: dict, *, device: str, room_id: str) -> None:
+def assert_join_chatroom_response(
+    assert_api,
+    resp: dict,
+    *,
+    device: str,
+    room_id: str,
+    is_in_whitelist: bool = False,
+) -> None:
     assert_api.assert_response_matches(
         resp,
         expected={
@@ -119,7 +137,7 @@ def assert_join_chatroom_response(assert_api, resp: dict, *, device: str, room_i
                 "roomId": room_id,
                 "memberCount": gt(0),
                 "isAllMemberMuted": False,
-                "isInWhitelist": False,
+                "isInWhitelist": is_in_whitelist,
             },
         },
         ignore_keys={

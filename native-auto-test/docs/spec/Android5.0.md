@@ -65,6 +65,73 @@
 
 Skip 不计入通过；如对应 5.0 替代 API 或原生修复完成，再恢复为严格用例。
 
+## Chatroom 模块（2026-08-18）
+
+```text
+本轮全量结果：3 failed / 134 passed / 7 skipped / 1 warning
+耗时：403.25s（6m43s）
+```
+
+### FAILED（3）
+
+1. `tests/chatroom/test_chatroom_callbacks.py::test_chatroom_member_exited_callback`
+   B 离开聊天室后，A 未收到 `onRoomMemberExited`。A 已显式加入聊天室，保留失败，待 5.0 原生 SDK/服务端确认。
+
+2. `tests/chatroom/test_chatroom_exceptions.py::test_chatroom_join_room_nonexistent`
+   官方 4.x 预期 `code=705`（`Chat room does not exist`），Android 5.0 实际返回 `code=303`；保留严格错误码断言，待确认 5.0 错误码基线。
+
+3. `tests/chatroom/test_chatroom_members.py::test_chatroom_join_with_ext_member_joined_callback`
+   A 加入成功且 wrapper 已传递 ext，但 B 未收到 A 携带 ext 的 `onRoomMemberJoined`，仅收到聊天室初始成员 `user3/ext=""` 事件。严格保留目标成员和 ext 断言，待 5.0 原生 SDK/服务端确认。
+
+### SKIPPED（7）
+
+- 5.0 已移除客户端 `createChatRoom` / `destroyChatRoom`：
+  `test_chatroom_create_room_via_sdk_without_permission`、
+  `test_chatroom_destroy_room_nonexistent`、
+  `test_chatroom_destroy_room_empty_id`、
+  `test_chatroom_destroy_room_success`。
+- 5.0 不支持 `ChatRoomManager.getAllChatRooms`：
+  `test_chatroom_join_then_get_local_room_and_all_rooms`、
+  `test_chatroom_get_all_local_rooms_returns_list`、
+  `test_chatroom_join_leave_other_rooms_option_controls_existing_rooms`。
+
+以上 skip 属于 5.0 API 移除/不支持，不计入通过，也不通过放宽断言处理。
+
+## Client 模块（2026-08-18）
+
+```text
+本轮结果：2 failed / 23 passed / 2 skipped / 1 warning
+耗时：21.59s
+```
+
+### FAILED（2）
+
+- `tests/client/test_client_remaining_api_coverage.py::test_client_session_sensitive_api_boundaries[getLoggedInDevicesFromServer-info2-expected_result2]`
+- `tests/client/test_client_remaining_api_coverage.py::test_client_session_sensitive_api_boundaries[kickAllDevices-info4-expected_result4]`
+
+5.0 wrapper 已改用 token 原生 API：
+
+- `fetchLoggedInDevicesFromServerWithToken`
+- `kickAllDevicesWithToken`
+
+用例中的 `isPwd` 已移除，但原断言仍保留 4.x 的 `204/User does not exist`。5.0 实测非法用户/非法 token 返回：
+`303/Unknown server error`。wrapper 仅透传原生 SDK 错误，不构造 `303`。
+
+临时 discovery 结果：
+
+- 不存在用户 + 有效 token：`303/Unknown server error`
+- 存在用户 + 非法 token：`303/Unknown server error`
+- 存在用户 + 有效 token：正常返回设备列表
+- `kickAllDevices` 的非法凭证场景：`303/Unknown server error`
+- 本轮未观察到 5.0 token API 返回 `204/User does not exist`。
+
+因此 `204` 仍是 SDK 错误码定义，但当前两个 case 实际冻结的是 4.x 密码 API 语义；5.0 应按 token API 重新定义边界预期，不能忽略错误码。
+
+### SKIPPED（2）
+
+- `test_client_create_account_empty_user_boundary`：5.0 移除客户端 `createAccount`，账号预创建走 REST。
+- `test_client_session_sensitive_api_boundaries[loginWithAgoraToken-info5-expected_result5]`：5.0 API Matrix 标记 `Client.loginWithAgoraToken` 为 removed/unsupported。
+
 ## status / fileStatus 实测口径
 
 5.0 相比官方 4.x E2E，消息状态不能再按 4.x 的固定发送响应值统一断言；要按
@@ -128,23 +195,3 @@ Wrapper 为了通过测试改写字段。
 - 不把 `status` / `fileStatus` 放入全局 `ignore_keys`；如果某个接口尚未确认阶段值，应单独记录为待确认，不用忽略字段掩盖。
 
 该状态机差异未出现在官方 5.0 API 变更说明中，属于 Android 5.0 原生实测差异。
-
-## Conversation / `deleteConversation` 实测差异
-
-这 3 个用例验证的是本地会话删除，不是服务端会话删除：
-
-- `test_chat_load_all_conversations_contains_then_not_contains`：创建会话、加载会话列表、删除会话、再次确认列表中消失。
-- `test_chat_delete_conversation_existing_then_not_found`：删除已存在会话后，`getConversation(createIfNeed=false)` 应返回空。
-- `test_chat_delete_conversation_nonexistent_returns_bool`：删除不存在会话，验证返回布尔值。
-
-| 场景 | 官方 4.x E2E | Android 5.0 实测 |
-|---|---:|---:|
-| 删除已存在本地会话 | `True` | `False` |
-| 删除不存在本地会话 | `True` | `False` |
-
-Android 5.0 Wrapper 仅透传原生 `EMChatManager.deleteConversation()` 的 boolean，`False` 来自原生 SDK，不是 Wrapper 构造。当前失败发生在返回值断言处，删除后的列表/查询状态尚未在这些失败用例中继续验证，因此暂不将其判断为“删除一定失败”；需单独记录返回值与删除后的本地状态。
-
-## 运行备注
-
-- 全量耗时较长，失败日志中反复出现 managed-ws runner 注册，需另行排查设备连接/重连耗时。
-- `PytestReturnNotNoneWarning`：两个测试函数返回了字符串，应清理测试代码，但不影响本次结果统计。

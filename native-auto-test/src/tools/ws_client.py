@@ -105,16 +105,6 @@ def _is_response_message(msg: dict[str, Any], request_id: Any, request_sequence:
     # 桥接的真正响应不会携带 info。忽略该回显，继续等待真实回包。
     if "info" in msg:
         return False
-    # 当前 relay 对请求回显时还会丢掉 info，并固定补上
-    # {code: 300, description: "Server is unreachable"}。该包早于设备的
-    # 真实执行结果到达，不能结束当前 call。
-    result = msg.get("result")
-    if (
-        isinstance(result, dict)
-        and result.get("code") == 300
-        and result.get("description") == "Server is unreachable"
-    ):
-        return False
     # 必须是响应包：包含 result 或 error，避免请求回显被误当作响应
     if "result" not in msg and "error" not in msg:
         return False

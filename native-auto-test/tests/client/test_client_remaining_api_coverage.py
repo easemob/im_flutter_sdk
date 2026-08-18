@@ -199,27 +199,26 @@ def test_client_update_runtime_setting_success(device_a, assert_api, cmd, info):
             {"appKey": ""},
             {"code": 110, "description": "appkey is null or empty"},
         ),
-        # getLoggedInDevicesFromServer/fetchLoggedInDevices：错误账号密码边界。
+        # getLoggedInDevicesFromServer/fetchLoggedInDevices：错误账号/token 边界。
         (
             Cmd.getLoggedInDevicesFromServer.value,
-            {"userId": "__invalid_user__", "password": "__invalid_pwd__", "isPwd": True},
+            {"userId": "__invalid_user__", "password": "__invalid_pwd__"},
             {"code": 204, "description": "User does not exist"},
         ),
-        # kickDevice：错误账号密码与空 resource 边界，不影响当前设备。
+        # kickDevice：错误账号/token 与空 resource 边界，不影响当前设备。
         (
             Cmd.kickDevice.value,
             {
                 "userId": "__invalid_user__",
                 "password": "__invalid_pwd__",
                 "resource": "",
-                "isPwd": True,
             },
             {"code": 205, "description": "Invalid parameter"},
         ),
-        # kickAllDevices：错误账号密码边界，不影响当前设备。
+        # kickAllDevices：错误账号/token 边界，不影响当前设备。
         (
             Cmd.kickAllDevices.value,
-            {"userId": "__invalid_user__", "password": "__invalid_pwd__", "isPwd": True},
+            {"userId": "__invalid_user__", "password": "__invalid_pwd__"},
             {"code": 204, "description": "User does not exist"},
         ),
         # loginWithAgoraToken：非法账号与空 token 边界，不应切换当前密码登录态。
