@@ -23,6 +23,9 @@
 - 新增用户属性更新事件 `onSelfUserInfoUpdate` 和 `onUserInfoUpdate`；
 - `ChatOptions` 新增 `enableUserInfo` 和 `enableAutoSyncContacts` 配置项；
 
+## 4.19.3
+- 修复 Flutter iOS 上调用 `getUnreadMessageCount` 时将聊天室未读消息一并计算的问题；
+
 ## 4.19.2
 - 安卓依赖 SDK 升级到 4.19.3.1；
 - 修复 Flutter Android 上发送视频没有设置首帧缩略图时无法发送的问题；
