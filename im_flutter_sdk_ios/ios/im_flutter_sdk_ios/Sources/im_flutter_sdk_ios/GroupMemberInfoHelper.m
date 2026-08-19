@@ -14,6 +14,9 @@
     ret[@"userId"] = self.userId;
     ret[@"joinedTs"] = @(self.joinedTimestamp);
     ret[@"role"] = [NSNumber numberWithInteger:[EnumTools groupPermissionTypeToInt:self.role]];
+    ret[@"namecard"] = self.namecard;
+    ret[@"nickname"] = self.nickname;
+    ret[@"avatarUrl"] = self.avatarUrl;
     return ret;
 }
 @end

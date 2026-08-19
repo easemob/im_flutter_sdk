@@ -243,6 +243,16 @@
     else if ([ChatLoadMessagesWithIds isEqualToString:call.method]) {
         [self loadMessagesWithIds:call.arguments channelName:call.method result:result];
     }
+    // 4.22.0
+    else if ([ChatDownloadBigImage isEqualToString:call.method]) {
+        [self downloadBigImage:call.arguments channelName:call.method result:result];
+    }
+    else if ([ChatVoiceMessageToText isEqualToString:call.method]) {
+        [self voiceMessageToText:call.arguments channelName:call.method result:result];
+    }
+    else if ([ChatVoiceFileToText isEqualToString:call.method]) {
+        [self voiceFileToText:call.arguments channelName:call.method result:result];
+    }
     else {
         [super handleMethodCall:call result:result];
     }
@@ -1626,6 +1636,97 @@
                       channelName:aChannelName
                             error:aError
                            object:msgList];
+    }];
+}
+
+#pragma mark 4.22.0
+
+- (void)downloadBigImage:(NSDictionary *)param
+             channelName:(NSString *)aChannelName
+                  result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    __block EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
+    EMChatMessage *tmpMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
+    [EMClient.sharedClient.chatManager downloadBigImageAttachment:tmpMsg
+                                                         progress:^(int progress)
+     {
+        [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
+                                    arguments:@{
+            @"progress":@(progress),
+            @"localId": msg.messageId
+        }];
+    } completion:^(EMChatMessage *message, EMError *error)
+     {
+        if (error) {
+            NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusFailed message:message thumbnail:NO];
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageError
+                                        arguments:@{
+                @"error":[error toJson],
+                @"localId": msg.messageId,
+                @"message":msgDict
+            }];
+        }else {
+            NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusSucceed message:message thumbnail:NO];
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageSuccess
+                                        arguments:@{
+                @"message":msgDict,
+                @"localId": msg.messageId
+            }];
+        }
+    }];
+
+    NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusDownloading message:msg thumbnail:NO];
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:msgDict];
+}
+
+- (void)voiceMessageToText:(NSDictionary *)param
+               channelName:(NSString *)aChannelName
+                    result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
+    EMChatMessage *tmpMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
+    [EMClient.sharedClient.chatManager voiceMessageToText:tmpMsg
+                                               completion:^(NSString * _Nullable text, EMError * _Nullable aError)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:@{@"text": text ?: [NSNull null]}];
+    }];
+}
+
+- (void)voiceFileToText:(NSDictionary *)param
+            channelName:(NSString *)aChannelName
+                 result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *filePath = param[@"filePath"];
+    NSDictionary *voiceParamJson = param[@"voiceParam"];
+    EMVoiceParam *voiceParam = nil;
+    if (voiceParamJson && ![voiceParamJson isKindOfClass:[NSNull class]]) {
+        voiceParam = [[EMVoiceParam alloc] init];
+        NSString *format = voiceParamJson[@"format"];
+        if ([format isEqualToString:@"pcm"]) {
+            voiceParam.format = EMVoiceFormatPCM;
+        } else if ([format isEqualToString:@"mp3"]) {
+            voiceParam.format = EMVoiceFormatMP3;
+        } else if ([format isEqualToString:@"amr"]) {
+            voiceParam.format = EMVoiceFormatAMR;
+        }
+        voiceParam.sampleRate = [voiceParamJson[@"sampleRate"] integerValue];
+        voiceParam.bitsPerSample = [voiceParamJson[@"bitsPerSample"] integerValue];
+        voiceParam.channels = [voiceParamJson[@"channels"] integerValue];
+    }
+    [EMClient.sharedClient.chatManager voiceFileToText:filePath
+                                            voiceParam:voiceParam
+                                            completion:^(NSString * _Nullable text, EMError * _Nullable aError)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:@{@"text": text ?: [NSNull null]}];
     }];
 }
 

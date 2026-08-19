@@ -380,4 +380,16 @@ public class MethodKey {
     // 4.15.2
     static final String loadConversationMessagesWithKeyword = "loadConversationMessagesWithKeyword";
     static final String loadMessagesWithIds = "loadMessagesWithIds";
+
+    // 4.22.0
+    static final String downloadBigImage = "downloadBigImage";
+    static final String voiceMessageToText = "voiceMessageToText";
+    static final String voiceFileToText = "voiceFileToText";
+    static final String updateGroupNamecard = "updateGroupNamecard";
+    static final String getGroupNamecard = "getGroupNamecard";
+    static final String subscribeUsersInfo = "subscribeUsersInfo";
+    static final String unsubscribeUsersInfo = "unsubscribeUsersInfo";
+    static final String fetchSubscribedUsers = "fetchSubscribedUsers";
+    static final String getLocalUserInfoByIds = "getLocalUserInfoByIds";
+    static final String onUserInfoChanged = "onUserInfoChanged";
 }

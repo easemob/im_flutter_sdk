@@ -9,8 +9,9 @@
 #import "ClientWrapper.h"
 #import "MethodKeys.h"
 #import "UserInfoHelper.h"
+#import "ListenerHandle.h"
 
-@interface UserInfoManagerWrapper ()
+@interface UserInfoManagerWrapper () <EMUserInfoManagerDelegate>
 
 @end
 
@@ -19,8 +20,13 @@
     
     if(self = [super initWithChannelName:aChannelName
                            registrar:registrar]) {
+        [EMClient.sharedClient.userInfoManager addDelegate:self delegateQueue:nil];
     }
     return self;
+}
+
+- (void)unRegisterEaseListener {
+    [EMClient.sharedClient.userInfoManager removeDelegate:self];
 }
 
 
@@ -46,6 +52,31 @@
         [self fetchUserInfoByIdWithType:call.arguments
                             channelName:call.method
                                  result:result];
+    }
+    
+    // 4.22.0
+    if ([call.method isEqualToString:ChatSubscribeUsersInfo]) {
+        [self subscribeUsersInfo:call.arguments
+                     channelName:call.method
+                          result:result];
+    }
+    
+    if ([call.method isEqualToString:ChatUnsubscribeUsersInfo]) {
+        [self unsubscribeUsersInfo:call.arguments
+                       channelName:call.method
+                            result:result];
+    }
+    
+    if ([call.method isEqualToString:ChatFetchSubscribedUsers]) {
+        [self fetchSubscribedUsers:call.arguments
+                       channelName:call.method
+                            result:result];
+    }
+    
+    if ([call.method isEqualToString:ChatGetLocalUserInfoByIds]) {
+        [self getLocalUserInfoByIds:call.arguments
+                        channelName:call.method
+                             result:result];
     }
     
 }
@@ -135,6 +166,87 @@
 
 }
 
+
+#pragma mark - 4.22.0
+
+- (void)subscribeUsersInfo:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
+    NSArray *userIds = param[@"userIds"];
+    [EMClient.sharedClient.userInfoManager subscribeUsersInfo:userIds
+                                                   completion:^(EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:nil];
+    }];
+}
+
+- (void)unsubscribeUsersInfo:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
+    NSArray *userIds = param[@"userIds"];
+    [EMClient.sharedClient.userInfoManager unsubscribeUsersInfo:userIds
+                                                     completion:^(EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:nil];
+    }];
+}
+
+- (void)fetchSubscribedUsers:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
+    [EMClient.sharedClient.userInfoManager fetchSubscribedUsers:^(NSArray<EMUserInfo *> * _Nullable users, EMError * _Nullable aError) {
+        NSMutableArray *userList = [NSMutableArray array];
+        for (EMUserInfo *userInfo in users) {
+            [userList addObject:[userInfo toJson]];
+        }
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:@{@"users": userList}];
+    }];
+}
+
+- (void)getLocalUserInfoByIds:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    NSArray *userIds = param[@"userIds"];
+    NSDictionary *userInfos = [EMClient.sharedClient.userInfoManager getUserInfoByIds:userIds];
+    NSMutableDictionary *dic = NSMutableDictionary.new;
+    [userInfos enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        dic[key] = [(EMUserInfo *)obj toJson];
+    }];
+    [self wrapperCallBack:result
+              channelName:aChannelName
+                    error:nil
+                   object:[dic copy]];
+}
+
+#pragma mark - EMUserInfoManagerDelegate
+
+- (void)onSelfUserInfoUpdate:(EMUserInfo *)aUserInfo {
+    __weak typeof(self) weakSelf = self;
+    [ListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onSelfUserInfoUpdate",
+            @"userInfo":[aUserInfo toJson]
+        };
+        [weakSelf.channel invokeMethod:ChatOnUserInfoChanged arguments:map];
+    }];
+}
+
+- (void)onUserInfoUpdate:(NSDictionary<NSString *, EMUserInfo *> *)aUserInfos {
+    __weak typeof(self) weakSelf = self;
+    [ListenerHandle.sharedInstance addHandle:^{
+        NSMutableArray *userList = [NSMutableArray array];
+        for (EMUserInfo *userInfo in aUserInfos.allValues) {
+            [userList addObject:[userInfo toJson]];
+        }
+        NSDictionary *map = @{
+            @"type":@"onUserInfoUpdate",
+            @"userInfos":userList
+        };
+        [weakSelf.channel invokeMethod:ChatOnUserInfoChanged arguments:map];
+    }];
+}
 
 - (EMUserInfoType)userInfoTypeFromInt:(int)typeValue {
     EMUserInfoType userInfoType;

@@ -13,12 +13,12 @@ import '../internal/inner_headers.dart';
 ///
 /// Adds connection event handler:
 /// ```dart
-///   EMClient.getInstance.addConnectionEventHandler(UNIQUE_HANDLER_ID, EMConnectionEventHandler());
+///   ChatClient.getInstance.addConnectionEventHandler(UNIQUE_HANDLER_ID, ConnectionEventHandler());
 /// ```
 ///
 /// Remove a connection event handler:
 /// ```dart
-///   EMClient.getInstance.removeConnectionEventHandler(UNIQUE_HANDLER_ID);
+///   ChatClient.getInstance.removeConnectionEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
 ///
@@ -30,15 +30,15 @@ import '../internal/inner_headers.dart';
 ///
 /// 添加 connection event handler:
 /// ```dart
-///   EMClient.getInstance.addConnectionEventHandler(UNIQUE_HANDLER_ID, EMConnectionEventHandler());
+///   ChatClient.getInstance.addConnectionEventHandler(UNIQUE_HANDLER_ID, ConnectionEventHandler());
 /// ```
 ///
 /// 移除 connection event handler:
 /// ```dart
-///   EMClient.getInstance.removeConnectionEventHandler(UNIQUE_HANDLER_ID);
+///   ChatClient.getInstance.removeConnectionEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
-class EMConnectionEventHandler {
+class ConnectionEventHandler {
   /// ~english
   /// Occurs when the SDK connects to the chat server successfully.
   /// ~end
@@ -232,7 +232,7 @@ class EMConnectionEventHandler {
   /// Param [onOfflineMessageSyncFinish] 从服务器拉取离线消息结束时触发。
   ///
   /// ~end
-  EMConnectionEventHandler({
+  ConnectionEventHandler({
     this.onConnected,
     this.onDisconnected,
     this.onUserDidLoginFromOtherDevice,
@@ -256,12 +256,12 @@ class EMConnectionEventHandler {
 ///
 /// Adds a multi-device event handler:
 /// ```dart
-///   EMClient.getInstance.addMultiDeviceEventHandler((UNIQUE_HANDLER_ID, EMMultiDeviceEventHandler());
+///   ChatClient.getInstance.addMultiDeviceEventHandler((UNIQUE_HANDLER_ID, ChatMultiDeviceEventHandler());
 /// ```
 ///
 /// Removes a multi-device event handler:
 /// ```dart
-///   EMClient.getInstance.removeMultiDeviceEventHandler(UNIQUE_HANDLER_ID);
+///   ChatClient.getInstance.removeMultiDeviceEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
 ///
@@ -271,15 +271,15 @@ class EMConnectionEventHandler {
 ///
 /// 添加监听:
 /// ```dart
-///   EMClient.getInstance.addMultiDeviceEventHandler((UNIQUE_HANDLER_ID, EMMultiDeviceEventHandler());
+///   ChatClient.getInstance.addMultiDeviceEventHandler((UNIQUE_HANDLER_ID, ChatMultiDeviceEventHandler());
 /// ```
 ///
 /// 移除监听:
 /// ```dart
-///   EMClient.getInstance.removeMultiDeviceEventHandler(UNIQUE_HANDLER_ID);
+///   ChatClient.getInstance.removeMultiDeviceEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
-class EMMultiDeviceEventHandler {
+class ChatMultiDeviceEventHandler {
   /// ~english
   /// The multi-device event of contact.
   /// ~end
@@ -288,7 +288,7 @@ class EMMultiDeviceEventHandler {
   /// 多设备联系人事件。
   /// ~end
   final void Function(
-    EMMultiDevicesEvent event,
+    ChatMultiDevicesEvent event,
     String userId,
     String? ext,
   )? onContactEvent;
@@ -301,7 +301,7 @@ class EMMultiDeviceEventHandler {
   /// 多设备群组事件。
   /// ~end
   final void Function(
-    EMMultiDevicesEvent event,
+    ChatMultiDevicesEvent event,
     String groupId,
     List<String>? userIds,
   )? onGroupEvent;
@@ -314,7 +314,7 @@ class EMMultiDeviceEventHandler {
   /// 多设备 Thread 事件。
   /// ~end
   final void Function(
-    EMMultiDevicesEvent event,
+    ChatMultiDevicesEvent event,
     String chatThreadId,
     List<String> userIds,
   )? onChatThreadEvent;
@@ -339,9 +339,9 @@ class EMMultiDeviceEventHandler {
   /// 开启多设备后单个会话操作的多设备事件回调。
   /// ~end
   final void Function(
-    EMMultiDevicesEvent event,
+    ChatMultiDevicesEvent event,
     String conversationId,
-    EMConversationType type,
+    ChatConversationType type,
   )? onConversationEvent;
 
   /// ~english
@@ -373,7 +373,7 @@ class EMMultiDeviceEventHandler {
   /// Param [onConversationEvent] 多设备单个会话操作事件。
   ///
   /// ~end
-  EMMultiDeviceEventHandler({
+  ChatMultiDeviceEventHandler({
     this.onContactEvent,
     this.onGroupEvent,
     this.onChatThreadEvent,
@@ -385,18 +385,18 @@ class EMMultiDeviceEventHandler {
 /// ~english
 /// The chat event handler.
 ///
-/// This handler is used to check whether messages are received. If messages are sent successfully, a delivery receipt will be returned (delivery receipt needs to be enabled: [EMOptions.requireDeliveryAck].
-/// If the peer user reads the received message, a read receipt will be returned (read receipt needs to be enabled: [EMOptions.requireAck]).
+/// This handler is used to check whether messages are received. If messages are sent successfully, a delivery receipt will be returned (delivery receipt needs to be enabled: [ChatOptions.requireDeliveryAck].
+/// If the peer user reads the received message, a read receipt will be returned (read receipt needs to be enabled: [ChatOptions.requireAck]).
 /// This API should be implemented in the app to listen for message status changes.
 ///
 /// Adds chat event handler:
 /// ```dart
-///   EMClient.getInstance.chatManager.addEventHandler(UNIQUE_HANDLER_ID, EMChatEventHandler());
+///   ChatClient.getInstance.chatManager.addEventHandler(UNIQUE_HANDLER_ID, ChatEventHandler());
 /// ```
 ///
 /// Removes a chat event handler:
 /// ```dart
-///   EMClient.getInstance.chatManager.removeEventHandler(UNIQUE_HANDLER_ID);
+///   ChatClient.getInstance.chatManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
 ///
@@ -407,15 +407,15 @@ class EMMultiDeviceEventHandler {
 ///
 /// 添加监听：
 /// ```dart
-///   EMClient.getInstance.chatManager.addEventHandler(UNIQUE_HANDLER_ID, EMChatEventHandler());
+///   ChatClient.getInstance.chatManager.addEventHandler(UNIQUE_HANDLER_ID, ChatEventHandler());
 /// ```
 ///
 /// 移除监听：
 /// ```dart
-///   EMClient.getInstance.chatManager.removeEventHandler(UNIQUE_HANDLER_ID);
+///   ChatClient.getInstance.chatManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
-class EMChatEventHandler {
+class ChatEventHandler {
   /// ~english
   /// Occurs when a message is received.
   ///
@@ -426,7 +426,7 @@ class EMChatEventHandler {
   /// 收到消息回调。
   /// 在收到文本、图片、视频、语音、地理位置和文件等消息时，通过此回调通知用户。
   /// ~end
-  final void Function(List<EMMessage> messages)? onMessagesReceived;
+  final void Function(List<ChatMessage> messages)? onMessagesReceived;
 
   /// ~english
   /// Occurs when a stream message is received.
@@ -438,7 +438,7 @@ class EMChatEventHandler {
   /// 收到流式消息回调。
   /// 在收到流式消息时，通过此回调通知用户。
   /// ~end
-  final void Function(List<EMMessage> messages)? onStreamMessagesReceived;
+  final void Function(List<ChatMessage> messages)? onStreamMessagesReceived;
 
   /// ~english
   /// Occurs when a command message is received.
@@ -450,7 +450,7 @@ class EMChatEventHandler {
   /// 收到命令消息回调。
   /// 与 [onMessagesReceived] 不同, 这个回调只包含命令的消息，命令消息通常不对用户展示。
   /// ~end
-  final void Function(List<EMMessage> messages)? onCmdMessagesReceived;
+  final void Function(List<ChatMessage> messages)? onCmdMessagesReceived;
 
   /// ~english
   /// Occurs when a read receipt is received for a message.
@@ -459,7 +459,7 @@ class EMChatEventHandler {
   /// ~chinese
   /// 收到单聊消息已读回执的回调。
   /// ~end
-  final void Function(List<EMMessage> messages)? onMessagesRead;
+  final void Function(List<ChatMessage> messages)? onMessagesRead;
 
   /// ~english
   /// Occurs when a read receipt is received for a group message.
@@ -468,7 +468,7 @@ class EMChatEventHandler {
   /// ~chinese
   /// 收到群组消息的已读回执的回调。
   /// ~end
-  final void Function(List<EMGroupMessageAck> groupMessageAcks)?
+  final void Function(List<ChatGroupMessageAck> groupMessageAcks)?
       onGroupMessageRead;
 
   /// ~english
@@ -487,7 +487,7 @@ class EMChatEventHandler {
   /// ~chinese
   /// 收到消息已送达回执的回调。
   /// ~end
-  final void Function(List<EMMessage> messages)? onMessagesDelivered;
+  final void Function(List<ChatMessage> messages)? onMessagesDelivered;
 
   @Deprecated('Use [onMessagesRecalledInfo] instead')
 
@@ -498,7 +498,7 @@ class EMChatEventHandler {
   /// ~chinese
   /// 已收到的消息被撤回的回调。
   /// ~end
-  final void Function(List<EMMessage> messages)? onMessagesRecalled;
+  final void Function(List<ChatMessage> messages)? onMessagesRecalled;
 
   /// ~english
   /// Occurs when a received message is recalled.
@@ -523,10 +523,10 @@ class EMChatEventHandler {
   ///
   /// This event is triggered in the following scenarios:
   /// (1) The message is read by the recipient (The conversation read receipt is sent).
-  /// Upon receiving this event, the SDK sets the [EMMessage.hasReadAck] property of the message in the conversation to `true` in the local database.
+  /// Upon receiving this event, the SDK sets the [ChatMessage.hasReadAck] property of the message in the conversation to `true` in the local database.
   /// (2) In the multi-device login scenario, when one device sends a conversation read receipt,
   /// the server will set the number of unread messages to 0, and the callback occurs on the other devices.
-  /// and the [EMMessage.hasReadAck] property of the message in the conversation is set to `true` in the local database.
+  /// and the [ChatMessage.hasReadAck] property of the message in the conversation is set to `true` in the local database.
   /// ~end
   ///
   /// ~chinese
@@ -534,9 +534,9 @@ class EMChatEventHandler {
   ///
   /// 回调此方法的场景：
   /// （1）消息被接收方阅读，即接收方发送了会话已读回执。
-  /// SDK 在接收到此事件时，会将本地数据库中该会话中消息的 `[EMMessage.hasReadAck]` 属性置为 `true`。
+  /// SDK 在接收到此事件时，会将本地数据库中该会话中消息的 `[ChatMessage.hasReadAck]` 属性置为 `true`。
   /// （2）多端多设备登录场景下，一端发送会话已读回执，服务器端会将会话的未读消息数置为 0，
-  /// 同时其他端会回调此方法，并将本地数据库中该会话中消息的 `[EMMessage.hasReadAck]` 属性置为 `true`。
+  /// 同时其他端会回调此方法，并将本地数据库中该会话中消息的 `[ChatMessage.hasReadAck]` 属性置为 `true`。
   /// ~end
   final void Function(String from, String to)? onConversationRead;
 
@@ -547,7 +547,7 @@ class EMChatEventHandler {
   /// ~chinese
   /// 消息表情回复（Reaction）变化监听器。
   /// ~end
-  final void Function(List<EMMessageReactionEvent> events)?
+  final void Function(List<ChatMessageReactionEvent> events)?
       onMessageReactionDidChange;
 
   /// ~english
@@ -557,7 +557,7 @@ class EMChatEventHandler {
   /// ~chinese
   /// 收到消息内容变化。
   /// ~end
-  final void Function(EMMessage message, String operatorId, int operationTime)?
+  final void Function(ChatMessage message, String operatorId, int operationTime)?
       onMessageContentChanged;
 
   /// ~english
@@ -641,7 +641,7 @@ class EMChatEventHandler {
   ///
   /// Param [onMessagesRecalledInfo] 已收到的消息被撤回的回调。
   /// ~end
-  EMChatEventHandler(
+  ChatEventHandler(
       {this.onMessagesReceived,
       this.onStreamMessagesReceived,
       this.onCmdMessagesReceived,
@@ -663,12 +663,12 @@ class EMChatEventHandler {
 ///
 /// Adds a chat event handler:
 /// ```dart
-///   EMClient.getInstance.chatRoomManager.addEventHandler(UNIQUE_HANDLER_ID, EMChatRoomEventHandler());
+///   ChatClient.getInstance.chatRoomManager.addEventHandler(UNIQUE_HANDLER_ID, ChatRoomEventHandler());
 /// ```
 ///
 /// Removes a chat room event handler:
 /// ```dart
-///   EMClient.getInstance.chatRoomManager.removeEventHandler(UNIQUE_HANDLER_ID);
+///   ChatClient.getInstance.chatRoomManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
 ///
@@ -677,15 +677,15 @@ class EMChatEventHandler {
 ///
 /// 添加监听:
 /// ```dart
-///   EMClient.getInstance.chatRoomManager.addEventHandler(UNIQUE_HANDLER_ID, EMChatRoomEventHandler());
+///   ChatClient.getInstance.chatRoomManager.addEventHandler(UNIQUE_HANDLER_ID, ChatRoomEventHandler());
 /// ```
 ///
 /// Removes a chat room event handler:
 /// ```dart
-///   EMClient.getInstance.chatRoomManager.removeEventHandler(UNIQUE_HANDLER_ID);
+///   ChatClient.getInstance.chatRoomManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
-class EMChatRoomEventHandler {
+class ChatRoomEventHandler {
   /// ~english
   /// Occurs when a member is changed to be an admin.
   /// ~end
@@ -851,7 +851,7 @@ class EMChatRoomEventHandler {
   /// ~chinese
   /// 聊天室详情变更。
   /// ~end
-  final void Function(EMChatRoom room)? onSpecificationChanged;
+  final void Function(ChatRoom room)? onSpecificationChanged;
 
   /// ~english
   /// Occurs when the custom chat room attributes (key-value) are updated.
@@ -950,7 +950,7 @@ class EMChatRoomEventHandler {
   ///
   /// Param [onAttributesRemoved] 聊天室属性被删除。
   /// ~end
-  EMChatRoomEventHandler({
+  ChatRoomEventHandler({
     this.onAdminAddedFromChatRoom,
     this.onAdminRemovedFromChatRoom,
     this.onAllChatRoomMemberMuteStateChanged,
@@ -975,12 +975,12 @@ class EMChatRoomEventHandler {
 ///
 /// Adds a message thread event handler:
 /// ```dart
-///   EMClient.getInstance.chatThreadManager.addEventHandler(UNIQUE_HANDLER_ID, EMChatThreadEventHandler());
+///   ChatClient.getInstance.chatThreadManager.addEventHandler(UNIQUE_HANDLER_ID, ChatThreadEventHandler());
 /// ```
 ///
 /// Removes a chat event handler:
 /// ```dart
-/// EMClient.getInstance.chatThreadManager.removeEventHandler(UNIQUE_HANDLER_ID);
+/// ChatClient.getInstance.chatThreadManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
 ///
@@ -989,15 +989,15 @@ class EMChatRoomEventHandler {
 ///
 /// 添加监听:
 /// ```dart
-///   EMClient.getInstance.chatThreadManager.addEventHandler(UNIQUE_HANDLER_ID, EMChatThreadEventHandler());
+///   ChatClient.getInstance.chatThreadManager.addEventHandler(UNIQUE_HANDLER_ID, ChatThreadEventHandler());
 /// ```
 ///
 /// 移除监听:
 /// ```dart
-/// EMClient.getInstance.chatThreadManager.removeEventHandler(UNIQUE_HANDLER_ID);
+/// ChatClient.getInstance.chatThreadManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
-class EMChatThreadEventHandler {
+class ChatThreadEventHandler {
   /// ~english
   /// Occurs when a message thread is created.
   ///
@@ -1008,7 +1008,7 @@ class EMChatThreadEventHandler {
   /// 子区创建回调。
   /// ~end
   final void Function(
-    EMChatThreadEvent event,
+    ChatThreadEvent event,
   )? onChatThreadCreate;
 
   /// ~english
@@ -1022,7 +1022,7 @@ class EMChatThreadEventHandler {
   /// 子区所属群组的所有成员均可调用该方法。
   /// ~end
   final void Function(
-    EMChatThreadEvent event,
+    ChatThreadEvent event,
   )? onChatThreadDestroy;
 
   /// ~english
@@ -1038,7 +1038,7 @@ class EMChatThreadEventHandler {
   /// 子区所属群组的所有成员均可调用该方法。
   /// ~end
   final void Function(
-    EMChatThreadEvent event,
+    ChatThreadEvent event,
   )? onChatThreadUpdate;
 
   /// ~english
@@ -1049,7 +1049,7 @@ class EMChatThreadEventHandler {
   /// 管理员移除子区用户的回调。
   /// ~end
   final void Function(
-    EMChatThreadEvent event,
+    ChatThreadEvent event,
   )? onUserKickOutOfChatThread;
 
   /// ~english
@@ -1075,7 +1075,7 @@ class EMChatThreadEventHandler {
   ///
   /// Param [onUserKickOutOfChatThread] 管理员移除子区用户的回调。
   /// ~end
-  EMChatThreadEventHandler({
+  ChatThreadEventHandler({
     this.onChatThreadCreate,
     this.onChatThreadDestroy,
     this.onChatThreadUpdate,
@@ -1090,12 +1090,12 @@ class EMChatThreadEventHandler {
 ///
 /// Adds a contact event handler:
 /// ```dart
-///   EMClient.getInstance.contactManager.addEventHandler(UNIQUE_HANDLER_ID, EMContactEventHandler());
+///   ChatClient.getInstance.contactManager.addEventHandler(UNIQUE_HANDLER_ID, ChatContactEventHandler());
 /// ```
 ///
 /// Removes a contact event handler:
 /// ```dart
-///   EMClient.getInstance.contactManager.removeEventHandler(UNIQUE_HANDLER_ID);
+///   ChatClient.getInstance.contactManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
 ///
@@ -1104,15 +1104,15 @@ class EMChatThreadEventHandler {
 ///
 /// 添加监听:
 /// ```dart
-///   EMClient.getInstance.contactManager.addEventHandler(UNIQUE_HANDLER_ID, EMContactEventHandler());
+///   ChatClient.getInstance.contactManager.addEventHandler(UNIQUE_HANDLER_ID, ChatContactEventHandler());
 /// ```
 ///
 /// 移除监听:
 /// ```dart
-///   EMClient.getInstance.contactManager.removeEventHandler(UNIQUE_HANDLER_ID);
+///   ChatClient.getInstance.contactManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
-class EMContactEventHandler {
+class ChatContactEventHandler {
   /// ~english
   /// Occurs when user is added as a contact by another user.
   /// ~end
@@ -1170,6 +1170,41 @@ class EMContactEventHandler {
   )? onFriendRequestDeclined;
 
   /// ~english
+  /// Occurs when the SDK starts syncing the contact list from the server.
+  /// ~end
+  ///
+  /// ~chinese
+  /// SDK 开始从服务器同步联系人列表时触发的回调。
+  /// ~end
+  final void Function()? onContactSyncStart;
+
+  /// ~english
+  /// Occurs when the SDK finishes syncing the contact list from the server.
+  ///
+  /// Param [error] The error information if the sync fails, `null` if the sync succeeds.
+  /// ~end
+  ///
+  /// ~chinese
+  /// SDK 从服务器同步联系人列表结束时触发的回调。
+  ///
+  /// Param [error] 同步失败的错误信息，同步成功时为 `null`。
+  /// ~end
+  final void Function(ChatError? error)? onContactSyncFinish;
+
+  /// ~english
+  /// Occurs when the information of a contact is updated.
+  ///
+  /// Param [contact] The updated contact.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 联系人信息更新时触发的回调。
+  ///
+  /// Param [contact] 更新后的联系人。
+  /// ~end
+  final void Function(ChatContact contact)? onContactInfoUpdate;
+
+  /// ~english
   /// The contact updates listener callback.
   ///
   /// Param [onContactAdded] Current user is added as a contact by another user.
@@ -1181,6 +1216,12 @@ class EMContactEventHandler {
   /// Param [onFriendRequestAccepted] A friend request is approved.
   ///
   /// Param [onFriendRequestDeclined] A friend request is declined.
+  ///
+  /// Param [onContactSyncStart] The SDK starts syncing the contact list from the server.
+  ///
+  /// Param [onContactSyncFinish] The SDK finishes syncing the contact list from the server.
+  ///
+  /// Param [onContactInfoUpdate] The information of a contact is updated.
   /// ~end
   ///
   /// ~chinese
@@ -1195,13 +1236,22 @@ class EMContactEventHandler {
   /// Param [onFriendRequestAccepted] 发出的好友申请被对方同意。
   ///
   /// Param [onFriendRequestDeclined] 发出的好友申请被对方拒绝。
+  ///
+  /// Param [onContactSyncStart] 开始从服务器同步联系人列表回调。
+  ///
+  /// Param [onContactSyncFinish] 从服务器同步联系人列表结束回调。
+  ///
+  /// Param [onContactInfoUpdate] 联系人信息更新回调。
   /// ~end
-  EMContactEventHandler({
+  ChatContactEventHandler({
     this.onContactAdded,
     this.onContactDeleted,
     this.onContactInvited,
     this.onFriendRequestAccepted,
     this.onFriendRequestDeclined,
+    this.onContactSyncStart,
+    this.onContactSyncFinish,
+    this.onContactInfoUpdate,
   });
 }
 
@@ -1212,12 +1262,12 @@ class EMContactEventHandler {
 ///
 /// Adds a group event handler:
 /// ```dart
-///   EMClient.getInstance.groupManager.addEventHandler(UNIQUE_HANDLER_ID, EMGroupEventHandler());
+///   ChatClient.getInstance.groupManager.addEventHandler(UNIQUE_HANDLER_ID, ChatGroupEventHandler());
 /// ```
 ///
 /// Removes a group event handler:
 /// ```dart
-///   EMClient.getInstance.groupManager.removeEventHandler(UNIQUE_HANDLER_ID);
+///   ChatClient.getInstance.groupManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
 ///
@@ -1226,15 +1276,15 @@ class EMContactEventHandler {
 ///
 /// 添加监听:
 /// ```dart
-///   EMClient.getInstance.groupManager.addEventHandler(UNIQUE_HANDLER_ID, EMGroupEventHandler());
+///   ChatClient.getInstance.groupManager.addEventHandler(UNIQUE_HANDLER_ID, ChatGroupEventHandler());
 /// ```
 ///
 /// 移除监听:
 /// ```dart
-///   EMClient.getInstance.groupManager.removeEventHandler(UNIQUE_HANDLER_ID);
+///   ChatClient.getInstance.groupManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
-class EMGroupEventHandler {
+class ChatGroupEventHandler {
   /// ~english
   /// Occurs when a member is set as an admin.
   /// ~end
@@ -1309,13 +1359,13 @@ class EMGroupEventHandler {
 
   /// ~english
   /// Occurs when the group invitation is accepted automatically.
-  /// For settings, See [EMOptions.autoAcceptGroupInvitation].
+  /// For settings, See [ChatOptions.autoAcceptGroupInvitation].
   /// The SDK will join the group before notifying the app of the acceptance of the group invitation.
   /// ~end
   ///
   /// ~chinese
   /// 当前用户自动同意入群邀请的回调。
-  /// 设置请见 [EMOptions.autoAcceptGroupInvitation].
+  /// 设置请见 [ChatOptions.autoAcceptGroupInvitation].
   /// ~end
   final void Function(
     String groupId,
@@ -1494,7 +1544,7 @@ class EMGroupEventHandler {
   /// ~end
   final void Function(
     String groupId,
-    EMGroupSharedFile sharedFile,
+    ChatGroupSharedFile sharedFile,
   )? onSharedFileAddedFromGroup;
 
   /// ~english
@@ -1505,7 +1555,7 @@ class EMGroupEventHandler {
   /// 群详情变更回调。
   /// ~end
   final void Function(
-    EMGroup group,
+    ChatGroup group,
   )? onSpecificationDidUpdate;
 
   /// ~english
@@ -1601,6 +1651,31 @@ class EMGroupEventHandler {
   )? onMembersExitedFromGroup;
 
   /// ~english
+  /// Occurs when the group namecard of a user is changed.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [userId] The user ID of the group member whose namecard is changed.
+  ///
+  /// Param [namecard] The new group namecard, `null` if the namecard is removed.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 用户的群名片变更回调。
+  ///
+  /// Param [groupId] 群组 ID。
+  ///
+  /// Param [userId] 群名片变更的群成员的用户 ID。
+  ///
+  /// Param [namecard] 新的群名片，名片被移除时为 `null`。
+  /// ~end
+  final void Function(
+    String groupId,
+    String userId,
+    String? namecard,
+  )? onUserGroupNamecardChanged;
+
+  /// ~english
   /// The group manager listener callback.
   ///
   /// Param [onAdminAddedFromGroup] A member is set as an admin.
@@ -1657,6 +1732,8 @@ class EMGroupEventHandler {
   ///
   /// Param [onMembersExitedFromGroup] members leaves the group.
   ///
+  /// Param [onUserGroupNamecardChanged] The group namecard of a user is changed.
+  ///
   /// ~end
   ///
   /// ~chinese
@@ -1674,7 +1751,7 @@ class EMGroupEventHandler {
   ///
   /// Param [onAnnouncementChangedFromGroup] 群公告更新回调。
   ///
-  /// Param [onAutoAcceptInvitationFromGroup] 当前用户自动同意入群邀请的回调, 设置请见 [EMOptions.autoAcceptGroupInvitation]。
+  /// Param [onAutoAcceptInvitationFromGroup] 当前用户自动同意入群邀请的回调, 设置请见 [ChatOptions.autoAcceptGroupInvitation]。
   ///
   /// Param [onGroupDestroyed] 当前用户收到群组被解散的回调。
   ///
@@ -1715,8 +1792,10 @@ class EMGroupEventHandler {
   /// Param [onMembersJoinedFromGroup] 成员加入群组。
   ///
   /// Param [onMembersExitedFromGroup] 成员离开群组。
+  ///
+  /// Param [onUserGroupNamecardChanged] 用户的群名片变更回调。
   /// ~end
-  EMGroupEventHandler({
+  ChatGroupEventHandler({
     this.onAdminAddedFromGroup,
     this.onAdminRemovedFromGroup,
     this.onAllGroupMemberMuteStateChanged,
@@ -1746,6 +1825,7 @@ class EMGroupEventHandler {
     this.onAttributesChangedOfGroupMember,
     this.onMembersJoinedFromGroup,
     this.onMembersExitedFromGroup,
+    this.onUserGroupNamecardChanged,
   });
 }
 
@@ -1756,12 +1836,12 @@ class EMGroupEventHandler {
 ///
 /// Adds a presence event handler:
 /// ```dart
-///   EMClient.getInstance.presenceManager.addEventHandler(UNIQUE_HANDLER_ID, EMPresenceEventHandler());
+///   ChatClient.getInstance.presenceManager.addEventHandler(UNIQUE_HANDLER_ID, ChatPresenceEventHandler());
 /// ```
 ///
 /// Removes a presence event handler:
 /// ```dart
-///   EMClient.getInstance.presenceManager.removeEventHandler(UNIQUE_HANDLER_ID);
+///   ChatClient.getInstance.presenceManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
 ///
@@ -1770,15 +1850,15 @@ class EMGroupEventHandler {
 ///
 /// 添加监听:
 /// ```dart
-///   EMClient.getInstance.presenceManager.addEventHandler(UNIQUE_HANDLER_ID, EMPresenceEventHandler());
+///   ChatClient.getInstance.presenceManager.addEventHandler(UNIQUE_HANDLER_ID, ChatPresenceEventHandler());
 /// ```
 ///
 /// 移除监听:
 /// ```dart
-///   EMClient.getInstance.presenceManager.removeEventHandler(UNIQUE_HANDLER_ID);
+///   ChatClient.getInstance.presenceManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
-class EMPresenceEventHandler {
+class ChatPresenceEventHandler {
   /// ~english
   /// Occurs when the presence state of a subscribed user changes.
   /// ~end
@@ -1786,7 +1866,7 @@ class EMPresenceEventHandler {
   /// ~chinese
   /// 收到被订阅用户的在线状态发生变化。
   /// ~end
-  final Function(List<EMPresence> list)? onPresenceStatusChanged;
+  final Function(List<ChatPresence> list)? onPresenceStatusChanged;
 
   /// ~english
   /// The presence manager listener callback.
@@ -1797,7 +1877,7 @@ class EMPresenceEventHandler {
   /// ~chinese
   /// 订阅用户状态变更监听。
   /// ~end
-  EMPresenceEventHandler({
+  ChatPresenceEventHandler({
     this.onPresenceStatusChanged,
   });
 }
@@ -1829,7 +1909,7 @@ class ChatMessageEvent {
   /// ~chinese
   /// 消息发送或下载成功回调。
   /// ~end
-  final void Function(String msgId, EMMessage msg)? onSuccess;
+  final void Function(String msgId, ChatMessage msg)? onSuccess;
 
   /// ~english
   /// Occurs when a message fails to be sent or downloaded.
@@ -1846,7 +1926,7 @@ class ChatMessageEvent {
   ///
   /// Param [msg] 发送或下载失败的消息。
   /// ~end
-  final void Function(String msgId, EMMessage msg, EMError error)? onError;
+  final void Function(String msgId, ChatMessage msg, ChatError error)? onError;
 
   /// ~english
   /// Occurs when there is a progress for message upload or download. This event is triggered when a message is being uploaded or downloaded.
@@ -1864,4 +1944,83 @@ class ChatMessageEvent {
   /// Param [progress] 上传或下载进度。
   /// ~end
   final void Function(String msgId, int progress)? onProgress;
+}
+
+/// ~english
+/// The user info event handler.
+///
+/// Occurs when the user attributes of the current user or subscribed users are updated.
+///
+/// Adds a user info event handler:
+/// ```dart
+///   ChatClient.getInstance.userInfoManager.addEventHandler(UNIQUE_HANDLER_ID, ChatUserInfoEventHandler());
+/// ```
+///
+/// Removes a user info event handler:
+/// ```dart
+///   ChatClient.getInstance.userInfoManager.removeEventHandler(UNIQUE_HANDLER_ID);
+/// ```
+/// ~end
+///
+/// ~chinese
+/// 用户属性事件监听。
+///
+/// 当前用户或被订阅用户的用户属性更新时触发。
+///
+/// 添加监听:
+/// ```dart
+///   ChatClient.getInstance.userInfoManager.addEventHandler(UNIQUE_HANDLER_ID, ChatUserInfoEventHandler());
+/// ```
+///
+/// 移除监听:
+/// ```dart
+///   ChatClient.getInstance.userInfoManager.removeEventHandler(UNIQUE_HANDLER_ID);
+/// ```
+/// ~end
+class ChatUserInfoEventHandler {
+  /// ~english
+  /// Occurs when the user attributes of the current user are updated.
+  ///
+  /// Param [userInfo] The updated user attributes of the current user.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 当前用户的用户属性更新回调。
+  ///
+  /// Param [userInfo] 更新后的当前用户的用户属性。
+  /// ~end
+  final void Function(ChatUserInfo userInfo)? onSelfUserInfoUpdate;
+
+  /// ~english
+  /// Occurs when the user attributes of subscribed users are updated.
+  ///
+  /// Param [userInfos] The updated user attributes of subscribed users.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 被订阅用户的用户属性更新回调。
+  ///
+  /// Param [userInfos] 更新后的被订阅用户的用户属性列表。
+  /// ~end
+  final void Function(List<ChatUserInfo> userInfos)? onUserInfoUpdate;
+
+  /// ~english
+  /// The user info event handler.
+  ///
+  /// Param [onSelfUserInfoUpdate] The user attributes of the current user are updated.
+  ///
+  /// Param [onUserInfoUpdate] The user attributes of subscribed users are updated.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 用户属性事件监听。
+  ///
+  /// Param [onSelfUserInfoUpdate] 当前用户的用户属性更新回调。
+  ///
+  /// Param [onUserInfoUpdate] 被订阅用户的用户属性更新回调。
+  /// ~end
+  ChatUserInfoEventHandler({
+    this.onSelfUserInfoUpdate,
+    this.onUserInfoUpdate,
+  });
 }

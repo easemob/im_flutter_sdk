@@ -94,6 +94,16 @@
     ret[@"broadcast"] = @(self.broadcast);
     ret[@"isContentReplaced"] = @(self.isContentReplaced);
 
+    if (self.senderInfo) {
+        ret[@"senderInfo"] = @{
+            @"userId": self.senderInfo.userId ?: [NSNull null],
+            @"nickname": self.senderInfo.nickname ?: [NSNull null],
+            @"avatarUrl": self.senderInfo.avatarUrl ?: [NSNull null],
+            @"remark": self.senderInfo.remark ?: [NSNull null],
+            @"groupNameCard": self.senderInfo.groupNameCard ?: [NSNull null],
+        };
+    }
+
     if (self.streamChunk) {
         NSMutableDictionary *streamChunkDict = [NSMutableDictionary dictionary];
         streamChunkDict[@"status"] = @(self.streamChunk.status);
@@ -411,7 +421,10 @@
     ret[@"secret"] = self.secretKey;
     ret[@"displayName"] = self.displayName;
     ret[@"localPath"] = self.localPath;
-    ret[@"sendOriginalImage"] = self.compressionRatio == 1.0 ? @(YES) : @(NO);
+    ret[@"sendOriginalImage"] = @(self.isOriginalImage);
+    ret[@"bigImageLocalPath"] = self.bigImageLocalPath;
+    ret[@"bigImageRemotePath"] = self.bigImageRemotePath;
+    ret[@"bigImageDownloadStatus"] = [NSNumber numberWithInteger:[EnumTools downloadStatusToInt:self.bigImageDownloadStatus]];
     ret[@"isGif"] = @(self.isGif);
     return ret;
 }
@@ -489,6 +502,7 @@
     ret[@"secret"] = self.secretKey;
     ret[@"remotePath"] = self.remotePath;
     ret[@"fileStatus"] = [NSNumber numberWithInteger:[EnumTools downloadStatusToInt:self.downloadStatus]];
+    ret[@"text"] = self.text;
     return ret;
 }
 

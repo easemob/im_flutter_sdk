@@ -159,6 +159,13 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
             else if (MethodKey.updateGroupAvatar.equals(call.method)) {
                 updateGroupAvatar(param, call.method, result);
             }
+            // 4.22.0
+            else if (MethodKey.updateGroupNamecard.equals(call.method)) {
+                updateGroupNamecard(param, call.method, result);
+            }
+            else if (MethodKey.getGroupNamecard.equals(call.method)) {
+                getGroupNamecard(param, call.method, result);
+            }
             else {
                 super.onMethodCall(call, result);
             }
@@ -1337,6 +1344,21 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
                         }
                 );
             }
+
+            // 4.22.0
+            @Override
+            public void onUserGroupNamecardUpdated(String groupId, String userId, String groupNamecard) {
+                ListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onUserGroupNamecardChanged");
+                            data.put("groupId", groupId);
+                            data.put("userId", userId);
+                            data.put("namecard", groupNamecard);
+                            post(() -> channel.invokeMethod(MethodKey.onGroupChanged, data));
+                        }
+                );
+            }
         };
         EMClient.getInstance().groupManager().addGroupChangeListener(groupChangeListener);
     }
@@ -1386,5 +1408,25 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
                 super.updateObject(GroupHelper.toJson(group));
             }
         });
+    }
+
+    // 4.22.0
+    private void updateGroupNamecard(JSONObject param, String channelName, Result result) throws JSONException{
+        String groupId = param.getString("groupId");
+        String namecard = null;
+        if (param.has("namecard") && !param.isNull("namecard")) {
+            namecard = param.getString("namecard");
+        }
+        EMClient.getInstance().groupManager().asyncUpdateGroupNamecard(groupId, namecard, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    // 4.22.0
+    private void getGroupNamecard(JSONObject param, String channelName, Result result) throws JSONException{
+        String groupId = param.getString("groupId");
+        String userId = param.getString("userId");
+        String namecard = EMClient.getInstance().groupManager().getGroupNamecard(groupId, userId);
+        Map<String, Object> map = new HashMap<>();
+        map.put("namecard", namecard);
+        onSuccess(result, channelName, map);
     }
 }

@@ -1,4 +1,4 @@
-import 'em_chat_enums.dart';
+import 'chat_enums.dart';
 
 /// ~english
 /// Reaction operation.

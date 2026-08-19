@@ -291,7 +291,17 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     _options = [EMOptions fromJson:param];
     [self analyzeExtSettings:param];
 
-    [EMClient.sharedClient initializeSDKWithOptions:_options];
+    EMError *aError = [EMClient.sharedClient initializeSDKWithOptions:_options];
+    if (aError) {
+        // init 失败（如 appKey 格式非法）时清空 _options，
+        // 否则重试 init 会因 _options 非空而直接返回假成功。
+        _options = nil;
+        [weakSelf wrapperCallBack:result
+                      channelName:ChatInit
+                            error:aError
+                           object:nil];
+        return;
+    }
 
     [self registerManagers];
     [weakSelf wrapperCallBack:result

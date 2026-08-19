@@ -1,337 +1,145 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-var appKey = "easemob#easeim";
+import 'auto/auto_mode.dart';
+import 'log/floating_log.dart';
+import 'log/log_store.dart';
+import 'pages/init_page.dart';
+import 'sdk_state.dart';
+import 'tools/floating_attachment.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  assert(appKey.isNotEmpty, "appKey is empty");
-
-  EMOptions options = EMOptions.withAppKey(
-    appKey,
-    autoLogin: false,
-  );
-
-  await EMClient.getInstance.init(options);
-  runApp(const MyApp());
+  await LogStore.instance.init();
+  runApp(const ApiTesterApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+/// 用于取 Navigator 内部的 Overlay（RootShell 在 Navigator 之上，
+/// 直接用自身 context 找不到 Overlay）。
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
-  // This widget is the root of your application.
+/// 顶部状态条：未初始化 / 已初始化，未登录 / 已登录：<userId>，不做硬性门控。
+class StatusBar extends StatelessWidget {
+  const StatusBar({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const MyHomePage(title: 'Flutter SDK Demo'),
+    return ListenableBuilder(
+      listenable: SdkState.instance,
+      builder: (context, _) {
+        return Container(
+          width: double.infinity,
+          color: Colors.blueGrey.shade700,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          child: Text(
+            SdkState.instance.statusText,
+            style: const TextStyle(color: Colors.white, fontSize: 12),
+          ),
+        );
+      },
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+/// 根壳：状态条常显 + init 成功后插入悬浮日志/悬浮附件（生命周期独立于页面）。
+class RootShell extends StatefulWidget {
+  final Widget? child;
+  const RootShell({super.key, required this.child});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<RootShell> createState() => _RootShellState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  ScrollController scrollController = ScrollController();
-  String _userId = "";
-  String _password = "";
-  String _messageContent = "";
-  String _chatId = "";
-  final List<String> _logText = [];
+class _RootShellState extends State<RootShell> {
+  bool _logShown = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: SdkState.instance,
+      builder: (context, _) {
+        if (SdkState.instance.initialized && !_logShown) {
+          _logShown = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final overlay = appNavigatorKey.currentState?.overlay;
+            if (overlay != null) {
+              FloatingLog.show(overlay);
+              FloatingAttachment.show(overlay);
+            }
+          });
+        }
+        return Column(
+          children: [
+            // 颜色包在 SafeArea 外层，让刘海/状态栏区域与状态条同色。
+            Container(
+              color: Colors.blueGrey.shade700,
+              child: const SafeArea(bottom: false, child: StatusBar()),
+            ),
+            // 状态条已处理顶部 inset，移除页面的重复 padding，
+            // 否则 AppBar 上方会出现一段空白。
+            Expanded(
+              child: MediaQuery.removePadding(
+                context: context,
+                removeTop: true,
+                child: widget.child ?? const SizedBox.shrink(),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class ApiTesterApp extends StatelessWidget {
+  const ApiTesterApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'IM API Tester',
+      navigatorKey: appNavigatorKey,
+      theme: ThemeData(colorSchemeSeed: Colors.blue, useMaterial3: true),
+      builder: (context, child) => RootShell(child: child),
+      home: AutoMode.enabled ? const AutoHomePage() : const InitPage(),
+    );
+  }
+}
+
+/// 自动模式占位页：启动脚本，展示状态；日志走 stdout / 落盘通道。
+class AutoHomePage extends StatefulWidget {
+  const AutoHomePage({super.key});
+
+  @override
+  State<AutoHomePage> createState() => _AutoHomePageState();
+}
+
+class _AutoHomePageState extends State<AutoHomePage> {
+  bool _started = false;
 
   @override
   void initState() {
     super.initState();
-    _addChatListener();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_started) {
+        _started = true;
+        AutoMode.run();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
-      body: Container(
-        padding: const EdgeInsets.only(left: 10, right: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            TextField(
-              decoration: const InputDecoration(hintText: "Enter userId"),
-              onChanged: (username) => _userId = username,
-            ),
-            TextField(
-              decoration: const InputDecoration(hintText: "Enter password"),
-              onChanged: (password) => _password = password,
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: TextButton(
-                    onPressed: _signIn,
-                    style: ButtonStyle(
-                      foregroundColor: WidgetStateProperty.all(Colors.white),
-                      backgroundColor: WidgetStateProperty.all(
-                        Colors.lightBlue,
-                      ),
-                    ),
-                    child: const Text("SIGN IN"),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextButton(
-                    onPressed: _signOut,
-                    style: ButtonStyle(
-                      foregroundColor: WidgetStateProperty.all(Colors.white),
-                      backgroundColor: WidgetStateProperty.all(
-                        Colors.lightBlue,
-                      ),
-                    ),
-                    child: const Text("SIGN OUT"),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextButton(
-                    onPressed: _signUp,
-                    style: ButtonStyle(
-                      foregroundColor: WidgetStateProperty.all(Colors.white),
-                      backgroundColor: WidgetStateProperty.all(
-                        Colors.lightBlue,
-                      ),
-                    ),
-                    child: const Text("SIGN UP"),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              decoration: const InputDecoration(
-                hintText: "Enter the username you want to send",
-              ),
-              onChanged: (chatId) => _chatId = chatId,
-            ),
-            TextField(
-              decoration: const InputDecoration(hintText: "Enter content"),
-              onChanged: (msg) => _messageContent = msg,
-            ),
-            const SizedBox(height: 10),
-            TextButton(
-              onPressed: _sendMessage,
-              style: ButtonStyle(
-                foregroundColor: WidgetStateProperty.all(Colors.white),
-                backgroundColor: WidgetStateProperty.all(Colors.lightBlue),
-              ),
-              child: const Text("SEND TEXT"),
-            ),
-            Flexible(
-              child: ListView.builder(
-                controller: scrollController,
-                itemBuilder: (_, index) {
-                  return Text(_logText[index]);
-                },
-                itemCount: _logText.length,
-              ),
-            ),
-          ],
+      appBar: AppBar(title: const Text('自动脚本模式')),
+      body: const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text(
+            'API_SCRIPT=${AutoMode.scriptPath}\n\n脚本执行中，结果见 [APITEST] 结构化日志（stdout / api_test.log）。',
+            textAlign: TextAlign.center,
+          ),
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    Platform.isAndroid
-        ? EMClient.getInstance.chatManager.removeMessageEvent(
-            "UNIQUE_HANDLER_ID",
-          )
-        : EMClient.getInstance.chatManager.removeMessageEvent(
-            "UNIQUE_HANDLER_ID",
-          );
-    EMClient.getInstance.chatManager.removeEventHandler("UNIQUE_HANDLER_ID");
-    super.dispose();
-  }
-
-  void _addChatListener() {
-    EMClient.getInstance.addConnectionEventHandler(
-      'identifier',
-      EMConnectionEventHandler(
-        onUserDidLoginFromOtherDevice: (info) {
-          _addLogToConsole(
-              "onUserDidLoginFromOtherDevice,info: ${info.deviceName}");
-        },
-        onConnected: () {
-          _addLogToConsole("onConnected");
-        },
-        onDisconnected: () {
-          _addLogToConsole("onDisconnected");
-        },
-        onUserDidRemoveFromServer: () {
-          _addLogToConsole("onUserDidRemoveFromServer");
-        },
-        onUserDidForbidByServer: () {
-          _addLogToConsole("onUserDidForbidByServer");
-        },
-      ),
-    );
-
-    EMClient.getInstance.chatManager.addMessageEvent(
-      "UNIQUE_HANDLER_ID",
-      ChatMessageEvent(
-        onSuccess: (msgId, msg) {
-          _addLogToConsole("on message succeed");
-        },
-        onProgress: (msgId, progress) {
-          _addLogToConsole("on message progress");
-        },
-        onError: (msgId, msg, error) {
-          _addLogToConsole(
-            "on message failed, code: ${error.code}, desc: ${error.description}",
-          );
-        },
-      ),
-    );
-
-    EMClient.getInstance.chatManager.addEventHandler(
-      "UNIQUE_HANDLER_ID",
-      EMChatEventHandler(
-        onMessagesReceived: (messages) {
-          for (var msg in messages) {
-            switch (msg.body.type) {
-              case MessageType.TXT:
-                {
-                  EMTextMessageBody body = msg.body as EMTextMessageBody;
-                  _addLogToConsole(
-                    "receive text message: ${body.content}, from: ${msg.from}",
-                  );
-                }
-                break;
-              case MessageType.IMAGE:
-                {
-                  _addLogToConsole("receive image message, from: ${msg.from}");
-                }
-                break;
-              case MessageType.VIDEO:
-                {
-                  _addLogToConsole("receive video message, from: ${msg.from}");
-                }
-                break;
-              case MessageType.LOCATION:
-                {
-                  _addLogToConsole(
-                    "receive location message, from: ${msg.from}",
-                  );
-                }
-                break;
-              case MessageType.VOICE:
-                {
-                  _addLogToConsole("receive voice message, from: ${msg.from}");
-                }
-                break;
-              case MessageType.FILE:
-                {
-                  EMClient.getInstance.chatManager.downloadAttachment(msg);
-                  _addLogToConsole("receive file message, from: ${msg.from}");
-                }
-                break;
-              case MessageType.CUSTOM:
-                {
-                  _addLogToConsole("receive custom message, from: ${msg.from}");
-                }
-                break;
-              case MessageType.CMD:
-                {
-                  // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 [EMChatManagerEventHandle.onCmdMessagesReceived] 回调接收
-                }
-                break;
-              case MessageType.COMBINE:
-                {
-                  _addLogToConsole(
-                    "receive combine message, from: ${msg.from}",
-                  );
-                }
-            }
-          }
-        },
-      ),
-    );
-    EMClient.getInstance.groupManager.removeEventHandler('identifier');
-  }
-
-  void _signIn() async {
-    if (_userId.isEmpty || _password.isEmpty) {
-      _addLogToConsole("userId or password is null");
-      return;
-    }
-
-    try {
-      _addLogToConsole("sign in...");
-      await EMClient.getInstance.loginWithPassword(_userId, _password);
-      await EMClient.getInstance.startCallback();
-      _addLogToConsole("sign in succeed, username: $_userId");
-    } on EMError catch (e) {
-      _addLogToConsole("sign in failed, e: ${e.code} , ${e.description}");
-    }
-  }
-
-  void _signOut() async {
-    try {
-      _addLogToConsole("sign out...");
-      await EMClient.getInstance.logout(true);
-      _addLogToConsole("sign out succeed");
-    } on EMError catch (e) {
-      _addLogToConsole(
-        "sign out failed, code: ${e.code}, desc: ${e.description}",
-      );
-    }
-  }
-
-  void _signUp() async {
-    try {
-      _addLogToConsole("sign up...");
-      await EMClient.getInstance.createAccount(_userId, _password);
-      _addLogToConsole("sign up succeed, username: $_userId");
-    } on EMError catch (e) {
-      _addLogToConsole("sign up failed, e: ${e.code} , ${e.description}");
-    }
-  }
-
-  void _sendMessage() async {
-    if (_chatId.isEmpty || _messageContent.isEmpty) {
-      _addLogToConsole("single chat id or message content is null");
-      return;
-    }
-
-    var msg = EMMessage.createTxtSendMessage(
-      targetId: _chatId,
-      content: _messageContent,
-    );
-
-    await EMClient.getInstance.chatManager.sendMessage(msg);
-  }
-
-  void _addLogToConsole(String log) {
-    _logText.add("$_timeString: $log");
-    setState(() {
-      scrollController.jumpTo(scrollController.position.maxScrollExtent);
-    });
-  }
-
-  String get _timeString {
-    return DateTime.now().toString().split(".").first;
   }
 }

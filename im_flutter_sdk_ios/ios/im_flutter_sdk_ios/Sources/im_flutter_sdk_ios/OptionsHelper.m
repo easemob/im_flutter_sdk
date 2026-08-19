@@ -99,6 +99,9 @@
     
     // 4.10
     options.workPathCopiable = [aJson[@"workPathCopiable"] boolValue];
+    // 4.22.0
+    options.enableUserInfo = [aJson[@"enableUserInfo"] boolValue];
+    options.enableAutoSyncContacts = [aJson[@"enableAutoSyncContacts"] boolValue];
     return options;
 }
 

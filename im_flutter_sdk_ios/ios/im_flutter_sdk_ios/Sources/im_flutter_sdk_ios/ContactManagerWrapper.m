@@ -10,6 +10,7 @@
 #import "ListenerHandle.h"
 #import "ContactHelper.h"
 #import "CursorResultHelper.h"
+#import "ErrorHelper.h"
 
 @interface ContactManagerWrapper () <EMContactManagerDelegate>
 
@@ -369,6 +370,39 @@
         NSDictionary *map = @{
             @"type":@"onFriendRequestDeclined",
             @"userId":aUsername
+        };
+        [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
+    }];
+}
+
+// 4.22.0
+- (void)onFriendStartSync {
+    __weak typeof(self) weakSelf = self;
+    [ListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onContactSyncStart"
+        };
+        [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
+    }];
+}
+
+- (void)onFriendSyncFinished:(EMError *)error {
+    __weak typeof(self) weakSelf = self;
+    [ListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onContactSyncFinish",
+            @"error":error ? [error toJson] : [NSNull null]
+        };
+        [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
+    }];
+}
+
+- (void)onFriendInfoChanged:(EMContact *)contact {
+    __weak typeof(self) weakSelf = self;
+    [ListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onContactInfoUpdate",
+            @"contact":[contact toJson]
         };
         [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
     }];

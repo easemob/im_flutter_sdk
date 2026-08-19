@@ -1,12 +1,15 @@
 package com.easemob.im_flutter_sdk;
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.hyphenate.EMError;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMUserInfo;
+import com.hyphenate.chat.EMUserInfoManagerListener;
 import com.hyphenate.exceptions.HyphenateException;
 
 
@@ -22,8 +25,11 @@ import io.flutter.plugin.common.MethodChannel.Result;
 
 public class UserInfoManagerWrapper extends Wrapper implements MethodCallHandler {
 
+    private EMUserInfoManagerListener userInfoManagerListener;
+
     UserInfoManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
+        registerEaseListener();
     }
 
     @Override
@@ -38,6 +44,15 @@ public class UserInfoManagerWrapper extends Wrapper implements MethodCallHandler
                 fetchUserInfoByUserId(param, call.method, result);
             }else if (MethodKey.fetchUserInfoByIdWithType.equals(call.method)) {
                 fetchUserInfoByIdWithType(param, call.method, result);
+            // 4.22.0
+            }else if (MethodKey.subscribeUsersInfo.equals(call.method)) {
+                subscribeUsersInfo(param, call.method, result);
+            }else if (MethodKey.unsubscribeUsersInfo.equals(call.method)) {
+                unsubscribeUsersInfo(param, call.method, result);
+            }else if (MethodKey.fetchSubscribedUsers.equals(call.method)) {
+                fetchSubscribedUsers(param, call.method, result);
+            }else if (MethodKey.getLocalUserInfoByIds.equals(call.method)) {
+                getLocalUserInfoByIds(param, call.method, result);
             } else {
                 super.onMethodCall(call, result);
             }
@@ -232,6 +247,106 @@ public class UserInfoManagerWrapper extends Wrapper implements MethodCallHandler
         }
 
         return infoType;
+    }
+
+
+    // 4.22.0
+    private void subscribeUsersInfo(JSONObject params, String channelName, Result result) throws JSONException {
+        JSONArray userIdArray = params.getJSONArray("userIds");
+        String[] userIds = new String[userIdArray.length()];
+        for (int i = 0; i < userIdArray.length(); i++) {
+            userIds[i] = (String) userIdArray.get(i);
+        }
+
+        EMClient.getInstance().userInfoManager().subscribeUsersInfo(userIds, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    // 4.22.0
+    private void unsubscribeUsersInfo(JSONObject params, String channelName, Result result) throws JSONException {
+        JSONArray userIdArray = params.getJSONArray("userIds");
+        String[] userIds = new String[userIdArray.length()];
+        for (int i = 0; i < userIdArray.length(); i++) {
+            userIds[i] = (String) userIdArray.get(i);
+        }
+
+        EMClient.getInstance().userInfoManager().unsubscribeUsersInfo(userIds, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    // 4.22.0
+    private void fetchSubscribedUsers(JSONObject params, String channelName, Result result) throws JSONException {
+        EMClient.getInstance().userInfoManager().fetchSubscribedUsers(new EMValueWrapperCallBack<List<EMUserInfo>>(result, channelName) {
+            @Override
+            public void onSuccess(List<EMUserInfo> object) {
+                List<Map> users = new ArrayList<>();
+                for (EMUserInfo userInfo : object) {
+                    users.add(UserInfoHelper.toJson(userInfo));
+                }
+                Map<String, Object> map = new HashMap<>();
+                map.put("users", users);
+                updateObject(map);
+            }
+        });
+    }
+
+    // 4.22.0
+    private void getLocalUserInfoByIds(JSONObject params, String channelName, Result result) throws JSONException {
+        JSONArray userIdArray = params.getJSONArray("userIds");
+        String[] userIds = new String[userIdArray.length()];
+        for (int i = 0; i < userIdArray.length(); i++) {
+            userIds[i] = (String) userIdArray.get(i);
+        }
+
+        EMClient.getInstance().userInfoManager().getUserInfoWithUserIds(userIds, new EMValueWrapperCallBack<Map<String, EMUserInfo>>(result, channelName) {
+            @Override
+            public void onSuccess(Map<String, EMUserInfo> object) {
+                final Map<String,Map> rMap = generateMapFromMap(object);
+                updateObject(rMap);
+            }
+        });
+    }
+
+    // 4.22.0
+    private void registerEaseListener() {
+        if (userInfoManagerListener != null) {
+            EMClient.getInstance().userInfoManager().removeUserInfoManagerListener(userInfoManagerListener);
+        }
+
+        userInfoManagerListener = new EMUserInfoManagerListener() {
+            @Override
+            public void onSelfUserInfoUpdate(EMUserInfo userInfo) {
+                ListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onSelfUserInfoUpdate");
+                            data.put("userInfo", UserInfoHelper.toJson(userInfo));
+                            post(() -> channel.invokeMethod(MethodKey.onUserInfoChanged, data));
+                        }
+                );
+            }
+
+            @Override
+            public void onUserInfoUpdate(List<EMUserInfo> userInfoList) {
+                ListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            List<Map> userInfos = new ArrayList<>();
+                            for (EMUserInfo userInfo : userInfoList) {
+                                userInfos.add(UserInfoHelper.toJson(userInfo));
+                            }
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onUserInfoUpdate");
+                            data.put("userInfos", userInfos);
+                            post(() -> channel.invokeMethod(MethodKey.onUserInfoChanged, data));
+                        }
+                );
+            }
+        };
+
+        EMClient.getInstance().userInfoManager().addUserInfoManagerListener(userInfoManagerListener);
+    }
+
+    @Override
+    public void unRegisterEaseListener() {
+        EMClient.getInstance().userInfoManager().removeUserInfoManagerListener(userInfoManagerListener);
     }
 
 

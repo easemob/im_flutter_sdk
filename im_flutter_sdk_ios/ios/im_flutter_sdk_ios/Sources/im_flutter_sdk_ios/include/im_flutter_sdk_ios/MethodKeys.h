@@ -404,3 +404,15 @@ static NSString *const updateGroupAvatar = @"updateGroupAvatar";
 // 4.15.2
 static NSString *const loadConversationMessagesWithKeyword = @"loadConversationMessagesWithKeyword";
 static NSString *const ChatLoadMessagesWithIds = @"loadMessagesWithIds";
+
+// 4.22.0
+static NSString *const ChatDownloadBigImage = @"downloadBigImage";
+static NSString *const ChatVoiceMessageToText = @"voiceMessageToText";
+static NSString *const ChatVoiceFileToText = @"voiceFileToText";
+static NSString *const ChatUpdateGroupNamecard = @"updateGroupNamecard";
+static NSString *const ChatGetGroupNamecard = @"getGroupNamecard";
+static NSString *const ChatSubscribeUsersInfo = @"subscribeUsersInfo";
+static NSString *const ChatUnsubscribeUsersInfo = @"unsubscribeUsersInfo";
+static NSString *const ChatFetchSubscribedUsers = @"fetchSubscribedUsers";
+static NSString *const ChatGetLocalUserInfoByIds = @"getLocalUserInfoByIds";
+static NSString *const ChatOnUserInfoChanged = @"onUserInfoChanged";
