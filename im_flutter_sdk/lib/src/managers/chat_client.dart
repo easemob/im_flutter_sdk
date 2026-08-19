@@ -573,7 +573,7 @@ class ChatClient {
   /// ~end
   Future<void> createAccount(String userId, String password) async {
     try {
-      ChatLog.v('create account: $userId : $password');
+      ChatLog.v('create account: $userId : ******');
       Map req = {'userId': userId, 'password': password};
       Map result = await platform_interface.Client.instance
           .callNativeMethod(ChatMethodKeys.createAccount, req);
@@ -623,7 +623,7 @@ class ChatClient {
     bool isPassword = true,
   ]) async {
     try {
-      ChatLog.v('login: $userId : $pwdOrToken, isPassword: $isPassword');
+      ChatLog.v('login: $userId : ******, isPassword: $isPassword');
       Map req = {
         'userId': userId,
         'pwdOrToken': pwdOrToken,
