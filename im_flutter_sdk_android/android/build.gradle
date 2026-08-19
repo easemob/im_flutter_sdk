@@ -37,6 +37,7 @@ android {
 
     defaultConfig {
         minSdk = 21
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 }
 
@@ -49,4 +50,6 @@ dependencies {
     // implementation 'cn.shengwang:chat-sdk:1.3.2'
     implementation 'io.hyphenate:hyphenate-chat:4.22.1'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test:runner:1.5.2'
 }
