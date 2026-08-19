@@ -7,8 +7,7 @@ final groupApis = <ApiEntry>[
   ApiEntry(
     name: 'EMGroupManager.updateGroupNamecard',
     group: 'GroupManager',
-    description:
-        '更新当前用户的群名片（4.22 新增）。可选参数 "namecard"：字符串；'
+    description: '更新当前用户的群名片（4.22 新增）。可选参数 "namecard"：字符串；'
         '不传或显式给 null 表示移除群名片。变更结果通过 '
         'EMGroupEventHandler.onUserGroupNamecardChanged 回调验证。',
     paramsTemplate: '''{
@@ -24,8 +23,7 @@ final groupApis = <ApiEntry>[
   ApiEntry(
     name: 'EMGroupManager.getGroupNamecard',
     group: 'GroupManager',
-    description:
-        '获取群成员的群名片（4.22 新增），返回名片字符串；成员未设置时返回 null（结果无 data 字段）。',
+    description: '获取群成员的群名片（4.22 新增），返回名片字符串；成员未设置时返回 null（结果无 data 字段）。',
     paramsTemplate: '''{
   "groupId": "yourGroupId",
   "userId": "memberUserId"

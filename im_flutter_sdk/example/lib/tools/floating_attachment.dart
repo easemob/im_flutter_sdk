@@ -87,8 +87,8 @@ class _FloatingAttachmentWidgetState extends State<FloatingAttachmentWidget> {
                 children: [
                   const SizedBox(width: 12),
                   const Expanded(
-                    child:
-                        Text('附件', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text('附件',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                   TextButton(
                     onPressed: () => AttachmentStore.instance.clear(),

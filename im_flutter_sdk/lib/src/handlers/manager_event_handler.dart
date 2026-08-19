@@ -557,7 +557,8 @@ class ChatEventHandler {
   /// ~chinese
   /// 收到消息内容变化。
   /// ~end
-  final void Function(ChatMessage message, String operatorId, int operationTime)?
+  final void Function(
+          ChatMessage message, String operatorId, int operationTime)?
       onMessageContentChanged;
 
   /// ~english

@@ -7,8 +7,7 @@ final presenceApis = <ApiEntry>[
   ApiEntry(
     name: 'EMPresenceManager.subscribe',
     group: 'PresenceManager',
-    description:
-        '订阅指定用户的在线状态，返回 EMPresence 数组（含 expiryTime）。'
+    description: '订阅指定用户的在线状态，返回 EMPresence 数组（含 expiryTime）。'
         'expiry 单位秒，最长 2592000（30 天）。',
     paramsTemplate: '''{
   "members": ["userId1", "userId2"],
@@ -50,8 +49,7 @@ final presenceApis = <ApiEntry>[
   ApiEntry(
     name: 'EMPresenceManager.fetchSubscribedMembers',
     group: 'PresenceManager',
-    description:
-        '分页查询当前用户订阅了哪些用户的在线状态，返回用户 ID 数组。'
+    description: '分页查询当前用户订阅了哪些用户的在线状态，返回用户 ID 数组。'
         'pageNum 从 1 开始；pageSize 为 0 时预期返回错误。',
     paramsTemplate: '''{
   "pageNum": 1,

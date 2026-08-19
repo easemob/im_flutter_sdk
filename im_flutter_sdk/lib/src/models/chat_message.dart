@@ -4,7 +4,8 @@ import 'dart:math';
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/chat_extension.dart';
-import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart' as platform_interface;
+import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart'
+    as platform_interface;
 
 /// ~english
 /// The message class.
@@ -304,7 +305,8 @@ class ChatMessage {
       return null;
     }
     Map req = {"msgId": msgId};
-    Map result = await platform_interface.Client.instance.messageManager.callNativeMethod(
+    Map result = await platform_interface.Client.instance.messageManager
+        .callNativeMethod(
       ChatMethodKeys.getPinInfo,
       req,
     );
@@ -957,8 +959,8 @@ class ChatMessage {
       ..from = map["from"]
       ..body = _bodyFromMap(map["body"])!
       ..attributes = map.getMapValue("attributes")
-      ..direction =
-          MessageDirection.values[map["direction"] ?? MessageDirection.SEND.index]
+      ..direction = MessageDirection
+          .values[map["direction"] ?? MessageDirection.SEND.index]
       ..hasRead = map.boolValue('hasRead')
       ..hasReadAck = map.boolValue('hasReadAck')
       ..needGroupAck = map.boolValue('needGroupAck')
@@ -971,7 +973,8 @@ class ChatMessage {
       ..isChatThreadMessage = map["isThread"] ?? false
       ..onlineState = map["onlineState"] ?? true
       ..deliverOnlineOnly = map['deliverOnlineOnly'] ?? false
-      ..status = MessageStatus.values[map["status"] ?? MessageStatus.CREATE.index]
+      ..status =
+          MessageStatus.values[map["status"] ?? MessageStatus.CREATE.index]
       ..receiverList = map["receiverList"]?.cast<String>()
       ..isBroadcast = map["broadcast"] ?? false
       ..isContentReplaced = map["isContentReplaced"] ?? false
@@ -1042,7 +1045,8 @@ class ChatMessage {
   Future<List<ChatMessageReaction>> reactionList() async {
     try {
       Map req = {"msgId": msgId};
-      Map result = await platform_interface.Client.instance.messageManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.messageManager
+          .callNativeMethod(
         ChatMethodKeys.getReactionList,
         req,
       );
@@ -1381,15 +1385,16 @@ class ChatFileMessageBody extends ChatMessageBody {
     super.type = MessageType.FILE,
   });
 
-  ChatFileMessageBody.fromJson({required Map map, super.type = MessageType.FILE})
+  ChatFileMessageBody.fromJson(
+      {required Map map, super.type = MessageType.FILE})
       : super.fromJson(map: map) {
     secret = map["secret"];
     remotePath = map["remotePath"];
     fileSize = map["fileSize"];
     localPath = map["localPath"] ?? "";
     displayName = map["displayName"];
-    fileStatus =
-        DownloadStatus.values[map["fileStatus"] ?? DownloadStatus.PENDING.index];
+    fileStatus = DownloadStatus
+        .values[map["fileStatus"] ?? DownloadStatus.PENDING.index];
   }
 
   @override
@@ -2071,8 +2076,8 @@ class CombineMessageBody extends ChatMessageBody {
     var body = CombineMessageBody(
       title: map["title"],
       summary: map["summary"],
-      fileStatus:
-          DownloadStatus.values[map["fileStatus"] ?? DownloadStatus.PENDING.index],
+      fileStatus: DownloadStatus
+          .values[map["fileStatus"] ?? DownloadStatus.PENDING.index],
     );
     body._localPath = map["localPath"];
     body._remotePath = map["remotePath"];

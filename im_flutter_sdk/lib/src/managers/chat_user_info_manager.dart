@@ -2,7 +2,8 @@ import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/chat_extension.dart';
 import 'package:im_flutter_sdk/src/tools/chat_log.dart';
-import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart' as platform_interface;
+import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart'
+    as platform_interface;
 
 /// ~english
 /// The user attribute manager class, which gets and sets the user attributes.

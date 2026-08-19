@@ -89,56 +89,58 @@ class _FloatingLogWidgetState extends State<FloatingLogWidget> {
         elevation: 16,
         child: SafeArea(
           child: Column(
-          children: [
-            Row(
-              children: [
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Text('日志', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-                TextButton(
-                  onPressed: () => LogStore.instance.clear(),
-                  child: const Text('清空'),
-                ),
-                TextButton(
-                  onPressed: () => Clipboard.setData(
-                    ClipboardData(text: LogStore.instance.fullText),
+            children: [
+              Row(
+                children: [
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text('日志',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
-                  child: const Text('复制全部'),
-                ),
-                TextButton(
-                  onPressed: () => setState(() => _open = false),
-                  child: const Text('关闭'),
-                ),
-              ],
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: ListenableBuilder(
-                listenable: LogStore.instance,
-                builder: (context, _) {
-                  final lines = LogStore.instance.lines;
-                  return ListView.builder(
-                    reverse: true,
-                    itemCount: lines.length,
-                    itemBuilder: (context, i) {
-                      final line = lines[lines.length - 1 - i];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        child: Text(
-                          _fold(_display(line)),
-                          style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
-                        ),
-                      );
-                    },
-                  );
-                },
+                  TextButton(
+                    onPressed: () => LogStore.instance.clear(),
+                    child: const Text('清空'),
+                  ),
+                  TextButton(
+                    onPressed: () => Clipboard.setData(
+                      ClipboardData(text: LogStore.instance.fullText),
+                    ),
+                    child: const Text('复制全部'),
+                  ),
+                  TextButton(
+                    onPressed: () => setState(() => _open = false),
+                    child: const Text('关闭'),
+                  ),
+                ],
               ),
-            ),
-          ],
+              const Divider(height: 1),
+              Expanded(
+                child: ListenableBuilder(
+                  listenable: LogStore.instance,
+                  builder: (context, _) {
+                    final lines = LogStore.instance.lines;
+                    return ListView.builder(
+                      reverse: true,
+                      itemCount: lines.length,
+                      itemBuilder: (context, i) {
+                        final line = lines[lines.length - 1 - i];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          child: Text(
+                            _fold(_display(line)),
+                            style: const TextStyle(
+                                fontSize: 11, fontFamily: 'monospace'),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),

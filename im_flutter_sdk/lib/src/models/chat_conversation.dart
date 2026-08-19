@@ -2,7 +2,8 @@ import 'dart:core';
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/chat_extension.dart';
-import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart' as platform_interface;
+import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart'
+    as platform_interface;
 
 /// ~english
 /// The conversation class, indicating a one-to-one chat, a group chat, or a conversation chat. It contains the messages that are sent and received within the conversation.
@@ -651,7 +652,8 @@ class ChatConversation {
       req['count'] = loadCount;
       req['direction'] = direction.index;
 
-      Map<String, dynamic> result = await platform_interface.Client.instance.conversationManager
+      Map<String, dynamic> result = await platform_interface
+          .Client.instance.conversationManager
           .callNativeMethod(ChatMethodKeys.loadMsgWithStartId, req);
       ChatError.hasErrorFromResult(result);
       List<ChatMessage> msgList = [];
@@ -730,7 +732,8 @@ class ChatConversation {
       req.putIfNotNull("senders", senders);
       req.putIfNotNull("from", sender);
 
-      Map<String, dynamic> result = await platform_interface.Client.instance.conversationManager
+      Map<String, dynamic> result = await platform_interface
+          .Client.instance.conversationManager
           .callNativeMethod(ChatMethodKeys.loadMsgWithKeywords, req);
       ChatError.hasErrorFromResult(result);
       List<ChatMessage> msgList = [];
@@ -785,7 +788,8 @@ class ChatConversation {
       req['endTime'] = endTime;
       req['count'] = count;
 
-      Map<String, dynamic> result = await platform_interface.Client.instance.conversationManager
+      Map<String, dynamic> result = await platform_interface
+          .Client.instance.conversationManager
           .callNativeMethod(ChatMethodKeys.loadMsgWithTime, req);
       ChatError.hasErrorFromResult(result);
       List<ChatMessage> msgList = [];
@@ -808,8 +812,9 @@ class ChatConversation {
   Future<int> messagesCount() async {
     try {
       Map req = _toJson();
-      Map<String, dynamic> result =
-          await platform_interface.Client.instance.conversationManager.callNativeMethod(
+      Map<String, dynamic> result = await platform_interface
+          .Client.instance.conversationManager
+          .callNativeMethod(
         ChatMethodKeys.messageCount,
         req,
       );
@@ -930,8 +935,9 @@ class ChatConversation {
       req['direction'] = options.direction.index;
       req.putIfNotNull("from", options.from);
       req['types'] = options.types.map((e) => (e).index).toList();
-      Map result = await platform_interface.Client.instance.conversationManager.callNativeMethod(
-          ChatMethodKeys.conversationSearchMsgsByOptions, req);
+      Map result = await platform_interface.Client.instance.conversationManager
+          .callNativeMethod(
+              ChatMethodKeys.conversationSearchMsgsByOptions, req);
       ChatError.hasErrorFromResult(result);
       List<ChatMessage> messages = [];
       List list = result[ChatMethodKeys.conversationSearchMsgsByOptions];
@@ -981,8 +987,9 @@ class ChatConversation {
       Map req = _toJson();
       req.putIfNotNull("startTs", startMs);
       req.putIfNotNull("endTs", endMs);
-      Map result = await platform_interface.Client.instance.conversationManager.callNativeMethod(
-          ChatMethodKeys.conversationGetLocalMessageCount, req);
+      Map result = await platform_interface.Client.instance.conversationManager
+          .callNativeMethod(
+              ChatMethodKeys.conversationGetLocalMessageCount, req);
       ChatError.hasErrorFromResult(result);
       return result[ChatMethodKeys.conversationGetLocalMessageCount];
     } catch (e) {
@@ -1014,8 +1021,9 @@ class ChatConversation {
     try {
       Map req = _toJson();
       req.putIfNotNull("msgIds", msgIds);
-      Map result = await platform_interface.Client.instance.conversationManager.callNativeMethod(
-          ChatMethodKeys.conversationDeleteServerMessageWithIds, req);
+      Map result = await platform_interface.Client.instance.conversationManager
+          .callNativeMethod(
+              ChatMethodKeys.conversationDeleteServerMessageWithIds, req);
       ChatError.hasErrorFromResult(result);
       return result[ChatMethodKeys.conversationGetLocalMessageCount];
     } catch (e) {
@@ -1046,8 +1054,9 @@ class ChatConversation {
       {required int beforeMs}) async {
     try {
       Map req = {"beforeTs": beforeMs};
-      Map result = await platform_interface.Client.instance.conversationManager.callNativeMethod(
-          ChatMethodKeys.conversationDeleteServerMessageWithTime, req);
+      Map result = await platform_interface.Client.instance.conversationManager
+          .callNativeMethod(
+              ChatMethodKeys.conversationDeleteServerMessageWithTime, req);
       ChatError.hasErrorFromResult(result);
       return result[ChatMethodKeys.conversationGetLocalMessageCount];
     } catch (e) {

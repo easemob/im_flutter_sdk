@@ -24,7 +24,8 @@ class _ApiCallPageState extends State<ApiCallPage> {
   @override
   void initState() {
     super.initState();
-    _paramsController = TextEditingController(text: widget.entry.paramsTemplate);
+    _paramsController =
+        TextEditingController(text: widget.entry.paramsTemplate);
   }
 
   Future<void> _invoke() async {
@@ -90,7 +91,8 @@ class _ApiCallPageState extends State<ApiCallPage> {
             Row(
               children: [
                 const Expanded(
-                  child: Text('结果', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child:
+                      Text('结果', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 TextButton(
                   onPressed: () =>

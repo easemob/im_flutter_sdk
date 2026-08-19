@@ -2,7 +2,8 @@ import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/chat_extension.dart';
 import 'package:im_flutter_sdk/src/tools/chat_log.dart';
-import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart' as platform_interface;
+import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart'
+    as platform_interface;
 
 /// ~english
 /// The chat room manager class, which manages user joining and exiting the chat room, retrieving the chat room list, and managing member privileges.
@@ -330,9 +331,9 @@ class ChatRoomManager {
     int pageSize = 200,
   }) async {
     try {
-      Map result = await platform_interface.Client.instance.chatRoomManager.callNativeMethod(
-          ChatMethodKeys.fetchPublicChatRoomsFromServer,
-          {"pageNum": pageNum, "pageSize": pageSize});
+      Map result = await platform_interface.Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.fetchPublicChatRoomsFromServer,
+              {"pageNum": pageNum, "pageSize": pageSize});
       ChatError.hasErrorFromResult(result);
       return ChatPageResult<ChatRoom>.fromJson(
           result[ChatMethodKeys.fetchPublicChatRoomsFromServer],
@@ -370,9 +371,9 @@ class ChatRoomManager {
     @Deprecated('') bool? fetchMembers,
   }) async {
     try {
-      Map result = await platform_interface.Client.instance.chatRoomManager.callNativeMethod(
-          ChatMethodKeys.fetchChatRoomInfoFromServer,
-          {"roomId": roomId, "fetchMembers": fetchMembers});
+      Map result = await platform_interface.Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.fetchChatRoomInfoFromServer,
+              {"roomId": roomId, "fetchMembers": fetchMembers});
       ChatError.hasErrorFromResult(result);
       return ChatRoom.fromJson(
           result[ChatMethodKeys.fetchChatRoomInfoFromServer]);
@@ -1147,8 +1148,9 @@ class ChatRoomManager {
   Future<List<String>> fetchChatRoomAllowListFromServer(String roomId) async {
     try {
       Map req = {"roomId": roomId};
-      Map result = await platform_interface.Client.instance.chatRoomManager.callNativeMethod(
-          ChatMethodKeys.fetchChatRoomWhiteListFromServer, req);
+      Map result = await platform_interface.Client.instance.chatRoomManager
+          .callNativeMethod(
+              ChatMethodKeys.fetchChatRoomWhiteListFromServer, req);
       ChatError.hasErrorFromResult(result);
       List<String> list = [];
       result[ChatMethodKeys.fetchChatRoomWhiteListFromServer]
@@ -1188,8 +1190,9 @@ class ChatRoomManager {
   Future<bool> isMemberInChatRoomAllowList(String roomId) async {
     try {
       Map req = {"roomId": roomId};
-      Map result = await platform_interface.Client.instance.chatRoomManager.callNativeMethod(
-          ChatMethodKeys.isMemberInChatRoomWhiteListFromServer, req);
+      Map result = await platform_interface.Client.instance.chatRoomManager
+          .callNativeMethod(
+              ChatMethodKeys.isMemberInChatRoomWhiteListFromServer, req);
       ChatError.hasErrorFromResult(result);
       return result
           .boolValue(ChatMethodKeys.isMemberInChatRoomWhiteListFromServer);
@@ -1231,7 +1234,8 @@ class ChatRoomManager {
         "roomId": roomId,
         "members": members,
       };
-      Map result = await platform_interface.Client.instance.chatRoomManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatRoomManager
+          .callNativeMethod(
         ChatMethodKeys.addMembersToChatRoomWhiteList,
         req,
       );
@@ -1274,7 +1278,8 @@ class ChatRoomManager {
         "roomId": roomId,
         "members": members,
       };
-      Map result = await platform_interface.Client.instance.chatRoomManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatRoomManager
+          .callNativeMethod(
         ChatMethodKeys.removeMembersFromChatRoomWhiteList,
         req,
       );
@@ -1311,7 +1316,8 @@ class ChatRoomManager {
   Future<void> muteAllChatRoomMembers(String roomId) async {
     try {
       Map req = {"roomId": roomId};
-      Map result = await platform_interface.Client.instance.chatRoomManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatRoomManager
+          .callNativeMethod(
         ChatMethodKeys.muteAllChatRoomMembers,
         req,
       );
@@ -1344,7 +1350,8 @@ class ChatRoomManager {
   Future<void> unMuteAllChatRoomMembers(String roomId) async {
     try {
       Map req = {"roomId": roomId};
-      Map result = await platform_interface.Client.instance.chatRoomManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatRoomManager
+          .callNativeMethod(
         ChatMethodKeys.unMuteAllChatRoomMembers,
         req,
       );
@@ -1387,7 +1394,8 @@ class ChatRoomManager {
         "roomId": roomId,
       };
       req.putIfNotNull("keys", keys);
-      Map result = await platform_interface.Client.instance.chatRoomManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatRoomManager
+          .callNativeMethod(
         ChatMethodKeys.fetchChatRoomAttributes,
         req,
       );
@@ -1454,7 +1462,8 @@ class ChatRoomManager {
         "forced": overwrite,
       };
 
-      Map result = await platform_interface.Client.instance.chatRoomManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatRoomManager
+          .callNativeMethod(
         ChatMethodKeys.setChatRoomAttributes,
         req,
       );
@@ -1507,7 +1516,8 @@ class ChatRoomManager {
         "forced": force,
       };
 
-      Map result = await platform_interface.Client.instance.chatRoomManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatRoomManager
+          .callNativeMethod(
         ChatMethodKeys.removeChatRoomAttributes,
         req,
       );
@@ -1518,7 +1528,6 @@ class ChatRoomManager {
       rethrow;
     }
   }
-
 
   /// ~english
   /// Checks whether the current user is on the chatroom mute list.
@@ -1542,7 +1551,8 @@ class ChatRoomManager {
   Future<bool> isMemberInChatRoomMuteList(String roomId) async {
     try {
       Map req = {"roomId": roomId};
-      Map result = await platform_interface.Client.instance.chatRoomManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatRoomManager
+          .callNativeMethod(
         ChatMethodKeys.isMemberInChatRoomMuteList,
         req,
       );

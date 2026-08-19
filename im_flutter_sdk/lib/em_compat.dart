@@ -137,13 +137,15 @@ typedef EMMessageBody = ChatMessageBody;
 @Deprecated('请改用 ChatMessageReaction(Use ChatMessageReaction instead)。')
 typedef EMMessageReaction = ChatMessageReaction;
 
-@Deprecated('请改用 ChatMessageReactionEvent(Use ChatMessageReactionEvent instead)。')
+@Deprecated(
+    '请改用 ChatMessageReactionEvent(Use ChatMessageReactionEvent instead)。')
 typedef EMMessageReactionEvent = ChatMessageReactionEvent;
 
 @Deprecated('请改用 ChatMessageSenderInfo(Use ChatMessageSenderInfo instead)。')
 typedef EMMessageSenderInfo = ChatMessageSenderInfo;
 
-@Deprecated('请改用 ChatMultiDeviceEventHandler(Use ChatMultiDeviceEventHandler instead)。')
+@Deprecated(
+    '请改用 ChatMultiDeviceEventHandler(Use ChatMultiDeviceEventHandler instead)。')
 typedef EMMultiDeviceEventHandler = ChatMultiDeviceEventHandler;
 
 @Deprecated('请改用 ChatMultiDevicesEvent(Use ChatMultiDevicesEvent instead)。')
@@ -158,13 +160,15 @@ typedef EMPageResult<T> = ChatPageResult<T>;
 @Deprecated('请改用 ChatPresence(Use ChatPresence instead)。')
 typedef EMPresence = ChatPresence;
 
-@Deprecated('请改用 ChatPresenceEventHandler(Use ChatPresenceEventHandler instead)。')
+@Deprecated(
+    '请改用 ChatPresenceEventHandler(Use ChatPresenceEventHandler instead)。')
 typedef EMPresenceEventHandler = ChatPresenceEventHandler;
 
 @Deprecated('请改用 ChatPresenceManager(Use ChatPresenceManager instead)。')
 typedef EMPresenceManager = ChatPresenceManager;
 
-@Deprecated('请改用 ChatPresenceStatusDetail(Use ChatPresenceStatusDetail instead)。')
+@Deprecated(
+    '请改用 ChatPresenceStatusDetail(Use ChatPresenceStatusDetail instead)。')
 typedef EMPresenceStatusDetail = ChatPresenceStatusDetail;
 
 @Deprecated('请改用 ChatPushConfig(Use ChatPushConfig instead)。')
@@ -197,7 +201,8 @@ typedef EMUserInfo = ChatUserInfo;
 @Deprecated('请改用 ChatUserInfoChangeEvent(Use ChatUserInfoChangeEvent instead)。')
 typedef EMUserInfoChangeEvent = ChatUserInfoChangeEvent;
 
-@Deprecated('请改用 ChatUserInfoEventHandler(Use ChatUserInfoEventHandler instead)。')
+@Deprecated(
+    '请改用 ChatUserInfoEventHandler(Use ChatUserInfoEventHandler instead)。')
 typedef EMUserInfoEventHandler = ChatUserInfoEventHandler;
 
 @Deprecated('请改用 ChatUserInfoManager(Use ChatUserInfoManager instead)。')
@@ -214,4 +219,3 @@ typedef EMVoiceMessageBody = ChatVoiceMessageBody;
 
 @Deprecated('请改用 ChatVoiceParam(Use ChatVoiceParam instead)。')
 typedef EMVoiceParam = ChatVoiceParam;
-

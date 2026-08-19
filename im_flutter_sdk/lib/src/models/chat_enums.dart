@@ -1182,8 +1182,6 @@ enum ConversationMarkType {
   Type19,
 }
 
-
-
 extension ChatGroupPermissionTypeExtension on ChatGroupPermissionType {
   static ChatGroupPermissionType values(int type) {
     return ChatGroupPermissionType.values[type + 1];

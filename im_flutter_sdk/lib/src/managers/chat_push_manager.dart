@@ -3,7 +3,8 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/chat_log.dart';
-import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart' as platform_interface;
+import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart'
+    as platform_interface;
 
 /// ~english
 /// The message push configuration options.
@@ -22,7 +23,8 @@ class ChatPushManager {
   /// ~end
 
   ChatPushManager() {
-    platform_interface.Client.instance.pushManager.updateNativeHandler((MethodCall call) async {
+    platform_interface.Client.instance.pushManager
+        .updateNativeHandler((MethodCall call) async {
       ChatLog.d("${call.method}: arguments: ${call.arguments}");
     });
   }
@@ -367,7 +369,8 @@ class ChatPushManager {
     try {
       Map req = {};
       req["param"] = param.toJson();
-      Map result = await platform_interface.Client.instance.pushManager.callNativeMethod(
+      Map result =
+          await platform_interface.Client.instance.pushManager.callNativeMethod(
         ChatMethodKeys.setSilentModeForAll,
         req,
       );
@@ -434,7 +437,8 @@ class ChatPushManager {
       for (var item in conversations) {
         req[item.id] = item.type.index;
       }
-      Map result = await platform_interface.Client.instance.pushManager.callNativeMethod(
+      Map result =
+          await platform_interface.Client.instance.pushManager.callNativeMethod(
         ChatMethodKeys.fetchSilentModeForConversations,
         req,
       );
@@ -473,7 +477,8 @@ class ChatPushManager {
   Future<void> setPreferredNotificationLanguage(String languageCode) async {
     try {
       Map req = {"code": languageCode};
-      Map result = await platform_interface.Client.instance.pushManager.callNativeMethod(
+      Map result =
+          await platform_interface.Client.instance.pushManager.callNativeMethod(
         ChatMethodKeys.setPreferredNotificationLanguage,
         req,
       );
@@ -501,7 +506,8 @@ class ChatPushManager {
 
   Future<String?> fetchPreferredNotificationLanguage() async {
     try {
-      Map result = await platform_interface.Client.instance.pushManager.callNativeMethod(
+      Map result =
+          await platform_interface.Client.instance.pushManager.callNativeMethod(
         ChatMethodKeys.fetchPreferredNotificationLanguage,
       );
       ChatError.hasErrorFromResult(result);

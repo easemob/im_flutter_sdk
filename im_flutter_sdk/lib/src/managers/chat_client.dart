@@ -1,7 +1,8 @@
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/chat_extension.dart';
 import 'package:im_flutter_sdk/src/tools/chat_log.dart';
-import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart' as platform_interface;
+import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart'
+    as platform_interface;
 
 /// ~english
 /// The ChatClient class, which is the entry point of the Chat SDK.
@@ -151,7 +152,8 @@ class ChatClient {
   }
 
   Future<void> _onMultiDeviceGroupEvent(Map map) async {
-    ChatMultiDevicesEvent event = convertIntToChatMultiDevicesEvent(map['event'])!;
+    ChatMultiDevicesEvent event =
+        convertIntToChatMultiDevicesEvent(map['event'])!;
     String target = map['target'];
     List<String>? users = map.getList("userIds");
 
@@ -161,7 +163,8 @@ class ChatClient {
   }
 
   Future<void> _onMultiDeviceContactEvent(Map map) async {
-    ChatMultiDevicesEvent event = convertIntToChatMultiDevicesEvent(map['event'])!;
+    ChatMultiDevicesEvent event =
+        convertIntToChatMultiDevicesEvent(map['event'])!;
     String target = map['target'];
     String? ext = map['ext'];
 
@@ -171,7 +174,8 @@ class ChatClient {
   }
 
   Future<void> _onMultiDeviceThreadEvent(Map map) async {
-    ChatMultiDevicesEvent event = convertIntToChatMultiDevicesEvent(map['event'])!;
+    ChatMultiDevicesEvent event =
+        convertIntToChatMultiDevicesEvent(map['event'])!;
     String target = map['target'] ?? '';
     List<String> users = map.getList("userIds") ?? [];
 
@@ -189,7 +193,8 @@ class ChatClient {
   }
 
   Future<void> _onMultiDevicesConversationEvent(Map map) async {
-    ChatMultiDevicesEvent event = convertIntToChatMultiDevicesEvent(map['event'])!;
+    ChatMultiDevicesEvent event =
+        convertIntToChatMultiDevicesEvent(map['event'])!;
     String convId = map['convId'];
     ChatConversationType type = ChatConversationType.values[map['convType']];
     for (var handler in _multiDeviceHandlers.values) {
@@ -211,7 +216,8 @@ class ChatClient {
   ChatUserInfoManager? _userInfoManager;
 
   ChatManager get chatManager => _chatManager ??= ChatManager();
-  ChatContactManager get contactManager => _contactManager ??= ChatContactManager();
+  ChatContactManager get contactManager =>
+      _contactManager ??= ChatContactManager();
   ChatRoomManager get chatRoomManager => _roomManager ??= ChatRoomManager();
   ChatGroupManager get groupManager => _groupManager ??= ChatGroupManager();
   ChatPushManager get pushManager => _pushManager ??= ChatPushManager();
@@ -392,7 +398,8 @@ class ChatClient {
   /// ~end
   Future<void> startCallback() async {
     try {
-      await platform_interface.Client.instance.callNativeMethod(ChatMethodKeys.startCallback);
+      await platform_interface.Client.instance
+          .callNativeMethod(ChatMethodKeys.startCallback);
     } catch (e) {
       rethrow;
     }
@@ -465,8 +472,8 @@ class ChatClient {
   /// ~end
   Future<String?> getCurrentUserId() async {
     try {
-      Map result =
-          await platform_interface.Client.instance.callNativeMethod(ChatMethodKeys.getCurrentUser);
+      Map result = await platform_interface.Client.instance
+          .callNativeMethod(ChatMethodKeys.getCurrentUser);
       ChatError.hasErrorFromResult(result);
       _currentUserId = result[ChatMethodKeys.getCurrentUser];
       if (_currentUserId != null) {
@@ -491,8 +498,8 @@ class ChatClient {
   /// ~end
   Future<String> getAccessToken() async {
     try {
-      Map result =
-          await platform_interface.Client.instance.callNativeMethod(ChatMethodKeys.getToken);
+      Map result = await platform_interface.Client.instance
+          .callNativeMethod(ChatMethodKeys.getToken);
       ChatError.hasErrorFromResult(result);
       return result[ChatMethodKeys.getToken];
     } catch (e) {
@@ -629,8 +636,8 @@ class ChatClient {
         'pwdOrToken': pwdOrToken,
         'isPassword': isPassword
       };
-      Map result =
-          await platform_interface.Client.instance.callNativeMethod(ChatMethodKeys.login, req);
+      Map result = await platform_interface.Client.instance
+          .callNativeMethod(ChatMethodKeys.login, req);
       ChatError.hasErrorFromResult(result);
       _currentUserId = userId;
     } catch (e) {
@@ -802,8 +809,8 @@ class ChatClient {
     try {
       ChatLog.v('logout unbindDeviceToken: $unbindDeviceToken');
       Map req = {'unbindToken': unbindDeviceToken};
-      Map result =
-          await platform_interface.Client.instance.callNativeMethod(ChatMethodKeys.logout, req);
+      Map result = await platform_interface.Client.instance
+          .callNativeMethod(ChatMethodKeys.logout, req);
       ChatError.hasErrorFromResult(result);
       _clearAllInfo();
     } catch (e) {
@@ -901,8 +908,8 @@ class ChatClient {
   Future<String> compressLogs() async {
     try {
       ChatLog.v('compressLogs:');
-      Map result =
-          await platform_interface.Client.instance.callNativeMethod(ChatMethodKeys.compressLogs);
+      Map result = await platform_interface.Client.instance
+          .callNativeMethod(ChatMethodKeys.compressLogs);
       ChatError.hasErrorFromResult(result);
       return result[ChatMethodKeys.compressLogs];
     } catch (e) {

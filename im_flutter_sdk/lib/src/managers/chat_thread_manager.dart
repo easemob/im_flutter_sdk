@@ -1,7 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/chat_extension.dart';
-import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart' as platform_interface;
+import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart'
+    as platform_interface;
 
 /// ~english
 /// The chat thread manager class.
@@ -161,13 +162,13 @@ class ChatThreadManager {
   }) async {
     try {
       Map req = {"threadId": chatThreadId};
-      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager
+          .callNativeMethod(
         ChatMethodKeys.fetchChatThreadDetail,
         req,
       );
       ChatError.hasErrorFromResult(result);
-      return ChatThread.fromJson(
-          result[ChatMethodKeys.fetchChatThreadDetail]);
+      return ChatThread.fromJson(result[ChatMethodKeys.fetchChatThreadDetail]);
     } catch (e) {
       rethrow;
     }
@@ -308,8 +309,9 @@ class ChatThreadManager {
         "pageSize": limit,
       };
       req.putIfNotNull("cursor", cursor);
-      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
-          ChatMethodKeys.fetchJoinedChatThreadsWithParentId, req);
+      Map result = await platform_interface.Client.instance.chatThreadManager
+          .callNativeMethod(
+              ChatMethodKeys.fetchJoinedChatThreadsWithParentId, req);
       ChatError.hasErrorFromResult(result);
       return ChatCursorResult.fromJson(
           result[ChatMethodKeys.fetchJoinedChatThreadsWithParentId],
@@ -365,7 +367,8 @@ class ChatThreadManager {
         "threadId": chatThreadId,
       };
       req.putIfNotNull("cursor", cursor);
-      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager
+          .callNativeMethod(
         ChatMethodKeys.fetchChatThreadMember,
         req,
       );
@@ -405,7 +408,8 @@ class ChatThreadManager {
       Map req = {
         "threadIds": chatThreadIds,
       };
-      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager
+          .callNativeMethod(
         ChatMethodKeys.fetchLastMessageWithChatThreads,
         req,
       );
@@ -460,7 +464,8 @@ class ChatThreadManager {
         "memberId": memberId,
         "threadId": chatThreadId,
       };
-      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager
+          .callNativeMethod(
         ChatMethodKeys.removeMemberFromChatThread,
         req,
       );
@@ -508,7 +513,8 @@ class ChatThreadManager {
         "name": newName,
         "threadId": chatThreadId,
       };
-      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager
+          .callNativeMethod(
         ChatMethodKeys.updateChatThreadSubject,
         req,
       );
@@ -574,7 +580,8 @@ class ChatThreadManager {
         "msgId": messageId,
         "parentId": parentId,
       };
-      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager
+          .callNativeMethod(
         ChatMethodKeys.createChatThread,
         req,
       );
@@ -625,7 +632,8 @@ class ChatThreadManager {
       Map req = {
         "threadId": chatThreadId,
       };
-      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager
+          .callNativeMethod(
         ChatMethodKeys.joinChatThread,
         req,
       );
@@ -669,7 +677,8 @@ class ChatThreadManager {
       Map req = {
         "threadId": chatThreadId,
       };
-      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager
+          .callNativeMethod(
         ChatMethodKeys.leaveChatThread,
         req,
       );
@@ -716,7 +725,8 @@ class ChatThreadManager {
       Map req = {
         "threadId": chatThreadId,
       };
-      Map result = await platform_interface.Client.instance.chatThreadManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.chatThreadManager
+          .callNativeMethod(
         ChatMethodKeys.destroyChatThread,
         req,
       );

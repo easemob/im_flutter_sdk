@@ -7,8 +7,7 @@ final userInfoApis = <ApiEntry>[
   ApiEntry(
     name: 'EMUserInfoManager.subscribeUsersInfo',
     group: 'UserInfoManager',
-    description:
-        '订阅指定用户的用户属性（4.22 新增，需 enableUserInfo=true）。'
+    description: '订阅指定用户的用户属性（4.22 新增，需 enableUserInfo=true）。'
         '订阅成功后被订阅用户属性更新时收到 EMUserInfoEventHandler.onUserInfoUpdate 回调。',
     paramsTemplate: '''{
   "userIds": ["userId1", "userId2"]
@@ -54,8 +53,7 @@ final userInfoApis = <ApiEntry>[
   ApiEntry(
     name: 'EMUserInfoManager.updateUserInfo',
     group: 'UserInfoManager',
-    description:
-        '更新当前用户的用户属性（需 enableUserInfo=true），所有字段可选，只传要更新的字段。'
+    description: '更新当前用户的用户属性（需 enableUserInfo=true），所有字段可选，只传要更新的字段。'
         'gender：0 默认/1 男/2 女。返回更新后的 EMUserInfo。',
     paramsTemplate: '''{
   "gender": 1
@@ -76,8 +74,7 @@ final userInfoApis = <ApiEntry>[
   ApiEntry(
     name: 'EMUserInfoManager.fetchUserInfoById',
     group: 'UserInfoManager',
-    description:
-        '从服务器获取指定用户的用户属性，返回 {userId: EMUserInfo} 的 Map。'
+    description: '从服务器获取指定用户的用户属性，返回 {userId: EMUserInfo} 的 Map。'
         'expireTime：缓存有效期（秒），0 表示不走本地缓存、强制拉取服务器数据。',
     paramsTemplate: '''{
   "userIds": ["userId1"],

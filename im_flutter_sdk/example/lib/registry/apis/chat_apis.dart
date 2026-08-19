@@ -59,8 +59,7 @@ final chatApis = <ApiEntry>[
   ApiEntry(
     name: 'EMChatManager.downloadBigImage',
     group: 'ChatManager',
-    description:
-        '下载图片消息的大图（4.22 新增）。message 为完整图片消息 JSON（body.type=1），'
+    description: '下载图片消息的大图（4.22 新增）。message 为完整图片消息 JSON（body.type=1），'
         '取 sendMessage 结果的 data 填入 message 字段即可（round-trip 成立）。'
         '注意：图片 body 的 toJson 不输出 bigImageRemotePath / bigImageDownloadStatus（服务器只读字段），'
         '回贴输入不受影响，下载后新字段通过事件回调或重新取消息验证。',
@@ -90,8 +89,7 @@ final chatApis = <ApiEntry>[
   ApiEntry(
     name: 'EMChatManager.voiceMessageToText',
     group: 'ChatManager',
-    description:
-        '语音消息转文字（4.22 新增），返回转换文本。message 为完整语音消息 JSON（body.type=4），'
+    description: '语音消息转文字（4.22 新增），返回转换文本。message 为完整语音消息 JSON（body.type=4），'
         '取 sendMessage 结果的 data 填入 message 字段即可（round-trip 成立）。'
         '注意：语音 body 的 toJson 不输出 text 字段（服务器下发只读字段），回贴输入不受影响。',
     paramsTemplate: '''{
@@ -120,8 +118,7 @@ final chatApis = <ApiEntry>[
   ApiEntry(
     name: 'EMChatManager.voiceFileToText',
     group: 'ChatManager',
-    description:
-        '本地语音文件转文字（4.22 新增），返回转换文本。'
+    description: '本地语音文件转文字（4.22 新增），返回转换文本。'
         '可选参数 voiceParam：{"format": "pcm|mp3|amr", "sampleRate": 16000, "bitsPerSample": 16, "channels": 1}。',
     paramsTemplate: '''{
   "filePath": "/path/to/voice.amr"
@@ -140,8 +137,7 @@ final chatApis = <ApiEntry>[
   ApiEntry(
     name: 'EMChatManager.translateMessage',
     group: 'ChatManager',
-    description:
-        '翻译文本消息，返回带翻译结果的 EMMessage。message 为完整消息 JSON（body.type=0），'
+    description: '翻译文本消息，返回带翻译结果的 EMMessage。message 为完整消息 JSON（body.type=0），'
         'languages 为目标语言代码数组。'
         '传入不存在的 msgId 时预期返回错误而不是崩溃（复验测试反馈的崩溃问题）。',
     paramsTemplate: '''{

@@ -3,7 +3,8 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/chat_extension.dart';
 import 'package:im_flutter_sdk/src/tools/chat_log.dart';
 
-import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart' as platform_interface;
+import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart'
+    as platform_interface;
 
 /// ~english
 /// The contact manager class, which manages chat contacts such as adding, deleting, retrieving, and modifying contacts.
@@ -16,7 +17,8 @@ class ChatContactManager {
   final Map<String, ChatContactEventHandler> _eventHandlesMap = {};
 
   ChatContactManager() {
-    platform_interface.Client.instance.contactManager.updateNativeHandler((MethodCall call) async {
+    platform_interface.Client.instance.contactManager
+        .updateNativeHandler((MethodCall call) async {
       ChatLog.d("${call.method}: arguments: ${call.arguments}");
       Map? argMap = call.arguments;
       if (call.method == ChatMethodKeys.onContactChanged) {
@@ -366,7 +368,8 @@ class ChatContactManager {
   ) async {
     try {
       Map req = {'userId': userId};
-      Map result = await platform_interface.Client.instance.contactManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.contactManager
+          .callNativeMethod(
         ChatMethodKeys.addUserToBlockList,
         req,
       );
@@ -777,7 +780,8 @@ class ChatContactManager {
     try {
       Map map = {"pageSize": pageSize};
       map.putIfNotNull('cursor', cursor);
-      Map result = await platform_interface.Client.instance.contactManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.contactManager
+          .callNativeMethod(
         ChatMethodKeys.fetchContacts,
         map,
       );

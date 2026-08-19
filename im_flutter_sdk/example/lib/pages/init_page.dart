@@ -88,7 +88,8 @@ class _InitPageState extends State<InitPage> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(
                   _error!,
-                  style: const TextStyle(color: Colors.red, fontFamily: 'monospace'),
+                  style: const TextStyle(
+                      color: Colors.red, fontFamily: 'monospace'),
                 ),
               ),
             const SizedBox(height: 8),

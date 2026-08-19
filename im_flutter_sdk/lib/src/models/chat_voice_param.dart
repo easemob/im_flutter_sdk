@@ -60,8 +60,8 @@ class ChatVoiceParam {
 
   factory ChatVoiceParam.fromJson(Map map) {
     return ChatVoiceParam(
-      format:
-          ChatVoiceFormat.values.asNameMap()[map["format"]] ?? ChatVoiceFormat.pcm,
+      format: ChatVoiceFormat.values.asNameMap()[map["format"]] ??
+          ChatVoiceFormat.pcm,
       sampleRate: map["sampleRate"],
       bitsPerSample: map["bitsPerSample"],
       channels: map["channels"],

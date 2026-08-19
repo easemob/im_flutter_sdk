@@ -2,7 +2,8 @@ import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/chat_extension.dart';
 import 'package:im_flutter_sdk/src/tools/chat_log.dart';
-import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart' as platform_interface;
+import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart'
+    as platform_interface;
 
 /// ~english
 /// The group manager class, which manages group creation and deletion, user joining and exiting the group, etc.
@@ -15,7 +16,8 @@ class ChatGroupManager {
   final Map<String, ChatGroupEventHandler> _eventHandlesMap = {};
 
   ChatGroupManager() {
-    platform_interface.Client.instance.groupManager.updateNativeHandler((MethodCall call) async {
+    platform_interface.Client.instance.groupManager
+        .updateNativeHandler((MethodCall call) async {
       ChatLog.d("${call.method}: arguments: ${call.arguments}");
       Map? argMap = call.arguments;
       if (call.method == ChatMethodKeys.onGroupChanged) {
@@ -544,7 +546,8 @@ class ChatGroupManager {
         'pageSize': pageSize,
       };
       req.putIfNotNull("cursor", cursor);
-      Map result = await platform_interface.Client.instance.groupManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.groupManager
+          .callNativeMethod(
         ChatMethodKeys.getGroupMemberListFromServer,
         req,
       );
@@ -866,7 +869,8 @@ class ChatGroupManager {
       };
       req.putIfNotNull("reason", reason);
 
-      Map result = await platform_interface.Client.instance.groupManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.groupManager
+          .callNativeMethod(
         ChatMethodKeys.inviterUser,
         req,
       );
@@ -1901,7 +1905,8 @@ class ChatGroupManager {
       Map result = await platform_interface.Client.instance.groupManager
           .callNativeMethod(ChatMethodKeys.acceptInvitationFromGroup, req);
       ChatError.hasErrorFromResult(result);
-      return ChatGroup.fromJson(result[ChatMethodKeys.acceptInvitationFromGroup]);
+      return ChatGroup.fromJson(
+          result[ChatMethodKeys.acceptInvitationFromGroup]);
     } catch (e) {
       rethrow;
     }
@@ -2022,8 +2027,9 @@ class ChatGroupManager {
       };
       req.putIfNotNull('userId', userId);
       req.putIfNotNull('keys', keys);
-      Map result = await platform_interface.Client.instance.groupManager.callNativeMethod(
-          ChatMethodKeys.removeMemberAttributesFromGroup, req);
+      Map result = await platform_interface.Client.instance.groupManager
+          .callNativeMethod(
+              ChatMethodKeys.removeMemberAttributesFromGroup, req);
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -2103,8 +2109,9 @@ class ChatGroupManager {
     try {
       Map req = {'groupId': groupId, 'userIds': userIds};
       req.putIfNotNull("keys", keys);
-      Map result = await platform_interface.Client.instance.groupManager.callNativeMethod(
-          ChatMethodKeys.fetchMembersAttributesFromGroup, req);
+      Map result = await platform_interface.Client.instance.groupManager
+          .callNativeMethod(
+              ChatMethodKeys.fetchMembersAttributesFromGroup, req);
       ChatError.hasErrorFromResult(result);
       var map = result[ChatMethodKeys.fetchMembersAttributesFromGroup];
       Map<String, Map<String, String>> ret = {};
@@ -2242,7 +2249,8 @@ class ChatGroupManager {
 
       req.putIfNotNull('cursor', cursor);
 
-      Map result = await platform_interface.Client.instance.groupManager.callNativeMethod(
+      Map result = await platform_interface.Client.instance.groupManager
+          .callNativeMethod(
         ChatMethodKeys.fetchGroupMembersInfo,
         req,
       );

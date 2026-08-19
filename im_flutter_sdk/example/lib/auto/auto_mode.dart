@@ -259,7 +259,10 @@ class AutoMode {
               Duration(milliseconds: timeoutMs),
               onTimeout: () => {
                 'success': false,
-                'error': {'code': -2, 'message': 'timeout after ${timeoutMs}ms'},
+                'error': {
+                  'code': -2,
+                  'message': 'timeout after ${timeoutMs}ms'
+                },
               },
             );
           }

@@ -1,7 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/chat_log.dart';
-import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart' as platform_interface;
+import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart'
+    as platform_interface;
 
 /// ~english
 /// The Manager that defines how to manage presence states.
@@ -237,8 +238,9 @@ class ChatPresenceManager {
   }) async {
     try {
       Map req = {'pageNum': pageNum, "pageSize": pageSize};
-      Map result = await platform_interface.Client.instance.presenceManager.callNativeMethod(
-          ChatMethodKeys.fetchSubscribedMembersWithPageNum, req);
+      Map result = await platform_interface.Client.instance.presenceManager
+          .callNativeMethod(
+              ChatMethodKeys.fetchSubscribedMembersWithPageNum, req);
       ChatError.hasErrorFromResult(result);
       List<String> list = [];
       result[ChatMethodKeys.fetchSubscribedMembersWithPageNum]

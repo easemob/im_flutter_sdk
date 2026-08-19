@@ -31,7 +31,8 @@ void registerAllListeners() {
           log('EMConnectionEventHandler.onUserKickedByOtherDevice'),
       onUserAuthenticationFailed: () =>
           log('EMConnectionEventHandler.onUserAuthenticationFailed'),
-      onTokenWillExpire: () => log('EMConnectionEventHandler.onTokenWillExpire'),
+      onTokenWillExpire: () =>
+          log('EMConnectionEventHandler.onTokenWillExpire'),
       onTokenDidExpire: () => log('EMConnectionEventHandler.onTokenDidExpire'),
       onAppActiveNumberReachLimit: () =>
           log('EMConnectionEventHandler.onAppActiveNumberReachLimit'),
@@ -291,10 +292,13 @@ void registerAllListeners() {
         'EMGroupEventHandler.onAnnouncementChangedFromGroup',
         {'groupId': groupId, 'announcement': announcement},
       ),
-      onAutoAcceptInvitationFromGroup: (groupId, inviter, inviteMessage) =>
-          log(
+      onAutoAcceptInvitationFromGroup: (groupId, inviter, inviteMessage) => log(
         'EMGroupEventHandler.onAutoAcceptInvitationFromGroup',
-        {'groupId': groupId, 'inviter': inviter, 'inviteMessage': inviteMessage},
+        {
+          'groupId': groupId,
+          'inviter': inviter,
+          'inviteMessage': inviteMessage
+        },
       ),
       onGroupDestroyed: (groupId, groupName) => log(
         'EMGroupEventHandler.onGroupDestroyed',
@@ -345,8 +349,8 @@ void registerAllListeners() {
           'applicant': applicant,
         },
       ),
-      onRequestToJoinReceivedFromGroup: (groupId, groupName, applicant, reason) =>
-          log(
+      onRequestToJoinReceivedFromGroup:
+          (groupId, groupName, applicant, reason) => log(
         'EMGroupEventHandler.onRequestToJoinReceivedFromGroup',
         {
           'groupId': groupId,
