@@ -31,8 +31,7 @@ void registerAllListeners() {
           log('ConnectionEventHandler.onUserKickedByOtherDevice'),
       onUserAuthenticationFailed: () =>
           log('ConnectionEventHandler.onUserAuthenticationFailed'),
-      onTokenWillExpire: () =>
-          log('ConnectionEventHandler.onTokenWillExpire'),
+      onTokenWillExpire: () => log('ConnectionEventHandler.onTokenWillExpire'),
       onTokenDidExpire: () => log('ConnectionEventHandler.onTokenDidExpire'),
       onAppActiveNumberReachLimit: () =>
           log('ConnectionEventHandler.onAppActiveNumberReachLimit'),
@@ -253,7 +252,8 @@ void registerAllListeners() {
         'ChatContactEventHandler.onFriendRequestDeclined',
         {'userId': userId},
       ),
-      onContactSyncStart: () => log('ChatContactEventHandler.onContactSyncStart'),
+      onContactSyncStart: () =>
+          log('ChatContactEventHandler.onContactSyncStart'),
       onContactSyncFinish: (error) => log(
         'ChatContactEventHandler.onContactSyncFinish',
         {'error': error == null ? null : errorToJson(error)},

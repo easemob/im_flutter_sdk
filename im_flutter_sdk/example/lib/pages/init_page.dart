@@ -78,7 +78,8 @@ class _InitPageState extends State<InitPage> {
                 style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: 'ChatOptions JSON（appKey 必填，可加 enableUserInfo 等可选键）',
+                  labelText:
+                      'ChatOptions JSON（appKey 必填，可加 enableUserInfo 等可选键）',
                   alignLabelWithHint: true,
                 ),
               ),
