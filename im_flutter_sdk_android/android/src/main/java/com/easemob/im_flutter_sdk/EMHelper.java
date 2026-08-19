@@ -39,6 +39,7 @@ import com.hyphenate.chat.EMPresence;
 import com.hyphenate.chat.EMPushConfigs;
 import com.hyphenate.chat.EMPushManager;
 import com.hyphenate.chat.EMRecallMessageInfo;
+import com.hyphenate.chat.EMSenderInfo;
 import com.hyphenate.chat.EMSilentModeParam;
 import com.hyphenate.chat.EMSilentModeResult;
 import com.hyphenate.chat.EMSilentModeTime;
@@ -152,6 +153,13 @@ class OptionsHelper {
         if(json.has("loginExtensionInfo")) {
             options.setLoginCustomExt(json.getString("loginExtensionInfo"));
         }
+        // 4.22.0
+        if (json.has("enableUserInfo")) {
+            options.setEnableUserInfo(json.getBoolean("enableUserInfo"));
+        }
+        if (json.has("enableAutoSyncContacts")) {
+            options.setEnableAutoSyncContacts(json.getBoolean("enableAutoSyncContacts"));
+        }
         return options;
 
     }
@@ -216,9 +224,13 @@ class GroupHelper {
 class GroupMemberInfoHelper {
     static Map<String, Object> toJson(EMGroupMemberInfo info) {
         Map<String, Object> data = new HashMap<>();
-        data.put("userId", info.getMemberId());
+        // 4.22.0
+        data.put("userId", info.getUserId());
         data.put("joinedTs", info.getJoinTime());
         data.put("role", EnumTools.groupPermissionTypeToInt(info.getRole()));
+        data.put("namecard", info.getNamecard());
+        data.put("nickname", info.getNickname());
+        data.put("avatarUrl", info.getAvatarUrl());
         return data;
     }
 }
@@ -306,6 +318,12 @@ class ContactHelper {
         if (remark != null) {
             data.put("remark", remark);
         }
+        // 4.22.0
+        EMUserInfo userInfo = contact.getUserInfo();
+        if (userInfo != null) {
+            data.put("userInfo", UserInfoHelper.toJson(userInfo));
+        }
+        data.put("addTimestamp", contact.getAddTimestamp());
         return data;
     }
 
@@ -590,6 +608,18 @@ class MessageHelper {
         // 通过EMMessageWrapper获取
         // data.put("groupAckCount", message.groupAckCount());
         data.put("isThread", message.isChatThreadMessage());
+
+        // 4.22.0
+        EMSenderInfo senderInfo = message.getSenderInfo();
+        if (senderInfo != null) {
+            Map<String, Object> senderInfoData = new HashMap<>();
+            senderInfoData.put("userId", senderInfo.getUserId());
+            senderInfoData.put("nickname", senderInfo.getNickname());
+            senderInfoData.put("avatarUrl", senderInfo.getAvatar());
+            senderInfoData.put("remark", senderInfo.getRemark());
+            senderInfoData.put("groupNameCard", senderInfo.getNamecard());
+            data.put("senderInfo", senderInfoData);
+        }
 
         EMStreamChunk streamChunk = message.getStreamChunk();
         if (streamChunk != null) {
@@ -903,7 +933,11 @@ class GroupAckHelper {
         data.put("thumbnailStatus", EnumTools.downloadStatusToInt(body.thumbnailDownloadStatus()));
         data.put("height", body.getHeight());
         data.put("width", body.getWidth());
-        data.put("sendOriginalImage", body.isSendOriginalImage());
+        // 4.22.0
+        data.put("sendOriginalImage", body.isOriginalImage());
+        data.put("bigImageLocalPath", body.getBigImageLocalUrl());
+        data.put("bigImageRemotePath", body.getBigImageRemoteUrl());
+        data.put("bigImageDownloadStatus", EnumTools.downloadStatusToInt(body.getBigImageDownloadStatus()));
         data.put("fileSize", body.getFileSize());
         data.put("type", EnumTools.messageBodyTypeToInt(Type.IMAGE));
         data.put("isGif", body.isGif());
@@ -1006,6 +1040,8 @@ class GroupAckHelper {
         data.put("secret", body.getSecret());
         data.put("type", EnumTools.messageBodyTypeToInt(Type.VOICE));
         data.put("fileSize", body.getFileSize());
+        // 4.22.0
+        data.put("text", body.getText());
         return data;
     }
 

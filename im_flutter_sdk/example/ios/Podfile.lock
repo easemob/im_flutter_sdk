@@ -1,32 +1,88 @@
 PODS:
-  - Flutter (1.0.0)
-  - HyphenateChat (4.19.1):
-    - ShengwangInfra_iOS (~> 1.3.0)
-  - im_flutter_sdk_ios (4.19.2):
+  - DKImagePickerController/Core (4.3.9):
+    - DKImagePickerController/ImageDataManager
+    - DKImagePickerController/Resource
+  - DKImagePickerController/ImageDataManager (4.3.9)
+  - DKImagePickerController/PhotoGallery (4.3.9):
+    - DKImagePickerController/Core
+    - DKPhotoGallery
+  - DKImagePickerController/Resource (4.3.9)
+  - DKPhotoGallery (0.0.19):
+    - DKPhotoGallery/Core (= 0.0.19)
+    - DKPhotoGallery/Model (= 0.0.19)
+    - DKPhotoGallery/Preview (= 0.0.19)
+    - DKPhotoGallery/Resource (= 0.0.19)
+    - SDWebImage
+    - SwiftyGif
+  - DKPhotoGallery/Core (0.0.19):
+    - DKPhotoGallery/Model
+    - DKPhotoGallery/Preview
+    - SDWebImage
+    - SwiftyGif
+  - DKPhotoGallery/Model (0.0.19):
+    - SDWebImage
+    - SwiftyGif
+  - DKPhotoGallery/Preview (0.0.19):
+    - DKPhotoGallery/Model
+    - DKPhotoGallery/Resource
+    - SDWebImage
+    - SwiftyGif
+  - DKPhotoGallery/Resource (0.0.19):
+    - SDWebImage
+    - SwiftyGif
+  - file_picker (0.0.1):
+    - DKImagePickerController/PhotoGallery
     - Flutter
-    - HyphenateChat (= 4.19.1)
+  - Flutter (1.0.0)
+  - HyphenateChat (4.22.1):
+    - ShengwangInfra_iOS (~> 1.3.0)
+  - im_flutter_sdk_ios (4.22.0):
+    - Flutter
+    - HyphenateChat (= 4.22.1)
+  - integration_test (0.0.1):
+    - Flutter
+  - SDWebImage (5.21.7):
+    - SDWebImage/Core (= 5.21.7)
+  - SDWebImage/Core (5.21.7)
   - ShengwangInfra_iOS (1.3.5)
+  - SwiftyGif (5.4.5)
 
 DEPENDENCIES:
+  - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
   - im_flutter_sdk_ios (from `.symlinks/plugins/im_flutter_sdk_ios/ios`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
 
 SPEC REPOS:
   trunk:
+    - DKImagePickerController
+    - DKPhotoGallery
     - HyphenateChat
+    - SDWebImage
     - ShengwangInfra_iOS
+    - SwiftyGif
 
 EXTERNAL SOURCES:
+  file_picker:
+    :path: ".symlinks/plugins/file_picker/ios"
   Flutter:
     :path: Flutter
   im_flutter_sdk_ios:
     :path: ".symlinks/plugins/im_flutter_sdk_ios/ios"
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
 
 SPEC CHECKSUMS:
-  Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
-  HyphenateChat: 6e84d205716ada52bd955ae56a2ace1735d255de
-  im_flutter_sdk_ios: 4e544822e9ed74b71e2e9a52222049e2fdb2a09b
+  DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
+  DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
+  file_picker: a0560bc09d61de87f12d246fc47d2119e6ef37be
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  HyphenateChat: 8b17b7416e155012486a135e508a2523b04f2e62
+  im_flutter_sdk_ios: b3c370b68fea59045b4b3c3ab24d366de3bfd04a
+  integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
+  SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   ShengwangInfra_iOS: 0ae2d429ec428cdbaebb39ac883ec64c5c20f7bb
+  SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
 
 PODFILE CHECKSUM: ce2a4dd764e1c7aeed6a7cdc5e61d092b6dc6d32
 

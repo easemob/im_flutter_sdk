@@ -161,9 +161,13 @@ final class _ContractLayout {
         'com/easemob/im_flutter_sdk',
       ),
       iosConstants: File(
-        '$root/im_flutter_sdk_ios/ios/Classes/MethodKeys.h',
+        '$root/im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/'
+        'im_flutter_sdk_ios/include/im_flutter_sdk_ios/MethodKeys.h',
       ),
-      iosRoutes: Directory('$root/im_flutter_sdk_ios/ios/Classes'),
+      iosRoutes: Directory(
+        '$root/im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/'
+        'im_flutter_sdk_ios',
+      ),
     );
   }
 

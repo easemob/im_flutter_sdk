@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.hyphenate.EMContactListener;
+import com.hyphenate.EMError;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMContact;
 import com.hyphenate.chat.EMCursorResult;
@@ -330,6 +331,48 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
                             Map<String, Object> data = new HashMap<>();
                             data.put("type", "onFriendRequestDeclined");
                             data.put("userId", userName);
+                            post(() -> channel.invokeMethod(MethodKey.onContactChanged, data));
+                        }
+                );
+            }
+
+            // 4.22.0
+            @Override
+            public void onContactSyncStart() {
+                ListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onContactSyncStart");
+                            post(() -> channel.invokeMethod(MethodKey.onContactChanged, data));
+                        }
+                );
+            }
+
+            // 4.22.0
+            @Override
+            public void onContactSyncFinishWithError(int errorCode, String error) {
+                ListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onContactSyncFinish");
+                            if (errorCode == EMError.EM_NO_ERROR) {
+                                data.put("error", null);
+                            }else {
+                                data.put("error", ErrorHelper.toJson(errorCode, error));
+                            }
+                            post(() -> channel.invokeMethod(MethodKey.onContactChanged, data));
+                        }
+                );
+            }
+
+            // 4.22.0
+            @Override
+            public void onContactInfoUpdate(EMContact contact) {
+                ListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onContactInfoUpdate");
+                            data.put("contact", ContactHelper.toJson(contact));
                             post(() -> channel.invokeMethod(MethodKey.onContactChanged, data));
                         }
                 );

@@ -1,5 +1,5 @@
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk/src/tools/em_extension.dart';
+import 'package:im_flutter_sdk/src/tools/chat_extension.dart';
 
 /// ~english
 /// Offline push Settings parameter entity class.
@@ -199,7 +199,7 @@ class ChatSilentModeResult {
   /// ~chinese
   /// 会话类型
   /// ~end
-  final EMConversationType conversationType;
+  final ChatConversationType conversationType;
 
   /// ~english
   /// The Conversation ID.
@@ -261,8 +261,8 @@ class ChatSilentModeResult {
     ChatPushRemindType remindType =
         ChatPushRemindType.values[map["remindType"]];
     String conversationId = map["convId"];
-    EMConversationType conversationType =
-        EMConversationType.values[map["conversationType"]];
+    ChatConversationType conversationType =
+        ChatConversationType.values[map["conversationType"]];
     return ChatSilentModeResult(
       expireTimestamp,
       conversationType,

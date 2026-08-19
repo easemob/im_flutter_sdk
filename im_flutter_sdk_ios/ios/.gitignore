@@ -2,6 +2,8 @@
 .vagrant/
 .sconsign.dblite
 .svn/
+.swiftpm/
+.build/
 
 .DS_Store
 *.swp
@@ -36,3 +38,4 @@ Icon?
 /Flutter/Generated.xcconfig
 /Flutter/ephemeral/
 /Flutter/flutter_export_environment.sh
+.build/
