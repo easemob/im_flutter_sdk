@@ -138,97 +138,100 @@ def _send_text_and_assert(topology, assert_api, *, content):
 )
 @pytest.mark.topology("account_a_to_account_b")
 def test_chat_text_content_boundaries(topology, assert_api, content):
-    boundary_name = (
-        "空文本"
-        if content == ""
-        else "长度 250"
-        if len(content) == 250
-        else "特殊字符与 Unicode 文本"
-    )
-    try:
-        import allure
-
-        allure.dynamic.title(f"文本边界：{boundary_name}")
-        allure.dynamic.description(
-            f"A 发送{boundary_name}，验证 A 副端同步、B 全部在线端接收及多端送达回执。"
+    with _allure_step("验证：chat text content boundaries"):
+        boundary_name = (
+            "空文本"
+            if content == ""
+            else "长度 250"
+            if len(content) == 250
+            else "特殊字符与 Unicode 文本"
         )
-        allure.dynamic.parameter("边界场景", boundary_name)
-    except ImportError:
-        pass
-    _send_text_and_assert(topology, assert_api, content=content)
+        try:
+            import allure
+
+            allure.dynamic.title(f"文本边界：{boundary_name}")
+            allure.dynamic.description(
+                f"A 发送{boundary_name}，验证 A 副端同步、B 全部在线端接收及多端送达回执。"
+            )
+            allure.dynamic.parameter("边界场景", boundary_name)
+        except ImportError:
+            pass
+        _send_text_and_assert(topology, assert_api, content=content)
 
 
 def test_chat_send_rejects_mismatched_from(device_a, device_b, assert_api, user_a, user_b):
-    content = f"mismatched-from-{uuid.uuid4().hex[:8]}"
-    invalid_from = "__not_logged_in_sender__"
-    device_a.drain_events()
-    response = device_a.call(
-        "ChatManager", Cmd.sendMessage.value,
-        info=build_text(invalid_from, user_b, content),
-    )
-    temp_id = ((response.get("result") or {}).get("msgId"))
-    assert temp_id, response
-    assert_api.assert_response_matches(
-        response,
-        expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA", "result": {
-            "msgId": temp_id, "from": invalid_from, "to": user_b, "convId": user_b,
-            "chatType": 0, "direction": 0, "hasRead": True,
-            "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
-            "body": {"type": 0, "content": content},
-        }},
-        ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState", "deliverOnlineOnly", "targetLanguages", "translations"},
-    )
-    event = device_a.receive_message(match_event_type=Cmd.onMessageError.value, timeout=20)
-    assert_api.assert_response_matches(
-        event,
-        expected={"type": "event", "eventType": Cmd.onMessageError.value, "data": {
-            "msgId": temp_id,
-            "msg": {"msgId": temp_id, "from": invalid_from, "to": user_b, "convId": user_b,
-                    "chatType": 0, "direction": 0, "hasRead": True,
-                    "needReadReceipt": False, "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
-                    "body": {"type": 0, "content": content, "translations": {}}},
-            "error": {"code": 500, "description": "Message is invalid"},
-        }},
-        ignore_keys={"timestamp", "sequence", "localTime", "serverTime"},
-    )
+    with _allure_step("验证：chat send rejects mismatched from"):
+        content = f"mismatched-from-{uuid.uuid4().hex[:8]}"
+        invalid_from = "__not_logged_in_sender__"
+        device_a.drain_events()
+        response = device_a.call(
+            "ChatManager", Cmd.sendMessage.value,
+            info=build_text(invalid_from, user_b, content),
+        )
+        temp_id = ((response.get("result") or {}).get("msgId"))
+        assert temp_id, response
+        assert_api.assert_response_matches(
+            response,
+            expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA", "result": {
+                "msgId": temp_id, "from": invalid_from, "to": user_b, "convId": user_b,
+                "chatType": 0, "direction": 0, "hasRead": True,
+                "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
+                "body": {"type": 0, "content": content},
+            }},
+            ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState", "deliverOnlineOnly", "targetLanguages", "translations"},
+        )
+        event = device_a.receive_message(match_event_type=Cmd.onMessageError.value, timeout=20)
+        assert_api.assert_response_matches(
+            event,
+            expected={"type": "event", "eventType": Cmd.onMessageError.value, "data": {
+                "msgId": temp_id,
+                "msg": {"msgId": temp_id, "from": invalid_from, "to": user_b, "convId": user_b,
+                        "chatType": 0, "direction": 0, "hasRead": True,
+                        "needReadReceipt": False, "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
+                        "body": {"type": 0, "content": content, "translations": {}}},
+                "error": {"code": 500, "description": "Message is invalid"},
+            }},
+            ignore_keys={"timestamp", "sequence", "localTime", "serverTime"},
+        )
 
 
 def test_chat_location_message_delivery_ack(device_a, device_b, assert_api, user_a, user_b):
-    payload = {
-        "targetId": user_b, "latitude": 30.2741, "longitude": 120.1551,
-        "address": "location-delivery", "buildingName": "location-delivery-building",
-    }
-    _, _, _, _, real_id = _send_type_and_receive(
-        device_a, device_b, assert_api, user_a, user_b, type_key="location", payload=payload,
-        need_read_receipt=True,
-    )
-    # 5.0 送达回执需发送标记 needReadReceipt=true（服务端才发 DELIVER_ACK）
-    event = None
-    deadline = time.monotonic() + 30.0
-    while time.monotonic() < deadline:
-        evt = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=3.0)
-        if evt and any(
-            str(m.get("msgId")) == str(real_id)
-            for m in ((evt.get("data") or {}).get("messages") or [])
-        ):
-            event = evt
-            break
-    assert event is not None, f"未收到送达回执 msgId={real_id}"
-    # 同一 msgId 重复出现不是合法的批量行为，必须暴露为失败，不能通过过滤首条掩盖。
-    matched = [
-        m for m in ((event.get("data") or {}).get("messages") or [])
-        if isinstance(m, dict) and str(m.get("msgId")) == str(real_id)
-    ]
-    assert len(matched) == 1, f"送达事件目标消息重复或缺失: msgId={real_id}, matched={matched}, event={event}"
-    assert_api.assert_response_matches(
-        {"type": "event", "eventType": event.get("eventType"), "data": {"messages": matched}},
-        expected={"type": "event", "eventType": event.get("eventType"), "data": {"messages": [{
-            "msgId": real_id, "from": user_a, "to": user_b, "convId": user_b,
-            "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
-            "needReadReceipt": True, "isPeerRead": False, "readReceiptCount": 0, "hasDeliverAck": True,
-            "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
-            "body": {"type": 3, "latitude": payload["latitude"], "longitude": payload["longitude"],
-                     "address": payload["address"], "buildingName": payload["buildingName"]},
-        }]}},
-        ignore_keys={"timestamp", "sequence", "localTime", "serverTime"},
-    )
+    with _allure_step("验证：chat location message delivery ack"):
+        payload = {
+            "targetId": user_b, "latitude": 30.2741, "longitude": 120.1551,
+            "address": "location-delivery", "buildingName": "location-delivery-building",
+        }
+        _, _, _, _, real_id = _send_type_and_receive(
+            device_a, device_b, assert_api, user_a, user_b, type_key="location", payload=payload,
+            need_read_receipt=True,
+        )
+        # 5.0 送达回执需发送标记 needReadReceipt=true（服务端才发 DELIVER_ACK）
+        event = None
+        deadline = time.monotonic() + 30.0
+        while time.monotonic() < deadline:
+            evt = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=3.0)
+            if evt and any(
+                str(m.get("msgId")) == str(real_id)
+                for m in ((evt.get("data") or {}).get("messages") or [])
+            ):
+                event = evt
+                break
+        assert event is not None, f"未收到送达回执 msgId={real_id}"
+        # 同一 msgId 重复出现不是合法的批量行为，必须暴露为失败，不能通过过滤首条掩盖。
+        matched = [
+            m for m in ((event.get("data") or {}).get("messages") or [])
+            if isinstance(m, dict) and str(m.get("msgId")) == str(real_id)
+        ]
+        assert len(matched) == 1, f"送达事件目标消息重复或缺失: msgId={real_id}, matched={matched}, event={event}"
+        assert_api.assert_response_matches(
+            {"type": "event", "eventType": event.get("eventType"), "data": {"messages": matched}},
+            expected={"type": "event", "eventType": event.get("eventType"), "data": {"messages": [{
+                "msgId": real_id, "from": user_a, "to": user_b, "convId": user_b,
+                "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
+                "needReadReceipt": True, "isPeerRead": False, "readReceiptCount": 0, "hasDeliverAck": True,
+                "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
+                "body": {"type": 3, "latitude": payload["latitude"], "longitude": payload["longitude"],
+                         "address": payload["address"], "buildingName": payload["buildingName"]},
+            }]}},
+            ignore_keys={"timestamp", "sequence", "localTime", "serverTime"},
+        )

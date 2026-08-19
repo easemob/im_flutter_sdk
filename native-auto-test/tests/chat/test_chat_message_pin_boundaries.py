@@ -229,13 +229,15 @@ def _assert_error(assert_api, resp, cmd, device, code, description):
 
 
 def test_chat_pin_message_invalid_id(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": "__invalid_pin_msg__"})
-    _assert_error(assert_api, resp, Cmd.pinMessage.value, "deviceA", 500, "Message is invalid")
+    with _allure_step("验证：chat pin message invalid id"):
+        resp = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": "__invalid_pin_msg__"})
+        _assert_error(assert_api, resp, Cmd.pinMessage.value, "deviceA", 500, "Message is invalid")
 
 
 def test_chat_pin_message_empty_id(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": ""})
-    _assert_error(assert_api, resp, Cmd.pinMessage.value, "deviceA", 110, None)
+    with _allure_step("验证：chat pin message empty id"):
+        resp = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": ""})
+        _assert_error(assert_api, resp, Cmd.pinMessage.value, "deviceA", 110, None)
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -313,34 +315,38 @@ def test_chat_pin_recalled_message(topology, assert_api):
 def test_chat_pin_recalled_typed_message(
     device_a, device_b, assert_api, user_a, user_b, type_key, payload,
 ):
-    _, _, _, msg_id = _send_typed(
-        device_a, device_b, assert_api, user_a, user_b, type_key, payload,
-    )
-    time.sleep(float(os.getenv("CHAT_RECALL_SETTLE_SECONDS", "5")))
-    recall = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
-    assert_api.assert_response_matches(
-        recall,
-        expected={"manager": "ChatManager", "cmd": Cmd.recallMessage.value,
-                  "device": "deviceA", "result": True},
-        ignore_keys={"sequence"},
-    )
-    time.sleep(1)
-    response = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": msg_id})
-    _assert_error(assert_api, response, Cmd.pinMessage.value, "deviceA", 500, "Message is invalid")
+    with _allure_step("验证：chat pin recalled typed message"):
+        _, _, _, msg_id = _send_typed(
+            device_a, device_b, assert_api, user_a, user_b, type_key, payload,
+        )
+        time.sleep(float(os.getenv("CHAT_RECALL_SETTLE_SECONDS", "5")))
+        recall = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
+        assert_api.assert_response_matches(
+            recall,
+            expected={"manager": "ChatManager", "cmd": Cmd.recallMessage.value,
+                      "device": "deviceA", "result": True},
+            ignore_keys={"sequence"},
+        )
+        time.sleep(1)
+        response = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": msg_id})
+        _assert_error(assert_api, response, Cmd.pinMessage.value, "deviceA", 500, "Message is invalid")
 
 
 def test_chat_unpin_message_invalid_id(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.unpinMessage.value, info={"msgId": "__invalid_unpin_msg__"})
-    _assert_error(assert_api, resp, Cmd.unpinMessage.value, "deviceA", 500, "Message is invalid")
+    with _allure_step("验证：chat unpin message invalid id"):
+        resp = device_a.call("ChatManager", Cmd.unpinMessage.value, info={"msgId": "__invalid_unpin_msg__"})
+        _assert_error(assert_api, resp, Cmd.unpinMessage.value, "deviceA", 500, "Message is invalid")
 
 
 def test_chat_unpin_message_empty_id(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.unpinMessage.value, info={"msgId": ""})
-    _assert_error(assert_api, resp, Cmd.unpinMessage.value, "deviceA", 110, None)
+    with _allure_step("验证：chat unpin message empty id"):
+        resp = device_a.call("ChatManager", Cmd.unpinMessage.value, info={"msgId": ""})
+        _assert_error(assert_api, resp, Cmd.unpinMessage.value, "deviceA", 110, None)
 
 
 @pytest.mark.parametrize("conv_id", ["", "__invalid_pin_conversation__"])
 def test_chat_fetch_pinned_messages_invalid_conversation(device_a, assert_api, conv_id):
-    resp = device_a.call("ChatManager", Cmd.fetchPinnedMessages.value, info={"convId": conv_id})
-    expected = (110, None) if conv_id == "" else (107, None)
-    _assert_error(assert_api, resp, Cmd.fetchPinnedMessages.value, "deviceA", *expected)
+    with _allure_step("验证：chat fetch pinned messages invalid conversation"):
+        resp = device_a.call("ChatManager", Cmd.fetchPinnedMessages.value, info={"convId": conv_id})
+        expected = (110, None) if conv_id == "" else (107, None)
+        _assert_error(assert_api, resp, Cmd.fetchPinnedMessages.value, "deviceA", *expected)

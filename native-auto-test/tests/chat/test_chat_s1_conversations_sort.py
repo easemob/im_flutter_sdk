@@ -7,6 +7,7 @@ import pytest
 
 from src import Cmd
 from tests.chat._utils import build_text
+from tests.allure_helpers import _allure_step
 
 
 pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.agorachat1_4_0]
@@ -123,57 +124,58 @@ def test_chat_get_all_conversations_by_sort_orders_latest_first(device_a, device
     目标：验证 ChatManager#getAllConversationsBySort 返回的会话排序正确（最新消息会话优先）。
     用 A->A 与 A->B 两个会话构造时间先后，再检查排序。
     """
-    self_conv_id = user_a
-    peer_conv_id = user_b
+    with _allure_step("验证：目标：验证 ChatManager#getAllConversationsBySort 返回的会话排序正确（最新消息会话优先）。"):
+        self_conv_id = user_a
+        peer_conv_id = user_b
 
-    _ = device_a.call(
-        "ChatManager",
-        Cmd.deleteConversation.value,
-        info={"convId": self_conv_id, "deleteMessages": True},
-    )
-    _ = device_a.call(
-        "ChatManager",
-        Cmd.deleteConversation.value,
-        info={"convId": peer_conv_id, "deleteMessages": True},
-    )
+        _ = device_a.call(
+            "ChatManager",
+            Cmd.deleteConversation.value,
+            info={"convId": self_conv_id, "deleteMessages": True},
+        )
+        _ = device_a.call(
+            "ChatManager",
+            Cmd.deleteConversation.value,
+            info={"convId": peer_conv_id, "deleteMessages": True},
+        )
 
-    _send_text_and_get_real_id(
-        device_a,
-        device_b,
-        assert_api,
-        user_a,
-        user_a,
-        f"s1-sort-self-{uuid.uuid4().hex[:6]}",
-        expect_receive_on_b=False,
-    )
-    time.sleep(1.0)
-    _send_text_and_get_real_id(
-        device_a,
-        device_b,
-        assert_api,
-        user_a,
-        user_b,
-        f"s1-sort-peer-{uuid.uuid4().hex[:6]}",
-        expect_receive_on_b=True,
-    )
-    time.sleep(1.5)
+        _send_text_and_get_real_id(
+            device_a,
+            device_b,
+            assert_api,
+            user_a,
+            user_a,
+            f"s1-sort-self-{uuid.uuid4().hex[:6]}",
+            expect_receive_on_b=False,
+        )
+        time.sleep(1.0)
+        _send_text_and_get_real_id(
+            device_a,
+            device_b,
+            assert_api,
+            user_a,
+            user_b,
+            f"s1-sort-peer-{uuid.uuid4().hex[:6]}",
+            expect_receive_on_b=True,
+        )
+        time.sleep(1.5)
 
-    # SDK 原生方法 key 是 loadAllConversations（内部调用 getAllConversationsBySort）
-    resp_sorted = device_a.call("ChatManager", Cmd.loadAllConversations.value, info={})
+        # SDK 原生方法 key 是 loadAllConversations（内部调用 getAllConversationsBySort）
+        resp_sorted = device_a.call("ChatManager", Cmd.loadAllConversations.value, info={})
 
-    assert_api.assert_response_matches(
-        resp_sorted,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.loadAllConversations.value,
-            "device": "deviceA",
-        },
-        ignore_keys={"sequence", "result"},
-    )
-    conv_ids = _extract_conv_ids_in_order(resp_sorted)
-    assert peer_conv_id in conv_ids, f"排序结果缺少 peer 会话: convId={peer_conv_id}, resp={resp_sorted}"
-    assert self_conv_id in conv_ids, f"排序结果缺少 self 会话: convId={self_conv_id}, resp={resp_sorted}"
-    assert conv_ids.index(peer_conv_id) < conv_ids.index(self_conv_id), (
-        "getAllConversationsBySort 排序不符合预期（最新会话应在前）: "
-        f"peer_index={conv_ids.index(peer_conv_id)}, self_index={conv_ids.index(self_conv_id)}, conv_ids={conv_ids}"
-    )
+        assert_api.assert_response_matches(
+            resp_sorted,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.loadAllConversations.value,
+                "device": "deviceA",
+            },
+            ignore_keys={"sequence", "result"},
+        )
+        conv_ids = _extract_conv_ids_in_order(resp_sorted)
+        assert peer_conv_id in conv_ids, f"排序结果缺少 peer 会话: convId={peer_conv_id}, resp={resp_sorted}"
+        assert self_conv_id in conv_ids, f"排序结果缺少 self 会话: convId={self_conv_id}, resp={resp_sorted}"
+        assert conv_ids.index(peer_conv_id) < conv_ids.index(self_conv_id), (
+            "getAllConversationsBySort 排序不符合预期（最新会话应在前）: "
+            f"peer_index={conv_ids.index(peer_conv_id)}, self_index={conv_ids.index(self_conv_id)}, conv_ids={conv_ids}"
+        )

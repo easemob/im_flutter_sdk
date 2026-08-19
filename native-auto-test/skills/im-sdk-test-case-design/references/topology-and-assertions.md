@@ -18,6 +18,30 @@ def test_delivery(topology, assert_api):
 - scenario 增减 Android、iOS、Web、Harmony 端时，Case 不修改。
 - 多 sender 不是默认拓扑；只有专项验证“多个发送端分别动作”时才增加。
 
+## 离线多端 Case 固定写法
+
+- 离线前按账号遍历 `topology.sender_devices` 或 `topology.recipient_devices` 下线，恢复时也逐台调用保留离线事件的登录流程；每台设备的离线队列独立消费。
+- 业务动作只在 `sender_action_device` 或 `recipient_action_device` 执行一次；副端不重复执行 accept/decline/remove 等动作。
+- 重新登录后按 endpoint 使用 `groupId`、`msgId` 等业务键等待和断言离线事件；如果是一次性动作结果，其他 endpoint 至少验证最终本地/服务端状态。
+- `finally` 恢复两个账号的全部 endpoint 和测试期间修改的账号选项；不要写死 `deviceA/deviceB`。
+
+推荐的最小结构：
+
+```python
+recipient_devices = topology.recipient_devices
+action_device = topology.sender_action_device
+
+logout_group_account_devices(recipient_devices, assert_api)
+action_device.call("GroupManager", cmd, info=info)  # 只执行一次
+login_group_account_devices(
+    recipient_devices, assert_api, user_id=topology.recipient_user
+)
+
+for endpoint in recipient_devices:
+    event = wait_group_event(endpoint, event_type=event_type, group_id=group_id)
+    assert_event(event, group_id=group_id)
+```
+
 ## response 与 event
 
 | 类型 | 含义 | 断言 |

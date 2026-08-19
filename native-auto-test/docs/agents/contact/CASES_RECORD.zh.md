@@ -4,6 +4,7 @@
 - 本文件记录 Contact 模块已覆盖用例（按 API 组织）。
 - 每条 case 以全局序号编号；统计按“当前记录条目数”计算。
 - 暂缓与 skip 项统一写 `CASES_DEFERRED.zh.md`。
+- Allure：Contact 活动用例已补充好友关系、备注、黑名单、本地同步及离线回放的业务步骤；5.0 不再支持的分页/备注持久化语义继续明确 skip。
 
 ## addContact
 
@@ -143,7 +144,7 @@
 
 正常 cases
 38. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_all_contacts_from_db_after_server_sync`
-    建立好友后直接调用 `getAllContactsFromDB`，冻结实测本地 DB 返回好友 ID 列表 `[user_b]` 的语义；Dart 公开方法 `getAllContactIds` 复用同一 native cmd，因此该链路同步覆盖 `getAllContactIds`。
+    建立好友并等待联系人事件落入 5.0 本地 DB 后调用 `getAllContactsFromDB`，冻结本地 DB 返回好友 ID 列表 `[user_b]` 的语义；Dart 公开方法 `getAllContactIds` 复用同一 native cmd，因此该链路同步覆盖 `getAllContactIds`。
 
 异常 cases
 39. 无（该 API 无入参，当前以有数据本地读取链路覆盖；空本地缓存场景后续可作为边界补充）。
@@ -161,7 +162,7 @@
 
 正常 cases
 42. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_self_ids_on_other_platform_returns_list`
-    当前账号仅保持单端登录时调用 `getSelfIdsOnOtherPlatform`，冻结实测返回空列表 `[]` 的语义。
+    先让同账号副端下线，确保当前仅 deviceA 在线，再调用 `getSelfIdsOnOtherPlatform`，冻结单端登录返回空列表 `[]` 的语义；多端场景不再错误地复用单端预期。
 
 异常 cases
 43. 无（该 API 无入参，且多平台同时登录需要额外可控设备会话；当前先覆盖单端登录下的稳定返回）。
@@ -175,6 +176,12 @@
 
 异常 cases
 45. 无（该专项只验证 5.0 原生同步事件的正常链路）。
+
+## 5.0 离线好友关系多端前置
+
+- 离线语义按账号处理：同账号的全部端必须下线；否则副端仍可能收到联系人事件或自动接受邀请，污染主端本地 DB。
+- `tests/contact/test_contact_offline_friendship.py` 已改为使用 `account_a_to_account_b` topology，从 `sender_devices/recipient_devices` 统一清理、下线、恢复账号全部端点，不再依赖 `deviceA/deviceASec/deviceB/deviceBSec` 角色名。
+- `getAllContactsFromDB` 保留目标好友关系的严格存在/不存在断言，并校验真实响应与列表类型；不把设备本地 DB 中与当前 case 无关的历史联系人作为失败条件。
 
 ## 统计
 - 当前记录 case 条目总数：`45`

@@ -5,6 +5,7 @@ import importlib
 import importlib.util
 
 import pytest
+from tests.group.allure_helpers import _allure_step
 
 
 def _capacity_module():
@@ -14,17 +15,20 @@ def _capacity_module():
     return importlib.import_module(module_name)
 
 
+
 def test_group_capacity_defaults_to_200_and_accepts_3000_override():
     """防止默认群容量漂移，或扩容场景没有将常规建群容量切换为 3000。"""
     capacity = _capacity_module()
     original_value = capacity.get_group_create_max_count()
     capacity.reset_group_create_max_count()
     try:
-        assert capacity.get_group_create_max_count() == 200
+        with _allure_step("验证本用例的关键业务结果"):
+            assert capacity.get_group_create_max_count() == 200
 
         capacity.configure_group_create_max_count(3000)
 
-        assert capacity.get_group_create_max_count() == 3000
+        with _allure_step("验证本用例的关键业务结果"):
+            assert capacity.get_group_create_max_count() == 3000
     finally:
         capacity.configure_group_create_max_count(original_value)
 
@@ -34,8 +38,9 @@ def test_group_capacity_rejects_non_positive_values(value: int):
     """防止错误的运行参数创建无效容量群并污染真实测试环境。"""
     capacity = _capacity_module()
 
-    with pytest.raises(ValueError, match="positive"):
-        capacity.configure_group_create_max_count(value)
+    with _allure_step(f"验证非法容量 {value} 被拒绝并返回 ValueError"):
+        with pytest.raises(ValueError, match="positive"):
+            capacity.configure_group_create_max_count(value)
 
 
 def test_group_options_use_active_capacity_unless_boundary_value_is_explicit():
@@ -46,18 +51,24 @@ def test_group_options_use_active_capacity_unless_boundary_value_is_explicit():
     original_value = capacity.get_group_create_max_count()
     capacity.configure_group_create_max_count(3000)
     try:
-        assert build_group_options() == {
-            "style": 0,
-            "maxCount": 3000,
-            "inviteNeedConfirm": False,
-            "ext": "auto-ext",
-        }
-        assert build_group_options(style=3, max_count=2) == {
-            "style": 3,
-            "maxCount": 2,
-            "inviteNeedConfirm": False,
-            "ext": "auto-ext",
-        }
+        with _allure_step("验证本用例的关键业务结果"):
+            assert build_group_options() == {
+                "isPublic": False,
+                "joinApprovalRequired": False,
+                "allowInvites": False,
+                "maxCount": 3000,
+                "inviteNeedConfirm": False,
+                "ext": "auto-ext",
+            }
+        with _allure_step("验证本用例的关键业务结果"):
+            assert build_group_options(style=3, max_count=2) == {
+                "isPublic": True,
+                "joinApprovalRequired": False,
+                "allowInvites": False,
+                "maxCount": 2,
+                "inviteNeedConfirm": False,
+                "ext": "auto-ext",
+            }
     finally:
         capacity.configure_group_create_max_count(original_value)
 
@@ -77,15 +88,18 @@ def test_group_snapshot_default_uses_active_capacity():
     capacity.configure_group_create_max_count(3000)
     try:
         assertions = CapturingAssertions()
-        assert_group_snapshot(
-            assertions,
-            {},
-            cmd="getGroupSpecificationFromServer",
-            group_id="group-id",
-            group_name="group-name",
-            owner="owner",
-        )
-        assert assertions.expected is not None
-        assert assertions.expected["result"]["maxUserCount"] == 3000
+        with _allure_step("验证本用例的关键业务结果"):
+            assert_group_snapshot(
+                assertions,
+                {},
+                cmd="getGroupSpecificationFromServer",
+                group_id="group-id",
+                group_name="group-name",
+                owner="owner",
+            )
+        with _allure_step("验证本用例的关键业务结果"):
+            assert assertions.expected is not None
+        with _allure_step("验证本用例的关键业务结果"):
+            assert assertions.expected["result"]["maxUserCount"] == 3000
     finally:
         capacity.configure_group_create_max_count(original_value)

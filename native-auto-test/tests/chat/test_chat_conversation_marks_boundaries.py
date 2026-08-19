@@ -7,20 +7,23 @@ import pytest
 
 from src import Cmd
 from tests.chat._utils import build_text
+from tests.allure_helpers import _allure_step
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
 
 @pytest.mark.parametrize("info", [{"convIds": ["__invalid_conv__"], "mark": 0}, {"convIds": [""], "mark": 0}])
 def test_chat_add_conversation_mark_boundaries(device_a, assert_api, info):
-    resp = device_a.call("ChatManager", Cmd.addRemoteAndLocalConversationsMark.value, info=info)
-    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.addRemoteAndLocalConversationsMark.value, "device": "deviceA", "result": {"code": 107, "description": "Invalid conversation"}}, ignore_keys={"sequence"})
+    with _allure_step("验证：chat add conversation mark boundaries"):
+        resp = device_a.call("ChatManager", Cmd.addRemoteAndLocalConversationsMark.value, info=info)
+        assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.addRemoteAndLocalConversationsMark.value, "device": "deviceA", "result": {"code": 107, "description": "Invalid conversation"}}, ignore_keys={"sequence"})
 
 
 @pytest.mark.parametrize("info", [{"convIds": ["__invalid_conv__"], "mark": 0}, {"convIds": [""], "mark": 0}])
 def test_chat_delete_conversation_mark_boundaries(device_a, assert_api, info):
-    resp = device_a.call("ChatManager", Cmd.deleteRemoteAndLocalConversationsMark.value, info=info)
-    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.deleteRemoteAndLocalConversationsMark.value, "device": "deviceA", "result": {"code": 107, "description": "Invalid conversation"}}, ignore_keys={"sequence"})
+    with _allure_step("验证：chat delete conversation mark boundaries"):
+        resp = device_a.call("ChatManager", Cmd.deleteRemoteAndLocalConversationsMark.value, info=info)
+        assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.deleteRemoteAndLocalConversationsMark.value, "device": "deviceA", "result": {"code": 107, "description": "Invalid conversation"}}, ignore_keys={"sequence"})
 
 
 @pytest.mark.parametrize(
@@ -131,54 +134,55 @@ def _target_mark_projection(response, conv_id):
 
 
 def test_chat_conversation_mark_idempotent_and_remove_unmarked(device_a, device_b, assert_api, user_a, user_b):
-    _ensure_server_conversation(device_a, device_b, assert_api, user_a, user_b)
-    for _ in range(2):
-        response = device_a.call(
-            "ChatManager", Cmd.addRemoteAndLocalConversationsMark.value,
-            info={"convIds": [user_b], "mark": 0},
-        )
+    with _allure_step("验证：chat conversation mark idempotent and remove unmarked"):
+        _ensure_server_conversation(device_a, device_b, assert_api, user_a, user_b)
+        for _ in range(2):
+            response = device_a.call(
+                "ChatManager", Cmd.addRemoteAndLocalConversationsMark.value,
+                info={"convIds": [user_b], "mark": 0},
+            )
+            assert_api.assert_response_matches(
+                response,
+                expected={"manager": "ChatManager", "cmd": Cmd.addRemoteAndLocalConversationsMark.value,
+                          "device": "deviceA", "result": None},
+                ignore_keys={"sequence"},
+            )
+        fetch = None
+        projection = []
+        deadline = time.monotonic() + 30
+        while time.monotonic() < deadline:
+            fetch = device_a.call(
+                "ChatManager", Cmd.loadAllConversations.value,
+                info={"mark": 0, "pageSize": 10, "cursor": "", "pinned": False},
+            )
+            projection = _target_mark_projection(fetch, user_b)
+            if projection:
+                break
+            time.sleep(1)
+        assert fetch is not None
         assert_api.assert_response_matches(
-            response,
-            expected={"manager": "ChatManager", "cmd": Cmd.addRemoteAndLocalConversationsMark.value,
-                      "device": "deviceA", "result": None},
+            {"manager": fetch.get("manager"), "cmd": fetch.get("cmd"), "device": fetch.get("device"),
+             "result": {"target": projection}},
+            expected={"manager": "ChatManager", "cmd": Cmd.loadAllConversations.value,
+                      "device": "deviceA", "result": {"target": [{"convId": user_b, "type": 0,
+                      "isThread": False, "isPinned": False, "marks": [0]}]}},
             ignore_keys={"sequence"},
         )
-    fetch = None
-    projection = []
-    deadline = time.monotonic() + 30
-    while time.monotonic() < deadline:
-        fetch = device_a.call(
+        for _ in range(2):
+            response = device_a.call(
+                "ChatManager", Cmd.deleteRemoteAndLocalConversationsMark.value,
+                info={"convIds": [user_b], "mark": 0},
+            )
+            assert_api.assert_response_matches(
+                response,
+                expected={"manager": "ChatManager", "cmd": Cmd.deleteRemoteAndLocalConversationsMark.value,
+                          "device": "deviceA", "result": None},
+                ignore_keys={"sequence"},
+            )
+        fetch_after = device_a.call(
             "ChatManager", Cmd.loadAllConversations.value,
             info={"mark": 0, "pageSize": 10, "cursor": "", "pinned": False},
         )
-        projection = _target_mark_projection(fetch, user_b)
-        if projection:
-            break
-        time.sleep(1)
-    assert fetch is not None
-    assert_api.assert_response_matches(
-        {"manager": fetch.get("manager"), "cmd": fetch.get("cmd"), "device": fetch.get("device"),
-         "result": {"target": projection}},
-        expected={"manager": "ChatManager", "cmd": Cmd.loadAllConversations.value,
-                  "device": "deviceA", "result": {"target": [{"convId": user_b, "type": 0,
-                  "isThread": False, "isPinned": False, "marks": [0]}]}},
-        ignore_keys={"sequence"},
-    )
-    for _ in range(2):
-        response = device_a.call(
-            "ChatManager", Cmd.deleteRemoteAndLocalConversationsMark.value,
-            info={"convIds": [user_b], "mark": 0},
-        )
-        assert_api.assert_response_matches(
-            response,
-            expected={"manager": "ChatManager", "cmd": Cmd.deleteRemoteAndLocalConversationsMark.value,
-                      "device": "deviceA", "result": None},
-            ignore_keys={"sequence"},
-        )
-    fetch_after = device_a.call(
-        "ChatManager", Cmd.loadAllConversations.value,
-        info={"mark": 0, "pageSize": 10, "cursor": "", "pinned": False},
-    )
-    # 5.0 fetchConversationsByOptions 返回全部会话（不按 mark 过滤）→ 改为验证该会话 marks 已清空
-    proj_after = _target_mark_projection(fetch_after, user_b)
-    assert proj_after and not (proj_after[0].get("marks") or []), f"删除标记后 marks 应为空: {fetch_after}"
+        # 5.0 fetchConversationsByOptions 返回全部会话（不按 mark 过滤）→ 改为验证该会话 marks 已清空
+        proj_after = _target_mark_projection(fetch_after, user_b)
+        assert proj_after and not (proj_after[0].get("marks") or []), f"删除标记后 marks 应为空: {fetch_after}"

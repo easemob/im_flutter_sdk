@@ -40,40 +40,45 @@ def _consume_direct_invite_events(
     group_id: str,
     owner: str,
     member: str,
+    owner_devices=(),
 ) -> None:
-    member_events = collect_group_events(
-        member_device,
-        expected_event_types={"onGroupAutoAcceptInvitation"},
-        group_id=group_id,
-        required_all_event_types={"onGroupAutoAcceptInvitation"},
-        timeout=10.0,
-    )
-    assert_api.assert_response_matches(
-        member_events[0],
-        expected={
-            "type": "event",
-            "eventType": "onGroupAutoAcceptInvitation",
-            "data": {"groupId": group_id, "inviter": owner, "inviteMessage": ""},
-        },
-        ignore_keys={"timestamp", "sequence"},
-    )
+    with _allure_step("成员端收到入群邀请并校验邀请字段"):
+        member_events = collect_group_events(
+            member_device,
+            expected_event_types={"onGroupAutoAcceptInvitation"},
+            group_id=group_id,
+            required_all_event_types={"onGroupAutoAcceptInvitation"},
+            timeout=10.0,
+        )
+        assert_api.assert_response_matches(
+            member_events[0],
+            expected={
+                "type": "event",
+                "eventType": "onGroupAutoAcceptInvitation",
+                "data": {"groupId": group_id, "inviter": owner, "inviteMessage": ""},
+            },
+            ignore_keys={"timestamp", "sequence"},
+        )
 
     owner_event_types = {"onGroupMembersJoined"}  # 5.0 只派发批量事件
-    owner_events = collect_group_events(
-        owner_device,
-        expected_event_types=owner_event_types,
-        group_id=group_id,
-        required_all_event_types=owner_event_types,
-        timeout=10.0,
-    )
-    assert_group_events(
-        assert_api,
-        owner_events,
-        expected_event_types=owner_event_types,
-        group_id=group_id,
-        required_all_event_types=owner_event_types,
-        expected_member=member,
-    )
+    owner_endpoints = tuple(dict.fromkeys((owner_device, *owner_devices)))
+    with _allure_step("群主账号全部在线端收到成员加入事件"):
+        for endpoint in owner_endpoints:
+            owner_events = collect_group_events(
+                endpoint,
+                expected_event_types=owner_event_types,
+                group_id=group_id,
+                required_all_event_types=owner_event_types,
+                timeout=10.0,
+            )
+            assert_group_events(
+                assert_api,
+                owner_events,
+                expected_event_types=owner_event_types,
+                group_id=group_id,
+                required_all_event_types=owner_event_types,
+                expected_member=member,
+            )
 
 
 def _assert_shared_file_added_event(
@@ -148,25 +153,27 @@ def _upload_remove_and_assert_peer_events(
     operator_device_name: str,
     group_id: str,
     operator: str,
+    operator_devices=(),
 ) -> None:
-    resp_upload = operator_device.call(
-        "GroupManager",
-        Cmd.uploadGroupSharedFile.value,
-        info={"groupId": group_id},
-    )
-    assert_api.assert_response_matches(
-        resp_upload,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.uploadGroupSharedFile.value,
-            "device": operator_device_name,
-            "result": {
-                "fileId": ne(""),
-                "fileName": ne(""),
+    with _allure_step("上传群共享文件并校验返回的文件标识"):
+        resp_upload = operator_device.call(
+            "GroupManager",
+            Cmd.uploadGroupSharedFile.value,
+            info={"groupId": group_id},
+        )
+        assert_api.assert_response_matches(
+            resp_upload,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.uploadGroupSharedFile.value,
+                "device": operator_device_name,
+                "result": {
+                    "fileId": ne(""),
+                    "fileName": ne(""),
+                },
             },
-        },
-        ignore_keys={"sequence"},
-    )
+            ignore_keys={"sequence"},
+        )
 
     shared_file = None
     with _allure_step("owner 账号全部在线端收到共享文件新增事件（onGroupSharedFileAdded）"):
@@ -184,36 +191,40 @@ def _upload_remove_and_assert_peer_events(
                 group_id=group_id,
                 owner=operator,
             )
-    assert_no_group_event(
-        operator_device,
-        group_id=group_id,
-        event_types={"onGroupSharedFileAdded"},
-    )
+    with _allure_step("操作者账号全部在线端不收到共享文件新增事件"):
+        for endpoint in tuple(dict.fromkeys((operator_device, *operator_devices))):
+            assert_no_group_event(
+                endpoint,
+                group_id=group_id,
+                event_types={"onGroupSharedFileAdded"},
+            )
 
-    _assert_file_list_matches_event(
-        operator_device,
-        assert_api,
-        device_name=operator_device_name,
-        group_id=group_id,
-        expected_file=shared_file,
-    )
+    with _allure_step("查询共享文件列表并校验新增文件"):
+        _assert_file_list_matches_event(
+            operator_device,
+            assert_api,
+            device_name=operator_device_name,
+            group_id=group_id,
+            expected_file=shared_file,
+        )
 
     file_id = shared_file["fileId"]
-    resp_remove = operator_device.call(
-        "GroupManager",
-        Cmd.removeGroupSharedFile.value,
-        info={"groupId": group_id, "fileId": file_id},
-    )
-    assert_api.assert_response_matches(
-        resp_remove,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.removeGroupSharedFile.value,
-            "device": operator_device_name,
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("删除群共享文件并校验操作成功"):
+        resp_remove = operator_device.call(
+            "GroupManager",
+            Cmd.removeGroupSharedFile.value,
+            info={"groupId": group_id, "fileId": file_id},
+        )
+        assert_api.assert_response_matches(
+            resp_remove,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.removeGroupSharedFile.value,
+                "device": operator_device_name,
+                "result": True,
+            },
+            ignore_keys={"sequence"},
+        )
 
     with _allure_step("owner 账号全部在线端收到共享文件删除事件（onGroupSharedFileDeleted）"):
         for __d__ in observer_devices:
@@ -233,27 +244,31 @@ def _upload_remove_and_assert_peer_events(
                 },
                 ignore_keys={"timestamp", "sequence"},
             )
-    assert_no_group_event(
-        operator_device,
-        group_id=group_id,
-        event_types={"onGroupSharedFileDeleted"},
-    )
+    with _allure_step("操作者账号全部在线端不收到共享文件删除事件"):
+        for endpoint in tuple(dict.fromkeys((operator_device, *operator_devices))):
+            assert_no_group_event(
+                endpoint,
+                group_id=group_id,
+                event_types={"onGroupSharedFileDeleted"},
+            )
 
-    resp_empty = operator_device.call(
-        "GroupManager",
-        Cmd.getGroupFileListFromServer.value,
-        info={"groupId": group_id, "pageNum": 1, "pageSize": 20},
-    )
-    assert_api.assert_response_matches(
-        resp_empty,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.getGroupFileListFromServer.value,
-            "device": operator_device_name,
-            "result": [],
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("再次查询共享文件列表并确认文件已删除"):
+        resp_empty = operator_device.call(
+            "GroupManager",
+            Cmd.getGroupFileListFromServer.value,
+            info={"groupId": group_id, "pageNum": 1, "pageSize": 20},
+        )
+        assert_api.assert_response_matches(
+            resp_empty,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.getGroupFileListFromServer.value,
+                "device": operator_device_name,
+                "result": [],
+            },
+            ignore_keys={"sequence"},
+        )
+
 
 
 def test_group_owner_upload_remove_shared_file_notifies_member(
@@ -273,14 +288,15 @@ def test_group_owner_upload_remove_shared_file_notifies_member(
     """
     group_id = ""
     try:
-        group_id, _ = create_group(
-            device_b,
-            assert_api,
-            owner=user_b,
-            group_name=new_group_name("owner_shared_file"),
-            invite_members=[user_a],
-            device_name="deviceB",
-        )
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            group_id, _ = create_group(
+                device_b,
+                assert_api,
+                owner=user_b,
+                group_name=new_group_name("owner_shared_file"),
+                invite_members=[user_a],
+                device_name="deviceB",
+            )
         _consume_direct_invite_events(
             device_b,
             device_a,
@@ -299,59 +315,65 @@ def test_group_owner_upload_remove_shared_file_notifies_member(
         )
     finally:
         if group_id:
-            destroy_group(
-                device_b,
-                assert_api,
-                group_id,
-                device_b=device_a,
-                device_name="deviceB",
-            )
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(
+                    device_b,
+                    assert_api,
+                    group_id,
+                    device_b=device_a,
+                    device_name="deviceB",
+                )
 
 
 @pytest.mark.topology("account_a_to_account_b")
 def test_group_admin_upload_remove_shared_file_notifies_owner(
-    device_a,
-    device_b,
     assert_api,
     user_a,
     user_b,
     topology,
 ):
     """管理员 B 上传/删除共享文件：新增/删除事件同步到 owner 账号（A）全部在线端；B 全端收管理员提升事件。"""
+    owner = topology.sender_action_device
+    admin = topology.recipient_action_device
     senders = topology.sender_devices
     recipients = topology.recipient_devices
     group_id = ""
     try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=new_group_name("admin_shared_file"),
-            invite_members=[user_b],
-        )
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            group_id, _ = create_group(
+                owner,
+                assert_api,
+                owner=user_a,
+                group_name=new_group_name("admin_shared_file"),
+                invite_members=[user_b],
+                device_name=owner.device_name,
+            )
         _consume_direct_invite_events(
-            device_a,
-            device_b,
+            owner,
+            admin,
             assert_api,
             group_id=group_id,
             owner=user_a,
             member=user_b,
+            owner_devices=senders,
         )
 
-        resp_admin = device_a.call(
-            "GroupManager",
-            Cmd.addAdmin.value,
-            info={"groupId": group_id, "admin": user_b},
-        )
-        assert_api.assert_response_matches(
-            resp_admin,
-            expected={
-                "manager": "GroupManager",
-                "cmd": Cmd.addAdmin.value,
-                "device": "deviceA",
-            },
-            ignore_keys={"sequence", "result"},
-        )
+        with _allure_step("A 添加群管理员"):
+            resp_admin = owner.call(
+                "GroupManager",
+                Cmd.addAdmin.value,
+                info={"groupId": group_id, "admin": user_b},
+            )
+        with _allure_step("验证 添加群管理员返回的关键字段"):
+            assert_api.assert_response_matches(
+                resp_admin,
+                expected={
+                    "manager": "GroupManager",
+                    "cmd": Cmd.addAdmin.value,
+                    "device": owner.device_name,
+                },
+                ignore_keys={"sequence", "result"},
+            )
         with _allure_step("B 账号全部在线端收到管理员提升事件（onGroupAdminAdded）"):
             for __d__ in recipients:
                 admin_events = collect_group_events(
@@ -378,16 +400,18 @@ def test_group_admin_upload_remove_shared_file_notifies_owner(
                 )
 
         _upload_remove_and_assert_peer_events(
-            device_b,
+            admin,
             senders,
             assert_api,
-            operator_device_name="deviceB",
+            operator_device_name=admin.device_name,
             group_id=group_id,
             operator=user_b,
+            operator_devices=recipients,
         )
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id, device_b=device_b)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(owner, assert_api, group_id, device_b=admin, device_name=owner.device_name)
 
 
 def test_group_upload_shared_file_explicit_host_path_is_invalid(device_a, assert_api, user_a):
@@ -398,23 +422,27 @@ def test_group_upload_shared_file_explicit_host_path_is_invalid(device_a, assert
     """
     group_id = ""
     try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=new_group_name("shared_file_host_path"),
-            invite_members=[],
-        )
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            group_id, _ = create_group(
+                device_a,
+                assert_api,
+                owner=user_a,
+                group_name=new_group_name("shared_file_host_path"),
+                invite_members=[],
+            )
 
-        resp_upload = device_a.call(
-            "GroupManager",
-            Cmd.uploadGroupSharedFile.value,
-            info={"groupId": group_id, "filePath": "/private/tmp/group_shared_upload_auto.txt"},
-        )
-        assert_api.assert_error(resp_upload, code=401, description="Invalid file")
+        with _allure_step("A 上传群共享文件"):
+            resp_upload = device_a.call(
+                "GroupManager",
+                Cmd.uploadGroupSharedFile.value,
+                info={"groupId": group_id, "filePath": "/private/tmp/group_shared_upload_auto.txt"},
+            )
+        with _allure_step("验证 上传群共享文件返回的错误码与错误文案"):
+            assert_api.assert_error(resp_upload, code=401, description="Invalid file")
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(device_a, assert_api, group_id)
 
 
 def test_group_upload_shared_file_nonexistent_group(device_a, assert_api):
@@ -423,12 +451,14 @@ def test_group_upload_shared_file_nonexistent_group(device_a, assert_api):
     步骤：A 调用 uploadGroupSharedFile。
     预期与断言：群不存在校验优先，真实返回 `600/do not find this group`。
     """
-    resp = device_a.call(
-        "GroupManager",
-        Cmd.uploadGroupSharedFile.value,
-        info={"groupId": _NONEXISTENT_GROUP_ID, "filePath": "/private/tmp/x.txt"},
-    )
-    assert_api.assert_error(resp, code=600, description="do not find this group")
+    with _allure_step("A 上传群共享文件"):
+        resp = device_a.call(
+            "GroupManager",
+            Cmd.uploadGroupSharedFile.value,
+            info={"groupId": _NONEXISTENT_GROUP_ID, "filePath": "/private/tmp/x.txt"},
+        )
+    with _allure_step("验证 上传群共享文件返回的错误码与错误文案"):
+        assert_api.assert_error(resp, code=600, description="do not find this group")
 
 
 def test_group_download_shared_file_nonexistent_group_current_behavior(device_a, assert_api):
@@ -437,21 +467,23 @@ def test_group_download_shared_file_nonexistent_group_current_behavior(device_a,
     步骤：A 调用 downloadGroupSharedFile。
     预期与断言：当前 Android Wrapper 真实同步返回 `result=true`；本 case 仅冻结该现状。
     """
-    resp = device_a.call(
-        "GroupManager",
-        Cmd.downloadGroupSharedFile.value,
-        info={"groupId": _NONEXISTENT_GROUP_ID, "fileId": "1", "savePath": "/private/tmp"},
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.downloadGroupSharedFile.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("A 下载群共享文件"):
+        resp = device_a.call(
+            "GroupManager",
+            Cmd.downloadGroupSharedFile.value,
+            info={"groupId": _NONEXISTENT_GROUP_ID, "fileId": "1", "savePath": "/private/tmp"},
+        )
+    with _allure_step("验证 下载群共享文件返回的关键字段"):
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.downloadGroupSharedFile.value,
+                "device": "deviceA",
+                "result": True,
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_group_remove_shared_file_nonexistent_group(device_a, assert_api):
@@ -460,12 +492,14 @@ def test_group_remove_shared_file_nonexistent_group(device_a, assert_api):
     步骤：A 调用 removeGroupSharedFile。
     预期与断言：真实返回 `600/do not find this group`。
     """
-    resp = device_a.call(
-        "GroupManager",
-        Cmd.removeGroupSharedFile.value,
-        info={"groupId": _NONEXISTENT_GROUP_ID, "fileId": "1"},
-    )
-    assert_api.assert_error(resp, code=600, description="do not find this group")
+    with _allure_step("A 执行群组业务操作"):
+        resp = device_a.call(
+            "GroupManager",
+            Cmd.removeGroupSharedFile.value,
+            info={"groupId": _NONEXISTENT_GROUP_ID, "fileId": "1"},
+        )
+    with _allure_step("验证执行群组业务操作返回的错误码与错误文案"):
+        assert_api.assert_error(resp, code=600, description="do not find this group")
 
 
 def test_group_upload_shared_file_invalid_path(device_a, assert_api, user_a):
@@ -476,19 +510,23 @@ def test_group_upload_shared_file_invalid_path(device_a, assert_api, user_a):
     """
     group_id = ""
     try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=new_group_name("shared_file_invalid"),
-            invite_members=[],
-        )
-        resp = device_a.call(
-            "GroupManager",
-            Cmd.uploadGroupSharedFile.value,
-            info={"groupId": group_id, "filePath": "/private/tmp/this_file_should_not_exist_123456789.txt"},
-        )
-        assert_api.assert_error(resp, code=401, description="Invalid file")
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            group_id, _ = create_group(
+                device_a,
+                assert_api,
+                owner=user_a,
+                group_name=new_group_name("shared_file_invalid"),
+                invite_members=[],
+            )
+        with _allure_step("A 上传群共享文件"):
+            resp = device_a.call(
+                "GroupManager",
+                Cmd.uploadGroupSharedFile.value,
+                info={"groupId": group_id, "filePath": "/private/tmp/this_file_should_not_exist_123456789.txt"},
+            )
+        with _allure_step("验证 上传群共享文件返回的错误码与错误文案"):
+            assert_api.assert_error(resp, code=401, description="Invalid file")
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(device_a, assert_api, group_id)

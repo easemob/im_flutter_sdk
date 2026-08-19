@@ -4,6 +4,7 @@
 - 本文件记录 Group 模块已覆盖用例（按 API 组织）。
 - 每条 case 以全局序号编号；统计按“当前记录条目数”计算。
 - 暂缓与 skip 项统一写 `CASES_DEFERRED.zh.md`。
+- 拓扑用例约定：动作端、同账号其他在线端和对端均从 `topology` 动态取得；事件/无事件断言按对应账号的全部在线端遍历，不固定 `deviceA/deviceB`。Allure 步骤按“准备、业务动作、事件/状态验证、清理”记录业务语义。
 
 ## createGroup
 
@@ -130,8 +131,8 @@
 
 正常 cases
 34. `tests/group/test_group_announcement.py::test_group_owner_update_announcement_notifies_member`
-    群主 A 更新公告，B 收到精确 `onAnnouncementChangedFromGroup`，A 不收到同类事件，
-    服务端读取值与写入值一致。
+    群主动作端更新公告，接收账号全部拓扑端点收到精确 `onGroupAnnouncementChanged`，
+    发送账号全部拓扑端点不收到同类事件，服务端读取值与写入值一致。
 
 异常 cases
 35. `tests/group/test_group_exceptions_announcement.py::test_group_update_announcement_nonexistent_group`
@@ -599,8 +600,8 @@
      创建两个 `style=3` 公开群，以 `pageSize=1` 使用真实 cursor 连续翻页，精确找到两个
      动态 `groupId/name`，并断言 cursor 变化和 groupId 不重复。
 144. `tests/group/test_group_announcement.py::test_group_admin_update_announcement_notifies_owner`
-     B 被提升为管理员后更新公告，群主 A 收到精确回调，操作者 B 不收到同类事件，
-     服务端公告值一致。
+     接收账号动作端被提升为管理员后更新公告，发送账号全部拓扑端点收到精确
+     `onGroupAnnouncementChanged`，接收账号全部拓扑端点不收到同类事件，服务端公告值一致。
 145. `tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_auto_accept_when_confirmation_required`
      B 保持 `autoAcceptGroupInvitation=true`，A 以 `inviteNeedConfirm=true` 邀请 B；B 收到
      自动接受事件，A 收到接受事件及两类加入事件，最终服务端成员为 2。
@@ -674,6 +675,18 @@
 | 184 | `test_chat_thread_fetch_members_and_latest_message` | thread 成员列表和未发送线程消息时的最新消息映射 | 1 | 已覆盖 |
 | 185 | `test_chat_thread_update_name_and_leave` | 更新 thread 名称、双方更新事件、B 退出及已加入列表变化 | 1 | 已覆盖 |
 | 186 | `test_chat_thread_destroy_event_received_by_group_member` | 解散 thread，群成员收到销毁事件并校验稳定字段 | 1 | 已覆盖 |
+
+## 第五阶段：Group 离线用例拓扑化
+
+以下 4 个离线文件已统一使用 `account_a_to_account_b` topology：离线按账号遍历全部 endpoint，业务动作仍只在
+`sender_action_device`/`recipient_action_device` 执行一次，重新登录后按 endpoint 消费并断言离线事件，清理时恢复两端账号的全部设备。
+
+- `test_group_offline_invitation_application.py`：邀请/入群申请的离线接收、处理结果和最终成员状态。
+- `test_group_offline_member_state.py`：移除、拉黑、解散、主动退群后的离线状态恢复。
+- `test_group_offline_message_delivery.py`：文本、命令、撤回、内容变更、回执和会话状态的离线多端投递。
+- `test_group_offline_roles_and_configuration.py`：管理员、群主、群配置、禁言、白名单、成员属性和共享文件的离线终态。
+
+本次静态收集为 `31 items`；尚未以真实设备执行这批改造后的 Group 离线全量，因此不在此处标记为通过。
 
 ## 统计
 - 当前记录测试函数条目：`186`；第二阶段新增 `29` 个函数、展开 `66 items`；第三阶段累计 `6` 个函数、展开 `16 items`；第四阶段迁移 `5` 个 ChatThread 函数、展开 `5 items`。

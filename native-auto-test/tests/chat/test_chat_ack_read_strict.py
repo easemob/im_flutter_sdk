@@ -34,22 +34,23 @@ def _target_message(event, msg_id=None, *, content=None):
 
 def test_chat_ack_message_read_invalid_msg_id(device_b, assert_api, user_a):
     """ackMessageRead 使用无效 msgId；按不存在语义冻结。"""
-    resp = device_b.call(
-        "ChatManager",
-        Cmd.ackMessageRead.value,
-        info={"msgId": "__invalid_msg_id__", "to": user_a},
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.ackMessageRead.value,
-            "device": "deviceB",
-            # 原生实际：两端一致 110 "messages is empty"（wrapper 透传后确认）
-            "result": {"code": 110, "description": "messages is empty"},
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证：ackMessageRead 使用无效 msgId；按不存在语义冻结。"):
+        resp = device_b.call(
+            "ChatManager",
+            Cmd.ackMessageRead.value,
+            info={"msgId": "__invalid_msg_id__", "to": user_a},
+        )
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.ackMessageRead.value,
+                "device": action_recipient.device_name,
+                # 原生实际：两端一致 110 "messages is empty"（wrapper 透传后确认）
+                "result": {"code": 110, "description": "messages is empty"},
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -161,7 +162,7 @@ def test_chat_ack_message_read_success_with_event(topology, assert_api):
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.ackMessageRead.value,
-            "device": "deviceB",
+            "device": action_recipient.device_name,
             "result": True,
         },
         ignore_keys={"sequence"},

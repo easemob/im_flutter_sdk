@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pytest
+from tests.group.allure_helpers import _allure_step
 
 from src import Cmd
 from tests.group.group_helpers import (
@@ -11,6 +12,7 @@ from tests.group.group_helpers import (
     collect_group_events,
     create_group,
     destroy_group,
+    group_style_configs,
     new_group_name,
 )
 
@@ -84,6 +86,7 @@ def _fetch_group(
     member_count: int,
     admins: list[str] | None = None,
     permission_type: int = 2,
+    style: int,
     device_name: str,
 ) -> None:
     response = device.call(
@@ -91,6 +94,7 @@ def _fetch_group(
         Cmd.getGroupSpecificationFromServer.value,
         info={"groupId": group_id},
     )
+    configs = group_style_configs(style)
     assert_group_snapshot(
         assert_api,
         response,
@@ -101,8 +105,9 @@ def _fetch_group(
         member_count_value=member_count,
         admin_list_value=admins,
         permission_type=permission_type,
-        # 官方迁移表 6.1：仅 style=1（PrivateMemberCanInvite）allowInvites=true；style=2（公开需审批）→ false
-        is_member_allow_to_invite=False,
+        is_member_allow_to_invite=configs["allowInvites"],
+        is_public=configs["isPublic"],
+        join_approval_required=configs["joinApprovalRequired"],
         device=device_name,
     )
     assert_group_members_exact(response, members, err_prefix="入群申请服务端快照")
@@ -157,6 +162,7 @@ def _request_join(
     [Cmd.acceptJoinApplication.value, Cmd.declineJoinApplication.value],
     ids=["accept", "decline"],
 )
+
 def test_group_join_application_valid_group_without_pending_is_rejected(
     device_a,
     assert_api,
@@ -168,19 +174,22 @@ def test_group_join_application_valid_group_without_pending_is_rejected(
     group_id = ""
     group_name = new_group_name(f"application_no_pending_{action}")
     try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=group_name,
-            invite_members=[],
-            style=2,
-        )
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            group_id, _ = create_group(
+                device_a,
+                assert_api,
+                owner=user_a,
+                group_name=group_name,
+                invite_members=[],
+                style=2,
+            )
         info = {"groupId": group_id, "userId": user_b}
         if action == Cmd.declineJoinApplication.value:
             info["reason"] = "no-pending"
-        response = device_a.call("GroupManager", action, info=info)
-        assert_api.assert_error(response, code=110, description="is not in the apply list")
+        with _allure_step("A 执行群组业务操作"):
+            response = device_a.call("GroupManager", action, info=info)
+        with _allure_step("验证执行群组业务操作返回的错误码与错误文案"):
+            assert_api.assert_error(response, code=110, description="is not in the apply list")
         _fetch_group(
             device_a,
             assert_api,
@@ -189,11 +198,13 @@ def test_group_join_application_valid_group_without_pending_is_rejected(
             owner=user_a,
             members=[],
             member_count=1,
+            style=2,
             device_name="deviceA",
         )
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(device_a, assert_api, group_id)
 
 
 def test_group_join_application_empty_reason_uses_server_default(
@@ -207,65 +218,73 @@ def test_group_join_application_empty_reason_uses_server_default(
     group_id = ""
     group_name = new_group_name("application_empty_reason")
     try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=group_name,
-            invite_members=[],
-            style=2,
-        )
-        response = device_b.call(
-            "GroupManager",
-            Cmd.requestToJoinPublicGroup.value,
-            info={"groupId": group_id, "reason": ""},
-        )
-        _assert_call(
-            assert_api,
-            response,
-            manager="GroupManager",
-            cmd=Cmd.requestToJoinPublicGroup.value,
-            device="deviceB",
-            result=None,
-        )
-        request_events = collect_group_events(
-            device_a,
-            expected_event_types={"onGroupRequestToJoinReceived"},
-            group_id=group_id,
-            required_all_event_types={"onGroupRequestToJoinReceived"},
-            timeout=10.0,
-        )
-        _assert_event(
-            assert_api,
-            request_events[0],
-            event_type="onGroupRequestToJoinReceived",
-            data={
-                "groupId": group_id,
-                "groupName": group_name,
-                "applicant": user_b,
-                "reason": "apply to join",
-            },
-        )
-        decline = device_a.call(
-            "GroupManager",
-            Cmd.declineJoinApplication.value,
-            info={"groupId": group_id, "userId": user_b, "reason": "cleanup"},
-        )
-        _assert_call(
-            assert_api,
-            decline,
-            manager="GroupManager",
-            cmd=Cmd.declineJoinApplication.value,
-            device="deviceA",
-            result=None,
-        )
-        collect_group_events(
-            device_b,
-            expected_event_types={"onGroupRequestToJoinDeclined"},
-            group_id=group_id,
-            required_all_event_types={"onGroupRequestToJoinDeclined"},
-            timeout=10.0,
-        )
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            group_id, _ = create_group(
+                device_a,
+                assert_api,
+                owner=user_a,
+                group_name=group_name,
+                invite_members=[],
+                style=2,
+            )
+        with _allure_step("B 申请加入公开群"):
+            response = device_b.call(
+                "GroupManager",
+                Cmd.requestToJoinPublicGroup.value,
+                info={"groupId": group_id, "reason": ""},
+            )
+        with _allure_step("验证群业务状态、事件与关键字段"):
+            _assert_call(
+                assert_api,
+                response,
+                manager="GroupManager",
+                cmd=Cmd.requestToJoinPublicGroup.value,
+                device="deviceB",
+                result=None,
+            )
+        with _allure_step("等待并校验目标业务事件"):
+            request_events = collect_group_events(
+                device_a,
+                expected_event_types={"onGroupRequestToJoinReceived"},
+                group_id=group_id,
+                required_all_event_types={"onGroupRequestToJoinReceived"},
+                timeout=10.0,
+            )
+        with _allure_step("验证群业务状态、事件与关键字段"):
+            _assert_event(
+                assert_api,
+                request_events[0],
+                event_type="onGroupRequestToJoinReceived",
+                data={
+                    "groupId": group_id,
+                    "groupName": group_name,
+                    "applicant": user_b,
+                    "reason": "apply to join",
+                },
+            )
+        with _allure_step("A 拒绝入群申请"):
+            decline = device_a.call(
+                "GroupManager",
+                Cmd.declineJoinApplication.value,
+                info={"groupId": group_id, "userId": user_b, "reason": "cleanup"},
+            )
+        with _allure_step("验证群业务状态、事件与关键字段"):
+            _assert_call(
+                assert_api,
+                decline,
+                manager="GroupManager",
+                cmd=Cmd.declineJoinApplication.value,
+                device="deviceA",
+                result=None,
+            )
+        with _allure_step("等待并校验目标业务事件"):
+            collect_group_events(
+                device_b,
+                expected_event_types={"onGroupRequestToJoinDeclined"},
+                group_id=group_id,
+                required_all_event_types={"onGroupRequestToJoinDeclined"},
+                timeout=10.0,
+            )
         _fetch_group(
             device_a,
             assert_api,
@@ -274,11 +293,13 @@ def test_group_join_application_empty_reason_uses_server_default(
             owner=user_a,
             members=[],
             member_count=1,
+            style=2,
             device_name="deviceA",
         )
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(device_a, assert_api, group_id)
 
 
 def test_group_duplicate_join_application_keeps_single_pending_request(
@@ -292,14 +313,15 @@ def test_group_duplicate_join_application_keeps_single_pending_request(
     group_id = ""
     group_name = new_group_name("application_duplicate")
     try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=group_name,
-            invite_members=[],
-            style=2,
-        )
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            group_id, _ = create_group(
+                device_a,
+                assert_api,
+                owner=user_a,
+                group_name=group_name,
+                invite_members=[],
+                style=2,
+            )
         _request_join(
             device_b,
             device_a,
@@ -320,37 +342,41 @@ def test_group_duplicate_join_application_keeps_single_pending_request(
             applicant=user_b,
             reason="second-reason",
         )
-        decline = device_a.call(
-            "GroupManager",
-            Cmd.declineJoinApplication.value,
-            info={"groupId": group_id, "userId": user_b, "reason": "cleanup"},
-        )
-        _assert_call(
-            assert_api,
-            decline,
-            manager="GroupManager",
-            cmd=Cmd.declineJoinApplication.value,
-            device="deviceA",
-            result=None,
-        )
-        declined_events = collect_group_events(
-            device_b,
-            expected_event_types={"onGroupRequestToJoinDeclined"},
-            group_id=group_id,
-            required_all_event_types={"onGroupRequestToJoinDeclined"},
-            timeout=10.0,
-        )
-        _assert_event(
-            assert_api,
-            declined_events[0],
-            event_type="onGroupRequestToJoinDeclined",
-            data={
-                "groupId": group_id,
-                "decliner": user_a,
-                "reason": "cleanup",
-                "applicant": user_b,
-            },
-        )
+        with _allure_step("A 拒绝入群申请"):
+            decline = device_a.call(
+                "GroupManager",
+                Cmd.declineJoinApplication.value,
+                info={"groupId": group_id, "userId": user_b, "reason": "cleanup"},
+            )
+        with _allure_step("验证群业务状态、事件与关键字段"):
+            _assert_call(
+                assert_api,
+                decline,
+                manager="GroupManager",
+                cmd=Cmd.declineJoinApplication.value,
+                device="deviceA",
+                result=None,
+            )
+        with _allure_step("等待并校验目标业务事件"):
+            declined_events = collect_group_events(
+                device_b,
+                expected_event_types={"onGroupRequestToJoinDeclined"},
+                group_id=group_id,
+                required_all_event_types={"onGroupRequestToJoinDeclined"},
+                timeout=10.0,
+            )
+        with _allure_step("验证群业务状态、事件与关键字段"):
+            _assert_event(
+                assert_api,
+                declined_events[0],
+                event_type="onGroupRequestToJoinDeclined",
+                data={
+                    "groupId": group_id,
+                    "decliner": user_a,
+                    "reason": "cleanup",
+                    "applicant": user_b,
+                },
+            )
         _fetch_group(
             device_a,
             assert_api,
@@ -359,11 +385,13 @@ def test_group_duplicate_join_application_keeps_single_pending_request(
             owner=user_a,
             members=[],
             member_count=1,
+            style=2,
             device_name="deviceA",
         )
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(device_a, assert_api, group_id)
 
 
 @pytest.mark.parametrize(
@@ -389,14 +417,15 @@ def test_group_join_application_cannot_be_processed_twice(
     group_name = new_group_name(f"application_{first_action}_{second_action}")
     accepted = False
     try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=group_name,
-            invite_members=[],
-            style=2,
-        )
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            group_id, _ = create_group(
+                device_a,
+                assert_api,
+                owner=user_a,
+                group_name=group_name,
+                invite_members=[],
+                style=2,
+            )
         _request_join(
             device_b,
             device_a,
@@ -415,48 +444,53 @@ def test_group_join_application_cannot_be_processed_twice(
         first_info = {"groupId": group_id, "userId": user_b}
         if first_action == "decline":
             first_info["reason"] = "first-decline"
-        first = device_a.call("GroupManager", first_cmd, info=first_info)
-        _assert_call(
-            assert_api,
-            first,
-            manager="GroupManager",
-            cmd=first_cmd,
-            device="deviceA",
-            result=None,
-        )
+        with _allure_step("A 执行群组业务操作"):
+            first = device_a.call("GroupManager", first_cmd, info=first_info)
+        with _allure_step("验证群业务状态、事件与关键字段"):
+            _assert_call(
+                assert_api,
+                first,
+                manager="GroupManager",
+                cmd=first_cmd,
+                device="deviceA",
+                result=None,
+            )
         first_event_type = (
             "onGroupRequestToJoinAccepted"
             if first_action == "accept"
             else "onGroupRequestToJoinDeclined"
         )
-        first_events = collect_group_events(
-            device_b,
-            expected_event_types={first_event_type},
-            group_id=group_id,
-            required_all_event_types={first_event_type},
-            timeout=10.0,
-        )
+        with _allure_step("等待并校验目标业务事件"):
+            first_events = collect_group_events(
+                device_b,
+                expected_event_types={first_event_type},
+                group_id=group_id,
+                required_all_event_types={first_event_type},
+                timeout=10.0,
+            )
         if first_action == "accept":
             accepted = True
-            _assert_event(
-                assert_api,
-                first_events[0],
-                event_type=first_event_type,
-                data={"groupId": group_id, "groupName": group_name, "accepter": user_a},
-            )
+            with _allure_step("验证群业务状态、事件与关键字段"):
+                _assert_event(
+                    assert_api,
+                    first_events[0],
+                    event_type=first_event_type,
+                    data={"groupId": group_id, "groupName": group_name, "accepter": user_a},
+                )
             device_a.drain_events()
         else:
-            _assert_event(
-                assert_api,
-                first_events[0],
-                event_type=first_event_type,
-                data={
-                    "groupId": group_id,
-                        "decliner": user_a,
-                    "reason": "first-decline",
-                    "applicant": user_b,
-                },
-            )
+            with _allure_step("验证群业务状态、事件与关键字段"):
+                _assert_event(
+                    assert_api,
+                    first_events[0],
+                    event_type=first_event_type,
+                    data={
+                        "groupId": group_id,
+                            "decliner": user_a,
+                        "reason": "first-decline",
+                        "applicant": user_b,
+                    },
+                )
 
         second_cmd = (
             Cmd.acceptJoinApplication.value
@@ -466,8 +500,10 @@ def test_group_join_application_cannot_be_processed_twice(
         second_info = {"groupId": group_id, "userId": user_b}
         if second_action == "decline":
             second_info["reason"] = "second-decline"
-        second = device_a.call("GroupManager", second_cmd, info=second_info)
-        assert_api.assert_error(second, code=110, description="is not in the apply list")
+        with _allure_step("A 执行群组业务操作"):
+            second = device_a.call("GroupManager", second_cmd, info=second_info)
+        with _allure_step("验证执行群组业务操作返回的错误码与错误文案"):
+            assert_api.assert_error(second, code=110, description="is not in the apply list")
         _fetch_group(
             device_a,
             assert_api,
@@ -476,11 +512,13 @@ def test_group_join_application_cannot_be_processed_twice(
             owner=user_a,
             members=[user_b] if accepted else [],
             member_count=2 if accepted else 1,
+            style=2,
             device_name="deviceA",
         )
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id, device_b=device_b if accepted else None)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(device_a, assert_api, group_id, device_b=device_b if accepted else None)
 
 
 @pytest.mark.parametrize(
@@ -515,65 +553,73 @@ def test_group_join_application_processing_permission_by_role(
     device_a_is_c = False
     accepted = False
     try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=group_name,
-            invite_members=[user_b],
-            style=2,
-        )
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            group_id, _ = create_group(
+                device_a,
+                assert_api,
+                owner=user_a,
+                group_name=group_name,
+                invite_members=[user_b],
+                style=2,
+            )
         device_a.drain_events()
         device_b.drain_events()
         if make_admin:
-            add_admin = device_a.call(
-                "GroupManager",
-                Cmd.addAdmin.value,
-                info={"groupId": group_id, "admin": user_b},
-            )
-            assert isinstance(add_admin.get("result"), dict), add_admin
+            with _allure_step("A 添加群管理员"):
+                add_admin = device_a.call(
+                    "GroupManager",
+                    Cmd.addAdmin.value,
+                    info={"groupId": group_id, "admin": user_b},
+                )
+            with _allure_step("验证 添加群管理员返回的关键字段"):
+                assert isinstance(add_admin.get("result"), dict), add_admin
             device_b.drain_events()
 
         _switch_user(device_a, assert_api, device_name="deviceA", user_id=user_c)
         device_a_is_c = True
-        request = device_a.call(
-            "GroupManager",
-            Cmd.requestToJoinPublicGroup.value,
-            info={"groupId": group_id, "reason": f"role-{action}"},
-        )
-        _assert_call(
-            assert_api,
-            request,
-            manager="GroupManager",
-            cmd=Cmd.requestToJoinPublicGroup.value,
-            device="deviceA",
-            result=None,
-        )
-        if make_admin:
-            request_events = collect_group_events(
-                device_b,
-                expected_event_types={"onGroupRequestToJoinReceived"},
-                group_id=group_id,
-                required_all_event_types={"onGroupRequestToJoinReceived"},
-                timeout=10.0,
+        with _allure_step("A 申请加入公开群"):
+            request = device_a.call(
+                "GroupManager",
+                Cmd.requestToJoinPublicGroup.value,
+                info={"groupId": group_id, "reason": f"role-{action}"},
             )
-            _assert_event(
+        with _allure_step("验证群业务状态、事件与关键字段"):
+            _assert_call(
                 assert_api,
-                request_events[0],
-                event_type="onGroupRequestToJoinReceived",
-                data={
-                    "groupId": group_id,
-                    "groupName": group_name,
-                    "applicant": user_c,
-                    "reason": f"role-{action}",
-                },
+                request,
+                manager="GroupManager",
+                cmd=Cmd.requestToJoinPublicGroup.value,
+                device="deviceA",
+                result=None,
             )
+        if make_admin:
+            with _allure_step("等待并校验目标业务事件"):
+                request_events = collect_group_events(
+                    device_b,
+                    expected_event_types={"onGroupRequestToJoinReceived"},
+                    group_id=group_id,
+                    required_all_event_types={"onGroupRequestToJoinReceived"},
+                    timeout=10.0,
+                )
+            with _allure_step("验证群业务状态、事件与关键字段"):
+                _assert_event(
+                    assert_api,
+                    request_events[0],
+                    event_type="onGroupRequestToJoinReceived",
+                    data={
+                        "groupId": group_id,
+                        "groupName": group_name,
+                        "applicant": user_c,
+                        "reason": f"role-{action}",
+                    },
+                )
         else:
-            assert_no_group_event(
-                device_b,
-                group_id=group_id,
-                event_types={"onGroupRequestToJoinReceived"},
-            )
+            with _allure_step("验证 添加群管理员返回的关键字段"):
+                assert_no_group_event(
+                    device_b,
+                    group_id=group_id,
+                    event_types={"onGroupRequestToJoinReceived"},
+                )
 
         command = (
             Cmd.acceptJoinApplication.value
@@ -583,50 +629,56 @@ def test_group_join_application_processing_permission_by_role(
         info = {"groupId": group_id, "userId": user_c}
         if action == "decline":
             info["reason"] = "role-decline"
-        response = device_b.call("GroupManager", command, info=info)
+        with _allure_step("B 执行群组业务操作"):
+            response = device_b.call("GroupManager", command, info=info)
         if make_admin:
-            _assert_call(
-                assert_api,
-                response,
-                manager="GroupManager",
-                cmd=command,
-                device="deviceB",
-                result=None,
-            )
+            with _allure_step("验证群业务状态、事件与关键字段"):
+                _assert_call(
+                    assert_api,
+                    response,
+                    manager="GroupManager",
+                    cmd=command,
+                    device="deviceB",
+                    result=None,
+                )
             event_type = (
                 "onGroupRequestToJoinAccepted"
                 if action == "accept"
                 else "onGroupRequestToJoinDeclined"
             )
-            result_events = collect_group_events(
-                device_a,
-                expected_event_types={event_type},
-                group_id=group_id,
-                required_all_event_types={event_type},
-                timeout=10.0,
-            )
+            with _allure_step("等待并校验目标业务事件"):
+                result_events = collect_group_events(
+                    device_a,
+                    expected_event_types={event_type},
+                    group_id=group_id,
+                    required_all_event_types={event_type},
+                    timeout=10.0,
+                )
             if action == "accept":
                 accepted = True
-                _assert_event(
-                    assert_api,
-                    result_events[0],
-                    event_type=event_type,
-                    data={"groupId": group_id, "groupName": group_name, "accepter": user_b},
-                )
+                with _allure_step("验证群业务状态、事件与关键字段"):
+                    _assert_event(
+                        assert_api,
+                        result_events[0],
+                        event_type=event_type,
+                        data={"groupId": group_id, "groupName": group_name, "accepter": user_b},
+                    )
             else:
-                _assert_event(
-                    assert_api,
-                    result_events[0],
-                    event_type=event_type,
-                    data={
-                        "groupId": group_id,
-                                "decliner": user_b,
-                        "reason": "role-decline",
-                        "applicant": user_c,
-                    },
-                )
+                with _allure_step("验证群业务状态、事件与关键字段"):
+                    _assert_event(
+                        assert_api,
+                        result_events[0],
+                        event_type=event_type,
+                        data={
+                            "groupId": group_id,
+                                    "decliner": user_b,
+                            "reason": "role-decline",
+                            "applicant": user_c,
+                        },
+                    )
         else:
-            assert_api.assert_error(response, code=603, description="permission")
+            with _allure_step("验证执行群组业务操作返回的错误码与错误文案"):
+                assert_api.assert_error(response, code=603, description="permission")
     finally:
         if device_a_is_c:
             _switch_user(device_a, assert_api, device_name="deviceA", user_id=user_a)
@@ -640,9 +692,11 @@ def test_group_join_application_processing_permission_by_role(
                 members=([user_c] if accepted else []) if make_admin else [user_b],
                 member_count=3 if accepted else 2,
                 admins=[user_b] if make_admin else [],
+                style=2,
                 device_name="deviceA",
             )
-            destroy_group(device_a, assert_api, group_id, device_b=device_b)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(device_a, assert_api, group_id, device_b=device_b)
 
 
 @pytest.mark.parametrize("action", ["accept", "decline"], ids=["accept", "decline"])
@@ -660,14 +714,15 @@ def test_group_non_member_cannot_process_join_application(
     group_name = new_group_name(f"application_nonmember_{action}")
     device_a_is_c = False
     try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=group_name,
-            invite_members=[],
-            style=2,
-        )
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            group_id, _ = create_group(
+                device_a,
+                assert_api,
+                owner=user_a,
+                group_name=group_name,
+                invite_members=[],
+                style=2,
+            )
         _request_join(
             device_b,
             device_a,
@@ -688,13 +743,16 @@ def test_group_non_member_cannot_process_join_application(
         info = {"groupId": group_id, "userId": user_b}
         if action == "decline":
             info["reason"] = "nonmember-decline"
-        response = device_a.call("GroupManager", command, info=info)
-        assert_api.assert_error(response, code=602, description="has not joined the group")
-        assert_no_group_event(
-            device_b,
-            group_id=group_id,
-            event_types={"onGroupRequestToJoinAccepted", "onGroupRequestToJoinDeclined"},
-        )
+        with _allure_step("A 执行群组业务操作"):
+            response = device_a.call("GroupManager", command, info=info)
+        with _allure_step("验证执行群组业务操作返回的错误码与错误文案"):
+            assert_api.assert_error(response, code=602, description="has not joined the group")
+        with _allure_step("验证执行群组业务操作返回的响应 result 与关键字段"):
+            assert_no_group_event(
+                device_b,
+                group_id=group_id,
+                event_types={"onGroupRequestToJoinAccepted", "onGroupRequestToJoinDeclined"},
+            )
     finally:
         if device_a_is_c:
             _switch_user(device_a, assert_api, device_name="deviceA", user_id=user_a)
@@ -707,6 +765,8 @@ def test_group_non_member_cannot_process_join_application(
                 owner=user_a,
                 members=[],
                 member_count=1,
+                style=2,
                 device_name="deviceA",
             )
-            destroy_group(device_a, assert_api, group_id)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(device_a, assert_api, group_id)

@@ -9,6 +9,7 @@ import pytest
 from src import Cmd, ne
 from tests.chat.test_chat_message_callback_and_combine import _send_with_type
 from tests.chat._utils import build_text
+from tests.allure_helpers import _allure_step
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
@@ -114,37 +115,39 @@ def _send_text_and_assert(device_a, device_b, assert_api, user_a, user_b, conten
 @pytest.mark.topology("account_a_to_account_b")
 def test_chat_sender_downloads_image_and_video_attachment(topology, assert_api):
     """发送方下载自己发送的 image/video 附件（发送账号副端同步 + 接收账号全端收由 _send_with_type 内部完成）。"""
-    device_a = topology.sender_action_device
-    user_a = topology.sender_user
-    user_b = topology.recipient_user
-    _, image_sent, _ = _send_with_type(topology, assert_api, type_key="image", payload={"targetId": user_b})
-    response = device_a.call("ChatManager", Cmd.downloadAttachment.value, info={"message": image_sent})
-    _assert_sender_download(assert_api, response, message=image_sent, user_a=user_a, user_b=user_b)
-    _, video_sent, _ = _send_with_type(topology, assert_api, type_key="video", payload={"targetId": user_b})
-    response = device_a.call("ChatManager", Cmd.downloadAttachment.value, info={"message": video_sent})
-    _assert_sender_download(assert_api, response, message=video_sent, user_a=user_a, user_b=user_b)
+    with _allure_step("验证：发送方下载自己发送的 image/video 附件（发送账号副端同步 + 接收账号全端收由 _send_with_type 内部完成）。"):
+        device_a = topology.sender_action_device
+        user_a = topology.sender_user
+        user_b = topology.recipient_user
+        _, image_sent, _ = _send_with_type(topology, assert_api, type_key="image", payload={"targetId": user_b})
+        response = device_a.call("ChatManager", Cmd.downloadAttachment.value, info={"message": image_sent})
+        _assert_sender_download(assert_api, response, message=image_sent, user_a=user_a, user_b=user_b)
+        _, video_sent, _ = _send_with_type(topology, assert_api, type_key="video", payload={"targetId": user_b})
+        response = device_a.call("ChatManager", Cmd.downloadAttachment.value, info={"message": video_sent})
+        _assert_sender_download(assert_api, response, message=video_sent, user_a=user_a, user_b=user_b)
 
 
 def test_chat_download_attachment_for_text_message(device_a, device_b, assert_api, user_a, user_b):
-    content = f"download-text-{uuid.uuid4().hex[:8]}"
-    msg = _send_text_and_assert(device_a, device_b, assert_api, user_a, user_b, content)
-    resp_download = device_a.call("ChatManager", Cmd.downloadAttachment.value, info={"message": msg})
-    _assert_delivery_ack_boolean(resp_download.get("result") or {}, source="downloadAttachment(text).result")
-    assert_api.assert_response_matches(
-        resp_download,
-        expected={
-            "manager": "ChatManager", "cmd": Cmd.downloadAttachment.value, "device": "deviceA",
-            "result": {
-                "msgId": "{{msgId}}", "from": user_a, "to": user_b, "convId": user_b,
-                "chatType": 0, "direction": 0, "status": 2,
-                "hasRead": True, "needReadReceipt": False,  "isThread": False, "isContentReplaced": False,
-                "body": {"type": 0, "content": content, "translations": {}},
+    with _allure_step("验证：chat download attachment for text message"):
+        content = f"download-text-{uuid.uuid4().hex[:8]}"
+        msg = _send_text_and_assert(device_a, device_b, assert_api, user_a, user_b, content)
+        resp_download = device_a.call("ChatManager", Cmd.downloadAttachment.value, info={"message": msg})
+        _assert_delivery_ack_boolean(resp_download.get("result") or {}, source="downloadAttachment(text).result")
+        assert_api.assert_response_matches(
+            resp_download,
+            expected={
+                "manager": "ChatManager", "cmd": Cmd.downloadAttachment.value, "device": "deviceA",
+                "result": {
+                    "msgId": "{{msgId}}", "from": user_a, "to": user_b, "convId": user_b,
+                    "chatType": 0, "direction": 0, "status": 2,
+                    "hasRead": True, "needReadReceipt": False,  "isThread": False, "isContentReplaced": False,
+                    "body": {"type": 0, "content": content, "translations": {}},
+                },
             },
-        },
-        context={"msgId": msg.get("msgId")},
-        ignore_keys={"sequence", "timestamp", "localTime", "serverTime", "broadcast", "onlineState",
-                     "deliverOnlineOnly", "targetLanguages", "hasDeliverAck"},
-    )
+            context={"msgId": msg.get("msgId")},
+            ignore_keys={"sequence", "timestamp", "localTime", "serverTime", "broadcast", "onlineState",
+                         "deliverOnlineOnly", "targetLanguages", "hasDeliverAck"},
+        )
 
 
 def _history_message_expected(msg, *, user_a, user_b):
@@ -158,33 +161,34 @@ def _history_message_expected(msg, *, user_a, user_b):
 
 
 def test_chat_fetch_history_page_size_one_cursor(device_a, device_b, assert_api, user_a, user_b):
-    messages = []
-    for content in (f"history-page-a-{uuid.uuid4().hex[:6]}", f"history-page-b-{uuid.uuid4().hex[:6]}"):
-        messages.append(_send_text_and_assert(device_a, device_b, assert_api, user_a, user_b, content))
-    assert len(messages) == 2
-    time.sleep(float(os.getenv("CHAT_HISTORY_SETTLE_SECONDS", "5")))
-    first = device_a.call("ChatManager", Cmd.fetchHistoryMessagesByOptions.value, info={"convId": user_b, "type": 0, "pageSize": 1, "cursor": ""})
-    result = first.get("result") or {}
-    assert result.get("list"), first
-    _assert_delivery_ack_boolean(result["list"][0], source="fetchHistoryMessagesByOptions.first.list[0]")
-    first_msg = messages[1]
-    assert_api.assert_response_matches(
-        first,
-        expected={"manager": "ChatManager", "cmd": Cmd.fetchHistoryMessagesByOptions.value, "device": "deviceA",
-                  "result": {"cursor": ne(""), "list": [_history_message_expected(first_msg, user_a=user_a, user_b=user_b)]}},
-        context={"msgId": first_msg.get("msgId"), "content": (first_msg.get("body") or {}).get("content")},
-        ignore_keys={"sequence", "timestamp", "localTime", "serverTime", "broadcast", "onlineState", "hasDeliverAck"},
-    )
-    cursor = result.get("cursor")
-    if cursor:
-        second = device_a.call("ChatManager", Cmd.fetchHistoryMessagesByOptions.value, info={"convId": user_b, "type": 0, "pageSize": 1, "cursor": cursor})
-        second_result = second.get("result") or {}
-        assert second_result.get("list"), second
-        _assert_delivery_ack_boolean(second_result["list"][0], source="fetchHistoryMessagesByOptions.second.list[0]")
+    with _allure_step("验证：chat fetch history page size one cursor"):
+        messages = []
+        for content in (f"history-page-a-{uuid.uuid4().hex[:6]}", f"history-page-b-{uuid.uuid4().hex[:6]}"):
+            messages.append(_send_text_and_assert(device_a, device_b, assert_api, user_a, user_b, content))
+        assert len(messages) == 2
+        time.sleep(float(os.getenv("CHAT_HISTORY_SETTLE_SECONDS", "5")))
+        first = device_a.call("ChatManager", Cmd.fetchHistoryMessagesByOptions.value, info={"convId": user_b, "type": 0, "pageSize": 1, "cursor": ""})
+        result = first.get("result") or {}
+        assert result.get("list"), first
+        _assert_delivery_ack_boolean(result["list"][0], source="fetchHistoryMessagesByOptions.first.list[0]")
+        first_msg = messages[1]
         assert_api.assert_response_matches(
-            second,
+            first,
             expected={"manager": "ChatManager", "cmd": Cmd.fetchHistoryMessagesByOptions.value, "device": "deviceA",
-                      "result": {"cursor": ne(""), "list": [_history_message_expected(messages[0], user_a=user_a, user_b=user_b)]}},
-            context={"msgId": messages[0].get("msgId"), "content": (messages[0].get("body") or {}).get("content")},
+                      "result": {"cursor": ne(""), "list": [_history_message_expected(first_msg, user_a=user_a, user_b=user_b)]}},
+            context={"msgId": first_msg.get("msgId"), "content": (first_msg.get("body") or {}).get("content")},
             ignore_keys={"sequence", "timestamp", "localTime", "serverTime", "broadcast", "onlineState", "hasDeliverAck"},
         )
+        cursor = result.get("cursor")
+        if cursor:
+            second = device_a.call("ChatManager", Cmd.fetchHistoryMessagesByOptions.value, info={"convId": user_b, "type": 0, "pageSize": 1, "cursor": cursor})
+            second_result = second.get("result") or {}
+            assert second_result.get("list"), second
+            _assert_delivery_ack_boolean(second_result["list"][0], source="fetchHistoryMessagesByOptions.second.list[0]")
+            assert_api.assert_response_matches(
+                second,
+                expected={"manager": "ChatManager", "cmd": Cmd.fetchHistoryMessagesByOptions.value, "device": "deviceA",
+                          "result": {"cursor": ne(""), "list": [_history_message_expected(messages[0], user_a=user_a, user_b=user_b)]}},
+                context={"msgId": messages[0].get("msgId"), "content": (messages[0].get("body") or {}).get("content")},
+                ignore_keys={"sequence", "timestamp", "localTime", "serverTime", "broadcast", "onlineState", "hasDeliverAck"},
+            )

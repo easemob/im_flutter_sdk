@@ -507,9 +507,8 @@ def message_group(device_a, device_a_sec, device_b, device_b_sec, assert_api, us
     ["txt", "file", "image", "video", "voice", "location", "cmd", "custom"],
 )
 @pytest.mark.topology("account_a_to_account_b")
+
 def test_group_message_send_receive_by_type(
-    device_a,
-    device_b,
     assert_api,
     user_a,
     message_group,
@@ -517,48 +516,52 @@ def test_group_message_send_receive_by_type(
     type_key,
 ):
     """A 向包含 B 的群发送指定类型消息：A 全部在线端同步、B 全部在线端接收。"""
+    sender = topology.sender_action_device
+    recipient = topology.recipient_action_device
     payload = _payload_for(type_key, message_group)
-    _send_group_message(
-        device_a,
-        device_b,
-        assert_api,
-        user_a,
-        message_group,
-        type_key=type_key,
-        payload=payload,
-        sender_sec_devices=tuple(d for d in topology.sender_devices if d is not topology.sender_action_device),
-        recipient_sec_devices=tuple(d for d in topology.recipient_devices if d is not topology.recipient_action_device),
-    )
+    with _allure_step(f"A 发送 {type_key} 类型群消息，并验证发送端与接收端链路"):
+        _send_group_message(
+            sender,
+            recipient,
+            assert_api,
+            user_a,
+            message_group,
+            type_key=type_key,
+            payload=payload,
+            sender_sec_devices=tuple(d for d in topology.sender_devices if d is not topology.sender_action_device),
+            recipient_sec_devices=tuple(d for d in topology.recipient_devices if d is not topology.recipient_action_device),
+        )
 
 
 @pytest.mark.topology("account_a_to_account_b")
 def test_group_message_send_receive_combine(
-    device_a,
-    device_b,
     assert_api,
     user_a,
     message_group,
     topology,
 ):
     """A 合并同群两条真实文本消息并发送，B 全部在线端收到关联同一群会话的合并消息。"""
+    sender = topology.sender_action_device
+    recipient = topology.recipient_action_device
     sender_sec = tuple(d for d in topology.sender_devices if d is not topology.sender_action_device)
     recipient_sec = tuple(d for d in topology.recipient_devices if d is not topology.recipient_action_device)
     source_ids = []
     for index in range(2):
         payload = {"targetId": message_group, "content": f"combine-source-{index}-{uuid.uuid4().hex[:8]}"}
-        source_ids.append(
-            _send_group_message(
-                device_a,
-                device_b,
-                assert_api,
-                user_a,
-                message_group,
-                type_key="txt",
-                payload=payload,
-                sender_sec_devices=sender_sec,
-                recipient_sec_devices=recipient_sec,
+        with _allure_step(f"A 发送第 {index + 1} 条源文本消息并记录 msgId"):
+            source_ids.append(
+                _send_group_message(
+                    sender,
+                    recipient,
+                    assert_api,
+                    user_a,
+                    message_group,
+                    type_key="txt",
+                    payload=payload,
+                    sender_sec_devices=sender_sec,
+                    recipient_sec_devices=recipient_sec,
+                )
             )
-        )
     payload = {
         "targetId": message_group,
         "title": "group-combine-title",
@@ -566,25 +569,28 @@ def test_group_message_send_receive_combine(
         "compatibleText": "group-combine-compatible",
         "msgIds": source_ids,
     }
-    _send_group_message(
-        device_a,
-        device_b,
-        assert_api,
-        user_a,
-        message_group,
-        type_key="combine",
-        payload=payload,
-        sender_sec_devices=sender_sec,
-        recipient_sec_devices=recipient_sec,
-    )
+    with _allure_step("A 发送合并消息，并验证 B 全部在线端收到关联消息"):
+        _send_group_message(
+            sender,
+            recipient,
+            assert_api,
+            user_a,
+            message_group,
+            type_key="combine",
+            payload=payload,
+            sender_sec_devices=sender_sec,
+            recipient_sec_devices=recipient_sec,
+        )
 
 
 def test_group_message_ack_boundary_methods(device_a, assert_api):
     """非法群消息 ID 与群 ID 调用群回执 API，冻结当前真实同步返回。"""
     info = {"msgId": "__invalid_group_msg_id__", "group_id": "__invalid_group_id__"}
-    resp_ack = device_a.call("ChatManager", Cmd.ackGroupMessageRead.value, info=info)
+    with _allure_step("A 发送群已读回执"):
+        resp_ack = device_a.call("ChatManager", Cmd.ackGroupMessageRead.value, info=info)
     # 5.0 实测：非法 msgId → 本地 getMessage 为 null → asyncSendMessageReadReceipts([]) → 原生 110 "messages is empty"
-    assert_api.assert_error(resp_ack, code=110, description="messages is empty")
+    with _allure_step("验证发送群已读回执返回的错误码与错误文案"):
+        assert_api.assert_error(resp_ack, code=110, description="messages is empty")
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -625,38 +631,41 @@ def test_group_message_fetch_acks_success(topology, assert_api):
                 info=_build_group_text(sender_user, group_id, content, need_group_ack=True),
             )
         temp_id = ((send_resp.get("result") or {}).get("msgId"))
-        assert temp_id, f"群消息发送响应未返回临时 msgId: {send_resp}"
-        _assert_response_step(
-            assert_api,
-            "确认群消息已提交",
-            send_resp,
-            expected={
-                "manager": "ChatManager",
-                "cmd": Cmd.sendMessage.value,
-                "device": sender.device_name,
-                "result": {
-                    "msgId": temp_id,
-                    "from": sender_user,
-                    "to": group_id,
-                    "convId": group_id,
-                    "chatType": 1,
-                    "direction": 0,
-                    "status": 0,
-                    "hasRead": True,
-                    "needReadReceipt": True, "isThread": False,
-                    "isContentReplaced": False,
-                    "broadcast": False,
-                    "onlineState": True,
-                    "body": {"targetLanguages": [], "translations": {}, "type": 0, "content": content},
+        with _allure_step("验证发送群消息返回的关键字段"):
+            assert temp_id, f"群消息发送响应未返回临时 msgId: {send_resp}"
+        with _allure_step("验证群业务状态、事件与关键字段"):
+            _assert_response_step(
+                assert_api,
+                "确认群消息已提交",
+                send_resp,
+                expected={
+                    "manager": "ChatManager",
+                    "cmd": Cmd.sendMessage.value,
+                    "device": sender.device_name,
+                    "result": {
+                        "msgId": temp_id,
+                        "from": sender_user,
+                        "to": group_id,
+                        "convId": group_id,
+                        "chatType": 1,
+                        "direction": 0,
+                        "status": 0,
+                        "hasRead": True,
+                        "needReadReceipt": True, "isThread": False,
+                        "isContentReplaced": False,
+                        "broadcast": False,
+                        "onlineState": True,
+                        "body": {"targetLanguages": [], "translations": {}, "type": 0, "content": content},
+                    },
                 },
-            },
-            ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly"},
-        )
+                ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly"},
+            )
         with _allure_step(f"等待 {sender.device_name} 的消息发送成功回调（onMessageSuccess）"):
             success_evt = _wait_success(sender, temp_id=temp_id)
         success_msg = (((success_evt.get("data") or {}).get("msg")) or {})
         real_id = success_msg.get("msgId")
-        assert real_id, f"群回执消息成功事件未返回真实 msgId: {success_evt}"
+        with _allure_step("验证发送群消息返回的关键字段"):
+            assert real_id, f"群回执消息成功事件未返回真实 msgId: {success_evt}"
         event_message = {
             "msgId": str(real_id),
             "from": sender_user,
@@ -669,20 +678,21 @@ def test_group_message_fetch_acks_success(topology, assert_api):
             "deliverOnlineOnly": False,
             "body": {"type": 0, "content": content},
         }
-        _assert_event_step(
-            assert_api,
-            "确认消息发送成功",
-            success_evt,
-            expected={
-                "type": "event",
-                "eventType": Cmd.onMessageSuccess.value,
-                "data": {
-                    "msgId": temp_id,
-                    "msg": {**event_message, "direction": 0, "hasRead": True},
+        with _allure_step("验证群业务状态、事件与关键字段"):
+            _assert_event_step(
+                assert_api,
+                "确认消息发送成功",
+                success_evt,
+                expected={
+                    "type": "event",
+                    "eventType": Cmd.onMessageSuccess.value,
+                    "data": {
+                        "msgId": temp_id,
+                        "msg": {**event_message, "direction": 0, "hasRead": True},
+                    },
                 },
-            },
-            ignore_keys=_MESSAGE_IGNORE_KEYS,
-        )
+                ignore_keys=_MESSAGE_IGNORE_KEYS,
+            )
         for role, sender_device in zip(topology.sender_roles, topology.sender_devices):
             if sender_device is sender:
                 continue
@@ -694,19 +704,20 @@ def test_group_message_fetch_acks_success(topology, assert_api):
                     event_type=Cmd.onMessagesReceived.value,
                     real_id=str(real_id),
                 )
-            _assert_event_step(
-                assert_api,
-                f"确认发送账号副端 {role} 已同步群消息",
-                synced_evt,
-                expected={
-                    "type": "event",
-                    "eventType": Cmd.onMessagesReceived.value,
-                    "data": {
-                        "messages": [{**event_message, "direction": 0, "hasRead": True}],
+            with _allure_step("验证群业务状态、事件与关键字段"):
+                _assert_event_step(
+                    assert_api,
+                    f"确认发送账号副端 {role} 已同步群消息",
+                    synced_evt,
+                    expected={
+                        "type": "event",
+                        "eventType": Cmd.onMessagesReceived.value,
+                        "data": {
+                            "messages": [{**event_message, "direction": 0, "hasRead": True}],
+                        },
                     },
-                },
-                ignore_keys=_MESSAGE_IGNORE_KEYS,
-            )
+                    ignore_keys=_MESSAGE_IGNORE_KEYS,
+                )
             with _allure_step(
                 f"发送账号副端 {role} 从本地消息库查询群消息"
             ):
@@ -723,19 +734,20 @@ def test_group_message_fetch_acks_success(topology, assert_api):
             # Android 4.23 的 getMessage 结果不稳定返回该可选字段；
             # 发送端同步事件仍保留字段校验，避免放宽真正的事件契约。
             sender_lookup_message.pop("deliverOnlineOnly", None)
-            _assert_response_step(
-                assert_api,
-                f"确认发送账号副端 {role} 已落库群消息",
-                lookup,
-                expected={
-                    "manager": "ChatManager",
-                    "cmd": Cmd.getMessage.value,
-                    "device": sender_device.device_name,
-                    "result": sender_lookup_message,
-                },
-                ignore_keys=_MESSAGE_IGNORE_KEYS,
-                allow_extra_fields=True,
-            )
+            with _allure_step("验证群业务状态、事件与关键字段"):
+                _assert_response_step(
+                    assert_api,
+                    f"确认发送账号副端 {role} 已落库群消息",
+                    lookup,
+                    expected={
+                        "manager": "ChatManager",
+                        "cmd": Cmd.getMessage.value,
+                        "device": sender_device.device_name,
+                        "result": sender_lookup_message,
+                    },
+                    ignore_keys=_MESSAGE_IGNORE_KEYS,
+                    allow_extra_fields=True,
+                )
         for recipient in recipients:
             with _allure_step(
                 f"接收端 {recipient.device_name} 收到群消息（onMessagesReceived）"
@@ -745,19 +757,20 @@ def test_group_message_fetch_acks_success(topology, assert_api):
                     event_type=Cmd.onMessagesReceived.value,
                     real_id=str(real_id),
                 )
-            _assert_event_step(
-                assert_api,
-                f"确认接收端 {recipient.device_name} 收到当前群消息",
-                recv_evt,
-                expected={
-                    "type": "event",
-                    "eventType": Cmd.onMessagesReceived.value,
-                    "data": {
-                        "messages": [{**event_message, "direction": 1, "hasRead": False}],
+            with _allure_step("验证群业务状态、事件与关键字段"):
+                _assert_event_step(
+                    assert_api,
+                    f"确认接收端 {recipient.device_name} 收到当前群消息",
+                    recv_evt,
+                    expected={
+                        "type": "event",
+                        "eventType": Cmd.onMessagesReceived.value,
+                        "data": {
+                            "messages": [{**event_message, "direction": 1, "hasRead": False}],
+                        },
                     },
-                },
-                ignore_keys=_MESSAGE_IGNORE_KEYS,
-            )
+                    ignore_keys=_MESSAGE_IGNORE_KEYS,
+                )
 
         with _allure_step(f"接收端动作设备 {recipient_action.device_name} 发送群已读回执"):
             ack_resp = recipient_action.call(
@@ -765,18 +778,19 @@ def test_group_message_fetch_acks_success(topology, assert_api):
                 Cmd.ackGroupMessageRead.value,
                 info={"msgId": str(real_id), "group_id": group_id, "content": "read"},
             )
-        _assert_response_step(
-            assert_api,
-            "确认群已读回执提交成功",
-            ack_resp,
-            expected={
-                "manager": "ChatManager",
-                "cmd": Cmd.ackGroupMessageRead.value,
-                "device": recipient_action.device_name,
-                "result": True,
-            },
-            ignore_keys={"sequence"},
-        )
+        with _allure_step("验证群业务状态、事件与关键字段"):
+            _assert_response_step(
+                assert_api,
+                "确认群已读回执提交成功",
+                ack_resp,
+                expected={
+                    "manager": "ChatManager",
+                    "cmd": Cmd.ackGroupMessageRead.value,
+                    "device": recipient_action.device_name,
+                    "result": True,
+                },
+                ignore_keys={"sequence"},
+            )
 
         with _allure_step(f"{sender.device_name} 查询该消息的群回执"):
             fetch_resp = sender.call(
@@ -784,27 +798,29 @@ def test_group_message_fetch_acks_success(topology, assert_api):
                 Cmd.asyncFetchGroupAcks.value,
                 info={"msgId": str(real_id), "group_id": group_id, "pageSize": 20, "ack_id": None},
             )
-        _assert_response_step(
-            assert_api,
-            "确认群回执查询响应符合当前 SDK 基线",
-            fetch_resp,
-            expected={
-                "manager": "ChatManager",
-                "cmd": Cmd.asyncFetchGroupAcks.value,
-                "device": sender.device_name,
-                "result": {"cursor": "", "list": []},
-            },
-            ignore_keys={"sequence"},
-        )
+        with _allure_step("验证群业务状态、事件与关键字段"):
+            _assert_response_step(
+                assert_api,
+                "确认群回执查询响应符合当前 SDK 基线",
+                fetch_resp,
+                expected={
+                    "manager": "ChatManager",
+                    "cmd": Cmd.asyncFetchGroupAcks.value,
+                    "device": sender.device_name,
+                    "result": {"cursor": "", "list": []},
+                },
+                ignore_keys={"sequence"},
+            )
     finally:
         if group_id:
-            destroy_group(
-                recipient_action,
-                assert_api,
-                group_id,
-                device_b=sender,
-                device_name=recipient_action.device_name,
-            )
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(
+                    recipient_action,
+                    assert_api,
+                    group_id,
+                    device_b=sender,
+                    device_name=recipient_action.device_name,
+                )
 
 
 @pytest.mark.parametrize("target_kind", ["empty", "nonexistent"])
@@ -818,18 +834,19 @@ def test_group_message_send_rejects_invalid_group_target(
     """A 向空或不存在 groupId 发送群文本时应失败，B 不得收到目标消息。"""
     group_id = "" if target_kind == "empty" else f"nonexistent_group_{uuid.uuid4().hex}"
     content = f"invalid-group-{target_kind}-{uuid.uuid4().hex[:8]}"
-    _send_group_text_expect_error(
-        device_a,
-        device_b,
-        assert_api,
-        sender_name="deviceA",
-        from_user=user_a,
-        group_id=group_id,
-        content=content,
-        error_code=500 if target_kind == "empty" else 606,
-        error_description="Message is invalid" if target_kind == "empty" else "Group does not exist",
-        error_message_status=1 if target_kind == "empty" else 3,
-    )
+    with _allure_step(f"A 向 {target_kind} 群目标发送文本并验证失败终态"):
+        _send_group_text_expect_error(
+            device_a,
+            device_b,
+            assert_api,
+            sender_name="deviceA",
+            from_user=user_a,
+            group_id=group_id,
+            content=content,
+            error_code=500 if target_kind == "empty" else 606,
+            error_description="Message is invalid" if target_kind == "empty" else "Group does not exist",
+            error_message_status=1 if target_kind == "empty" else 3,
+        )
 
 
 def _assert_owner_member_exited_events(device_a, assert_api, *, group_id: str, member: str) -> None:
@@ -866,104 +883,118 @@ def test_group_message_send_rejects_non_member_states(
     group_id = ""
     group_name = new_group_name(f"send_{member_state}")
     try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=group_name,
-            invite_members=[] if member_state == "never-member" else [user_b],
-        )
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            group_id, _ = create_group(
+                device_a,
+                assert_api,
+                owner=user_a,
+                group_name=group_name,
+                invite_members=[] if member_state == "never-member" else [user_b],
+            )
         time.sleep(float(os.getenv("GROUP_MESSAGE_MEMBER_SETTLE_SECONDS", "5")))
         device_a.drain_events()
         device_b.drain_events()
 
         if member_state == "left":
-            leave_resp = device_b.call("GroupManager", Cmd.leaveGroup.value, info={"groupId": group_id})
-            assert_api.assert_response_matches(
-                leave_resp,
-                expected={
-                    "manager": "GroupManager",
-                    "cmd": Cmd.leaveGroup.value,
-                    "device": "deviceB",
-                    "result": True,
-                },
-                ignore_keys={"sequence"},
-            )
-            _assert_owner_member_exited_events(device_a, assert_api, group_id=group_id, member=user_b)
-            assert_no_group_event(
-                device_b,
-                group_id=group_id,
-                event_types={"onGroupMembersExited", "onGroupMemberExited"},
-            )
+            with _allure_step("B 退出群"):
+                leave_resp = device_b.call("GroupManager", Cmd.leaveGroup.value, info={"groupId": group_id})
+            with _allure_step("验证退出群返回的关键字段"):
+                assert_api.assert_response_matches(
+                    leave_resp,
+                    expected={
+                        "manager": "GroupManager",
+                        "cmd": Cmd.leaveGroup.value,
+                        "device": "deviceB",
+                        "result": True,
+                    },
+                    ignore_keys={"sequence"},
+                )
+            with _allure_step("验证群业务状态、事件与关键字段"):
+                _assert_owner_member_exited_events(device_a, assert_api, group_id=group_id, member=user_b)
+            with _allure_step("验证退出群返回的关键字段"):
+                assert_no_group_event(
+                    device_b,
+                    group_id=group_id,
+                    event_types={"onGroupMembersExited", "onGroupMemberExited"},
+                )
         elif member_state == "removed":
-            remove_resp = device_a.call(
-                "GroupManager",
-                Cmd.removeMembers.value,
-                info={"groupId": group_id, "members": [user_b]},
-            )
-            assert_api.assert_response_matches(
-                remove_resp,
-                expected={
-                    "manager": "GroupManager",
-                    "cmd": Cmd.removeMembers.value,
-                    "device": "deviceA",
-                    "result": True,
-                },
-                ignore_keys={"sequence"},
-            )
+            with _allure_step("A 移除群成员"):
+                remove_resp = device_a.call(
+                    "GroupManager",
+                    Cmd.removeMembers.value,
+                    info={"groupId": group_id, "members": [user_b]},
+                )
+            with _allure_step("验证 移除群成员返回的关键字段"):
+                assert_api.assert_response_matches(
+                    remove_resp,
+                    expected={
+                        "manager": "GroupManager",
+                        "cmd": Cmd.removeMembers.value,
+                        "device": "deviceA",
+                        "result": True,
+                    },
+                    ignore_keys={"sequence"},
+                )
             removed_event_types = {
                 GroupChangeEvent.ON_USER_REMOVED.value,
                 "onGroupMemberExited",
                 "onGroupUserRemoved",
             }
-            removed_events = collect_group_events(
-                device_b,
-                expected_event_types=removed_event_types,
-                group_id=group_id,
-                allow_missing_group_id=True,
-                required_all_event_types={"onGroupUserRemoved"},
-                timeout=10.0,
-            )
-            assert_group_events(
-                assert_api,
-                removed_events,
-                expected_event_types=removed_event_types,
-                group_id=group_id,
-                allow_missing_group_id=True,
-                required_all_event_types={"onGroupUserRemoved"},
-                expected_member=user_b,
-            )
-            _assert_owner_member_exited_events(device_a, assert_api, group_id=group_id, member=user_b)
+            with _allure_step("等待并校验目标业务事件"):
+                removed_events = collect_group_events(
+                    device_b,
+                    expected_event_types=removed_event_types,
+                    group_id=group_id,
+                    allow_missing_group_id=True,
+                    required_all_event_types={"onGroupUserRemoved"},
+                    timeout=10.0,
+                )
+            with _allure_step("验证 移除群成员返回的关键字段"):
+                assert_group_events(
+                    assert_api,
+                    removed_events,
+                    expected_event_types=removed_event_types,
+                    group_id=group_id,
+                    allow_missing_group_id=True,
+                    required_all_event_types={"onGroupUserRemoved"},
+                    expected_member=user_b,
+                )
+            with _allure_step("验证群业务状态、事件与关键字段"):
+                _assert_owner_member_exited_events(device_a, assert_api, group_id=group_id, member=user_b)
 
-        snapshot = device_a.call(
-            "GroupManager",
-            Cmd.getGroupSpecificationFromServer.value,
-            info={"groupId": group_id},
-        )
-        assert_group_snapshot(
-            assert_api,
-            snapshot,
-            cmd=Cmd.getGroupSpecificationFromServer.value,
-            group_id=group_id,
-            group_name=group_name,
-            owner=user_a,
-            member_count_value=1,
-            member_list_value=[],
-        )
+        with _allure_step("A 查询服务端群详情"):
+            snapshot = device_a.call(
+                "GroupManager",
+                Cmd.getGroupSpecificationFromServer.value,
+                info={"groupId": group_id},
+            )
+        with _allure_step("验证 移除群成员返回的关键字段"):
+            assert_group_snapshot(
+                assert_api,
+                snapshot,
+                cmd=Cmd.getGroupSpecificationFromServer.value,
+                group_id=group_id,
+                group_name=group_name,
+                owner=user_a,
+                member_count_value=1,
+                member_list_value=[],
+            )
 
         content = f"non-member-{member_state}-{uuid.uuid4().hex[:8]}"
-        _send_group_text_expect_error(
-            device_b,
-            device_a,
-            assert_api,
-            sender_name="deviceB",
-            from_user=user_b,
-            group_id=group_id,
-            content=content,
-            error_code=602,
-            error_description="User has not joined the group",
-            error_message_status=3,
-        )
+        with _allure_step("执行群消息动作并验证发送/接收链路"):
+            _send_group_text_expect_error(
+                device_b,
+                device_a,
+                assert_api,
+                sender_name="deviceB",
+                from_user=user_b,
+                group_id=group_id,
+                content=content,
+                error_code=602,
+                error_description="User has not joined the group",
+                error_message_status=3,
+            )
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(device_a, assert_api, group_id)

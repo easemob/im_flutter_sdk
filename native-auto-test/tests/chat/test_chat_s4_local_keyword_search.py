@@ -7,6 +7,7 @@ import pytest
 
 from src import Cmd
 from tests.chat._utils import build_text
+from tests.allure_helpers import _allure_step
 
 
 pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.agorachat1_4_0]
@@ -143,61 +144,63 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
 
 
 def test_chat_load_conversation_messages_with_keyword_success(device_a, device_b, assert_api, user_a, user_b):
-    keyword = f"kw_{uuid.uuid4().hex[:10]}"
-    content = f"s4-keyword-{keyword}"
-    real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content)
+    with _allure_step("验证：chat load conversation messages with keyword success"):
+        keyword = f"kw_{uuid.uuid4().hex[:10]}"
+        content = f"s4-keyword-{keyword}"
+        real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content)
 
-    info = {
-        "keyword": keyword,
-        "timestamp": -1,
-        "sender": user_a,
-        "direction": 1,
-        "scope": 2,
-    }
-    resp = None
-    deadline = time.monotonic() + 30.0
-    while time.monotonic() < deadline:
-        resp = device_a.call("ChatManager", Cmd.loadConversationMessagesWithKeyword.value, info=info)
-        result = resp.get("result") if isinstance(resp, dict) else {}
-        ids = result.get(user_b) if isinstance(result, dict) else None
-        if isinstance(ids, list) and real_id in ids:
-            break
-        time.sleep(1.0)
-    assert resp is not None
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.loadConversationMessagesWithKeyword.value,
-            "device": "deviceA",
-            "result": {
-                user_b: [real_id],
-            },
-        },
-        ignore_keys={"sequence"},
-    )
-
-
-def test_chat_load_conversation_messages_with_keyword_no_hit(device_a, assert_api, user_a):
-    keyword = f"kw_no_hit_{uuid.uuid4().hex[:10]}"
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.loadConversationMessagesWithKeyword.value,
-        info={
+        info = {
             "keyword": keyword,
             "timestamp": -1,
             "sender": user_a,
-            "direction": 0,
+            "direction": 1,
             "scope": 2,
-        },
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.loadConversationMessagesWithKeyword.value,
-            "device": "deviceA",
-            "result": {},
-        },
-        ignore_keys={"sequence"},
-    )
+        }
+        resp = None
+        deadline = time.monotonic() + 30.0
+        while time.monotonic() < deadline:
+            resp = device_a.call("ChatManager", Cmd.loadConversationMessagesWithKeyword.value, info=info)
+            result = resp.get("result") if isinstance(resp, dict) else {}
+            ids = result.get(user_b) if isinstance(result, dict) else None
+            if isinstance(ids, list) and real_id in ids:
+                break
+            time.sleep(1.0)
+        assert resp is not None
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.loadConversationMessagesWithKeyword.value,
+                "device": "deviceA",
+                "result": {
+                    user_b: [real_id],
+                },
+            },
+            ignore_keys={"sequence"},
+        )
+
+
+def test_chat_load_conversation_messages_with_keyword_no_hit(device_a, assert_api, user_a):
+    with _allure_step("验证：chat load conversation messages with keyword no hit"):
+        keyword = f"kw_no_hit_{uuid.uuid4().hex[:10]}"
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.loadConversationMessagesWithKeyword.value,
+            info={
+                "keyword": keyword,
+                "timestamp": -1,
+                "sender": user_a,
+                "direction": 0,
+                "scope": 2,
+            },
+        )
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.loadConversationMessagesWithKeyword.value,
+                "device": "deviceA",
+                "result": {},
+            },
+            ignore_keys={"sequence"},
+        )

@@ -44,6 +44,16 @@ description: 设计、实现或审查 IM SDK 的 native-auto-test 用例。用�
 - 已读、撤回、reaction：先完成消息投递，再按 API 语义检查相关账号的全部在线端回调。
 - 发送端多端不是多 sender：通常只有 `sender_action_device` 调用 API；其他发送账号端用于验证同步或回调。
 
+### 离线多端 Case 固定写法
+
+- 离线前按账号下线：遍历 `topology.sender_devices` 或 `topology.recipient_devices`，不要只调用 `logout_for_offline(device_a/device_b)`。
+- 恢复时也按 endpoint 逐台调用 `login_preserving_offline_events`；每台设备的离线事件队列独立消费，不能用动作端收到事件代表副端也收到。
+- API 动作只在 `sender_action_device` 或 `recipient_action_device` 执行一次，避免副端重复 accept/decline/remove 等业务动作。
+- 对账号级离线回放事件，按 SDK 语义在每个重新登录 endpoint 上用 `groupId`/`msgId` 等业务键等待并断言；如果事件是一次性动作结果，则其他 endpoint 至少验证相同的最终本地/服务端状态，不重复执行动作。
+- `finally` 必须恢复两个账号的全部 endpoint，并恢复自动接受邀请等账号/客户端选项；清理不能只恢复 `deviceA/deviceB`。
+- 统一从 topology 取 `action_device`、`*_devices` 和用户 ID；不得在离线 Case 中写死 `deviceA/deviceB/deviceASec/deviceBSec`。
+- 只有整个文件的所有 Case 都使用同一个 topology 时才把 marker 放入模块级 `pytestmark`；混合普通 API 与拓扑 Case 时，marker 放在具体函数前，避免无关 Case 启动全部设备。
+
 ## 实现断言与业务步骤
 
 - 请求 `manager/cmd/info` 必须与权威 API/model 一致。

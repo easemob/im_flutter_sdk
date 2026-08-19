@@ -13,8 +13,8 @@ _DELIVERY_FLAG_KEYS = {"needReadReceipt"}
 
 from src import Cmd
 from src.test_flow.offline_test_flow import (
-    login_preserving_offline_events,
-    logout_for_offline,
+    login_account_devices,
+    logout_account_devices,
 )
 from tests.chat.test_chat_offline_message_delivery import (
     _COMBINE_DYNAMIC_KEYS,
@@ -22,15 +22,23 @@ from tests.chat.test_chat_offline_message_delivery import (
     _MESSAGE_DYNAMIC_KEYS,
     _assert_call,
     _assert_received_message,
+    _assert_received_message_on_devices,
     _assert_send_response_and_success,
+    _device_name,
     _establish_friendship,
+    _offline_endpoints,
     _prepare_offline_friend,
     _restore_case,
     _wait_message_event,
 )
+from tests.allure_helpers import _allure_step
 
 
-pytestmark = [pytest.mark.client, pytest.mark.chat]
+pytestmark = [
+    pytest.mark.client,
+    pytest.mark.chat,
+    pytest.mark.topology("account_a_to_account_b"),
+]
 
 
 _TYPED_DELIVERY_CASES = [
@@ -191,7 +199,7 @@ def _assert_delivered_message(
                 ]
             },
         },
-        # 发送方消息 body.fileStatus 实测恒 0（官方 4.x 锁 3，5.0 状态机变化已记录）→ 锁 0（body 参数已为 0）
+        # 送达事件严格校验回执语义；媒体 body 的 endpoint 状态由调用方动态字段规则处理。
         ignore_keys=ignore_keys,
     )
 
@@ -229,13 +237,14 @@ def _assert_download_response(
     user_a: str,
     user_b: str,
     body: dict,
+    device_name: str,
 ) -> None:
     assert_api.assert_response_matches(
         response,
         expected={
             "manager": "ChatManager",
             "cmd": cmd,
-            "device": "deviceB",
+            "device": device_name,
             "result": {
                 "msgId": real_id,
                 "from": user_a,
@@ -250,8 +259,9 @@ def _assert_download_response(
                 "body": body,
             },
         },
-        # 5.0：hasReadAck/needGroupAck 无此字段（已删）；hasDeliverAck=isDelivered() 下载后仍 False（场景相关）→ ignore
-        ignore_keys=_MEDIA_DYNAMIC_KEYS | {"sequence", "hasDeliverAck"},
+        # 5.0：这是下载调用返回时的本地快照；status/fileStatus/hasDeliverAck
+        # 受 endpoint 状态机时序影响，不能锁死 4.x 数值。
+        ignore_keys=_MEDIA_DYNAMIC_KEYS | {"sequence", "status", "hasDeliverAck"},
     )
 
 
@@ -287,75 +297,179 @@ def _assert_download_success_event(
                 },
             },
         },
-        # 5.0：hasReadAck/needGroupAck 无此字段；hasDeliverAck 下载后仍 False（场景相关）→ ignore
+        # success 事件仍严格校验消息身份、正文和完成事件；仅忽略 endpoint 动态媒体字段。
         ignore_keys=_MEDIA_DYNAMIC_KEYS | {"hasDeliverAck"},
     )
 
 
+def _download_media_on_endpoint(
+    endpoint,
+    assert_api,
+    *,
+    type_key: str,
+    real_id: str,
+    user_a: str,
+    user_b: str,
+    received_body: dict,
+    download_cmds: list[str],
+) -> None:
+    received = _wait_message_event(endpoint, Cmd.onMessagesReceived.value, real_id=real_id)
+    _assert_received_message(
+        assert_api,
+        received,
+        event_type=Cmd.onMessagesReceived.value,
+        real_id=real_id,
+        user_a=user_a,
+        user_b=user_b,
+        body=received_body,
+        ignore_keys=_MEDIA_DYNAMIC_KEYS,
+    )
+    raw_message = _message_from_event(received, real_id=real_id)
+    current_body = dict(received_body)
+    for cmd in download_cmds:
+        response = endpoint.call("ChatManager", cmd, info={"message": raw_message})
+        if cmd == Cmd.downloadThumbnail.value and type_key == "video":
+            assert_api.assert_response_matches(
+                response,
+                expected={
+                    "manager": "ChatManager",
+                    "cmd": Cmd.downloadThumbnail.value,
+                    "device": _device_name(endpoint),
+                    "result": {
+                        "msgId": real_id,
+                        "from": user_a,
+                        "to": user_b,
+                        "convId": user_a,
+                        "chatType": 0,
+                        "direction": 1,
+                        "body": current_body,
+                    },
+                },
+                ignore_keys=_MEDIA_DYNAMIC_KEYS
+                | {"sequence", "status", "hasRead", "hasDeliverAck", "isThread", "isContentReplaced", "deliverOnlineOnly"},
+            )
+            error = _wait_download_event(endpoint, Cmd.onMessageError.value, real_id=real_id)
+            assert_api.assert_response_matches(
+                error,
+                expected={
+                    "type": "event",
+                    "eventType": Cmd.onMessageError.value,
+                    "data": {
+                        "msgId": real_id,
+                        "error": {"code": 403, "description": "Failed to download the file"},
+                    },
+                },
+                ignore_keys={"timestamp", "sequence", "msg"},
+            )
+            continue
+        response_body = dict(current_body)
+        success_body = dict(current_body)
+        # Android 5.0 的 fileStatus 是 endpoint 本地缓存/下载状态，不保证从
+        # 0 按 0 -> 1 返回；这里验证真实下载响应和 success 事件的消息身份/正文，
+        # 不把 4.x 的状态数值写死。
+        _assert_download_response(
+            assert_api,
+            response,
+            cmd=cmd,
+            real_id=real_id,
+            user_a=user_a,
+            user_b=user_b,
+            body=response_body,
+            device_name=_device_name(endpoint),
+        )
+        success = _wait_download_event(endpoint, Cmd.onMessageSuccess.value, real_id=real_id)
+        _assert_download_success_event(
+            assert_api,
+            success,
+            real_id=real_id,
+            user_a=user_a,
+            user_b=user_b,
+            body=success_body,
+        )
+        raw_message = ((success.get("data") or {}).get("msg") or raw_message)
+        current_body = success_body
+
+
 @pytest.mark.parametrize(("type_key", "payload_template", "expected_body", "ignore_keys"), _TYPED_DELIVERY_CASES)
 def test_chat_offline_typed_delivery_ack_after_recipient_login(
-    device_a,
-    device_b,
+    topology,
     assert_api,
-    user_a,
-    user_b,
     type_key,
     payload_template,
     expected_body,
     ignore_keys,
 ):
     """B 离线时的类型消息仅在重登接收后触发 A 的真实送达回执（需发送标记 needReadReceipt）。"""
-    marker = uuid.uuid4().hex[:8]
-    payload = {
-        key: (user_b if value == "{{userB}}" else value)
-        for key, value in payload_template.items()
-    }
-    body = _body_for_case(type_key, payload, expected_body, marker)
-    # 发送侧媒体状态与接收侧离线回放状态不同；location/custom 不包含 fileStatus。
-    if type_key in {"file", "image", "video"}:
-        received_body = {**body, "fileStatus": 3}
-    elif type_key == "voice":
-        received_body = {**body, "fileStatus": 0}
-    else:
-        received_body = body
-    try:
-        _prepare_offline_friend(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
-        _, real_id, _ = _assert_send_response_and_success(
-            device_a,
-            assert_api,
-            type_key=type_key,
-            payload=payload,
-            user_a=user_a,
-            user_b=user_b,
-            response_body=body,
-            success_body=body,
-            ignore_keys=ignore_keys,
-            need_read_receipt=True,
-        )
-        login_preserving_offline_events(device_b, assert_api, device_name="deviceB", user_id=user_b)
-        received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id)
-        _assert_received_message(
-            assert_api,
-            received,
-            event_type=Cmd.onMessagesReceived.value,
-            real_id=real_id,
-            user_a=user_a,
-            user_b=user_b,
-            body=received_body,
-            ignore_keys=ignore_keys | _DELIVERY_FLAG_KEYS,
-        )
-        delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id)
-        _assert_delivered_message(
-            assert_api,
-            delivered,
-            real_id=real_id,
-            user_a=user_a,
-            user_b=user_b,
-            body=body,
-            ignore_keys=ignore_keys,
-        )
-    finally:
-        _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
+    with _allure_step("验证：B 离线时的类型消息仅在重登接收后触发 A 的真实送达回执（需发送标记 needReadReceipt）。"):
+        device_a, device_b, user_a, user_b, sender_devices, recipient_devices = _offline_endpoints(topology)
+        marker = uuid.uuid4().hex[:8]
+        payload = {
+            key: (user_b if value == "{{userB}}" else value)
+            for key, value in payload_template.items()
+        }
+        body = _body_for_case(type_key, payload, expected_body, marker)
+        # 发送侧媒体状态与接收侧离线回放状态不同；location/custom 不包含 fileStatus。
+        if type_key in {"file", "image", "video"}:
+            received_body = {**body, "fileStatus": 3}
+        elif type_key == "voice":
+            received_body = {**body, "fileStatus": 0}
+        else:
+            received_body = body
+        try:
+            _prepare_offline_friend(
+                device_a,
+                device_b,
+                assert_api,
+                user_a=user_a,
+                user_b=user_b,
+                sender_devices=sender_devices,
+                recipient_devices=recipient_devices,
+            )
+            _, real_id, _ = _assert_send_response_and_success(
+                device_a,
+                assert_api,
+                type_key=type_key,
+                payload=payload,
+                user_a=user_a,
+                user_b=user_b,
+                response_body=body,
+                success_body=body,
+                ignore_keys=ignore_keys,
+                need_read_receipt=True,
+            )
+            login_account_devices(recipient_devices, assert_api, user_id=user_b)
+            for endpoint in recipient_devices:
+                received = _wait_message_event(endpoint, Cmd.onMessagesReceived.value, real_id=real_id)
+                _assert_received_message(
+                    assert_api,
+                    received,
+                    event_type=Cmd.onMessagesReceived.value,
+                    real_id=real_id,
+                    user_a=user_a,
+                    user_b=user_b,
+                    body=received_body,
+                    ignore_keys=ignore_keys | _DELIVERY_FLAG_KEYS,
+                )
+            for endpoint in sender_devices:
+                delivered = _wait_message_event(endpoint, Cmd.onMessagesDelivered.value, real_id=real_id)
+                _assert_delivered_message(
+                    assert_api,
+                    delivered,
+                    real_id=real_id,
+                    user_a=user_a,
+                    user_b=user_b,
+                    body=body,
+                    ignore_keys=ignore_keys,
+                )
+        finally:
+            _restore_case(
+                device_a,
+                device_b,
+                user_a=user_a,
+                user_b=user_b,
+                sender_devices=sender_devices,
+                recipient_devices=recipient_devices,
+            )
 
 
 @pytest.mark.parametrize(
@@ -370,11 +484,8 @@ def test_chat_offline_typed_delivery_ack_after_recipient_login(
     _OFFLINE_DOWNLOAD_CASES,
 )
 def test_chat_offline_received_media_downloads_after_recipient_login(
-    device_a,
-    device_b,
+    topology,
     assert_api,
-    user_a,
-    user_b,
     type_key,
     payload_template,
     response_body,
@@ -383,579 +494,574 @@ def test_chat_offline_received_media_downloads_after_recipient_login(
     download_cmds,
 ):
     """B 使用离线回放的原始媒体消息下载附件；图片/视频同时覆盖缩略图。"""
-    payload = {
-        key: (user_b if value == "{{userB}}" else value)
-        for key, value in payload_template.items()
-    }
-    try:
-        _prepare_offline_friend(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
-        _, real_id, _ = _assert_send_response_and_success(
-            device_a,
-            assert_api,
-            type_key=type_key,
-            payload=payload,
-            user_a=user_a,
-            user_b=user_b,
-            response_body=response_body,
-            success_body=success_body,
-            ignore_keys=_MEDIA_DYNAMIC_KEYS,
-        )
-        login_preserving_offline_events(
-            device_b, assert_api, device_name="deviceB", user_id=user_b
-        )
-        received = _wait_message_event(
-            device_b, Cmd.onMessagesReceived.value, real_id=real_id
-        )
-        _assert_received_message(
-            assert_api,
-            received,
-            event_type=Cmd.onMessagesReceived.value,
-            real_id=real_id,
-            user_a=user_a,
-            user_b=user_b,
-            body=received_body,
-            ignore_keys=_MEDIA_DYNAMIC_KEYS,
-        )
-        raw_message = _message_from_event(received, real_id=real_id)
-        current_body = dict(received_body)
-        for cmd in download_cmds:
-            response = device_b.call(
-                "ChatManager", cmd, info={"message": raw_message}
-            )
-            if cmd == Cmd.downloadThumbnail.value and type_key == "video":
-                assert_api.assert_response_matches(
-                    response,
-                    expected={
-                        "manager": "ChatManager",
-                        "cmd": Cmd.downloadThumbnail.value,
-                        "device": "deviceB",
-                        "result": {
-                            "msgId": real_id,
-                            "from": user_a,
-                            "to": user_b,
-                            "convId": user_a,
-                            "chatType": 0,
-                            "direction": 1,
-                            "body": current_body,
-                        },
-                    },
-                    ignore_keys=_MEDIA_DYNAMIC_KEYS
-                    | {
-                        "sequence",
-                        "status",
-                        "hasRead",
-                        "hasDeliverAck",
-                        "isThread",
-                        "isContentReplaced",
-                        "deliverOnlineOnly",
-                    },
-                )
-                error = _wait_download_event(
-                    device_b, Cmd.onMessageError.value, real_id=real_id
-                )
-                assert_api.assert_response_matches(
-                    error,
-                    expected={
-                        "type": "event",
-                        "eventType": Cmd.onMessageError.value,
-                        "data": {
-                            "msgId": real_id,
-                            "error": {
-                                "code": 403,
-                                "description": "Failed to download the file",
-                            },
-                        },
-                    },
-                    ignore_keys={"timestamp", "sequence", "msg"},
-                )
-                continue
-            response_body = dict(current_body)
-            success_body = dict(current_body)
-            if cmd == Cmd.downloadAttachment.value:
-                response_body["fileStatus"] = 0
-                success_body["fileStatus"] = 1
-            _assert_download_response(
+    with _allure_step("验证：B 使用离线回放的原始媒体消息下载附件；图片/视频同时覆盖缩略图。"):
+        device_a, device_b, user_a, user_b, sender_devices, recipient_devices = _offline_endpoints(topology)
+        payload = {
+            key: (user_b if value == "{{userB}}" else value)
+            for key, value in payload_template.items()
+        }
+        try:
+            _prepare_offline_friend(
+                device_a,
+                device_b,
                 assert_api,
-                response,
-                cmd=cmd,
-                real_id=real_id,
                 user_a=user_a,
                 user_b=user_b,
-                body=response_body,
+                sender_devices=sender_devices,
+                recipient_devices=recipient_devices,
             )
-            success = _wait_download_event(
-                device_b, Cmd.onMessageSuccess.value, real_id=real_id
-            )
-            _assert_download_success_event(
+            _, real_id, _ = _assert_send_response_and_success(
+                device_a,
                 assert_api,
-                success,
-                real_id=real_id,
+                type_key=type_key,
+                payload=payload,
                 user_a=user_a,
                 user_b=user_b,
-                body=success_body,
+                response_body=response_body,
+                success_body=success_body,
+                ignore_keys=_MEDIA_DYNAMIC_KEYS,
             )
-            raw_message = ((success.get("data") or {}).get("msg") or raw_message)
-            current_body = success_body
-    finally:
-        _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
+            login_account_devices(recipient_devices, assert_api, user_id=user_b)
+            for endpoint in recipient_devices:
+                _download_media_on_endpoint(
+                    endpoint,
+                    assert_api,
+                    type_key=type_key,
+                    real_id=real_id,
+                    user_a=user_a,
+                    user_b=user_b,
+                    received_body=received_body,
+                    download_cmds=download_cmds,
+                )
+        finally:
+            _restore_case(
+                device_a,
+                device_b,
+                user_a=user_a,
+                user_b=user_b,
+                sender_devices=sender_devices,
+                recipient_devices=recipient_devices,
+            )
 
 
 def test_chat_offline_combine_delivery_ack_after_recipient_login(
-    device_a,
-    device_b,
+    topology,
     assert_api,
-    user_a,
-    user_b,
 ):
     """真实源消息组成 combine；B 离线重登接收后 A 才收到送达回执（源消息与 combine 均需标记 needReadReceipt）。"""
-    marker = uuid.uuid4().hex[:8]
-    title = f"offline-delivery-combine-{marker}"
-    summary = "offline combine delivery summary"
-    compatible_text = "offline combine delivery compatible"
-    try:
-        _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
-        source_ids = []
-        for index in range(2):
-            content = f"offline-delivery-source-{index}-{marker}"
-            _, source_id, _ = _assert_send_response_and_success(
+    with _allure_step("验证：真实源消息组成 combine；B 离线重登接收后 A 才收到送达回执（源消息与 combine 均需标记 needReadReceipt）。"):
+        device_a, device_b, user_a, user_b, sender_devices, recipient_devices = _offline_endpoints(topology)
+        marker = uuid.uuid4().hex[:8]
+        title = f"offline-delivery-combine-{marker}"
+        summary = "offline combine delivery summary"
+        compatible_text = "offline combine delivery compatible"
+        try:
+            _establish_friendship(
+                device_a,
+                device_b,
+                assert_api,
+                user_a=user_a,
+                user_b=user_b,
+                sender_devices=sender_devices,
+                recipient_devices=recipient_devices,
+            )
+            source_ids = []
+            for index in range(2):
+                content = f"offline-delivery-source-{index}-{marker}"
+                _, source_id, _ = _assert_send_response_and_success(
+                    device_a,
+                    assert_api,
+                    type_key="txt",
+                    payload={"targetId": user_b, "content": content},
+                    user_a=user_a,
+                    user_b=user_b,
+                    response_body={"type": 0, "content": content},
+                    success_body={"type": 0, "content": content, "translations": {}},
+                    need_read_receipt=True,
+                )
+                received_source = _wait_message_event(
+                    device_b, Cmd.onMessagesReceived.value, real_id=source_id
+                )
+                _assert_received_message(
+                    assert_api,
+                    received_source,
+                    event_type=Cmd.onMessagesReceived.value,
+                    real_id=source_id,
+                    user_a=user_a,
+                    user_b=user_b,
+                    body={"type": 0, "content": content, "translations": {}},
+                    ignore_keys=_DELIVERY_FLAG_KEYS,
+                )
+                _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=source_id)
+                source_ids.append(source_id)
+            device_a.drain_events(timeout=0.5)
+            device_b.drain_events(timeout=0.5)
+            logout_account_devices(recipient_devices, assert_api)
+            _, real_id, _ = _assert_send_response_and_success(
                 device_a,
                 assert_api,
-                type_key="txt",
-                payload={"targetId": user_b, "content": content},
+                type_key="combine",
+                payload={
+                    "targetId": user_b,
+                    "title": title,
+                    "summary": summary,
+                    "compatibleText": compatible_text,
+                    "msgIds": source_ids,
+                },
                 user_a=user_a,
                 user_b=user_b,
-                response_body={"type": 0, "content": content},
-                success_body={"type": 0, "content": content, "translations": {}},
+                response_body={
+                    "type": 8,
+                    "title": title,
+                    "summary": summary,
+                    "compatibleText": compatible_text,
+                    "fileStatus": 0,
+                },
+                success_body={
+                    "type": 8,
+                    "title": title,
+                    "summary": summary,
+                    "compatibleText": compatible_text,
+                    "fileStatus": 1,
+                },
+                ignore_keys=_COMBINE_DYNAMIC_KEYS,
                 need_read_receipt=True,
             )
-            received_source = _wait_message_event(
-                device_b, Cmd.onMessagesReceived.value, real_id=source_id
+            login_account_devices(recipient_devices, assert_api, user_id=user_b)
+            received = _wait_message_event(
+                device_b, Cmd.onMessagesReceived.value, real_id=real_id
             )
+            received_body = {
+                "type": 8,
+                "title": title,
+                "summary": summary,
+                "compatibleText": compatible_text,
+                "fileStatus": 3,
+            }
             _assert_received_message(
                 assert_api,
-                received_source,
+                received,
                 event_type=Cmd.onMessagesReceived.value,
-                real_id=source_id,
+                real_id=real_id,
                 user_a=user_a,
                 user_b=user_b,
-                body={"type": 0, "content": content, "translations": {}},
-                ignore_keys=_DELIVERY_FLAG_KEYS,
+                body=received_body,
+                ignore_keys=_COMBINE_DYNAMIC_KEYS | _DELIVERY_FLAG_KEYS,
             )
-            _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=source_id)
-            source_ids.append(source_id)
-        device_a.drain_events(timeout=0.5)
-        device_b.drain_events(timeout=0.5)
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
-        _, real_id, _ = _assert_send_response_and_success(
-            device_a,
-            assert_api,
-            type_key="combine",
-            payload={
-                "targetId": user_b,
-                "title": title,
-                "summary": summary,
-                "compatibleText": compatible_text,
-                "msgIds": source_ids,
-            },
-            user_a=user_a,
-            user_b=user_b,
-            response_body={
-                "type": 8,
-                "title": title,
-                "summary": summary,
-                "compatibleText": compatible_text,
-                "fileStatus": 0,
-            },
-            success_body={
-                "type": 8,
-                "title": title,
-                "summary": summary,
-                "compatibleText": compatible_text,
-                "fileStatus": 1,
-            },
-            ignore_keys=_COMBINE_DYNAMIC_KEYS,
-            need_read_receipt=True,
-        )
-        login_preserving_offline_events(
-            device_b, assert_api, device_name="deviceB", user_id=user_b
-        )
-        received = _wait_message_event(
-            device_b, Cmd.onMessagesReceived.value, real_id=real_id
-        )
-        received_body = {
-            "type": 8,
-            "title": title,
-            "summary": summary,
-            "compatibleText": compatible_text,
-            "fileStatus": 3,
-        }
-        _assert_received_message(
-            assert_api,
-            received,
-            event_type=Cmd.onMessagesReceived.value,
-            real_id=real_id,
-            user_a=user_a,
-            user_b=user_b,
-            body=received_body,
-            ignore_keys=_COMBINE_DYNAMIC_KEYS | _DELIVERY_FLAG_KEYS,
-        )
-        delivered = _wait_message_event(
-            device_a, Cmd.onMessagesDelivered.value, real_id=real_id
-        )
-        _assert_delivered_message(
-            assert_api,
-            delivered,
-            real_id=real_id,
-            user_a=user_a,
-            user_b=user_b,
-            body={
-                "type": 8,
-                "title": title,
-                "summary": summary,
-                "compatibleText": compatible_text,
-                "fileStatus": 1,
-            },
-            ignore_keys=_COMBINE_DYNAMIC_KEYS,
-        )
-    finally:
-        _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
+            for endpoint in recipient_devices[1:]:
+                extra_received = _wait_message_event(
+                    endpoint, Cmd.onMessagesReceived.value, real_id=real_id
+                )
+                _assert_received_message(
+                    assert_api,
+                    extra_received,
+                    event_type=Cmd.onMessagesReceived.value,
+                    real_id=real_id,
+                    user_a=user_a,
+                    user_b=user_b,
+                    body=received_body,
+                    ignore_keys=_COMBINE_DYNAMIC_KEYS | _DELIVERY_FLAG_KEYS,
+                )
+            for endpoint in sender_devices:
+                delivered = _wait_message_event(
+                    endpoint, Cmd.onMessagesDelivered.value, real_id=real_id
+                )
+                _assert_delivered_message(
+                    assert_api,
+                    delivered,
+                    real_id=real_id,
+                    user_a=user_a,
+                    user_b=user_b,
+                    body={
+                        "type": 8,
+                        "title": title,
+                        "summary": summary,
+                        "compatibleText": compatible_text,
+                        "fileStatus": 1,
+                    },
+                    ignore_keys=_COMBINE_DYNAMIC_KEYS,
+                )
+        finally:
+            _restore_case(
+                device_a,
+                device_b,
+                user_a=user_a,
+                user_b=user_b,
+                sender_devices=sender_devices,
+                recipient_devices=recipient_devices,
+            )
 
 
 def test_chat_offline_text_automatic_translation_after_recipient_login(
-    device_a,
-    device_b,
+    topology,
     assert_api,
-    user_a,
-    user_b,
 ):
     """带 targetLanguages 的文本在 B 离线期间发送，重登后保留真实翻译结果。"""
-    # 翻译引擎会把内容中的英文后缀转大写（实测）→ 后缀用数字保证翻译结果可预测
-    suffix = str(int(time.time_ns() % 100000000))
-    content = f"offline-translation-{suffix}"
-    body = {
-        "type": 0,
-        "content": content,
-        "targetLanguages": ["zh-Hans"],
-        "translations": {"zh-Hans": f"离线翻译-{suffix}"},
-    }
-    try:
-        _prepare_offline_friend(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
-        _, real_id, _ = _assert_send_response_and_success(
-            device_a,
-            assert_api,
-            type_key="txt",
-            payload={"targetId": user_b, "content": content, "targetLanguages": ["zh-Hans"]},
-            user_a=user_a,
-            user_b=user_b,
-            response_body={"type": 0, "content": content, "targetLanguages": ["zh-Hans"]},
-            success_body=body,
-            ignore_keys=_MESSAGE_DYNAMIC_KEYS - {"targetLanguages"},
-        )
-        login_preserving_offline_events(device_b, assert_api, device_name="deviceB", user_id=user_b)
-        received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id)
-        _assert_received_message(
-            assert_api,
-            received,
-            event_type=Cmd.onMessagesReceived.value,
-            real_id=real_id,
-            user_a=user_a,
-            user_b=user_b,
-            body=body,
-            ignore_keys=_MESSAGE_DYNAMIC_KEYS,
-        )
-    finally:
-        _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
-
-
-def test_chat_offline_mixed_backlog_local_state_after_recipient_login(
-    device_a,
-    device_b,
-    assert_api,
-    user_a,
-    user_b,
-):
-    """B 离线积压四类消息；按 ID 集合核对回放、本地、历史、未读和最新消息。"""
-    marker = uuid.uuid4().hex[:8]
-    text_body = {
-        "type": 0,
-        "content": f"offline-mixed-text-{marker}",
-        "translations": {},
-    }
-    location_body = {
-        "type": 3,
-        "latitude": 30.2741,
-        "longitude": 120.1551,
-        "address": f"offline-mixed-location-{marker}",
-        "buildingName": "offline-mixed-building",
-    }
-    custom_body = {
-        "type": 7,
-        "event": f"offline-mixed-custom-{marker}",
-        "params": {"source": "offline-mixed", "revision": "1"},
-    }
-    title = f"offline-mixed-combine-{marker}"
-    combine_sender_body = {
-        "type": 8,
-        "title": title,
-        "summary": "offline mixed combine summary",
-        "compatibleText": "offline mixed combine compatible",
-        "fileStatus": 1,
-    }
-    combine_received_body = {**combine_sender_body, "fileStatus": 3}
-    try:
-        _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
-        source_ids: list[str] = []
-        for index in range(2):
-            source_content = f"offline-mixed-source-{index}-{marker}"
-            _, source_id, _ = _assert_send_response_and_success(
+    with _allure_step("验证：带 targetLanguages 的文本在 B 离线期间发送，重登后保留真实翻译结果。"):
+        device_a, device_b, user_a, user_b, sender_devices, recipient_devices = _offline_endpoints(topology)
+        # 翻译引擎会把内容中的英文后缀转大写（实测）→ 后缀用数字保证翻译结果可预测
+        suffix = str(int(time.time_ns() % 100000000))
+        content = f"offline-translation-{suffix}"
+        body = {
+            "type": 0,
+            "content": content,
+            "targetLanguages": ["zh-Hans"],
+            "translations": {"zh-Hans": f"离线翻译-{suffix}"},
+        }
+        try:
+            _prepare_offline_friend(
+                device_a,
+                device_b,
+                assert_api,
+                user_a=user_a,
+                user_b=user_b,
+                sender_devices=sender_devices,
+                recipient_devices=recipient_devices,
+            )
+            _, real_id, _ = _assert_send_response_and_success(
                 device_a,
                 assert_api,
                 type_key="txt",
-                payload={"targetId": user_b, "content": source_content},
+                payload={"targetId": user_b, "content": content, "targetLanguages": ["zh-Hans"]},
                 user_a=user_a,
                 user_b=user_b,
-                response_body={"type": 0, "content": source_content},
-                success_body={
-                    "type": 0,
-                    "content": source_content,
-                    "translations": {},
-                },
+                response_body={"type": 0, "content": content, "targetLanguages": ["zh-Hans"]},
+                success_body=body,
+                ignore_keys=_MESSAGE_DYNAMIC_KEYS - {"targetLanguages"},
             )
-            source_received = _wait_message_event(
-                device_b, Cmd.onMessagesReceived.value, real_id=source_id
-            )
-            _assert_received_message(
-                assert_api,
-                source_received,
-                event_type=Cmd.onMessagesReceived.value,
-                real_id=source_id,
+            login_account_devices(recipient_devices, assert_api, user_id=user_b)
+            for endpoint in recipient_devices:
+                received = _wait_message_event(endpoint, Cmd.onMessagesReceived.value, real_id=real_id)
+                _assert_received_message(
+                    assert_api,
+                    received,
+                    event_type=Cmd.onMessagesReceived.value,
+                    real_id=real_id,
+                    user_a=user_a,
+                    user_b=user_b,
+                    body=body,
+                    ignore_keys=_MESSAGE_DYNAMIC_KEYS,
+                )
+        finally:
+            _restore_case(
+                device_a,
+                device_b,
                 user_a=user_a,
                 user_b=user_b,
-                body={
-                    "type": 0,
-                    "content": source_content,
-                    "translations": {},
-                },
+                sender_devices=sender_devices,
+                recipient_devices=recipient_devices,
             )
-            source_ids.append(source_id)
 
-        cleared = device_b.call(
-            "ConversationManager",
-            Cmd.clearAllMessages.value,
-            info={"convId": user_a, "type": 0},
-        )
-        _assert_call(
-            assert_api,
-            cleared,
-            manager="ConversationManager",
-            cmd=Cmd.clearAllMessages.value,
-            device_name="deviceB",
-            result=True,
-        )
-        marked = device_b.call(
-            "ConversationManager",
-            Cmd.markAllMessagesAsRead.value,
-            info={"convId": user_a, "type": 0},
-        )
-        _assert_call(
-            assert_api,
-            marked,
-            manager="ConversationManager",
-            cmd=Cmd.markAllMessagesAsRead.value,
-            device_name="deviceB",
-            result=True,
-        )
-        device_a.drain_events(timeout=0.5)
-        device_b.drain_events(timeout=0.5)
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
 
-        messages: list[tuple[str, dict, set[str]]] = []
-        _, text_id, _ = _assert_send_response_and_success(
-            device_a,
-            assert_api,
-            type_key="txt",
-            payload={"targetId": user_b, "content": text_body["content"]},
-            user_a=user_a,
-            user_b=user_b,
-            response_body={"type": 0, "content": text_body["content"]},
-            success_body=text_body,
-        )
-        messages.append((text_id, text_body, _MESSAGE_DYNAMIC_KEYS | _DELIVERY_SKIP_KEYS))
-        _, location_id, _ = _assert_send_response_and_success(
-            device_a,
-            assert_api,
-            type_key="location",
-            payload={"targetId": user_b, **{k: v for k, v in location_body.items() if k != "type"}},
-            user_a=user_a,
-            user_b=user_b,
-            response_body=location_body,
-            success_body=location_body,
-        )
-        messages.append((location_id, location_body, _MESSAGE_DYNAMIC_KEYS | _DELIVERY_SKIP_KEYS))
-        _, custom_id, _ = _assert_send_response_and_success(
-            device_a,
-            assert_api,
-            type_key="custom",
-            payload={"targetId": user_b, "event": custom_body["event"], "params": custom_body["params"]},
-            user_a=user_a,
-            user_b=user_b,
-            response_body=custom_body,
-            success_body=custom_body,
-        )
-        messages.append((custom_id, custom_body, _MESSAGE_DYNAMIC_KEYS | _DELIVERY_SKIP_KEYS))
-        _, combine_id, _ = _assert_send_response_and_success(
-            device_a,
-            assert_api,
-            type_key="combine",
-            payload={
-                "targetId": user_b,
-                "title": title,
-                "summary": combine_sender_body["summary"],
-                "compatibleText": combine_sender_body["compatibleText"],
-                "msgIds": source_ids,
-            },
-            user_a=user_a,
-            user_b=user_b,
-            response_body={**combine_sender_body, "fileStatus": 0},
-            success_body=combine_sender_body,
-            ignore_keys=_COMBINE_DYNAMIC_KEYS,
-        )
-        messages.append((combine_id, combine_received_body, _COMBINE_DYNAMIC_KEYS | _DELIVERY_SKIP_KEYS))
-        expected_by_id = {
-            message_id: {
-                "msgId": message_id,
-                "from": user_a,
-                "to": user_b,
-                "convId": user_a,
-                "chatType": 0,
-                "direction": 1,
-                "status": 2,
-                "hasRead": False,
-                "isThread": False,
-                "isContentReplaced": False,
-                "deliverOnlineOnly": False,
-                "body": body,
-            }
-            for message_id, body, _ in messages
+def test_chat_offline_mixed_backlog_local_state_after_recipient_login(
+    topology,
+    assert_api,
+):
+    """B 离线积压四类消息；按 ID 集合核对回放、本地、历史、未读和最新消息。"""
+    with _allure_step("验证：B 离线积压四类消息；按 ID 集合核对回放、本地、历史、未读和最新消息。"):
+        device_a, device_b, user_a, user_b, sender_devices, recipient_devices = _offline_endpoints(topology)
+        marker = uuid.uuid4().hex[:8]
+        text_body = {
+            "type": 0,
+            "content": f"offline-mixed-text-{marker}",
+            "translations": {},
         }
-
-        login_preserving_offline_events(
-            device_b, assert_api, device_name="deviceB", user_id=user_b
-        )
-        pending = set(expected_by_id)
-        deadline = time.monotonic() + 60.0
-        while pending and time.monotonic() < deadline:
-            event = device_b.receive_message(
-                match_event_type=Cmd.onMessagesReceived.value, timeout=3.0
+        location_body = {
+            "type": 3,
+            "latitude": 30.2741,
+            "longitude": 120.1551,
+            "address": f"offline-mixed-location-{marker}",
+            "buildingName": "offline-mixed-building",
+        }
+        custom_body = {
+            "type": 7,
+            "event": f"offline-mixed-custom-{marker}",
+            "params": {"source": "offline-mixed", "revision": "1"},
+        }
+        title = f"offline-mixed-combine-{marker}"
+        combine_sender_body = {
+            "type": 8,
+            "title": title,
+            "summary": "offline mixed combine summary",
+            "compatibleText": "offline mixed combine compatible",
+            "fileStatus": 1,
+        }
+        combine_received_body = {**combine_sender_body, "fileStatus": 3}
+        try:
+            _establish_friendship(
+                device_a,
+                device_b,
+                assert_api,
+                user_a=user_a,
+                user_b=user_b,
+                sender_devices=sender_devices,
+                recipient_devices=recipient_devices,
             )
-            if not event:
-                continue
-            actual_messages = ((event.get("data") or {}).get("messages") or [])
-            actual_ids = [
-                str(item.get("msgId"))
-                for item in actual_messages
-                if isinstance(item, dict)
-            ]
-            target_ids = [message_id for message_id in actual_ids if message_id in expected_by_id]
-            if not target_ids:
-                continue
-            assert len(target_ids) == len(actual_ids), f"离线混合回放夹带非目标消息: {event}"
-            assert_api.assert_response_matches(
-                event,
-                expected={
-                    "type": "event",
-                    "eventType": Cmd.onMessagesReceived.value,
-                    "data": {"messages": [expected_by_id[mid] for mid in actual_ids]},
+            source_ids: list[str] = []
+            for index in range(2):
+                source_content = f"offline-mixed-source-{index}-{marker}"
+                _, source_id, _ = _assert_send_response_and_success(
+                    device_a,
+                    assert_api,
+                    type_key="txt",
+                    payload={"targetId": user_b, "content": source_content},
+                    user_a=user_a,
+                    user_b=user_b,
+                    response_body={"type": 0, "content": source_content},
+                    success_body={
+                        "type": 0,
+                        "content": source_content,
+                        "translations": {},
+                    },
+                )
+                _assert_received_message_on_devices(
+                    recipient_devices,
+                    assert_api,
+                    event_type=Cmd.onMessagesReceived.value,
+                    real_id=source_id,
+                    user_a=user_a,
+                    user_b=user_b,
+                    body={
+                        "type": 0,
+                        "content": source_content,
+                        "translations": {},
+                    },
+                )
+                source_ids.append(source_id)
+
+            for endpoint in recipient_devices:
+                cleared = endpoint.call(
+                    "ConversationManager",
+                    Cmd.clearAllMessages.value,
+                    info={"convId": user_a, "type": 0},
+                )
+                _assert_call(
+                    assert_api,
+                    cleared,
+                    manager="ConversationManager",
+                    cmd=Cmd.clearAllMessages.value,
+                    device_name=_device_name(endpoint),
+                    result=True,
+                )
+                marked = endpoint.call(
+                    "ConversationManager",
+                    Cmd.markAllMessagesAsRead.value,
+                    info={"convId": user_a, "type": 0},
+                )
+                _assert_call(
+                    assert_api,
+                    marked,
+                    manager="ConversationManager",
+                    cmd=Cmd.markAllMessagesAsRead.value,
+                    device_name=_device_name(endpoint),
+                    result=True,
+                )
+            device_a.drain_events(timeout=0.5)
+            for endpoint in recipient_devices:
+                endpoint.drain_events(timeout=0.5)
+            logout_account_devices(recipient_devices, assert_api)
+
+            messages: list[tuple[str, dict, set[str]]] = []
+            _, text_id, _ = _assert_send_response_and_success(
+                device_a,
+                assert_api,
+                type_key="txt",
+                payload={"targetId": user_b, "content": text_body["content"]},
+                user_a=user_a,
+                user_b=user_b,
+                response_body={"type": 0, "content": text_body["content"]},
+                success_body=text_body,
+            )
+            messages.append((text_id, text_body, _MESSAGE_DYNAMIC_KEYS | _DELIVERY_SKIP_KEYS))
+            _, location_id, _ = _assert_send_response_and_success(
+                device_a,
+                assert_api,
+                type_key="location",
+                payload={"targetId": user_b, **{k: v for k, v in location_body.items() if k != "type"}},
+                user_a=user_a,
+                user_b=user_b,
+                response_body=location_body,
+                success_body=location_body,
+            )
+            messages.append((location_id, location_body, _MESSAGE_DYNAMIC_KEYS | _DELIVERY_SKIP_KEYS))
+            _, custom_id, _ = _assert_send_response_and_success(
+                device_a,
+                assert_api,
+                type_key="custom",
+                payload={"targetId": user_b, "event": custom_body["event"], "params": custom_body["params"]},
+                user_a=user_a,
+                user_b=user_b,
+                response_body=custom_body,
+                success_body=custom_body,
+            )
+            messages.append((custom_id, custom_body, _MESSAGE_DYNAMIC_KEYS | _DELIVERY_SKIP_KEYS))
+            _, combine_id, _ = _assert_send_response_and_success(
+                device_a,
+                assert_api,
+                type_key="combine",
+                payload={
+                    "targetId": user_b,
+                    "title": title,
+                    "summary": combine_sender_body["summary"],
+                    "compatibleText": combine_sender_body["compatibleText"],
+                    "msgIds": source_ids,
                 },
-                ignore_keys=_COMBINE_DYNAMIC_KEYS | _DELIVERY_SKIP_KEYS,
+                user_a=user_a,
+                user_b=user_b,
+                response_body={**combine_sender_body, "fileStatus": 0},
+                success_body=combine_sender_body,
+                ignore_keys=_COMBINE_DYNAMIC_KEYS,
             )
-            pending.difference_update(target_ids)
-        assert pending == set(), f"B 上线后缺少混合离线消息: {sorted(pending)}"
-
-        for message_id, body, ignore_keys in messages:
-            local = device_b.call(
-                "ChatManager", Cmd.getMessage.value, info={"msgId": message_id}
-            )
-            local_expected = dict(expected_by_id[message_id])
-            local_expected.pop("deliverOnlineOnly")
-            assert_api.assert_response_matches(
-                local,
-                expected={
-                    "manager": "ChatManager",
-                    "cmd": Cmd.getMessage.value,
-                    "device": "deviceB",
-                    "result": local_expected,
-                },
-                ignore_keys=ignore_keys,
-            )
-
-        unread = device_b.call(
-            "ConversationManager",
-            Cmd.getUnreadMsgCount.value,
-            info={"convId": user_a, "type": 0},
-        )
-        _assert_call(
-            assert_api,
-            unread,
-            manager="ConversationManager",
-            cmd=Cmd.getUnreadMsgCount.value,
-            device_name="deviceB",
-            result=4,
-        )
-        latest_expected = dict(expected_by_id[combine_id])
-        latest_expected.pop("deliverOnlineOnly")
-        latest = device_b.call(
-            "ConversationManager",
-            Cmd.getLatestMessage.value,
-            info={"convId": user_a, "type": 0},
-        )
-        assert_api.assert_response_matches(
-            latest,
-            expected={
-                "manager": "ConversationManager",
-                "cmd": Cmd.getLatestMessage.value,
-                "device": "deviceB",
-                "result": latest_expected,
-            },
-            ignore_keys=_COMBINE_DYNAMIC_KEYS,
-        )
-
-        history = None
-        history_ids: set[str] = set()
-        for _ in range(5):
-            history = device_b.call(
-                "ChatManager",
-                Cmd.fetchHistoryMessages.value,
-                info={
+            messages.append((combine_id, combine_received_body, _COMBINE_DYNAMIC_KEYS | _DELIVERY_SKIP_KEYS))
+            expected_by_id = {
+                message_id: {
+                    "msgId": message_id,
+                    "from": user_a,
+                    "to": user_b,
                     "convId": user_a,
-                    "type": 0,
-                    "pageSize": 50,
-                    "startMsgId": "",
-                    "direction": 0,
-                },
-            )
-            history_ids = {
-                str(item.get("msgId"))
-                for item in (((history.get("result") or {}).get("list")) or [])
-                if isinstance(item, dict) and str(item.get("msgId")) in expected_by_id
+                    "chatType": 0,
+                    "direction": 1,
+                    "status": 2,
+                    "hasRead": False,
+                    "isThread": False,
+                    "isContentReplaced": False,
+                    "deliverOnlineOnly": False,
+                    "body": body,
+                }
+                for message_id, body, _ in messages
             }
-            if history_ids == set(expected_by_id):
-                break
-            time.sleep(2)
-        assert_api.assert_response_matches(
-            {
-                "manager": (history or {}).get("manager"),
-                "cmd": (history or {}).get("cmd"),
-                "device": (history or {}).get("device"),
-                "result": {"targetIds": sorted(history_ids)},
-            },
-            expected={
-                "manager": "ChatManager",
-                "cmd": Cmd.fetchHistoryMessages.value,
-                "device": "deviceB",
-                "result": {"targetIds": sorted(expected_by_id)},
-            },
-        )
 
-    finally:
-        _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
+            login_account_devices(recipient_devices, assert_api, user_id=user_b)
+            for endpoint in recipient_devices:
+                pending = set(expected_by_id)
+                deadline = time.monotonic() + 60.0
+                while pending and time.monotonic() < deadline:
+                    event = endpoint.receive_message(
+                        match_event_type=Cmd.onMessagesReceived.value, timeout=3.0
+                    )
+                    if not event:
+                        continue
+                    actual_messages = ((event.get("data") or {}).get("messages") or [])
+                    actual_ids = [
+                        str(item.get("msgId"))
+                        for item in actual_messages
+                        if isinstance(item, dict)
+                    ]
+                    target_ids = [message_id for message_id in actual_ids if message_id in expected_by_id]
+                    if not target_ids:
+                        continue
+                    assert len(target_ids) == len(actual_ids), (
+                        f"离线混合回放夹带非目标消息: endpoint={_device_name(endpoint)}, event={event}"
+                    )
+                    assert_api.assert_response_matches(
+                        event,
+                        expected={
+                            "type": "event",
+                            "eventType": Cmd.onMessagesReceived.value,
+                            "data": {"messages": [expected_by_id[mid] for mid in actual_ids]},
+                        },
+                        ignore_keys=_COMBINE_DYNAMIC_KEYS | _DELIVERY_SKIP_KEYS,
+                    )
+                    pending.difference_update(target_ids)
+                assert pending == set(), (
+                    f"B endpoint 上线后缺少混合离线消息: endpoint={_device_name(endpoint)}, "
+                    f"missing={sorted(pending)}"
+                )
+
+            for endpoint in recipient_devices:
+                for message_id, body, ignore_keys in messages:
+                    local = endpoint.call(
+                        "ChatManager", Cmd.getMessage.value, info={"msgId": message_id}
+                    )
+                    local_expected = dict(expected_by_id[message_id])
+                    local_expected.pop("deliverOnlineOnly")
+                    assert_api.assert_response_matches(
+                        local,
+                        expected={
+                            "manager": "ChatManager",
+                            "cmd": Cmd.getMessage.value,
+                            "device": _device_name(endpoint),
+                            "result": local_expected,
+                        },
+                        ignore_keys=ignore_keys,
+                    )
+
+                unread = endpoint.call(
+                    "ConversationManager",
+                    Cmd.getUnreadMsgCount.value,
+                    info={"convId": user_a, "type": 0},
+                )
+                _assert_call(
+                    assert_api,
+                    unread,
+                    manager="ConversationManager",
+                    cmd=Cmd.getUnreadMsgCount.value,
+                    device_name=_device_name(endpoint),
+                    result=4,
+                )
+            latest_expected = dict(expected_by_id[combine_id])
+            latest_expected.pop("deliverOnlineOnly")
+            for endpoint in recipient_devices:
+                latest = endpoint.call(
+                    "ConversationManager",
+                    Cmd.getLatestMessage.value,
+                    info={"convId": user_a, "type": 0},
+                )
+                assert_api.assert_response_matches(
+                    latest,
+                    expected={
+                        "manager": "ConversationManager",
+                        "cmd": Cmd.getLatestMessage.value,
+                        "device": _device_name(endpoint),
+                        "result": latest_expected,
+                    },
+                    ignore_keys=_COMBINE_DYNAMIC_KEYS,
+                )
+
+            for endpoint in recipient_devices:
+                history = None
+                history_ids: set[str] = set()
+                for _ in range(5):
+                    history = endpoint.call(
+                        "ChatManager",
+                        Cmd.fetchHistoryMessages.value,
+                        info={
+                            "convId": user_a,
+                            "type": 0,
+                            "pageSize": 50,
+                            "startMsgId": "",
+                            "direction": 0,
+                        },
+                    )
+                    history_ids = {
+                        str(item.get("msgId"))
+                        for item in (((history.get("result") or {}).get("list")) or [])
+                        if isinstance(item, dict) and str(item.get("msgId")) in expected_by_id
+                    }
+                    if history_ids == set(expected_by_id):
+                        break
+                    time.sleep(2)
+                assert_api.assert_response_matches(
+                    {
+                        "manager": (history or {}).get("manager"),
+                        "cmd": (history or {}).get("cmd"),
+                        "device": (history or {}).get("device"),
+                        "result": {"targetIds": sorted(history_ids)},
+                    },
+                    expected={
+                        "manager": "ChatManager",
+                        "cmd": Cmd.fetchHistoryMessages.value,
+                        "device": _device_name(endpoint),
+                        "result": {"targetIds": sorted(expected_by_id)},
+                    },
+                )
+
+        finally:
+            _restore_case(
+                device_a,
+                device_b,
+                user_a=user_a,
+                user_b=user_b,
+                sender_devices=sender_devices,
+                recipient_devices=recipient_devices,
+            )

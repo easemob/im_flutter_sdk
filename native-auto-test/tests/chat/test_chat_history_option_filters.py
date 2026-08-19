@@ -8,6 +8,7 @@ import pytest
 from src import Cmd
 from tests.chat._utils import build_text
 from tests.chat.test_chat_recall_and_message_read_ack import _send_typed
+from tests.allure_helpers import _allure_step
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
@@ -95,104 +96,105 @@ def _target_projection(response, target_ids):
 
 
 def test_chat_history_filters_direction_time_and_message_types(device_a, device_b, assert_api, user_a, user_b):
-    device_a.drain_events()
-    device_b.drain_events()
-    cleanup = device_a.call(
-        "ChatManager", Cmd.deleteRemoteConversation.value,
-        info={"convId": user_b, "conversationType": 0, "isDeleteRemoteMessage": True},
-    )
-    assert_api.assert_response_matches(
-        cleanup,
-        expected={"manager": "ChatManager", "cmd": Cmd.deleteRemoteConversation.value,
-                  "device": "deviceA", "result": None},
-        ignore_keys={"sequence"},
-    )
-    # deleteRemoteConversation 的同步响应早于服务端删除真正完成；立即发送会
-    # 与仍在执行的删除竞争，导致第一条新消息偶发被一并清掉。
-    time.sleep(5)
-    text_content = f"history-filter-text-{uuid.uuid4().hex[:6]}"
-    text = _send_text(device_a, device_b, assert_api, user_a, user_b, text_content)
-    time.sleep(1)
-    custom_event = f"history-filter-custom-{uuid.uuid4().hex[:6]}"
-    _, custom_success, _, custom_id = _send_typed(
-        device_a, device_b, assert_api, user_a, user_b, "custom",
-        {"event": custom_event, "params": {"filter": "history"}},
-    )
-    text_id = str(text["msgId"])
-    custom_id = str(custom_id)
-    target_ids = {text_id, custom_id}
-    custom_message = ((custom_success.get("data") or {}).get("msg") or {})
-    text_ts = int(text["serverTime"])
-    custom_ts = int(custom_message["serverTime"])
-    middle_ts = (text_ts + custom_ts) // 2
-    base = {"needSave": False, "startTs": -1, "endTs": -1}
-
-    # 发送成功回调早于漫游存储完成，尤其是 custom 消息。先等服务端的 UP
-    # 查询能同时看见两条目标消息，再验证 DOWN 与过滤规则，避免把存储延迟
-    # 误判成 direction 行为。
-    archive_deadline = time.monotonic() + 60
-    archive_response = None
-    while time.monotonic() < archive_deadline:
-        archive_response = _fetch(
-            device_a, user_b,
-            options={**base, "direction": 0, "msgTypes": [0, 7]},
-            page_size=50,
+    with _allure_step("验证：chat history filters direction time and message types"):
+        device_a.drain_events()
+        device_b.drain_events()
+        cleanup = device_a.call(
+            "ChatManager", Cmd.deleteRemoteConversation.value,
+            info={"convId": user_b, "conversationType": 0, "isDeleteRemoteMessage": True},
         )
-        archived_ids = {
-            item["msgId"] for item in _target_projection(archive_response, target_ids)
-        }
-        if archived_ids == target_ids:
-            break
-        time.sleep(2)
-    assert archive_response is not None and archived_ids == target_ids, (
-        f"目标消息未在超时前进入漫游存储: response={archive_response}"
-    )
-
-    down_options = {**base, "direction": 1}
-    down_cursor = ""
-    down_found = set()
-    seen_cursors = set()
-    for _ in range(50):
-        down_response = _fetch(
-            device_a, user_b, options=down_options, cursor=down_cursor, page_size=50,
-        )
-        down_found.update(
-            item["msgId"] for item in _target_projection(down_response, target_ids)
-        )
-        if down_found == target_ids:
-            break
-        next_cursor = str((down_response.get("result") or {}).get("cursor") or "")
-        if not next_cursor or next_cursor in seen_cursors:
-            break
-        seen_cursors.add(next_cursor)
-        down_cursor = next_cursor
-    assert down_found == target_ids, (
-        f"direction-down 未遍历到目标消息: found={down_found}, targets={target_ids}, "
-        f"cursor={down_cursor}"
-    )
-
-    cases = [
-        ("end-before-custom", {**base, "direction": 0, "startTs": 0, "endTs": middle_ts}, {text_id}),
-        ("start-after-text", {**base, "direction": 0, "startTs": middle_ts, "endTs": -1}, {custom_id}),
-        ("image-only", {**base, "direction": 0, "msgTypes": [1]}, set()),
-        ("text-and-image", {**base, "direction": 0, "msgTypes": [0, 1]}, {text_id}),
-        ("custom-only", {**base, "direction": 0, "msgTypes": [7]}, {custom_id}),
-        ("text-and-custom", {**base, "direction": 0, "msgTypes": [0, 7]}, {text_id, custom_id}),
-    ]
-    for name, options, expected_ids in cases:
-        response = _fetch(device_a, user_b, options=options)
-        projection = _target_projection(response, target_ids)
-        actual_ids = {item["msgId"] for item in projection}
-        assert actual_ids == expected_ids, f"{name}: response={response}, projection={projection}"
-        for item in projection:
-            if item["msgId"] == text_id:
-                assert item == {"msgId": text_id, "type": 0, "content": text_content, "event": None}
-            elif item["msgId"] == custom_id:
-                assert item == {"msgId": custom_id, "type": 7, "content": None, "event": custom_event}
         assert_api.assert_response_matches(
-            {"manager": response.get("manager"), "cmd": response.get("cmd"), "device": response.get("device"),
-             "result": {"targetIds": sorted(actual_ids)}},
-            expected={"manager": "ChatManager", "cmd": Cmd.fetchHistoryMessagesByOptions.value,
-                      "device": "deviceA", "result": {"targetIds": sorted(expected_ids)}},
+            cleanup,
+            expected={"manager": "ChatManager", "cmd": Cmd.deleteRemoteConversation.value,
+                      "device": "deviceA", "result": None},
             ignore_keys={"sequence"},
         )
+        # deleteRemoteConversation 的同步响应早于服务端删除真正完成；立即发送会
+        # 与仍在执行的删除竞争，导致第一条新消息偶发被一并清掉。
+        time.sleep(5)
+        text_content = f"history-filter-text-{uuid.uuid4().hex[:6]}"
+        text = _send_text(device_a, device_b, assert_api, user_a, user_b, text_content)
+        time.sleep(1)
+        custom_event = f"history-filter-custom-{uuid.uuid4().hex[:6]}"
+        _, custom_success, _, custom_id = _send_typed(
+            device_a, device_b, assert_api, user_a, user_b, "custom",
+            {"event": custom_event, "params": {"filter": "history"}},
+        )
+        text_id = str(text["msgId"])
+        custom_id = str(custom_id)
+        target_ids = {text_id, custom_id}
+        custom_message = ((custom_success.get("data") or {}).get("msg") or {})
+        text_ts = int(text["serverTime"])
+        custom_ts = int(custom_message["serverTime"])
+        middle_ts = (text_ts + custom_ts) // 2
+        base = {"needSave": False, "startTs": -1, "endTs": -1}
+
+        # 发送成功回调早于漫游存储完成，尤其是 custom 消息。先等服务端的 UP
+        # 查询能同时看见两条目标消息，再验证 DOWN 与过滤规则，避免把存储延迟
+        # 误判成 direction 行为。
+        archive_deadline = time.monotonic() + 60
+        archive_response = None
+        while time.monotonic() < archive_deadline:
+            archive_response = _fetch(
+                device_a, user_b,
+                options={**base, "direction": 0, "msgTypes": [0, 7]},
+                page_size=50,
+            )
+            archived_ids = {
+                item["msgId"] for item in _target_projection(archive_response, target_ids)
+            }
+            if archived_ids == target_ids:
+                break
+            time.sleep(2)
+        assert archive_response is not None and archived_ids == target_ids, (
+            f"目标消息未在超时前进入漫游存储: response={archive_response}"
+        )
+
+        down_options = {**base, "direction": 1}
+        down_cursor = ""
+        down_found = set()
+        seen_cursors = set()
+        for _ in range(50):
+            down_response = _fetch(
+                device_a, user_b, options=down_options, cursor=down_cursor, page_size=50,
+            )
+            down_found.update(
+                item["msgId"] for item in _target_projection(down_response, target_ids)
+            )
+            if down_found == target_ids:
+                break
+            next_cursor = str((down_response.get("result") or {}).get("cursor") or "")
+            if not next_cursor or next_cursor in seen_cursors:
+                break
+            seen_cursors.add(next_cursor)
+            down_cursor = next_cursor
+        assert down_found == target_ids, (
+            f"direction-down 未遍历到目标消息: found={down_found}, targets={target_ids}, "
+            f"cursor={down_cursor}"
+        )
+
+        cases = [
+            ("end-before-custom", {**base, "direction": 0, "startTs": 0, "endTs": middle_ts}, {text_id}),
+            ("start-after-text", {**base, "direction": 0, "startTs": middle_ts, "endTs": -1}, {custom_id}),
+            ("image-only", {**base, "direction": 0, "msgTypes": [1]}, set()),
+            ("text-and-image", {**base, "direction": 0, "msgTypes": [0, 1]}, {text_id}),
+            ("custom-only", {**base, "direction": 0, "msgTypes": [7]}, {custom_id}),
+            ("text-and-custom", {**base, "direction": 0, "msgTypes": [0, 7]}, {text_id, custom_id}),
+        ]
+        for name, options, expected_ids in cases:
+            response = _fetch(device_a, user_b, options=options)
+            projection = _target_projection(response, target_ids)
+            actual_ids = {item["msgId"] for item in projection}
+            assert actual_ids == expected_ids, f"{name}: response={response}, projection={projection}"
+            for item in projection:
+                if item["msgId"] == text_id:
+                    assert item == {"msgId": text_id, "type": 0, "content": text_content, "event": None}
+                elif item["msgId"] == custom_id:
+                    assert item == {"msgId": custom_id, "type": 7, "content": None, "event": custom_event}
+            assert_api.assert_response_matches(
+                {"manager": response.get("manager"), "cmd": response.get("cmd"), "device": response.get("device"),
+                 "result": {"targetIds": sorted(actual_ids)}},
+                expected={"manager": "ChatManager", "cmd": Cmd.fetchHistoryMessagesByOptions.value,
+                          "device": "deviceA", "result": {"targetIds": sorted(expected_ids)}},
+                ignore_keys={"sequence"},
+            )

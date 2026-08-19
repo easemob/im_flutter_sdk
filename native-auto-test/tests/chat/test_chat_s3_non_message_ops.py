@@ -256,7 +256,7 @@ def test_chat_ack_conversation_read_success_with_event(topology, assert_api):
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.ackConversationRead.value,
-            "device": "deviceB",
+            "device": action_recipient.device_name,
             # wrapper asyncClearConversationUnreadMessageCount 构造 true（对齐官方 4.x 语义）
             "result": True,
         },
@@ -269,309 +269,320 @@ def test_chat_ack_conversation_read_success_with_event(topology, assert_api):
 
 
 def test_chat_ack_conversation_read_invalid_conv_id(device_b, assert_api):
-    resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": "__invalid_conversation_id__"})
-    _assert_error_with_envelope(
-        assert_api,
-        resp,
-        Cmd.ackConversationRead.value,
-        "deviceB",
-        code=110,
-        desc_contains="conversation not found",
-    )
+    with _allure_step("验证：chat ack conversation read invalid conv id"):
+        resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": "__invalid_conversation_id__"})
+        _assert_error_with_envelope(
+            assert_api,
+            resp,
+            Cmd.ackConversationRead.value,
+            "deviceB",
+            code=110,
+            desc_contains="conversation not found",
+        )
 
 
 def test_chat_ack_conversation_read_empty_conv_id(device_b, assert_api):
-    resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": ""})
-    _assert_error_with_envelope(
-        assert_api,
-        resp,
-        Cmd.ackConversationRead.value,
-        "deviceB",
-        code=110,
-        desc_contains="conversation not found",
-    )
+    with _allure_step("验证：chat ack conversation read empty conv id"):
+        resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": ""})
+        _assert_error_with_envelope(
+            assert_api,
+            resp,
+            Cmd.ackConversationRead.value,
+            "deviceB",
+            code=110,
+            desc_contains="conversation not found",
+        )
 
 
 def test_chat_pin_conversation_success_toggle(device_a, device_b, assert_api, user_a, user_b):
-    resp_prepare = device_a.call("ChatManager", Cmd.getConversation.value, info={"convId": user_b, "type": 0, "createIfNeed": True})
-    prepare_conv = resp_prepare.get("result") or {}
-    assert_api.assert_response_matches(
-        {
-            "manager": "ChatManager",
-            "cmd": Cmd.getConversation.value,
-            "device": "deviceA",
-            "result": {
-                "convId": prepare_conv.get("convId"),
-                "type": prepare_conv.get("type"),
+    with _allure_step("验证：chat pin conversation success toggle"):
+        resp_prepare = device_a.call("ChatManager", Cmd.getConversation.value, info={"convId": user_b, "type": 0, "createIfNeed": True})
+        prepare_conv = resp_prepare.get("result") or {}
+        assert_api.assert_response_matches(
+            {
+                "manager": "ChatManager",
+                "cmd": Cmd.getConversation.value,
+                "device": "deviceA",
+                "result": {
+                    "convId": prepare_conv.get("convId"),
+                    "type": prepare_conv.get("type"),
+                },
             },
-        },
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.getConversation.value,
-            "device": "deviceA",
-            "result": {
-                "convId": "{{convId}}",
-                "type": 0,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.getConversation.value,
+                "device": "deviceA",
+                "result": {
+                    "convId": "{{convId}}",
+                    "type": 0,
+                },
             },
-        },
-        context={"convId": user_b},
-        ignore_keys={"sequence"},
-    )
+            context={"convId": user_b},
+            ignore_keys={"sequence"},
+        )
 
-    cleanup_resp = _pin_conversation_after_pending_ops(device_a, conv_id=user_b, is_pinned=False)
-    assert_api.assert_response_matches(
-        cleanup_resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.pinConversation.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
-
-    resp_pin = _pin_conversation_after_pending_ops(device_a, conv_id=user_b, is_pinned=True)
-    assert_api.assert_response_matches(
-        resp_pin,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.pinConversation.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
-
-    resp_conv = device_a.call("ChatManager", Cmd.getConversation.value, info={"convId": user_b, "type": 0, "createIfNeed": True})
-    conv = resp_conv.get("result") or {}
-    assert_api.assert_response_matches(
-        {
-            "manager": "ChatManager",
-            "cmd": Cmd.getConversation.value,
-            "device": "deviceA",
-            "result": {
-                "convId": conv.get("convId"),
-                "type": conv.get("type"),
-                "isPinned": conv.get("isPinned"),
+        cleanup_resp = _pin_conversation_after_pending_ops(device_a, conv_id=user_b, is_pinned=False)
+        assert_api.assert_response_matches(
+            cleanup_resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.pinConversation.value,
+                "device": "deviceA",
+                "result": None,
             },
-        },
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.getConversation.value,
-            "device": "deviceA",
-            "result": {
-                "convId": "{{convId}}",
-                "type": 0,
-                "isPinned": True,
-            },
-        },
-        context={"convId": user_b},
-        ignore_keys={"sequence"},
-    )
+            ignore_keys={"sequence"},
+        )
 
-    resp_unpin = _pin_conversation_after_pending_ops(device_a, conv_id=user_b, is_pinned=False)
-    assert_api.assert_response_matches(
-        resp_unpin,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.pinConversation.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
+        resp_pin = _pin_conversation_after_pending_ops(device_a, conv_id=user_b, is_pinned=True)
+        assert_api.assert_response_matches(
+            resp_pin,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.pinConversation.value,
+                "device": "deviceA",
+                "result": None,
+            },
+            ignore_keys={"sequence"},
+        )
 
-    resp_conv2 = device_a.call("ChatManager", Cmd.getConversation.value, info={"convId": user_b, "type": 0, "createIfNeed": True})
-    conv2 = resp_conv2.get("result") or {}
-    assert_api.assert_response_matches(
-        {
-            "manager": "ChatManager",
-            "cmd": Cmd.getConversation.value,
-            "device": "deviceA",
-            "result": {
-                "convId": conv2.get("convId"),
-                "type": conv2.get("type"),
-                "isPinned": conv2.get("isPinned"),
+        resp_conv = device_a.call("ChatManager", Cmd.getConversation.value, info={"convId": user_b, "type": 0, "createIfNeed": True})
+        conv = resp_conv.get("result") or {}
+        assert_api.assert_response_matches(
+            {
+                "manager": "ChatManager",
+                "cmd": Cmd.getConversation.value,
+                "device": "deviceA",
+                "result": {
+                    "convId": conv.get("convId"),
+                    "type": conv.get("type"),
+                    "isPinned": conv.get("isPinned"),
+                },
             },
-        },
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.getConversation.value,
-            "device": "deviceA",
-            "result": {
-                "convId": "{{convId}}",
-                "type": 0,
-                "isPinned": False,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.getConversation.value,
+                "device": "deviceA",
+                "result": {
+                    "convId": "{{convId}}",
+                    "type": 0,
+                    "isPinned": True,
+                },
             },
-        },
-        context={"convId": user_b},
-        ignore_keys={"sequence"},
-    )
+            context={"convId": user_b},
+            ignore_keys={"sequence"},
+        )
+
+        resp_unpin = _pin_conversation_after_pending_ops(device_a, conv_id=user_b, is_pinned=False)
+        assert_api.assert_response_matches(
+            resp_unpin,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.pinConversation.value,
+                "device": "deviceA",
+                "result": None,
+            },
+            ignore_keys={"sequence"},
+        )
+
+        resp_conv2 = device_a.call("ChatManager", Cmd.getConversation.value, info={"convId": user_b, "type": 0, "createIfNeed": True})
+        conv2 = resp_conv2.get("result") or {}
+        assert_api.assert_response_matches(
+            {
+                "manager": "ChatManager",
+                "cmd": Cmd.getConversation.value,
+                "device": "deviceA",
+                "result": {
+                    "convId": conv2.get("convId"),
+                    "type": conv2.get("type"),
+                    "isPinned": conv2.get("isPinned"),
+                },
+            },
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.getConversation.value,
+                "device": "deviceA",
+                "result": {
+                    "convId": "{{convId}}",
+                    "type": 0,
+                    "isPinned": False,
+                },
+            },
+            context={"convId": user_b},
+            ignore_keys={"sequence"},
+        )
 
 
 def test_chat_pin_conversation_invalid_conv_id(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.pinConversation.value, info={"convId": "__invalid__", "isPinned": True})
-    _assert_error_with_envelope(
-        assert_api,
-        resp,
-        Cmd.pinConversation.value,
-        "deviceA",
-        code=107,
-        desc_contains="Invalid conversation",
-    )
+    with _allure_step("验证：chat pin conversation invalid conv id"):
+        resp = device_a.call("ChatManager", Cmd.pinConversation.value, info={"convId": "__invalid__", "isPinned": True})
+        _assert_error_with_envelope(
+            assert_api,
+            resp,
+            Cmd.pinConversation.value,
+            "deviceA",
+            code=107,
+            desc_contains="Invalid conversation",
+        )
 
 
 def test_chat_pin_conversation_empty_conv_id(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.pinConversation.value, info={"convId": "", "isPinned": True})
-    _assert_error_with_envelope(
-        assert_api,
-        resp,
-        Cmd.pinConversation.value,
-        "deviceA",
-        code=107,
-        desc_contains="Invalid conversation",
-    )
+    with _allure_step("验证：chat pin conversation empty conv id"):
+        resp = device_a.call("ChatManager", Cmd.pinConversation.value, info={"convId": "", "isPinned": True})
+        _assert_error_with_envelope(
+            assert_api,
+            resp,
+            Cmd.pinConversation.value,
+            "deviceA",
+            code=107,
+            desc_contains="Invalid conversation",
+        )
 
 
 def test_chat_fetch_history_messages_success(device_a, device_b, assert_api, user_a, user_b):
-    content = f"s3-history-{uuid.uuid4().hex[:6]}"
-    real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content)
-    time.sleep(2)
-    info = {"convId": user_b, "type": 0, "pageSize": 20, "startMsgId": "", "direction": 0}
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.fetchHistoryMessages.value,
-        info=info,
-    )
-    result = resp.get("result") or {}
-    hits = [
-        {"msgId": item.get("msgId"), "convId": item.get("convId")}
-        for item in (result.get("list") or [])
-        if isinstance(item, dict) and str(item.get("msgId")) == str(real_id)
-    ]
-    if not hits:
+    with _allure_step("验证：chat fetch history messages success"):
+        content = f"s3-history-{uuid.uuid4().hex[:6]}"
+        real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content)
         time.sleep(2)
-        resp = device_a.call("ChatManager", Cmd.fetchHistoryMessages.value, info=info)
+        info = {"convId": user_b, "type": 0, "pageSize": 20, "startMsgId": "", "direction": 0}
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.fetchHistoryMessages.value,
+            info=info,
+        )
         result = resp.get("result") or {}
         hits = [
             {"msgId": item.get("msgId"), "convId": item.get("convId")}
             for item in (result.get("list") or [])
             if isinstance(item, dict) and str(item.get("msgId")) == str(real_id)
         ]
-    assert_api.assert_response_matches(
-        {
-            "manager": "ChatManager",
-            "cmd": Cmd.fetchHistoryMessages.value,
-            "device": "deviceA",
-            "result": {
-                "list": hits,
+        if not hits:
+            time.sleep(2)
+            resp = device_a.call("ChatManager", Cmd.fetchHistoryMessages.value, info=info)
+            result = resp.get("result") or {}
+            hits = [
+                {"msgId": item.get("msgId"), "convId": item.get("convId")}
+                for item in (result.get("list") or [])
+                if isinstance(item, dict) and str(item.get("msgId")) == str(real_id)
+            ]
+        assert_api.assert_response_matches(
+            {
+                "manager": "ChatManager",
+                "cmd": Cmd.fetchHistoryMessages.value,
+                "device": "deviceA",
+                "result": {
+                    "list": hits,
+                },
             },
-        },
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.fetchHistoryMessages.value,
-            "device": "deviceA",
-            "result": {"list": [{"msgId": "{{msgId}}", "convId": "{{convId}}"}]},
-        },
-        context={"msgId": str(real_id), "convId": user_b},
-        ignore_keys={"sequence"},
-    )
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.fetchHistoryMessages.value,
+                "device": "deviceA",
+                "result": {"list": [{"msgId": "{{msgId}}", "convId": "{{convId}}"}]},
+            },
+            context={"msgId": str(real_id), "convId": user_b},
+            ignore_keys={"sequence"},
+        )
 
 
 def test_chat_fetch_history_messages_invalid_conv_id(device_a, assert_api):
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.fetchHistoryMessages.value,
-        info={"convId": "__invalid__", "type": 0, "pageSize": 20, "startMsgId": "", "direction": 0},
-    )
-    _assert_invalid_conv_returns_cursor(assert_api, resp, Cmd.fetchHistoryMessages.value, "deviceA")
+    with _allure_step("验证：chat fetch history messages invalid conv id"):
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.fetchHistoryMessages.value,
+            info={"convId": "__invalid__", "type": 0, "pageSize": 20, "startMsgId": "", "direction": 0},
+        )
+        _assert_invalid_conv_returns_cursor(assert_api, resp, Cmd.fetchHistoryMessages.value, "deviceA")
 
 
 def test_chat_fetch_history_messages_empty_conv_id(device_a, assert_api):
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.fetchHistoryMessages.value,
-        info={"convId": "", "type": 0, "pageSize": 20, "startMsgId": "", "direction": 0},
-    )
-    # 5.0 实测：空 convId → 110 "Invalid parameter"（官方 4.x 空 convId 行为不同）→ 断言 110
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.fetchHistoryMessages.value,
-            "device": "deviceA",
-            "result": {"code": 110, "description": "Invalid parameter"},
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证：chat fetch history messages empty conv id"):
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.fetchHistoryMessages.value,
+            info={"convId": "", "type": 0, "pageSize": 20, "startMsgId": "", "direction": 0},
+        )
+        # 5.0 实测：空 convId → 110 "Invalid parameter"（官方 4.x 空 convId 行为不同）→ 断言 110
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.fetchHistoryMessages.value,
+                "device": "deviceA",
+                "result": {"code": 110, "description": "Invalid parameter"},
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_chat_fetch_history_messages_by_options_success(device_a, device_b, assert_api, user_a, user_b):
-    content = f"s3-history-opt-{uuid.uuid4().hex[:6]}"
-    real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content)
-    time.sleep(2)
-    info = {"convId": user_b, "type": 0, "pageSize": 20, "cursor": ""}
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.fetchHistoryMessagesByOptions.value,
-        info=info,
-    )
-    result = resp.get("result") or {}
-    hits = [
-        {"msgId": item.get("msgId"), "convId": item.get("convId")}
-        for item in (result.get("list") or [])
-        if isinstance(item, dict) and str(item.get("msgId")) == str(real_id)
-    ]
-    if not hits:
+    with _allure_step("验证：chat fetch history messages by options success"):
+        content = f"s3-history-opt-{uuid.uuid4().hex[:6]}"
+        real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content)
         time.sleep(2)
-        resp = device_a.call("ChatManager", Cmd.fetchHistoryMessagesByOptions.value, info=info)
+        info = {"convId": user_b, "type": 0, "pageSize": 20, "cursor": ""}
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.fetchHistoryMessagesByOptions.value,
+            info=info,
+        )
         result = resp.get("result") or {}
         hits = [
             {"msgId": item.get("msgId"), "convId": item.get("convId")}
             for item in (result.get("list") or [])
             if isinstance(item, dict) and str(item.get("msgId")) == str(real_id)
         ]
-    assert_api.assert_response_matches(
-        {
-            "manager": "ChatManager",
-            "cmd": Cmd.fetchHistoryMessagesByOptions.value,
-            "device": "deviceA",
-            "result": {
-                "list": hits,
+        if not hits:
+            time.sleep(2)
+            resp = device_a.call("ChatManager", Cmd.fetchHistoryMessagesByOptions.value, info=info)
+            result = resp.get("result") or {}
+            hits = [
+                {"msgId": item.get("msgId"), "convId": item.get("convId")}
+                for item in (result.get("list") or [])
+                if isinstance(item, dict) and str(item.get("msgId")) == str(real_id)
+            ]
+        assert_api.assert_response_matches(
+            {
+                "manager": "ChatManager",
+                "cmd": Cmd.fetchHistoryMessagesByOptions.value,
+                "device": "deviceA",
+                "result": {
+                    "list": hits,
+                },
             },
-        },
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.fetchHistoryMessagesByOptions.value,
-            "device": "deviceA",
-            "result": {"list": [{"msgId": "{{msgId}}", "convId": "{{convId}}"}]},
-        },
-        context={"msgId": str(real_id), "convId": user_b},
-        ignore_keys={"sequence"},
-    )
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.fetchHistoryMessagesByOptions.value,
+                "device": "deviceA",
+                "result": {"list": [{"msgId": "{{msgId}}", "convId": "{{convId}}"}]},
+            },
+            context={"msgId": str(real_id), "convId": user_b},
+            ignore_keys={"sequence"},
+        )
 
 
 def test_chat_fetch_history_messages_by_options_invalid_conv_id(device_a, assert_api):
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.fetchHistoryMessagesByOptions.value,
-        info={"convId": "__invalid__", "type": 0, "pageSize": 20, "cursor": ""},
-    )
-    _assert_invalid_conv_returns_cursor(assert_api, resp, Cmd.fetchHistoryMessagesByOptions.value, "deviceA")
+    with _allure_step("验证：chat fetch history messages by options invalid conv id"):
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.fetchHistoryMessagesByOptions.value,
+            info={"convId": "__invalid__", "type": 0, "pageSize": 20, "cursor": ""},
+        )
+        _assert_invalid_conv_returns_cursor(assert_api, resp, Cmd.fetchHistoryMessagesByOptions.value, "deviceA")
 
 
 def test_chat_fetch_history_messages_by_options_empty_conv_id(device_a, assert_api):
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.fetchHistoryMessagesByOptions.value,
-        info={"convId": "", "type": 0, "pageSize": 20, "cursor": ""},
-    )
-    # 5.0 实测：空 convId → 原生 110 "Invalid parameter"（本地校验；非空无效 convId 才返回空 cursor）
-    _assert_error_with_envelope(
-        assert_api,
-        resp,
-        Cmd.fetchHistoryMessagesByOptions.value,
-        "deviceA",
-        code=110,
-        desc_contains="Invalid parameter",
-    )
+    with _allure_step("验证：chat fetch history messages by options empty conv id"):
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.fetchHistoryMessagesByOptions.value,
+            info={"convId": "", "type": 0, "pageSize": 20, "cursor": ""},
+        )
+        # 5.0 实测：空 convId → 原生 110 "Invalid parameter"（本地校验；非空无效 convId 才返回空 cursor）
+        _assert_error_with_envelope(
+            assert_api,
+            resp,
+            Cmd.fetchHistoryMessagesByOptions.value,
+            "deviceA",
+            code=110,
+            desc_contains="Invalid parameter",
+        )

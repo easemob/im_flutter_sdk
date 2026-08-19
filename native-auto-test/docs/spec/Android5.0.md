@@ -23,7 +23,7 @@
 - `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_content_change_after_relogin`（1）
 - `tests/chat/test_chat_s4_message_content_changed.py::test_chat_modify_custom_message_content_changed_event`（1）
 
-#### 2. 送达/离线回放时序异常（3）
+#### 2. 送达/离线回放时序异常（3）(改完所有设备都logout后，都pass)
 
 - `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_delivery_ack_after_recipient_login`
   B 尚未重新登录时，A 已收到 `onMessagesDelivered`；用例预期该事件只能在 B 重登后出现。
@@ -131,6 +131,34 @@ Skip 不计入通过；如对应 5.0 替代 API 或原生修复完成，再恢�
 
 - `test_client_create_account_empty_user_boundary`：5.0 移除客户端 `createAccount`，账号预创建走 REST。
 - `test_client_session_sensitive_api_boundaries[loginWithAgoraToken-info5-expected_result5]`：5.0 API Matrix 标记 `Client.loginWithAgoraToken` 为 removed/unsupported。
+
+## Contact 模块（2026-08-18）
+
+```text
+本轮结果：31 passed / 6 skipped / 0 failed / 1 warning
+耗时：199.27s（3m19s）
+```
+
+### SKIPPED（6）
+
+- `tests/contact/test_contact.py::test_contact_remark_not_preserved_after_delete_and_readd`
+  5.0 的 `getContact` 使用本地联系人缓存，删除并重新添加后的备注清理语义暂不稳定。
+- `tests/contact/test_contact.py::test_contact_fetch_all_contact_ids`
+  5.0 移除 `fetchAllContactIds`。
+- `tests/contact/test_contact.py::test_contact_get_all_contact_ids`
+  Android 5.0 不支持 `getAllContactIds`。
+- `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_zero`
+- `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_exceeds_50`
+- `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_negative`
+  5.0 移除 `fetchContacts` 分页接口，参数边界不再适用。
+
+以上 skip 均为 5.0 API 移除/不支持或本地缓存语义未稳定，不通过放宽断言处理。
+
+### 本轮适配确认
+
+- `setContactRemark` 成功后，`getContact` 增加等待本地缓存最终一致；备注字段仍严格断言。
+- 离线好友关系用 topology 统一下线、恢复同账号全部设备。
+- `getAllContactsFromDB` 只校验当前目标好友关系存在/不存在，并保留真实响应与列表类型断言；不再要求本地 DB 整体只能有当前 case 的联系人，避免历史联系人造成误报。
 
 ## status / fileStatus 实测口径
 

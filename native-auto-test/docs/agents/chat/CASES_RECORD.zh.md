@@ -5,6 +5,7 @@
 - ChatThread API 属于群组场景，相关 5 个 cases 已迁移到 `tests/group/`；本台账仅保留单聊 ChatManager 与单聊消息公共 API，不重复记录 Thread 用例。
 - 每条 case 以全局序号编号；统计按“当前记录条目数”计算。
 - 暂缓与 skip 项统一写 `CASES_DEFERRED.zh.md`。
+- Allure：Chat 活动用例已补充按业务目标命名的步骤；消息/回调/离线用例保留原有断言与拓扑流程，跳过项继续展示明确原因。
 
 ## getConversation
 
@@ -519,6 +520,13 @@
 - 真实日志：重新构建安装后，两台 App 初始化日志均显示 `requireDeliveryAck: true`；发送端收到 `onMessagesDelivered`，事件消息使用真实服务端 msgId 且 `hasDeliverAck=true`，后续 `onMessagesRead` 同样保留 `hasDeliverAck=true`。
 - 断言同步：本地会话、按 ID 加载及关键字检索的公共消息准备断言由旧环境的 `false` 收紧为 `true`，没有忽略该字段。`loadMessagesWithIds` 在查询前显式等待每条消息对应的送达事件，消除连续发消息时本地状态尚未刷新的竞争。
 - 验证：原始 `test_chat_ack_message_read_success_with_event` 单例严格通过；最终受影响范围同 session 聚合回归 `19 passed, 0 failed, 0 skipped`。CMD 送达 case 仍维持原有 skip，恢复条件不变。
+
+### 5.0 离线消息的多端前置
+
+- `test_chat_offline_message_delivery.py`、`test_chat_offline_message_operations.py`、`test_chat_offline_message_extended_delivery.py`、`test_chat_offline_message_extended_operations.py` 均通过 `account_a_to_account_b` topology 取得账号全部端点，不再写死 `deviceB/deviceBSec`。
+- 账号进入离线阶段时，统一调用 `logout_account_devices(topology.sender_devices/recipient_devices)`，同账号所有端点必须同时下线；否则副端仍可能先收到消息、回执或操作事件，污染“尚未重新登录”的前置条件。
+- 用例业务步骤只恢复 topology 指定的动作端，用于验证“动作端重新登录后的离线事件”；`finally` 统一调用 `restore_account_devices` 恢复发送/接收账号全部端点，并清理好友与消息状态，避免影响下一个 case。
+- 媒体 `status/fileStatus/thumbnailStatus` 仍按消息阶段断言：发送阶段与离线重登接收阶段不混用；仅对已确认的 5.0 时序差异做局部忽略，不能用离线断言掩盖在线行为问题。
 
 ### 指定 14 条回归修复（2026-07-15，5556/5558）
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 import pytest
 
 from src import Cmd
+from tests.chatroom.chatroom_helpers import _allure_step
 
 
 pytestmark = [pytest.mark.client, pytest.mark.chatroom, pytest.mark.agorachat4_23_0]
@@ -298,9 +299,10 @@ _EMPTY_ROOM_ID_MANAGEMENT_CASES = [
     ids=[case[0] for case in _NONEXISTENT_MANAGEMENT_CASES],
 )
 def test_chatroom_management_api_nonexistent_room(device_a, assert_api, cmd, info, expected_code, expected_description):
-    resp = device_a.call("ChatRoomManager", cmd, info=info)
-    # 只看 errorcode（描述两端不同: "Chatroom id is invalid" vs "Chat room ID is invalid"）
-    assert_api.assert_error(resp, code=expected_code, description=None)
+    with _allure_step(f"调用 {cmd} 访问不存在聊天室并验证错误码"):
+        resp = device_a.call("ChatRoomManager", cmd, info=info)
+        # 只看 errorcode（描述两端不同: "Chatroom id is invalid" vs "Chat room ID is invalid"）
+        assert_api.assert_error(resp, code=expected_code, description=None)
 
 
 @pytest.mark.parametrize(
@@ -309,21 +311,17 @@ def test_chatroom_management_api_nonexistent_room(device_a, assert_api, cmd, inf
     ids=[case[0] for case in _EMPTY_ROOM_ID_MANAGEMENT_CASES],
 )
 def test_chatroom_management_api_empty_room_id(device_a, assert_api, cmd, info, expected_code, expected_description):
-    resp = device_a.call("ChatRoomManager", cmd, info=info)
-    if expected_description == "":
-        assert_api.assert_response_matches(
-            resp,
-            expected={
-                "manager": "ChatRoomManager",
-                "cmd": cmd,
-                "device": "deviceA",
-                "result": {
-                    "code": expected_code,
-                    "description": "",
+    with _allure_step(f"调用 {cmd} 使用空聊天室 ID 并验证边界响应"):
+        resp = device_a.call("ChatRoomManager", cmd, info=info)
+        if expected_description == "":
+            assert_api.assert_response_matches(
+                resp,
+                expected={
+                    "manager": "ChatRoomManager", "cmd": cmd, "device": "deviceA",
+                    "result": {"code": expected_code, "description": ""},
                 },
-            },
-            ignore_keys={"sequence"},
-        )
-        return
-    # 只看 errorcode（描述两端不同: "Chatroom id is invalid" vs "Chat room ID is invalid"）
-    assert_api.assert_error(resp, code=expected_code, description=None)
+                ignore_keys={"sequence"},
+            )
+            return
+        # 只看 errorcode（描述两端不同: "Chatroom id is invalid" vs "Chat room ID is invalid"）
+        assert_api.assert_error(resp, code=expected_code, description=None)

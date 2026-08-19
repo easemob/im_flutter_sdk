@@ -4,6 +4,7 @@ from __future__ import annotations
 import time
 
 import pytest
+from contextlib import nullcontext
 
 from src import Cmd, GroupChangeEvent
 from tests.group.group_helpers import (
@@ -14,6 +15,14 @@ from tests.group.group_helpers import (
     new_group_name,
 )
 
+
+def _allure_step(name: str):
+    try:
+        import allure
+
+        return allure.step(name)
+    except ImportError:
+        return nullcontext()
 
 pytestmark = [pytest.mark.client, pytest.mark.group]
 
@@ -45,6 +54,7 @@ def _assert_no_group_event(
 
 
 @pytest.mark.topology("account_a_to_account_b")
+
 def test_group_add_admin_and_remove_admin_success(topology, assert_api):
     """
     多端拓扑：A 添加/移除 B 为管理员；admin 事件同步到 B 全部在线端，A 全部端不收 admin 事件（原生语义）。
@@ -223,7 +233,8 @@ def test_group_add_admin_and_remove_admin_success(topology, assert_api):
                 )
     finally:
         if group_id:
-            destroy_group(sender, assert_api, group_id)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(sender, assert_api, group_id)
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -328,4 +339,5 @@ def test_group_update_owner_success(topology, assert_api):
                 assert result.get("owner") == member_user, f"owner 变更后群 owner 不匹配: {resp_get_after_owner_change}"
     finally:
         if group_id:
-            destroy_group(sender, assert_api, group_id, device_b=topology.recipient_action_device)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(sender, assert_api, group_id, device_b=topology.recipient_action_device)

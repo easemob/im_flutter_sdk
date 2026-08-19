@@ -9,6 +9,7 @@ from __future__ import annotations
 import pytest
 
 from src import Cmd
+from tests.allure_helpers import _allure_step
 
 
 pytestmark = [pytest.mark.client]
@@ -56,188 +57,198 @@ _USER_INFO_UPDATE_WITH_TYPE_IGNORE_KEYS = frozenset({
 
 def test_user_info_update_own_set_and_modify(device_a, assert_api, user_a):
     """updateOwnUserInfo：先设置再修改当前用户属性。"""
-    resp_set = device_a.call(
-        "UserInfoManager",
-        Cmd.updateOwnUserInfo.value,
-        info={"nickName": "nick-init", "sign": "sign-init", "gender": 1,"mail":"aa"},
-    )
-    assert_api.assert_response_matches(
-        resp_set,
-        expected={
-            "manager": "UserInfoManager",
-            "cmd": Cmd.updateOwnUserInfo.value,
-            "device": "deviceA",
-            "result": {
-                "nickName": "nick-init",
-                "sign": "sign-init",
-                "gender": 1,
-                "mail":"aa",
-                "userId": user_a,
+    with _allure_step("设置当前用户昵称、签名和性别并验证结果"):
+        resp_set = device_a.call(
+            "UserInfoManager",
+            Cmd.updateOwnUserInfo.value,
+            info={"nickName": "nick-init", "sign": "sign-init", "gender": 1,"mail":"aa"},
+        )
+        assert_api.assert_response_matches(
+            resp_set,
+            expected={
+                "manager": "UserInfoManager",
+                "cmd": Cmd.updateOwnUserInfo.value,
+                "device": "deviceA",
+                "result": {
+                    "nickName": "nick-init",
+                    "sign": "sign-init",
+                    "gender": 1,
+                    "mail":"aa",
+                    "userId": user_a,
+                },
             },
-        },
-        ignore_keys={"sequence", "ext", "avatarUrl", "phone", "birth", "gender"},
-    )
+            ignore_keys={"sequence", "ext", "avatarUrl", "phone", "birth", "gender"},
+        )
 
-    resp_modify = device_a.call(
-        "UserInfoManager",
-        Cmd.updateOwnUserInfo.value,
-        info={"nickName": "nick-mod", "sign": "sign-mod"},
-    )
-    assert_api.assert_response_matches(
-        resp_modify,
-        expected={
-            "manager": "UserInfoManager",
-            "cmd": Cmd.updateOwnUserInfo.value,
-            "device": "deviceA",
-            "result": {
-                "nickName": "nick-mod",
-                "sign": "sign-mod",
-                "mail": "",
-                "userId": user_a,
-                "gender": 0,
+    with _allure_step("修改当前用户昵称和签名并验证更新结果"):
+        resp_modify = device_a.call(
+            "UserInfoManager",
+            Cmd.updateOwnUserInfo.value,
+            info={"nickName": "nick-mod", "sign": "sign-mod"},
+        )
+        assert_api.assert_response_matches(
+            resp_modify,
+            expected={
+                "manager": "UserInfoManager",
+                "cmd": Cmd.updateOwnUserInfo.value,
+                "device": "deviceA",
+                "result": {
+                    "nickName": "nick-mod",
+                    "sign": "sign-mod",
+                    "mail": "",
+                    "userId": user_a,
+                    "gender": 0,
+                },
             },
-        },
-        # 仅更新 nick/sign 时服务端返回的 gender 可能与首次设置不一致，不作为本步断言
-        ignore_keys={"sequence", "ext", "avatarUrl", "phone", "birth"},
-    )
+            # 仅更新 nick/sign 时服务端返回的 gender 可能与首次设置不一致，不作为本步断言
+            ignore_keys={"sequence", "ext", "avatarUrl", "phone", "birth"},
+        )
 
 
 def test_user_info_update_own_with_type_nickname(device_a, assert_api, user_a):
     """updateOwnUserInfoWithType：按类型更新昵称（0 = NICKNAME）。"""
-    resp = device_a.call(
-        "UserInfoManager",
-        Cmd.updateOwnUserInfoWithType.value,
-        info={"userInfoType": 0, "userInfoValue": "nick-by-type"},
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "UserInfoManager",
-            "cmd": Cmd.updateOwnUserInfoWithType.value,
-            "device": "deviceA",
-            "result": '{"gender":"0","nickname":"nick-by-type","sign":"sign-mod"}',
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("按昵称类型更新当前用户昵称并验证结果"):
+        resp = device_a.call(
+            "UserInfoManager",
+            Cmd.updateOwnUserInfoWithType.value,
+            info={"userInfoType": 0, "userInfoValue": "nick-by-type"},
+        )
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "UserInfoManager",
+                "cmd": Cmd.updateOwnUserInfoWithType.value,
+                "device": "deviceA",
+                "result": '{"gender":"0","nickname":"nick-by-type","sign":"sign-mod"}',
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_user_info_update_then_fetch_user_info_by_id(device_a, assert_api, user_a):
     """先 updateOwnUserInfo，再用 fetchUserInfoById 拉当前用户（全量字段，与 fetchOwnInfo 语义等价）。"""
-    device_a.call(
-        "UserInfoManager",
-        Cmd.updateOwnUserInfo.value,
-        info={
-            "nickName": "nick-then-bid",
-            "sign": "sign-then-bid",
-            "mail": "mail-then-bid@example.com",
-        },
-    )
-    resp = device_a.call(
-        "UserInfoManager",
-        Cmd.fetchUserInfoById.value,
-        info={"userIds": [user_a]},
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "UserInfoManager",
-            "cmd": Cmd.fetchUserInfoById.value,
-            "device": "deviceA",
-            "result": {
-                user_a: {
-                    "userId": user_a,
-                    "nickName": "nick-then-bid",
-                    "sign": "sign-then-bid",
-                    "mail": "mail-then-bid@example.com",
+    with _allure_step("设置用于查询验证的用户资料"):
+        device_a.call(
+            "UserInfoManager",
+            Cmd.updateOwnUserInfo.value,
+            info={
+                "nickName": "nick-then-bid",
+                "sign": "sign-then-bid",
+                "mail": "mail-then-bid@example.com",
+            },
+        )
+    with _allure_step("按用户 ID 查询资料并验证全部字段"):
+        resp = device_a.call(
+            "UserInfoManager",
+            Cmd.fetchUserInfoById.value,
+            info={"userIds": [user_a]},
+        )
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "UserInfoManager",
+                "cmd": Cmd.fetchUserInfoById.value,
+                "device": "deviceA",
+                "result": {
+                    user_a: {
+                        "userId": user_a,
+                        "nickName": "nick-then-bid",
+                        "sign": "sign-then-bid",
+                        "mail": "mail-then-bid@example.com",
+                    },
                 },
             },
-        },
-        ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS,
-    )
+            ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS,
+        )
 
 
 def test_user_info_update_then_fetch_own_info(device_a, assert_api, user_a):
     """fetchOwnInfo：更新当前用户属性后拉取自己的用户属性。"""
-    device_a.call(
-        "UserInfoManager",
-        Cmd.updateOwnUserInfo.value,
-        info={
-            "nickName": "nick-own-info",
-            "sign": "sign-own-info",
-            "mail": "mail-own-info@example.com",
-        },
-    )
-    resp = device_a.call(
-        "UserInfoManager",
-        Cmd.fetchOwnInfo.value,
-        info={},
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "UserInfoManager",
-            "cmd": Cmd.fetchOwnInfo.value,
-            "device": "deviceA",
-            "result": {
-                "userId": user_a,
+    with _allure_step("设置用于查询的当前用户资料"):
+        device_a.call(
+            "UserInfoManager",
+            Cmd.updateOwnUserInfo.value,
+            info={
                 "nickName": "nick-own-info",
                 "sign": "sign-own-info",
                 "mail": "mail-own-info@example.com",
             },
-        },
-        ignore_keys={"sequence", "gender", "avatarUrl", "phone", "birth", "ext"},
-    )
+        )
+    with _allure_step("查询当前用户资料并验证属性"):
+        resp = device_a.call(
+            "UserInfoManager",
+            Cmd.fetchOwnInfo.value,
+            info={},
+        )
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "UserInfoManager",
+                "cmd": Cmd.fetchOwnInfo.value,
+                "device": "deviceA",
+                "result": {
+                    "userId": user_a,
+                    "nickName": "nick-own-info",
+                    "sign": "sign-own-info",
+                    "mail": "mail-own-info@example.com",
+                },
+            },
+            ignore_keys={"sequence", "gender", "avatarUrl", "phone", "birth", "ext"},
+        )
 
 
 def test_user_info_update_then_fetch_user_info_by_id_with_type(device_a, assert_api, user_a):
     """先 updateOwnUserInfo，再用 fetchUserInfoByIdWithType 按类型拉取（仅 nick + sign；按类型返回时未必含 mail）。"""
-    device_a.call(
-        "UserInfoManager",
-        Cmd.updateOwnUserInfo.value,
-        info={
-            "nickName": "nick-then-wit",
-            "sign": "sign-then-wit",
-            "mail": "mail-then-wit@example.com",
-        },
-    )
-    resp = device_a.call(
-        "UserInfoManager",
-        Cmd.fetchUserInfoByIdWithType.value,
-        info={
-            "userIds": [user_a],
-            "userInfoTypes": [0, 5],
-        },
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "UserInfoManager",
-            "cmd": Cmd.fetchUserInfoByIdWithType.value,
-            "device": "deviceA",
-            "result": {
-                user_a: {
-                    "userId": user_a,
-                    "nickName": "nick-then-wit",
-                    "sign": "sign-then-wit",
+    with _allure_step("设置按类型查询所需的用户资料"):
+        device_a.call(
+            "UserInfoManager",
+            Cmd.updateOwnUserInfo.value,
+            info={
+                "nickName": "nick-then-wit",
+                "sign": "sign-then-wit",
+                "mail": "mail-then-wit@example.com",
+            },
+        )
+    with _allure_step("按资料类型查询用户并验证昵称和签名"):
+        resp = device_a.call(
+            "UserInfoManager",
+            Cmd.fetchUserInfoByIdWithType.value,
+            info={
+                "userIds": [user_a],
+                "userInfoTypes": [0, 5],
+            },
+        )
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "UserInfoManager",
+                "cmd": Cmd.fetchUserInfoByIdWithType.value,
+                "device": "deviceA",
+                "result": {
+                    user_a: {
+                        "userId": user_a,
+                        "nickName": "nick-then-wit",
+                        "sign": "sign-then-wit",
+                    },
                 },
             },
-        },
-        ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS
-        | frozenset({"mail"}),
-    )
+            ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS
+            | frozenset({"mail"}),
+        )
 
 
 def test_user_info_update_then_all_fetch_paths_in_one_flow(device_a, assert_api, user_a):
     """一次更新后：先 fetchUserInfoById（全量），再 fetchUserInfoByIdWithType（nick+sign），字段一致。"""
-    device_a.call(
-        "UserInfoManager",
-        Cmd.updateOwnUserInfo.value,
-        info={
-            "nickName": "nick-flow-all",
-            "sign": "sign-flow-all",
-            "mail": "mail-flow-all@example.com",
-        },
-    )
+    with _allure_step("设置统一的用户资料用于多接口查询"):
+        device_a.call(
+            "UserInfoManager",
+            Cmd.updateOwnUserInfo.value,
+            info={
+                "nickName": "nick-flow-all",
+                "sign": "sign-flow-all",
+                "mail": "mail-flow-all@example.com",
+            },
+        )
     expected_full = {
         "userId": user_a,
         "nickName": "nick-flow-all",
@@ -249,141 +260,149 @@ def test_user_info_update_then_all_fetch_paths_in_one_flow(device_a, assert_api,
         "nickName": "nick-flow-all",
         "sign": "sign-flow-all",
     }
-    r_bid = device_a.call(
-        "UserInfoManager",
-        Cmd.fetchUserInfoById.value,
-        info={"userIds": [user_a]},
-    )
-    assert_api.assert_response_matches(
-        r_bid,
-        expected={
-            "manager": "UserInfoManager",
-            "cmd": Cmd.fetchUserInfoById.value,
-            "device": "deviceA",
-            "result": {user_a: expected_full},
-        },
-        ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS,
-    )
-    r_wit = device_a.call(
-        "UserInfoManager",
-        Cmd.fetchUserInfoByIdWithType.value,
-        info={"userIds": [user_a], "userInfoTypes": [0, 5]},
-    )
-    assert_api.assert_response_matches(
-        r_wit,
-        expected={
-            "manager": "UserInfoManager",
-            "cmd": Cmd.fetchUserInfoByIdWithType.value,
-            "device": "deviceA",
-            "result": {user_a: expected_partial},
-        },
-        ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS
-        | frozenset({"mail"}),
-    )
+    with _allure_step("按用户 ID 查询全量资料并验证字段"):
+        r_bid = device_a.call(
+            "UserInfoManager",
+            Cmd.fetchUserInfoById.value,
+            info={"userIds": [user_a]},
+        )
+        assert_api.assert_response_matches(
+            r_bid,
+            expected={
+                "manager": "UserInfoManager",
+                "cmd": Cmd.fetchUserInfoById.value,
+                "device": "deviceA",
+                "result": {user_a: expected_full},
+            },
+            ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS,
+        )
+    with _allure_step("按资料类型查询并验证部分字段一致"):
+        r_wit = device_a.call(
+            "UserInfoManager",
+            Cmd.fetchUserInfoByIdWithType.value,
+            info={"userIds": [user_a], "userInfoTypes": [0, 5]},
+        )
+        assert_api.assert_response_matches(
+            r_wit,
+            expected={
+                "manager": "UserInfoManager",
+                "cmd": Cmd.fetchUserInfoByIdWithType.value,
+                "device": "deviceA",
+                "result": {user_a: expected_partial},
+            },
+            ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS
+            | frozenset({"mail"}),
+        )
 
 
 def test_user_info_update_own_nickname_length_over_64(device_a, assert_api):
     """updateOwnUserInfo：昵称超过 2k长度，预期失败。"""
-    resp = device_a.call(
-        "UserInfoManager",
-        Cmd.updateOwnUserInfo.value,
-        info={"nickName": "n" * 2050},
-    )
-    assert_api.assert_error(resp, code=901, description="User info exceeds the data length")
+    with _allure_step("提交超长昵称并验证长度错误"):
+        resp = device_a.call(
+            "UserInfoManager",
+            Cmd.updateOwnUserInfo.value,
+            info={"nickName": "n" * 2050},
+        )
+        assert_api.assert_error(resp, code=901, description="User info exceeds the data length")
 
 def test_user_info_update_own_nickname_empty(device_a, assert_api, user_a):
     """updateOwnUserInfo：昵称为空"""
-    resp = device_a.call(
-        "UserInfoManager",
-        Cmd.updateOwnUserInfo.value,
-        info={"nickName": ""},
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "UserInfoManager",
-            "cmd": Cmd.updateOwnUserInfo.value,
-            "device": "deviceA",
-            "result": {
-                "userId": user_a,
+    with _allure_step("提交空昵称并验证空值处理结果"):
+        resp = device_a.call(
+            "UserInfoManager",
+            Cmd.updateOwnUserInfo.value,
+            info={"nickName": ""},
+        )
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "UserInfoManager",
+                "cmd": Cmd.updateOwnUserInfo.value,
+                "device": "deviceA",
+                "result": {
+                    "userId": user_a,
+                },
             },
-        },
-        ignore_keys=_USER_INFO_UPDATE_WITH_TYPE_IGNORE_KEYS | frozenset({"nickName"}),
-    )
+            ignore_keys=_USER_INFO_UPDATE_WITH_TYPE_IGNORE_KEYS | frozenset({"nickName"}),
+        )
 
 
 def test_user_info_fetch_by_id_normal(device_a, assert_api, user_a, user_b):
     """fetchUserInfoById：获取指定用户（当前用户与另一用户）的属性。"""
-    resp = device_a.call(
-        "UserInfoManager",
-        Cmd.fetchUserInfoById.value,
-        info={"userIds": [user_a, user_b]},
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "UserInfoManager",
-            "cmd": Cmd.fetchUserInfoById.value,
-            "device": "deviceA",
-            "result": {
-                user_a: {"userId": user_a},
-                user_b: {"userId": user_b},
+    with _allure_step("查询两个用户的资料并验证用户标识"):
+        resp = device_a.call(
+            "UserInfoManager",
+            Cmd.fetchUserInfoById.value,
+            info={"userIds": [user_a, user_b]},
+        )
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "UserInfoManager",
+                "cmd": Cmd.fetchUserInfoById.value,
+                "device": "deviceA",
+                "result": {
+                    user_a: {"userId": user_a},
+                    user_b: {"userId": user_b},
+                },
             },
-        },
-        ignore_keys=_USER_INFO_FETCH_BY_ID_IGNORE_KEYS,
-    )
+            ignore_keys=_USER_INFO_FETCH_BY_ID_IGNORE_KEYS,
+        )
 
 
 def test_user_info_fetch_by_id_with_type_normal(device_a, assert_api, user_a, user_b):
     """fetchUserInfoByIdWithType：按属性类型拉取指定用户（nick + sign）。"""
-    resp = device_a.call(
-        "UserInfoManager",
-        Cmd.fetchUserInfoByIdWithType.value,
-        info={
-            "userIds": [user_a, user_b],
-            "userInfoTypes": [0, 5],
-        },
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "UserInfoManager",
-            "cmd": Cmd.fetchUserInfoByIdWithType.value,
-            "device": "deviceA",
-            "result": {
-                user_a: {"userId": user_a},
-                user_b: {"userId": user_b},
+    with _allure_step("按昵称和签名类型查询用户资料"):
+        resp = device_a.call(
+            "UserInfoManager",
+            Cmd.fetchUserInfoByIdWithType.value,
+            info={
+                "userIds": [user_a, user_b],
+                "userInfoTypes": [0, 5],
             },
-        },
-        ignore_keys=_USER_INFO_FETCH_BY_ID_IGNORE_KEYS,
-    )
+        )
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "UserInfoManager",
+                "cmd": Cmd.fetchUserInfoByIdWithType.value,
+                "device": "deviceA",
+                "result": {
+                    user_a: {"userId": user_a},
+                    user_b: {"userId": user_b},
+                },
+            },
+            ignore_keys=_USER_INFO_FETCH_BY_ID_IGNORE_KEYS,
+        )
 
 
 def test_user_info_fetch_by_id_empty_user_ids(device_a, assert_api):
     """fetchUserInfoById：userIds 为空列表。"""
-    resp = device_a.call(
-        "UserInfoManager",
-        Cmd.fetchUserInfoById.value,
-        info={"userIds": []},
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "UserInfoManager",
-            "cmd": Cmd.fetchUserInfoById.value,
-            "device": "deviceA",
-            "result": {"code": 205, "description": "userIds is empty"}
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("使用空用户列表查询资料并验证参数错误"):
+        resp = device_a.call(
+            "UserInfoManager",
+            Cmd.fetchUserInfoById.value,
+            info={"userIds": []},
+        )
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "UserInfoManager",
+                "cmd": Cmd.fetchUserInfoById.value,
+                "device": "deviceA",
+                "result": {"code": 205, "description": "userIds is empty"}
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_user_info_fetch_by_id_user_ids_over_100(device_a, assert_api):
     """fetchUserInfoById：userIds 超过 100 个，预期失败。"""
-    user_ids = [f"uid_{i}" for i in range(101)]
-    resp = device_a.call(
-        "UserInfoManager",
-        Cmd.fetchUserInfoById.value,
-        info={"userIds": user_ids},
-    )
-    assert_api.assert_error(resp, code=900, description=" The maximum number of user IDs is exceeded.")
+    with _allure_step("使用超过上限的用户列表查询资料并验证数量错误"):
+        user_ids = [f"uid_{i}" for i in range(101)]
+        resp = device_a.call(
+            "UserInfoManager",
+            Cmd.fetchUserInfoById.value,
+            info={"userIds": user_ids},
+        )
+        assert_api.assert_error(resp, code=900, description=" The maximum number of user IDs is exceeded.")

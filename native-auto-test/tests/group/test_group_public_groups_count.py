@@ -4,6 +4,7 @@ from __future__ import annotations
 import time
 
 import pytest
+from tests.group.allure_helpers import _allure_step
 
 from src import Cmd
 from tests.group.group_helpers import create_group, destroy_group, new_group_name
@@ -37,25 +38,30 @@ def _assert_public_groups_result(result: object, *, resp: dict) -> None:
         assert isinstance(name, str), f"getPublicGroupsFromServer list[{idx}].name 非法: {item!r}"
 
 
+
 def test_group_fetch_joined_group_count_success(device_a, assert_api):
     """
     前置：A 已登录，当前账号可能已加入零个或多个共享环境群组。
     步骤：A 调用 fetchJoinedGroupCount。
     预期与断言：响应信封匹配，result 为当前服务端返回的非负整数计数。
     """
-    resp = device_a.call("GroupManager", Cmd.fetchJoinedGroupCount.value, info={})
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.fetchJoinedGroupCount.value,
-            "device": "deviceA",
-        },
-        ignore_keys={"sequence", "result"},
-    )
+    with _allure_step("A 查询已加入群数量"):
+        resp = device_a.call("GroupManager", Cmd.fetchJoinedGroupCount.value, info={})
+    with _allure_step("验证查询已加入群数量返回的关键字段"):
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.fetchJoinedGroupCount.value,
+                "device": "deviceA",
+            },
+            ignore_keys={"sequence", "result"},
+        )
     result = resp.get("result")
-    assert isinstance(result, int), f"fetchJoinedGroupCount result 应为 int: {resp}"
-    assert result >= 0, f"fetchJoinedGroupCount result 应>=0: {resp}"
+    with _allure_step("验证查询已加入群数量返回的关键字段"):
+        assert isinstance(result, int), f"fetchJoinedGroupCount result 应为 int: {resp}"
+    with _allure_step("验证查询已加入群数量返回的关键字段"):
+        assert result >= 0, f"fetchJoinedGroupCount result 应>=0: {resp}"
 
 
 @pytest.mark.skip(reason="5.0 移除服务端拉公开群（getPublicGroupsFromServer 残留，无公开群列表）")
@@ -65,22 +71,25 @@ def test_group_get_public_groups_from_server_success(device_a, assert_api):
     步骤：A 使用真实 cursor API 参数 pageSize=20 拉取第一页，不传 pageNum。
     预期与断言：响应严格包含 cursor/list；cursor 为字符串，每个列表项严格只有 groupId/name。
     """
-    resp = device_a.call(
-        "GroupManager",
-        Cmd.getPublicGroupsFromServer.value,
-        info={"pageSize": 20},
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.getPublicGroupsFromServer.value,
-            "device": "deviceA",
-        },
-        ignore_keys={"sequence", "result"},
-    )
+    with _allure_step("A 查询公开群列表"):
+        resp = device_a.call(
+            "GroupManager",
+            Cmd.getPublicGroupsFromServer.value,
+            info={"pageSize": 20},
+        )
+    with _allure_step("验证查询公开群列表返回的关键字段"):
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.getPublicGroupsFromServer.value,
+                "device": "deviceA",
+            },
+            ignore_keys={"sequence", "result"},
+        )
     result = resp.get("result")
-    _assert_public_groups_result(result, resp=resp)
+    with _allure_step("验证群业务状态、事件与关键字段"):
+        _assert_public_groups_result(result, resp=resp)
 
 
 @pytest.mark.skip(reason="5.0 移除服务端拉公开群（getPublicGroupsFromServer 残留，无公开群列表）")
@@ -101,27 +110,29 @@ def test_group_public_groups_cursor_paginates_two_created_groups(
     group_names: list[str] = []
     try:
         first_name = new_group_name("public_cursor_first")
-        first_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=first_name,
-            invite_members=[],
-            style=3,
-        )
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            first_id, _ = create_group(
+                device_a,
+                assert_api,
+                owner=user_a,
+                group_name=first_name,
+                invite_members=[],
+                style=3,
+            )
         group_ids.append(first_id)
         group_names.append(first_name)
 
         time.sleep(1.1)
         second_name = new_group_name("public_cursor_second")
-        second_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=second_name,
-            invite_members=[],
-            style=3,
-        )
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            second_id, _ = create_group(
+                device_a,
+                assert_api,
+                owner=user_a,
+                group_name=second_name,
+                invite_members=[],
+                style=3,
+            )
         group_ids.append(second_id)
         group_names.append(second_name)
 
@@ -137,50 +148,61 @@ def test_group_public_groups_cursor_paginates_two_created_groups(
             info: dict[str, object] = {"pageSize": 1}
             if previous_cursor is not None:
                 info["cursor"] = previous_cursor
-            resp = device_a.call(
-                "GroupManager",
-                Cmd.getPublicGroupsFromServer.value,
-                info=info,
-            )
-            assert_api.assert_response_matches(
-                resp,
-                expected={
-                    "manager": "GroupManager",
-                    "cmd": Cmd.getPublicGroupsFromServer.value,
-                    "device": "deviceA",
-                },
-                ignore_keys={"sequence", "result"},
-            )
+            with _allure_step("A 查询公开群列表"):
+                resp = device_a.call(
+                    "GroupManager",
+                    Cmd.getPublicGroupsFromServer.value,
+                    info=info,
+                )
+            with _allure_step("验证查询公开群列表返回的关键字段"):
+                assert_api.assert_response_matches(
+                    resp,
+                    expected={
+                        "manager": "GroupManager",
+                        "cmd": Cmd.getPublicGroupsFromServer.value,
+                        "device": "deviceA",
+                    },
+                    ignore_keys={"sequence", "result"},
+                )
             result = resp.get("result")
-            _assert_public_groups_result(result, resp=resp)
-            assert isinstance(result, dict)
+            with _allure_step("验证群业务状态、事件与关键字段"):
+                _assert_public_groups_result(result, resp=resp)
+            with _allure_step("验证查询公开群列表返回的关键字段"):
+                assert isinstance(result, dict)
             page_groups = result["list"]
             cursor = result["cursor"]
-            assert len(page_groups) <= 1, f"pageSize=1 但返回超过一个群: {resp}"
+            with _allure_step("验证查询公开群列表返回的关键字段"):
+                assert len(page_groups) <= 1, f"pageSize=1 但返回超过一个群: {resp}"
 
             if page_groups:
                 item = page_groups[0]
                 group_id = item["groupId"]
-                assert group_id not in seen_group_ids, f"cursor 分页返回重复 groupId={group_id}: {resp}"
+                with _allure_step("验证查询公开群列表返回的关键字段"):
+                    assert group_id not in seen_group_ids, f"cursor 分页返回重复 groupId={group_id}: {resp}"
                 seen_group_ids.add(group_id)
                 if group_id in expected_targets:
-                    assert item == expected_targets[group_id], (
-                        f"公开群目标项不匹配: expected={expected_targets[group_id]}, actual={item}"
-                    )
+                    with _allure_step("验证查询公开群列表返回的关键字段"):
+                        assert item == expected_targets[group_id], (
+                            f"公开群目标项不匹配: expected={expected_targets[group_id]}, actual={item}"
+                        )
                     found_targets[group_id] = item
 
             if set(found_targets) == set(expected_targets):
                 break
-            assert cursor, (
-                "找到本次创建的两个公开群之前 cursor 已为空: "
-                f"found={sorted(found_targets)}, expected={sorted(expected_targets)}, resp={resp}"
-            )
-            assert cursor != previous_cursor, f"连续两页 cursor 未变化: cursor={cursor}, resp={resp}"
+            with _allure_step("验证查询公开群列表返回的关键字段"):
+                assert cursor, (
+                    "找到本次创建的两个公开群之前 cursor 已为空: "
+                    f"found={sorted(found_targets)}, expected={sorted(expected_targets)}, resp={resp}"
+                )
+            with _allure_step("验证查询公开群列表返回的关键字段"):
+                assert cursor != previous_cursor, f"连续两页 cursor 未变化: cursor={cursor}, resp={resp}"
             previous_cursor = cursor
 
-        assert found_targets == expected_targets, (
-            f"cursor 遍历未找到全部目标群: expected={expected_targets}, actual={found_targets}"
-        )
+        with _allure_step("验证查询公开群列表返回的关键字段"):
+            assert found_targets == expected_targets, (
+                f"cursor 遍历未找到全部目标群: expected={expected_targets}, actual={found_targets}"
+            )
     finally:
         for group_id in reversed(group_ids):
-            destroy_group(device_a, assert_api, group_id)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(device_a, assert_api, group_id)

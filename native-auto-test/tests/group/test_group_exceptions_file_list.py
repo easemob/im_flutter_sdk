@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pytest
+from tests.group.allure_helpers import _allure_step
 
 from src import Cmd
 
@@ -20,15 +21,18 @@ _NONEXISTENT_GROUP_ID = "nonexistent_group_999999"
         (1, 0),
     ],
 )
+
 def test_group_get_group_file_list_from_server_nonexistent_group(
     device_a,
     assert_api,
     page_num,
     page_size,
 ):
-    resp = device_a.call(
-        "GroupManager",
-        Cmd.getGroupFileListFromServer.value,
-        info={"groupId": _NONEXISTENT_GROUP_ID, "pageNum": page_num, "pageSize": page_size},
-    )
-    assert_api.assert_error(resp, code=600, description="do not find this group")
+    with _allure_step("A 查询群共享文件列表"):
+        resp = device_a.call(
+            "GroupManager",
+            Cmd.getGroupFileListFromServer.value,
+            info={"groupId": _NONEXISTENT_GROUP_ID, "pageNum": page_num, "pageSize": page_size},
+        )
+    with _allure_step("验证查询群共享文件列表返回的错误码与错误文案"):
+        assert_api.assert_error(resp, code=600, description="do not find this group")

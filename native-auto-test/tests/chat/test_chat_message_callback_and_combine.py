@@ -188,7 +188,7 @@ def _assert_download_api_with_progress(device, assert_api, *, cmd: str, message:
         expected={
             "manager": "ChatManager",
             "cmd": cmd,
-            "device": "deviceB",
+            "device": device_b.device_name,
             "result": {
                 "msgId": "{{msgId}}",
                 "body": {"type": ne(None), "fileStatus": ne(None)},
@@ -327,7 +327,7 @@ def _assert_combine_inner_download_api_with_progress(device, assert_api, *, cmd:
         expected={
             "manager": "ChatManager",
             "cmd": cmd,
-            "device": "deviceB",
+            "device": device_b.device_name,
             "result": {
                 "msgId": "{{msgId}}",
                 "body": {"type": ne(None), "fileStatus": ne(None)},
@@ -598,66 +598,67 @@ def _send_with_type(topology, assert_api, *, type_key: str, payload: dict) -> tu
 @pytest.mark.topology("account_a_to_account_b")
 def test_attachment_messages_send_receive_and_public_download_methods(topology, assert_api):
     """发送 file/image/video 附件：发送账号副端同步、接收账号全部在线端接收，主接收端执行公开下载 API。"""
-    device_b = topology.recipient_action_device
-    user_a = topology.sender_user
-    user_b = topology.recipient_user
-    _, file_sent, file_received = _send_with_type(
-        topology,
-        assert_api,
-        type_key="file",
-        payload={"targetId": topology.recipient_user},
-    )
-    _assert_received_attachment_message(assert_api, file_received, user_a=user_a, user_b=user_b, body_type=5)
-    _assert_download_api_with_progress(
-        device_b,
-        assert_api,
-        cmd=Cmd.downloadAttachment.value,
-        message=file_received,
-    )
+    with _allure_step("验证：发送 file/image/video 附件：发送账号副端同步、接收账号全部在线端接收，主接收端执行公开下载 API。"):
+        device_b = topology.recipient_action_device
+        user_a = topology.sender_user
+        user_b = topology.recipient_user
+        _, file_sent, file_received = _send_with_type(
+            topology,
+            assert_api,
+            type_key="file",
+            payload={"targetId": topology.recipient_user},
+        )
+        _assert_received_attachment_message(assert_api, file_received, user_a=user_a, user_b=user_b, body_type=5)
+        _assert_download_api_with_progress(
+            device_b,
+            assert_api,
+            cmd=Cmd.downloadAttachment.value,
+            message=file_received,
+        )
 
-    _, image_sent, image_received = _send_with_type(
-        topology,
-        assert_api,
-        type_key="image",
-        payload={"targetId": topology.recipient_user},
-    )
-    _assert_received_attachment_message(assert_api, image_received, user_a=user_a, user_b=user_b, body_type=1)
-    _assert_download_api_with_progress(
-        device_b,
-        assert_api,
-        cmd=Cmd.downloadThumbnail.value,
-        message=image_received,
-    )
-    _assert_download_api_with_progress(
-        device_b,
-        assert_api,
-        cmd=Cmd.downloadBigImage.value,
-        message=image_received,
-    )
+        _, image_sent, image_received = _send_with_type(
+            topology,
+            assert_api,
+            type_key="image",
+            payload={"targetId": topology.recipient_user},
+        )
+        _assert_received_attachment_message(assert_api, image_received, user_a=user_a, user_b=user_b, body_type=1)
+        _assert_download_api_with_progress(
+            device_b,
+            assert_api,
+            cmd=Cmd.downloadThumbnail.value,
+            message=image_received,
+        )
+        _assert_download_api_with_progress(
+            device_b,
+            assert_api,
+            cmd=Cmd.downloadBigImage.value,
+            message=image_received,
+        )
 
-    _, video_sent, video_received = _send_with_type(
-        topology,
-        assert_api,
-        type_key="video",
-        payload={"targetId": topology.recipient_user},
-    )
-    _assert_received_attachment_message(assert_api, video_received, user_a=user_a, user_b=user_b, body_type=2)
-    _assert_download_api_with_progress(
-        device_b,
-        assert_api,
-        cmd=Cmd.downloadThumbnail.value,
-        message=video_received,
-    )
-    _assert_download_api_with_progress(
-        device_b,
-        assert_api,
-        cmd=Cmd.downloadAttachment.value,
-        message=video_received,
-    )
+        _, video_sent, video_received = _send_with_type(
+            topology,
+            assert_api,
+            type_key="video",
+            payload={"targetId": topology.recipient_user},
+        )
+        _assert_received_attachment_message(assert_api, video_received, user_a=user_a, user_b=user_b, body_type=2)
+        _assert_download_api_with_progress(
+            device_b,
+            assert_api,
+            cmd=Cmd.downloadThumbnail.value,
+            message=video_received,
+        )
+        _assert_download_api_with_progress(
+            device_b,
+            assert_api,
+            cmd=Cmd.downloadAttachment.value,
+            message=video_received,
+        )
 
-    assert file_sent["msgId"]
-    assert image_sent["msgId"]
-    assert video_sent["msgId"]
+        assert file_sent["msgId"]
+        assert image_sent["msgId"]
+        assert video_sent["msgId"]
 
 
 def _send_text_message_with_webhook_env(
@@ -802,205 +803,208 @@ def _send_text_message_with_webhook_env(
 @pytest.mark.topology("account_a_to_account_b")
 def test_send_text_message_with_webhook_env(topology, assert_api, webhook_env, case_name):
     """发送带 webhookEnv 的文本消息：发送账号副端同步、接收账号全部在线端接收。"""
-    content = f"s423-webhook-{case_name}-{uuid.uuid4().hex[:6]}"
-    _send_text_message_with_webhook_env(
-        topology,
-        assert_api,
-        content=content,
-        webhook_env=webhook_env,
-    )
+    with _allure_step("验证：发送带 webhookEnv 的文本消息：发送账号副端同步、接收账号全部在线端接收。"):
+        content = f"s423-webhook-{case_name}-{uuid.uuid4().hex[:6]}"
+        _send_text_message_with_webhook_env(
+            topology,
+            assert_api,
+            content=content,
+            webhook_env=webhook_env,
+        )
 
 
 @pytest.mark.topology("account_a_to_account_b")
 def test_combine_forward_send_receive_and_inner_attachment_download(topology, assert_api):
     """combine 消息：发送账号副端同步、接收账号全部在线端接收，主接收端执行 inner 附件下载。"""
-    device_b = topology.recipient_action_device
-    user_a = topology.sender_user
-    user_b = topology.recipient_user
-    _, image_sent, _ = _send_with_type(
-        topology,
-        assert_api,
-        type_key="image",
-        payload={"targetId": topology.recipient_user},
-    )
-    _, video_sent, _ = _send_with_type(
-        topology,
-        assert_api,
-        type_key="video",
-        payload={"targetId": topology.recipient_user},
-    )
+    with _allure_step("验证：combine 消息：发送账号副端同步、接收账号全部在线端接收，主接收端执行 inner 附件下载。"):
+        device_b = topology.recipient_action_device
+        user_a = topology.sender_user
+        user_b = topology.recipient_user
+        _, image_sent, _ = _send_with_type(
+            topology,
+            assert_api,
+            type_key="image",
+            payload={"targetId": topology.recipient_user},
+        )
+        _, video_sent, _ = _send_with_type(
+            topology,
+            assert_api,
+            type_key="video",
+            payload={"targetId": topology.recipient_user},
+        )
 
-    image_msg_id = image_sent["msgId"]
-    video_msg_id = video_sent["msgId"]
-    combine_payload = {
-        "targetId": user_b,
-        "title": f"s423-combine-{uuid.uuid4().hex[:6]}",
-        "summary": "image and video",
-        "compatibleText": "combine-compatible",
-        "msgIds": [image_msg_id, video_msg_id],
-    }
-    _, combine_sent, combine_received = _send_with_type(
-        topology,
-        assert_api,
-        type_key="combine",
-        payload=combine_payload,
-    )
-    assert combine_sent.get("body", {}).get("type") == combine_received.get("body", {}).get("type"), (
-        f"发送端与接收端 combine body.type 不一致: sent={combine_sent}, received={combine_received}"
-    )
-    assert_api.assert_response_matches(
-        combine_received,
-        expected={
-            "msgId": "{{realId}}",
-            "from": "{{fromUser}}",
-            "to": "{{toUser}}",
-            "convId": "{{fromUser}}",
-            "chatType": 0,
-            "direction": 1,
-            "status": 2,
-            "deliverOnlineOnly": False,
-            "hasRead": False,
-            "needReadReceipt": False, "isThread": False,
-            "isContentReplaced": False,
-            "body": {
-                "type": 8,
-                "title": combine_payload["title"],
-                "summary": combine_payload["summary"],
-                "compatibleText": combine_payload["compatibleText"],
-                "fileStatus": ne(None),
+        image_msg_id = image_sent["msgId"]
+        video_msg_id = video_sent["msgId"]
+        combine_payload = {
+            "targetId": user_b,
+            "title": f"s423-combine-{uuid.uuid4().hex[:6]}",
+            "summary": "image and video",
+            "compatibleText": "combine-compatible",
+            "msgIds": [image_msg_id, video_msg_id],
+        }
+        _, combine_sent, combine_received = _send_with_type(
+            topology,
+            assert_api,
+            type_key="combine",
+            payload=combine_payload,
+        )
+        assert combine_sent.get("body", {}).get("type") == combine_received.get("body", {}).get("type"), (
+            f"发送端与接收端 combine body.type 不一致: sent={combine_sent}, received={combine_received}"
+        )
+        assert_api.assert_response_matches(
+            combine_received,
+            expected={
+                "msgId": "{{realId}}",
+                "from": "{{fromUser}}",
+                "to": "{{toUser}}",
+                "convId": "{{fromUser}}",
+                "chatType": 0,
+                "direction": 1,
+                "status": 2,
+                "deliverOnlineOnly": False,
+                "hasRead": False,
+                "needReadReceipt": False, "isThread": False,
+                "isContentReplaced": False,
+                "body": {
+                    "type": 8,
+                    "title": combine_payload["title"],
+                    "summary": combine_payload["summary"],
+                    "compatibleText": combine_payload["compatibleText"],
+                    "fileStatus": ne(None),
+                },
             },
-        },
-        context={
-            "realId": combine_sent.get("msgId"),
-            "fromUser": user_a,
-            "toUser": user_b,
-        },
-        ignore_keys={
-            "timestamp",
-            "serverTime",
-            "localTime",
-            "broadcast",
-            "onlineState",
-            "translations",
-            "targetLanguages",
-            "receiverList",
-            "localPath",
-            "remotePath",
-            "secret",
-            "messageList",
-        },
-    )
+            context={
+                "realId": combine_sent.get("msgId"),
+                "fromUser": user_a,
+                "toUser": user_b,
+            },
+            ignore_keys={
+                "timestamp",
+                "serverTime",
+                "localTime",
+                "broadcast",
+                "onlineState",
+                "translations",
+                "targetLanguages",
+                "receiverList",
+                "localPath",
+                "remotePath",
+                "secret",
+                "messageList",
+            },
+        )
 
-    parse_resp = device_b.call(
-        "ChatManager",
-        Cmd.downloadAndParseCombineMessage.value,
-        info={"message": combine_received},
-    )
-    _skip_if_missing_plugin(parse_resp, Cmd.downloadAndParseCombineMessage.value)
-    assert_api.assert_response_matches(
-        parse_resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.downloadAndParseCombineMessage.value,
-            "device": "deviceB",
-            "result": ne(None),
-        },
-        ignore_keys={"sequence"},
-    )
+        parse_resp = device_b.call(
+            "ChatManager",
+            Cmd.downloadAndParseCombineMessage.value,
+            info={"message": combine_received},
+        )
+        _skip_if_missing_plugin(parse_resp, Cmd.downloadAndParseCombineMessage.value)
+        assert_api.assert_response_matches(
+            parse_resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.downloadAndParseCombineMessage.value,
+                "device": device_b.device_name,
+                "result": ne(None),
+            },
+            ignore_keys={"sequence"},
+        )
 
-    inner_messages = parse_resp.get("result")
-    assert isinstance(inner_messages, list) and inner_messages, f"合并消息解析未返回内部消息列表: {parse_resp}"
-    inner_by_id = {str(m.get("msgId")): m for m in inner_messages if isinstance(m, dict)}
-    image_inner = inner_by_id.get(str(image_msg_id))
-    video_inner = inner_by_id.get(str(video_msg_id))
-    assert image_inner is not None, f"合并消息解析结果缺少内部图片消息: expected={image_msg_id}, actual={inner_messages}"
-    assert video_inner is not None, f"合并消息解析结果缺少内部视频消息: expected={video_msg_id}, actual={inner_messages}"
-    assert image_inner.get("body", {}).get("type") == 1, f"内部图片消息类型不正确: {image_inner}"
-    assert video_inner.get("body", {}).get("type") == 2, f"内部视频消息类型不正确: {video_inner}"
+        inner_messages = parse_resp.get("result")
+        assert isinstance(inner_messages, list) and inner_messages, f"合并消息解析未返回内部消息列表: {parse_resp}"
+        inner_by_id = {str(m.get("msgId")): m for m in inner_messages if isinstance(m, dict)}
+        image_inner = inner_by_id.get(str(image_msg_id))
+        video_inner = inner_by_id.get(str(video_msg_id))
+        assert image_inner is not None, f"合并消息解析结果缺少内部图片消息: expected={image_msg_id}, actual={inner_messages}"
+        assert video_inner is not None, f"合并消息解析结果缺少内部视频消息: expected={video_msg_id}, actual={inner_messages}"
+        assert image_inner.get("body", {}).get("type") == 1, f"内部图片消息类型不正确: {image_inner}"
+        assert video_inner.get("body", {}).get("type") == 2, f"内部视频消息类型不正确: {video_inner}"
 
-    # 5.0 实测：combine inner 附件下载不派发进度事件（与 case 2 对齐）→ 仅验证调用成功（API 已双端实现）
-    for cmd, message in (
-        (Cmd.downloadMessageAttachmentInCombine.value, image_inner),
-        (Cmd.downloadMessageThumbnailInCombine.value, image_inner),
-        (Cmd.downloadMessageAttachmentInCombine.value, video_inner),
-        (Cmd.downloadMessageThumbnailInCombine.value, video_inner),
-    ):
-        resp = device_b.call("ChatManager", cmd, info={"message": message})
-        _fail_if_error(resp, cmd)
-    time.sleep(5)
+        # 5.0 实测：combine inner 附件下载不派发进度事件（与 case 2 对齐）→ 仅验证调用成功（API 已双端实现）
+        for cmd, message in (
+            (Cmd.downloadMessageAttachmentInCombine.value, image_inner),
+            (Cmd.downloadMessageThumbnailInCombine.value, image_inner),
+            (Cmd.downloadMessageAttachmentInCombine.value, video_inner),
+            (Cmd.downloadMessageThumbnailInCombine.value, video_inner),
+        ):
+            resp = device_b.call("ChatManager", cmd, info={"message": message})
+            _fail_if_error(resp, cmd)
+        time.sleep(5)
 
 
 @pytest.mark.topology("account_a_to_account_b")
 def test_combine_forward_media_inner_attachment_download(topology, assert_api):
     """combine 转发媒体：发送账号副端同步、接收账号全部在线端接收，主接收端执行 inner 附件下载。"""
-    device_b = topology.recipient_action_device
-    user_a = topology.sender_user
-    user_b = topology.recipient_user
-    _, image_sent, _ = _send_with_type(
-        topology,
-        assert_api,
-        type_key="image",
-        payload={"targetId": topology.recipient_user, "thumbnailLocalPath": ""},
-    )
-    _, video_sent, _ = _send_with_type(
-        topology,
-        assert_api,
-        type_key="video",
-        payload={"targetId": topology.recipient_user},
-    )
+    with _allure_step("验证：combine 转发媒体：发送账号副端同步、接收账号全部在线端接收，主接收端执行 inner 附件下载。"):
+        device_b = topology.recipient_action_device
+        user_a = topology.sender_user
+        user_b = topology.recipient_user
+        _, image_sent, _ = _send_with_type(
+            topology,
+            assert_api,
+            type_key="image",
+            payload={"targetId": topology.recipient_user, "thumbnailLocalPath": ""},
+        )
+        _, video_sent, _ = _send_with_type(
+            topology,
+            assert_api,
+            type_key="video",
+            payload={"targetId": topology.recipient_user},
+        )
 
-    image_msg_id = image_sent["msgId"]
-    video_msg_id = video_sent["msgId"]
-    combine_payload = {
-        "targetId": user_b,
-        "title": f"s423-combine-{uuid.uuid4().hex[:6]}",
-        "summary": "image and video",
-        "compatibleText": "combine-compatible",
-        "msgIds": [image_msg_id, video_msg_id],
-    }
-    _, combine_sent, combine_received = _send_with_type(
-        topology,
-        assert_api,
-        type_key="combine",
-        payload=combine_payload,
-    )
-    assert combine_sent.get("body", {}).get("type") == combine_received.get("body", {}).get("type"), (
-        f"发送端与接收端 combine body.type 不一致: sent={combine_sent}, received={combine_received}"
-    )
+        image_msg_id = image_sent["msgId"]
+        video_msg_id = video_sent["msgId"]
+        combine_payload = {
+            "targetId": user_b,
+            "title": f"s423-combine-{uuid.uuid4().hex[:6]}",
+            "summary": "image and video",
+            "compatibleText": "combine-compatible",
+            "msgIds": [image_msg_id, video_msg_id],
+        }
+        _, combine_sent, combine_received = _send_with_type(
+            topology,
+            assert_api,
+            type_key="combine",
+            payload=combine_payload,
+        )
+        assert combine_sent.get("body", {}).get("type") == combine_received.get("body", {}).get("type"), (
+            f"发送端与接收端 combine body.type 不一致: sent={combine_sent}, received={combine_received}"
+        )
 
-    parse_resp = device_b.call(
-        "ChatManager",
-        Cmd.downloadAndParseCombineMessage.value,
-        info={"message": combine_received},
-    )
-    _skip_if_missing_plugin(parse_resp, Cmd.downloadAndParseCombineMessage.value)
-    assert_api.assert_response_matches(
-        parse_resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.downloadAndParseCombineMessage.value,
-            "device": "deviceB",
-            "result": ne(None),
-        },
-        ignore_keys={"sequence"},
-    )
+        parse_resp = device_b.call(
+            "ChatManager",
+            Cmd.downloadAndParseCombineMessage.value,
+            info={"message": combine_received},
+        )
+        _skip_if_missing_plugin(parse_resp, Cmd.downloadAndParseCombineMessage.value)
+        assert_api.assert_response_matches(
+            parse_resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.downloadAndParseCombineMessage.value,
+                "device": device_b.device_name,
+                "result": ne(None),
+            },
+            ignore_keys={"sequence"},
+        )
 
-    inner_messages = parse_resp.get("result")
-    assert isinstance(inner_messages, list) and inner_messages, f"合并消息解析未返回内部消息列表: {parse_resp}"
-    inner_by_id = {str(m.get("msgId")): m for m in inner_messages if isinstance(m, dict)}
-    image_inner = inner_by_id.get(str(image_msg_id))
-    video_inner = inner_by_id.get(str(video_msg_id))
-    assert image_inner is not None, f"合并消息解析结果缺少内部图片消息: expected={image_msg_id}, actual={inner_messages}"
-    assert video_inner is not None, f"合并消息解析结果缺少内部视频消息: expected={video_msg_id}, actual={inner_messages}"
-    assert image_inner.get("body", {}).get("type") == 1, f"内部图片消息类型不正确: {image_inner}"
-    assert video_inner.get("body", {}).get("type") == 2, f"内部视频消息类型不正确: {video_inner}"
+        inner_messages = parse_resp.get("result")
+        assert isinstance(inner_messages, list) and inner_messages, f"合并消息解析未返回内部消息列表: {parse_resp}"
+        inner_by_id = {str(m.get("msgId")): m for m in inner_messages if isinstance(m, dict)}
+        image_inner = inner_by_id.get(str(image_msg_id))
+        video_inner = inner_by_id.get(str(video_msg_id))
+        assert image_inner is not None, f"合并消息解析结果缺少内部图片消息: expected={image_msg_id}, actual={inner_messages}"
+        assert video_inner is not None, f"合并消息解析结果缺少内部视频消息: expected={video_msg_id}, actual={inner_messages}"
+        assert image_inner.get("body", {}).get("type") == 1, f"内部图片消息类型不正确: {image_inner}"
+        assert video_inner.get("body", {}).get("type") == 2, f"内部视频消息类型不正确: {video_inner}"
 
-    for cmd, message in (
-        # (Cmd.downloadMessageAttachmentInCombine.value, image_inner),
-        # (Cmd.downloadMessageThumbnailInCombine.value, image_inner),
-        # (Cmd.downloadMessageAttachmentInCombine.value, video_inner),
-        (Cmd.downloadMessageThumbnailInCombine.value, video_inner),
-    ):
-        resp = device_b.call("ChatManager", cmd, info={"message": message})
-        _fail_if_error(resp, cmd)
-    time.sleep(30)
+        for cmd, message in (
+            # (Cmd.downloadMessageAttachmentInCombine.value, image_inner),
+            # (Cmd.downloadMessageThumbnailInCombine.value, image_inner),
+            # (Cmd.downloadMessageAttachmentInCombine.value, video_inner),
+            (Cmd.downloadMessageThumbnailInCombine.value, video_inner),
+        ):
+            resp = device_b.call("ChatManager", cmd, info={"message": message})
+            _fail_if_error(resp, cmd)
+        time.sleep(30)

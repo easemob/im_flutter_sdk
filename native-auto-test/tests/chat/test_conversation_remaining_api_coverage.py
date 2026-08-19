@@ -7,6 +7,7 @@ import pytest
 
 from src import Cmd, ge, ne
 from tests.chat._utils import build_text
+from tests.allure_helpers import _allure_step
 
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
@@ -176,211 +177,185 @@ def _send_text_and_receive(device_a, device_b, assert_api, user_a: str, user_b: 
 
 def test_conversation_latest_and_last_received_messages(device_a, device_b, assert_api, user_a, user_b):
     """latestMessage/lastReceivedMessage：发送一条单聊消息后，分别校验发送方最新消息和接收方最近收到消息。"""
-    conv_a = _conversation(user_b)
-    conv_b = _conversation(user_a)
-    for device, conv, expected_device in ((device_a, conv_a, "deviceA"), (device_b, conv_b, "deviceB")):
-        resp_clear = device.call("ConversationManager", Cmd.clearAllMessages.value, info=conv)
+    with _allure_step("验证：latestMessage/lastReceivedMessage：发送一条单聊消息后，分别校验发送方最新消息和接收方最近收到消息。"):
+        conv_a = _conversation(user_b)
+        conv_b = _conversation(user_a)
+        for device, conv, expected_device in ((device_a, conv_a, "deviceA"), (device_b, conv_b, "deviceB")):
+            resp_clear = device.call("ConversationManager", Cmd.clearAllMessages.value, info=conv)
+            assert_api.assert_response_matches(
+                resp_clear,
+                expected={
+                    "manager": "ConversationManager",
+                    "cmd": Cmd.clearAllMessages.value,
+                    "device": expected_device,
+                    "result": True,
+                },
+                ignore_keys={"sequence"},
+            )
+
+        content = f"conv-latest-{uuid.uuid4().hex[:8]}"
+        msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
+
+        resp_latest = device_a.call(
+            "ConversationManager",
+            Cmd.getLatestMessage.value,
+            info=conv_a,
+        )
         assert_api.assert_response_matches(
-            resp_clear,
+            resp_latest,
             expected={
                 "manager": "ConversationManager",
-                "cmd": Cmd.clearAllMessages.value,
-                "device": expected_device,
+                "cmd": Cmd.getLatestMessage.value,
+                "device": "deviceA",
+                "result": _expected_sent_message(ne(""), "{{userA}}", "{{userB}}", "{{content}}", status=ge(1), has_deliver_ack=None),
+            },
+            context={"msgId": msg_id, "userA": user_a, "userB": user_b, "content": content},
+            ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly", "receiverList"},
+        )
+
+        resp_last_received = device_b.call(
+            "ConversationManager",
+            Cmd.getLatestMessageFromOthers.value,
+            info=conv_b,
+        )
+        assert_api.assert_response_matches(
+            resp_last_received,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.getLatestMessageFromOthers.value,
+                "device": "deviceB",
+                "result": {
+                    "from": user_a,
+                    "to": user_b,
+                    "convId": user_a,
+                    "chatType": 0,
+                    "direction": 1,
+                    "body": {"type": 0},
+                },
+            },
+            ignore_keys={
+                "sequence",
+                "msgId",
+                "serverTime",
+                "localTime",
+                "deliverOnlineOnly",
+                "receiverList",
+                "content",
+                "status",
+                "hasRead",
+                "hasDeliverAck",
+                "isThread",
+                "isContentReplaced",
+                "broadcast",
+                "onlineState",
+                "groupAckCount",
+                "targetLanguages",
+                "translations",
+            },
+        )
+        for device, conv in ((device_a, conv_a), (device_b, conv_b)):
+            device.call("ConversationManager", Cmd.clearAllMessages.value, info=conv)
+
+
+def test_conversation_read_count_and_mark_read(device_a, device_b, assert_api, user_a, user_b):
+    """unreadCount/markMessageAsRead/markAllMessagesAsRead：制造未读后按消息和按会话标记已读，校验计数清零。"""
+    with _allure_step("验证：unreadCount/markMessageAsRead/markAllMessagesAsRead：制造未读后按消息和按会话标记已读，校验计数清零。"):
+        conv_b = _conversation(user_a)
+        device_b.call("ConversationManager", Cmd.markAllMessagesAsRead.value, info=conv_b)
+        baseline_resp = device_b.call("ConversationManager", Cmd.getUnreadMsgCount.value, info=conv_b)
+        baseline = baseline_resp.get("result")
+        assert isinstance(baseline, int), f"getUnreadMsgCount 未返回 int: {baseline_resp}"
+
+        content = f"conv-read-{uuid.uuid4().hex[:8]}"
+        msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
+
+        resp_unread = device_b.call("ConversationManager", Cmd.getUnreadMsgCount.value, info=conv_b)
+        assert_api.assert_response_matches(
+            resp_unread,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.getUnreadMsgCount.value,
+                "device": "deviceB",
+                "result": ge(baseline),
+            },
+            ignore_keys={"sequence"},
+        )
+
+        resp_mark_one = device_b.call(
+            "ConversationManager",
+            Cmd.markMessageAsRead.value,
+            info={**conv_b, "msgId": msg_id},
+        )
+        mark_one_result = resp_mark_one.get("result")
+        if isinstance(mark_one_result, dict):
+            if mark_one_result.get("code") == 3:
+                expected_mark_one = {"code": 3, "description": "Database operation failed"}
+            else:
+                # 对齐官方：错误 dict 固定 500（Message is invalid）；bool 分支官方亦自证（true/false 明确）
+                expected_mark_one = {"code": 500, "description": "Message is invalid"}
+        elif isinstance(mark_one_result, bool):
+            expected_mark_one = mark_one_result
+        elif mark_one_result == 0:
+            expected_mark_one = 0
+        else:
+            expected_mark_one = 1
+        assert_api.assert_response_matches(
+            resp_mark_one,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.markMessageAsRead.value,
+                "device": "deviceB",
+                "result": expected_mark_one,
+            },
+            ignore_keys={"sequence"},
+        )
+
+        resp_mark_all = device_b.call("ConversationManager", Cmd.markAllMessagesAsRead.value, info=conv_b)
+        # wrapper 5.0 构造 true（EMWrapperCallBack object=true，对齐官方 4.x 语义）
+        assert_api.assert_response_matches(
+            resp_mark_all,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.markAllMessagesAsRead.value,
+                "device": "deviceB",
                 "result": True,
             },
             ignore_keys={"sequence"},
         )
 
-    content = f"conv-latest-{uuid.uuid4().hex[:8]}"
-    msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
-
-    resp_latest = device_a.call(
-        "ConversationManager",
-        Cmd.getLatestMessage.value,
-        info=conv_a,
-    )
-    assert_api.assert_response_matches(
-        resp_latest,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.getLatestMessage.value,
-            "device": "deviceA",
-            "result": _expected_sent_message(ne(""), "{{userA}}", "{{userB}}", "{{content}}", status=ge(1), has_deliver_ack=None),
-        },
-        context={"msgId": msg_id, "userA": user_a, "userB": user_b, "content": content},
-        ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly", "receiverList"},
-    )
-
-    resp_last_received = device_b.call(
-        "ConversationManager",
-        Cmd.getLatestMessageFromOthers.value,
-        info=conv_b,
-    )
-    assert_api.assert_response_matches(
-        resp_last_received,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.getLatestMessageFromOthers.value,
-            "device": "deviceB",
-            "result": {
-                "from": user_a,
-                "to": user_b,
-                "convId": user_a,
-                "chatType": 0,
-                "direction": 1,
-                "body": {"type": 0},
+        resp_zero = device_b.call("ConversationManager", Cmd.getUnreadMsgCount.value, info=conv_b)
+        assert_api.assert_response_matches(
+            resp_zero,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.getUnreadMsgCount.value,
+                "device": "deviceB",
+                "result": 0,
             },
-        },
-        ignore_keys={
-            "sequence",
-            "msgId",
-            "serverTime",
-            "localTime",
-            "deliverOnlineOnly",
-            "receiverList",
-            "content",
-            "status",
-            "hasRead",
-            "hasDeliverAck",
-            "isThread",
-            "isContentReplaced",
-            "broadcast",
-            "onlineState",
-            "groupAckCount",
-            "targetLanguages",
-            "translations",
-        },
-    )
-    for device, conv in ((device_a, conv_a), (device_b, conv_b)):
-        device.call("ConversationManager", Cmd.clearAllMessages.value, info=conv)
-
-
-def test_conversation_read_count_and_mark_read(device_a, device_b, assert_api, user_a, user_b):
-    """unreadCount/markMessageAsRead/markAllMessagesAsRead：制造未读后按消息和按会话标记已读，校验计数清零。"""
-    conv_b = _conversation(user_a)
-    device_b.call("ConversationManager", Cmd.markAllMessagesAsRead.value, info=conv_b)
-    baseline_resp = device_b.call("ConversationManager", Cmd.getUnreadMsgCount.value, info=conv_b)
-    baseline = baseline_resp.get("result")
-    assert isinstance(baseline, int), f"getUnreadMsgCount 未返回 int: {baseline_resp}"
-
-    content = f"conv-read-{uuid.uuid4().hex[:8]}"
-    msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
-
-    resp_unread = device_b.call("ConversationManager", Cmd.getUnreadMsgCount.value, info=conv_b)
-    assert_api.assert_response_matches(
-        resp_unread,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.getUnreadMsgCount.value,
-            "device": "deviceB",
-            "result": ge(baseline),
-        },
-        ignore_keys={"sequence"},
-    )
-
-    resp_mark_one = device_b.call(
-        "ConversationManager",
-        Cmd.markMessageAsRead.value,
-        info={**conv_b, "msgId": msg_id},
-    )
-    mark_one_result = resp_mark_one.get("result")
-    if isinstance(mark_one_result, dict):
-        if mark_one_result.get("code") == 3:
-            expected_mark_one = {"code": 3, "description": "Database operation failed"}
-        else:
-            # 对齐官方：错误 dict 固定 500（Message is invalid）；bool 分支官方亦自证（true/false 明确）
-            expected_mark_one = {"code": 500, "description": "Message is invalid"}
-    elif isinstance(mark_one_result, bool):
-        expected_mark_one = mark_one_result
-    elif mark_one_result == 0:
-        expected_mark_one = 0
-    else:
-        expected_mark_one = 1
-    assert_api.assert_response_matches(
-        resp_mark_one,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.markMessageAsRead.value,
-            "device": "deviceB",
-            "result": expected_mark_one,
-        },
-        ignore_keys={"sequence"},
-    )
-
-    resp_mark_all = device_b.call("ConversationManager", Cmd.markAllMessagesAsRead.value, info=conv_b)
-    # wrapper 5.0 构造 true（EMWrapperCallBack object=true，对齐官方 4.x 语义）
-    assert_api.assert_response_matches(
-        resp_mark_all,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.markAllMessagesAsRead.value,
-            "device": "deviceB",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
-
-    resp_zero = device_b.call("ConversationManager", Cmd.getUnreadMsgCount.value, info=conv_b)
-    assert_api.assert_response_matches(
-        resp_zero,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.getUnreadMsgCount.value,
-            "device": "deviceB",
-            "result": 0,
-        },
-        ignore_keys={"sequence"},
-    )
+            ignore_keys={"sequence"},
+        )
 
 
 def test_conversation_load_message_and_message_lists(device_a, device_b, assert_api, user_a, user_b):
     """loadMessage/loadMessages/loadMessagesFromTime：发送后按 ID、数量和时间窗口加载当前消息。"""
-    keyword = f"conv-load-{uuid.uuid4().hex[:8]}"
-    msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, keyword)
-    conv_a = _conversation(user_b)
-    start_time = int(time.time() * 1000) - 60_000
-    end_time = int(time.time() * 1000) + 60_000
+    with _allure_step("验证：loadMessage/loadMessages/loadMessagesFromTime：发送后按 ID、数量和时间窗口加载当前消息。"):
+        keyword = f"conv-load-{uuid.uuid4().hex[:8]}"
+        msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, keyword)
+        conv_a = _conversation(user_b)
+        start_time = int(time.time() * 1000) - 60_000
+        end_time = int(time.time() * 1000) + 60_000
 
-    resp_load_one = device_a.call("ConversationManager", Cmd.loadMsgWithId.value, info={**conv_a, "msgId": msg_id})
-    assert_api.assert_response_matches(
-        resp_load_one,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.loadMsgWithId.value,
-            "device": "deviceA",
-            "result": _expected_sent_message(
-                "{{msgId}}", "{{userA}}", "{{userB}}", "{{keyword}}",
-                status=ge(1), has_deliver_ack=None,
-            ),
-        },
-        context={"msgId": msg_id, "userA": user_a, "userB": user_b, "keyword": keyword},
-        ignore_keys={
-            "sequence",
-            "serverTime",
-            "localTime",
-            "deliverOnlineOnly",
-            "receiverList",
-        },
-    )
-
-    list_expect = [
-        _expected_sent_message(
-            "{{msgId}}", "{{userA}}", "{{userB}}", "{{keyword}}",
-            status=ge(1), has_deliver_ack=None,
-        )
-    ]
-    for cmd, info in [
-        (Cmd.loadMsgWithStartId.value, {**conv_a, "startId": "", "count": 1, "direction": 0}),
-        (Cmd.loadMsgWithTime.value, {**conv_a, "startTime": start_time, "endTime": end_time, "count": 1}),
-    ]:
-        resp = device_a.call("ConversationManager", cmd, info=info)
+        resp_load_one = device_a.call("ConversationManager", Cmd.loadMsgWithId.value, info={**conv_a, "msgId": msg_id})
         assert_api.assert_response_matches(
-            resp,
+            resp_load_one,
             expected={
                 "manager": "ConversationManager",
-                "cmd": cmd,
+                "cmd": Cmd.loadMsgWithId.value,
                 "device": "deviceA",
-                "result": list_expect,
+                "result": _expected_sent_message(
+                    "{{msgId}}", "{{userA}}", "{{userB}}", "{{keyword}}",
+                    status=ge(1), has_deliver_ack=None,
+                ),
             },
             context={"msgId": msg_id, "userA": user_a, "userB": user_b, "keyword": keyword},
             ignore_keys={
@@ -392,419 +367,454 @@ def test_conversation_load_message_and_message_lists(device_a, device_b, assert_
             },
         )
 
+        list_expect = [
+            _expected_sent_message(
+                "{{msgId}}", "{{userA}}", "{{userB}}", "{{keyword}}",
+                status=ge(1), has_deliver_ack=None,
+            )
+        ]
+        for cmd, info in [
+            (Cmd.loadMsgWithStartId.value, {**conv_a, "startId": "", "count": 1, "direction": 0}),
+            (Cmd.loadMsgWithTime.value, {**conv_a, "startTime": start_time, "endTime": end_time, "count": 1}),
+        ]:
+            resp = device_a.call("ConversationManager", cmd, info=info)
+            assert_api.assert_response_matches(
+                resp,
+                expected={
+                    "manager": "ConversationManager",
+                    "cmd": cmd,
+                    "device": "deviceA",
+                    "result": list_expect,
+                },
+                context={"msgId": msg_id, "userA": user_a, "userB": user_b, "keyword": keyword},
+                ignore_keys={
+                    "sequence",
+                    "serverTime",
+                    "localTime",
+                    "deliverOnlineOnly",
+                    "receiverList",
+                },
+            )
+
 
 def test_conversation_type_keyword_and_options_search_current_behavior(device_a, device_b, assert_api, user_a, user_b):
     """loadMessagesWithMsgType/loadMessagesWithKeyword/conversationSearchMsgsByOptions：使用空数量/唯一关键词边界冻结空列表返回。"""
-    keyword = f"conv-search-{uuid.uuid4().hex[:8]}"
-    conv_a = _conversation(user_b)
+    with _allure_step("验证：loadMessagesWithMsgType/loadMessagesWithKeyword/conversationSearchMsgsByOptions：使用空数量/唯一关键词边界冻结空列表返回。"):
+        keyword = f"conv-search-{uuid.uuid4().hex[:8]}"
+        conv_a = _conversation(user_b)
 
-    resp_by_type = device_a.call(
-        "ConversationManager",
-        Cmd.loadMsgWithMsgType.value,
-        info={**conv_a, "msgType": 0, "timestamp": -1, "count": 0, "direction": 0},
-    )
-    assert_api.assert_response_matches(
-        resp_by_type,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.loadMsgWithMsgType.value,
-            "device": "deviceA",
-            "result": [],
-        },
-        ignore_keys={"sequence"},
-    )
+        resp_by_type = device_a.call(
+            "ConversationManager",
+            Cmd.loadMsgWithMsgType.value,
+            info={**conv_a, "msgType": 0, "timestamp": -1, "count": 0, "direction": 0},
+        )
+        assert_api.assert_response_matches(
+            resp_by_type,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.loadMsgWithMsgType.value,
+                "device": "deviceA",
+                "result": [],
+            },
+            ignore_keys={"sequence"},
+        )
 
-    resp_by_keyword = device_a.call(
-        "ConversationManager",
-        Cmd.loadMsgWithKeywords.value,
-        info={**conv_a, "keywords": keyword, "count": 1, "timestamp": -1, "searchScope": 0, "direction": 0},
-    )
-    assert_api.assert_response_matches(
-        resp_by_keyword,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.loadMsgWithKeywords.value,
-            "device": "deviceA",
-            "result": [],
-        },
-        ignore_keys={"sequence"},
-    )
+        resp_by_keyword = device_a.call(
+            "ConversationManager",
+            Cmd.loadMsgWithKeywords.value,
+            info={**conv_a, "keywords": keyword, "count": 1, "timestamp": -1, "searchScope": 0, "direction": 0},
+        )
+        assert_api.assert_response_matches(
+            resp_by_keyword,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.loadMsgWithKeywords.value,
+                "device": "deviceA",
+                "result": [],
+            },
+            ignore_keys={"sequence"},
+        )
 
-    resp_by_options = device_a.call(
-        "ConversationManager",
-        Cmd.conversationSearchMsgsByOptions.value,
-        info={**conv_a, "ts": -1, "count": 0, "direction": 0, "types": [0], "from": user_a},
-    )
-    assert_api.assert_response_matches(
-        resp_by_options,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.conversationSearchMsgsByOptions.value,
-            "device": "deviceA",
-            "result": [],
-        },
-        ignore_keys={"sequence"},
-    )
+        resp_by_options = device_a.call(
+            "ConversationManager",
+            Cmd.conversationSearchMsgsByOptions.value,
+            info={**conv_a, "ts": -1, "count": 0, "direction": 0, "types": [0], "from": user_a},
+        )
+        assert_api.assert_response_matches(
+            resp_by_options,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.conversationSearchMsgsByOptions.value,
+                "device": "deviceA",
+                "result": [],
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_conversation_ext_and_count_queries(device_a, device_b, assert_api, user_a, user_b):
     """syncConversationExt/messageCount/conversationGetLocalMessageCount/conversationRemindType/pinnedMessages：校验会话扩展、计数、免打扰和置顶消息查询。"""
-    content = f"conv-count-{uuid.uuid4().hex[:8]}"
-    msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
-    conv_a = _conversation(user_b)
+    with _allure_step("验证：syncConversationExt/messageCount/conversationGetLocalMessageCount/conversationRemindType/pinnedMessages：校验会话扩展、计数、免打扰"):
+        content = f"conv-count-{uuid.uuid4().hex[:8]}"
+        msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
+        conv_a = _conversation(user_b)
 
-    resp_ext = device_a.call(
-        "ConversationManager",
-        Cmd.syncConversationExt.value,
-        info={**conv_a, "ext": {"scene": "api-coverage"}},
-    )
-    assert_api.assert_response_matches(
-        resp_ext,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.syncConversationExt.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
-
-    resp_msg_count = device_a.call("ConversationManager", Cmd.messageCount.value, info=conv_a)
-    assert_api.assert_response_matches(
-        resp_msg_count,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.messageCount.value,
-            "device": "deviceA",
-            "result": ge(1),
-        },
-        ignore_keys={"sequence"},
-    )
-
-    now = int(time.time() * 1000)
-    resp_local_count = device_a.call(
-        "ConversationManager",
-        Cmd.conversationGetLocalMessageCount.value,
-        info={**conv_a, "startTs": now - 60_000, "endTs": now + 60_000},
-    )
-    assert_api.assert_response_matches(
-        resp_local_count,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.conversationGetLocalMessageCount.value,
-            "device": "deviceA",
-            "result": ge(1),
-        },
-        ignore_keys={"sequence"},
-    )
-
-    resp_remind = device_a.call("ConversationManager", Cmd.conversationRemindType.value, info=conv_a)
-    assert_api.assert_response_matches(
-        resp_remind,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.conversationRemindType.value,
-            "device": "deviceA",
-            "result": 0,
-        },
-        ignore_keys={"sequence"},
-    )
-
-    resp_pin = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": msg_id})
-    assert_api.assert_response_matches(
-        resp_pin,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.pinMessage.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
-
-    resp_pinned = device_a.call("ConversationManager", Cmd.pinnedMessages.value, info=conv_a)
-    target_pinned = [
-        message for message in (resp_pinned.get("result") or [])
-        if isinstance(message, dict) and str(message.get("msgId")) == str(msg_id)
-    ]
-    assert_api.assert_response_matches(
-        {**resp_pinned, "result": target_pinned},
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.pinnedMessages.value,
-            "device": "deviceA",
-            "result": [
-                _expected_sent_message(
-                    msg_id, user_a, user_b, content,
-                    has_deliver_ack=None,
-                )
-            ],
-        },
-        ignore_keys={
-            "sequence",
-            "serverTime",
-            "localTime",
-            "deliverOnlineOnly",
-            "receiverList",
-        },
-    )
-
-    resp_unpin = device_a.call("ChatManager", Cmd.unpinMessage.value, info={"msgId": msg_id})
-    assert_api.assert_response_matches(
-        resp_unpin,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.unpinMessage.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
-
-
-def test_conversation_invalid_message_id_boundaries(device_a, assert_api, user_b):
-    """loadMessage/markMessageAsRead/deleteMessageByIds：非法消息 ID 边界，冻结当前端真实返回语义。"""
-    conv_a = _conversation(user_b)
-
-    resp_load_invalid = device_a.call(
-        "ConversationManager",
-        Cmd.loadMsgWithId.value,
-        info={**conv_a, "msgId": "__not_exists_msg_id__"},
-    )
-    assert_api.assert_response_matches(
-        resp_load_invalid,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.loadMsgWithId.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
-
-    resp_mark_invalid = device_a.call(
-        "ConversationManager",
-        Cmd.markMessageAsRead.value,
-        info={**conv_a, "msgId": "__not_exists_msg_id__"},
-    )
-    # 原生实际（wrapper 透传后）：markMessageAsRead 无效 ID → 110 "messages is empty"（同 ackMessageRead）
-    assert_api.assert_response_matches(
-        resp_mark_invalid,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.markMessageAsRead.value,
-            "device": "deviceA",
-            "result": {"code": 110, "description": "messages is empty"},
-        },
-        ignore_keys={"sequence"},
-    )
-
-    resp_delete_empty = device_a.call(
-        "ConversationManager",
-        Cmd.deleteMessageByIds.value,
-        info={**conv_a, "messageIds": []},
-    )
-    assert_api.assert_response_matches(
-        resp_delete_empty,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.deleteMessageByIds.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
-
-
-def test_conversation_local_insert_append_update_and_delete(device_a, assert_api, user_a, user_b):
-    """insertMessage/appendMessage/updateConversationMessage/removeMessage/clearAllMessages/deleteMessagesWithTs：本地消息写入、更新和删除链路。"""
-    conv_a = _conversation(user_b)
-    base_time = int(time.time() * 1000)
-    insert_id = f"local-insert-{uuid.uuid4().hex[:8]}"
-    append_id = f"local-append-{uuid.uuid4().hex[:8]}"
-    update_content = f"local-updated-{uuid.uuid4().hex[:8]}"
-    insert_msg = {
-        "msgId": insert_id,
-        "from": user_a,
-        "to": user_b,
-        "convId": user_b,
-        "chatType": 0,
-        "direction": 0,
-        "status": 2,
-        "hasRead": True,
-        "needReadReceipt": False, "isThread": False,
-        "deliverOnlineOnly": False,
-        "localTime": base_time,
-        "serverTime": base_time,
-        "body": {"type": 0, "content": f"local-insert-{uuid.uuid4().hex[:8]}"},
-    }
-    append_msg = {
-        **insert_msg,
-        "msgId": append_id,
-        "localTime": base_time + 1,
-        "serverTime": base_time + 1,
-        "body": {"type": 0, "content": f"local-append-{uuid.uuid4().hex[:8]}"},
-    }
-
-    for cmd, message in [
-        (Cmd.insertMessage.value, insert_msg),
-        (Cmd.appendMessage.value, append_msg),
-    ]:
-        resp = device_a.call("ConversationManager", cmd, info={**conv_a, "msg": message})
+        resp_ext = device_a.call(
+            "ConversationManager",
+            Cmd.syncConversationExt.value,
+            info={**conv_a, "ext": {"scene": "api-coverage"}},
+        )
         assert_api.assert_response_matches(
-            resp,
+            resp_ext,
             expected={
                 "manager": "ConversationManager",
-                "cmd": cmd,
+                "cmd": Cmd.syncConversationExt.value,
                 "device": "deviceA",
                 "result": True,
             },
             ignore_keys={"sequence"},
         )
 
-    updated_msg = {**append_msg, "body": {"type": 0, "content": update_content}}
-    resp_update = device_a.call(
-        "ConversationManager",
-        Cmd.updateConversationMessage.value,
-        info={**conv_a, "msg": updated_msg},
-    )
-    assert_api.assert_response_matches(
-        resp_update,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.updateConversationMessage.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
-
-    resp_loaded = device_a.call("ConversationManager", Cmd.loadMsgWithId.value, info={**conv_a, "msgId": append_id})
-    assert_api.assert_response_matches(
-        resp_loaded,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.loadMsgWithId.value,
-            "device": "deviceA",
-            "result": {
-                "msgId": append_id,
-                "from": user_a,
-                "to": user_b,
-                "convId": user_b,
-                "chatType": 0,
-                "direction": 0,
-                "status": 2,
-                "hasRead": True,
-                "needReadReceipt": False, "isThread": False,
-                "body": {
-                    "targetLanguages": [],
-                    "translations": {},
-                    "type": 0,
-                    "content": update_content,
-                },
-                "broadcast": False,
-                "onlineState": True,
+        resp_msg_count = device_a.call("ConversationManager", Cmd.messageCount.value, info=conv_a)
+        assert_api.assert_response_matches(
+            resp_msg_count,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.messageCount.value,
+                "device": "deviceA",
+                "result": ge(1),
             },
-        },
-        ignore_keys={
-            "sequence",
-            "serverTime",
-            "localTime",
-            "isContentReplaced",
-            "deliverOnlineOnly",
-            "receiverList",
-        },
-    )
+            ignore_keys={"sequence"},
+        )
 
-    resp_remove = device_a.call("ConversationManager", Cmd.removeMessage.value, info={**conv_a, "msgId": insert_id})
-    assert_api.assert_response_matches(
-        resp_remove,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.removeMessage.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
+        now = int(time.time() * 1000)
+        resp_local_count = device_a.call(
+            "ConversationManager",
+            Cmd.conversationGetLocalMessageCount.value,
+            info={**conv_a, "startTs": now - 60_000, "endTs": now + 60_000},
+        )
+        assert_api.assert_response_matches(
+            resp_local_count,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.conversationGetLocalMessageCount.value,
+                "device": "deviceA",
+                "result": ge(1),
+            },
+            ignore_keys={"sequence"},
+        )
 
-    resp_delete_by_time = device_a.call(
-        "ConversationManager",
-        Cmd.deleteMessagesWithTs.value,
-        info={**conv_a, "startTs": base_time, "endTs": base_time + 2},
-    )
-    assert_api.assert_response_matches(
-        resp_delete_by_time,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.deleteMessagesWithTs.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
+        resp_remind = device_a.call("ConversationManager", Cmd.conversationRemindType.value, info=conv_a)
+        assert_api.assert_response_matches(
+            resp_remind,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.conversationRemindType.value,
+                "device": "deviceA",
+                "result": 0,
+            },
+            ignore_keys={"sequence"},
+        )
 
-    resp_clear = device_a.call("ConversationManager", Cmd.clearAllMessages.value, info=conv_a)
-    assert_api.assert_response_matches(
-        resp_clear,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.clearAllMessages.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
+        resp_pin = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": msg_id})
+        assert_api.assert_response_matches(
+            resp_pin,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.pinMessage.value,
+                "device": "deviceA",
+                "result": None,
+            },
+            ignore_keys={"sequence"},
+        )
+
+        resp_pinned = device_a.call("ConversationManager", Cmd.pinnedMessages.value, info=conv_a)
+        target_pinned = [
+            message for message in (resp_pinned.get("result") or [])
+            if isinstance(message, dict) and str(message.get("msgId")) == str(msg_id)
+        ]
+        assert_api.assert_response_matches(
+            {**resp_pinned, "result": target_pinned},
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.pinnedMessages.value,
+                "device": "deviceA",
+                "result": [
+                    _expected_sent_message(
+                        msg_id, user_a, user_b, content,
+                        has_deliver_ack=None,
+                    )
+                ],
+            },
+            ignore_keys={
+                "sequence",
+                "serverTime",
+                "localTime",
+                "deliverOnlineOnly",
+                "receiverList",
+            },
+        )
+
+        resp_unpin = device_a.call("ChatManager", Cmd.unpinMessage.value, info={"msgId": msg_id})
+        assert_api.assert_response_matches(
+            resp_unpin,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.unpinMessage.value,
+                "device": "deviceA",
+                "result": None,
+            },
+            ignore_keys={"sequence"},
+        )
+
+
+def test_conversation_invalid_message_id_boundaries(device_a, assert_api, user_b):
+    """loadMessage/markMessageAsRead/deleteMessageByIds：非法消息 ID 边界，冻结当前端真实返回语义。"""
+    with _allure_step("验证：loadMessage/markMessageAsRead/deleteMessageByIds：非法消息 ID 边界，冻结当前端真实返回语义。"):
+        conv_a = _conversation(user_b)
+
+        resp_load_invalid = device_a.call(
+            "ConversationManager",
+            Cmd.loadMsgWithId.value,
+            info={**conv_a, "msgId": "__not_exists_msg_id__"},
+        )
+        assert_api.assert_response_matches(
+            resp_load_invalid,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.loadMsgWithId.value,
+                "device": "deviceA",
+                "result": None,
+            },
+            ignore_keys={"sequence"},
+        )
+
+        resp_mark_invalid = device_a.call(
+            "ConversationManager",
+            Cmd.markMessageAsRead.value,
+            info={**conv_a, "msgId": "__not_exists_msg_id__"},
+        )
+        # 原生实际（wrapper 透传后）：markMessageAsRead 无效 ID → 110 "messages is empty"（同 ackMessageRead）
+        assert_api.assert_response_matches(
+            resp_mark_invalid,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.markMessageAsRead.value,
+                "device": "deviceA",
+                "result": {"code": 110, "description": "messages is empty"},
+            },
+            ignore_keys={"sequence"},
+        )
+
+        resp_delete_empty = device_a.call(
+            "ConversationManager",
+            Cmd.deleteMessageByIds.value,
+            info={**conv_a, "messageIds": []},
+        )
+        assert_api.assert_response_matches(
+            resp_delete_empty,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.deleteMessageByIds.value,
+                "device": "deviceA",
+                "result": True,
+            },
+            ignore_keys={"sequence"},
+        )
+
+
+def test_conversation_local_insert_append_update_and_delete(device_a, assert_api, user_a, user_b):
+    """insertMessage/appendMessage/updateConversationMessage/removeMessage/clearAllMessages/deleteMessagesWithTs：本地消息写入、更新和删除链路。"""
+    with _allure_step("验证：insertMessage/appendMessage/updateConversationMessage/removeMessage/clearAllMessages/deleteMessagesWithTs：本地消息写入、更新和删"):
+        conv_a = _conversation(user_b)
+        base_time = int(time.time() * 1000)
+        insert_id = f"local-insert-{uuid.uuid4().hex[:8]}"
+        append_id = f"local-append-{uuid.uuid4().hex[:8]}"
+        update_content = f"local-updated-{uuid.uuid4().hex[:8]}"
+        insert_msg = {
+            "msgId": insert_id,
+            "from": user_a,
+            "to": user_b,
+            "convId": user_b,
+            "chatType": 0,
+            "direction": 0,
+            "status": 2,
+            "hasRead": True,
+            "needReadReceipt": False, "isThread": False,
+            "deliverOnlineOnly": False,
+            "localTime": base_time,
+            "serverTime": base_time,
+            "body": {"type": 0, "content": f"local-insert-{uuid.uuid4().hex[:8]}"},
+        }
+        append_msg = {
+            **insert_msg,
+            "msgId": append_id,
+            "localTime": base_time + 1,
+            "serverTime": base_time + 1,
+            "body": {"type": 0, "content": f"local-append-{uuid.uuid4().hex[:8]}"},
+        }
+
+        for cmd, message in [
+            (Cmd.insertMessage.value, insert_msg),
+            (Cmd.appendMessage.value, append_msg),
+        ]:
+            resp = device_a.call("ConversationManager", cmd, info={**conv_a, "msg": message})
+            assert_api.assert_response_matches(
+                resp,
+                expected={
+                    "manager": "ConversationManager",
+                    "cmd": cmd,
+                    "device": "deviceA",
+                    "result": True,
+                },
+                ignore_keys={"sequence"},
+            )
+
+        updated_msg = {**append_msg, "body": {"type": 0, "content": update_content}}
+        resp_update = device_a.call(
+            "ConversationManager",
+            Cmd.updateConversationMessage.value,
+            info={**conv_a, "msg": updated_msg},
+        )
+        assert_api.assert_response_matches(
+            resp_update,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.updateConversationMessage.value,
+                "device": "deviceA",
+                "result": True,
+            },
+            ignore_keys={"sequence"},
+        )
+
+        resp_loaded = device_a.call("ConversationManager", Cmd.loadMsgWithId.value, info={**conv_a, "msgId": append_id})
+        assert_api.assert_response_matches(
+            resp_loaded,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.loadMsgWithId.value,
+                "device": "deviceA",
+                "result": {
+                    "msgId": append_id,
+                    "from": user_a,
+                    "to": user_b,
+                    "convId": user_b,
+                    "chatType": 0,
+                    "direction": 0,
+                    "status": 2,
+                    "hasRead": True,
+                    "needReadReceipt": False, "isThread": False,
+                    "body": {
+                        "targetLanguages": [],
+                        "translations": {},
+                        "type": 0,
+                        "content": update_content,
+                    },
+                    "broadcast": False,
+                    "onlineState": True,
+                },
+            },
+            ignore_keys={
+                "sequence",
+                "serverTime",
+                "localTime",
+                "isContentReplaced",
+                "deliverOnlineOnly",
+                "receiverList",
+            },
+        )
+
+        resp_remove = device_a.call("ConversationManager", Cmd.removeMessage.value, info={**conv_a, "msgId": insert_id})
+        assert_api.assert_response_matches(
+            resp_remove,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.removeMessage.value,
+                "device": "deviceA",
+                "result": True,
+            },
+            ignore_keys={"sequence"},
+        )
+
+        resp_delete_by_time = device_a.call(
+            "ConversationManager",
+            Cmd.deleteMessagesWithTs.value,
+            info={**conv_a, "startTs": base_time, "endTs": base_time + 2},
+        )
+        assert_api.assert_response_matches(
+            resp_delete_by_time,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.deleteMessagesWithTs.value,
+                "device": "deviceA",
+                "result": True,
+            },
+            ignore_keys={"sequence"},
+        )
+
+        resp_clear = device_a.call("ConversationManager", Cmd.clearAllMessages.value, info=conv_a)
+        assert_api.assert_response_matches(
+            resp_clear,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.clearAllMessages.value,
+                "device": "deviceA",
+                "result": True,
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_conversation_delete_local_and_server_messages_current_behavior(device_a, device_b, assert_api, user_a, user_b):
     """conversationDeleteServerMessageWithIds：按消息 ID 删除本地及服务端消息，冻结当前返回。"""
-    content = f"conv-server-delete-{uuid.uuid4().hex[:8]}"
-    msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
-    conv_a = _conversation(user_b)
+    with _allure_step("验证：conversationDeleteServerMessageWithIds：按消息 ID 删除本地及服务端消息，冻结当前返回。"):
+        content = f"conv-server-delete-{uuid.uuid4().hex[:8]}"
+        msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
+        conv_a = _conversation(user_b)
 
-    resp_delete_ids = device_a.call(
-        "ConversationManager",
-        Cmd.conversationDeleteServerMessageWithIds.value,
-        info={**conv_a, "msgIds": [msg_id]},
-    )
-    delete_ids_result = resp_delete_ids.get("result")
-    # 5.0：removeMessagesFromServer 成功 → wrapper 基类 object=null 提交真 null（已改基类）
-    # （官方 4.x 冻结 500 是官方环境删除失败；5.0 删除成功返回 null）
-    expected_delete_ids = None
-    assert_api.assert_response_matches(
-        resp_delete_ids,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.conversationDeleteServerMessageWithIds.value,
-            "device": "deviceA",
-            "result": expected_delete_ids,
-        },
-        ignore_keys={"sequence"},
-    )
+        resp_delete_ids = device_a.call(
+            "ConversationManager",
+            Cmd.conversationDeleteServerMessageWithIds.value,
+            info={**conv_a, "msgIds": [msg_id]},
+        )
+        delete_ids_result = resp_delete_ids.get("result")
+        # 5.0：removeMessagesFromServer 成功 → wrapper 基类 object=null 提交真 null（已改基类）
+        # （官方 4.x 冻结 500 是官方环境删除失败；5.0 删除成功返回 null）
+        expected_delete_ids = None
+        assert_api.assert_response_matches(
+            resp_delete_ids,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.conversationDeleteServerMessageWithIds.value,
+                "device": "deviceA",
+                "result": expected_delete_ids,
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_conversation_delete_local_and_server_messages_by_time(device_a, device_b, assert_api, user_a, user_b):
     """conversationDeleteServerMessageWithTime：按时间删除本地及服务端消息，冻结当前返回。"""
-    content = f"conv-server-delete-time-{uuid.uuid4().hex[:8]}"
-    _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
-    conv_a = _conversation(user_b)
+    with _allure_step("验证：conversationDeleteServerMessageWithTime：按时间删除本地及服务端消息，冻结当前返回。"):
+        content = f"conv-server-delete-time-{uuid.uuid4().hex[:8]}"
+        _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
+        conv_a = _conversation(user_b)
 
-    resp_delete_time = device_a.call(
-        "ConversationManager",
-        Cmd.conversationDeleteServerMessageWithTime.value,
-        info={**conv_a, "beforeTs": int(time.time() * 1000) + 1_000},
-    )
-    delete_time_result = resp_delete_time.get("result")
-    # 5.0：删除成功 → null（同 WithIds）
-    expected_delete_time = None
-    assert_api.assert_response_matches(
-        resp_delete_time,
-        expected={
-            "manager": "ConversationManager",
-            "cmd": Cmd.conversationDeleteServerMessageWithTime.value,
-            "device": "deviceA",
-            "result": expected_delete_time,
-        },
-        ignore_keys={"sequence"},
-    )
+        resp_delete_time = device_a.call(
+            "ConversationManager",
+            Cmd.conversationDeleteServerMessageWithTime.value,
+            info={**conv_a, "beforeTs": int(time.time() * 1000) + 1_000},
+        )
+        delete_time_result = resp_delete_time.get("result")
+        # 5.0：删除成功 → null（同 WithIds）
+        expected_delete_time = None
+        assert_api.assert_response_matches(
+            resp_delete_time,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.conversationDeleteServerMessageWithTime.value,
+                "device": "deviceA",
+                "result": expected_delete_time,
+            },
+            ignore_keys={"sequence"},
+        )

@@ -285,12 +285,10 @@ class GroupOptionsHelper {
         if (json.has("ext")){
             options.extField = json.getString("ext");
         }
-        // 5.0: style 枚举(0-3) → isPublic/joinApprovalRequired/allowInvites 布尔
-        int style = json.getInt("style");
-        options.isPublic = (style == 2 || style == 3);
-        options.joinApprovalRequired = (style == 2);
-        // 官方迁移表 6.1 + 官方 e2e 断言：仅 style=1（PrivateMemberCanInvite）成员可邀请（allowInvites=true）
-        options.allowInvites = (style == 1);
+        // 5.0 使用 EMGroupConfigs 三布尔字段；style 仅属于 4.x 协议，不再作为入参。
+        options.isPublic = json.getBoolean("isPublic");
+        options.joinApprovalRequired = json.getBoolean("joinApprovalRequired");
+        options.allowInvites = json.getBoolean("allowInvites");
         return options;
     }
 
@@ -299,14 +297,10 @@ class GroupOptionsHelper {
         data.put("maxCount", options.maxUsers);
         data.put("inviteNeedConfirm", options.inviteNeedConfirm);
         data.put("ext", options.extField);
-        // 5.0 布尔 → style 整数
-        int style;
-        if (!options.isPublic) {
-            style = options.allowInvites ? 1 : 0;
-        } else {
-            style = options.joinApprovalRequired ? 2 : 3;
-        }
-        data.put("style", style);
+        // 5.0 对外统一输出 EMGroupConfigs 三布尔字段，不回退为 4.x style。
+        data.put("isPublic", options.isPublic);
+        data.put("joinApprovalRequired", options.joinApprovalRequired);
+        data.put("allowInvites", options.allowInvites);
         return data;
     }
 }

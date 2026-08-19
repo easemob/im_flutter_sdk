@@ -7,6 +7,7 @@ import pytest
 
 from src import Cmd
 from tests.chat._utils import build_text
+from tests.allure_helpers import _allure_step
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
@@ -95,89 +96,91 @@ def _target_pinned(response, conv_id):
 
 
 def test_chat_conversation_pin_and_unpin_are_idempotent(device_a, device_b, assert_api, user_a, user_b):
-    _prepare_conversation(device_a, device_b, assert_api, user_a, user_b)
-    for is_pinned in (False, True, True):
-        response = device_a.call(
-            "ChatManager", Cmd.pinConversation.value,
-            info={"convId": user_b, "isPinned": is_pinned},
+    with _allure_step("验证：chat conversation pin and unpin are idempotent"):
+        _prepare_conversation(device_a, device_b, assert_api, user_a, user_b)
+        for is_pinned in (False, True, True):
+            response = device_a.call(
+                "ChatManager", Cmd.pinConversation.value,
+                info={"convId": user_b, "isPinned": is_pinned},
+            )
+            assert_api.assert_response_matches(
+                response,
+                expected={"manager": "ChatManager", "cmd": Cmd.pinConversation.value,
+                          "device": "deviceA", "result": None},
+                ignore_keys={"sequence"},
+            )
+        fetch = device_a.call(
+            "ChatManager", Cmd.loadAllConversations.value,
+            info={"pageSize": 20, "cursor": "", "pinned": True},
         )
         assert_api.assert_response_matches(
-            response,
-            expected={"manager": "ChatManager", "cmd": Cmd.pinConversation.value,
-                      "device": "deviceA", "result": None},
+            {"manager": fetch.get("manager"), "cmd": fetch.get("cmd"), "device": fetch.get("device"),
+             "result": {"target": _target_pinned(fetch, user_b)}},
+            expected={"manager": "ChatManager", "cmd": Cmd.loadAllConversations.value,
+                      "device": "deviceA", "result": {"target": [{"convId": user_b,
+                      "type": 0, "isPinned": True, "isThread": False}]}},
             ignore_keys={"sequence"},
         )
-    fetch = device_a.call(
-        "ChatManager", Cmd.loadAllConversations.value,
-        info={"pageSize": 20, "cursor": "", "pinned": True},
-    )
-    assert_api.assert_response_matches(
-        {"manager": fetch.get("manager"), "cmd": fetch.get("cmd"), "device": fetch.get("device"),
-         "result": {"target": _target_pinned(fetch, user_b)}},
-        expected={"manager": "ChatManager", "cmd": Cmd.loadAllConversations.value,
-                  "device": "deviceA", "result": {"target": [{"convId": user_b,
-                  "type": 0, "isPinned": True, "isThread": False}]}},
-        ignore_keys={"sequence"},
-    )
-    for _ in range(2):
-        response = device_a.call(
-            "ChatManager", Cmd.pinConversation.value,
-            info={"convId": user_b, "isPinned": False},
+        for _ in range(2):
+            response = device_a.call(
+                "ChatManager", Cmd.pinConversation.value,
+                info={"convId": user_b, "isPinned": False},
+            )
+            assert_api.assert_response_matches(
+                response,
+                expected={"manager": "ChatManager", "cmd": Cmd.pinConversation.value,
+                          "device": "deviceA", "result": None},
+                ignore_keys={"sequence"},
+            )
+        fetch_after = device_a.call(
+            "ChatManager", Cmd.loadAllConversations.value,
+            info={"pageSize": 20, "cursor": "", "pinned": True},
         )
-        assert_api.assert_response_matches(
-            response,
-            expected={"manager": "ChatManager", "cmd": Cmd.pinConversation.value,
-                      "device": "deviceA", "result": None},
-            ignore_keys={"sequence"},
-        )
-    fetch_after = device_a.call(
-        "ChatManager", Cmd.loadAllConversations.value,
-        info={"pageSize": 20, "cursor": "", "pinned": True},
-    )
-    # 5.0 fetchConversationsByOptions 返回全部会话（不按 pinned 过滤）→ 改为验证该会话 isPinned=False
-    proj_after = _target_pinned(fetch_after, user_b)
-    assert proj_after and proj_after[0].get("isPinned") is False, f"取消置顶后 isPinned 应为 False: {fetch_after}"
+        # 5.0 fetchConversationsByOptions 返回全部会话（不按 pinned 过滤）→ 改为验证该会话 isPinned=False
+        proj_after = _target_pinned(fetch_after, user_b)
+        assert proj_after and proj_after[0].get("isPinned") is False, f"取消置顶后 isPinned 应为 False: {fetch_after}"
 
 def test_chat_pin_conversation_non_boolean_coerces_to_unpin(
     device_a, device_b, assert_api, user_a, user_b,
 ):
     """Generic bridge 实测 Android 会将非布尔 isPinned 按 false 处理。"""
-    _prepare_conversation(device_a, device_b, assert_api, user_a, user_b)
-    pin = device_a.call(
-        "ChatManager", Cmd.pinConversation.value,
-        info={"convId": user_b, "isPinned": True},
-    )
-    assert_api.assert_response_matches(
-        pin,
-        expected={"manager": "ChatManager", "cmd": Cmd.pinConversation.value,
-                  "device": "deviceA", "result": None},
-        ignore_keys={"sequence"},
-    )
-    response = device_a.call(
-        "ChatManager", Cmd.pinConversation.value,
-        info={"convId": user_b, "isPinned": "not-a-boolean"},
-    )
-    assert_api.assert_response_matches(
-        response,
-        expected={"manager": "ChatManager", "cmd": Cmd.pinConversation.value,
-                  "device": "deviceA", "result": None},
-        ignore_keys={"sequence"},
-    )
-    conversation = device_a.call(
-        "ChatManager", Cmd.getConversation.value,
-        info={"convId": user_b, "type": 0, "createIfNeed": True},
-    )
-    result = conversation.get("result") or {}
-    assert_api.assert_response_matches(
-        {"manager": conversation.get("manager"), "cmd": conversation.get("cmd"),
-         "device": conversation.get("device"),
-         "result": {"convId": result.get("convId"), "type": result.get("type"),
-                    "isPinned": result.get("isPinned")}},
-        expected={"manager": "ChatManager", "cmd": Cmd.getConversation.value,
-                  "device": "deviceA", "result": {"convId": user_b, "type": 0,
-                  "isPinned": False}},
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证：Generic bridge 实测 Android 会将非布尔 isPinned 按 false 处理。"):
+        _prepare_conversation(device_a, device_b, assert_api, user_a, user_b)
+        pin = device_a.call(
+            "ChatManager", Cmd.pinConversation.value,
+            info={"convId": user_b, "isPinned": True},
+        )
+        assert_api.assert_response_matches(
+            pin,
+            expected={"manager": "ChatManager", "cmd": Cmd.pinConversation.value,
+                      "device": "deviceA", "result": None},
+            ignore_keys={"sequence"},
+        )
+        response = device_a.call(
+            "ChatManager", Cmd.pinConversation.value,
+            info={"convId": user_b, "isPinned": "not-a-boolean"},
+        )
+        assert_api.assert_response_matches(
+            response,
+            expected={"manager": "ChatManager", "cmd": Cmd.pinConversation.value,
+                      "device": "deviceA", "result": None},
+            ignore_keys={"sequence"},
+        )
+        conversation = device_a.call(
+            "ChatManager", Cmd.getConversation.value,
+            info={"convId": user_b, "type": 0, "createIfNeed": True},
+        )
+        result = conversation.get("result") or {}
+        assert_api.assert_response_matches(
+            {"manager": conversation.get("manager"), "cmd": conversation.get("cmd"),
+             "device": conversation.get("device"),
+             "result": {"convId": result.get("convId"), "type": result.get("type"),
+                        "isPinned": result.get("isPinned")}},
+            expected={"manager": "ChatManager", "cmd": Cmd.getConversation.value,
+                      "device": "deviceA", "result": {"convId": user_b, "type": 0,
+                      "isPinned": False}},
+            ignore_keys={"sequence"},
+        )
 
 
 @pytest.mark.parametrize(

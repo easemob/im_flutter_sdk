@@ -9,6 +9,23 @@ from src.tools.group_capacity import get_group_create_max_count
 # GroupChangeEvent 枚举一致），Case 硬编码也已对齐，无需归一化。
 
 
+_GROUP_STYLE_CONFIGS: dict[int, dict[str, bool]] = {
+    # 兼容 4.x case 的 style 别名；真正发给 5.0 的请求使用三个布尔字段。
+    0: {"isPublic": False, "joinApprovalRequired": False, "allowInvites": False},
+    1: {"isPublic": False, "joinApprovalRequired": False, "allowInvites": True},
+    2: {"isPublic": True, "joinApprovalRequired": True, "allowInvites": False},
+    3: {"isPublic": True, "joinApprovalRequired": False, "allowInvites": False},
+}
+
+
+def group_style_configs(style: int) -> dict[str, bool]:
+    """将旧 style 场景别名转换为 Android 5.0 的 EMGroupConfigs 字段。"""
+    try:
+        return dict(_GROUP_STYLE_CONFIGS[style])
+    except KeyError as error:
+        raise ValueError(f"不支持的 group style: {style}; expected 0/1/2/3") from error
+
+
 def build_group_options(
     *,
     style: int = 0,
@@ -16,11 +33,11 @@ def build_group_options(
     invite_need_confirm: bool = False,
     ext: str = "auto-ext",
 ) -> dict:
-    """构造 Group options；未显式指定容量时采用当前运行场景。"""
+    """构造 5.0 EMGroupConfigs；style 仅作为现有 case 的兼容别名。"""
     if max_count is None:
         max_count = get_group_create_max_count()
     return {
-        "style": style,
+        **group_style_configs(style),
         "maxCount": max_count,
         "inviteNeedConfirm": invite_need_confirm,
         "ext": ext,
@@ -792,6 +809,7 @@ def create_group(
     device_name: str = "deviceA",
     is_member_allow_to_invite: bool | None = None,
 ):
+    configs = group_style_configs(style)
     resp_create = device_a.call(
         "GroupManager",
         Cmd.createGroup.value,
@@ -801,7 +819,7 @@ def create_group(
             "inviteMembers": invite_members,
             "inviteReason": "auto-case",
             "options": {
-                "style": style,
+                **configs,
                 "maxCount": max_count,
                 "inviteNeedConfirm": invite_need_confirm,
                 "ext": "auto-ext",
@@ -819,15 +837,14 @@ def create_group(
         owner=owner,
         member_count_value=(1 + len(invite_members) if expected_member_count is None else expected_member_count),
         max_user_count_value=max_count,
-        # 官方迁移表 6.1：仅 style=1（PrivateMemberCanInvite）allowInvites=true；style 0/2/3 → false
-        # 快照返回的 isMemberAllowToInvite 由服务端按 allowInvites 决定；可显式传参覆盖
+        # 快照字段必须和创建请求中的 5.0 configs 保持一致；可显式传参覆盖
         is_member_allow_to_invite=(
             is_member_allow_to_invite
             if is_member_allow_to_invite is not None
-            else (style == 1)
+            else configs["allowInvites"]
         ),
-        is_public=style in (2, 3),
-        join_approval_required=style == 2,
+        is_public=configs["isPublic"],
+        join_approval_required=configs["joinApprovalRequired"],
         device=device_name,
     )
     return gid, resp_create

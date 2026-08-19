@@ -252,68 +252,69 @@ def test_presence_publish_128k_desc(device_a, device_b, assert_api):
     """
     A 发布 128KB 大小 desc 的在线状态
     """
-    # 1. A 发布 128k desc
-    resp_pub = device_a.call(
-        "PresenceManager",
-        Cmd.presenceWithDescription.value,
-        info={"desc": DESC_128K},
-    )
-    assert_api.assert_response_matches(
-        resp_pub,
-        expected={
-            "manager": "PresenceManager",
-            "cmd": Cmd.presenceWithDescription.value,
-            "device": "{{device}}",
-            "result": {
-		        "description": "Presence parameter length is exceeded",
-		        "code": 1100
-	        },
-        },
-        context={"device": "deviceA"},
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("A 发布超长在线状态描述并验证长度错误"):
+        resp_pub = device_a.call(
+            "PresenceManager",
+            Cmd.presenceWithDescription.value,
+            info={"desc": DESC_128K},
+        )
+        assert_api.assert_response_matches(
+            resp_pub,
+            expected={
+                "manager": "PresenceManager",
+                "cmd": Cmd.presenceWithDescription.value,
+                "device": "{{device}}",
+                "result": {
+                    "description": "Presence parameter length is exceeded",
+                    "code": 1100
+                },
+            },
+            context={"device": "deviceA"},
+            ignore_keys={"sequence"},
+        )
 
 
 def test_presence_subscribe_nonexistent_user(device_a, assert_api):
     """
     订阅不存在用户：B 对不存在用户发起 presenceSubscribe。
     """
-    resp = device_a.call(
-        "PresenceManager",
-        Cmd.presenceSubscribe.value,
-        info={"members": [USER_NONEXISTENT], "expiry": PRESENCE_EXPIRY},
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "PresenceManager",
-            "cmd": Cmd.presenceSubscribe.value,
-            "device": "{{device}}",
-            "result": [{"statusDescription": "", "publisher": "{{publisher}}", "expiryTime": gt(0),"statusDetails":{},"lastTime":0}],
-        },
-        context={"device": "deviceA", "publisher": USER_NONEXISTENT},
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("订阅不存在用户并验证当前服务端返回语义"):
+        resp = device_a.call(
+            "PresenceManager",
+            Cmd.presenceSubscribe.value,
+            info={"members": [USER_NONEXISTENT], "expiry": PRESENCE_EXPIRY},
+        )
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "PresenceManager",
+                "cmd": Cmd.presenceSubscribe.value,
+                "device": "{{device}}",
+                "result": [{"statusDescription": "", "publisher": "{{publisher}}", "expiryTime": gt(0),"statusDetails":{},"lastTime":0}],
+            },
+            context={"device": "deviceA", "publisher": USER_NONEXISTENT},
+            ignore_keys={"sequence"},
+        )
 
 
 def test_presence_subscribe_expiry_over_30_days(device_a, device_b, assert_api, user_a):
     """
     订阅存在用户但过期时间大于 30 天：B 订阅 A，expiry 设为超过 30 天，预期返回错误。
     """
-    # A 先发布 presence，确保 A 存在且在线
-    resp_pub = device_a.call(
-        "PresenceManager",
-        Cmd.presenceWithDescription.value,
-        info={"desc": "online"},
-    )
-    assert_api.assert_success(resp_pub)
-    # B 订阅 A，但 expiry 超过 30 天（30*24*3600 + 1 秒）
-    resp = device_b.call(
-        "PresenceManager",
-        Cmd.presenceSubscribe.value,
-        info={"members": [user_a], "expiry": SECONDS_30_DAYS + 1},
-    )
-    assert_api.assert_error(resp)
+    with _allure_step("A 发布在线状态作为订阅前置"):
+        resp_pub = device_a.call(
+            "PresenceManager",
+            Cmd.presenceWithDescription.value,
+            info={"desc": "online"},
+        )
+        assert_api.assert_success(resp_pub)
+    with _allure_step("B 使用超过 30 天的有效期订阅并验证边界错误"):
+        resp = device_b.call(
+            "PresenceManager",
+            Cmd.presenceSubscribe.value,
+            info={"members": [user_a], "expiry": SECONDS_30_DAYS + 1},
+        )
+        assert_api.assert_error(resp)
 
 
 # presenceSubscribe / presenceUnsubscribe 单次成员数上限（超过则预期报错）
@@ -324,52 +325,54 @@ def test_presence_subscribe_over_100_members(device_a, assert_api):
     """
     订阅超过 100 个用户：presenceSubscribe 传入超过 100 个 members，预期返回错误。
     """
-    members_over_limit = [f"user_{i}" for i in range(PRESENCE_SUBSCRIBE_MAX_MEMBERS + 1)]
-    resp = device_a.call(
-        "PresenceManager",
-        Cmd.presenceSubscribe.value,
-        info={"members": members_over_limit, "expiry": PRESENCE_EXPIRY},
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "PresenceManager",
-            "cmd": Cmd.presenceSubscribe.value,
-            "device": "{{device}}",
-            "result": {
-                "description": "Presence parameter length is exceeded",
-                "code": 1100
+    with _allure_step("订阅超过数量上限的用户并验证数量错误"):
+        members_over_limit = [f"user_{i}" for i in range(PRESENCE_SUBSCRIBE_MAX_MEMBERS + 1)]
+        resp = device_a.call(
+            "PresenceManager",
+            Cmd.presenceSubscribe.value,
+            info={"members": members_over_limit, "expiry": PRESENCE_EXPIRY},
+        )
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "PresenceManager",
+                "cmd": Cmd.presenceSubscribe.value,
+                "device": "{{device}}",
+                "result": {
+                    "description": "Presence parameter length is exceeded",
+                    "code": 1100
+                },
             },
-        },
-        context={"device": "deviceA"},
-        ignore_keys={"sequence"},
-    )
+            context={"device": "deviceA"},
+            ignore_keys={"sequence"},
+        )
 
 
 def test_presence_unsubscribe_over_100_members(device_b, assert_api):
     """
     取消订阅超过 100 个用户：presenceUnsubscribe 传入超过 100 个 members，预期返回错误。
     """
-    members_over_limit = [f"user_{i}" for i in range(PRESENCE_SUBSCRIBE_MAX_MEMBERS + 1)]
-    resp = device_b.call(
-        "PresenceManager",
-        Cmd.presenceUnsubscribe.value,
-        info={"members": members_over_limit},
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "PresenceManager",
-            "cmd": Cmd.presenceUnsubscribe.value,
-            "device": "{{device}}",
-            "result": {
-                "description": "Presence parameter length is exceeded",
-                "code": 1100
+    with _allure_step("取消超过数量上限的订阅并验证数量错误"):
+        members_over_limit = [f"user_{i}" for i in range(PRESENCE_SUBSCRIBE_MAX_MEMBERS + 1)]
+        resp = device_b.call(
+            "PresenceManager",
+            Cmd.presenceUnsubscribe.value,
+            info={"members": members_over_limit},
+        )
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "PresenceManager",
+                "cmd": Cmd.presenceUnsubscribe.value,
+                "device": "{{device}}",
+                "result": {
+                    "description": "Presence parameter length is exceeded",
+                    "code": 1100
+                },
             },
-        },
-        context={"device": "deviceB"},
-        ignore_keys={"sequence"},
-    )
+            context={"device": "deviceB"},
+            ignore_keys={"sequence"},
+        )
 
 # ---------- fetchSubscribedMembersWithPageNum 分页测试 ----------
 
@@ -378,134 +381,139 @@ def test_fetch_subscribed_members_pagination(device_a, device_b, assert_api, use
     """
     分页查询订阅列表：B 订阅 A 后，第 1 页有数据，第 2 页为空。
     """
-    # 准备：A 发布，B 订阅 A
-    resp_pub = device_a.call(
-        "PresenceManager",
-        Cmd.presenceWithDescription.value,
-        info={"desc": "online"},
-    )
-    assert_api.assert_success(resp_pub)
-    resp_sub = device_b.call(
-        "PresenceManager",
-        Cmd.presenceSubscribe.value,
-        info={"members": [user_a], "expiry": PRESENCE_EXPIRY},
-    )
-    assert_api.assert_success(resp_sub)
+    with _allure_step("创建在线状态并建立订阅前置"):
+        resp_pub = device_a.call(
+            "PresenceManager",
+            Cmd.presenceWithDescription.value,
+            info={"desc": "online"},
+        )
+        assert_api.assert_success(resp_pub)
+        resp_sub = device_b.call(
+            "PresenceManager",
+            Cmd.presenceSubscribe.value,
+            info={"members": [user_a], "expiry": PRESENCE_EXPIRY},
+        )
+        assert_api.assert_success(resp_sub)
 
-    # 第 1 页：pageNum=1, pageSize=20，应返回 [user_a]
-    resp_p1 = device_b.call(
-        "PresenceManager",
-        Cmd.fetchSubscribedMembersWithPageNum.value,
-        info={"pageNum": 1, "pageSize": 20},
-    )
-    assert_api.assert_response_matches(
-        resp_p1,
-        expected={
-            "manager": "PresenceManager",
-            "cmd": Cmd.fetchSubscribedMembersWithPageNum.value,
-            "device": "{{device}}",
-            "result": ["{{publisher}}"],
-        },
-        context={"device": "deviceB", "publisher": user_a},
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("查询第一页订阅列表并验证包含 A"):
+        resp_p1 = device_b.call(
+            "PresenceManager",
+            Cmd.fetchSubscribedMembersWithPageNum.value,
+            info={"pageNum": 1, "pageSize": 20},
+        )
+        assert_api.assert_response_matches(
+            resp_p1,
+            expected={
+                "manager": "PresenceManager",
+                "cmd": Cmd.fetchSubscribedMembersWithPageNum.value,
+                "device": "{{device}}",
+                "result": ["{{publisher}}"],
+            },
+            context={"device": "deviceB", "publisher": user_a},
+            ignore_keys={"sequence"},
+        )
 
-    # 第 2 页：应为空列表
-    resp_p2 = device_b.call(
-        "PresenceManager",
-        Cmd.fetchSubscribedMembersWithPageNum.value,
-        info={"pageNum": 2, "pageSize": 20},
-    )
-    assert_api.assert_response_matches(
-        resp_p2,
-        expected={
-            "manager": "PresenceManager",
-            "cmd": Cmd.fetchSubscribedMembersWithPageNum.value,
-            "device": "{{device}}",
-            "result": [],
-        },
-        context={"device": "deviceB"},
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("查询第二页订阅列表并验证为空"):
+        resp_p2 = device_b.call(
+            "PresenceManager",
+            Cmd.fetchSubscribedMembersWithPageNum.value,
+            info={"pageNum": 2, "pageSize": 20},
+        )
+        assert_api.assert_response_matches(
+            resp_p2,
+            expected={
+                "manager": "PresenceManager",
+                "cmd": Cmd.fetchSubscribedMembersWithPageNum.value,
+                "device": "{{device}}",
+                "result": [],
+            },
+            context={"device": "deviceB"},
+            ignore_keys={"sequence"},
+        )
 
 
 def test_fetch_subscribed_members_pagination_page_size_one(device_a, device_b, assert_api, user_a):
     """
     分页 pageSize=1：第 1 页 1 条，第 2 页 0 条。
     """
-    resp_pub = device_a.call(
-        "PresenceManager",
-        Cmd.presenceWithDescription.value,
-        info={"desc": "online"},
-    )
-    assert_api.assert_success(resp_pub)
-    resp_sub = device_b.call(
-        "PresenceManager",
-        Cmd.presenceSubscribe.value,
-        info={"members": [user_a], "expiry": PRESENCE_EXPIRY},
-    )
-    assert_api.assert_success(resp_sub)
+    with _allure_step("创建在线状态并建立订阅前置"):
+        resp_pub = device_a.call(
+            "PresenceManager",
+            Cmd.presenceWithDescription.value,
+            info={"desc": "online"},
+        )
+        assert_api.assert_success(resp_pub)
+        resp_sub = device_b.call(
+            "PresenceManager",
+            Cmd.presenceSubscribe.value,
+            info={"members": [user_a], "expiry": PRESENCE_EXPIRY},
+        )
+        assert_api.assert_success(resp_sub)
 
-    resp_1 = device_b.call(
-        "PresenceManager",
-        Cmd.fetchSubscribedMembersWithPageNum.value,
-        info={"pageNum": 1, "pageSize": 1},
-    )
-    assert_api.assert_response_matches(
-        resp_1,
-        expected={
-            "manager": "PresenceManager",
-            "cmd": Cmd.fetchSubscribedMembersWithPageNum.value,
-            "device": "{{device}}",
-            "result": ["{{publisher}}"],
-        },
-        context={"device": "deviceB", "publisher": user_a},
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("按 pageSize=1 查询第一页并验证包含 A"):
+        resp_1 = device_b.call(
+            "PresenceManager",
+            Cmd.fetchSubscribedMembersWithPageNum.value,
+            info={"pageNum": 1, "pageSize": 1},
+        )
+        assert_api.assert_response_matches(
+            resp_1,
+            expected={
+                "manager": "PresenceManager",
+                "cmd": Cmd.fetchSubscribedMembersWithPageNum.value,
+                "device": "{{device}}",
+                "result": ["{{publisher}}"],
+            },
+            context={"device": "deviceB", "publisher": user_a},
+            ignore_keys={"sequence"},
+        )
 
-    resp_2 = device_b.call(
-        "PresenceManager",
-        Cmd.fetchSubscribedMembersWithPageNum.value,
-        info={"pageNum": 2, "pageSize": 1},
-    )
-    assert_api.assert_response_matches(
-        resp_2,
-        expected={
-            "manager": "PresenceManager",
-            "cmd": Cmd.fetchSubscribedMembersWithPageNum.value,
-            "device": "{{device}}",
-            "result": [],
-        },
-        context={"device": "deviceB"},
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("按 pageSize=1 查询第二页并验证为空"):
+        resp_2 = device_b.call(
+            "PresenceManager",
+            Cmd.fetchSubscribedMembersWithPageNum.value,
+            info={"pageNum": 2, "pageSize": 1},
+        )
+        assert_api.assert_response_matches(
+            resp_2,
+            expected={
+                "manager": "PresenceManager",
+                "cmd": Cmd.fetchSubscribedMembersWithPageNum.value,
+                "device": "{{device}}",
+                "result": [],
+            },
+            context={"device": "deviceB"},
+            ignore_keys={"sequence"},
+        )
 
 
 def test_fetch_subscribed_members_invalid_pagination(device_b, assert_api, user_a):
     """
     非法分页参数：pageNum=0 或 pageSize=0，预期返回错误。
     """
-    resp_zero_page = device_b.call(
-        "PresenceManager",
-        Cmd.fetchSubscribedMembersWithPageNum.value,
-        info={"pageNum": 0, "pageSize": 20},
-    )
-    # pageNum 从 1 开始时，0 可能报错；若服务端从 0 开始则改为断言成功并校验结果
-    assert_api.assert_response_matches(
-        resp_zero_page,
-        expected={
-            "manager": "PresenceManager",
-            "cmd": Cmd.fetchSubscribedMembersWithPageNum.value,
-            "device": "{{device}}",
-            "result": ["{{publisher}}"],
-        },
-        context={"device": "deviceB", "publisher": user_a},
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("使用 pageNum=0 查询订阅列表并验证边界语义"):
+        resp_zero_page = device_b.call(
+            "PresenceManager",
+            Cmd.fetchSubscribedMembersWithPageNum.value,
+            info={"pageNum": 0, "pageSize": 20},
+        )
+        # pageNum 从 1 开始时，0 可能报错；若服务端从 0 开始则改为断言成功并校验结果
+        assert_api.assert_response_matches(
+            resp_zero_page,
+            expected={
+                "manager": "PresenceManager",
+                "cmd": Cmd.fetchSubscribedMembersWithPageNum.value,
+                "device": "{{device}}",
+                "result": ["{{publisher}}"],
+            },
+            context={"device": "deviceB", "publisher": user_a},
+            ignore_keys={"sequence"},
+        )
 
-    resp_zero_size = device_b.call(
-        "PresenceManager",
-        Cmd.fetchSubscribedMembersWithPageNum.value,
-        info={"pageNum": 1, "pageSize": 0},
-    )
-    assert_api.assert_error(resp_zero_size)
+    with _allure_step("使用 pageSize=0 查询订阅列表并验证边界错误"):
+        resp_zero_size = device_b.call(
+            "PresenceManager",
+            Cmd.fetchSubscribedMembersWithPageNum.value,
+            info={"pageNum": 1, "pageSize": 0},
+        )
+        assert_api.assert_error(resp_zero_size)

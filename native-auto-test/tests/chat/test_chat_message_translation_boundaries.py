@@ -7,6 +7,7 @@ import pytest
 
 from src import Cmd
 from tests.chat._utils import build_text
+from tests.allure_helpers import _allure_step
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
@@ -191,19 +192,22 @@ def _assert_translation_result(assert_api, resp, msg, languages):
 
 
 def test_chat_translate_message_empty_languages(device_a, device_b, assert_api, user_a, user_b):
-    msg = _text_message(device_a, device_b, assert_api, user_a, user_b, f"translate-empty-{uuid.uuid4().hex[:6]}")
-    resp = _translate(device_a, assert_api, msg, [])
-    _assert_translation_result(assert_api, resp, msg, [])
+    with _allure_step("验证：chat translate message empty languages"):
+        msg = _text_message(device_a, device_b, assert_api, user_a, user_b, f"translate-empty-{uuid.uuid4().hex[:6]}")
+        resp = _translate(device_a, assert_api, msg, [])
+        _assert_translation_result(assert_api, resp, msg, [])
 
 
 def test_chat_translate_message_unsupported_language(device_a, device_b, assert_api, user_a, user_b):
-    msg = _text_message(device_a, device_b, assert_api, user_a, user_b, f"translate-unsupported-{uuid.uuid4().hex[:6]}")
-    resp = _translate(device_a, assert_api, msg, ["xx-INVALID"])
-    _assert_translation_result(assert_api, resp, msg, ["xx-INVALID"])
+    with _allure_step("验证：chat translate message unsupported language"):
+        msg = _text_message(device_a, device_b, assert_api, user_a, user_b, f"translate-unsupported-{uuid.uuid4().hex[:6]}")
+        resp = _translate(device_a, assert_api, msg, ["xx-INVALID"])
+        _assert_translation_result(assert_api, resp, msg, ["xx-INVALID"])
 
 
 def test_chat_translate_custom_message(device_a, device_b, assert_api, user_a, user_b):
-    msg = _custom_message(device_a, device_b, assert_api, user_a, user_b)
-    resp = _translate(device_a, assert_api, msg, ["zh-Hans"])
-    # 只看 errorcode（leader 要求）：描述两端不同，code 一致 1
-    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.translateMessage.value, "device": "deviceA", "result": {"code": 1}}, ignore_keys={"sequence"})
+    with _allure_step("验证：chat translate custom message"):
+        msg = _custom_message(device_a, device_b, assert_api, user_a, user_b)
+        resp = _translate(device_a, assert_api, msg, ["zh-Hans"])
+        # 只看 errorcode（leader 要求）：描述两端不同，code 一致 1
+        assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.translateMessage.value, "device": "deviceA", "result": {"code": 1}}, ignore_keys={"sequence"})

@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 
 from src import Cmd, ne
-from tests.chatroom.chatroom_helpers import create_chatroom_or_skip, safe_delete_chatroom
+from tests.chatroom.chatroom_helpers import _allure_step, create_chatroom_or_skip, safe_delete_chatroom
 from tests.chatroom.test_chatroom_management_basics import _join_chatroom_as_b
 
 
@@ -85,19 +85,12 @@ def test_chatroom_change_subject_empty_success(device_a, assert_api, user_a):
     """changeChatRoomSubject：聊天室名称允许置为空，实测返回完整聊天室对象且 name 为空字符串。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="meta_boundary", desc_prefix="meta_boundary")
     try:
-        resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.changeChatRoomSubject.value,
-            info={"roomId": room_id, "subject": ""},
-        )
-        _assert_room_result(
-            assert_api,
-            resp,
-            cmd=Cmd.changeChatRoomSubject.value,
-            room_id=room_id,
-            owner=user_a,
-            name="",
-        )
+        with _allure_step("将聊天室名称置空并验证返回的聊天室状态"):
+            resp = device_a.call(
+                "ChatRoomManager", Cmd.changeChatRoomSubject.value,
+                info={"roomId": room_id, "subject": ""},
+            )
+            _assert_room_result(assert_api, resp, cmd=Cmd.changeChatRoomSubject.value, room_id=room_id, owner=user_a, name="")
     finally:
         safe_delete_chatroom(room_id)
 
@@ -106,18 +99,12 @@ def test_chatroom_change_subject_too_long(device_a, assert_api, user_a):
     """changeChatRoomSubject：名称超过 1024 字符，实测返回 703/title cannot exceed to 1024。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="meta_boundary", desc_prefix="meta_boundary")
     try:
-        resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.changeChatRoomSubject.value,
-            info={"roomId": room_id, "subject": SUBJECT_TOO_LONG},
-        )
-        _assert_error_result(
-            assert_api,
-            resp,
-            cmd=Cmd.changeChatRoomSubject.value,
-            code=703,
-            description="title cannot exceed to 1024",
-        )
+        with _allure_step("提交超长聊天室名称并验证长度错误"):
+            resp = device_a.call(
+                "ChatRoomManager", Cmd.changeChatRoomSubject.value,
+                info={"roomId": room_id, "subject": SUBJECT_TOO_LONG},
+            )
+            _assert_error_result(assert_api, resp, cmd=Cmd.changeChatRoomSubject.value, code=703, description="title cannot exceed to 1024")
     finally:
         safe_delete_chatroom(room_id)
 
@@ -130,20 +117,15 @@ def test_chatroom_change_description_empty_success(device_a, assert_api, user_a)
         desc_prefix="meta_boundary",
     )
     try:
-        resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.changeChatRoomDescription.value,
-            info={"roomId": room_id, "description": ""},
-        )
-        _assert_room_result(
-            assert_api,
-            resp,
-            cmd=Cmd.changeChatRoomDescription.value,
-            room_id=room_id,
-            owner=user_a,
-            name=room_name,
-            desc="",
-        )
+        with _allure_step("将聊天室描述置空并验证返回状态"):
+            resp = device_a.call(
+                "ChatRoomManager", Cmd.changeChatRoomDescription.value,
+                info={"roomId": room_id, "description": ""},
+            )
+            _assert_room_result(
+                assert_api, resp, cmd=Cmd.changeChatRoomDescription.value,
+                room_id=room_id, owner=user_a, name=room_name, desc="",
+            )
     finally:
         safe_delete_chatroom(room_id)
 
@@ -152,18 +134,12 @@ def test_chatroom_change_description_too_long(device_a, assert_api, user_a):
     """changeChatRoomDescription：描述超过 4096 字符，实测返回 703/desc cannot exceed to 4096。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="meta_boundary", desc_prefix="meta_boundary")
     try:
-        resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.changeChatRoomDescription.value,
-            info={"roomId": room_id, "description": DESCRIPTION_TOO_LONG},
-        )
-        _assert_error_result(
-            assert_api,
-            resp,
-            cmd=Cmd.changeChatRoomDescription.value,
-            code=703,
-            description="desc cannot exceed to 4096",
-        )
+        with _allure_step("提交超长聊天室描述并验证长度错误"):
+            resp = device_a.call(
+                "ChatRoomManager", Cmd.changeChatRoomDescription.value,
+                info={"roomId": room_id, "description": DESCRIPTION_TOO_LONG},
+            )
+            _assert_error_result(assert_api, resp, cmd=Cmd.changeChatRoomDescription.value, code=703, description="desc cannot exceed to 4096")
     finally:
         safe_delete_chatroom(room_id)
 
@@ -172,21 +148,16 @@ def test_chatroom_update_announcement_empty(device_a, assert_api, user_a):
     """updateChatRoomAnnouncement：公告允许置为空，实测返回 True。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="announcement_empty", desc_prefix="announcement_empty")
     try:
-        resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.updateChatRoomAnnouncement.value,
-            info={"roomId": room_id, "announcement": ""},
-        )
-        assert_api.assert_response_matches(
-            resp,
-            expected={
-                "manager": "ChatRoomManager",
-                "cmd": Cmd.updateChatRoomAnnouncement.value,
-                "device": "deviceA",
-                "result": True,
-            },
-            ignore_keys={"sequence"},
-        )
+        with _allure_step("将聊天室公告置空并验证返回成功"):
+            resp = device_a.call(
+                "ChatRoomManager", Cmd.updateChatRoomAnnouncement.value,
+                info={"roomId": room_id, "announcement": ""},
+            )
+            assert_api.assert_response_matches(
+                resp,
+                expected={"manager": "ChatRoomManager", "cmd": Cmd.updateChatRoomAnnouncement.value, "device": "deviceA", "result": True},
+                ignore_keys={"sequence"},
+            )
     finally:
         safe_delete_chatroom(room_id)
 
@@ -222,17 +193,12 @@ def test_chatroom_member_management_empty_members(
     """成员管理接口：成员列表为空时，逐方法锁定真实错误码与错误描述。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="empty_members", desc_prefix="empty_members")
     try:
-        info = {"roomId": room_id, member_key: []}
-        if cmd == Cmd.muteChatRoomMembers.value:
-            info["duration"] = 60000
-        resp = device_a.call("ChatRoomManager", cmd, info=info)
-        _assert_error_result(
-            assert_api,
-            resp,
-            cmd=cmd,
-            code=expected_code,
-            description=expected_description,
-        )
+        with _allure_step("提交空成员列表管理请求并验证当前错误响应"):
+            info = {"roomId": room_id, member_key: []}
+            if cmd == Cmd.muteChatRoomMembers.value:
+                info["duration"] = 60000
+            resp = device_a.call("ChatRoomManager", cmd, info=info)
+            _assert_error_result(assert_api, resp, cmd=cmd, code=expected_code, description=expected_description)
     finally:
         safe_delete_chatroom(room_id)
 
@@ -286,39 +252,21 @@ def test_chatroom_member_management_nonexistent_user(device_a, assert_api, user_
     """成员管理接口：传入不存在用户时，逐方法锁定真实错误或幂等成功响应。"""
     room_id, room_name = create_chatroom_or_skip(owner=user_a, name_prefix="bad_member", desc_prefix="bad_member")
     try:
-        payload = {"roomId": room_id, **info}
-        resp = device_a.call("ChatRoomManager", cmd, info=payload)
-        if expected is None:
-            # whiteList 等幂等成功操作：原生返回 room（wrapper 透传）—— 断言 result 非 None（room 存在）
-            assert_api.assert_response_matches(
-                resp,
-                expected={
-                    "manager": "ChatRoomManager",
-                    "cmd": cmd,
-                    "device": "deviceA",
-                    "result": ne(None),
-                },
-                ignore_keys={"sequence"},
-            )
-            return
-        if expected == "room":
-            _assert_room_result(
-                assert_api,
-                resp,
-                cmd=cmd,
-                room_id=room_id,
-                owner=user_a,
-                name=room_name,
-            )
-            return
-        code, description = expected
-        _assert_error_result(
-            assert_api,
-            resp,
-            cmd=cmd,
-            code=code,
-            description=description.replace("{room_id}", room_id),
-        )
+        with _allure_step("提交不存在用户的成员管理请求并验证真实响应"):
+            payload = {"roomId": room_id, **info}
+            resp = device_a.call("ChatRoomManager", cmd, info=payload)
+            if expected is None:
+                assert_api.assert_response_matches(
+                    resp,
+                    expected={"manager": "ChatRoomManager", "cmd": cmd, "device": "deviceA", "result": ne(None)},
+                    ignore_keys={"sequence"},
+                )
+                return
+            if expected == "room":
+                _assert_room_result(assert_api, resp, cmd=cmd, room_id=room_id, owner=user_a, name=room_name)
+                return
+            code, description = expected
+            _assert_error_result(assert_api, resp, cmd=cmd, code=code, description=description.replace("{room_id}", room_id))
     finally:
         safe_delete_chatroom(room_id)
 
@@ -348,43 +296,28 @@ def test_chatroom_member_management_non_member(device_a, assert_api, user_a, use
     """成员管理接口：真实用户未加入聊天室时，逐方法锁定当前成功/失败语义。"""
     room_id, room_name = create_chatroom_or_skip(owner=user_a, name_prefix="non_member", desc_prefix="non_member")
     try:
-        payload = {"roomId": room_id}
-        for key, value in info.items():
-            if isinstance(value, str):
-                payload[key] = value.replace("{{user_b}}", user_b)
-            else:
-                payload[key] = [item.replace("{{user_b}}", user_b) for item in value]
-        resp = device_a.call("ChatRoomManager", cmd, info=payload)
-        if expected == "room":
-            _assert_room_result(
-                assert_api,
-                resp,
-                cmd=cmd,
-                room_id=room_id,
-                owner=user_a,
-                name=room_name,
+        with _allure_step("对未加入成员执行聊天室管理操作并验证成功或错误语义"):
+            payload = {"roomId": room_id}
+            for key, value in info.items():
+                if isinstance(value, str):
+                    payload[key] = value.replace("{{user_b}}", user_b)
+                else:
+                    payload[key] = [item.replace("{{user_b}}", user_b) for item in value]
+            resp = device_a.call("ChatRoomManager", cmd, info=payload)
+            if expected == "room":
+                _assert_room_result(assert_api, resp, cmd=cmd, room_id=room_id, owner=user_a, name=room_name)
+                return
+            if expected == "owner_changed":
+                _assert_room_result(
+                    assert_api, resp, cmd=cmd, room_id=room_id, owner=user_b, name=room_name,
+                    permission_type=0, member_list=[user_a],
+                )
+                return
+            code, description = expected
+            _assert_error_result(
+                assert_api, resp, cmd=cmd, code=code,
+                description=description.replace("{{user_b}}", user_b).replace("{{room_id}}", room_id),
             )
-            return
-        if expected == "owner_changed":
-            _assert_room_result(
-                assert_api,
-                resp,
-                cmd=cmd,
-                room_id=room_id,
-                owner=user_b,
-                name=room_name,
-                permission_type=0,
-                member_list=[user_a],
-            )
-            return
-        code, description = expected
-        _assert_error_result(
-            assert_api,
-            resp,
-            cmd=cmd,
-            code=code,
-            description=description.replace("{{user_b}}", user_b).replace("{{room_id}}", room_id),
-        )
     finally:
         safe_delete_chatroom(room_id)
 
@@ -406,25 +339,20 @@ def test_chatroom_fetch_members_invalid_paging(device_a, device_b, assert_api, u
     """fetchChatRoomMembers：非法 pageNum/pageSize 当前仍返回 cursor 结构与成员列表。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="members_page_bad", desc_prefix="members_page_bad")
     try:
-        _join_chatroom_as_b(device_b, assert_api, room_id)
-        resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomMembers.value,
-            info={"roomId": room_id, "cursor": "", "pageSize": page_size, "pageNum": page_num},
-        )
-        assert_api.assert_response_matches(
-            resp,
-            expected={
-                "manager": "ChatRoomManager",
-                "cmd": Cmd.fetchChatRoomMembers.value,
-                "device": "deviceA",
-                "result": {
-                    "cursor": "",
-                    "list": [user_b],
+        with _allure_step("B 加入聊天室并验证非法成员分页参数仍返回成员列表"):
+            _join_chatroom_as_b(device_b, assert_api, room_id)
+            resp = device_a.call(
+                "ChatRoomManager", Cmd.fetchChatRoomMembers.value,
+                info={"roomId": room_id, "cursor": "", "pageSize": page_size, "pageNum": page_num},
+            )
+            assert_api.assert_response_matches(
+                resp,
+                expected={
+                    "manager": "ChatRoomManager", "cmd": Cmd.fetchChatRoomMembers.value, "device": "deviceA",
+                    "result": {"cursor": "", "list": [user_b]},
                 },
-            },
-            ignore_keys={"sequence"},
-        )
+                ignore_keys={"sequence"},
+            )
     finally:
         safe_delete_chatroom(room_id)
 
@@ -454,21 +382,16 @@ def test_chatroom_server_member_list_invalid_paging(device_a, assert_api, user_a
     """fetchChatRoomMuteList/fetchChatRoomBlockList：非法分页参数当前容错返回空列表。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="list_page_bad", desc_prefix="list_page_bad")
     try:
-        resp = device_a.call(
-            "ChatRoomManager",
-            cmd,
-            info={"roomId": room_id, "pageNum": page_num, "pageSize": page_size},
-        )
-        assert_api.assert_response_matches(
-            resp,
-            expected={
-                "manager": "ChatRoomManager",
-                "cmd": cmd,
-                "device": "deviceA",
-                "result": [],
-            },
-            ignore_keys={"sequence"},
-        )
+        with _allure_step("使用非法分页参数查询聊天室成员名单并验证空列表响应"):
+            resp = device_a.call(
+                "ChatRoomManager", cmd,
+                info={"roomId": room_id, "pageNum": page_num, "pageSize": page_size},
+            )
+            assert_api.assert_response_matches(
+                resp,
+                expected={"manager": "ChatRoomManager", "cmd": cmd, "device": "deviceA", "result": []},
+                ignore_keys={"sequence"},
+            )
     finally:
         safe_delete_chatroom(room_id)
 
@@ -477,18 +400,12 @@ def test_chatroom_add_attributes_empty_map(device_a, assert_api, user_a):
     """setChatRoomAttributes：attributes 为空 map 时，实测返回 110 且 description 为空字符串。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="attr_empty", desc_prefix="attr_empty")
     try:
-        resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.setChatRoomAttributes.value,
-            info={"roomId": room_id, "attributes": {}, "autoDelete": False, "forced": True},
-        )
-        _assert_error_result(
-            assert_api,
-            resp,
-            cmd=Cmd.setChatRoomAttributes.value,
-            code=110,
-            description="",
-        )
+        with _allure_step("提交空聊天室属性 map 并验证参数错误"):
+            resp = device_a.call(
+                "ChatRoomManager", Cmd.setChatRoomAttributes.value,
+                info={"roomId": room_id, "attributes": {}, "autoDelete": False, "forced": True},
+            )
+            _assert_error_result(assert_api, resp, cmd=Cmd.setChatRoomAttributes.value, code=110, description="")
     finally:
         safe_delete_chatroom(room_id)
 
@@ -497,18 +414,12 @@ def test_chatroom_remove_attributes_empty_keys(device_a, assert_api, user_a):
     """removeChatRoomAttributes：keys 为空列表时，实测返回 110 且 description 为空字符串。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="attr_keys_empty", desc_prefix="attr_keys_empty")
     try:
-        resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.removeChatRoomAttributes.value,
-            info={"roomId": room_id, "keys": [], "forced": True},
-        )
-        _assert_error_result(
-            assert_api,
-            resp,
-            cmd=Cmd.removeChatRoomAttributes.value,
-            code=110,
-            description="",
-        )
+        with _allure_step("提交空聊天室属性 key 列表并验证参数错误"):
+            resp = device_a.call(
+                "ChatRoomManager", Cmd.removeChatRoomAttributes.value,
+                info={"roomId": room_id, "keys": [], "forced": True},
+            )
+            _assert_error_result(assert_api, resp, cmd=Cmd.removeChatRoomAttributes.value, code=110, description="")
     finally:
         safe_delete_chatroom(room_id)
 
@@ -524,11 +435,6 @@ def test_chatroom_remove_attributes_empty_keys(device_a, assert_api, user_a):
 )
 def test_chatroom_member_self_checks_empty_room_id(device_a, assert_api, cmd):
     """白名单/禁言自查接口：roomId 为空时，按方法分别冻结 700/Chat room ID is invalid。"""
-    resp = device_a.call("ChatRoomManager", cmd, info={"roomId": ""})
-    _assert_error_result(
-        assert_api,
-        resp,
-        cmd=cmd,
-        code=700,
-        description="Chat room ID is invalid",
-    )
+    with _allure_step("使用空聊天室 ID 查询成员状态并验证参数错误"):
+        resp = device_a.call("ChatRoomManager", cmd, info={"roomId": ""})
+        _assert_error_result(assert_api, resp, cmd=cmd, code=700, description="Chat room ID is invalid")

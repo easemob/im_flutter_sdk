@@ -8,6 +8,7 @@ import pytest
 from src import Cmd, ne
 from src.tools.assertions import assert_error
 from tests.chat._utils import build_text, now_ms
+from tests.allure_helpers import _allure_step
 
 
 def _assert_chat_response(assert_api, resp: dict, cmd: str, device: str = "deviceA", result_expected=ne(None)) -> None:
@@ -181,24 +182,25 @@ def _wait_server_conversation_projection(device, cmd: str, info: dict, user_b: s
 
 def test_chat_load_all_conversations_contains_target_conversation(device_a, device_b, assert_api, user_a, user_b):
     """5.0 会话改本地读取（loadAllConversations）：发消息后本地会话列表含目标会话（原 getConversationsFromServer 服务端拉取已移除）。"""
-    _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-get-server-{uuid.uuid4().hex[:6]}")
-    resp, projected = _wait_server_conversation_projection(device_a, Cmd.loadAllConversations.value, {}, user_b)
-    assert_api.assert_response_matches(
-        {
-            "manager": "ChatManager",
-            "cmd": Cmd.loadAllConversations.value,
-            "device": "deviceA",
-            "result": projected,
-        },
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.loadAllConversations.value,
-            "device": "deviceA",
-            "result": [{"convId": "{{convId}}", "type": 0}],
-        },
-        context={"convId": user_b},
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证：5.0 会话改本地读取（loadAllConversations）：发消息后本地会话列表含目标会话（原 getConversationsFromServer 服务端拉取已移除）。"):
+        _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-get-server-{uuid.uuid4().hex[:6]}")
+        resp, projected = _wait_server_conversation_projection(device_a, Cmd.loadAllConversations.value, {}, user_b)
+        assert_api.assert_response_matches(
+            {
+                "manager": "ChatManager",
+                "cmd": Cmd.loadAllConversations.value,
+                "device": "deviceA",
+                "result": projected,
+            },
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.loadAllConversations.value,
+                "device": "deviceA",
+                "result": [{"convId": "{{convId}}", "type": 0}],
+            },
+            context={"convId": user_b},
+            ignore_keys={"sequence"},
+        )
 
 
 @pytest.mark.skip(reason="5.0 移除服务端拉会话（改用本地列表，无服务端/分页语义）")
@@ -430,41 +432,45 @@ def test_chat_get_pinned_conversations_from_server_with_cursor_invalid_page_size
 
 
 def test_chat_delete_remote_conversation_success(device_a, device_b, assert_api, user_a, user_b):
-    _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-del-remote-{uuid.uuid4().hex[:6]}")
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.deleteRemoteConversation.value,
-        info={"convId": user_b, "conversationType": 0, "isDeleteRemoteMessage": False},
-    )
-    _assert_chat_response(assert_api, resp, Cmd.deleteRemoteConversation.value, "deviceA", None)
+    with _allure_step("验证：chat delete remote conversation success"):
+        _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-del-remote-{uuid.uuid4().hex[:6]}")
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.deleteRemoteConversation.value,
+            info={"convId": user_b, "conversationType": 0, "isDeleteRemoteMessage": False},
+        )
+        _assert_chat_response(assert_api, resp, Cmd.deleteRemoteConversation.value, "deviceA", None)
 
 
 def test_chat_delete_remote_conversation_empty_conv_id(device_a):
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.deleteRemoteConversation.value,
-        info={"convId": "", "conversationType": 0, "isDeleteRemoteMessage": False},
-    )
-    assert_error(resp, code=303, description="field channel cannot be null or empty")
+    with _allure_step("验证：chat delete remote conversation empty conv id"):
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.deleteRemoteConversation.value,
+            info={"convId": "", "conversationType": 0, "isDeleteRemoteMessage": False},
+        )
+        assert_error(resp, code=303, description="field channel cannot be null or empty")
 
 
 def test_chat_delete_remote_conversation_invalid_type(device_a, assert_api):
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.deleteRemoteConversation.value,
-        info={"convId": "__invalid_conv__", "conversationType": 2, "isDeleteRemoteMessage": False},
-    )
-    _assert_chat_response(assert_api, resp, Cmd.deleteRemoteConversation.value, "deviceA", None)
+    with _allure_step("验证：chat delete remote conversation invalid type"):
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.deleteRemoteConversation.value,
+            info={"convId": "__invalid_conv__", "conversationType": 2, "isDeleteRemoteMessage": False},
+        )
+        _assert_chat_response(assert_api, resp, Cmd.deleteRemoteConversation.value, "deviceA", None)
 
 
 def test_chat_remove_messages_from_server_with_msg_ids_success(device_a, device_b, assert_api, user_a, user_b):
-    real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-rm-server-ids-{uuid.uuid4().hex[:6]}")
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.removeMessagesFromServerWithMsgIds.value,
-        info={"convId": user_b, "type": 0, "msgIds": [real_id]},
-    )
-    _assert_chat_response(assert_api, resp, Cmd.removeMessagesFromServerWithMsgIds.value, "deviceA", None)
+    with _allure_step("验证：chat remove messages from server with msg ids success"):
+        real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-rm-server-ids-{uuid.uuid4().hex[:6]}")
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.removeMessagesFromServerWithMsgIds.value,
+            info={"convId": user_b, "type": 0, "msgIds": [real_id]},
+        )
+        _assert_chat_response(assert_api, resp, Cmd.removeMessagesFromServerWithMsgIds.value, "deviceA", None)
 
 
 @pytest.mark.skip(reason="必填缺失类 case 暂缓；当前端易返回 MissingPlugin 非被测端语义")
@@ -478,12 +484,13 @@ def test_chat_remove_messages_from_server_with_msg_ids_missing_msg_ids(device_a,
 
 
 def test_chat_remove_messages_from_server_with_msg_ids_empty_msg_ids(device_a, user_b):
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.removeMessagesFromServerWithMsgIds.value,
-        info={"convId": user_b, "type": 0, "msgIds": []},
-    )
-    assert_error(resp, code=110, description="Invalid parameter")
+    with _allure_step("验证：chat remove messages from server with msg ids empty msg ids"):
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.removeMessagesFromServerWithMsgIds.value,
+            info={"convId": user_b, "type": 0, "msgIds": []},
+        )
+        assert_error(resp, code=110, description="Invalid parameter")
 
 
 @pytest.mark.skip(reason="必填缺失类 case 暂缓；当前端易返回 MissingPlugin 非被测端语义")
@@ -497,12 +504,13 @@ def test_chat_remove_messages_from_server_with_msg_ids_missing_conv_id(device_a)
 
 
 def test_chat_remove_messages_from_server_with_ts_success(device_a, assert_api, user_b):
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.removeMessagesFromServerWithTs.value,
-        info={"convId": user_b, "type": 0, "timestamp": now_ms()},
-    )
-    _assert_chat_response(assert_api, resp, Cmd.removeMessagesFromServerWithTs.value, "deviceA", None)
+    with _allure_step("验证：chat remove messages from server with ts success"):
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.removeMessagesFromServerWithTs.value,
+            info={"convId": user_b, "type": 0, "timestamp": now_ms()},
+        )
+        _assert_chat_response(assert_api, resp, Cmd.removeMessagesFromServerWithTs.value, "deviceA", None)
 
 
 @pytest.mark.skip(reason="必填缺失类 case 暂缓；按规则不纳入 strict 批次")
@@ -516,12 +524,13 @@ def test_chat_remove_messages_from_server_with_ts_missing_timestamp(device_a, us
 
 
 def test_chat_remove_messages_from_server_with_ts_timestamp_zero(device_a, user_b):
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.removeMessagesFromServerWithTs.value,
-        info={"convId": user_b, "type": 0, "timestamp": 0},
-    )
-    assert_error(resp, code=110, description="Invalid parameter")
+    with _allure_step("验证：chat remove messages from server with ts timestamp zero"):
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.removeMessagesFromServerWithTs.value,
+            info={"convId": user_b, "type": 0, "timestamp": 0},
+        )
+        assert_error(resp, code=110, description="Invalid parameter")
 
 
 @pytest.mark.skip(reason="必填缺失类 case 暂缓；当前端易返回 MissingPlugin 非被测端语义")

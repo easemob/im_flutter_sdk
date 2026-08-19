@@ -8,6 +8,7 @@ import pytest
 from src import Cmd
 
 from tests.chat._utils import swt_to_send
+from tests.allure_helpers import _allure_step
 
 
 pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.agorachat1_4_0]
@@ -132,82 +133,43 @@ def test_chat_message_send_target_boundaries(
     case_name,
 ):
     """空目标应失败；不存在用户按真实服务端语义发送成功；B 均不得误收目标消息。"""
-    device_a.drain_events()
-    device_b.drain_events()
-    target_id = "" if case_name == "empty" else f"qa{uuid.uuid4().hex[:24]}"
-    marker = f"target-boundary-{uuid.uuid4().hex[:12]}"
-    type_key = "txt" if case_name == "empty" else "cmd"
-    payload = (
-        {"targetId": target_id, "content": marker}
-        if type_key == "txt"
-        else {"targetId": target_id, "action": marker, "deliverOnlineOnly": False}
-    )
-    body = (
-        {"type": 0, "content": marker}
-        if type_key == "txt"
-        else {"type": 6, "action": marker, "deliverOnlineOnly": False}
-    )
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.sendMessage.value,
-        info={"to": target_id, "chatType": 0, "direction": 0, "body": body},
-    )
-    temp_id = ((resp.get("result") or {}).get("msgId"))
-    assert temp_id, f"发送目标错误未返回待关联临时 msgId: case={case_name}, resp={resp}"
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.sendMessage.value,
-            "device": "deviceA",
-            "result": {
-                "msgId": temp_id,
-                "from": user_a,
-                "to": target_id,
-                "convId": target_id,
-                "chatType": 0,
-                "direction": 0,
-                
-                "hasRead": True,
-                "needReadReceipt": False, "isThread": False,
-                "isContentReplaced": False,
-                "deliverOnlineOnly": False,
-                "body": body,
-            },
-        },
-        ignore_keys={
-            "sequence",
-            "status",
-            "serverTime",
-            "localTime",
-            "broadcast",
-            "onlineState",
-            "targetLanguages",
-            "translations",
-        },
-    )
-    terminal, terminal_evt = _wait_send_terminal(device_a, temp_id=temp_id)
-    expected_terminal = "error" if case_name == "empty" else "success"
-    assert terminal == expected_terminal, (
-        f"目标边界终态不符合当前真实语义: case={case_name}, "
-        f"expected={expected_terminal}, event={terminal_evt}"
-    )
-    if terminal == "success":
-        real_id = ((((terminal_evt.get("data") or {}).get("msg")) or {}).get("msgId"))
-        assert real_id, f"不存在用户发送成功事件缺少真实 msgId: {terminal_evt}"
-        expected_event = {
-            "type": "event",
-            "eventType": Cmd.onMessageSuccess.value,
-            "data": {
-                "msgId": temp_id,
-                "msg": {
-                    "msgId": real_id,
+    with _allure_step("验证：空目标应失败；不存在用户按真实服务端语义发送成功；B 均不得误收目标消息。"):
+        device_a.drain_events()
+        device_b.drain_events()
+        target_id = "" if case_name == "empty" else f"qa{uuid.uuid4().hex[:24]}"
+        marker = f"target-boundary-{uuid.uuid4().hex[:12]}"
+        type_key = "txt" if case_name == "empty" else "cmd"
+        payload = (
+            {"targetId": target_id, "content": marker}
+            if type_key == "txt"
+            else {"targetId": target_id, "action": marker, "deliverOnlineOnly": False}
+        )
+        body = (
+            {"type": 0, "content": marker}
+            if type_key == "txt"
+            else {"type": 6, "action": marker, "deliverOnlineOnly": False}
+        )
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.sendMessage.value,
+            info={"to": target_id, "chatType": 0, "direction": 0, "body": body},
+        )
+        temp_id = ((resp.get("result") or {}).get("msgId"))
+        assert temp_id, f"发送目标错误未返回待关联临时 msgId: case={case_name}, resp={resp}"
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.sendMessage.value,
+                "device": "deviceA",
+                "result": {
+                    "msgId": temp_id,
                     "from": user_a,
                     "to": target_id,
                     "convId": target_id,
                     "chatType": 0,
                     "direction": 0,
-                    "status": 2,
+
                     "hasRead": True,
                     "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False,
@@ -215,55 +177,95 @@ def test_chat_message_send_target_boundaries(
                     "body": body,
                 },
             },
-        }
-    else:
-        expected_event = {
-            "type": "event",
-            "eventType": Cmd.onMessageError.value,
-            "data": {
-                "msgId": temp_id,
-                "msg": {
-                    "msgId": temp_id,
-                    "from": user_a,
-                    "to": target_id,
-                    "convId": target_id,
-                    "chatType": 0,
-                    "direction": 0,
-                    
-                    "body": body,
-                },
-                "error": {"code": 500, "description": "Message is invalid"},
+            ignore_keys={
+                "sequence",
+                "status",
+                "serverTime",
+                "localTime",
+                "broadcast",
+                "onlineState",
+                "targetLanguages",
+                "translations",
             },
-        }
-    assert_api.assert_response_matches(
-        terminal_evt,
-        expected=expected_event,
-        ignore_keys={
-            "timestamp",
-            "sequence",
-            "status",
-            "serverTime",
-            "localTime",
-            "broadcast",
-            "onlineState",
-            "targetLanguages",
-            "translations",
-            "deliverOnlineOnly",
-            "hasRead",
-            "hasDeliverAck",
-            "isThread",
-            "isContentReplaced",
-        },
-    )
-    _assert_peer_did_not_receive_body(
-        device_b,
-        from_user=user_a,
-        body_predicate=(
-            (lambda candidate: candidate.get("content") == marker)
-            if type_key == "txt"
-            else (lambda candidate: candidate.get("action") == marker)
-        ),
-    )
+        )
+        terminal, terminal_evt = _wait_send_terminal(device_a, temp_id=temp_id)
+        expected_terminal = "error" if case_name == "empty" else "success"
+        assert terminal == expected_terminal, (
+            f"目标边界终态不符合当前真实语义: case={case_name}, "
+            f"expected={expected_terminal}, event={terminal_evt}"
+        )
+        if terminal == "success":
+            real_id = ((((terminal_evt.get("data") or {}).get("msg")) or {}).get("msgId"))
+            assert real_id, f"不存在用户发送成功事件缺少真实 msgId: {terminal_evt}"
+            expected_event = {
+                "type": "event",
+                "eventType": Cmd.onMessageSuccess.value,
+                "data": {
+                    "msgId": temp_id,
+                    "msg": {
+                        "msgId": real_id,
+                        "from": user_a,
+                        "to": target_id,
+                        "convId": target_id,
+                        "chatType": 0,
+                        "direction": 0,
+                        "status": 2,
+                        "hasRead": True,
+                        "needReadReceipt": False, "isThread": False,
+                        "isContentReplaced": False,
+                        "deliverOnlineOnly": False,
+                        "body": body,
+                    },
+                },
+            }
+        else:
+            expected_event = {
+                "type": "event",
+                "eventType": Cmd.onMessageError.value,
+                "data": {
+                    "msgId": temp_id,
+                    "msg": {
+                        "msgId": temp_id,
+                        "from": user_a,
+                        "to": target_id,
+                        "convId": target_id,
+                        "chatType": 0,
+                        "direction": 0,
+                    
+                        "body": body,
+                    },
+                    "error": {"code": 500, "description": "Message is invalid"},
+                },
+            }
+        assert_api.assert_response_matches(
+            terminal_evt,
+            expected=expected_event,
+            ignore_keys={
+                "timestamp",
+                "sequence",
+                "status",
+                "serverTime",
+                "localTime",
+                "broadcast",
+                "onlineState",
+                "targetLanguages",
+                "translations",
+                "deliverOnlineOnly",
+                "hasRead",
+                "hasDeliverAck",
+                "isThread",
+                "isContentReplaced",
+            },
+        )
+        _assert_peer_did_not_receive_body(
+            device_b,
+            from_user=user_a,
+            body_predicate=(
+                (lambda candidate: candidate.get("content") == marker)
+                if type_key == "txt"
+                else (lambda candidate: candidate.get("action") == marker)
+            ),
+        )
 
 
 @pytest.mark.parametrize(
@@ -357,63 +359,64 @@ def _missing_key(type_key: str, payload: dict) -> str:
 
 def test_chat_combine_message_rejects_empty_source_ids(device_a, device_b, assert_api, user_a, user_b):
     """合并消息来源 ID 为空时应进入失败终态，B 不得收到该合并消息。"""
-    device_a.drain_events()
-    device_b.drain_events()
-    title = f"empty-combine-{uuid.uuid4().hex[:8]}"
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.sendMessage.value,
-        info={
-            "to": user_b,
-            "chatType": 0,
-            "direction": 0,
-            "body": {
+    with _allure_step("验证：合并消息来源 ID 为空时应进入失败终态，B 不得收到该合并消息。"):
+        device_a.drain_events()
+        device_b.drain_events()
+        title = f"empty-combine-{uuid.uuid4().hex[:8]}"
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.sendMessage.value,
+            info={
+                "to": user_b,
+                "chatType": 0,
+                "direction": 0,
+                "body": {
+                    "type": 8,
+                    "title": title,
+                    "summary": "empty source ids",
+                    "compatibleText": "empty combine",
+                    "messageList": [],
+                    "fileStatus": 0,
+                },
+            },
+        )
+        temp_id = ((resp.get("result") or {}).get("msgId"))
+        assert temp_id, f"空来源合并消息未返回临时 msgId: {resp}"
+        terminal, terminal_evt = _wait_send_terminal(device_a, temp_id=temp_id)
+        assert terminal == "error", f"空来源合并消息未失败: {terminal_evt}"
+        _assert_failed_send_envelopes(
+            assert_api,
+            resp=resp,
+            error_evt=terminal_evt,
+            temp_id=temp_id,
+            from_user=user_a,
+            to_user=user_b,
+            response_body={
                 "type": 8,
                 "title": title,
                 "summary": "empty source ids",
                 "compatibleText": "empty combine",
-                "messageList": [],
-                "fileStatus": 0,
             },
-        },
-    )
-    temp_id = ((resp.get("result") or {}).get("msgId"))
-    assert temp_id, f"空来源合并消息未返回临时 msgId: {resp}"
-    terminal, terminal_evt = _wait_send_terminal(device_a, temp_id=temp_id)
-    assert terminal == "error", f"空来源合并消息未失败: {terminal_evt}"
-    _assert_failed_send_envelopes(
-        assert_api,
-        resp=resp,
-        error_evt=terminal_evt,
-        temp_id=temp_id,
-        from_user=user_a,
-        to_user=user_b,
-        response_body={
-            "type": 8,
-            "title": title,
-            "summary": "empty source ids",
-            "compatibleText": "empty combine",
-        },
-        error_body={
-            "type": 8,
-            "title": title,
-            "summary": "empty source ids",
-            "compatibleText": "empty combine",
-            "localPath": "",
-            "remotePath": "",
-            "secret": "",
-            "fileStatus": 3,
-        },
-        error_code=110,
-        error_description="The count of combined messages must be between 1 and 300.",
-        response_status=1,
-        ignore_response_status=True,
-    )
-    _assert_peer_did_not_receive_body(
-        device_b,
-        from_user=user_a,
-        body_predicate=lambda body: body.get("type") == 8 and body.get("title") == title,
-    )
+            error_body={
+                "type": 8,
+                "title": title,
+                "summary": "empty source ids",
+                "compatibleText": "empty combine",
+                "localPath": "",
+                "remotePath": "",
+                "secret": "",
+                "fileStatus": 3,
+            },
+            error_code=110,
+            error_description="The count of combined messages must be between 1 and 300.",
+            response_status=1,
+            ignore_response_status=True,
+        )
+        _assert_peer_did_not_receive_body(
+            device_b,
+            from_user=user_a,
+            body_predicate=lambda body: body.get("type") == 8 and body.get("title") == title,
+        )
 
 
 @pytest.mark.parametrize("type_key", ["file", "image", "video", "voice"])
@@ -426,90 +429,91 @@ def test_chat_media_message_rejects_nonexistent_device_path(
     type_key,
 ):
     """媒体消息显式传入不存在 Android 路径时应失败，B 不得收到该媒体消息。"""
-    device_a.drain_events()
-    device_b.drain_events()
-    marker = f"missing-{type_key}-{uuid.uuid4().hex[:8]}"
-    payload = {
-        "targetId": user_b,
-        "filePath": f"/data/local/tmp/{marker}.bin",
-        "displayName": marker,
-    }
-    if type_key in {"video", "voice"}:
-        payload["duration"] = 1
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.sendMessage.value,
-        info=swt_to_send({"type": type_key, "payload": payload, "chatType": 0}),
-    )
-    temp_id = ((resp.get("result") or {}).get("msgId"))
-    assert temp_id, f"不存在媒体路径未返回临时 msgId: type={type_key}, resp={resp}"
-    terminal, terminal_evt = _wait_send_terminal(device_a, temp_id=temp_id)
-    assert terminal == "error", f"不存在媒体路径未失败: type={type_key}, event={terminal_evt}"
-    body = {
-        "type": {"image": 1, "video": 2, "voice": 4, "file": 5}[type_key],
-        "secret": "",
-        "remotePath": "",
-        "fileSize": 0,
-        "localPath": payload["filePath"],
-        "displayName": marker,
-        "fileStatus": 0,
-    }
-    if type_key == "image":
-        body.update({
-            "thumbnailLocalPath": "",
-            "thumbnailRemotePath": "",
-            "thumbnailSecret": "",
-            "sendOriginalImage": False,
-            "height": 0,
-            "width": 0,
-            "thumbnailStatus": 0,
-            "isGif": False,
-        })
-    elif type_key == "video":
-        body.update({
-            "duration": 1,
-            "thumbnailLocalPath": "",
-            "thumbnailRemotePath": "",
-            "thumbnailSecret": "",
-            "height": 0,
-            "width": 0,
-            "thumbnailStatus": 0,
-        })
-    elif type_key == "voice":
-        body["duration"] = 1
-    error_description = (
-        "File movement error."
-        if type_key in {"file", "voice"}
-        else "File not exists or can not be read"
-    )
-    _assert_failed_send_envelopes(
-        assert_api,
-        resp=resp,
-        error_evt=terminal_evt,
-        temp_id=temp_id,
-        from_user=user_a,
-        to_user=user_b,
-        response_body={
-            key: value
-            for key, value in body.items()
-            if key not in {
-                "secret",
-                "remotePath",
-                "fileSize",
-                "thumbnailLocalPath",
-                "thumbnailRemotePath",
-                "thumbnailSecret",
-            }
-        },
-        error_body=body,
-        error_code=401,
-        error_description=error_description,
-        response_status=1,
-        # 媒体路径错误时 result.status 在 0/1/3 间竞态（发送状态时序）→ 忽略
-        ignore_response_status=True,
-    )
-    _assert_peer_did_not_receive_body(
-        device_b,
-        from_user=user_a,
-        body_predicate=lambda body: body.get("displayName") == marker,
-    )
+    with _allure_step("验证：媒体消息显式传入不存在 Android 路径时应失败，B 不得收到该媒体消息。"):
+        device_a.drain_events()
+        device_b.drain_events()
+        marker = f"missing-{type_key}-{uuid.uuid4().hex[:8]}"
+        payload = {
+            "targetId": user_b,
+            "filePath": f"/data/local/tmp/{marker}.bin",
+            "displayName": marker,
+        }
+        if type_key in {"video", "voice"}:
+            payload["duration"] = 1
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.sendMessage.value,
+            info=swt_to_send({"type": type_key, "payload": payload, "chatType": 0}),
+        )
+        temp_id = ((resp.get("result") or {}).get("msgId"))
+        assert temp_id, f"不存在媒体路径未返回临时 msgId: type={type_key}, resp={resp}"
+        terminal, terminal_evt = _wait_send_terminal(device_a, temp_id=temp_id)
+        assert terminal == "error", f"不存在媒体路径未失败: type={type_key}, event={terminal_evt}"
+        body = {
+            "type": {"image": 1, "video": 2, "voice": 4, "file": 5}[type_key],
+            "secret": "",
+            "remotePath": "",
+            "fileSize": 0,
+            "localPath": payload["filePath"],
+            "displayName": marker,
+            "fileStatus": 0,
+        }
+        if type_key == "image":
+            body.update({
+                "thumbnailLocalPath": "",
+                "thumbnailRemotePath": "",
+                "thumbnailSecret": "",
+                "sendOriginalImage": False,
+                "height": 0,
+                "width": 0,
+                "thumbnailStatus": 0,
+                "isGif": False,
+            })
+        elif type_key == "video":
+            body.update({
+                "duration": 1,
+                "thumbnailLocalPath": "",
+                "thumbnailRemotePath": "",
+                "thumbnailSecret": "",
+                "height": 0,
+                "width": 0,
+                "thumbnailStatus": 0,
+            })
+        elif type_key == "voice":
+            body["duration"] = 1
+        error_description = (
+            "File movement error."
+            if type_key in {"file", "voice"}
+            else "File not exists or can not be read"
+        )
+        _assert_failed_send_envelopes(
+            assert_api,
+            resp=resp,
+            error_evt=terminal_evt,
+            temp_id=temp_id,
+            from_user=user_a,
+            to_user=user_b,
+            response_body={
+                key: value
+                for key, value in body.items()
+                if key not in {
+                    "secret",
+                    "remotePath",
+                    "fileSize",
+                    "thumbnailLocalPath",
+                    "thumbnailRemotePath",
+                    "thumbnailSecret",
+                }
+            },
+            error_body=body,
+            error_code=401,
+            error_description=error_description,
+            response_status=1,
+            # 媒体路径错误时 result.status 在 0/1/3 间竞态（发送状态时序）→ 忽略
+            ignore_response_status=True,
+        )
+        _assert_peer_did_not_receive_body(
+            device_b,
+            from_user=user_a,
+            body_predicate=lambda body: body.get("displayName") == marker,
+        )

@@ -7,6 +7,43 @@ from __future__ import annotations
 from src import Cmd
 
 
+def device_name(device) -> str:
+    """Return the configured runner/device name without assuming a topology role."""
+    return getattr(device, "device_name", None) or getattr(device, "_device", "device")
+
+
+def unique_devices(devices) -> tuple:
+    """Deduplicate topology endpoints while preserving topology order."""
+    result = []
+    for device in devices:
+        if device is not None and not any(device is existing for existing in result):
+            result.append(device)
+    return tuple(result)
+
+
+def logout_account_devices(devices, assert_api) -> None:
+    """Log out every endpoint belonging to one account before an offline action."""
+    for device in unique_devices(devices):
+        logout_for_offline(device, assert_api, device_name=device_name(device))
+
+
+def login_account_devices(devices, assert_api, *, user_id: str) -> None:
+    """登录一个账号的全部 endpoint，并保留各 endpoint 的离线事件。"""
+    for device in unique_devices(devices):
+        login_preserving_offline_events(
+            device,
+            assert_api,
+            device_name=device_name(device),
+            user_id=user_id,
+        )
+
+
+def restore_account_devices(devices, *, user_id: str) -> None:
+    """Best-effort restore of every endpoint belonging to one account."""
+    for device in unique_devices(devices):
+        restore_user_login(device, user_id=user_id)
+
+
 def _assert_client_response(assert_api, response: dict, *, cmd: str,
                             device_name: str, result) -> None:
     assert_api.assert_response_matches(
@@ -133,4 +170,3 @@ def set_accept_invitation_always(
         device_name=device_name,
         result=None,
     )
-

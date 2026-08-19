@@ -6,6 +6,7 @@ from uuid import uuid4
 
 from src import Cmd, ge, ne
 from tests.chatroom.chatroom_helpers import (
+    _allure_step,
     assert_join_chatroom_response,
     assert_chatroom_event,
     collect_chatroom_events,
@@ -127,117 +128,87 @@ def _assert_local_rooms(
 def test_chatroom_join_then_get_local_room_and_all_rooms(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="local_room", desc_prefix="local_room")
     try:
-        _join_room(device_b, assert_api, room_id=room_id)
-
-        local_resp = device_b.call("ChatRoomManager", Cmd.getChatRoom.value, info={"roomId": room_id})
-        assert_api.assert_response_matches(
-            local_resp,
-            expected={
-                "manager": "ChatRoomManager",
-                "cmd": Cmd.getChatRoom.value,
-                "device": "deviceB",
-                "result": {
-                    "roomId": room_id,
-                    "maxUsers": ge(0),
-                    "memberCount": ge(1),
+        with _allure_step("B 加入聊天室并验证本地单房间与全部房间查询"):
+            _join_room(device_b, assert_api, room_id=room_id)
+            local_resp = device_b.call("ChatRoomManager", Cmd.getChatRoom.value, info={"roomId": room_id})
+            assert_api.assert_response_matches(
+                local_resp,
+                expected={
+                    "manager": "ChatRoomManager", "cmd": Cmd.getChatRoom.value, "device": "deviceB",
+                    "result": {"roomId": room_id, "maxUsers": ge(0), "memberCount": ge(1)},
                 },
-            },
-            ignore_keys=CHATROOM_IGNORE_KEYS,
-        )
-
-        all_resp = device_b.call("ChatRoomManager", Cmd.getAllChatRooms.value, info={})
-        assert_api.assert_response_matches(
-            all_resp,
-            expected={
-                "manager": "ChatRoomManager",
-                "cmd": Cmd.getAllChatRooms.value,
-                "device": "deviceB",
-                "result": ne(None),
-            },
-            ignore_keys={"sequence"},
-        )
-        rooms = all_resp.get("result")
-        assert isinstance(rooms, list), f"getAllChatRooms result 应为 list: {all_resp}"
+                ignore_keys=CHATROOM_IGNORE_KEYS,
+            )
+            all_resp = device_b.call("ChatRoomManager", Cmd.getAllChatRooms.value, info={})
+            assert_api.assert_response_matches(
+                all_resp,
+                expected={"manager": "ChatRoomManager", "cmd": Cmd.getAllChatRooms.value, "device": "deviceB", "result": ne(None)},
+                ignore_keys={"sequence"},
+            )
+            rooms = all_resp.get("result")
+            assert isinstance(rooms, list), f"getAllChatRooms result 应为 list: {all_resp}"
     finally:
         safe_delete_chatroom(room_id)
 
 
 def test_chatroom_get_local_room_empty_id_returns_none(device_b, assert_api):
-    resp = device_b.call("ChatRoomManager", Cmd.getChatRoom.value, info={"roomId": ""})
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatRoomManager",
-            "cmd": Cmd.getChatRoom.value,
-            "device": "deviceB",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("使用空聊天室 ID 查询本地房间并验证返回空值"):
+        resp = device_b.call("ChatRoomManager", Cmd.getChatRoom.value, info={"roomId": ""})
+        assert_api.assert_response_matches(
+            resp,
+            expected={"manager": "ChatRoomManager", "cmd": Cmd.getChatRoom.value, "device": "deviceB", "result": None},
+            ignore_keys={"sequence"},
+        )
 
 
 def test_chatroom_get_local_room_nonexistent_returns_placeholder(device_b, assert_api):
     room_id = f"nonexistent_local_room_{uuid4().hex[:8]}"
-    resp = device_b.call("ChatRoomManager", Cmd.getChatRoom.value, info={"roomId": room_id})
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatRoomManager",
-            "cmd": Cmd.getChatRoom.value,
-            "device": "deviceB",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("查询不存在的本地聊天室并验证返回空值"):
+        resp = device_b.call("ChatRoomManager", Cmd.getChatRoom.value, info={"roomId": room_id})
+        assert_api.assert_response_matches(
+            resp,
+            expected={"manager": "ChatRoomManager", "cmd": Cmd.getChatRoom.value, "device": "deviceB", "result": None},
+            ignore_keys={"sequence"},
+        )
 
 
 def test_chatroom_get_all_local_rooms_returns_list(device_b, assert_api):
-    resp = device_b.call("ChatRoomManager", Cmd.getAllChatRooms.value, info={})
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatRoomManager",
-            "cmd": Cmd.getAllChatRooms.value,
-            "device": "deviceB",
-            "result": ne(None),
-        },
-        ignore_keys={"sequence"},
-    )
-    rooms = resp.get("result")
-    assert isinstance(rooms, list), f"getAllChatRooms result 应为 list: {resp}"
-    for room in rooms:
-        assert isinstance(room, dict), f"getAllChatRooms item 应为 dict: {room!r}"
-        assert "roomId" in room, f"getAllChatRooms item 缺少 roomId: {room!r}"
+    with _allure_step("读取本地全部聊天室并验证列表及房间 ID 结构"):
+        resp = device_b.call("ChatRoomManager", Cmd.getAllChatRooms.value, info={})
+        assert_api.assert_response_matches(
+            resp,
+            expected={"manager": "ChatRoomManager", "cmd": Cmd.getAllChatRooms.value, "device": "deviceB", "result": ne(None)},
+            ignore_keys={"sequence"},
+        )
+        rooms = resp.get("result")
+        assert isinstance(rooms, list), f"getAllChatRooms result 应为 list: {resp}"
+        for room in rooms:
+            assert isinstance(room, dict), f"getAllChatRooms item 应为 dict: {room!r}"
+            assert "roomId" in room, f"getAllChatRooms item 缺少 roomId: {room!r}"
 
 
 def test_chatroom_fetch_members_after_join_success(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="members", desc_prefix="members")
     try:
-        _join_room(device_b, assert_api, room_id=room_id)
-
-        resp = device_b.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomMembers.value,
-            info={"roomId": room_id, "cursor": "", "pageSize": 20},
-        )
-        assert_api.assert_response_matches(
-            resp,
-            expected={
-                "manager": "ChatRoomManager",
-                "cmd": Cmd.fetchChatRoomMembers.value,
-                "device": "deviceB",
-                "result": {
-                    "cursor": ne(None),
-                    "list": ne(None),
+        with _allure_step("B 加入聊天室并分页查询成员列表，验证包含 B"):
+            _join_room(device_b, assert_api, room_id=room_id)
+            resp = device_b.call(
+                "ChatRoomManager", Cmd.fetchChatRoomMembers.value,
+                info={"roomId": room_id, "cursor": "", "pageSize": 20},
+            )
+            assert_api.assert_response_matches(
+                resp,
+                expected={
+                    "manager": "ChatRoomManager", "cmd": Cmd.fetchChatRoomMembers.value, "device": "deviceB",
+                    "result": {"cursor": ne(None), "list": ne(None)},
                 },
-            },
-            ignore_keys={"sequence"},
-        )
-        result = resp.get("result")
-        assert isinstance(result, dict), f"fetchChatRoomMembers result 应为 dict: {resp}"
-        members = result.get("list")
-        assert isinstance(members, list), f"fetchChatRoomMembers result.list 应为 list: {resp}"
-        assert user_b in members, f"聊天室成员列表缺少加入成员: user_b={user_b}, members={members}"
+                ignore_keys={"sequence"},
+            )
+            result = resp.get("result")
+            assert isinstance(result, dict), f"fetchChatRoomMembers result 应为 dict: {resp}"
+            members = result.get("list")
+            assert isinstance(members, list), f"fetchChatRoomMembers result.list 应为 list: {resp}"
+            assert user_b in members, f"聊天室成员列表缺少加入成员: user_b={user_b}, members={members}"
     finally:
         safe_delete_chatroom(room_id)
 
@@ -245,13 +216,12 @@ def test_chatroom_fetch_members_after_join_success(device_a, device_b, assert_ap
 def test_chatroom_fetch_members_with_cursor_pagination(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="members_page", desc_prefix="members_page")
     try:
-        _join_room(device_b, assert_api, room_id=room_id)
-
-        first_resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomMembers.value,
-            info={"roomId": room_id, "cursor": "", "pageSize": 1},
-        )
+        with _allure_step("B 加入聊天室并验证首个成员分页结果"):
+            _join_room(device_b, assert_api, room_id=room_id)
+            first_resp = device_a.call(
+                "ChatRoomManager", Cmd.fetchChatRoomMembers.value,
+                info={"roomId": room_id, "cursor": "", "pageSize": 1},
+            )
         assert_api.assert_response_matches(
             first_resp,
             expected={
@@ -274,29 +244,24 @@ def test_chatroom_fetch_members_with_cursor_pagination(device_a, device_b, asser
         cursor = first_result.get("cursor")
         all_members = list(first_members)
         if cursor:
-            second_resp = device_a.call(
-                "ChatRoomManager",
-                Cmd.fetchChatRoomMembers.value,
-                info={"roomId": room_id, "cursor": cursor, "pageSize": 20},
-            )
-            assert_api.assert_response_matches(
-                second_resp,
-                expected={
-                    "manager": "ChatRoomManager",
-                    "cmd": Cmd.fetchChatRoomMembers.value,
-                    "device": "deviceA",
-                    "result": {
-                        "cursor": ne(None),
-                        "list": ne(None),
+            with _allure_step("使用返回 cursor 查询下一页并合并成员结果"):
+                second_resp = device_a.call(
+                    "ChatRoomManager", Cmd.fetchChatRoomMembers.value,
+                    info={"roomId": room_id, "cursor": cursor, "pageSize": 20},
+                )
+                assert_api.assert_response_matches(
+                    second_resp,
+                    expected={
+                        "manager": "ChatRoomManager", "cmd": Cmd.fetchChatRoomMembers.value, "device": "deviceA",
+                        "result": {"cursor": ne(None), "list": ne(None)},
                     },
-                },
-                ignore_keys={"sequence"},
-            )
-            second_result = second_resp.get("result")
-            assert isinstance(second_result, dict), f"fetchChatRoomMembers second result 应为 dict: {second_resp}"
-            second_members = second_result.get("list")
-            assert isinstance(second_members, list), f"fetchChatRoomMembers second list 应为 list: {second_resp}"
-            all_members.extend(second_members)
+                    ignore_keys={"sequence"},
+                )
+                second_result = second_resp.get("result")
+                assert isinstance(second_result, dict), f"fetchChatRoomMembers second result 应为 dict: {second_resp}"
+                second_members = second_result.get("list")
+                assert isinstance(second_members, list), f"fetchChatRoomMembers second list 应为 list: {second_resp}"
+                all_members.extend(second_members)
 
         assert user_a not in all_members, f"聊天室普通成员分页列表不应包含 owner: user_a={user_a}, members={all_members}"
         assert user_b in all_members, f"分页成员列表缺少加入成员: user_b={user_b}, members={all_members}"
@@ -314,8 +279,9 @@ def test_chatroom_join_leave_other_rooms_option_controls_existing_rooms(device_a
     room_drop_b, _ = create_chatroom_or_skip(owner=user_a, name_prefix="leave_other_true_b", desc_prefix="leave_other_true")
     created_room_ids = [room_keep_a, room_keep_b, room_drop_a, room_drop_b]
     try:
-        _join_room(device_b, assert_api, room_id=room_keep_a, leave_other_rooms=False)
-        _join_room(device_b, assert_api, room_id=room_keep_b, leave_other_rooms=False)
+        with _allure_step("leaveOtherRooms=false：连续加入两个聊天室并验证旧房间保留"):
+            _join_room(device_b, assert_api, room_id=room_keep_a, leave_other_rooms=False)
+            _join_room(device_b, assert_api, room_id=room_keep_b, leave_other_rooms=False)
 
         _wait_for_member_state(
             device_a,
@@ -337,7 +303,8 @@ def test_chatroom_join_leave_other_rooms_option_controls_existing_rooms(device_a
         )
         _assert_local_rooms(device_b, assert_api)
 
-        _join_room(device_b, assert_api, room_id=room_drop_a, leave_other_rooms=False)
+        with _allure_step("leaveOtherRooms=true：准备旧聊天室成员关系"):
+            _join_room(device_b, assert_api, room_id=room_drop_a, leave_other_rooms=False)
         _wait_for_member_state(
             device_a,
             assert_api,
@@ -348,7 +315,8 @@ def test_chatroom_join_leave_other_rooms_option_controls_existing_rooms(device_a
             context="leaveOtherRooms=true 前置条件应先加入旧聊天室",
         )
 
-        _join_room(device_b, assert_api, room_id=room_drop_b, leave_other_rooms=True)
+        with _allure_step("leaveOtherRooms=true：加入新聊天室并验证旧房间退出"):
+            _join_room(device_b, assert_api, room_id=room_drop_b, leave_other_rooms=True)
         _wait_for_member_state(
             device_a,
             assert_api,
@@ -376,42 +344,31 @@ def test_chatroom_join_leave_other_rooms_option_controls_existing_rooms(device_a
 def test_chatroom_leave_room_updates_local_cache(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="leave", desc_prefix="leave")
     try:
-        _join_room(device_b, assert_api, room_id=room_id)
-
-        leave_resp = device_b.call("ChatRoomManager", Cmd.leaveChatRoom.value, info={"roomId": room_id})
-        assert_api.assert_response_matches(
-            leave_resp,
-            expected={
-                "manager": "ChatRoomManager",
-                "cmd": Cmd.leaveChatRoom.value,
-                "device": "deviceB",
-                "result": True,
-            },
-            ignore_keys={"sequence"},
-        )
-
-        members_resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomMembers.value,
-            info={"roomId": room_id, "cursor": "", "pageSize": 20},
-        )
-        assert_api.assert_response_matches(
-            members_resp,
-            expected={
-                "manager": "ChatRoomManager",
-                "cmd": Cmd.fetchChatRoomMembers.value,
-                "device": "deviceA",
-                "result": {
-                    "cursor": ne(None),
-                    "list": ne(None),
+        with _allure_step("B 加入后主动离开聊天室并验证离开响应"):
+            _join_room(device_b, assert_api, room_id=room_id)
+            leave_resp = device_b.call("ChatRoomManager", Cmd.leaveChatRoom.value, info={"roomId": room_id})
+            assert_api.assert_response_matches(
+                leave_resp,
+                expected={"manager": "ChatRoomManager", "cmd": Cmd.leaveChatRoom.value, "device": "deviceB", "result": True},
+                ignore_keys={"sequence"},
+            )
+        with _allure_step("A 查询成员列表并验证 B 已移除"):
+            members_resp = device_a.call(
+                "ChatRoomManager", Cmd.fetchChatRoomMembers.value,
+                info={"roomId": room_id, "cursor": "", "pageSize": 20},
+            )
+            assert_api.assert_response_matches(
+                members_resp,
+                expected={
+                    "manager": "ChatRoomManager", "cmd": Cmd.fetchChatRoomMembers.value, "device": "deviceA",
+                    "result": {"cursor": ne(None), "list": ne(None)},
                 },
-            },
-            ignore_keys={"sequence"},
-        )
-        result = members_resp.get("result")
-        assert isinstance(result, dict), f"fetchChatRoomMembers result 应为 dict: {members_resp}"
-        members = result.get("list")
-        assert isinstance(members, list), f"fetchChatRoomMembers result.list 应为 list: {members_resp}"
-        assert user_b not in members, f"leaveChatRoom 后成员列表仍包含离开成员: user_b={user_b}, members={members}"
+                ignore_keys={"sequence"},
+            )
+            result = members_resp.get("result")
+            assert isinstance(result, dict), f"fetchChatRoomMembers result 应为 dict: {members_resp}"
+            members = result.get("list")
+            assert isinstance(members, list), f"fetchChatRoomMembers result.list 应为 list: {members_resp}"
+            assert user_b not in members, f"leaveChatRoom 后成员列表仍包含离开成员: user_b={user_b}, members={members}"
     finally:
         safe_delete_chatroom(room_id)

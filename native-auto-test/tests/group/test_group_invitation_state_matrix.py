@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pytest
+from tests.group.allure_helpers import _allure_step
 
 from src import Cmd
 from tests.group.group_helpers import (
@@ -110,6 +111,7 @@ def _fetch_group(device_a, assert_api, *, group_id: str, group_name: str,
     [Cmd.acceptInvitationFromGroup.value, Cmd.declineInvitationFromGroup.value],
     ids=["accept", "decline"],
 )
+
 def test_group_invitation_valid_group_without_pending_is_rejected(
     device_a,
     device_b,
@@ -122,20 +124,23 @@ def test_group_invitation_valid_group_without_pending_is_rejected(
     group_name = new_group_name(f"invitation_no_pending_{action}")
     try:
         _set_auto_accept(device_b, assert_api, False)
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=group_name,
-            invite_members=[],
-            style=0,
-            invite_need_confirm=True,
-        )
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            group_id, _ = create_group(
+                device_a,
+                assert_api,
+                owner=user_a,
+                group_name=group_name,
+                invite_members=[],
+                style=0,
+                invite_need_confirm=True,
+            )
         info = {"groupId": group_id, "inviter": user_a}
         if action == Cmd.declineInvitationFromGroup.value:
             info["reason"] = "no-pending"
-        response = device_b.call("GroupManager", action, info=info)
-        assert_api.assert_error(response, code=603, description="is not in the invitee list")
+        with _allure_step("B 执行群组业务操作"):
+            response = device_b.call("GroupManager", action, info=info)
+        with _allure_step("验证执行群组业务操作返回的错误码与错误文案"):
+            assert_api.assert_error(response, code=603, description="is not in the invitee list")
         _fetch_group(
             device_a,
             assert_api,
@@ -146,7 +151,8 @@ def test_group_invitation_valid_group_without_pending_is_rejected(
         )
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(device_a, assert_api, group_id)
         _set_auto_accept(device_b, assert_api, True)
 
 
@@ -169,14 +175,15 @@ def test_group_invitation_wrong_inviter_does_not_consume_pending(
     accepted = False
     try:
         _set_auto_accept(device_b, assert_api, False)
-        group_id = _create_pending_invitation(
-            device_a,
-            device_b,
-            assert_api,
-            user_a=user_a,
-            user_b=user_b,
-            group_name=group_name,
-        )
+        with _allure_step("测试准备：创建测试群并建立成员前置"):
+            group_id = _create_pending_invitation(
+                device_a,
+                device_b,
+                assert_api,
+                user_a=user_a,
+                user_b=user_b,
+                group_name=group_name,
+            )
         command = (
             Cmd.acceptInvitationFromGroup.value
             if action == "accept"
@@ -185,7 +192,8 @@ def test_group_invitation_wrong_inviter_does_not_consume_pending(
         info = {"groupId": group_id, "inviter": user_c}
         if action == "decline":
             info["reason"] = "wrong-inviter"
-        wrong = device_b.call("GroupManager", command, info=info)
+        with _allure_step("B 执行群组业务操作"):
+            wrong = device_b.call("GroupManager", command, info=info)
         wrong_result = wrong.get("result")
         wrong_inviter_rejected = (
             isinstance(wrong_result, dict)
@@ -193,18 +201,21 @@ def test_group_invitation_wrong_inviter_does_not_consume_pending(
             and "inviter" in str(wrong_result.get("description", ""))
         )
 
-        correct = device_b.call(
-            "GroupManager",
-            Cmd.acceptInvitationFromGroup.value,
-            info={"groupId": group_id, "inviter": user_a},
-        )
+        with _allure_step("B 接受入群邀请"):
+            correct = device_b.call(
+                "GroupManager",
+                Cmd.acceptInvitationFromGroup.value,
+                info={"groupId": group_id, "inviter": user_a},
+            )
         if not wrong_inviter_rejected:
             if action == "accept":
                 accepted = True
-                assert_api.assert_error(correct, code=601, description="already joined")
+                with _allure_step("验证接受入群邀请返回的错误码与错误文案"):
+                    assert_api.assert_error(correct, code=601, description="already joined")
                 actual_members = [user_b]
             else:
-                assert_api.assert_error(correct, code=603, description="is not in the invitee list")
+                with _allure_step("验证接受入群邀请返回的错误码与错误文案"):
+                    assert_api.assert_error(correct, code=603, description="is not in the invitee list")
                 actual_members = []
             _fetch_group(
                 device_a,
@@ -220,33 +231,37 @@ def test_group_invitation_wrong_inviter_does_not_consume_pending(
                 f"actual=错误 inviter 已处理邀请且正确 inviter 随后无法接受"
             )
         result = correct.get("result")
-        assert isinstance(result, dict), correct
-        assert result.get("groupId") == group_id, correct
+        with _allure_step("验证接受入群邀请返回的响应 result 与关键字段"):
+            assert isinstance(result, dict), correct
+        with _allure_step("验证接受入群邀请返回的响应 result 与关键字段"):
+            assert result.get("groupId") == group_id, correct
         accepted = True
-        accepted_events = collect_group_events(
-            device_a,
-            expected_event_types={
-                "onGroupInvitationAccepted",
-                "onGroupMembersJoined",
-                "onGroupMemberJoined",
-            },
-            group_id=group_id,
-            required_all_event_types={
-                "onGroupInvitationAccepted",
-                "onGroupMembersJoined",
-            },  # 5.0 只派发批量事件（无单数 onGroupMemberJoined）
-            timeout=10.0,
-        )
+        with _allure_step("等待并校验目标业务事件"):
+            accepted_events = collect_group_events(
+                device_a,
+                expected_event_types={
+                    "onGroupInvitationAccepted",
+                    "onGroupMembersJoined",
+                    "onGroupMemberJoined",
+                },
+                group_id=group_id,
+                required_all_event_types={
+                    "onGroupInvitationAccepted",
+                    "onGroupMembersJoined",
+                },  # 5.0 只派发批量事件（无单数 onGroupMemberJoined）
+                timeout=10.0,
+            )
         by_type = {event["eventType"]: event for event in accepted_events}
-        assert_api.assert_response_matches(
-            by_type["onGroupInvitationAccepted"],
-            expected={
-                "type": "event",
-                "eventType": "onGroupInvitationAccepted",
-                "data": {"groupId": group_id, "invitee": user_b, "reason": ""},
-            },
-            ignore_keys={"timestamp", "sequence"},
-        )
+        with _allure_step("验证接受入群邀请返回的响应 result 与关键字段"):
+            assert_api.assert_response_matches(
+                by_type["onGroupInvitationAccepted"],
+                expected={
+                    "type": "event",
+                    "eventType": "onGroupInvitationAccepted",
+                    "data": {"groupId": group_id, "invitee": user_b, "reason": ""},
+                },
+                ignore_keys={"timestamp", "sequence"},
+            )
         _fetch_group(
             device_a,
             assert_api,
@@ -257,7 +272,8 @@ def test_group_invitation_wrong_inviter_does_not_consume_pending(
         )
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id, device_b=device_b if accepted else None)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(device_a, assert_api, group_id, device_b=device_b if accepted else None)
         _set_auto_accept(device_b, assert_api, True)
 
 
@@ -285,14 +301,15 @@ def test_group_invitation_cannot_be_processed_twice(
     accepted = False
     try:
         _set_auto_accept(device_b, assert_api, False)
-        group_id = _create_pending_invitation(
-            device_a,
-            device_b,
-            assert_api,
-            user_a=user_a,
-            user_b=user_b,
-            group_name=group_name,
-        )
+        with _allure_step("测试准备：创建测试群并建立成员前置"):
+            group_id = _create_pending_invitation(
+                device_a,
+                device_b,
+                assert_api,
+                user_a=user_a,
+                user_b=user_b,
+                group_name=group_name,
+            )
         first_cmd = (
             Cmd.acceptInvitationFromGroup.value
             if first_action == "accept"
@@ -301,40 +318,46 @@ def test_group_invitation_cannot_be_processed_twice(
         first_info = {"groupId": group_id, "inviter": user_a}
         if first_action == "decline":
             first_info["reason"] = "first-decline"
-        first = device_b.call("GroupManager", first_cmd, info=first_info)
+        with _allure_step("B 执行群组业务操作"):
+            first = device_b.call("GroupManager", first_cmd, info=first_info)
         if first_action == "accept":
             result = first.get("result")
-            assert isinstance(result, dict), first
-            assert result.get("groupId") == group_id, first
+            with _allure_step("验证执行群组业务操作返回的响应 result 与关键字段"):
+                assert isinstance(result, dict), first
+            with _allure_step("验证执行群组业务操作返回的响应 result 与关键字段"):
+                assert result.get("groupId") == group_id, first
             accepted = True
-            collect_group_events(
-                device_a,
-                expected_event_types={
-                    "onGroupInvitationAccepted",
-                    "onGroupMembersJoined",
-                    "onGroupMemberJoined",
-                },
-                group_id=group_id,
-                required_all_event_types={
-                    "onGroupInvitationAccepted",
-                    "onGroupMembersJoined",
-                },  # 5.0 只发复数事件
-                timeout=10.0,
-            )
+            with _allure_step("等待并校验目标业务事件"):
+                collect_group_events(
+                    device_a,
+                    expected_event_types={
+                        "onGroupInvitationAccepted",
+                        "onGroupMembersJoined",
+                        "onGroupMemberJoined",
+                    },
+                    group_id=group_id,
+                    required_all_event_types={
+                        "onGroupInvitationAccepted",
+                        "onGroupMembersJoined",
+                    },  # 5.0 只发复数事件
+                    timeout=10.0,
+                )
         else:
-            _assert_call(
-                assert_api,
-                first,
-                manager="GroupManager",
-                cmd=Cmd.declineInvitationFromGroup.value,
-                device="deviceB",
-                result=None,
-            )
-            assert_no_group_event(
-                device_a,
-                group_id=group_id,
-                event_types={"onGroupMembersJoined"},  # 5.0 只派发批量事件
-            )
+            with _allure_step("验证群业务状态、事件与关键字段"):
+                _assert_call(
+                    assert_api,
+                    first,
+                    manager="GroupManager",
+                    cmd=Cmd.declineInvitationFromGroup.value,
+                    device="deviceB",
+                    result=None,
+                )
+            with _allure_step("验证执行群组业务操作返回的响应 result 与关键字段"):
+                assert_no_group_event(
+                    device_a,
+                    group_id=group_id,
+                    event_types={"onGroupMembersJoined"},  # 5.0 只派发批量事件
+                )
 
         second_cmd = (
             Cmd.acceptInvitationFromGroup.value
@@ -344,11 +367,14 @@ def test_group_invitation_cannot_be_processed_twice(
         second_info = {"groupId": group_id, "inviter": user_a}
         if second_action == "decline":
             second_info["reason"] = "second-decline"
-        second = device_b.call("GroupManager", second_cmd, info=second_info)
+        with _allure_step("B 执行群组业务操作"):
+            second = device_b.call("GroupManager", second_cmd, info=second_info)
         if accepted:
-            assert_api.assert_error(second, code=601, description="already joined")
+            with _allure_step("验证执行群组业务操作返回的错误码与错误文案"):
+                assert_api.assert_error(second, code=601, description="already joined")
         else:
-            assert_api.assert_error(second, code=603, description="is not in the invitee list")
+            with _allure_step("验证执行群组业务操作返回的错误码与错误文案"):
+                assert_api.assert_error(second, code=603, description="is not in the invitee list")
         _fetch_group(
             device_a,
             assert_api,
@@ -359,5 +385,6 @@ def test_group_invitation_cannot_be_processed_twice(
         )
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id, device_b=device_b if accepted else None)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(device_a, assert_api, group_id, device_b=device_b if accepted else None)
         _set_auto_accept(device_b, assert_api, True)

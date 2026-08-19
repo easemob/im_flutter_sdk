@@ -365,15 +365,17 @@ def _assert_send_success_and_events(topology, assert_api, *, content: str, targe
 @pytest.mark.topology("account_a_to_account_b")
 def test_send_message_with_type_text_basic(topology, assert_api):
     """sendMessageWithType(txt) 基本文本：发送账号副端同步、接收账号全端接收并落库。"""
-    content = f"txt-{uuid.uuid4().hex[:6]}"
-    _assert_send_success_and_events(topology, assert_api, content=content)
+    with _allure_step("验证：sendMessageWithType(txt) 基本文本：发送账号副端同步、接收账号全端接收并落库。"):
+        content = f"txt-{uuid.uuid4().hex[:6]}"
+        _assert_send_success_and_events(topology, assert_api, content=content)
 
 
 @pytest.mark.topology("account_a_to_account_b")
 def test_send_message_with_type_text_with_languages(topology, assert_api):
     """sendMessageWithType(txt) 带目标语言：发送成功、全端同步并携带 translations。"""
-    content = f"txttr-{uuid.uuid4().hex[:6]}"
-    _assert_send_success_and_events(topology, assert_api, content=content, target_languages=["zh-Hans"])
+    with _allure_step("验证：sendMessageWithType(txt) 带目标语言：发送成功、全端同步并携带 translations。"):
+        content = f"txttr-{uuid.uuid4().hex[:6]}"
+        _assert_send_success_and_events(topology, assert_api, content=content, target_languages=["zh-Hans"])
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -708,26 +710,30 @@ def _send_with_payload_and_assert(topology, assert_api, *, type_key: str, payloa
 @pytest.mark.topology("account_a_to_account_b")
 def test_send_message_with_type_file(topology, assert_api):
     """sendMessageWithType(file)：文件消息发送成功、发送账号副端同步、接收账号全端接收。"""
-    payload = {"targetId": topology.recipient_user}
-    _send_with_payload_and_assert(topology, assert_api, type_key="file", payload=payload)
+    with _allure_step("验证：sendMessageWithType(file)：文件消息发送成功、发送账号副端同步、接收账号全端接收。"):
+        payload = {"targetId": topology.recipient_user}
+        _send_with_payload_and_assert(topology, assert_api, type_key="file", payload=payload)
 
 
 @pytest.mark.topology("account_a_to_account_b")
 def test_send_message_with_type_image(topology, assert_api):
     """sendMessageWithType(image)：图片消息发送成功、发送账号副端同步、接收账号全端接收。"""
-    payload = {"targetId": topology.recipient_user, "thumbnailLocalPath": ""}
-    _send_with_payload_and_assert(topology, assert_api, type_key="image", payload=payload)
+    with _allure_step("验证：sendMessageWithType(image)：图片消息发送成功、发送账号副端同步、接收账号全端接收。"):
+        payload = {"targetId": topology.recipient_user, "thumbnailLocalPath": ""}
+        _send_with_payload_and_assert(topology, assert_api, type_key="image", payload=payload)
 
 
 @pytest.mark.topology("account_a_to_account_b")
 def test_send_message_with_type_image_heic(topology, assert_api):
     """发送 HEIC 格式图片，验证 SDK 能正常上传并投递到接收账号全部在线端。"""
-    payload = {"targetId": topology.recipient_user, "displayName": "imgHeic.HEIC", "thumbnailLocalPath": ""}
-    _send_with_payload_and_assert(topology, assert_api, type_key="image", payload=payload)
+    with _allure_step("验证：发送 HEIC 格式图片，验证 SDK 能正常上传并投递到接收账号全部在线端。"):
+        payload = {"targetId": topology.recipient_user, "displayName": "imgHeic.HEIC", "thumbnailLocalPath": ""}
+        _send_with_payload_and_assert(topology, assert_api, type_key="image", payload=payload)
 
 
 @pytest.mark.topology("account_a_to_account_b")
 def test_send_message_with_type_video(topology, assert_api):
     """sendMessageWithType(video)：视频消息发送成功、发送账号副端同步、接收账号全端接收。"""
-    payload = {"targetId": topology.recipient_user, "thumbnailLocalPath": ""}
-    _send_with_payload_and_assert(topology, assert_api, type_key="video", payload=payload)
+    with _allure_step("验证：sendMessageWithType(video)：视频消息发送成功、发送账号副端同步、接收账号全端接收。"):
+        payload = {"targetId": topology.recipient_user, "thumbnailLocalPath": ""}
+        _send_with_payload_and_assert(topology, assert_api, type_key="video", payload=payload)

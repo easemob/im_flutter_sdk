@@ -409,11 +409,12 @@ def test_chat_missing_location_message_send_receive(topology, assert_api):
 
 
 def test_chat_missing_voice_message_send_receive(device_a, device_b, assert_api, user_a, user_b):
-    _send_type_and_receive(
-        device_a, device_b, assert_api, user_a, user_b,
-        type_key="voice",
-        payload={"targetId": user_b, "duration": 1},
-    )
+    with _allure_step("验证：chat missing voice message send receive"):
+        _send_type_and_receive(
+            device_a, device_b, assert_api, user_a, user_b,
+            type_key="voice",
+            payload={"targetId": user_b, "duration": 1},
+        )
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -547,27 +548,28 @@ def test_chat_missing_custom_message_send_receive(topology, assert_api):
     ],
 )
 def test_chat_missing_message_delivery_ack(device_a, device_b, assert_api, user_a, user_b, type_key, payload):
-    setting = device_a.call("Client", Cmd.updateDeliveryAckSetting.value, info={"requireDeliveryAck": True})
-    assert_api.assert_response_matches(
-        setting,
-        expected={"manager": "Client", "cmd": Cmd.updateDeliveryAckSetting.value, "device": "deviceA", "result": None},
-        ignore_keys={"sequence"},
-    )
-    setting_b = device_b.call("Client", Cmd.updateDeliveryAckSetting.value, info={"requireDeliveryAck": True})
-    assert_api.assert_response_matches(
-        setting_b,
-        expected={"manager": "Client", "cmd": Cmd.updateDeliveryAckSetting.value, "device": "deviceB", "result": None},
-        ignore_keys={"sequence"},
-    )
-    payload = {"targetId": user_b, **payload}
-    _, _, _, _, real_id = _send_type_and_receive(
-        device_a,
-        device_b,
-        assert_api,
-        user_a,
-        user_b,
-        type_key=type_key,
-        payload=payload,
-        need_read_receipt=True,
-    )
-    return real_id
+    with _allure_step("验证：chat missing message delivery ack"):
+        setting = device_a.call("Client", Cmd.updateDeliveryAckSetting.value, info={"requireDeliveryAck": True})
+        assert_api.assert_response_matches(
+            setting,
+            expected={"manager": "Client", "cmd": Cmd.updateDeliveryAckSetting.value, "device": "deviceA", "result": None},
+            ignore_keys={"sequence"},
+        )
+        setting_b = device_b.call("Client", Cmd.updateDeliveryAckSetting.value, info={"requireDeliveryAck": True})
+        assert_api.assert_response_matches(
+            setting_b,
+            expected={"manager": "Client", "cmd": Cmd.updateDeliveryAckSetting.value, "device": "deviceB", "result": None},
+            ignore_keys={"sequence"},
+        )
+        payload = {"targetId": user_b, **payload}
+        _, _, _, _, real_id = _send_type_and_receive(
+            device_a,
+            device_b,
+            assert_api,
+            user_a,
+            user_b,
+            type_key=type_key,
+            payload=payload,
+            need_read_receipt=True,
+        )
+        return real_id

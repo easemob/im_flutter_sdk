@@ -1830,8 +1830,7 @@ def case_event_context(request, phase1_scenario, device_pool):
             device.begin_case(case_id)
             device.attach_execution_context(include_parameters=not topology_roles)
     try:
-        with _allure_step("测试执行：Case 业务步骤"):
-            yield
+        yield
     finally:
         with _allure_step("测试后置：结束设备事件上下文"):
             for device in devices:

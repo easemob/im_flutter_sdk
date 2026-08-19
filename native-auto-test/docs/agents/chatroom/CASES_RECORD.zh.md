@@ -4,6 +4,7 @@
 - 本文件记录 ChatRoom 模块已覆盖用例（按 API 组织）。
 - 每条 case 以全局序号编号；统计按“当前记录条目数”计算。
 - 暂缓与 skip 项统一写 `CASES_DEFERRED.zh.md`。
+- Allure：ChatRoom 活动用例已覆盖准备、管理动作或查询、结果/事件验证等业务步骤；5.0 移除的客户端创建/销毁用例保留明确 skip 原因。
 
 ## createChatRoom
 

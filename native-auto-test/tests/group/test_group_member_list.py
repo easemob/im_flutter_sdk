@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pytest
+from tests.group.allure_helpers import _allure_step
 
 from src import Cmd
 from tests.group.group_helpers import create_group, destroy_group, new_group_name
@@ -35,34 +36,41 @@ def _extract_member_ids(result: object, *, resp: dict) -> set[str]:
     return user_ids
 
 
+
 def test_group_get_group_member_list_from_server_success(device_a, assert_api, user_a, user_b):
     group_id = ""
     try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=new_group_name("member_list"),
-            invite_members=[user_b],
-        )
-        resp = device_a.call(
-            "GroupManager",
-            Cmd.getGroupMemberListFromServer.value,
-            info={"groupId": group_id, "pageNum": 1, "pageSize": 20},
-        )
-        assert_api.assert_response_matches(
-            resp,
-            expected={
-                "manager": "GroupManager",
-                "cmd": Cmd.getGroupMemberListFromServer.value,
-                "device": "deviceA",
-            },
-            ignore_keys={"sequence", "result"},
-        )
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            group_id, _ = create_group(
+                device_a,
+                assert_api,
+                owner=user_a,
+                group_name=new_group_name("member_list"),
+                invite_members=[user_b],
+            )
+        with _allure_step("A 查询服务端成员列表"):
+            resp = device_a.call(
+                "GroupManager",
+                Cmd.getGroupMemberListFromServer.value,
+                info={"groupId": group_id, "pageNum": 1, "pageSize": 20},
+            )
+        with _allure_step("验证查询服务端成员列表返回的关键字段"):
+            assert_api.assert_response_matches(
+                resp,
+                expected={
+                    "manager": "GroupManager",
+                    "cmd": Cmd.getGroupMemberListFromServer.value,
+                    "device": "deviceA",
+                },
+                ignore_keys={"sequence", "result"},
+            )
         user_ids = _extract_member_ids(resp.get("result"), resp=resp)
-        assert user_b in user_ids, f"成员列表未包含受邀成员: member={user_b}, resp={resp}"
+        with _allure_step("验证查询服务端成员列表返回的关键字段"):
+            assert user_b in user_ids, f"成员列表未包含受邀成员: member={user_b}, resp={resp}"
         # 当前端语义：该接口返回成员列表（不包含群主）
-        assert user_a not in user_ids, f"成员列表不应包含群主: owner={user_a}, resp={resp}"
+        with _allure_step("验证查询服务端成员列表返回的关键字段"):
+            assert user_a not in user_ids, f"成员列表不应包含群主: owner={user_a}, resp={resp}"
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(device_a, assert_api, group_id)

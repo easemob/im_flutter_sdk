@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import pytest
+from tests.group.allure_helpers import _allure_step
 
 from src import Cmd
 from src.tools.response_match import ne
@@ -14,67 +15,79 @@ pytestmark = [pytest.mark.client, pytest.mark.group]
 _NONEXISTENT_GROUP_ID = "nonexistent_group_999999"
 
 
+def _private_group_options(*, max_count: int = 200, ext: str = "auto-ext") -> dict:
+    return {
+        "isPublic": False,
+        "joinApprovalRequired": False,
+        "allowInvites": False,
+        "maxCount": max_count,
+        "inviteNeedConfirm": False,
+        "ext": ext,
+    }
+
+
+
 def test_group_create_group_empty_name(device_a, assert_api, user_a):
-    resp = device_a.call(
-        "GroupManager",
-        Cmd.createGroup.value,
-        info={
-            "groupName": "",
-            "desc": "auto-test group",
-            "inviteMembers": [],
-            "inviteReason": "auto-case",
-            "options": {
-                "style": 0,
-                "maxCount": 200,
-                "inviteNeedConfirm": False,
-                "ext": "auto-ext",
-            },
-        },
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.createGroup.value,
-            "device": "deviceA",
-            "result": {
-                "owner": user_a,
-                "ext": "auto-ext",
-                "permissionType": 2,
-                "isAllMemberMuted": False,
-                "adminList": [],
-                "avatarUrl": "",
-                "groupId": ne(""),
-                "memberCount": 1,
-                "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
-                "muteList": [],
-                "isMemberAllowToInvite": False,
-                "messageBlocked": False,
-                "memberList": [],
-                "blockList": [],
-                "name": "",
-                "maxUserCount": 200,
-                "isDisabled": False,
+    with _allure_step("A 创建群"):
+        resp = device_a.call(
+            "GroupManager",
+            Cmd.createGroup.value,
+            info={
+                "groupName": "",
                 "desc": "auto-test group",
-                "announcement": "",
+                "inviteMembers": [],
+                "inviteReason": "auto-case",
+                "options": _private_group_options(),
             },
-        },
-        ignore_keys={"sequence"},
-    )
+        )
+    with _allure_step("验证创建群返回的关键字段"):
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.createGroup.value,
+                "device": "deviceA",
+                "result": {
+                    "owner": user_a,
+                    "ext": "auto-ext",
+                    "permissionType": 2,
+                    "isAllMemberMuted": False,
+                    "adminList": [],
+                    "avatarUrl": "",
+                    "groupId": ne(""),
+                    "memberCount": 1,
+                    "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
+                    "muteList": [],
+                    "isMemberAllowToInvite": False,
+                    "messageBlocked": False,
+                    "memberList": [],
+                    "blockList": [],
+                    "name": "",
+                    "maxUserCount": 200,
+                    "isDisabled": False,
+                    "desc": "auto-test group",
+                    "announcement": "",
+                },
+            },
+            ignore_keys={"sequence"},
+        )
     gid = ((resp.get("result") or {}).get("groupId")) if isinstance(resp.get("result"), dict) else None
-    assert isinstance(gid, str) and gid, f"createGroup 空群名返回应包含可销毁的 groupId: {resp}"
+    with _allure_step("验证创建群返回的关键字段"):
+        assert isinstance(gid, str) and gid, f"createGroup 空群名返回应包含可销毁的 groupId: {resp}"
     # 清理由该异常场景产生的群，避免污染环境
-    resp_destroy = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": gid})
-    assert_api.assert_response_matches(
-        resp_destroy,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.destroyGroup.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("A 销毁测试群"):
+        resp_destroy = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": gid})
+    with _allure_step("验证销毁测试群返回的关键字段"):
+        assert_api.assert_response_matches(
+            resp_destroy,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.destroyGroup.value,
+                "device": "deviceA",
+                "result": True,
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 @pytest.mark.parametrize(
@@ -98,7 +111,7 @@ def test_group_create_group_empty_name(device_a, assert_api, user_a):
         ),
         (
             "options_ext_empty",
-            {"options": {"style": 0, "maxCount": 200, "inviteNeedConfirm": False, "ext": ""}},
+            {"options": _private_group_options(ext="")},
         ),
     ],
 )
@@ -108,87 +121,84 @@ def test_group_create_group_optional_fields_empty(device_a, assert_api, user_a, 
         "desc": "auto-test group",
         "inviteMembers": [],
         "inviteReason": "auto-case",
-        "options": {
-            "style": 0,
-            "maxCount": 200,
-            "inviteNeedConfirm": False,
-            "ext": "auto-ext",
-        },
+        "options": _private_group_options(),
     }
     for key, value in overrides.items():
         base_info[key] = value
 
-    resp = device_a.call("GroupManager", Cmd.createGroup.value, info=base_info)
+    with _allure_step("A 创建群"):
+        resp = device_a.call("GroupManager", Cmd.createGroup.value, info=base_info)
     result = resp.get("result") if isinstance(resp.get("result"), dict) else {}
     expected_desc = base_info["desc"]
     expected_ext = base_info["options"]["ext"]
     expected_avatar = base_info.get("avatarUrl", "")
     expected_member_count = 1 + len(base_info["inviteMembers"])
 
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.createGroup.value,
-            "device": "deviceA",
-            "result": {
-                "owner": user_a,
-                "ext": expected_ext,
-                "permissionType": 2,
-                "isAllMemberMuted": False,
-                "adminList": [],
-                "avatarUrl": expected_avatar,
-                "groupId": ne(""),
-                "memberCount": expected_member_count,
-                "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
-                "muteList": [],
-                "isMemberAllowToInvite": False,
-                "messageBlocked": False,
-                "memberList": [],
-                "blockList": [],
-                "name": base_info["groupName"],
-                "maxUserCount": 200,
-                "isDisabled": False,
-                "desc": expected_desc,
-                "announcement": "",
+    with _allure_step("验证创建群返回的关键字段"):
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.createGroup.value,
+                "device": "deviceA",
+                "result": {
+                    "owner": user_a,
+                    "ext": expected_ext,
+                    "permissionType": 2,
+                    "isAllMemberMuted": False,
+                    "adminList": [],
+                    "avatarUrl": expected_avatar,
+                    "groupId": ne(""),
+                    "memberCount": expected_member_count,
+                    "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
+                    "muteList": [],
+                    "isMemberAllowToInvite": False,
+                    "messageBlocked": False,
+                    "memberList": [],
+                    "blockList": [],
+                    "name": base_info["groupName"],
+                    "maxUserCount": 200,
+                    "isDisabled": False,
+                    "desc": expected_desc,
+                    "announcement": "",
+                },
             },
-        },
-        ignore_keys={"sequence"},
-    )
+            ignore_keys={"sequence"},
+        )
 
     gid = result.get("groupId")
-    assert isinstance(gid, str) and gid, f"{case_name}: createGroup 返回中未获取到 groupId: {resp}"
-    resp_destroy = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": gid})
-    assert_api.assert_response_matches(
-        resp_destroy,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.destroyGroup.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证创建群返回的关键字段"):
+        assert isinstance(gid, str) and gid, f"{case_name}: createGroup 返回中未获取到 groupId: {resp}"
+    with _allure_step("A 销毁测试群"):
+        resp_destroy = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": gid})
+    with _allure_step("验证销毁测试群返回的关键字段"):
+        assert_api.assert_response_matches(
+            resp_destroy,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.destroyGroup.value,
+                "device": "deviceA",
+                "result": True,
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_group_create_group_max_count_less_than_invite_members(device_a, assert_api, user_b, user_c):
-    resp = device_a.call(
-        "GroupManager",
-        Cmd.createGroup.value,
-        info={
-            "groupName": "cg_maxcount_lt_invites",
-            "desc": "auto-test group",
-            "inviteMembers": [user_b, user_c],
-            "inviteReason": "auto-case",
-            "options": {
-                "style": 0,
-                "maxCount": 1,
-                "inviteNeedConfirm": False,
-                "ext": "auto-ext",
+    with _allure_step("A 创建群"):
+        resp = device_a.call(
+            "GroupManager",
+            Cmd.createGroup.value,
+            info={
+                "groupName": "cg_maxcount_lt_invites",
+                "desc": "auto-test group",
+                "inviteMembers": [user_b, user_c],
+                "inviteReason": "auto-case",
+                "options": _private_group_options(max_count=1),
             },
-        },
-    )
-    assert_api.assert_error(resp, code=604, description="The group member capacity is reached")
+        )
+    with _allure_step("验证创建群返回的错误码与错误文案"):
+        assert_api.assert_error(resp, code=604, description="The group member capacity is reached")
 
 
 @pytest.mark.parametrize(
@@ -223,69 +233,70 @@ def test_group_create_group_name_and_avatar_abnormal_inputs(
         "desc": "auto-test group",
         "inviteMembers": [],
         "inviteReason": "auto-case",
-        "options": {
-            "style": 0,
-            "maxCount": 200,
-            "inviteNeedConfirm": False,
-            "ext": "auto-ext",
-        },
+        "options": _private_group_options(),
     }
     for key, value in overrides.items():
         base_info[key] = value
 
-    resp = device_a.call("GroupManager", Cmd.createGroup.value, info=base_info)
+    with _allure_step("A 创建群"):
+        resp = device_a.call("GroupManager", Cmd.createGroup.value, info=base_info)
     if expect_error is not None:
-        assert_api.assert_error(resp, code=expect_error["code"], description=expect_error["description"])
+        with _allure_step("验证创建群返回的错误码与错误文案"):
+            assert_api.assert_error(resp, code=expect_error["code"], description=expect_error["description"])
         return
 
     result = resp.get("result") if isinstance(resp.get("result"), dict) else {}
     expected_name = base_info["groupName"]
     expected_avatar = base_info.get("avatarUrl", "")
 
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.createGroup.value,
-            "device": "deviceA",
-            "result": {
-                "owner": user_a,
-                "ext": "auto-ext",
-                "permissionType": 2,
-                "isAllMemberMuted": False,
-                "adminList": [],
-                "avatarUrl": expected_avatar,
-                "groupId": ne(""),
-                "memberCount": 1,
-                "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
-                "muteList": [],
-                "isMemberAllowToInvite": False,
-                "messageBlocked": False,
-                "memberList": [],
-                "blockList": [],
-                "name": expected_name,
-                "maxUserCount": 200,
-                "isDisabled": False,
-                "desc": "auto-test group",
-                "announcement": "",
+    with _allure_step("验证创建群返回的关键字段"):
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.createGroup.value,
+                "device": "deviceA",
+                "result": {
+                    "owner": user_a,
+                    "ext": "auto-ext",
+                    "permissionType": 2,
+                    "isAllMemberMuted": False,
+                    "adminList": [],
+                    "avatarUrl": expected_avatar,
+                    "groupId": ne(""),
+                    "memberCount": 1,
+                    "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
+                    "muteList": [],
+                    "isMemberAllowToInvite": False,
+                    "messageBlocked": False,
+                    "memberList": [],
+                    "blockList": [],
+                    "name": expected_name,
+                    "maxUserCount": 200,
+                    "isDisabled": False,
+                    "desc": "auto-test group",
+                    "announcement": "",
+                },
             },
-        },
-        ignore_keys={"sequence"},
-    )
+            ignore_keys={"sequence"},
+        )
 
     gid = result.get("groupId")
-    assert isinstance(gid, str) and gid, f"{case_name}: createGroup 返回中未获取到 groupId: {resp}"
-    resp_destroy = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": gid})
-    assert_api.assert_response_matches(
-        resp_destroy,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.destroyGroup.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证创建群返回的关键字段"):
+        assert isinstance(gid, str) and gid, f"{case_name}: createGroup 返回中未获取到 groupId: {resp}"
+    with _allure_step("A 销毁测试群"):
+        resp_destroy = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": gid})
+    with _allure_step("验证销毁测试群返回的关键字段"):
+        assert_api.assert_response_matches(
+            resp_destroy,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.destroyGroup.value,
+                "device": "deviceA",
+                "result": True,
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 @pytest.mark.parametrize(
@@ -293,18 +304,23 @@ def test_group_create_group_name_and_avatar_abnormal_inputs(
     [
         ("desc_too_long_513", {"desc": "d" * 513}, None),
         ("invite_reason_too_long_1025", {"inviteReason": "r" * 1025}, None),
-        ("options_ext_too_long_1025", {"options": {"style": 0, "maxCount": 200, "inviteNeedConfirm": False, "ext": "e" * 1025}}, None),
+        ("options_ext_too_long_1025", {"options": _private_group_options(ext="e" * 1025)}, None),
         (
             "options_max_count_zero",
-            {"options": {"style": 0, "maxCount": 0, "inviteNeedConfirm": False, "ext": "auto-ext"}},
+            {"options": _private_group_options(max_count=0)},
             {"code": 110, "description": "maxUsers should be greater than 0"},
         ),
         (
             "options_max_count_negative",
-            {"options": {"style": 0, "maxCount": -1, "inviteNeedConfirm": False, "ext": "auto-ext"}},
+            {"options": _private_group_options(max_count=-1)},
             {"code": 110, "description": "maxUsers should be greater than 0"},
         ),
-        ("options_style_out_of_range", {"options": {"style": 99, "maxCount": 200, "inviteNeedConfirm": False, "ext": "auto-ext"}}, None),
+        pytest.param(
+            "options_style_out_of_range",
+            {},
+            None,
+            marks=pytest.mark.skip(reason="5.0 EMGroupConfigs 已移除 style，无对应边界"),
+        ),
     ],
 )
 def test_group_create_group_desc_reason_options_abnormal_inputs(
@@ -316,22 +332,19 @@ def test_group_create_group_desc_reason_options_abnormal_inputs(
         "desc": "auto-test group",
         "inviteMembers": [],
         "inviteReason": "auto-case",
-        "options": {
-            "style": 0,
-            "maxCount": 200,
-            "inviteNeedConfirm": False,
-            "ext": "auto-ext",
-        },
+        "options": _private_group_options(),
     }
     for key, value in overrides.items():
         base_info[key] = value
 
-    resp = device_a.call("GroupManager", Cmd.createGroup.value, info=base_info)
+    with _allure_step("A 创建群"):
+        resp = device_a.call("GroupManager", Cmd.createGroup.value, info=base_info)
     result = resp.get("result") if isinstance(resp.get("result"), dict) else {}
     is_error = isinstance(result, dict) and "code" in result and "description" in result
 
     if expect_error is not None:
-        assert_api.assert_error(resp, code=expect_error["code"], description=expect_error["description"])
+        with _allure_step("验证创建群返回的错误码与错误文案"):
+            assert_api.assert_error(resp, code=expect_error["code"], description=expect_error["description"])
         return
 
     if is_error:
@@ -344,50 +357,54 @@ def test_group_create_group_desc_reason_options_abnormal_inputs(
     expected_ext = base_info["options"]["ext"]
     expected_member_count = 1 + len(base_info["inviteMembers"])
 
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.createGroup.value,
-            "device": "deviceA",
-            "result": {
-                "owner": user_a,
-                "ext": expected_ext,
-                "permissionType": 2,
-                "isAllMemberMuted": False,
-                "adminList": [],
-                "avatarUrl": "",
-                "groupId": ne(""),
-                "memberCount": expected_member_count,
-                "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
-                "muteList": [],
-                "isMemberAllowToInvite": False,
-                "messageBlocked": False,
-                "memberList": [],
-                "blockList": [],
-                "name": base_info["groupName"],
-                "maxUserCount": base_info["options"]["maxCount"],
-                "isDisabled": False,
-                "desc": expected_desc,
-                "announcement": "",
+    with _allure_step("验证创建群返回的关键字段"):
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.createGroup.value,
+                "device": "deviceA",
+                "result": {
+                    "owner": user_a,
+                    "ext": expected_ext,
+                    "permissionType": 2,
+                    "isAllMemberMuted": False,
+                    "adminList": [],
+                    "avatarUrl": "",
+                    "groupId": ne(""),
+                    "memberCount": expected_member_count,
+                    "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
+                    "muteList": [],
+                    "isMemberAllowToInvite": False,
+                    "messageBlocked": False,
+                    "memberList": [],
+                    "blockList": [],
+                    "name": base_info["groupName"],
+                    "maxUserCount": base_info["options"]["maxCount"],
+                    "isDisabled": False,
+                    "desc": expected_desc,
+                    "announcement": "",
+                },
             },
-        },
-        ignore_keys={"sequence"},
-    )
+            ignore_keys={"sequence"},
+        )
 
     gid = result.get("groupId")
-    assert isinstance(gid, str) and gid, f"{case_name}: createGroup 返回中未获取到 groupId: {resp}"
-    resp_destroy = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": gid})
-    assert_api.assert_response_matches(
-        resp_destroy,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.destroyGroup.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证创建群返回的关键字段"):
+        assert isinstance(gid, str) and gid, f"{case_name}: createGroup 返回中未获取到 groupId: {resp}"
+    with _allure_step("A 销毁测试群"):
+        resp_destroy = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": gid})
+    with _allure_step("验证销毁测试群返回的关键字段"):
+        assert_api.assert_response_matches(
+            resp_destroy,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.destroyGroup.value,
+                "device": "deviceA",
+                "result": True,
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 @pytest.mark.parametrize(
@@ -411,20 +428,17 @@ def test_group_create_group_invite_members_abnormal_inputs(
         "desc": "auto-test group",
         "inviteMembers": resolved_invite_members,
         "inviteReason": "auto-case",
-        "options": {
-            "style": 0,
-            "maxCount": 200,
-            "inviteNeedConfirm": False,
-            "ext": "auto-ext",
-        },
+        "options": _private_group_options(),
     }
 
-    resp = device_a.call("GroupManager", Cmd.createGroup.value, info=info)
+    with _allure_step("A 创建群"):
+        resp = device_a.call("GroupManager", Cmd.createGroup.value, info=info)
     result = resp.get("result") if isinstance(resp.get("result"), dict) else {}
     is_error = isinstance(result, dict) and "code" in result and "description" in result
 
     if expect_error is not None:
-        assert_api.assert_error(resp, code=expect_error["code"], description=expect_error["description"])
+        with _allure_step("验证创建群返回的错误码与错误文案"):
+            assert_api.assert_error(resp, code=expect_error["code"], description=expect_error["description"])
         return
 
     if is_error:
@@ -433,49 +447,53 @@ def test_group_create_group_invite_members_abnormal_inputs(
             return
         pytest.fail(f"{case_name}: 未冻结的错误响应，请先 discovery 后补 strict 断言: {resp}")
 
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.createGroup.value,
-            "device": "deviceA",
-            "result": {
-                "owner": user_a,
-                "ext": "auto-ext",
-                "permissionType": 2,
-                "isAllMemberMuted": False,
-                "adminList": [],
-                "avatarUrl": "",
-                "groupId": ne(""),
-                "memberCount": 1 + len(set(resolved_invite_members)),
-                "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
-                "muteList": [],
-                "isMemberAllowToInvite": False,
-                "messageBlocked": False,
-                "blockList": [],
-                "name": info["groupName"],
-                "maxUserCount": 200,
-                "isDisabled": False,
-                "desc": "auto-test group",
-                "announcement": "",
+    with _allure_step("验证创建群返回的关键字段"):
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.createGroup.value,
+                "device": "deviceA",
+                "result": {
+                    "owner": user_a,
+                    "ext": "auto-ext",
+                    "permissionType": 2,
+                    "isAllMemberMuted": False,
+                    "adminList": [],
+                    "avatarUrl": "",
+                    "groupId": ne(""),
+                    "memberCount": 1 + len(set(resolved_invite_members)),
+                    "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
+                    "muteList": [],
+                    "isMemberAllowToInvite": False,
+                    "messageBlocked": False,
+                    "blockList": [],
+                    "name": info["groupName"],
+                    "maxUserCount": 200,
+                    "isDisabled": False,
+                    "desc": "auto-test group",
+                    "announcement": "",
+                },
             },
-        },
-        ignore_keys={"sequence", "memberList"},
-    )
+            ignore_keys={"sequence", "memberList"},
+        )
 
     gid = result.get("groupId")
-    assert isinstance(gid, str) and gid, f"{case_name}: createGroup 返回中未获取到 groupId: {resp}"
-    resp_destroy = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": gid})
-    assert_api.assert_response_matches(
-        resp_destroy,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.destroyGroup.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证创建群返回的关键字段"):
+        assert isinstance(gid, str) and gid, f"{case_name}: createGroup 返回中未获取到 groupId: {resp}"
+    with _allure_step("A 销毁测试群"):
+        resp_destroy = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": gid})
+    with _allure_step("验证销毁测试群返回的关键字段"):
+        assert_api.assert_response_matches(
+            resp_destroy,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.destroyGroup.value,
+                "device": "deviceA",
+                "result": True,
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 @pytest.mark.parametrize(
@@ -499,97 +517,106 @@ def test_group_create_group_text_fields_additional_inputs(
         "desc": "auto-test group",
         "inviteMembers": [],
         "inviteReason": "auto-case",
-        "options": {
-            "style": 0,
-            "maxCount": 200,
-            "inviteNeedConfirm": False,
-            "ext": "auto-ext",
-        },
+        "options": _private_group_options(),
     }
     base_info[field] = value
 
-    resp = device_a.call("GroupManager", Cmd.createGroup.value, info=base_info)
+    with _allure_step("A 创建群"):
+        resp = device_a.call("GroupManager", Cmd.createGroup.value, info=base_info)
     if expect_error is not None:
-        assert_api.assert_error(resp, code=expect_error["code"], description=expect_error["description"])
+        with _allure_step("验证创建群返回的错误码与错误文案"):
+            assert_api.assert_error(resp, code=expect_error["code"], description=expect_error["description"])
         return
 
     expected_name = base_info["groupName"]
     expected_desc = base_info["desc"]
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.createGroup.value,
-            "device": "deviceA",
-            "result": {
-                "owner": user_a,
-                "ext": "auto-ext",
-                "permissionType": 2,
-                "isAllMemberMuted": False,
-                "adminList": [],
-                "avatarUrl": "",
-                "groupId": ne(""),
-                "memberCount": 1,
-                "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
-                "muteList": [],
-                "isMemberAllowToInvite": False,
-                "messageBlocked": False,
-                "memberList": [],
-                "blockList": [],
-                "name": expected_name,
-                "maxUserCount": 200,
-                "isDisabled": False,
-                "desc": expected_desc,
-                "announcement": "",
+    with _allure_step("验证创建群返回的关键字段"):
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.createGroup.value,
+                "device": "deviceA",
+                "result": {
+                    "owner": user_a,
+                    "ext": "auto-ext",
+                    "permissionType": 2,
+                    "isAllMemberMuted": False,
+                    "adminList": [],
+                    "avatarUrl": "",
+                    "groupId": ne(""),
+                    "memberCount": 1,
+                    "isPublic": False,  # 5.0 isMemberOnly 移除 → isPublic（私有群=非公开）
+                    "muteList": [],
+                    "isMemberAllowToInvite": False,
+                    "messageBlocked": False,
+                    "memberList": [],
+                    "blockList": [],
+                    "name": expected_name,
+                    "maxUserCount": 200,
+                    "isDisabled": False,
+                    "desc": expected_desc,
+                    "announcement": "",
+                },
             },
-        },
-        ignore_keys={"sequence"},
-    )
+            ignore_keys={"sequence"},
+        )
 
     result = resp.get("result") if isinstance(resp.get("result"), dict) else {}
     gid = result.get("groupId")
-    assert isinstance(gid, str) and gid, f"{case_name}: createGroup 返回中未获取到 groupId: {resp}"
-    resp_destroy = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": gid})
-    assert_api.assert_response_matches(
-        resp_destroy,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.destroyGroup.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证创建群返回的关键字段"):
+        assert isinstance(gid, str) and gid, f"{case_name}: createGroup 返回中未获取到 groupId: {resp}"
+    with _allure_step("A 销毁测试群"):
+        resp_destroy = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": gid})
+    with _allure_step("验证销毁测试群返回的关键字段"):
+        assert_api.assert_response_matches(
+            resp_destroy,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.destroyGroup.value,
+                "device": "deviceA",
+                "result": True,
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_group_destroy_group_nonexistent(device_a, assert_api):
-    resp = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": _NONEXISTENT_GROUP_ID})
-    assert_api.assert_error(resp, code=600, description="do not find this group")
+    with _allure_step("A 销毁测试群"):
+        resp = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": _NONEXISTENT_GROUP_ID})
+    with _allure_step("验证销毁测试群返回的错误码与错误文案"):
+        assert_api.assert_error(resp, code=600, description="do not find this group")
 
 
 def test_group_destroy_group_empty_group_id(device_a, assert_api):
-    resp = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": ""})
-    assert_api.assert_error(resp, code=600, description="Group ID is invalid")
+    with _allure_step("A 销毁测试群"):
+        resp = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": ""})
+    with _allure_step("验证销毁测试群返回的错误码与错误文案"):
+        assert_api.assert_error(resp, code=600, description="Group ID is invalid")
 
 
 def test_group_get_group_with_id_nonexistent(device_a, assert_api):
-    resp = device_a.call("GroupManager", Cmd.getGroupWithId.value, info={"groupId": _NONEXISTENT_GROUP_ID})
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.getGroupWithId.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("A 查询本地群详情"):
+        resp = device_a.call("GroupManager", Cmd.getGroupWithId.value, info={"groupId": _NONEXISTENT_GROUP_ID})
+    with _allure_step("验证查询本地群详情返回的关键字段"):
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.getGroupWithId.value,
+                "device": "deviceA",
+                "result": None,
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_group_get_group_from_server_nonexistent(device_a, assert_api):
-    resp = device_a.call(
-        "GroupManager",
-        Cmd.getGroupSpecificationFromServer.value,
-        info={"groupId": _NONEXISTENT_GROUP_ID},
-    )
-    assert_api.assert_error(resp, code=600, description="do not find this group")
+    with _allure_step("A 查询服务端群详情"):
+        resp = device_a.call(
+            "GroupManager",
+            Cmd.getGroupSpecificationFromServer.value,
+            info={"groupId": _NONEXISTENT_GROUP_ID},
+        )
+    with _allure_step("验证查询服务端群详情返回的错误码与错误文案"):
+        assert_api.assert_error(resp, code=600, description="do not find this group")

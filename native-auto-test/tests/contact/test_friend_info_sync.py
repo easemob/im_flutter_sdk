@@ -133,7 +133,7 @@ def test_contact_data_sync_events_after_relogin(
                 ignore_keys={"sequence"},
             )
 
-        with _allure_step("deviceA 退出当前登录会话"):
+        with _allure_step(f"{device_a.device_name} 退出当前登录会话"):
             logout = device_a.call(
                 "Client", Cmd.logout.value, info={"unbindToken": False}
             )
@@ -151,7 +151,7 @@ def test_contact_data_sync_events_after_relogin(
 
         device_a.drain_events(timeout=1.0)
 
-        with _allure_step("deviceA 重新登录并触发 Contact 数据同步"):
+        with _allure_step(f"{device_a.device_name} 重新登录并触发 Contact 数据同步"):
             token = fetch_user_token(user_a, "1").get("access_token", "")
             assert token, "REST 未返回登录 token"
             login = device_a.call(
@@ -229,4 +229,6 @@ def test_contact_data_sync_events_after_relogin(
                 info={"dataSyncType": original_mask},
             )
         if friend_established:
-            flow.delete_friend(device_a, user_b)
+            # 清理不是本用例的业务断言；5.0 重新登录后的删除事件可能已被
+            # 数据同步队列消费，不能让 cleanup 的事件等待覆盖主流程结果。
+            flow.delete_friend(device_a, user_b, expect_event=False)

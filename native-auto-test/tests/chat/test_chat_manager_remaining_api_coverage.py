@@ -257,84 +257,85 @@ def _wait_conversation_on_server(device, *, conv_id: str, timeout: float = 60.0)
 
 def test_chat_manager_pin_unpin_and_fetch_pinned_messages(device_a, device_b, assert_api, user_a, user_b):
     """pinMessage/unpinMessage/fetchPinnedMessages：发送消息后置顶、拉取置顶列表、取消置顶并确认列表清空。"""
-    content = f"chat-pin-msg-{uuid.uuid4().hex[:8]}"
-    msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
+    with _allure_step("验证：pinMessage/unpinMessage/fetchPinnedMessages：发送消息后置顶、拉取置顶列表、取消置顶并确认列表清空。"):
+        content = f"chat-pin-msg-{uuid.uuid4().hex[:8]}"
+        msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
 
-    resp_pin = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": msg_id})
-    assert_api.assert_response_matches(
-        resp_pin,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.pinMessage.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
-    pin_evt_b = _wait_pin_changed(device_b, msg_id=msg_id, operation="MessagePinOperation.Pin")
-    _assert_pin_changed(assert_api, pin_evt_b, msg_id=msg_id, conversation_id=user_a, operation="MessagePinOperation.Pin", operator_id=user_a)
-    _assert_no_pin_changed(device_a, msg_id=msg_id, operation="MessagePinOperation.Pin")
+        resp_pin = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": msg_id})
+        assert_api.assert_response_matches(
+            resp_pin,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.pinMessage.value,
+                "device": "deviceA",
+                "result": None,
+            },
+            ignore_keys={"sequence"},
+        )
+        pin_evt_b = _wait_pin_changed(device_b, msg_id=msg_id, operation="MessagePinOperation.Pin")
+        _assert_pin_changed(assert_api, pin_evt_b, msg_id=msg_id, conversation_id=user_a, operation="MessagePinOperation.Pin", operator_id=user_a)
+        _assert_no_pin_changed(device_a, msg_id=msg_id, operation="MessagePinOperation.Pin")
 
-    resp_fetch = device_a.call("ChatManager", Cmd.fetchPinnedMessages.value, info={"convId": user_b})
-    target_pinned = [
-        message for message in (resp_fetch.get("result") or [])
-        if isinstance(message, dict) and str(message.get("msgId")) == str(msg_id)
-    ]
-    assert_api.assert_response_matches(
-        {**resp_fetch, "result": target_pinned},
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.fetchPinnedMessages.value,
-            "device": "deviceA",
-            "result": [
-                {
-                    "msgId": msg_id,
-                    "from": user_a,
-                    "to": user_b,
-                    "convId": user_b,
-                    "chatType": 0,
-                    "direction": 0,
-                    "status": 2,
-                    "hasRead": True,
-                    "needReadReceipt": False, "isThread": False,
-                    "isContentReplaced": False,
-                    "body": {"targetLanguages": [], "translations": {}, "type": 0, "content": content},
-                }
-            ],
-        },
-        ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState", "deliverOnlineOnly", "receiverList"},
-    )
+        resp_fetch = device_a.call("ChatManager", Cmd.fetchPinnedMessages.value, info={"convId": user_b})
+        target_pinned = [
+            message for message in (resp_fetch.get("result") or [])
+            if isinstance(message, dict) and str(message.get("msgId")) == str(msg_id)
+        ]
+        assert_api.assert_response_matches(
+            {**resp_fetch, "result": target_pinned},
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.fetchPinnedMessages.value,
+                "device": "deviceA",
+                "result": [
+                    {
+                        "msgId": msg_id,
+                        "from": user_a,
+                        "to": user_b,
+                        "convId": user_b,
+                        "chatType": 0,
+                        "direction": 0,
+                        "status": 2,
+                        "hasRead": True,
+                        "needReadReceipt": False, "isThread": False,
+                        "isContentReplaced": False,
+                        "body": {"targetLanguages": [], "translations": {}, "type": 0, "content": content},
+                    }
+                ],
+            },
+            ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState", "deliverOnlineOnly", "receiverList"},
+        )
 
-    resp_unpin = device_a.call("ChatManager", Cmd.unpinMessage.value, info={"msgId": msg_id})
-    assert_api.assert_response_matches(
-        resp_unpin,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.unpinMessage.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
-    unpin_evt_b = _wait_pin_changed(device_b, msg_id=msg_id, operation="MessagePinOperation.Unpin")
-    _assert_pin_changed(assert_api, unpin_evt_b, msg_id=msg_id, conversation_id=user_a, operation="MessagePinOperation.Unpin", operator_id=user_a)
-    _assert_no_pin_changed(device_a, msg_id=msg_id, operation="MessagePinOperation.Unpin")
+        resp_unpin = device_a.call("ChatManager", Cmd.unpinMessage.value, info={"msgId": msg_id})
+        assert_api.assert_response_matches(
+            resp_unpin,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.unpinMessage.value,
+                "device": "deviceA",
+                "result": None,
+            },
+            ignore_keys={"sequence"},
+        )
+        unpin_evt_b = _wait_pin_changed(device_b, msg_id=msg_id, operation="MessagePinOperation.Unpin")
+        _assert_pin_changed(assert_api, unpin_evt_b, msg_id=msg_id, conversation_id=user_a, operation="MessagePinOperation.Unpin", operator_id=user_a)
+        _assert_no_pin_changed(device_a, msg_id=msg_id, operation="MessagePinOperation.Unpin")
 
-    resp_fetch_empty = device_a.call("ChatManager", Cmd.fetchPinnedMessages.value, info={"convId": user_b})
-    target_after_unpin = [
-        message for message in (resp_fetch_empty.get("result") or [])
-        if isinstance(message, dict) and str(message.get("msgId")) == str(msg_id)
-    ]
-    assert_api.assert_response_matches(
-        {**resp_fetch_empty, "result": target_after_unpin},
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.fetchPinnedMessages.value,
-            "device": "deviceA",
-            "result": [],
-        },
-        ignore_keys={"sequence"},
-    )
+        resp_fetch_empty = device_a.call("ChatManager", Cmd.fetchPinnedMessages.value, info={"convId": user_b})
+        target_after_unpin = [
+            message for message in (resp_fetch_empty.get("result") or [])
+            if isinstance(message, dict) and str(message.get("msgId")) == str(msg_id)
+        ]
+        assert_api.assert_response_matches(
+            {**resp_fetch_empty, "result": target_after_unpin},
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.fetchPinnedMessages.value,
+                "device": "deviceA",
+                "result": [],
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -401,291 +402,296 @@ def test_chat_manager_recall_message_receiver_recalled_info_event(topology, asse
 
 def test_chat_manager_send_to_non_friend_current_success_event(device_a, assert_api, user_a, user_c):
     """sendMessage：向 user_c 发送单聊消息，按当前真实返回冻结为成功回调。"""
-    try:
-        device_a.drain_events()
-    except Exception:
-        pass
+    with _allure_step("验证：sendMessage：向 user_c 发送单聊消息，按当前真实返回冻结为成功回调。"):
+        try:
+            device_a.drain_events()
+        except Exception:
+            pass
 
-    content = f"chat-error-non-friend-{uuid.uuid4().hex[:8]}"
-    resp = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_c, content))
-    temp_id = ((resp.get("result") or {}).get("msgId"))
-    assert temp_id, f"sendMessage 未返回临时 msgId: {resp}"
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.sendMessage.value,
-            "device": "deviceA",
-            "result": {
-                "msgId": temp_id,
-                "from": user_a,
-                "to": user_c,
-                "convId": user_c,
-                "chatType": 0,
-                "direction": 0,
-                "hasRead": True,
-                "needReadReceipt": False, "isThread": False,
-                "isContentReplaced": False,
-                "broadcast": False,
-                "onlineState": True,
-                "body": {"targetLanguages": [], "translations": {}, "type": 0, "content": content},
-            },
-        },
-        ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly"},
-    )
-
-    evt = _wait_message_success_for_content(device_a, content=content, to=user_c, timeout=20.0)
-    real_id = (((evt.get("data") or {}).get("msg") or {}).get("msgId")) or temp_id
-    assert_api.assert_response_matches(
-        evt,
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessageSuccess.value,
-            "data": {
-                "msgId": temp_id,
-                "msg": {
-                    "msgId": real_id,
+        content = f"chat-error-non-friend-{uuid.uuid4().hex[:8]}"
+        resp = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_c, content))
+        temp_id = ((resp.get("result") or {}).get("msgId"))
+        assert temp_id, f"sendMessage 未返回临时 msgId: {resp}"
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.sendMessage.value,
+                "device": "deviceA",
+                "result": {
+                    "msgId": temp_id,
                     "from": user_a,
                     "to": user_c,
                     "convId": user_c,
                     "chatType": 0,
                     "direction": 0,
-                    "status": 2,
                     "hasRead": True,
                     "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False,
-                    "deliverOnlineOnly": False,
-                    "body": {"type": 0, "content": content, "translations": {}},
+                    "broadcast": False,
+                    "onlineState": True,
+                    "body": {"targetLanguages": [], "translations": {}, "type": 0, "content": content},
                 },
             },
-        },
-        ignore_keys={"timestamp", "serverTime", "localTime"},
-    )
+            ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly"},
+        )
+
+        evt = _wait_message_success_for_content(device_a, content=content, to=user_c, timeout=20.0)
+        real_id = (((evt.get("data") or {}).get("msg") or {}).get("msgId")) or temp_id
+        assert_api.assert_response_matches(
+            evt,
+            expected={
+                "type": "event",
+                "eventType": Cmd.onMessageSuccess.value,
+                "data": {
+                    "msgId": temp_id,
+                    "msg": {
+                        "msgId": real_id,
+                        "from": user_a,
+                        "to": user_c,
+                        "convId": user_c,
+                        "chatType": 0,
+                        "direction": 0,
+                        "status": 2,
+                        "hasRead": True,
+                        "needReadReceipt": False, "isThread": False,
+                        "isContentReplaced": False,
+                        "deliverOnlineOnly": False,
+                        "body": {"type": 0, "content": content, "translations": {}},
+                    },
+                },
+            },
+            ignore_keys={"timestamp", "serverTime", "localTime"},
+        )
 
 
 def test_chat_manager_conversation_marks_and_fetch_options(device_a, device_b, assert_api, user_a, user_b):
     """addRemoteAndLocalConversationsMark/deleteRemoteAndLocalConversationsMark/fetchConversationsByOptions：添加会话标记后按 options 查询，再移除标记。"""
-    _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, f"chat-mark-{uuid.uuid4().hex[:8]}")
-    _wait_conversation_on_server(device_a, conv_id=user_b)
+    with _allure_step("验证：addRemoteAndLocalConversationsMark/deleteRemoteAndLocalConversationsMark/fetchConversationsByOptions：添加会话标记后按 options"):
+        _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, f"chat-mark-{uuid.uuid4().hex[:8]}")
+        _wait_conversation_on_server(device_a, conv_id=user_b)
 
-    resp_add = device_a.call(
-        "ChatManager",
-        Cmd.addRemoteAndLocalConversationsMark.value,
-        info={"convIds": [user_b], "mark": 0},
-    )
-    assert_api.assert_response_matches(
-        resp_add,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.addRemoteAndLocalConversationsMark.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
+        resp_add = device_a.call(
+            "ChatManager",
+            Cmd.addRemoteAndLocalConversationsMark.value,
+            info={"convIds": [user_b], "mark": 0},
+        )
+        assert_api.assert_response_matches(
+            resp_add,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.addRemoteAndLocalConversationsMark.value,
+                "device": "deviceA",
+                "result": None,
+            },
+            ignore_keys={"sequence"},
+        )
 
-    fetch_info = {"mark": 0, "pageSize": 10, "cursor": "", "pinned": False}
-    resp_fetch_marked = None
-    deadline = time.monotonic() + 30.0
-    while time.monotonic() < deadline:
-        resp_fetch_marked = device_a.call("ChatManager", Cmd.loadAllConversations.value, info=fetch_info)
-        # 5.0 fetchConversationsByOptions 返回纯 list（无 {list, cursor} dict）
-        marked_list = resp_fetch_marked.get("result") or []
-        if any(isinstance(item, dict) and item.get("convId") == user_b and 0 in (item.get("marks") or []) for item in marked_list):
-            break
-        time.sleep(2.0)
-    assert resp_fetch_marked is not None
-    # 5.0 fetchConversationsByOptions 返回全部会话（不按 mark 过滤）→ 过滤出目标会话再断言
-    marked_target = [
-        item for item in (resp_fetch_marked.get("result") or [])
-        if isinstance(item, dict) and item.get("convId") == user_b
-    ]
-    assert_api.assert_response_matches(
-        {**resp_fetch_marked, "result": marked_target},
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.loadAllConversations.value,
-            "device": "deviceA",
-            "result": [
-                {
-                    "convId": user_b,
-                    "type": 0,
-                    "isThread": False,
-                    "isPinned": False,
-                    "pinnedTime": 0,
-                    "marks": [0],
-                }
-            ],
-        },
-        ignore_keys={"sequence", "ext"},
-    )
+        fetch_info = {"mark": 0, "pageSize": 10, "cursor": "", "pinned": False}
+        resp_fetch_marked = None
+        deadline = time.monotonic() + 30.0
+        while time.monotonic() < deadline:
+            resp_fetch_marked = device_a.call("ChatManager", Cmd.loadAllConversations.value, info=fetch_info)
+            # 5.0 fetchConversationsByOptions 返回纯 list（无 {list, cursor} dict）
+            marked_list = resp_fetch_marked.get("result") or []
+            if any(isinstance(item, dict) and item.get("convId") == user_b and 0 in (item.get("marks") or []) for item in marked_list):
+                break
+            time.sleep(2.0)
+        assert resp_fetch_marked is not None
+        # 5.0 fetchConversationsByOptions 返回全部会话（不按 mark 过滤）→ 过滤出目标会话再断言
+        marked_target = [
+            item for item in (resp_fetch_marked.get("result") or [])
+            if isinstance(item, dict) and item.get("convId") == user_b
+        ]
+        assert_api.assert_response_matches(
+            {**resp_fetch_marked, "result": marked_target},
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.loadAllConversations.value,
+                "device": "deviceA",
+                "result": [
+                    {
+                        "convId": user_b,
+                        "type": 0,
+                        "isThread": False,
+                        "isPinned": False,
+                        "pinnedTime": 0,
+                        "marks": [0],
+                    }
+                ],
+            },
+            ignore_keys={"sequence", "ext"},
+        )
 
-    resp_delete = device_a.call(
-        "ChatManager",
-        Cmd.deleteRemoteAndLocalConversationsMark.value,
-        info={"convIds": [user_b], "mark": 0},
-    )
-    assert_api.assert_response_matches(
-        resp_delete,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.deleteRemoteAndLocalConversationsMark.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
+        resp_delete = device_a.call(
+            "ChatManager",
+            Cmd.deleteRemoteAndLocalConversationsMark.value,
+            info={"convIds": [user_b], "mark": 0},
+        )
+        assert_api.assert_response_matches(
+            resp_delete,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.deleteRemoteAndLocalConversationsMark.value,
+                "device": "deviceA",
+                "result": None,
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_chat_manager_message_count_and_search_options_boundaries(device_a, assert_api, user_a):
     """getMessageCount/searchMsgsByOptions：校验全量消息计数返回数值，以及 count=0 搜索边界返回空列表。
     前置清理本地残留消息（避免全量跑时前面 case 的数据影响 count=0 边界断言）。"""
-    device_a.call("ChatManager", Cmd.deleteAllMessageAndConversation.value, info={"clearServerData": False})
-    resp_count = device_a.call("ChatManager", Cmd.getMessageCount.value, info={})
-    assert_api.assert_response_matches(
-        resp_count,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.getMessageCount.value,
-            "device": "deviceA",
-            "result": ge(0),
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证：getMessageCount/searchMsgsByOptions：校验全量消息计数返回数值，以及 count=0 搜索边界返回空列表。"):
+        device_a.call("ChatManager", Cmd.deleteAllMessageAndConversation.value, info={"clearServerData": False})
+        resp_count = device_a.call("ChatManager", Cmd.getMessageCount.value, info={})
+        assert_api.assert_response_matches(
+            resp_count,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.getMessageCount.value,
+                "device": "deviceA",
+                "result": ge(0),
+            },
+            ignore_keys={"sequence"},
+        )
 
-    resp_search = device_a.call(
-        "ChatManager",
-        Cmd.searchMsgsByOptions.value,
-        info={"ts": -1, "count": 0, "direction": 0, "types": [0], "from": user_a},
-    )
-    assert_api.assert_response_matches(
-        resp_search,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.searchMsgsByOptions.value,
-            "device": "deviceA",
-            "result": [],
-        },
-        ignore_keys={"sequence"},
-    )
+        resp_search = device_a.call(
+            "ChatManager",
+            Cmd.searchMsgsByOptions.value,
+            info={"ts": -1, "count": 0, "direction": 0, "types": [0], "from": user_a},
+        )
+        assert_api.assert_response_matches(
+            resp_search,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.searchMsgsByOptions.value,
+                "device": "deviceA",
+                "result": [],
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_chat_manager_delete_all_message_and_conversation_local(device_a, device_b, assert_api, user_a, user_b):
     """deleteAllMessageAndConversation：本地清空所有会话与消息，冻结 clearServerData=False 当前返回。"""
-    _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, f"chat-clear-all-{uuid.uuid4().hex[:8]}")
-    resp_delete = device_a.call(
-        "ChatManager",
-        Cmd.deleteAllMessageAndConversation.value,
-        info={"clearServerData": False},
-    )
-    assert_api.assert_response_matches(
-        resp_delete,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.deleteAllMessageAndConversation.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证：deleteAllMessageAndConversation：本地清空所有会话与消息，冻结 clearServerData=False 当前返回。"):
+        _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, f"chat-clear-all-{uuid.uuid4().hex[:8]}")
+        resp_delete = device_a.call(
+            "ChatManager",
+            Cmd.deleteAllMessageAndConversation.value,
+            info={"clearServerData": False},
+        )
+        assert_api.assert_response_matches(
+            resp_delete,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.deleteAllMessageAndConversation.value,
+                "device": "deviceA",
+                "result": None,
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_chat_manager_message_object_boundary_methods(device_a, assert_api, user_a, user_b):
     """resendMessage/updateChatMessage/importMessages：使用本地构造消息对象覆盖重发、更新和导入的边界/当前返回。"""
-    msg_id = f"chat-object-{uuid.uuid4().hex[:8]}"
-    original_body = {"type": 0, "content": f"chat-object-{uuid.uuid4().hex[:8]}"}
-    message = {
-        "msgId": msg_id,
-        "from": user_a,
-        "to": user_b,
-        "convId": user_b,
-        "chatType": 0,
-        "direction": 0,
-        "status": 3,
-        "hasRead": True,
-        "needReadReceipt": False, "isThread": False,
-        "deliverOnlineOnly": False,
-        "body": original_body,
-    }
+    with _allure_step("验证：resendMessage/updateChatMessage/importMessages：使用本地构造消息对象覆盖重发、更新和导入的边界/当前返回。"):
+        msg_id = f"chat-object-{uuid.uuid4().hex[:8]}"
+        original_body = {"type": 0, "content": f"chat-object-{uuid.uuid4().hex[:8]}"}
+        message = {
+            "msgId": msg_id,
+            "from": user_a,
+            "to": user_b,
+            "convId": user_b,
+            "chatType": 0,
+            "direction": 0,
+            "status": 3,
+            "hasRead": True,
+            "needReadReceipt": False, "isThread": False,
+            "deliverOnlineOnly": False,
+            "body": original_body,
+        }
 
-    resp_import = device_a.call("ChatManager", Cmd.importMessages.value, info={"messages": [message]})
-    assert_api.assert_response_matches(
-        resp_import,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.importMessages.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
-
-    updated_body = {"type": 0, "content": f"chat-object-updated-{uuid.uuid4().hex[:8]}"}
-    updated = {**message, "status": 2, "body": updated_body}
-    resp_update = device_a.call("ChatManager", Cmd.updateChatMessage.value, info={"message": updated})
-    assert_api.assert_response_matches(
-        resp_update,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.updateChatMessage.value,
-            "device": "deviceA",
-            "result": {
-                "msgId": msg_id,
-                "from": user_a,
-                "to": user_b,
-                "convId": user_b,
-                "chatType": 0,
-                "direction": 0,
-                "body": updated_body,
+        resp_import = device_a.call("ChatManager", Cmd.importMessages.value, info={"messages": [message]})
+        assert_api.assert_response_matches(
+            resp_import,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.importMessages.value,
+                "device": "deviceA",
+                "result": True,
             },
-        },
-        ignore_keys={
-            "sequence",
-            "serverTime",
-            "localTime",
-            "status",
-            "hasRead",
-            "hasDeliverAck",
-            "isThread",
-            "isContentReplaced",
-            "broadcast",
-            "onlineState",
-            "deliverOnlineOnly",
-            "targetLanguages",
-            "translations",
-        },
-    )
+            ignore_keys={"sequence"},
+        )
 
-    resp_resend = device_a.call("ChatManager", Cmd.resendMessage.value, info=message)
-    assert_api.assert_response_matches(
-        resp_resend,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.resendMessage.value,
-            "device": "deviceA",
-            "result": {
-                "msgId": msg_id,
-                "from": user_a,
-                "to": user_b,
-                "convId": user_b,
-                "chatType": 0,
-                "direction": 0,
-                "body": updated_body,
+        updated_body = {"type": 0, "content": f"chat-object-updated-{uuid.uuid4().hex[:8]}"}
+        updated = {**message, "status": 2, "body": updated_body}
+        resp_update = device_a.call("ChatManager", Cmd.updateChatMessage.value, info={"message": updated})
+        assert_api.assert_response_matches(
+            resp_update,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.updateChatMessage.value,
+                "device": "deviceA",
+                "result": {
+                    "msgId": msg_id,
+                    "from": user_a,
+                    "to": user_b,
+                    "convId": user_b,
+                    "chatType": 0,
+                    "direction": 0,
+                    "body": updated_body,
+                },
             },
-        },
-        ignore_keys={
-            "sequence",
-            "serverTime",
-            "localTime",
-            "status",
-            "hasRead",
-            "hasDeliverAck",
-            "isThread",
-            "isContentReplaced",
-            "broadcast",
-            "onlineState",
-            "deliverOnlineOnly",
-            "targetLanguages",
-            "translations",
-        },
-    )
+            ignore_keys={
+                "sequence",
+                "serverTime",
+                "localTime",
+                "status",
+                "hasRead",
+                "hasDeliverAck",
+                "isThread",
+                "isContentReplaced",
+                "broadcast",
+                "onlineState",
+                "deliverOnlineOnly",
+                "targetLanguages",
+                "translations",
+            },
+        )
+
+        resp_resend = device_a.call("ChatManager", Cmd.resendMessage.value, info=message)
+        assert_api.assert_response_matches(
+            resp_resend,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.resendMessage.value,
+                "device": "deviceA",
+                "result": {
+                    "msgId": msg_id,
+                    "from": user_a,
+                    "to": user_b,
+                    "convId": user_b,
+                    "chatType": 0,
+                    "direction": 0,
+                    "body": updated_body,
+                },
+            },
+            ignore_keys={
+                "sequence",
+                "serverTime",
+                "localTime",
+                "status",
+                "hasRead",
+                "hasDeliverAck",
+                "isThread",
+                "isContentReplaced",
+                "broadcast",
+                "onlineState",
+                "deliverOnlineOnly",
+                "targetLanguages",
+                "translations",
+            },
+        )

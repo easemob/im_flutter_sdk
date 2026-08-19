@@ -221,7 +221,7 @@ def _send_text_and_wait_received(device_a, device_b, assert_api, user_a: str, us
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.sendMessage.value,
-            "device": "deviceA",
+            "device": sender.device_name,
             "result": {
                 "msgId": str(temp_id),
                 "from": user_a,
@@ -407,146 +407,153 @@ def test_chat_reaction_change_event_received_by_sender(topology, assert_api):
 
 def test_chat_fetch_reaction_list_invalid_msg_id(device_a, assert_api):
     """fetchReactionList 传入不存在的 msgId 列表；先断言信封。"""
-    # Flutter 端签名要求 chatType 必填；请求体键名为 msgIds。
-    info = {"msgIds": ["__invalid_msg_id__"], "chatType": 0}
-    resp = device_a.call("ChatManager", Cmd.fetchReactionList.value, info=info)
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.fetchReactionList.value,
-            "device": "deviceA",
-            "result": {"__invalid_msg_id__": []},
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证：fetchReactionList 传入不存在的 msgId 列表；先断言信封。"):
+        # Flutter 端签名要求 chatType 必填；请求体键名为 msgIds。
+        info = {"msgIds": ["__invalid_msg_id__"], "chatType": 0}
+        resp = device_a.call("ChatManager", Cmd.fetchReactionList.value, info=info)
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.fetchReactionList.value,
+                "device": sender.device_name,
+                "result": {"__invalid_msg_id__": []},
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_chat_fetch_reaction_list_empty_msg_ids(device_a, assert_api):
     """fetchReactionList 传入空 msgIds；应返回参数错误。"""
-    info = {"msgIds": [], "chatType": 0}
-    resp = device_a.call("ChatManager", Cmd.fetchReactionList.value, info=info)
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.fetchReactionList.value,
-            "device": "deviceA",
-            "result": {"code": 110, "description": "'messageIdList' can not be null"},
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证：fetchReactionList 传入空 msgIds；应返回参数错误。"):
+        info = {"msgIds": [], "chatType": 0}
+        resp = device_a.call("ChatManager", Cmd.fetchReactionList.value, info=info)
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.fetchReactionList.value,
+                "device": "deviceA",
+                "result": {"code": 110, "description": "'messageIdList' can not be null"},
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_chat_fetch_reaction_list_invalid_chat_type(device_a, assert_api):
     """fetchReactionList 传入非法 chatType；当前实现返回空 reaction 列表映射。"""
-    info = {"msgIds": ["__invalid_msg_id__"], "chatType": -1}
-    resp = device_a.call("ChatManager", Cmd.fetchReactionList.value, info=info)
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.fetchReactionList.value,
-            "device": "deviceA",
-            "result": {"__invalid_msg_id__": []},
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证：fetchReactionList 传入非法 chatType；当前实现返回空 reaction 列表映射。"):
+        info = {"msgIds": ["__invalid_msg_id__"], "chatType": -1}
+        resp = device_a.call("ChatManager", Cmd.fetchReactionList.value, info=info)
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.fetchReactionList.value,
+                "device": "deviceA",
+                "result": {"__invalid_msg_id__": []},
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_chat_fetch_reaction_detail_invalid(device_a, assert_api):
     """fetchReactionDetail 使用无效 msgId/reaction；先校验信封。"""
-    # 原生 wrapper 将 pageSize 按必填读取（Android: getInt），缺失会直接抛参错。
-    info = {"msgId": "__invalid_msg_id__", "reaction": "👍", "pageSize": 20}
-    resp = device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info)
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.fetchReactionDetail.value,
-            "device": "deviceA",
-            "result": {"cursor": "", "list": []},
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证：fetchReactionDetail 使用无效 msgId/reaction；先校验信封。"):
+        # 原生 wrapper 将 pageSize 按必填读取（Android: getInt），缺失会直接抛参错。
+        info = {"msgId": "__invalid_msg_id__", "reaction": "👍", "pageSize": 20}
+        resp = device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info)
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.fetchReactionDetail.value,
+                "device": "deviceA",
+                "result": {"cursor": "", "list": []},
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_chat_fetch_reaction_detail_invalid_page_size(device_a, device_b, assert_api, user_a, user_b):
     """fetchReactionDetail 非法 pageSize（-1）；应返回参数错误。"""
-    try:
-        device_a.drain_events()
-        device_b.drain_events()
-    except Exception:
-        pass
+    with _allure_step("验证：fetchReactionDetail 非法 pageSize（-1）；应返回参数错误。"):
+        try:
+            device_a.drain_events()
+            device_b.drain_events()
+        except Exception:
+            pass
 
-    real_id = _send_text_and_wait_received(
-        device_a, device_b, assert_api, user_a, user_b, "reaction-detail-invalid-page-size"
-    )
+        real_id = _send_text_and_wait_received(
+            device_a, device_b, assert_api, user_a, user_b, "reaction-detail-invalid-page-size"
+        )
 
-    info = {"msgId": real_id, "reaction": "👍", "pageSize": -1}
-    resp = device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info)
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.fetchReactionDetail.value,
-            "device": "deviceA",
-            "result": {"code": 303, "description": "Unknown server error"},
-        },
-        ignore_keys={"sequence"},
-    )
+        info = {"msgId": real_id, "reaction": "👍", "pageSize": -1}
+        resp = device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info)
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.fetchReactionDetail.value,
+                "device": "deviceA",
+                "result": {"code": 303, "description": "Unknown server error"},
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_chat_fetch_reaction_detail_empty_reaction(device_a, device_b, assert_api, user_a, user_b):
     """fetchReactionDetail 传入空 reaction；应返回参数错误。"""
-    try:
-        device_a.drain_events()
-        device_b.drain_events()
-    except Exception:
-        pass
+    with _allure_step("验证：fetchReactionDetail 传入空 reaction；应返回参数错误。"):
+        try:
+            device_a.drain_events()
+            device_b.drain_events()
+        except Exception:
+            pass
 
-    real_id = _send_text_and_wait_received(
-        device_a, device_b, assert_api, user_a, user_b, "reaction-detail-empty-reaction"
-    )
+        real_id = _send_text_and_wait_received(
+            device_a, device_b, assert_api, user_a, user_b, "reaction-detail-empty-reaction"
+        )
 
-    info = {"msgId": real_id, "reaction": "", "pageSize": 20}
-    resp = device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info)
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.fetchReactionDetail.value,
-            "device": "deviceA",
-            "result": {"code": 110, "description": "'reaction' can not be null"},
-        },
-        ignore_keys={"sequence"},
-    )
+        info = {"msgId": real_id, "reaction": "", "pageSize": 20}
+        resp = device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info)
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.fetchReactionDetail.value,
+                "device": "deviceA",
+                "result": {"code": 110, "description": "'reaction' can not be null"},
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_chat_fetch_reaction_detail_oversize_page_size(device_a, device_b, assert_api, user_a, user_b):
     """fetchReactionDetail 过大 pageSize（1000）；应返回稳定结果结构。"""
-    try:
-        device_a.drain_events()
-        device_b.drain_events()
-    except Exception:
-        pass
+    with _allure_step("验证：fetchReactionDetail 过大 pageSize（1000）；应返回稳定结果结构。"):
+        try:
+            device_a.drain_events()
+            device_b.drain_events()
+        except Exception:
+            pass
 
-    real_id = _send_text_and_wait_received(
-        device_a, device_b, assert_api, user_a, user_b, "reaction-detail-oversize-page-size"
-    )
+        real_id = _send_text_and_wait_received(
+            device_a, device_b, assert_api, user_a, user_b, "reaction-detail-oversize-page-size"
+        )
 
-    info = {"msgId": real_id, "reaction": "👍", "pageSize": 1000}
-    resp = device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info)
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.fetchReactionDetail.value,
-            "device": "deviceA",
-            "result": {"code": 110, "description": "Limit exceeds the maximum quantity limit"},
-        },
-        ignore_keys={"sequence"},
-    )
+        info = {"msgId": real_id, "reaction": "👍", "pageSize": 1000}
+        resp = device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info)
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.fetchReactionDetail.value,
+                "device": "deviceA",
+                "result": {"code": 110, "description": "Limit exceeds the maximum quantity limit"},
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -591,7 +598,7 @@ def test_chat_add_reaction_duplicate_reaction(topology, assert_api):
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.addReaction.value,
-            "device": "deviceA",
+            "device": sender.device_name,
             "result": {"code": 1301, "description": "the user is already operation this message"},
         },
         ignore_keys={"sequence"},
@@ -623,7 +630,7 @@ def test_chat_remove_reaction_not_exists_reaction(topology, assert_api):
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.removeReaction.value,
-            "device": "deviceA",
+            "device": sender.device_name,
             "result": None,
         },
         ignore_keys={"sequence"},
@@ -632,85 +639,88 @@ def test_chat_remove_reaction_not_exists_reaction(topology, assert_api):
 
 def test_chat_remove_reaction_invalid_msg_id(device_a, assert_api):
     """removeReaction 使用无效 msgId；按不存在语义冻结。"""
-    resp = device_a.call("ChatManager", Cmd.removeReaction.value, info={"reaction": "👍", "msgId": "__invalid_msg_id__"})
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.removeReaction.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证：removeReaction 使用无效 msgId；按不存在语义冻结。"):
+        resp = device_a.call("ChatManager", Cmd.removeReaction.value, info={"reaction": "👍", "msgId": "__invalid_msg_id__"})
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.removeReaction.value,
+                "device": "deviceA",
+                "result": None,
+            },
+            ignore_keys={"sequence"},
+        )
 
 
 def test_chat_add_reaction_too_long_reaction(device_a, device_b, assert_api, user_a, user_b):
     """addReaction 超长 reaction；按被测端实际语义冻结。"""
-    try:
-        device_a.drain_events()
-        device_b.drain_events()
-    except Exception:
-        pass
+    with _allure_step("验证：addReaction 超长 reaction；按被测端实际语义冻结。"):
+        try:
+            device_a.drain_events()
+            device_b.drain_events()
+        except Exception:
+            pass
 
-    real_id = _send_text_and_wait_received(
-        device_a, device_b, assert_api, user_a, user_b, "reaction-too-long"
-    )
+        real_id = _send_text_and_wait_received(
+            device_a, device_b, assert_api, user_a, user_b, "reaction-too-long"
+        )
 
-    reaction_128 = "a" * 128
-    resp_128 = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction_128, "msgId": real_id})
-    assert_api.assert_response_matches(
-        resp_128,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.addReaction.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
-    _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction_128, is_added_by_self=True)
-    _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction_128, is_added_by_self=False)
+        reaction_128 = "a" * 128
+        resp_128 = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction_128, "msgId": real_id})
+        assert_api.assert_response_matches(
+            resp_128,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.addReaction.value,
+                "device": "deviceA",
+                "result": None,
+            },
+            ignore_keys={"sequence"},
+        )
+        _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction_128, is_added_by_self=True)
+        _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction_128, is_added_by_self=False)
 
-    reaction_256 = "b" * 256
-    resp_256 = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction_256, "msgId": real_id})
-    assert_api.assert_response_matches(
-        resp_256,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.addReaction.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
-    _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction_256, is_added_by_self=True)
-    _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction_256, is_added_by_self=False)
+        reaction_256 = "b" * 256
+        resp_256 = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction_256, "msgId": real_id})
+        assert_api.assert_response_matches(
+            resp_256,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.addReaction.value,
+                "device": "deviceA",
+                "result": None,
+            },
+            ignore_keys={"sequence"},
+        )
+        _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction_256, is_added_by_self=True)
+        _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction_256, is_added_by_self=False)
 
 
 def test_chat_add_reaction_special_char_reaction(device_a, device_b, assert_api, user_a, user_b):
     """addReaction 特殊字符 reaction；按被测端实际语义冻结。"""
-    try:
-        device_a.drain_events()
-        device_b.drain_events()
-    except Exception:
-        pass
+    with _allure_step("验证：addReaction 特殊字符 reaction；按被测端实际语义冻结。"):
+        try:
+            device_a.drain_events()
+            device_b.drain_events()
+        except Exception:
+            pass
 
-    real_id = _send_text_and_wait_received(
-        device_a, device_b, assert_api, user_a, user_b, "reaction-special-char"
-    )
+        real_id = _send_text_and_wait_received(
+            device_a, device_b, assert_api, user_a, user_b, "reaction-special-char"
+        )
 
-    reaction = "\n\t"
-    resp = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.addReaction.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
-    _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction, is_added_by_self=True)
-    _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction, is_added_by_self=False)
+        reaction = "\n\t"
+        resp = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.addReaction.value,
+                "device": "deviceA",
+                "result": None,
+            },
+            ignore_keys={"sequence"},
+        )
+        _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction, is_added_by_self=True)
+        _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction, is_added_by_self=False)

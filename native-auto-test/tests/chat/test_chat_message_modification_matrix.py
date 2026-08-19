@@ -175,35 +175,36 @@ def test_chat_non_sender_cannot_modify_message(topology, assert_api):
 
 
 def test_chat_modify_cmd_message_is_rejected(device_a, device_b, assert_api, user_a, user_b):
-    device_a.drain_events()
-    device_b.drain_events()
-    action = f"modify-cmd-{uuid.uuid4().hex[:6]}"
-    response = device_a.call(
-        "ChatManager", Cmd.sendMessage.value,
-        info={"to": user_b, "chatType": 0, "direction": 0,
-              "body": {"type": 6, "action": action, "deliverOnlineOnly": False}},
-    )
-    assert ((response.get("result") or {}).get("msgId")), response
-    deadline = time.monotonic() + 30
-    message = None
-    while time.monotonic() < deadline:
-        event = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=2)
-        candidate = ((event or {}).get("data") or {}).get("msg") or {}
-        if candidate.get("msgId") and (candidate.get("body") or {}).get("action") == action:
-            message = candidate
-            break
-    assert message, "未收到 CMD 发送成功事件"
-    modify = device_a.call(
-        "ChatManager", Cmd.modifyMessage.value,
-        info={"msgId": message["msgId"], "attributes": {"cmdEdit": True}},
-    )
-    assert_api.assert_response_matches(
-        modify,
-        expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value,
-                  "device": "deviceA", "result": {"code": 500,
-                  "description": "Message is invalid"}},
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证：chat modify cmd message is rejected"):
+        device_a.drain_events()
+        device_b.drain_events()
+        action = f"modify-cmd-{uuid.uuid4().hex[:6]}"
+        response = device_a.call(
+            "ChatManager", Cmd.sendMessage.value,
+            info={"to": user_b, "chatType": 0, "direction": 0,
+                  "body": {"type": 6, "action": action, "deliverOnlineOnly": False}},
+        )
+        assert ((response.get("result") or {}).get("msgId")), response
+        deadline = time.monotonic() + 30
+        message = None
+        while time.monotonic() < deadline:
+            event = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=2)
+            candidate = ((event or {}).get("data") or {}).get("msg") or {}
+            if candidate.get("msgId") and (candidate.get("body") or {}).get("action") == action:
+                message = candidate
+                break
+        assert message, "未收到 CMD 发送成功事件"
+        modify = device_a.call(
+            "ChatManager", Cmd.modifyMessage.value,
+            info={"msgId": message["msgId"], "attributes": {"cmdEdit": True}},
+        )
+        assert_api.assert_response_matches(
+            modify,
+            expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value,
+                      "device": "deviceA", "result": {"code": 500,
+                      "description": "Message is invalid"}},
+            ignore_keys={"sequence"},
+        )
 
 
 def _send_media(topology, assert_api, type_key):
@@ -224,70 +225,72 @@ def _send_media(topology, assert_api, type_key):
 @pytest.mark.parametrize("type_key", ["voice", "image", "video"])
 @pytest.mark.topology("account_a_to_account_b")
 def test_chat_modify_media_attributes(topology, assert_api, type_key):
-    message = _send_media(topology, assert_api, type_key)
-    device_a = topology.sender_action_device
-    user_a = topology.sender_user
-    user_b = topology.recipient_user
+    with _allure_step("验证：chat modify media attributes"):
+        message = _send_media(topology, assert_api, type_key)
+        device_a = topology.sender_action_device
+        user_a = topology.sender_user
+        user_b = topology.recipient_user
 
-    time.sleep(float(os.getenv("CHAT_MODIFY_SETTLE_SECONDS", "5")))
-    attributes = {"mediaEdit": type_key, "revision": "1"}
-    response = device_a.call(
-        "ChatManager", Cmd.modifyMessage.value,
-        info={"msgId": message["msgId"], "attributes": attributes},
-    )
-    _assert_delivery_ack_boolean(response.get("result") or {}, source=f"modifyMessage({type_key}).result")
-    assert_api.assert_response_matches(
-        response,
-        expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value,
-                  "device": "deviceA", "result": {"msgId": message["msgId"],
-                  "from": user_a, "to": user_b, "convId": user_b, "chatType": 0,
-                  "direction": 0, "status": 2, "hasRead": True, "needReadReceipt": False,  "isThread": False,
-                  "isContentReplaced": False, "attributes": attributes,
-                  "body": {"type": (message.get("body") or {}).get("type"),
-                           "operatorId": user_a, "operatorTime": gt(0), "operatorCount": gt(0)}}},
-        ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState", "deliverOnlineOnly",
-                     "localPath", "remotePath", "secret", "fileSize", "displayName", "fileStatus",
-                     "thumbnailLocalPath", "thumbnailRemotePath", "thumbnailSecret", "thumbnailStatus",
-                     "width", "height", "duration", "isGif", "sendOriginalImage", "hasDeliverAck"},
-    )
-    event = _wait_changed(device_b, msg_id=message["msgId"])
-    changed = ((event.get("data") or {}).get("message") or {})
-    assert_api.assert_response_matches(
-        event,
-        expected={"type": "event", "eventType": Cmd.onMessageContentChanged.value, "data": {
-            "message": {"msgId": message["msgId"], "from": user_a, "to": user_b,
-                        "convId": user_a, "chatType": 0, "direction": 1, "status": 2,
-                        "hasRead": False, "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
-                        "attributes": attributes,
-                        "body": {"type": (message.get("body") or {}).get("type")}},
-            "operatorId": user_a, "operationTime": gt(0),
-        }},
-        ignore_keys={"timestamp", "sequence", "localTime", "serverTime", "broadcast", "onlineState",
-                     "deliverOnlineOnly", "localPath", "remotePath", "secret", "fileSize", "displayName",
-                     "fileStatus", "thumbnailLocalPath", "thumbnailRemotePath", "thumbnailSecret",
-                     "thumbnailStatus", "width", "height", "duration", "isGif", "sendOriginalImage",
-                     "receiverList"},
-    )
+        time.sleep(float(os.getenv("CHAT_MODIFY_SETTLE_SECONDS", "5")))
+        attributes = {"mediaEdit": type_key, "revision": "1"}
+        response = device_a.call(
+            "ChatManager", Cmd.modifyMessage.value,
+            info={"msgId": message["msgId"], "attributes": attributes},
+        )
+        _assert_delivery_ack_boolean(response.get("result") or {}, source=f"modifyMessage({type_key}).result")
+        assert_api.assert_response_matches(
+            response,
+            expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value,
+                      "device": device_a.device_name, "result": {"msgId": message["msgId"],
+                      "from": user_a, "to": user_b, "convId": user_b, "chatType": 0,
+                      "direction": 0, "status": 2, "hasRead": True, "needReadReceipt": False,  "isThread": False,
+                      "isContentReplaced": False, "attributes": attributes,
+                      "body": {"type": (message.get("body") or {}).get("type"),
+                               "operatorId": user_a, "operatorTime": gt(0), "operatorCount": gt(0)}}},
+            ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState", "deliverOnlineOnly",
+                         "localPath", "remotePath", "secret", "fileSize", "displayName", "fileStatus",
+                         "thumbnailLocalPath", "thumbnailRemotePath", "thumbnailSecret", "thumbnailStatus",
+                         "width", "height", "duration", "isGif", "sendOriginalImage", "hasDeliverAck"},
+        )
+        event = _wait_changed(device_b, msg_id=message["msgId"])
+        changed = ((event.get("data") or {}).get("message") or {})
+        assert_api.assert_response_matches(
+            event,
+            expected={"type": "event", "eventType": Cmd.onMessageContentChanged.value, "data": {
+                "message": {"msgId": message["msgId"], "from": user_a, "to": user_b,
+                            "convId": user_a, "chatType": 0, "direction": 1, "status": 2,
+                            "hasRead": False, "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
+                            "attributes": attributes,
+                            "body": {"type": (message.get("body") or {}).get("type")}},
+                "operatorId": user_a, "operationTime": gt(0),
+            }},
+            ignore_keys={"timestamp", "sequence", "localTime", "serverTime", "broadcast", "onlineState",
+                         "deliverOnlineOnly", "localPath", "remotePath", "secret", "fileSize", "displayName",
+                         "fileStatus", "thumbnailLocalPath", "thumbnailRemotePath", "thumbnailSecret",
+                         "thumbnailStatus", "width", "height", "duration", "isGif", "sendOriginalImage",
+                         "receiverList"},
+        )
 
 
 @pytest.mark.parametrize("type_key", ["voice", "image", "video"])
 @pytest.mark.topology("account_a_to_account_b")
 def test_chat_modify_media_body_is_rejected(topology, assert_api, type_key):
-    message = _send_media(topology, assert_api, type_key)
-    device_a = topology.sender_action_device
-    user_a = topology.sender_user
-    user_b = topology.recipient_user
+    with _allure_step("验证：chat modify media body is rejected"):
+        message = _send_media(topology, assert_api, type_key)
+        device_a = topology.sender_action_device
+        user_a = topology.sender_user
+        user_b = topology.recipient_user
 
-    response = device_a.call(
-        "ChatManager", Cmd.modifyMessage.value,
-        info={"msgId": message["msgId"], "msgBody": message["body"]},
-    )
-    assert_api.assert_response_matches(
-        response,
-        expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value, "device": "deviceA",
-                  "result": {"code": 111, "description": "Unsupported operation"}},
-        ignore_keys={"sequence"},
-    )
+        response = device_a.call(
+            "ChatManager", Cmd.modifyMessage.value,
+            info={"msgId": message["msgId"], "msgBody": message["body"]},
+        )
+        assert_api.assert_response_matches(
+            response,
+            expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value, "device": device_a.device_name,
+                      "result": {"code": 111, "description": "Unsupported operation"}},
+            ignore_keys={"sequence"},
+        )
 
 
 def _wait_changed(device, *, msg_id, timeout=30.0):
@@ -307,64 +310,66 @@ def _wait_changed(device, *, msg_id, timeout=30.0):
 @pytest.mark.parametrize("mode", ["body", "attributes", "body-and-attributes"])
 def test_chat_modify_text_body_and_attributes(device_a, device_b, assert_api, user_a, user_b, mode):
     """官方结构移植：modifyMessage 修改正文/属性/两者。当前环境实测 305（edit not available，待研发）。"""
-    old_content = f"modify-text-old-{uuid.uuid4().hex[:6]}"
-    message = _send_text(device_a, device_b, assert_api, user_a, user_b, old_content)
-    time.sleep(float(os.getenv("CHAT_MODIFY_SETTLE_SECONDS", "5")))
-    new_content = f"modify-text-new-{uuid.uuid4().hex[:6]}"
-    attributes = {"editMode": mode, "revision": "1"}
-    info = {"msgId": message["msgId"]}
-    if mode != "attributes":
-        info["msgBody"] = {"type": 0, "content": new_content}
-    if mode != "body":
-        info["attributes"] = attributes
-    response = device_a.call("ChatManager", Cmd.modifyMessage.value, info=info)
-    expected_content = old_content if mode == "attributes" else new_content
-    expected_result = {
-        "msgId": message["msgId"], "from": user_a, "to": user_b, "convId": user_b,
-        "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
-        # 5.0：hasReadAck/needGroupAck 无；未设 flag → hasDeliverAck 恒 False
-        "hasDeliverAck": False, "needReadReceipt": False, "isPeerRead": False,
-        "isThread": False, "isContentReplaced": False,
-        "body": {"type": 0, "content": expected_content, "operatorId": user_a,
-                 "operatorTime": gt(0), "operatorCount": gt(0)},
-    }
-    if mode != "body":
-        expected_result["attributes"] = attributes
-    assert_api.assert_response_matches(
-        response,
-        expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value,
-                  "device": "deviceA", "result": expected_result},
-        ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState",
-                     "deliverOnlineOnly", "targetLanguages", "translations"},
-    )
-    event = _wait_changed(device_b, msg_id=message["msgId"])
-    expected_received = {
-        "msgId": message["msgId"], "from": user_a, "to": user_b, "convId": user_a,
-        "chatType": 0, "direction": 1, "status": 2, "hasRead": False,
-        "hasDeliverAck": False, "needReadReceipt": False, "isPeerRead": False,
-        "isThread": False, "isContentReplaced": False,
-        "body": {"type": 0, "content": expected_content},
-    }
-    if mode != "body":
-        expected_received["attributes"] = attributes
-    assert_api.assert_response_matches(
-        event,
-        expected={"type": "event", "eventType": Cmd.onMessageContentChanged.value,
-                  "data": {"message": expected_received, "operatorId": user_a, "operationTime": gt(0)}},
-        ignore_keys={"timestamp", "sequence", "localTime", "serverTime", "broadcast", "onlineState",
-                     "deliverOnlineOnly", "targetLanguages", "translations", "receiverList"},
-    )
+    with _allure_step("验证：官方结构移植：modifyMessage 修改正文/属性/两者。当前环境实测 305（edit not available，待研发）。"):
+        old_content = f"modify-text-old-{uuid.uuid4().hex[:6]}"
+        message = _send_text(device_a, device_b, assert_api, user_a, user_b, old_content)
+        time.sleep(float(os.getenv("CHAT_MODIFY_SETTLE_SECONDS", "5")))
+        new_content = f"modify-text-new-{uuid.uuid4().hex[:6]}"
+        attributes = {"editMode": mode, "revision": "1"}
+        info = {"msgId": message["msgId"]}
+        if mode != "attributes":
+            info["msgBody"] = {"type": 0, "content": new_content}
+        if mode != "body":
+            info["attributes"] = attributes
+        response = device_a.call("ChatManager", Cmd.modifyMessage.value, info=info)
+        expected_content = old_content if mode == "attributes" else new_content
+        expected_result = {
+            "msgId": message["msgId"], "from": user_a, "to": user_b, "convId": user_b,
+            "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
+            # 5.0：hasReadAck/needGroupAck 无；未设 flag → hasDeliverAck 恒 False
+            "hasDeliverAck": False, "needReadReceipt": False, "isPeerRead": False,
+            "isThread": False, "isContentReplaced": False,
+            "body": {"type": 0, "content": expected_content, "operatorId": user_a,
+                     "operatorTime": gt(0), "operatorCount": gt(0)},
+        }
+        if mode != "body":
+            expected_result["attributes"] = attributes
+        assert_api.assert_response_matches(
+            response,
+            expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value,
+                      "device": "deviceA", "result": expected_result},
+            ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState",
+                         "deliverOnlineOnly", "targetLanguages", "translations"},
+        )
+        event = _wait_changed(device_b, msg_id=message["msgId"])
+        expected_received = {
+            "msgId": message["msgId"], "from": user_a, "to": user_b, "convId": user_a,
+            "chatType": 0, "direction": 1, "status": 2, "hasRead": False,
+            "hasDeliverAck": False, "needReadReceipt": False, "isPeerRead": False,
+            "isThread": False, "isContentReplaced": False,
+            "body": {"type": 0, "content": expected_content},
+        }
+        if mode != "body":
+            expected_received["attributes"] = attributes
+        assert_api.assert_response_matches(
+            event,
+            expected={"type": "event", "eventType": Cmd.onMessageContentChanged.value,
+                      "data": {"message": expected_received, "operatorId": user_a, "operationTime": gt(0)}},
+            ignore_keys={"timestamp", "sequence", "localTime", "serverTime", "broadcast", "onlineState",
+                         "deliverOnlineOnly", "targetLanguages", "translations", "receiverList"},
+        )
 
 
 def test_chat_modify_message_empty_id(device_a, assert_api):
     """官方结构移植：modifyMessage 空 msgId → 错误。"""
-    response = device_a.call(
-        "ChatManager", Cmd.modifyMessage.value,
-        info={"msgId": "", "msgBody": {"type": 0, "content": "empty-id"}},
-    )
-    assert_api.assert_response_matches(
-        response,
-        expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value,
-                  "device": "deviceA", "result": {"code": 1, "description": "messageId is empty"}},
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证：官方结构移植：modifyMessage 空 msgId → 错误。"):
+        response = device_a.call(
+            "ChatManager", Cmd.modifyMessage.value,
+            info={"msgId": "", "msgBody": {"type": 0, "content": "empty-id"}},
+        )
+        assert_api.assert_response_matches(
+            response,
+            expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value,
+                      "device": "deviceA", "result": {"code": 1, "description": "messageId is empty"}},
+            ignore_keys={"sequence"},
+        )

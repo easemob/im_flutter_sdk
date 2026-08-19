@@ -32,37 +32,43 @@ pytestmark = [pytest.mark.client, pytest.mark.group, pytest.mark.agorachat1_4_0]
 
 
 @pytest.mark.topology("account_a_to_account_b")
-def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b, topology):
+
+def test_group_add_remove_members(assert_api, user_a, user_b, topology):
     """群主添加/移除成员：加入与移除事件同步到收发账号全部在线端。"""
+    owner = topology.sender_action_device
+    member = topology.recipient_action_device
     group_name = new_group_name("member")
     group_id = ""
     try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=group_name,
-            invite_members=[],
-        )
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            group_id, _ = create_group(
+                owner,
+                assert_api,
+                owner=user_a,
+                group_name=group_name,
+                invite_members=[],
+            )
 
         sec_b_devices = tuple(d for d in topology.recipient_devices if d is not topology.recipient_action_device)
         sec_a_devices = tuple(d for d in topology.sender_devices if d is not topology.sender_action_device)
 
-        resp_add = device_a.call(
-            "GroupManager",
-            Cmd.addMembers.value,
-            info={"groupId": group_id, "members": [user_b], "welcome": "welcome"},
-        )
-        assert_api.assert_response_matches(
-            resp_add,
-            expected={
-                "manager": "GroupManager",
-                "cmd": Cmd.addMembers.value,
-                "device": "deviceA",
-                "result": True,
-            },
-            ignore_keys={"sequence"},
-        )
+        with _allure_step("A 添加群成员"):
+            resp_add = owner.call(
+                "GroupManager",
+                Cmd.addMembers.value,
+                info={"groupId": group_id, "members": [user_b], "welcome": "welcome"},
+            )
+        with _allure_step("验证 添加群成员返回的关键字段"):
+            assert_api.assert_response_matches(
+                resp_add,
+                expected={
+                    "manager": "GroupManager",
+                    "cmd": Cmd.addMembers.value,
+                    "device": owner.device_name,
+                    "result": True,
+                },
+                ignore_keys={"sequence"},
+            )
 
         expected_add_events = {
             GroupChangeEvent.ON_INVITATION_RECEIVED.value,
@@ -74,24 +80,26 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
         required_add_events = {
             "onGroupAutoAcceptInvitation",
         }
-        add_events = collect_group_events(
-            device_b,
-            expected_event_types=expected_add_events,
-            group_id=group_id,
-            allow_missing_group_id=True,
-            required_all_event_types=required_add_events,
-            timeout=10.0,
-        )
-        assert_group_events(
-            assert_api,
-            add_events,
-            expected_event_types=expected_add_events,
-            group_id=group_id,
-            allow_missing_group_id=True,
-            required_all_event_types=required_add_events,
-            expected_inviter=user_a,
-            expected_member=user_b,
-        )
+        with _allure_step("等待并校验目标业务事件"):
+            add_events = collect_group_events(
+                member,
+                expected_event_types=expected_add_events,
+                group_id=group_id,
+                allow_missing_group_id=True,
+                required_all_event_types=required_add_events,
+                timeout=10.0,
+            )
+        with _allure_step("验证 添加群成员返回的关键字段"):
+            assert_group_events(
+                assert_api,
+                add_events,
+                expected_event_types=expected_add_events,
+                group_id=group_id,
+                allow_missing_group_id=True,
+                required_all_event_types=required_add_events,
+                expected_inviter=user_a,
+                expected_member=user_b,
+            )
 
         for sec_b in sec_b_devices:
             with _allure_step(f"接收账号副端 {sec_b.device_name} 同步验证收到事件"):
@@ -115,28 +123,30 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
                 )
 
 
-        owner_add_events = collect_group_events(
-            device_a,
-            expected_event_types={
-                "onGroupMembersJoined",
-                "onGroupMemberJoined",
-            },
-            group_id=group_id,
-            # 5.0 只派发批量事件 onGroupMembersJoined（单成员事件不派发）
-            required_all_event_types={"onGroupMembersJoined"},
-            timeout=10.0,
-        )
-        assert_group_events(
-            assert_api,
-            owner_add_events,
-            expected_event_types={
-                "onGroupMembersJoined",
-                "onGroupMemberJoined",
-            },
-            group_id=group_id,
-            required_all_event_types={"onGroupMembersJoined"},
-            expected_member=user_b,
-        )
+        with _allure_step("等待并校验目标业务事件"):
+            owner_add_events = collect_group_events(
+                owner,
+                expected_event_types={
+                    "onGroupMembersJoined",
+                    "onGroupMemberJoined",
+                },
+                group_id=group_id,
+                # 5.0 只派发批量事件 onGroupMembersJoined（单成员事件不派发）
+                required_all_event_types={"onGroupMembersJoined"},
+                timeout=10.0,
+            )
+        with _allure_step("验证 添加群成员返回的关键字段"):
+            assert_group_events(
+                assert_api,
+                owner_add_events,
+                expected_event_types={
+                    "onGroupMembersJoined",
+                    "onGroupMemberJoined",
+                },
+                group_id=group_id,
+                required_all_event_types={"onGroupMembersJoined"},
+                expected_member=user_b,
+            )
 
         for sec_a in sec_a_devices:
             with _allure_step(f"发送账号副端 {sec_a.device_name} 同步验证收到事件"):
@@ -163,38 +173,44 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
                 )
 
 
-        resp_get_after_add = device_a.call(
-            "GroupManager",
-            Cmd.getGroupSpecificationFromServer.value,
-            info={"groupId": group_id},
-        )
-        assert_group_snapshot(
-            assert_api,
-            resp_get_after_add,
-            cmd=Cmd.getGroupSpecificationFromServer.value,
-            group_id=group_id,
-            group_name=group_name,
-            owner=user_a,
-            member_count_value=2,
-        )
-        assert member_count(resp_get_after_add) == 2, f"addMembers 后 memberCount 预期 2: {resp_get_after_add}"
-        assert_group_members_exact(resp_get_after_add, [user_b], err_prefix="addMembers 后")
+        with _allure_step("A 查询服务端群详情"):
+            resp_get_after_add = owner.call(
+                "GroupManager",
+                Cmd.getGroupSpecificationFromServer.value,
+                info={"groupId": group_id},
+            )
+        with _allure_step("验证查询服务端群详情返回的关键字段"):
+            assert_group_snapshot(
+                assert_api,
+                resp_get_after_add,
+                cmd=Cmd.getGroupSpecificationFromServer.value,
+                group_id=group_id,
+                group_name=group_name,
+                owner=user_a,
+                member_count_value=2,
+            )
+        with _allure_step("验证查询服务端群详情返回的关键字段"):
+            assert member_count(resp_get_after_add) == 2, f"addMembers 后 memberCount 预期 2: {resp_get_after_add}"
+        with _allure_step("验证查询服务端群详情返回的关键字段"):
+            assert_group_members_exact(resp_get_after_add, [user_b], err_prefix="addMembers 后")
 
-        resp_remove = device_a.call(
-            "GroupManager",
-            Cmd.removeMembers.value,
-            info={"groupId": group_id, "members": [user_b]},
-        )
-        assert_api.assert_response_matches(
-            resp_remove,
-            expected={
-                "manager": "GroupManager",
-                "cmd": Cmd.removeMembers.value,
-                "device": "deviceA",
-                "result": True,
-            },
-            ignore_keys={"sequence"},
-        )
+        with _allure_step("A 移除群成员"):
+            resp_remove = owner.call(
+                "GroupManager",
+                Cmd.removeMembers.value,
+                info={"groupId": group_id, "members": [user_b]},
+            )
+        with _allure_step("验证 移除群成员返回的关键字段"):
+            assert_api.assert_response_matches(
+                resp_remove,
+                expected={
+                    "manager": "GroupManager",
+                    "cmd": Cmd.removeMembers.value,
+                    "device": owner.device_name,
+                    "result": True,
+                },
+                ignore_keys={"sequence"},
+            )
 
         expected_remove_events = {
             GroupChangeEvent.ON_USER_REMOVED.value,
@@ -202,23 +218,25 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
             "onGroupUserRemoved",
         }
         required_remove_events = {"onGroupUserRemoved"}
-        remove_events = collect_group_events(
-            device_b,
-            expected_event_types=expected_remove_events,
-            group_id=group_id,
-            allow_missing_group_id=True,
-            required_all_event_types=required_remove_events,
-            timeout=10.0,
-        )
-        assert_group_events(
-            assert_api,
-            remove_events,
-            expected_event_types=expected_remove_events,
-            group_id=group_id,
-            allow_missing_group_id=True,
-            required_all_event_types=required_remove_events,
-            expected_member=user_b,
-        )
+        with _allure_step("等待并校验目标业务事件"):
+            remove_events = collect_group_events(
+                member,
+                expected_event_types=expected_remove_events,
+                group_id=group_id,
+                allow_missing_group_id=True,
+                required_all_event_types=required_remove_events,
+                timeout=10.0,
+            )
+        with _allure_step("验证 移除群成员返回的关键字段"):
+            assert_group_events(
+                assert_api,
+                remove_events,
+                expected_event_types=expected_remove_events,
+                group_id=group_id,
+                allow_missing_group_id=True,
+                required_all_event_types=required_remove_events,
+                expected_member=user_b,
+            )
 
         for sec_b in sec_b_devices:
             with _allure_step(f"接收账号副端 {sec_b.device_name} 同步验证收到事件"):
@@ -241,27 +259,29 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
                 )
 
 
-        owner_remove_events = collect_group_events(
-            device_a,
-            expected_event_types={
-                "onGroupMembersExited",
-                "onGroupMemberExited",
-            },
-            group_id=group_id,
-            required_all_event_types={"onGroupMembersExited"},
-            timeout=10.0,
-        )
-        assert_group_events(
-            assert_api,
-            owner_remove_events,
-            expected_event_types={
-                "onGroupMembersExited",
-                "onGroupMemberExited",
-            },
-            group_id=group_id,
-            required_all_event_types={"onGroupMembersExited"},
-            expected_member=user_b,
-        )
+        with _allure_step("等待并校验目标业务事件"):
+            owner_remove_events = collect_group_events(
+                owner,
+                expected_event_types={
+                    "onGroupMembersExited",
+                    "onGroupMemberExited",
+                },
+                group_id=group_id,
+                required_all_event_types={"onGroupMembersExited"},
+                timeout=10.0,
+            )
+        with _allure_step("验证 移除群成员返回的关键字段"):
+            assert_group_events(
+                assert_api,
+                owner_remove_events,
+                expected_event_types={
+                    "onGroupMembersExited",
+                    "onGroupMemberExited",
+                },
+                group_id=group_id,
+                required_all_event_types={"onGroupMembersExited"},
+                expected_member=user_b,
+            )
 
         for sec_a in sec_a_devices:
             with _allure_step(f"发送账号副端 {sec_a.device_name} 同步验证收到事件"):
@@ -288,25 +308,30 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
                 )
 
 
-        resp_get_after_remove = device_a.call(
-            "GroupManager",
-            Cmd.getGroupSpecificationFromServer.value,
-            info={"groupId": group_id},
-        )
-        assert_group_snapshot(
-            assert_api,
-            resp_get_after_remove,
-            cmd=Cmd.getGroupSpecificationFromServer.value,
-            group_id=group_id,
-            group_name=group_name,
-            owner=user_a,
-            member_count_value=1,
-        )
-        assert member_count(resp_get_after_remove) == 1, f"removeMembers 后 memberCount 预期 1: {resp_get_after_remove}"
-        assert_group_members_exact(resp_get_after_remove, [], err_prefix="removeMembers 后")
+        with _allure_step("A 查询服务端群详情"):
+            resp_get_after_remove = owner.call(
+                "GroupManager",
+                Cmd.getGroupSpecificationFromServer.value,
+                info={"groupId": group_id},
+            )
+        with _allure_step("验证查询服务端群详情返回的关键字段"):
+            assert_group_snapshot(
+                assert_api,
+                resp_get_after_remove,
+                cmd=Cmd.getGroupSpecificationFromServer.value,
+                group_id=group_id,
+                group_name=group_name,
+                owner=user_a,
+                member_count_value=1,
+            )
+        with _allure_step("验证查询服务端群详情返回的关键字段"):
+            assert member_count(resp_get_after_remove) == 1, f"removeMembers 后 memberCount 预期 1: {resp_get_after_remove}"
+        with _allure_step("验证查询服务端群详情返回的关键字段"):
+            assert_group_members_exact(resp_get_after_remove, [], err_prefix="removeMembers 后")
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(owner, assert_api, group_id)
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -422,7 +447,8 @@ def test_group_join_and_leave_public_group(topology, assert_api):
                 assert member_user not in member_ids, f"退出后成员快照仍含 B: member_user={member_user}, members={member_ids}"
     finally:
         if group_id:
-            destroy_group(sender, assert_api, group_id)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(sender, assert_api, group_id)
 
 
 
@@ -439,19 +465,23 @@ def test_group_join_public_group_rejects_private_member_invite_group(
     """
     group_id = ""
     try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=new_group_name("private_join_reject"),
-            invite_members=[],
-            style=1,
-        )
-        resp_join = device_b.call("GroupManager", Cmd.joinPublicGroup.value, info={"groupId": group_id})
-        assert_api.assert_error(resp_join, code=603, description="group member permission is required")
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            group_id, _ = create_group(
+                device_a,
+                assert_api,
+                owner=user_a,
+                group_name=new_group_name("private_join_reject"),
+                invite_members=[],
+                style=1,
+            )
+        with _allure_step("B 加入公开群"):
+            resp_join = device_b.call("GroupManager", Cmd.joinPublicGroup.value, info={"groupId": group_id})
+        with _allure_step("验证加入公开群返回的错误码与错误文案"):
+            assert_api.assert_error(resp_join, code=603, description="group member permission is required")
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(device_a, assert_api, group_id)
 
 
 def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api, user_a, user_b, user_c):
@@ -464,46 +494,51 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
     group_id = ""
     members = [user_b, user_c]
     try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=group_name,
-            invite_members=[],
-        )
+        with _allure_step("测试准备：创建测试群并建立业务前置"):
+            group_id, _ = create_group(
+                device_a,
+                assert_api,
+                owner=user_a,
+                group_name=group_name,
+                invite_members=[],
+            )
 
-        resp_add = device_a.call(
-            "GroupManager",
-            Cmd.addMembers.value,
-            info={"groupId": group_id, "members": members, "welcome": "welcome"},
-        )
-        assert_api.assert_response_matches(
-            resp_add,
-            expected={
-                "manager": "GroupManager",
-                "cmd": Cmd.addMembers.value,
-                "device": "deviceA",
-                "result": True,
-            },
-            ignore_keys={"sequence"},
-        )
+        with _allure_step("A 添加群成员"):
+            resp_add = device_a.call(
+                "GroupManager",
+                Cmd.addMembers.value,
+                info={"groupId": group_id, "members": members, "welcome": "welcome"},
+            )
+        with _allure_step("验证 添加群成员返回的关键字段"):
+            assert_api.assert_response_matches(
+                resp_add,
+                expected={
+                    "manager": "GroupManager",
+                    "cmd": Cmd.addMembers.value,
+                    "device": "deviceA",
+                    "result": True,
+                },
+                ignore_keys={"sequence"},
+            )
 
         expected_joined_events = {"onGroupMembersJoined"}  # 5.0 只派发批量事件
         # 5.0 实测：批量加人只派发 onGroupMembersJoined（单成员事件不派发）→ required 用批量事件
-        joined_events = collect_group_events(
-            device_a,
-            expected_event_types=expected_joined_events,
-            group_id=group_id,
-            required_all_event_types={"onGroupMembersJoined"},
-            timeout=10.0,
-        )
-        assert_group_events(
-            assert_api,
-            joined_events,
-            expected_event_types=expected_joined_events,
-            group_id=group_id,
-            required_all_event_types={"onGroupMembersJoined"},
-        )
+        with _allure_step("等待并校验目标业务事件"):
+            joined_events = collect_group_events(
+                device_a,
+                expected_event_types=expected_joined_events,
+                group_id=group_id,
+                required_all_event_types={"onGroupMembersJoined"},
+                timeout=10.0,
+            )
+        with _allure_step("验证 添加群成员返回的关键字段"):
+            assert_group_events(
+                assert_api,
+                joined_events,
+                expected_event_types=expected_joined_events,
+                group_id=group_id,
+                required_all_event_types={"onGroupMembersJoined"},
+            )
         joined_batch = [evt for evt in joined_events if evt.get("eventType") == "onGroupMembersJoined"]
         if joined_batch:
             # SDK 可能对批量添加逐个触发事件，每个事件只含一个用户；合并所有事件的 userIds
@@ -511,53 +546,60 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
             for evt in joined_batch:
                 data_join = (evt.get("data") or {})
                 user_ids_join = data_join.get("userIds") or []
-                assert isinstance(user_ids_join, list), f"onMembersJoinedFromGroup.userIds 非 list: {evt}"
+                with _allure_step("验证 添加群成员返回的关键字段"):
+                    assert isinstance(user_ids_join, list), f"onMembersJoinedFromGroup.userIds 非 list: {evt}"
                 all_user_ids.extend(user_ids_join)
-            assert all(m in all_user_ids for m in members), (
-                f"onMembersJoinedFromGroup.userIds 缺少成员: expected={members}, actual={all_user_ids}"
-            )
+            with _allure_step("验证 添加群成员返回的关键字段"):
+                assert all(m in all_user_ids for m in members), (
+                    f"onMembersJoinedFromGroup.userIds 缺少成员: expected={members}, actual={all_user_ids}"
+                )
         else:
             joined_single_members = {
                 (evt.get("data") or {}).get("member")
                 for evt in joined_events
                 if evt.get("eventType") == "onGroupMemberJoined"
             }
-            assert all(m in joined_single_members for m in members), (
-                "未收到 onMembersJoinedFromGroup，且 onMemberJoinedFromGroup 未覆盖全部成员: "
-                f"expected={members}, actual={sorted(x for x in joined_single_members if isinstance(x, str))}"
+            with _allure_step("验证 添加群成员返回的关键字段"):
+                assert all(m in joined_single_members for m in members), (
+                    "未收到 onMembersJoinedFromGroup，且 onMemberJoinedFromGroup 未覆盖全部成员: "
+                    f"expected={members}, actual={sorted(x for x in joined_single_members if isinstance(x, str))}"
+                )
+
+        with _allure_step("A 移除群成员"):
+            resp_remove = device_a.call(
+                "GroupManager",
+                Cmd.removeMembers.value,
+                info={"groupId": group_id, "members": members},
+            )
+        with _allure_step("验证 移除群成员返回的关键字段"):
+            assert_api.assert_response_matches(
+                resp_remove,
+                expected={
+                    "manager": "GroupManager",
+                    "cmd": Cmd.removeMembers.value,
+                    "device": "deviceA",
+                    "result": True,
+                },
+                ignore_keys={"sequence"},
             )
 
-        resp_remove = device_a.call(
-            "GroupManager",
-            Cmd.removeMembers.value,
-            info={"groupId": group_id, "members": members},
-        )
-        assert_api.assert_response_matches(
-            resp_remove,
-            expected={
-                "manager": "GroupManager",
-                "cmd": Cmd.removeMembers.value,
-                "device": "deviceA",
-                "result": True,
-            },
-            ignore_keys={"sequence"},
-        )
-
         expected_exited_events = {"onGroupMembersExited", "onGroupMemberExited"}
-        exited_events = collect_group_events(
-            device_a,
-            expected_event_types=expected_exited_events,
-            group_id=group_id,
-            required_all_event_types={"onGroupMembersExited"},
-            timeout=10.0,
-        )
-        assert_group_events(
-            assert_api,
-            exited_events,
-            expected_event_types=expected_exited_events,
-            group_id=group_id,
-            required_all_event_types={"onGroupMembersExited"},
-        )
+        with _allure_step("等待并校验目标业务事件"):
+            exited_events = collect_group_events(
+                device_a,
+                expected_event_types=expected_exited_events,
+                group_id=group_id,
+                required_all_event_types={"onGroupMembersExited"},
+                timeout=10.0,
+            )
+        with _allure_step("验证 移除群成员返回的关键字段"):
+            assert_group_events(
+                assert_api,
+                exited_events,
+                expected_event_types=expected_exited_events,
+                group_id=group_id,
+                required_all_event_types={"onGroupMembersExited"},
+            )
         exited_batch = [evt for evt in exited_events if evt.get("eventType") == "onGroupMembersExited"]
         if exited_batch:
             # SDK 对批量移除逐个触发事件，合并所有事件的 userIds
@@ -565,21 +607,25 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
             for evt in exited_batch:
                 data_exit = (evt.get("data") or {})
                 user_ids_exit = data_exit.get("userIds") or []
-                assert isinstance(user_ids_exit, list), f"onMembersExitedFromGroup.userIds 非 list: {evt}"
+                with _allure_step("验证 移除群成员返回的关键字段"):
+                    assert isinstance(user_ids_exit, list), f"onMembersExitedFromGroup.userIds 非 list: {evt}"
                 all_exit_ids.extend(user_ids_exit)
-            assert all(m in all_exit_ids for m in members), (
-                f"onMembersExitedFromGroup.userIds 缺少成员: expected={members}, actual={all_exit_ids}"
-            )
+            with _allure_step("验证 移除群成员返回的关键字段"):
+                assert all(m in all_exit_ids for m in members), (
+                    f"onMembersExitedFromGroup.userIds 缺少成员: expected={members}, actual={all_exit_ids}"
+                )
         else:
             exited_single_members = {
                 (evt.get("data") or {}).get("member")
                 for evt in exited_events
                 if evt.get("eventType") == "onGroupUserRemoved"
             }
-            assert all(m in exited_single_members for m in members), (
-                "未收到 onMembersExitedFromGroup，且 onUserRemovedFromGroup 未覆盖全部成员: "
-                f"expected={members}, actual={sorted(x for x in exited_single_members if isinstance(x, str))}"
-            )
+            with _allure_step("验证 移除群成员返回的关键字段"):
+                assert all(m in exited_single_members for m in members), (
+                    "未收到 onMembersExitedFromGroup，且 onUserRemovedFromGroup 未覆盖全部成员: "
+                    f"expected={members}, actual={sorted(x for x in exited_single_members if isinstance(x, str))}"
+                )
     finally:
         if group_id:
-            destroy_group(device_a, assert_api, group_id)
+            with _allure_step("测试后置：销毁测试群并恢复群状态"):
+                destroy_group(device_a, assert_api, group_id)

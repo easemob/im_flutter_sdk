@@ -8,6 +8,7 @@ import pytest
 
 from src import Cmd
 from tests.chat._utils import build_text
+from tests.allure_helpers import _allure_step
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
@@ -85,33 +86,38 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
 pytestmark = [pytest.mark.skip(reason="5.0 移除 reportMessage（残留）")]
 
 def test_chat_report_text_message_success(device_a, device_b, assert_api, user_a, user_b):
-    content = f"report-text-{uuid.uuid4().hex[:8]}"
-    msg_id = _send_text(device_a, device_b, assert_api, user_a, user_b, content)
-    resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": msg_id, "tag": "tag-text", "reason": "reason-text"})
-    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": True}, ignore_keys={"sequence"})
+    with _allure_step("验证：chat report text message success"):
+        content = f"report-text-{uuid.uuid4().hex[:8]}"
+        msg_id = _send_text(device_a, device_b, assert_api, user_a, user_b, content)
+        resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": msg_id, "tag": "tag-text", "reason": "reason-text"})
+        assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": True}, ignore_keys={"sequence"})
 
 
 def test_chat_report_message_empty_message_id(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": "", "tag": "spam", "reason": "empty-id"})
-    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": {"code": 500, "description": "message id is invalid"}}, ignore_keys={"sequence"})
+    with _allure_step("验证：chat report message empty message id"):
+        resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": "", "tag": "spam", "reason": "empty-id"})
+        assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": {"code": 500, "description": "message id is invalid"}}, ignore_keys={"sequence"})
 
 
 def test_chat_report_message_empty_tag(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": "__invalid_report_msg__", "tag": "", "reason": "empty-tag"})
-    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": {"code": 500, "description": "message id is invalid"}}, ignore_keys={"sequence"})
+    with _allure_step("验证：chat report message empty tag"):
+        resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": "__invalid_report_msg__", "tag": "", "reason": "empty-tag"})
+        assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": {"code": 500, "description": "message id is invalid"}}, ignore_keys={"sequence"})
 
 
 def test_chat_report_message_empty_reason(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": "__invalid_report_msg__", "tag": "spam", "reason": ""})
-    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": {"code": 500, "description": "message id is invalid"}}, ignore_keys={"sequence"})
+    with _allure_step("验证：chat report message empty reason"):
+        resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": "__invalid_report_msg__", "tag": "spam", "reason": ""})
+        assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": {"code": 500, "description": "message id is invalid"}}, ignore_keys={"sequence"})
 
 
 def test_chat_report_recalled_message(device_a, device_b, assert_api, user_a, user_b):
-    content = f"report-recalled-{uuid.uuid4().hex[:8]}"
-    msg_id = _send_text(device_a, device_b, assert_api, user_a, user_b, content)
-    time.sleep(float(os.getenv("CHAT_RECALL_SETTLE_SECONDS", "5")))
-    recall = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
-    assert_api.assert_response_matches(recall, expected={"manager": "ChatManager", "cmd": Cmd.recallMessage.value, "device": "deviceA", "result": True}, ignore_keys={"sequence"})
-    time.sleep(1)
-    resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": msg_id, "tag": "spam", "reason": "recalled"})
-    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": {"code": 500, "description": "message id is invalid"}}, ignore_keys={"sequence"})
+    with _allure_step("验证：chat report recalled message"):
+        content = f"report-recalled-{uuid.uuid4().hex[:8]}"
+        msg_id = _send_text(device_a, device_b, assert_api, user_a, user_b, content)
+        time.sleep(float(os.getenv("CHAT_RECALL_SETTLE_SECONDS", "5")))
+        recall = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
+        assert_api.assert_response_matches(recall, expected={"manager": "ChatManager", "cmd": Cmd.recallMessage.value, "device": "deviceA", "result": True}, ignore_keys={"sequence"})
+        time.sleep(1)
+        resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": msg_id, "tag": "spam", "reason": "recalled"})
+        assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": {"code": 500, "description": "message id is invalid"}}, ignore_keys={"sequence"})
