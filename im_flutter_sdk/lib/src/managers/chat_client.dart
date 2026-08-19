@@ -672,11 +672,7 @@ class ChatClient {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
   /// ~end
   Future<void> loginWithAgoraToken(String userId, String agoraToken) async {
-    try {
-      return login(userId, agoraToken, false);
-    } catch (e) {
-      rethrow;
-    }
+    return login(userId, agoraToken, false);
   }
 
   /// ~english
@@ -709,12 +705,8 @@ class ChatClient {
     String userId,
     String token,
   ) async {
-    try {
-      // ignore: deprecated_member_use_from_same_package
-      return login(userId, token, false);
-    } catch (e) {
-      rethrow;
-    }
+    // ignore: deprecated_member_use_from_same_package
+    return login(userId, token, false);
   }
 
   /// ~english
@@ -747,12 +739,8 @@ class ChatClient {
     String userId,
     String password,
   ) async {
-    try {
-      // ignore: deprecated_member_use_from_same_package
-      return login(userId, password, true);
-    } catch (e) {
-      rethrow;
-    }
+    // ignore: deprecated_member_use_from_same_package
+    return login(userId, password, true);
   }
 
   /// ~english
