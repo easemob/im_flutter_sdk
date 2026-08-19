@@ -17,7 +17,7 @@ import '../sdk_state.dart';
 ///
 /// 测试数据与脚本分离：`--dart-define=API_CONFIG=<config.json 绝对路径>`，
 /// 缺省取脚本同目录下的 config.json（不存在则按空配置处理）。
-/// - init：config 中的 EMOptions 键（见 [_optionKeys]）为底，脚本 init 覆盖；
+/// - init：config 中的 ChatOptions 键（见 [_optionKeys]）为底，脚本 init 覆盖；
 /// - login：脚本 login 优先，否则由 config 的 loginUser + loginToken/loginPassword 推导。
 ///
 /// 参数字符串引用（恰好整个字符串匹配才替换，保留原值类型）：
@@ -35,7 +35,7 @@ class AutoMode {
   /// 单步默认超时（可被 step 的 "timeoutMs" 覆盖）。
   static const int defaultStepTimeoutMs = 30000;
 
-  /// init 允许从 config.json 继承的 EMOptions 键。
+  /// init 允许从 config.json 继承的 ChatOptions 键。
   static const List<String> _optionKeys = [
     'appKey',
     'autoLogin',
@@ -154,7 +154,7 @@ class AutoMode {
     }
     store.log('script.start', {'path': scriptPath});
 
-    // init：config 的 EMOptions 键为底，脚本 init 覆盖。
+    // init：config 的 ChatOptions 键为底，脚本 init 覆盖。
     try {
       final initJson = <String, dynamic>{
         for (final k in _optionKeys)
@@ -165,12 +165,12 @@ class AutoMode {
       final resolved = Map<String, dynamic>.from(
         _resolveRefs(initJson, null, config, const {}) as Map,
       );
-      await EMClient.getInstance.init(emOptionsFromJson(resolved));
+      await ChatClient.getInstance.init(emOptionsFromJson(resolved));
       registerAllListeners();
       SdkState.instance.markInitialized(jsonEncode(resolved));
-      store.log('api.EMClient.init', {'success': true});
+      store.log('api.ChatClient.init', {'success': true});
     } catch (e) {
-      store.log('api.EMClient.init', {
+      store.log('api.ChatClient.init', {
         'success': false,
         'error': errorToJson(e),
       });
@@ -202,18 +202,18 @@ class AutoMode {
         final password = resolved['password'] as String?;
         final token = resolved['token'] as String?;
         if (password != null) {
-          await EMClient.getInstance.loginWithPassword(userId, password);
+          await ChatClient.getInstance.loginWithPassword(userId, password);
         } else {
-          await EMClient.getInstance.loginWithToken(userId, token ?? '');
+          await ChatClient.getInstance.loginWithToken(userId, token ?? '');
         }
         SdkState.instance.markLoggedIn(userId);
-        store.log('api.EMClient.login', {
+        store.log('api.ChatClient.login', {
           'success': true,
           if (attempt > 1) 'attempt': attempt,
         });
         break;
       } catch (e) {
-        store.log('api.EMClient.login', {
+        store.log('api.ChatClient.login', {
           'success': false,
           'attempt': attempt,
           'error': errorToJson(e),

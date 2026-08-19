@@ -2,7 +2,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 /// API 注册表条目。Flutter 无运行时反射，API 名称 → 调用必须人工注册。
 class ApiEntry {
-  final String name; // 'EMChatManager.downloadBigImage'
+  final String name; // 'ChatManager.downloadBigImage'
   final String group; // 'ChatManager'
   final String description;
   final String paramsTemplate; // 必填字段 JSON 模板
@@ -21,8 +21,8 @@ class ApiEntry {
 Object? toJsonSafe(Object? v) {
   if (v == null || v is num || v is bool || v is String) return v;
   if (v is Enum) return v.name;
-  // EMPresence 未实现 toJson，特判序列化。
-  if (v is EMPresence) {
+  // ChatPresence 未实现 toJson，特判序列化。
+  if (v is ChatPresence) {
     return {
       'publisher': v.publisher,
       'statusDescription': v.statusDescription,
@@ -43,9 +43,9 @@ Object? toJsonSafe(Object? v) {
   }
 }
 
-/// 统一错误格式：EMError 取 code/description，其余取 toString。
+/// 统一错误格式：ChatError 取 code/description，其余取 toString。
 Map<String, dynamic> errorToJson(Object e) {
-  if (e is EMError) {
+  if (e is ChatError) {
     return {'code': e.code, 'message': e.description};
   }
   return {'code': -1, 'message': e.toString()};

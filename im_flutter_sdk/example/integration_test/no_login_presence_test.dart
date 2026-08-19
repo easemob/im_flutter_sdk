@@ -10,11 +10,11 @@ const _publicAppKey = String.fromEnvironment(
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  final client = EMClient.getInstance;
+  final client = ChatClient.getInstance;
 
   setUpAll(() async {
     await client.init(
-      EMOptions.withAppKey(_publicAppKey, autoLogin: false, debugMode: false),
+      ChatOptions.withAppKey(_publicAppKey, autoLogin: false, debugMode: false),
     );
 
     if (await client.isLoginBefore()) {
@@ -25,7 +25,7 @@ void main() {
   Future<void> expectNotLoggedIn(Future<void> Function() operation) async {
     await expectLater(
       operation,
-      throwsA(isA<EMError>().having((error) => error.code, 'code', 201)),
+      throwsA(isA<ChatError>().having((error) => error.code, 'code', 201)),
     );
   }
 

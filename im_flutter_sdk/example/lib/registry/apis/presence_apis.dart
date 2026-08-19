@@ -5,49 +5,49 @@ import '../api_entry.dart';
 /// PresenceManager 相关条目（复验测试反馈的 presence 问题用）。
 final presenceApis = <ApiEntry>[
   ApiEntry(
-    name: 'EMPresenceManager.subscribe',
+    name: 'ChatPresenceManager.subscribe',
     group: 'PresenceManager',
-    description: '订阅指定用户的在线状态，返回 EMPresence 数组（含 expiryTime）。'
+    description: '订阅指定用户的在线状态，返回 ChatPresence 数组（含 expiryTime）。'
         'expiry 单位秒，最长 2592000（30 天）。',
     paramsTemplate: '''{
   "members": ["userId1", "userId2"],
   "expiry": 2592000
 }''',
     invoke: (p) async {
-      return EMClient.getInstance.presenceManager.subscribe(
+      return ChatClient.getInstance.presenceManager.subscribe(
         members: (p['members'] as List).cast<String>(),
         expiry: p['expiry'] as int,
       );
     },
   ),
   ApiEntry(
-    name: 'EMPresenceManager.unsubscribe',
+    name: 'ChatPresenceManager.unsubscribe',
     group: 'PresenceManager',
     description: '取消订阅指定用户的在线状态。',
     paramsTemplate: '''{
   "members": ["userId1", "userId2"]
 }''',
     invoke: (p) async {
-      return EMClient.getInstance.presenceManager.unsubscribe(
+      return ChatClient.getInstance.presenceManager.unsubscribe(
         members: (p['members'] as List).cast<String>(),
       );
     },
   ),
   ApiEntry(
-    name: 'EMPresenceManager.publishPresence',
+    name: 'ChatPresenceManager.publishPresence',
     group: 'PresenceManager',
     description: '发布自定义在线状态。desc 为扩展信息字符串，超长时服务端应返回 400。',
     paramsTemplate: '''{
   "desc": "自定义状态描述"
 }''',
     invoke: (p) async {
-      return EMClient.getInstance.presenceManager.publishPresence(
+      return ChatClient.getInstance.presenceManager.publishPresence(
         p['desc'] as String,
       );
     },
   ),
   ApiEntry(
-    name: 'EMPresenceManager.fetchSubscribedMembers',
+    name: 'ChatPresenceManager.fetchSubscribedMembers',
     group: 'PresenceManager',
     description: '分页查询当前用户订阅了哪些用户的在线状态，返回用户 ID 数组。'
         'pageNum 从 1 开始；pageSize 为 0 时预期返回错误。',
@@ -56,21 +56,21 @@ final presenceApis = <ApiEntry>[
   "pageSize": 20
 }''',
     invoke: (p) async {
-      return EMClient.getInstance.presenceManager.fetchSubscribedMembers(
+      return ChatClient.getInstance.presenceManager.fetchSubscribedMembers(
         pageNum: (p['pageNum'] as int?) ?? 1,
         pageSize: (p['pageSize'] as int?) ?? 20,
       );
     },
   ),
   ApiEntry(
-    name: 'EMPresenceManager.fetchPresenceStatus',
+    name: 'ChatPresenceManager.fetchPresenceStatus',
     group: 'PresenceManager',
-    description: '查询指定用户的当前在线状态，返回 EMPresence 数组（含 expiryTime、desc 等）。',
+    description: '查询指定用户的当前在线状态，返回 ChatPresence 数组（含 expiryTime、desc 等）。',
     paramsTemplate: '''{
   "members": ["userId1", "userId2"]
 }''',
     invoke: (p) async {
-      return EMClient.getInstance.presenceManager.fetchPresenceStatus(
+      return ChatClient.getInstance.presenceManager.fetchPresenceStatus(
         members: (p['members'] as List).cast<String>(),
       );
     },

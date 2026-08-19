@@ -49,11 +49,11 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _login() async {
     final userId = _userController.text.trim();
     final secret = _secretController.text;
-    final ok = await _run('EMClient.login', () async {
+    final ok = await _run('ChatClient.login', () async {
       if (_usePassword) {
-        await EMClient.getInstance.loginWithPassword(userId, secret);
+        await ChatClient.getInstance.loginWithPassword(userId, secret);
       } else {
-        await EMClient.getInstance.loginWithToken(userId, secret);
+        await ChatClient.getInstance.loginWithToken(userId, secret);
       }
       SdkState.instance.markLoggedIn(userId);
     });
@@ -65,8 +65,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _logout() async {
-    await _run('EMClient.logout', () async {
-      await EMClient.getInstance.logout();
+    await _run('ChatClient.logout', () async {
+      await ChatClient.getInstance.logout();
       SdkState.instance.markLoggedOut();
     });
   }

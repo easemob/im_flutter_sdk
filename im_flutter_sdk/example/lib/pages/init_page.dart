@@ -30,9 +30,9 @@ class _InitPageState extends State<InitPage> {
     });
     try {
       final json = jsonDecode(_controller.text) as Map<String, dynamic>;
-      await EMClient.getInstance.init(emOptionsFromJson(json));
+      await ChatClient.getInstance.init(emOptionsFromJson(json));
       registerAllListeners();
-      LogStore.instance.log('api.EMClient.init', {'success': true});
+      LogStore.instance.log('api.ChatClient.init', {'success': true});
       SdkState.instance.markInitialized(_controller.text);
       if (mounted) {
         Navigator.of(context).pushReplacement(
@@ -41,7 +41,7 @@ class _InitPageState extends State<InitPage> {
       }
     } catch (e) {
       final err = errorToJson(e);
-      LogStore.instance.log('api.EMClient.init', {
+      LogStore.instance.log('api.ChatClient.init', {
         'success': false,
         'error': err,
       });
@@ -63,7 +63,7 @@ class _InitPageState extends State<InitPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('初始化 EMClient.init')),
+      appBar: AppBar(title: const Text('初始化 ChatClient.init')),
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -78,7 +78,7 @@ class _InitPageState extends State<InitPage> {
                 style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: 'EMOptions JSON（appKey 必填，可加 enableUserInfo 等可选键）',
+                  labelText: 'ChatOptions JSON（appKey 必填，可加 enableUserInfo 等可选键）',
                   alignLabelWithHint: true,
                 ),
               ),

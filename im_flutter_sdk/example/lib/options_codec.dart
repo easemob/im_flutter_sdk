@@ -1,8 +1,8 @@
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-/// 初始化页与自动模式共用：JSON → EMOptions。
+/// 初始化页与自动模式共用：JSON → ChatOptions。
 /// appKey 必填；其余键缺省时用 SDK 默认值，未知键忽略。
-EMOptions emOptionsFromJson(Map<String, dynamic> j) {
+ChatOptions emOptionsFromJson(Map<String, dynamic> j) {
   final appKey = j['appKey'] as String?;
   if (appKey == null || appKey.isEmpty) {
     throw ArgumentError('appKey 不能为空');
@@ -10,7 +10,7 @@ EMOptions emOptionsFromJson(Map<String, dynamic> j) {
   bool? b(String k) => j[k] as bool?;
   String? s(String k) => j[k] as String?;
   int? i(String k) => j[k] as int?;
-  return EMOptions.withAppKey(
+  return ChatOptions.withAppKey(
     appKey,
     autoLogin: b('autoLogin') ?? true,
     debugMode: b('debugMode') ?? false,

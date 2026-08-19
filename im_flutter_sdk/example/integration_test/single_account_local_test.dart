@@ -9,7 +9,7 @@ const _password = String.fromEnvironment('E2E_USER_PASSWORD');
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  final client = EMClient.getInstance;
+  final client = ChatClient.getInstance;
   var sequence = 0;
 
   void requireConfiguration() {
@@ -26,7 +26,7 @@ void main() {
   setUpAll(() async {
     requireConfiguration();
     await client.init(
-      EMOptions.withAppKey(_appKey, autoLogin: false, debugMode: false),
+      ChatOptions.withAppKey(_appKey, autoLogin: false, debugMode: false),
     );
 
     if (await client.isLoginBefore()) {
@@ -54,16 +54,16 @@ void main() {
 
   group('single-account local database', () {
     late String conversationId;
-    late EMConversation conversation;
+    late ChatConversation conversation;
 
-    EMMessage incoming(
+    ChatMessage incoming(
       String content, {
       int? timestamp,
       Map<String, dynamic>? attributes,
     }) {
       final time = timestamp ?? DateTime.now().millisecondsSinceEpoch;
-      return EMMessage.createReceiveMessage(
-        body: EMTextMessageBody(content: content),
+      return ChatMessage.createReceiveMessage(
+        body: ChatTextMessageBody(content: content),
       )
         ..from = conversationId
         ..to = _userId
@@ -100,7 +100,7 @@ void main() {
       await conversation.setExt(const <String, String>{'owner': 'flutter-ci'});
 
       expect(conversation.id, conversationId);
-      expect(conversation.type, EMConversationType.Chat);
+      expect(conversation.type, ChatConversationType.Chat);
       expect(conversation.ext, const <String, String>{'owner': 'flutter-ci'});
 
       final all = await client.chatManager.loadAllConversations();
@@ -148,10 +148,10 @@ void main() {
       expect((await conversation.loadMessage(message.msgId))?.msgId,
           message.msgId);
 
-      message.body = EMTextMessageBody(content: 'after update');
+      message.body = ChatTextMessageBody(content: 'after update');
       await conversation.updateMessage(message);
       final updated = await conversation.loadMessage(message.msgId);
-      expect((updated?.body as EMTextMessageBody).content, 'after update');
+      expect((updated?.body as ChatTextMessageBody).content, 'after update');
 
       await conversation.deleteMessage(message.msgId);
       expect(await conversation.loadMessage(message.msgId), isNull);
@@ -162,14 +162,14 @@ void main() {
       final first = incoming('page 1', timestamp: 1000);
       final second = incoming('page 2', timestamp: 2000);
       final third = incoming('page 3', timestamp: 3000);
-      for (final message in <EMMessage>[first, second, third]) {
+      for (final message in <ChatMessage>[first, second, third]) {
         await conversation.insertMessage(message);
       }
 
       final older = await conversation.loadMessages(
         startMsgId: third.msgId,
         loadCount: 2,
-        direction: EMSearchDirection.Up,
+        direction: ChatSearchDirection.Up,
       );
       expect(
           older.map((item) => item.msgId),
@@ -181,7 +181,7 @@ void main() {
       final newer = await conversation.loadMessages(
         startMsgId: first.msgId,
         loadCount: 2,
-        direction: EMSearchDirection.Down,
+        direction: ChatSearchDirection.Down,
       );
       expect(
           newer.map((item) => item.msgId),
@@ -246,7 +246,7 @@ void main() {
       final first = incoming('delete by id', timestamp: 1000);
       final second = incoming('delete by time', timestamp: 2000);
       final third = incoming('delete all', timestamp: 3000);
-      for (final message in <EMMessage>[first, second, third]) {
+      for (final message in <ChatMessage>[first, second, third]) {
         await conversation.insertMessage(message);
       }
 

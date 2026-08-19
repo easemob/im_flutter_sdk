@@ -10,60 +10,60 @@ void registerAllListeners() {
   void log(String source, [Map<String, Object?>? args]) =>
       LogStore.instance.log(source, args ?? {});
 
-  EMClient.getInstance.addConnectionEventHandler(
+  ChatClient.getInstance.addConnectionEventHandler(
     id,
-    EMConnectionEventHandler(
-      onConnected: () => log('EMConnectionEventHandler.onConnected'),
-      onDisconnected: () => log('EMConnectionEventHandler.onDisconnected'),
+    ConnectionEventHandler(
+      onConnected: () => log('ConnectionEventHandler.onConnected'),
+      onDisconnected: () => log('ConnectionEventHandler.onDisconnected'),
       onUserDidLoginFromOtherDevice: (info) => log(
-        'EMConnectionEventHandler.onUserDidLoginFromOtherDevice',
+        'ConnectionEventHandler.onUserDidLoginFromOtherDevice',
         {'info': toJsonSafe(info)},
       ),
       onUserDidRemoveFromServer: () =>
-          log('EMConnectionEventHandler.onUserDidRemoveFromServer'),
+          log('ConnectionEventHandler.onUserDidRemoveFromServer'),
       onUserDidForbidByServer: () =>
-          log('EMConnectionEventHandler.onUserDidForbidByServer'),
+          log('ConnectionEventHandler.onUserDidForbidByServer'),
       onUserDidChangePassword: () =>
-          log('EMConnectionEventHandler.onUserDidChangePassword'),
+          log('ConnectionEventHandler.onUserDidChangePassword'),
       onUserDidLoginTooManyDevice: () =>
-          log('EMConnectionEventHandler.onUserDidLoginTooManyDevice'),
+          log('ConnectionEventHandler.onUserDidLoginTooManyDevice'),
       onUserKickedByOtherDevice: () =>
-          log('EMConnectionEventHandler.onUserKickedByOtherDevice'),
+          log('ConnectionEventHandler.onUserKickedByOtherDevice'),
       onUserAuthenticationFailed: () =>
-          log('EMConnectionEventHandler.onUserAuthenticationFailed'),
+          log('ConnectionEventHandler.onUserAuthenticationFailed'),
       onTokenWillExpire: () =>
-          log('EMConnectionEventHandler.onTokenWillExpire'),
-      onTokenDidExpire: () => log('EMConnectionEventHandler.onTokenDidExpire'),
+          log('ConnectionEventHandler.onTokenWillExpire'),
+      onTokenDidExpire: () => log('ConnectionEventHandler.onTokenDidExpire'),
       onAppActiveNumberReachLimit: () =>
-          log('EMConnectionEventHandler.onAppActiveNumberReachLimit'),
+          log('ConnectionEventHandler.onAppActiveNumberReachLimit'),
       onOfflineMessageSyncStart: () =>
-          log('EMConnectionEventHandler.onOfflineMessageSyncStart'),
+          log('ConnectionEventHandler.onOfflineMessageSyncStart'),
       onOfflineMessageSyncFinish: () =>
-          log('EMConnectionEventHandler.onOfflineMessageSyncFinish'),
+          log('ConnectionEventHandler.onOfflineMessageSyncFinish'),
     ),
   );
 
-  EMClient.getInstance.addMultiDeviceEventHandler(
+  ChatClient.getInstance.addMultiDeviceEventHandler(
     id,
-    EMMultiDeviceEventHandler(
+    ChatMultiDeviceEventHandler(
       onContactEvent: (event, userId, ext) => log(
-        'EMMultiDeviceEventHandler.onContactEvent',
+        'ChatMultiDeviceEventHandler.onContactEvent',
         {'event': event.name, 'userId': userId, 'ext': ext},
       ),
       onGroupEvent: (event, groupId, userIds) => log(
-        'EMMultiDeviceEventHandler.onGroupEvent',
+        'ChatMultiDeviceEventHandler.onGroupEvent',
         {'event': event.name, 'groupId': groupId, 'userIds': userIds},
       ),
       onChatThreadEvent: (event, chatThreadId, userIds) => log(
-        'EMMultiDeviceEventHandler.onChatThreadEvent',
+        'ChatMultiDeviceEventHandler.onChatThreadEvent',
         {'event': event.name, 'chatThreadId': chatThreadId, 'userIds': userIds},
       ),
       onRemoteMessagesRemoved: (conversationId, deviceId) => log(
-        'EMMultiDeviceEventHandler.onRemoteMessagesRemoved',
+        'ChatMultiDeviceEventHandler.onRemoteMessagesRemoved',
         {'conversationId': conversationId, 'deviceId': deviceId},
       ),
       onConversationEvent: (event, conversationId, type) => log(
-        'EMMultiDeviceEventHandler.onConversationEvent',
+        'ChatMultiDeviceEventHandler.onConversationEvent',
         {
           'event': event.name,
           'conversationId': conversationId,
@@ -73,51 +73,51 @@ void registerAllListeners() {
     ),
   );
 
-  EMClient.getInstance.chatManager.addEventHandler(
+  ChatClient.getInstance.chatManager.addEventHandler(
     id,
-    EMChatEventHandler(
+    ChatEventHandler(
       onMessagesReceived: (messages) => log(
-        'EMChatEventHandler.onMessagesReceived',
+        'ChatEventHandler.onMessagesReceived',
         {'messages': toJsonSafe(messages)},
       ),
       onStreamMessagesReceived: (messages) => log(
-        'EMChatEventHandler.onStreamMessagesReceived',
+        'ChatEventHandler.onStreamMessagesReceived',
         {'messages': toJsonSafe(messages)},
       ),
       onCmdMessagesReceived: (messages) => log(
-        'EMChatEventHandler.onCmdMessagesReceived',
+        'ChatEventHandler.onCmdMessagesReceived',
         {'messages': toJsonSafe(messages)},
       ),
       onMessagesRead: (messages) => log(
-        'EMChatEventHandler.onMessagesRead',
+        'ChatEventHandler.onMessagesRead',
         {'messages': toJsonSafe(messages)},
       ),
       onGroupMessageRead: (acks) => log(
-        'EMChatEventHandler.onGroupMessageRead',
+        'ChatEventHandler.onGroupMessageRead',
         {'groupMessageAcks': toJsonSafe(acks)},
       ),
       onReadAckForGroupMessageUpdated: () =>
-          log('EMChatEventHandler.onReadAckForGroupMessageUpdated'),
+          log('ChatEventHandler.onReadAckForGroupMessageUpdated'),
       onMessagesDelivered: (messages) => log(
-        'EMChatEventHandler.onMessagesDelivered',
+        'ChatEventHandler.onMessagesDelivered',
         {'messages': toJsonSafe(messages)},
       ),
       onMessagesRecalledInfo: (infos) => log(
-        'EMChatEventHandler.onMessagesRecalledInfo',
+        'ChatEventHandler.onMessagesRecalledInfo',
         {'recallMessageInfos': toJsonSafe(infos)},
       ),
       onConversationsUpdate: () =>
-          log('EMChatEventHandler.onConversationsUpdate'),
+          log('ChatEventHandler.onConversationsUpdate'),
       onConversationRead: (from, to) => log(
-        'EMChatEventHandler.onConversationRead',
+        'ChatEventHandler.onConversationRead',
         {'from': from, 'to': to},
       ),
       onMessageReactionDidChange: (events) => log(
-        'EMChatEventHandler.onMessageReactionDidChange',
+        'ChatEventHandler.onMessageReactionDidChange',
         {'events': toJsonSafe(events)},
       ),
       onMessageContentChanged: (message, operatorId, operationTime) => log(
-        'EMChatEventHandler.onMessageContentChanged',
+        'ChatEventHandler.onMessageContentChanged',
         {
           'message': toJsonSafe(message),
           'operatorId': operatorId,
@@ -126,7 +126,7 @@ void registerAllListeners() {
       ),
       onMessagePinChanged: (messageId, conversationId, pinOperation, pinInfo) =>
           log(
-        'EMChatEventHandler.onMessagePinChanged',
+        'ChatEventHandler.onMessagePinChanged',
         {
           'messageId': messageId,
           'conversationId': conversationId,
@@ -137,59 +137,59 @@ void registerAllListeners() {
     ),
   );
 
-  EMClient.getInstance.chatRoomManager.addEventHandler(
+  ChatClient.getInstance.chatRoomManager.addEventHandler(
     id,
-    EMChatRoomEventHandler(
+    ChatRoomEventHandler(
       onAdminAddedFromChatRoom: (roomId, admin) => log(
-        'EMChatRoomEventHandler.onAdminAddedFromChatRoom',
+        'ChatRoomEventHandler.onAdminAddedFromChatRoom',
         {'roomId': roomId, 'admin': admin},
       ),
       onAdminRemovedFromChatRoom: (roomId, admin) => log(
-        'EMChatRoomEventHandler.onAdminRemovedFromChatRoom',
+        'ChatRoomEventHandler.onAdminRemovedFromChatRoom',
         {'roomId': roomId, 'admin': admin},
       ),
       onAllChatRoomMemberMuteStateChanged: (roomId, isAllMuted) => log(
-        'EMChatRoomEventHandler.onAllChatRoomMemberMuteStateChanged',
+        'ChatRoomEventHandler.onAllChatRoomMemberMuteStateChanged',
         {'roomId': roomId, 'isAllMuted': isAllMuted},
       ),
       onAllowListAddedFromChatRoom: (roomId, members) => log(
-        'EMChatRoomEventHandler.onAllowListAddedFromChatRoom',
+        'ChatRoomEventHandler.onAllowListAddedFromChatRoom',
         {'roomId': roomId, 'members': members},
       ),
       onAllowListRemovedFromChatRoom: (roomId, members) => log(
-        'EMChatRoomEventHandler.onAllowListRemovedFromChatRoom',
+        'ChatRoomEventHandler.onAllowListRemovedFromChatRoom',
         {'roomId': roomId, 'members': members},
       ),
       onAnnouncementChangedFromChatRoom: (roomId, announcement) => log(
-        'EMChatRoomEventHandler.onAnnouncementChangedFromChatRoom',
+        'ChatRoomEventHandler.onAnnouncementChangedFromChatRoom',
         {'roomId': roomId, 'announcement': announcement},
       ),
       onChatRoomDestroyed: (roomId, roomName) => log(
-        'EMChatRoomEventHandler.onChatRoomDestroyed',
+        'ChatRoomEventHandler.onChatRoomDestroyed',
         {'roomId': roomId, 'roomName': roomName},
       ),
       onMemberExitedFromChatRoom: (roomId, roomName, participant) => log(
-        'EMChatRoomEventHandler.onMemberExitedFromChatRoom',
+        'ChatRoomEventHandler.onMemberExitedFromChatRoom',
         {'roomId': roomId, 'roomName': roomName, 'participant': participant},
       ),
       onMemberJoinedFromChatRoom: (roomId, participant, ext) => log(
-        'EMChatRoomEventHandler.onMemberJoinedFromChatRoom',
+        'ChatRoomEventHandler.onMemberJoinedFromChatRoom',
         {'roomId': roomId, 'participant': participant, 'ext': ext},
       ),
       onMuteListAddedFromChatRoom: (roomId, mutes) => log(
-        'EMChatRoomEventHandler.onMuteListAddedFromChatRoom',
+        'ChatRoomEventHandler.onMuteListAddedFromChatRoom',
         {'roomId': roomId, 'mutes': mutes},
       ),
       onMuteListRemovedFromChatRoom: (roomId, mutes) => log(
-        'EMChatRoomEventHandler.onMuteListRemovedFromChatRoom',
+        'ChatRoomEventHandler.onMuteListRemovedFromChatRoom',
         {'roomId': roomId, 'mutes': mutes},
       ),
       onOwnerChangedFromChatRoom: (roomId, newOwner, oldOwner) => log(
-        'EMChatRoomEventHandler.onOwnerChangedFromChatRoom',
+        'ChatRoomEventHandler.onOwnerChangedFromChatRoom',
         {'roomId': roomId, 'newOwner': newOwner, 'oldOwner': oldOwner},
       ),
       onRemovedFromChatRoom: (roomId, roomName, participant, reason) => log(
-        'EMChatRoomEventHandler.onRemovedFromChatRoom',
+        'ChatRoomEventHandler.onRemovedFromChatRoom',
         {
           'roomId': roomId,
           'roomName': roomName,
@@ -198,102 +198,102 @@ void registerAllListeners() {
         },
       ),
       onSpecificationChanged: (room) => log(
-        'EMChatRoomEventHandler.onSpecificationChanged',
+        'ChatRoomEventHandler.onSpecificationChanged',
         {'room': toJsonSafe(room)},
       ),
       onAttributesUpdated: (roomId, attributes, from) => log(
-        'EMChatRoomEventHandler.onAttributesUpdated',
+        'ChatRoomEventHandler.onAttributesUpdated',
         {'roomId': roomId, 'attributes': attributes, 'from': from},
       ),
       onAttributesRemoved: (roomId, removedKeys, from) => log(
-        'EMChatRoomEventHandler.onAttributesRemoved',
+        'ChatRoomEventHandler.onAttributesRemoved',
         {'roomId': roomId, 'removedKeys': removedKeys, 'from': from},
       ),
     ),
   );
 
-  EMClient.getInstance.chatThreadManager.addEventHandler(
+  ChatClient.getInstance.chatThreadManager.addEventHandler(
     id,
-    EMChatThreadEventHandler(
+    ChatThreadEventHandler(
       onChatThreadCreate: (event) => log(
-        'EMChatThreadEventHandler.onChatThreadCreate',
+        'ChatThreadEventHandler.onChatThreadCreate',
         {'event': toJsonSafe(event)},
       ),
       onChatThreadDestroy: (event) => log(
-        'EMChatThreadEventHandler.onChatThreadDestroy',
+        'ChatThreadEventHandler.onChatThreadDestroy',
         {'event': toJsonSafe(event)},
       ),
       onChatThreadUpdate: (event) => log(
-        'EMChatThreadEventHandler.onChatThreadUpdate',
+        'ChatThreadEventHandler.onChatThreadUpdate',
         {'event': toJsonSafe(event)},
       ),
       onUserKickOutOfChatThread: (event) => log(
-        'EMChatThreadEventHandler.onUserKickOutOfChatThread',
+        'ChatThreadEventHandler.onUserKickOutOfChatThread',
         {'event': toJsonSafe(event)},
       ),
     ),
   );
 
-  EMClient.getInstance.contactManager.addEventHandler(
+  ChatClient.getInstance.contactManager.addEventHandler(
     id,
-    EMContactEventHandler(
+    ChatContactEventHandler(
       onContactAdded: (userId) =>
-          log('EMContactEventHandler.onContactAdded', {'userId': userId}),
+          log('ChatContactEventHandler.onContactAdded', {'userId': userId}),
       onContactDeleted: (userId) =>
-          log('EMContactEventHandler.onContactDeleted', {'userId': userId}),
+          log('ChatContactEventHandler.onContactDeleted', {'userId': userId}),
       onContactInvited: (userId, reason) => log(
-        'EMContactEventHandler.onContactInvited',
+        'ChatContactEventHandler.onContactInvited',
         {'userId': userId, 'reason': reason},
       ),
       onFriendRequestAccepted: (userId) => log(
-        'EMContactEventHandler.onFriendRequestAccepted',
+        'ChatContactEventHandler.onFriendRequestAccepted',
         {'userId': userId},
       ),
       onFriendRequestDeclined: (userId) => log(
-        'EMContactEventHandler.onFriendRequestDeclined',
+        'ChatContactEventHandler.onFriendRequestDeclined',
         {'userId': userId},
       ),
-      onContactSyncStart: () => log('EMContactEventHandler.onContactSyncStart'),
+      onContactSyncStart: () => log('ChatContactEventHandler.onContactSyncStart'),
       onContactSyncFinish: (error) => log(
-        'EMContactEventHandler.onContactSyncFinish',
+        'ChatContactEventHandler.onContactSyncFinish',
         {'error': error == null ? null : errorToJson(error)},
       ),
       onContactInfoUpdate: (contact) => log(
-        'EMContactEventHandler.onContactInfoUpdate',
+        'ChatContactEventHandler.onContactInfoUpdate',
         {'contact': toJsonSafe(contact)},
       ),
     ),
   );
 
-  EMClient.getInstance.groupManager.addEventHandler(
+  ChatClient.getInstance.groupManager.addEventHandler(
     id,
-    EMGroupEventHandler(
+    ChatGroupEventHandler(
       onAdminAddedFromGroup: (groupId, admin) => log(
-        'EMGroupEventHandler.onAdminAddedFromGroup',
+        'ChatGroupEventHandler.onAdminAddedFromGroup',
         {'groupId': groupId, 'admin': admin},
       ),
       onAdminRemovedFromGroup: (groupId, admin) => log(
-        'EMGroupEventHandler.onAdminRemovedFromGroup',
+        'ChatGroupEventHandler.onAdminRemovedFromGroup',
         {'groupId': groupId, 'admin': admin},
       ),
       onAllGroupMemberMuteStateChanged: (groupId, isAllMuted) => log(
-        'EMGroupEventHandler.onAllGroupMemberMuteStateChanged',
+        'ChatGroupEventHandler.onAllGroupMemberMuteStateChanged',
         {'groupId': groupId, 'isAllMuted': isAllMuted},
       ),
       onAllowListAddedFromGroup: (groupId, members) => log(
-        'EMGroupEventHandler.onAllowListAddedFromGroup',
+        'ChatGroupEventHandler.onAllowListAddedFromGroup',
         {'groupId': groupId, 'members': members},
       ),
       onAllowListRemovedFromGroup: (groupId, members) => log(
-        'EMGroupEventHandler.onAllowListRemovedFromGroup',
+        'ChatGroupEventHandler.onAllowListRemovedFromGroup',
         {'groupId': groupId, 'members': members},
       ),
       onAnnouncementChangedFromGroup: (groupId, announcement) => log(
-        'EMGroupEventHandler.onAnnouncementChangedFromGroup',
+        'ChatGroupEventHandler.onAnnouncementChangedFromGroup',
         {'groupId': groupId, 'announcement': announcement},
       ),
       onAutoAcceptInvitationFromGroup: (groupId, inviter, inviteMessage) => log(
-        'EMGroupEventHandler.onAutoAcceptInvitationFromGroup',
+        'ChatGroupEventHandler.onAutoAcceptInvitationFromGroup',
         {
           'groupId': groupId,
           'inviter': inviter,
@@ -301,20 +301,20 @@ void registerAllListeners() {
         },
       ),
       onGroupDestroyed: (groupId, groupName) => log(
-        'EMGroupEventHandler.onGroupDestroyed',
+        'ChatGroupEventHandler.onGroupDestroyed',
         {'groupId': groupId, 'groupName': groupName},
       ),
       onInvitationAcceptedFromGroup: (groupId, invitee, reason) => log(
-        'EMGroupEventHandler.onInvitationAcceptedFromGroup',
+        'ChatGroupEventHandler.onInvitationAcceptedFromGroup',
         {'groupId': groupId, 'invitee': invitee, 'reason': reason},
       ),
       onInvitationDeclinedFromGroup: (groupId, invitee, reason) => log(
-        'EMGroupEventHandler.onInvitationDeclinedFromGroup',
+        'ChatGroupEventHandler.onInvitationDeclinedFromGroup',
         {'groupId': groupId, 'invitee': invitee, 'reason': reason},
       ),
       onInvitationReceivedFromGroup: (groupId, groupName, inviter, reason) =>
           log(
-        'EMGroupEventHandler.onInvitationReceivedFromGroup',
+        'ChatGroupEventHandler.onInvitationReceivedFromGroup',
         {
           'groupId': groupId,
           'groupName': groupName,
@@ -323,24 +323,24 @@ void registerAllListeners() {
         },
       ),
       onMuteListAddedFromGroup: (groupId, mutes, muteExpire) => log(
-        'EMGroupEventHandler.onMuteListAddedFromGroup',
+        'ChatGroupEventHandler.onMuteListAddedFromGroup',
         {'groupId': groupId, 'mutes': mutes, 'muteExpire': muteExpire},
       ),
       onMuteListRemovedFromGroup: (groupId, mutes) => log(
-        'EMGroupEventHandler.onMuteListRemovedFromGroup',
+        'ChatGroupEventHandler.onMuteListRemovedFromGroup',
         {'groupId': groupId, 'mutes': mutes},
       ),
       onOwnerChangedFromGroup: (groupId, newOwner, oldOwner) => log(
-        'EMGroupEventHandler.onOwnerChangedFromGroup',
+        'ChatGroupEventHandler.onOwnerChangedFromGroup',
         {'groupId': groupId, 'newOwner': newOwner, 'oldOwner': oldOwner},
       ),
       onRequestToJoinAcceptedFromGroup: (groupId, groupName, accepter) => log(
-        'EMGroupEventHandler.onRequestToJoinAcceptedFromGroup',
+        'ChatGroupEventHandler.onRequestToJoinAcceptedFromGroup',
         {'groupId': groupId, 'groupName': groupName, 'accepter': accepter},
       ),
       onRequestToJoinDeclinedFromGroup:
           (groupId, groupName, decliner, reason, applicant) => log(
-        'EMGroupEventHandler.onRequestToJoinDeclinedFromGroup',
+        'ChatGroupEventHandler.onRequestToJoinDeclinedFromGroup',
         {
           'groupId': groupId,
           'groupName': groupName,
@@ -351,7 +351,7 @@ void registerAllListeners() {
       ),
       onRequestToJoinReceivedFromGroup:
           (groupId, groupName, applicant, reason) => log(
-        'EMGroupEventHandler.onRequestToJoinReceivedFromGroup',
+        'ChatGroupEventHandler.onRequestToJoinReceivedFromGroup',
         {
           'groupId': groupId,
           'groupName': groupName,
@@ -360,28 +360,28 @@ void registerAllListeners() {
         },
       ),
       onSharedFileAddedFromGroup: (groupId, sharedFile) => log(
-        'EMGroupEventHandler.onSharedFileAddedFromGroup',
+        'ChatGroupEventHandler.onSharedFileAddedFromGroup',
         {'groupId': groupId, 'sharedFile': toJsonSafe(sharedFile)},
       ),
       onSharedFileDeletedFromGroup: (groupId, fileId) => log(
-        'EMGroupEventHandler.onSharedFileDeletedFromGroup',
+        'ChatGroupEventHandler.onSharedFileDeletedFromGroup',
         {'groupId': groupId, 'fileId': fileId},
       ),
       onUserRemovedFromGroup: (groupId, groupName) => log(
-        'EMGroupEventHandler.onUserRemovedFromGroup',
+        'ChatGroupEventHandler.onUserRemovedFromGroup',
         {'groupId': groupId, 'groupName': groupName},
       ),
       onSpecificationDidUpdate: (group) => log(
-        'EMGroupEventHandler.onSpecificationDidUpdate',
+        'ChatGroupEventHandler.onSpecificationDidUpdate',
         {'group': toJsonSafe(group)},
       ),
       onDisableChanged: (groupId, isDisable) => log(
-        'EMGroupEventHandler.onDisableChanged',
+        'ChatGroupEventHandler.onDisableChanged',
         {'groupId': groupId, 'isDisable': isDisable},
       ),
       onAttributesChangedOfGroupMember:
           (groupId, userId, attributes, operatorId) => log(
-        'EMGroupEventHandler.onAttributesChangedOfGroupMember',
+        'ChatGroupEventHandler.onAttributesChangedOfGroupMember',
         {
           'groupId': groupId,
           'userId': userId,
@@ -390,39 +390,39 @@ void registerAllListeners() {
         },
       ),
       onMembersJoinedFromGroup: (groupId, userIds) => log(
-        'EMGroupEventHandler.onMembersJoinedFromGroup',
+        'ChatGroupEventHandler.onMembersJoinedFromGroup',
         {'groupId': groupId, 'userIds': userIds},
       ),
       onMembersExitedFromGroup: (groupId, userIds) => log(
-        'EMGroupEventHandler.onMembersExitedFromGroup',
+        'ChatGroupEventHandler.onMembersExitedFromGroup',
         {'groupId': groupId, 'userIds': userIds},
       ),
       onUserGroupNamecardChanged: (groupId, userId, namecard) => log(
-        'EMGroupEventHandler.onUserGroupNamecardChanged',
+        'ChatGroupEventHandler.onUserGroupNamecardChanged',
         {'groupId': groupId, 'userId': userId, 'namecard': namecard},
       ),
     ),
   );
 
-  EMClient.getInstance.presenceManager.addEventHandler(
+  ChatClient.getInstance.presenceManager.addEventHandler(
     id,
-    EMPresenceEventHandler(
+    ChatPresenceEventHandler(
       onPresenceStatusChanged: (list) => log(
-        'EMPresenceEventHandler.onPresenceStatusChanged',
+        'ChatPresenceEventHandler.onPresenceStatusChanged',
         {'list': toJsonSafe(list)},
       ),
     ),
   );
 
-  EMClient.getInstance.userInfoManager.addEventHandler(
+  ChatClient.getInstance.userInfoManager.addEventHandler(
     id,
-    EMUserInfoEventHandler(
+    ChatUserInfoEventHandler(
       onSelfUserInfoUpdate: (userInfo) => log(
-        'EMUserInfoEventHandler.onSelfUserInfoUpdate',
+        'ChatUserInfoEventHandler.onSelfUserInfoUpdate',
         {'userInfo': toJsonSafe(userInfo)},
       ),
       onUserInfoUpdate: (userInfos) => log(
-        'EMUserInfoEventHandler.onUserInfoUpdate',
+        'ChatUserInfoEventHandler.onUserInfoUpdate',
         {'userInfos': toJsonSafe(userInfos)},
       ),
     ),
