@@ -540,7 +540,7 @@ class ChatClient {
 
     try {
       _options = options;
-      ChatLog.v('init: $options');
+      ChatLog.v('init');
       await platform_interface.Client.instance
           .callNativeMethod(ChatMethodKeys.init, options.toJson());
       _currentUserId = await getCurrentUserId();
@@ -835,7 +835,7 @@ class ChatClient {
   /// ~end
   Future<bool> changeAppKey({required String newAppKey}) async {
     try {
-      ChatLog.v('changeAppKey: $newAppKey');
+      ChatLog.v('changeAppKey');
       Map req = {'appKey': newAppKey};
       Map result = await platform_interface.Client.instance
           .callNativeMethod(ChatMethodKeys.changeAppKey, req);
