@@ -25,7 +25,7 @@ def load_config() -> dict[str, Any]:
         else:
             _CONFIG = {
                 "websocket": {
-                    "base_url": "ws://140.143.132.6:2000/iov/websocket/dual",
+                    "base_url": "ws://140.143.132.6:4000/iov/websocket/dual",
                     "default_topic": "adc",
                     "connect_timeout": 10,
                     "response_timeout": 30,
