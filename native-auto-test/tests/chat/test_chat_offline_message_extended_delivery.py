@@ -168,9 +168,23 @@ def _assert_delivered_message(
     user_b: str,
     body: dict,
     ignore_keys: set[str],
+    allowed_file_status: set[int] | None = None,
 ) -> None:
     # 5.0：hasReadAck/needGroupAck 无此字段（已删）；送达回执需 needReadReceipt=true；实证字段值：
     # needReadReceipt=True、isPeerRead=False（��达时对方未读）、readReceiptCount=0、hasDeliverAck=True
+    if allowed_file_status is not None:
+        messages = ((event.get("data") or {}).get("messages")) or []
+        target = next(
+            (message for message in messages if str(message.get("msgId")) == str(real_id)),
+            None,
+        )
+        actual_file_status = ((target or {}).get("body") or {}).get("fileStatus")
+        assert actual_file_status in allowed_file_status, (
+            f"onMessagesDelivered 返回非法 fileStatus: "
+            f"expected one of {sorted(allowed_file_status)}, actual={actual_file_status}, event={event}"
+        )
+        body = {**body, "fileStatus": actual_file_status}
+
     assert_api.assert_response_matches(
         event,
         expected={
@@ -259,9 +273,9 @@ def _assert_download_response(
                 "body": body,
             },
         },
-        # 5.0：这是下载调用返回时的本地快照；status/fileStatus/hasDeliverAck
-        # 受 endpoint 状态机时序影响，不能锁死 4.x 数值。
-        ignore_keys=_MEDIA_DYNAMIC_KEYS | {"sequence", "status", "hasDeliverAck"},
+        # 5.0 下载响应严格校验 status=2；fileStatus 由调用方限制为 0/1，
+        # 仅保留路径等媒体元数据动态。
+        ignore_keys=_MEDIA_DYNAMIC_KEYS | {"sequence", "hasDeliverAck"},
     )
 
 
@@ -364,9 +378,14 @@ def _download_media_on_endpoint(
             continue
         response_body = dict(current_body)
         success_body = dict(current_body)
-        # Android 5.0 的 fileStatus 是 endpoint 本地缓存/下载状态，不保证从
-        # 0 按 0 -> 1 返回；这里验证真实下载响应和 success 事件的消息身份/正文，
-        # 不把 4.x 的状态数值写死。
+        if "fileStatus" in response_body:
+            actual_file_status = ((response.get("result") or {}).get("body") or {}).get("fileStatus")
+            assert actual_file_status in {0, 1}, (
+                f"downloadAttachment 返回非法 fileStatus: "
+                f"expected one of [0, 1], actual={actual_file_status}, response={response}"
+            )
+            response_body["fileStatus"] = actual_file_status
+            success_body["fileStatus"] = 1
         _assert_download_response(
             assert_api,
             response,
@@ -680,6 +699,7 @@ def test_chat_offline_combine_delivery_ack_after_recipient_login(
                         "fileStatus": 1,
                     },
                     ignore_keys=_COMBINE_DYNAMIC_KEYS,
+                    allowed_file_status={1, 3},
                 )
         finally:
             _restore_case(

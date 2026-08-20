@@ -142,26 +142,6 @@ def _send_text_and_get_real_id_no_drain(device_a, device_b, assert_api, user_a: 
     return real_id
 
 
-def _wait_text_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 30.0) -> dict:
-    deadline = time.monotonic() + timeout
-    seen = []
-    while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=event_type, timeout=min(2.0, max(0.1, deadline - time.monotonic())))
-        if evt:
-            seen.append(evt)
-        for msg in ((evt or {}).get("data") or {}).get("messages") or []:
-            if not isinstance(msg, dict):
-                continue
-            if str(msg.get("msgId")) == str(real_id) and ((msg.get("body") or {}).get("content") == content):
-                return {
-                    "type": evt.get("type"),
-                    "eventType": evt.get("eventType"),
-                    "data": {"messages": [msg]},
-                    "timestamp": evt.get("timestamp"),
-                }
-    raise AssertionError(f"未收到目标消息事件: event={event_type}, msgId={real_id}, content={content}, events={seen}")
-
-
 def _receive_ack_conversation_event(device, *, from_user: str, to_user: str, timeout: float = 60.0) -> dict:
     expected_types = {
         "onConversationRead",

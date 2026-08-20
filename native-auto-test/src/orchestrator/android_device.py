@@ -65,6 +65,12 @@ class AndroidDevice:
         serial = self._require_serial()
         if not artifact.path.is_file():
             raise AndroidEnvironmentError(f"APK does not exist: {artifact.path}")
+        if self._installed_artifact_matches(artifact):
+            print(
+                f"[env] reusing installed {artifact.path.name} on {serial}",
+                flush=True,
+            )
+            return "reused installed artifact"
         command = [self.adb, "-s", serial, "install"]
         if replace:
             command.append("-r")
@@ -76,6 +82,53 @@ class AndroidDevice:
         # URL/topic。等待包更新稳定后再由 launch() force-stop + 显式启动。
         time.sleep(3)
         return output
+
+    def _installed_artifact_matches(self, artifact: Artifact) -> bool:
+        """Return true only when the device APK hash matches the manifest.
+
+        A failed or unavailable inspection deliberately falls back to install;
+        test correctness is more important than reuse speed.
+        """
+        expected = str(artifact.artifact_sha256 or "").strip().lower()
+        if not expected or expected == "runtime":
+            return False
+        try:
+            package_paths = self._run(
+                [
+                    self.adb,
+                    "-s",
+                    self._require_serial(),
+                    "shell",
+                    "pm",
+                    "path",
+                    artifact.application_id,
+                ],
+                timeout=20,
+            )
+            apk_path = next(
+                (
+                    line.removeprefix("package:").strip()
+                    for line in package_paths.splitlines()
+                    if line.strip().startswith("package:")
+                ),
+                "",
+            )
+            if not apk_path:
+                return False
+            digest = self._run(
+                [
+                    self.adb,
+                    "-s",
+                    self._require_serial(),
+                    "shell",
+                    "sha256sum",
+                    apk_path,
+                ],
+                timeout=30,
+            ).split()[0].strip().lower()
+            return digest == expected
+        except (AndroidEnvironmentError, IndexError, OSError):
+            return False
 
     def launch(
         self,

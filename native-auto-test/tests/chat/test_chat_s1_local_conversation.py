@@ -21,26 +21,6 @@ def _assert_chat_response(assert_api, resp: dict, cmd: str, device: str, result_
     )
 
 
-def _wait_text_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 30.0) -> dict:
-    deadline = time.monotonic() + timeout
-    seen = []
-    while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=event_type, timeout=min(2.0, max(0.1, deadline - time.monotonic())))
-        if evt:
-            seen.append(evt)
-        for msg in ((evt or {}).get("data") or {}).get("messages") or []:
-            if not isinstance(msg, dict):
-                continue
-            if str(msg.get("msgId")) == str(real_id) and ((msg.get("body") or {}).get("content") == content):
-                return {
-                    "type": evt.get("type"),
-                    "eventType": evt.get("eventType"),
-                    "data": {"messages": [msg]},
-                    "timestamp": evt.get("timestamp"),
-                }
-    raise AssertionError(f"未收到目标消息事件: event={event_type}, msgId={real_id}, content={content}, events={seen}")
-
-
 def _clean_user_b_conversation(device_a, user_b: str) -> None:
     """前置清理：删除 user_b 本地会话，保证 deleteConversation/loadAllConversations 起点干净
     （session 内账号复用，前序 case 残留会导致 deleteConversation 返回值随会话存在性变化）。"""

@@ -8,6 +8,7 @@ import pytest
 
 from src import Cmd
 from src.tools.assertions import get_result
+from src.test_flow.event_waiters import wait_for_message_occurrences as _wait_message_event
 from tests.chat._utils import build_text
 
 
@@ -61,62 +62,6 @@ def _attach_event_wait_diagnostics(
         )
     except ImportError:
         pass
-
-
-def _wait_message_event(
-    device,
-    event_type: str,
-    *,
-    real_id: str,
-    content: str,
-    expected_message_count: int = 1,
-    timeout: float = 20.0,
-) -> dict:
-    device_name = getattr(device, "device_name", getattr(device, "_device", "unknown"))
-    deadline = time.monotonic() + timeout
-    seen = []
-    matched_messages = []
-    while time.monotonic() < deadline:
-        evt = device.receive_message(
-            match_event_type=event_type,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
-        )
-        if evt:
-            seen.append(evt)
-        for msg in ((evt or {}).get("data") or {}).get("messages") or []:
-            if not isinstance(msg, dict):
-                continue
-            body = msg.get("body") or {}
-            if str(msg.get("msgId")) == str(real_id) and body.get("content") == content:
-                matched_messages.append(msg)
-        if len(matched_messages) >= expected_message_count:
-            filtered_event = {
-                "type": evt.get("type"),
-                "eventType": evt.get("eventType"),
-                "data": {"messages": matched_messages},
-                "timestamp": evt.get("timestamp"),
-            }
-            source_device = getattr(evt, "_allure_source_device", None)
-            if source_device:
-                return evt.__class__(
-                    filtered_event,
-                    source_device=source_device,
-                )
-            return filtered_event
-    _attach_event_wait_diagnostics(
-        event_type=event_type,
-        expected={
-            "data.messages[].msgId": real_id,
-            "data.messages[].body.content": content,
-            "targetMessageCount": expected_message_count,
-        },
-        timeout=timeout,
-        seen=seen,
-    )
-    pytest.fail(
-        f"未命中目标消息事件: device={device_name}, eventType={event_type}, msgId={real_id}, "
-        f"content={content!r}, observed={len(seen)}"
-    )
 
 
 def _configured_account_device_count(

@@ -7,6 +7,7 @@ import uuid
 import pytest
 
 from src import Cmd, ne
+from src.test_flow.event_waiters import wait_for_message_occurrences as _wait_message_event
 from src.sdk_api.event_keys import ContactChangeEvent
 from src.test_flow.offline_test_flow import (
     login_account_devices,
@@ -37,8 +38,8 @@ _MESSAGE_DYNAMIC_KEYS = {
 }
 
 _MEDIA_DYNAMIC_KEYS = _MESSAGE_DYNAMIC_KEYS | {
-    # Android 5.0：媒体发送/离线回放时由本地缓存与下载时机决定，不能锁死 4.x 的状态值。
-    "fileStatus",
+    # 仅保留路径、密钥和缩略图元数据等非业务状态字段。
+    # fileStatus 按发送/接收/下载阶段严格断言，不得作为全局动态字段。
     "localPath",
     "remotePath",
     "secret",
@@ -54,8 +55,7 @@ _MEDIA_DYNAMIC_KEYS = _MESSAGE_DYNAMIC_KEYS | {
 }
 
 _COMBINE_DYNAMIC_KEYS = _MESSAGE_DYNAMIC_KEYS | {
-    # combine 的媒体状态同样是 endpoint 本地状态，不是服务端统一值。
-    "fileStatus",
+    # combine 的 fileStatus 按发送响应/成功事件/接收阶段分别断言。
     "localPath",
     "remotePath",
     "secret",
@@ -367,39 +367,6 @@ def _wait_success_event(
     raise AssertionError(f"未收到目标 onMessageSuccess: tempId={temp_id}, events={seen}")
 
 
-def _wait_message_event(
-    device,
-    event_type: str,
-    *,
-    real_id: str,
-    timeout: float = 60.0,
-) -> dict:
-    if isinstance(device, (tuple, list)):
-        return [
-            _wait_message_event(endpoint, event_type, real_id=real_id, timeout=timeout)
-            for endpoint in device
-        ]
-    deadline = time.monotonic() + timeout
-    seen = []
-    while time.monotonic() < deadline:
-        event = device.receive_message(
-            match_event_type=event_type,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
-        )
-        if event:
-            seen.append(event)
-        messages = (((event or {}).get("data") or {}).get("messages") or [])
-        if any(
-            isinstance(message, dict)
-            and str(message.get("msgId")) == str(real_id)
-            for message in messages
-        ):
-            return event
-    raise AssertionError(
-        f"未收到目标 {event_type}: msgId={real_id}, events={seen}"
-    )
-
-
 def _assert_received_message_on_devices(
     devices,
     assert_api,
@@ -446,7 +413,7 @@ def _assert_send_response_and_success(
     )
     temp_id = ((response.get("result") or {}).get("msgId"))
     assert isinstance(temp_id, str) and temp_id, f"发送响应缺少临时 msgId: {response}"
-    # 5.0 hasDeliverAck/status/fileStatus 都是本地状态机快照，受响应时机与 endpoint 缓存影响；不复用 4.x 固定值。
+    # 5.0 发送响应的 status 按消息类型处理；fileStatus 由 response_body 严格断言。
     response_ignored = (set(ignore_keys or _MESSAGE_DYNAMIC_KEYS) | {"hasDeliverAck", "status"})
     assert_api.assert_response_matches(
         response,
@@ -901,6 +868,7 @@ def test_chat_offline_combine_message_received_after_login(
                     "title": title,
                     "summary": summary,
                     "compatibleText": compatible_text,
+                    "fileStatus": 3,
                 },
                 ignore_keys=_COMBINE_DYNAMIC_KEYS,
             )

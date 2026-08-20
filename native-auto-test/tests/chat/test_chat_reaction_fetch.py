@@ -8,6 +8,7 @@ from contextlib import nullcontext
 import pytest
 
 from src import Cmd
+from src.test_flow.event_waiters import wait_for_message_occurrences as _wait_message_event
 from tests.chat._utils import build_text
 
 
@@ -21,36 +22,6 @@ def _allure_step(name: str):
         return allure.step(name)
     except ImportError:
         return nullcontext()
-
-
-def _wait_message_event(device, event_type: str, *, real_id: str, content: str, expected_message_count: int = 1, timeout: float = 30.0) -> dict:
-    deadline = time.monotonic() + timeout
-    seen = []
-    matched_messages = []
-    while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=event_type, timeout=min(2.0, max(0.1, deadline - time.monotonic())))
-        if evt:
-            seen.append(evt)
-        for msg in ((evt or {}).get("data") or {}).get("messages") or []:
-            if not isinstance(msg, dict):
-                continue
-            if str(msg.get("msgId")) == str(real_id) and ((msg.get("body") or {}).get("content") == content):
-                matched_messages.append(msg)
-        if len(matched_messages) >= expected_message_count:
-            filtered_event = {
-                "type": evt.get("type"),
-                "eventType": evt.get("eventType"),
-                "data": {"messages": matched_messages},
-                "timestamp": evt.get("timestamp"),
-            }
-            source_device = getattr(evt, "_allure_source_device", None)
-            if source_device:
-                return evt.__class__(
-                    filtered_event,
-                    source_device=source_device,
-                )
-            return filtered_event
-    raise AssertionError(f"未收到目标消息事件: event={event_type}, msgId={real_id}, content={content}, events={seen}")
 
 
 def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_id: str, user_a: str, user_b: str, content: str, direction: int, conv_id: str, has_read: bool, has_deliver_ack: bool | None, expected_message_count: int = 1) -> None:
@@ -269,6 +240,27 @@ def _send_text_and_wait_received(device_a, device_b, assert_api, user_a: str, us
     evt_received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id, content=content)
     _assert_text_message_event(assert_api, evt_received, event_type=Cmd.onMessagesReceived.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=None)
     return str(real_id)
+
+
+def _add_reaction_after_server_ready(device, *, reaction: str, real_id: str, timeout: float = 15.0) -> dict:
+    """仅对服务端瞬时的 302 creating 状态重试，其他错误原样返回。"""
+    deadline = time.monotonic() + timeout
+    last_response = None
+    while time.monotonic() < deadline:
+        last_response = device.call(
+            "ChatManager",
+            Cmd.addReaction.value,
+            info={"reaction": reaction, "msgId": real_id},
+        )
+        result = last_response.get("result")
+        if not (
+            isinstance(result, dict)
+            and result.get("code") == 302
+            and result.get("description") == "this message is creating reaction, please try again."
+        ):
+            return last_response
+        time.sleep(0.5)
+    return last_response or {}
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -654,8 +646,8 @@ def test_chat_remove_reaction_invalid_msg_id(device_a, assert_api):
 
 
 def test_chat_add_reaction_too_long_reaction(device_a, device_b, assert_api, user_a, user_b):
-    """addReaction 超长 reaction；按被测端实际语义冻结。"""
-    with _allure_step("验证：addReaction 超长 reaction；按被测端实际语义冻结。"):
+    """分别验证正常长度与超长 reaction，避免同一消息的异步操作互相竞争。"""
+    with _allure_step("验证：addReaction 超长 reaction；使用独立消息隔离异步操作状态。"):
         try:
             device_a.drain_events()
             device_b.drain_events()
@@ -681,8 +673,23 @@ def test_chat_add_reaction_too_long_reaction(device_a, device_b, assert_api, use
         _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction_128, is_added_by_self=True)
         _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction_128, is_added_by_self=False)
 
+        # onReactionChange 到达只代表客户端收到回调，不保证服务端已经完成
+        # 当前消息的 reaction 写入。超长边界使用新消息，避免被 302
+        # "message is creating reaction" 污染真正的长度语义。
+        oversize_real_id = _send_text_and_wait_received(
+            device_a,
+            device_b,
+            assert_api,
+            user_a,
+            user_b,
+            "reaction-too-long-oversize",
+        )
         reaction_256 = "b" * 256
-        resp_256 = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction_256, "msgId": real_id})
+        resp_256 = _add_reaction_after_server_ready(
+            device_a,
+            reaction=reaction_256,
+            real_id=oversize_real_id,
+        )
         assert_api.assert_response_matches(
             resp_256,
             expected={
@@ -693,8 +700,8 @@ def test_chat_add_reaction_too_long_reaction(device_a, device_b, assert_api, use
             },
             ignore_keys={"sequence"},
         )
-        _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction_256, is_added_by_self=True)
-        _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction_256, is_added_by_self=False)
+        _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=oversize_real_id, operator=user_a, reaction=reaction_256, is_added_by_self=True)
+        _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=oversize_real_id, operator=user_a, reaction=reaction_256, is_added_by_self=False)
 
 
 def test_chat_add_reaction_special_char_reaction(device_a, device_b, assert_api, user_a, user_b):

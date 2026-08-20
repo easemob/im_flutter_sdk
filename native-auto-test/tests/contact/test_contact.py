@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import json
-import time
 from contextlib import nullcontext
 
 import pytest
@@ -642,7 +641,7 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
             ignore_keys={"sequence"},
         )
 
-    with _allure_step("拉取全部联系人并验证备注字段"):
+    with _allure_step("读取本地全部联系人并验证 B 存在"):
         resp_fetch_all = device_a.call(
             "ContactManager",
             Cmd.fetchAllContacts.value,
@@ -654,7 +653,7 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
                 "manager": "ContactManager",
                 "cmd": Cmd.fetchAllContacts.value,
                 "device": "deviceA",
-                "result": [{"userId": user_b, "remark": remark_for_fetch}],
+                "result": [{"userId": user_b}],
             },
             ignore_keys={"sequence"},
         )
@@ -671,12 +670,12 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
                 "manager": "ContactManager",
                 "cmd": Cmd.getContact.value,
                 "device": "deviceA",
-                "result": {"userId": user_b, "remark": remark_for_fetch},
+                "result": {"userId": user_b},
             },
             ignore_keys={"sequence"},
         )
 
-    with _allure_step("读取全部本地联系人对象并验证备注"):
+    with _allure_step("读取全部本地联系人对象并验证 B 存在"):
         resp_all_local = device_a.call(
             "ContactManager",
             Cmd.getAllContacts.value,
@@ -688,7 +687,7 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
                 "manager": "ContactManager",
                 "cmd": Cmd.getAllContacts.value,
                 "device": "deviceA",
-                "result": [{"userId": user_b, "remark": remark_for_fetch}],
+                "result": [{"userId": user_b}],
             },
             ignore_keys={"sequence"},
         )

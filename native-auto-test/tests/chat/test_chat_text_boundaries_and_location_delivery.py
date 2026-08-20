@@ -7,6 +7,8 @@ import uuid
 import pytest
 
 from src import Cmd
+from src.test_flow.event_waiters import wait_for_message_occurrences
+from src.test_flow.event_waiters import wait_for_text_event as _wait_text_event
 from tests.chat._utils import build_text
 from tests.chat.test_chat_message_types_and_delivery import (
     _assert_sender_devices_received_message,
@@ -23,25 +25,6 @@ def _allure_step(name: str):
         return allure.step(name)
     except ImportError:
         return nullcontext()
-
-
-def _wait_text_event(device, event_type, *, content, timeout=30.0):
-    deadline = time.monotonic() + timeout
-    seen = []
-    while time.monotonic() < deadline:
-        event = device.receive_message(match_event_type=event_type, timeout=2.0)
-        if event:
-            seen.append(event)
-        messages = ((event or {}).get("data") or {}).get("messages") or []
-        if event_type == Cmd.onMessageSuccess.value:
-            message = ((event or {}).get("data") or {}).get("msg") or {}
-            if (message.get("body") or {}).get("content") == content:
-                return event, message
-        else:
-            for message in messages:
-                if isinstance(message, dict) and (message.get("body") or {}).get("content") == content:
-                    return event, message
-    pytest.fail(f"未收到目标文本事件: eventType={event_type}, content={content!r}, seen={seen}")
 
 
 def _send_text_and_assert(topology, assert_api, *, content):
@@ -195,34 +178,71 @@ def test_chat_send_rejects_mismatched_from(device_a, device_b, assert_api, user_
         )
 
 
-def test_chat_location_message_delivery_ack(device_a, device_b, assert_api, user_a, user_b):
+@pytest.mark.topology("account_a_to_account_b")
+def test_chat_location_message_delivery_ack(topology, assert_api):
     with _allure_step("验证：chat location message delivery ack"):
+        sender = topology.sender_action_device
+        recipients = topology.recipient_devices
+        user_a = topology.sender_user
+        user_b = topology.recipient_user
+
+        # 送达回执按接收账号的在线设备分别产生；先清空所有端，避免上一个
+        # case 的消息/回执混入本次批量回执。
+        for endpoint in (*topology.sender_devices, *recipients):
+            endpoint.drain_events(timeout=0.5)
+
+        for endpoint in (*topology.sender_devices, *recipients):
+            setting = endpoint.call(
+                "Client",
+                Cmd.updateDeliveryAckSetting.value,
+                info={"requireDeliveryAck": True},
+            )
+            assert_api.assert_response_matches(
+                setting,
+                expected={
+                    "manager": "Client",
+                    "cmd": Cmd.updateDeliveryAckSetting.value,
+                    "device": endpoint.device_name,
+                    "result": None,
+                },
+                ignore_keys={"sequence"},
+            )
+
         payload = {
             "targetId": user_b, "latitude": 30.2741, "longitude": 120.1551,
             "address": "location-delivery", "buildingName": "location-delivery-building",
         }
         _, _, _, _, real_id = _send_type_and_receive(
-            device_a, device_b, assert_api, user_a, user_b, type_key="location", payload=payload,
+            sender, topology.recipient_action_device, assert_api, user_a, user_b,
+            type_key="location", payload=payload,
             need_read_receipt=True,
         )
+
+        # _send_type_and_receive 已消费接收动作端事件；其余接收端也必须各自
+        # 收到同一条位置消息，不能用主端结果代表副端。
+        for endpoint in recipients:
+            if endpoint is topology.recipient_action_device:
+                continue
+            wait_for_message_occurrences(
+                endpoint,
+                Cmd.onMessagesReceived.value,
+                real_id=str(real_id),
+                expected_message_count=1,
+                timeout=30.0,
+            )
+
         # 5.0 送达回执需发送标记 needReadReceipt=true（服务端才发 DELIVER_ACK）
-        event = None
-        deadline = time.monotonic() + 30.0
-        while time.monotonic() < deadline:
-            evt = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=3.0)
-            if evt and any(
-                str(m.get("msgId")) == str(real_id)
-                for m in ((evt.get("data") or {}).get("messages") or [])
-            ):
-                event = evt
-                break
-        assert event is not None, f"未收到送达回执 msgId={real_id}"
-        # 同一 msgId 重复出现不是合法的批量行为，必须暴露为失败，不能通过过滤首条掩盖。
-        matched = [
-            m for m in ((event.get("data") or {}).get("messages") or [])
-            if isinstance(m, dict) and str(m.get("msgId")) == str(real_id)
-        ]
-        assert len(matched) == 1, f"送达事件目标消息重复或缺失: msgId={real_id}, matched={matched}, event={event}"
+        expected_count = len(recipients)
+        # 同一 msgId 按接收账号的在线设备重复出现是合法的多端语义；
+        # 公共等待器会跨事件累计，不会把同一个 msgId 去重。
+        event = wait_for_message_occurrences(
+            sender,
+            Cmd.onMessagesDelivered.value,
+            real_id=str(real_id),
+            expected_message_count=expected_count,
+            timeout=30.0,
+        )
+        matched = (event.get("data") or {}).get("messages") or []
         assert_api.assert_response_matches(
             {"type": "event", "eventType": event.get("eventType"), "data": {"messages": matched}},
             expected={"type": "event", "eventType": event.get("eventType"), "data": {"messages": [{
@@ -232,6 +252,6 @@ def test_chat_location_message_delivery_ack(device_a, device_b, assert_api, user
                 "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
                 "body": {"type": 3, "latitude": payload["latitude"], "longitude": payload["longitude"],
                          "address": payload["address"], "buildingName": payload["buildingName"]},
-            }]}},
+            } for _ in recipients]}},
             ignore_keys={"timestamp", "sequence", "localTime", "serverTime"},
         )

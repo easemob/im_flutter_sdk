@@ -20,6 +20,7 @@ import pytest
 
 from src import Cmd, ne, gt
 from src.tools.assertions import get_result
+from src.test_flow.event_waiters import wait_for_message_occurrences as _wait_message_event
 from tests.allure_helpers import _allure_step
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
@@ -91,30 +92,6 @@ def _find_first(obj: Any, key: str) -> Any | None:
             if r is not None:
                 return r
     return None
-
-
-def _wait_message_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 20.0) -> dict:
-    deadline = time.monotonic() + timeout
-    seen = []
-    while time.monotonic() < deadline:
-        evt = device.receive_message(
-            match_event_type=event_type,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
-        )
-        if evt:
-            seen.append(evt)
-        for msg in ((evt or {}).get("data") or {}).get("messages") or []:
-            if not isinstance(msg, dict):
-                continue
-            body = msg.get("body") or {}
-            if str(msg.get("msgId")) == str(real_id) and body.get("content") == content:
-                return {
-                    "type": evt.get("type"),
-                    "eventType": evt.get("eventType"),
-                    "data": {"messages": [msg]},
-                    "timestamp": evt.get("timestamp"),
-                }
-    pytest.fail(f"未收到目标消息事件: event={event_type}, msgId={real_id}, content={content}, seen={seen}")
 
 
 def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_id: str, user_a: str, user_b: str, content: str, direction: int, conv_id: str, has_read: bool, has_deliver_ack: bool) -> None:

@@ -89,11 +89,14 @@ class IMWebSocketBridge {
         cancelOnError: false,
       );
       _sendHello();
+      // managed-ws keeps the runner registration for the lifetime of this
+      // socket.  Re-sending the same hello every 10 seconds only replaces the
+      // same registry entry and makes the controller look like the Runner is
+      // repeatedly restarting.  A reconnect sends a fresh hello above, so a
+      // periodic hello is unnecessary and can create avoidable registration
+      // churn while a test is running.
       _helloTimer?.cancel();
-      _helloTimer = Timer.periodic(
-        const Duration(seconds: 10),
-        (_) => _sendHello(),
-      );
+      _helloTimer = null;
       _log('connected: $_connectUri');
     } catch (error, stackTrace) {
       _log('connect failed: $error\n$stackTrace');

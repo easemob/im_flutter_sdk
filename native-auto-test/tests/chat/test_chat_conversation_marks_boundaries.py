@@ -6,6 +6,7 @@ import uuid
 import pytest
 
 from src import Cmd
+from src.test_flow.event_waiters import wait_for_text_event as _wait_text_event
 from tests.chat._utils import build_text
 from tests.allure_helpers import _allure_step
 
@@ -48,24 +49,6 @@ def test_chat_fetch_conversation_marks_boundaries(device_a, assert_api, info):
         expected={"manager": "ChatManager", "cmd": Cmd.loadAllConversations.value, "device": "deviceA", "result": []},
         ignore_keys={"sequence"},
     )
-
-
-def _wait_text_event(device, event_type, *, content, timeout=30.0):
-    deadline = time.monotonic() + timeout
-    seen = []
-    while time.monotonic() < deadline:
-        event = device.receive_message(match_event_type=event_type, timeout=2)
-        if event:
-            seen.append(event)
-        if event_type == Cmd.onMessageSuccess.value:
-            message = ((event or {}).get("data") or {}).get("msg") or {}
-            if (message.get("body") or {}).get("content") == content:
-                return event, message
-            continue
-        for message in (((event or {}).get("data") or {}).get("messages") or []):
-            if isinstance(message, dict) and (message.get("body") or {}).get("content") == content:
-                return event, message
-    pytest.fail(f"未收到文本消息事件: eventType={event_type}, content={content!r}, seen={seen}")
 
 
 def _assert_text_event(assert_api, event_type, message, *, msg_id, user_a, user_b,

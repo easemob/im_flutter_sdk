@@ -53,26 +53,6 @@ def _assert_text_event(assert_api, evt, *, event_type, msg_id, user_a, user_b, c
     )
 
 
-def _wait_text_event(device, event_type, *, msg_id, content, timeout=30):
-    deadline = time.monotonic() + timeout
-    seen = []
-    while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=event_type, timeout=min(2.0, max(0.1, deadline - time.monotonic())))
-        if evt:
-            seen.append(evt)
-        for msg in ((evt or {}).get("data") or {}).get("messages") or []:
-            if not isinstance(msg, dict):
-                continue
-            if str(msg.get("msgId")) == str(msg_id) and ((msg.get("body") or {}).get("content") == content):
-                return {
-                    "type": evt.get("type"),
-                    "eventType": evt.get("eventType"),
-                    "data": {"messages": [msg]},
-                    "timestamp": evt.get("timestamp"),
-                }
-    raise AssertionError(f"未收到目标消息事件: event={event_type}, msgId={msg_id}, content={content}, events={seen}")
-
-
 def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
     device_a.drain_events()
     device_b.drain_events()

@@ -2,14 +2,9 @@
 
 > 只记录当前仍需跟踪的 FAILED / SKIPPED；已通过用例不在此展开。
 
-## Chat 模块（2026-08-18）
+## Chat 模块
 
-```text
-本轮全量结果：26 failed / 195 passed / 40 skipped / 3 warnings
-耗时：2956.44s（49m16s）
-```
-
-### FAILED（26）
+### FAILED
 
 #### 1. `modifyMessage` 不可用（14）
 
@@ -23,16 +18,7 @@
 - `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_content_change_after_relogin`（1）
 - `tests/chat/test_chat_s4_message_content_changed.py::test_chat_modify_custom_message_content_changed_event`（1）
 
-#### 2. 送达/离线回放时序异常（3）(改完所有设备都logout后，都pass)
-
-- `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_delivery_ack_after_recipient_login`
-  B 尚未重新登录时，A 已收到 `onMessagesDelivered`；用例预期该事件只能在 B 重登后出现。
-- `tests/chat/test_chat_offline_message_extended_delivery.py::test_chat_offline_combine_delivery_ack_after_recipient_login`
-  B 重登后未收到目标 combine 的 `onMessagesReceived`；此前该链路曾通过，需单跑确认是否为时序/环境波动。
-- `tests/chat/test_chat_offline_message_extended_operations.py::test_chat_offline_typed_message_recall_after_recipient_relogin[voice]`
-  撤回信息中的 voice `fileStatus` 本轮实际为 `1`，此前曾出现 `3`，值不稳定，不能锁死单值。
-
-#### 3. 离线 Reaction / Pin 事件未派发（4）
+#### 2. 离线 Reaction / Pin 事件未派发（4）
 
 - `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_sender_receives_reaction_add_after_relogin`
 - `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_sender_receives_reaction_remove_after_relogin`
@@ -41,20 +27,12 @@
 
 操作请求成功，但离线重登后未收到对应事件。Wrapper 已有回调转发，需继续确认 5.0 原生/服务端是否同步最终状态；不能删除事件断言。
 
-#### 4. Reaction 边界事件未派发（2）
+#### 3. Reaction 边界事件未派发（2）
 
 - `tests/chat/test_chat_reaction_fetch.py::test_chat_add_reaction_too_long_reaction`
-- `tests/chat/test_chat_reaction_fetch.py::test_chat_add_reaction_special_char_reaction`
 
 `addReaction` 请求成功，但未收到目标 `messageReactionDidChange` 事件；超长和特殊字符场景均需 SDK/服务端确认。
 
-#### 5. 本地会话删除返回值差异（3）
-
-- `tests/chat/test_chat_s1_local_conversation.py::test_chat_load_all_conversations_contains_then_not_contains`
-- `tests/chat/test_chat_s1_local_conversation.py::test_chat_delete_conversation_existing_then_not_found`
-- `tests/chat/test_chat_s1_local_conversation.py::test_chat_delete_conversation_nonexistent_returns_bool`
-
-官方 4.x 预期 `deleteConversation.result=True`，Android 5.0 原生返回 `False`；Wrapper 仅透传。删除后的本地列表/查询状态需单独验证。
 
 ### SKIPPED（40）
 
@@ -65,7 +43,7 @@
 
 Skip 不计入通过；如对应 5.0 替代 API 或原生修复完成，再恢复为严格用例。
 
-## Chatroom 模块（2026-08-18）
+## Chatroom 模块
 
 ```text
 本轮全量结果：3 failed / 134 passed / 7 skipped / 1 warning
@@ -97,7 +75,7 @@ Skip 不计入通过；如对应 5.0 替代 API 或原生修复完成，再恢�
 
 以上 skip 属于 5.0 API 移除/不支持，不计入通过，也不通过放宽断言处理。
 
-## Client 模块（2026-08-18）
+## Client 模块
 
 ```text
 本轮结果：2 failed / 23 passed / 2 skipped / 1 warning
@@ -132,7 +110,7 @@ Skip 不计入通过；如对应 5.0 替代 API 或原生修复完成，再恢�
 - `test_client_create_account_empty_user_boundary`：5.0 移除客户端 `createAccount`，账号预创建走 REST。
 - `test_client_session_sensitive_api_boundaries[loginWithAgoraToken-info5-expected_result5]`：5.0 API Matrix 标记 `Client.loginWithAgoraToken` 为 removed/unsupported。
 
-## Contact 模块（2026-08-18）
+## Contact 模块
 
 ```text
 本轮结果：31 passed / 6 skipped / 0 failed / 1 warning
@@ -196,7 +174,7 @@ Wrapper 为了通过测试改写字段。
 | combine 发送响应 | `3` | `0` |
 | combine 发送成功事件 | `1` | `1` |
 | combine 接收事件（在线/离线重登） | `3` | `3` |
-| 下载附件响应 | 未单独拆分 | `0` |
+| 下载附件响应 | 未单独拆分 | `0` 或 `1`（本地已缓存时直接返回 `1`） |
 | 下载附件成功事件 | 未单独拆分 | `1` |
 | location/custom | 无此字段 | 无此字段 |
 
@@ -206,7 +184,7 @@ Wrapper 为了通过测试改写字段。
 
 1. A 发送时，B 是否在线不改变 A 发送响应/发送成功阶段的断言。
 2. B 离线重登后收到 `onMessagesReceived`：`status=2`；file/image/video 的 `fileStatus=3`，voice 保持 `fileStatus=0`，与在线接收相同。
-3. 媒体执行 `downloadAttachment` 时，无论消息之前是否离线接收，下载接口本身是响应 `fileStatus=0`、成功事件 `fileStatus=1`；这是下载阶段，不是离线特有状态。
+3. 媒体执行 `downloadAttachment` 时，下载接口响应 `fileStatus` 允许为 `0` 或 `1`：未完成下载时为 `0`，本地缓存已完成时可直接为 `1`；成功事件固定为 `fileStatus=1`。这是下载阶段，不是离线特有状态。
 4. image 的缩略图下载单独验证；video 缩略图当前按用例验证失败事件 `403`，不能套用附件下载的 `0→1`。
 5. 离线送达回执需要 `needReadReceipt=true`；当前 5.0 实测既出现 B 重登后触发，也出现 B 尚未重登时提前触发，时序仍需确认。
 
@@ -215,16 +193,17 @@ Wrapper 为了通过测试改写字段。
 断言规则：
 
 - 发送响应的 `status` 按消息类型断言，不使用 4.x 的统一 `1`。
-- 发送响应的 `fileStatus` 按 5.0 发送方状态断言为 `0`。
+- 发送响应的 `fileStatus` 按 5.0 发送方状态断言为 `0`；下载接口响应严格断言为 `0` 或 `1`，不能直接忽略。
 - 发送成功事件 `status=2`；普通媒体发送成功阶段 `fileStatus=0`，下载附件成功阶段才是 `fileStatus=1`。
 - 在线/离线接收事件 `status=2`，媒体 `fileStatus` 按上表断言。
 - 撤回信息中的媒体 `fileStatus` 目前按场景实测，voice 已出现 `1` 与 `3` 两种值，暂不作为稳定单值契约。
 - combine 必须区分三个阶段：发送响应 `0`、发送成功 `1`、接收 `3`。
+- `onMessagesDelivered` 中的 combine 消息实测出现过 `fileStatus=1` 和 `3`；用例严格限制为 `{1,3}` 并记录实际值，不能放入全局 `ignore_keys`。
 - 不把 `status` / `fileStatus` 放入全局 `ignore_keys`；如果某个接口尚未确认阶段值，应单独记录为待确认，不用忽略字段掩盖。
 
 该状态机差异未出现在官方 5.0 API 变更说明中，属于 Android 5.0 原生实测差异。
 
-## Group 模块：`memberList` / `adminList`（2026-08-19）
+## Group 模块：`memberList` / `adminList`
 
 官方 4.x E2E 使用 `getGroupFromServer(groupId, true)`，管理员 B 从
 `memberList` 分离到 `adminList`：
@@ -257,7 +236,7 @@ owner + adminList + getGroupMemberListFromServer.result.list
 因此 5.0 用例严格校验 `groupId`，对 `groupName` 按 Android API 的可空语义校验允许值；
 这不是 wrapper 伪造字段，也不放宽为任意字符串。
 
-## Group 全量回归记录（2026-08-19）
+## Group 全量回归记录
 
 ```text
 42 failed / 205 passed / 20 skipped / 1 warning

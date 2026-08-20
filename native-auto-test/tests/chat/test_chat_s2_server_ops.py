@@ -24,26 +24,6 @@ def _assert_chat_response(assert_api, resp: dict, cmd: str, device: str = "devic
     )
 
 
-def _wait_text_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 60.0) -> dict:
-    seen = []
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=event_type, timeout=2.0)
-        if evt:
-            seen.append(evt)
-        for msg in ((evt or {}).get("data") or {}).get("messages") or []:
-            if not isinstance(msg, dict):
-                continue
-            if str(msg.get("msgId")) == str(real_id) and ((msg.get("body") or {}).get("content") == content):
-                return {
-                    "type": evt.get("type"),
-                    "eventType": evt.get("eventType"),
-                    "data": {"messages": [msg]},
-                    "timestamp": evt.get("timestamp"),
-                }
-    raise AssertionError(f"未收到目标消息事件: event={event_type}, msgId={real_id}, content={content}, events={seen}")
-
-
 def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_id: str, user_a: str, user_b: str, content: str, direction: int, conv_id: str, has_read: bool, has_deliver_ack: bool | None = None) -> None:
     assert_api.assert_response_matches(
         evt,

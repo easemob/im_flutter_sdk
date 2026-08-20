@@ -9,6 +9,7 @@ import pytest
 from tests.group.allure_helpers import _allure_step
 
 from src import Cmd, gt
+from src.test_flow.event_waiters import wait_for_message_occurrences as _wait_message_event
 from tests.group.group_helpers import create_group, new_group_name
 from tests.chat._utils import swt_to_send
 from tests.group.group_offline_helpers import (
@@ -90,34 +91,6 @@ def _wait_success(device, *, temp_id: str, timeout: float = 60.0) -> dict:
             return event
     raise AssertionError(
         f"未收到目标 onMessageSuccess: tempId={temp_id}, events={seen}"
-    )
-
-
-def _wait_message_event(
-    device,
-    event_type: str,
-    *,
-    real_id: str,
-    timeout: float = 60.0,
-) -> dict:
-    deadline = time.monotonic() + timeout
-    seen: list[dict] = []
-    while time.monotonic() < deadline:
-        event = device.receive_message(
-            match_event_type=event_type,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
-        )
-        if event:
-            seen.append(event)
-        messages = (((event or {}).get("data") or {}).get("messages")) or []
-        if any(
-            isinstance(message, dict)
-            and str(message.get("msgId")) == str(real_id)
-            for message in messages
-        ):
-            return event
-    raise AssertionError(
-        f"未收到目标 {event_type}: msgId={real_id}, events={seen}"
     )
 
 

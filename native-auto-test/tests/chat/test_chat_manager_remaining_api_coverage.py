@@ -8,6 +8,7 @@ from contextlib import nullcontext
 import pytest
 
 from src import Cmd, ge
+from src.test_flow.event_waiters import wait_for_message_occurrences as _wait_message_event
 from tests.chat._utils import build_text
 
 
@@ -137,27 +138,6 @@ def _wait_message_success_for_content(device, *, content: str, to: str, timeout:
         if msg.get("to") == to and body.get("content") == content and msg.get("msgId"):
             return evt
     raise AssertionError(f"未收到目标 onMessageSuccess: to={to}, content={content}, events={seen_events}")
-
-
-def _wait_message_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 60.0) -> dict:
-    seen_events = []
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=event_type, timeout=2.0)
-        if evt:
-            seen_events.append(evt)
-        for msg in ((evt or {}).get("data") or {}).get("messages") or []:
-            if not isinstance(msg, dict):
-                continue
-            body = msg.get("body") or {}
-            if str(msg.get("msgId")) == str(real_id) and body.get("content") == content:
-                return {
-                    "type": evt.get("type"),
-                    "eventType": evt.get("eventType"),
-                    "data": {"messages": [msg]},
-                    "timestamp": evt.get("timestamp"),
-                }
-    raise AssertionError(f"未收到目标消息事件: event={event_type}, msgId={real_id}, content={content}, events={seen_events}")
 
 
 def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_id: str, user_a: str, user_b: str, content: str, direction: int, conv_id: str, has_read: bool, has_deliver_ack: bool) -> None:
