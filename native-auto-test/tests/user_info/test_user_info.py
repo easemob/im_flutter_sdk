@@ -95,14 +95,36 @@ def test_user_info_update_own_set_and_modify(device_a, assert_api, user_a):
                 "result": {
                     "nickName": "nick-mod",
                     "sign": "sign-mod",
-                    "mail": "",
                     "userId": user_a,
-                    "gender": 0,
                 },
             },
-            # 仅更新 nick/sign 时服务端返回的 gender 可能与首次设置不一致，不作为本步断言
-            ignore_keys={"sequence", "ext", "avatarUrl", "phone", "birth"},
-        )
+        # 仅更新 nick/sign 时服务端返回的 gender 可能与首次设置不一致，不作为本步断言
+        ignore_keys={"sequence", "ext", "avatarUrl", "phone", "birth"},
+    )
+
+    # 更新接口返回对象在 Android/iOS 上的字段形态不同；最终资料必须通过查询结果验证。
+    resp_fetch = device_a.call(
+        "UserInfoManager",
+        Cmd.fetchUserInfoById.value,
+        info={"userIds": [user_a]},
+    )
+    assert_api.assert_response_matches(
+        resp_fetch,
+        expected={
+            "manager": "UserInfoManager",
+            "cmd": Cmd.fetchUserInfoById.value,
+            "device": "deviceA",
+            "result": {
+                user_a: {
+                    "userId": user_a,
+                    "nickName": "nick-mod",
+                    "sign": "sign-mod",
+                    "mail": "aa",
+                },
+            },
+        },
+        ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS,
+    )
 
 
 def test_user_info_update_own_with_type_nickname(device_a, assert_api, user_a):

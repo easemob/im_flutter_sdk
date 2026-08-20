@@ -1393,12 +1393,6 @@
                      arguments:nil];
 }
 
-- (void)onConversationRead:(NSString *)from
-                        to:(NSString *)to {
-    [self.channel invokeMethod:ChatOnConversationHasRead
-                     arguments:@{@"from":from, @"to": to}];
-}
-
 - (void)messagesDidReceive:(NSArray *)aMessages {
     NSMutableArray *msgList = [NSMutableArray array];
     for (EMChatMessage *msg in aMessages) {
@@ -1457,6 +1451,11 @@
     }
 }
 
+- (void)groupMessageReadReceiptsHasChanged {
+    // 5.0 原生 groupMessageReadReceiptsHasChanged → 协议 onReadAckForGroupMessageUpdated（Dart handler 已就绪）
+    [self.channel invokeMethod:ChatOnReadAckForGroupMessageUpdated arguments:nil];
+}
+
 - (void)messagesDidDeliver:(NSArray *)aMessages {
     NSMutableArray *list = [NSMutableArray array];
     for (EMChatMessage *msg in aMessages) {
@@ -1471,32 +1470,6 @@
 }
 
 
-
-- (void)messagesDidRecall:(NSArray *)aMessages {
-    NSMutableArray *list = [NSMutableArray array];
-    for (EMChatMessage *msg in aMessages) {
-        [list addObject:[msg toJson]];
-    }
-    
-    [self.channel invokeMethod:ChatOnMessagesRecalled
-                     arguments:list];
-}
-
-
-- (void)groupMessageDidRead:(EMChatMessage *)aMessage groupAcks:(NSArray *)aGroupAcks {
-    NSMutableArray *list = [NSMutableArray array];
-    for (EMMessageReadReceipt *ack in aGroupAcks) {
-        NSDictionary *json = @{
-            @"msgId": ack.messageId,
-            @"ack_id": ack.conversationId,
-            @"count": @(ack.readCount),
-        };
-        [list addObject:json];
-    }
-    
-    [self.channel invokeMethod:ChatOnGroupMessageRead
-                     arguments:list];
-}
 
 - (void)groupMessageAckHasChanged {
     [self.channel invokeMethod:ChatOnReadAckForGroupMessageUpdated

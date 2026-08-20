@@ -632,6 +632,21 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     [self.channel invokeMethod:ChatOnDatabaseOpened arguments:data];
 }
 
+- (void)syncDataStartWithType:(EMDataSyncType)type {
+    // 5.0 原生 syncDataStartWithType → 协议 onDataSyncStart（对齐 Android）
+    [self.channel invokeMethod:ChatOnDataSyncStart arguments:@{@"type": @(type)}];
+}
+
+- (void)syncDataFinished:(EMError * _Nullable)error type:(EMDataSyncType)type {
+    // 5.0 原生 syncDataFinished → 协议 onDataSyncFinish（对齐 Android）
+    NSMutableDictionary *data = [NSMutableDictionary dictionary];
+    data[@"type"] = @(type);
+    if (error) {
+        data[@"errorCode"] = @(error.code);
+    }
+    [self.channel invokeMethod:ChatOnDataSyncFinish arguments:data];
+}
+
 - (void)activeNumbersReachLimitation {
     [self.channel invokeMethod:ChatOnAppActiveNumberReachLimit arguments:nil];
 }

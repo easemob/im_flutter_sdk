@@ -78,6 +78,7 @@
     ret[@"convId"] = self.conversationId;
     ret[@"hasRead"] = @(self.isRead);
     ret[@"hasDeliverAck"] = @(self.isDeliverAcked);
+    ret[@"isPeerRead"] = @(self.isPeerRead);
     // 5.0 以 needReadReceipt 为准（替代 4.x hasReadAck/needGroupAck）
     ret[@"needReadReceipt"] = @(self.isNeedReadReceipt);
     ret[@"serverTime"] = @(self.timestamp);

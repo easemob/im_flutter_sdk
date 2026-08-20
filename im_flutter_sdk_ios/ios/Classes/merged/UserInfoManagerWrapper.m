@@ -15,6 +15,19 @@
 
 @end
 
+// Android 5.0 updateOwnInfoByAttribute 返回 JSON 字符串；iOS 原生返回 EMUserInfo。
+static NSString *androidUserInfoTypeResult(EMUserInfo *userInfo) {
+    NSDictionary *payload = @{
+        @"gender": [NSString stringWithFormat:@"%ld", (long)userInfo.gender],
+        @"nickname": userInfo.nickname ?: @"",
+        @"sign": userInfo.sign ?: @"",
+    };
+    NSData *data = [NSJSONSerialization dataWithJSONObject:payload
+                                                     options:NSJSONWritingSortedKeys
+                                                       error:nil];
+    return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+}
+
 @implementation UserInfoManagerWrapper
 - (instancetype)initWithChannelName:(NSString *)aChannelName registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
     
@@ -116,7 +129,7 @@
     
     [EMClient.sharedClient.userInfoManager updateOwnUserInfo:userInfoValue withType:userInfoType completion:^(EMUserInfo *aUserInfo, EMError *aError) {
         __strong typeof (self)strongSelf = weakSelf;
-        NSDictionary *objDic = [aUserInfo toJson];
+        NSString *objDic = aError ? nil : androidUserInfoTypeResult(aUserInfo);
         [strongSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
