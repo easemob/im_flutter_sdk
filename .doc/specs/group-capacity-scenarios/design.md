@@ -2,7 +2,7 @@
 
 ## Overview
 
-Group case 保持一份源码，通过 pytest 命令行参数选择常规建群容量。默认参数值为 `200`；扩容场景由 `--group-create-max-count=3000` 显式启用。实现只改 `native-auto-test` 的测试辅助层和直接构造常规建群请求的 Group lifecycle case，不修改 Flutter SDK 或测试 App。
+Group case 保持一份源码，通过 pytest 命令行参数选择常规建群容量。默认参数值为 `200`；扩容场景由 `--group-create-max-count=3100` 显式启用。实现只改 `native-auto-test` 的测试辅助层和直接构造常规建群请求的 Group lifecycle case，不修改 Flutter SDK 或测试 App。
 
 ## Architecture
 
@@ -22,13 +22,13 @@ sequenceDiagram
     participant H as create_group / direct request
     participant SDK as Flutter GroupManager
 
-    R->>C: pytest --group-create-max-count=3000
-    C->>S: configure(3000)
+    R->>C: pytest --group-create-max-count=3100
+    C->>S: configure(3100)
     R->>T: execute unchanged case logic
     T->>H: create normal group
     H->>S: get_active_max_count()
-    S-->>H: 3000
-    H->>SDK: options.maxCount=3000
+    S-->>H: 3100
+    H->>SDK: options.maxCount=3100
     Note over T,H: explicit boundary values 0/-1/1/2 are not overridden
     C->>S: reset() at session teardown
 ```
@@ -39,7 +39,7 @@ sequenceDiagram
 
 `create_group(max_count=None)` distinguishes omitted capacity from an intentional value: omitted resolves to the active scenario capacity; an explicit integer is used literally. This preserves capacity-boundary cases. Direct lifecycle create requests use a small runtime helper to build normal options, ensuring their request payloads and strict `maxUserCount` expectations follow the selected scenario.
 
-The capacity-3000 scenario is run as a separate CI job/report directory rather than being added to default group regression. This keeps standard runtime stable and labels results by scenario while testing the same functions.
+The capacity-3100 scenario is run as a separate CI job/report directory rather than being added to default group regression. This keeps standard runtime stable and labels results by scenario while testing the same functions.
 
 ## Constraints and Tradeoffs
 
@@ -53,5 +53,5 @@ The capacity-3000 scenario is run as a separate CI job/report directory rather t
 1. Unit-test the capacity state default, valid override and non-positive rejection without contacting test devices.
 2. Run the unit test red before implementation, then green after adding the utility.
 3. Run Group test collection checks and targeted Group helper/lifecycle imports with the default capacity.
-4. Run a small real Group creation subset with `--group-create-max-count=3000` in discovery mode, then strict mode after freezing the returned `maxUserCount=3000` evidence.
+4. Run a small real Group creation subset with `--group-create-max-count=3100` in discovery mode, then strict mode after freezing the returned `maxUserCount=3100` evidence.
 5. Record only commands and non-sensitive results in the Group case ledger.
