@@ -14,7 +14,7 @@ from tests.group.allure_helpers import _allure_step
 
 from src import Cmd
 from tests.group.group_helpers import (
-    assert_group_members_exact,
+    assert_group_members_from_server,
     assert_group_snapshot,
     create_group,
     destroy_group,
@@ -102,7 +102,14 @@ def test_group_member_count_local_then_server_sync(device_a, device_b, assert_ap
         with _allure_step("验证查询服务端群详情返回的关键字段"):
             assert member_count(resp_server) == 3, f"服务端成员数量预期 3: {resp_server}"
         with _allure_step("验证查询服务端群详情返回的关键字段"):
-            assert_group_members_exact(resp_server, [user_b, user_c], err_prefix="服务端拉取后")
+            assert_group_members_from_server(
+                device_a,
+                assert_api,
+                group_id=group_id,
+                device_name="deviceA",
+                expected_members=[user_b, user_c],
+                err_prefix="服务端拉取后",
+            )
         server_count = member_count(resp_server)
 
         with _allure_step("A 查询本地群详情"):

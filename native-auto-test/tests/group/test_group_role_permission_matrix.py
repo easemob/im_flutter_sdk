@@ -6,7 +6,8 @@ from tests.group.allure_helpers import _allure_step
 
 from src import Cmd
 from tests.group.group_helpers import (
-    assert_group_members_exact,
+    assert_group_events,
+    assert_group_members_from_server,
     assert_group_snapshot,
     collect_group_events,
     create_group,
@@ -138,6 +139,7 @@ def _fetch_group(
     message_blocked: bool = False,
     expected_desc: str = "auto-test group",
     expected_ext: str = "auto-ext",
+    member_count_value: int | None = None,
 ) -> dict:
     response = device.call(
         "GroupManager",
@@ -153,7 +155,12 @@ def _fetch_group(
         owner=owner,
         expected_desc=expected_desc,
         expected_ext=expected_ext,
-        member_count_value=1 + len(members) + len(admins),
+        # 官方 e2e 语义：管理员单独位于 adminList，memberList 只包含普通成员。
+        member_count_value=(
+            member_count_value
+            if member_count_value is not None
+            else 1 + len(members)
+        ),
         admin_list_value=admins,
         mute_list_value=mute_list,
         allow_list_value=allow_list,
@@ -163,7 +170,15 @@ def _fetch_group(
         permission_type=permission_type,
         device=device_name,
     )
-    assert_group_members_exact(response, members, err_prefix="角色权限矩阵服务端快照")
+    with _allure_step("查询并校验服务端分页普通成员列表"):
+        assert_group_members_from_server(
+            device,
+            assert_api,
+            group_id=group_id,
+            device_name=device_name,
+            expected_members=members,
+            err_prefix="角色权限矩阵",
+        )
     return response
 
 
@@ -373,6 +388,7 @@ def test_group_mute_members_role_permission_matrix(
             members=[user_c] if role == _ROLE_ADMIN else [user_b, user_c],
             admins=[user_b] if role == _ROLE_ADMIN else [],
             permission_type=2,
+            member_count_value=3,
             mute_list=[],
         )
     finally:
@@ -437,7 +453,7 @@ def test_group_mute_all_role_permission_matrix(
                     permission_type=_PERMISSION_TYPE[role],
                     device=actor_name,
                 )
-            event_type = "onAllGroupMemberMuteStateChanged"
+            event_type = "onGroupAllMemberMuteStateChanged"
             with _allure_step("等待并校验目标业务事件"):
                 events = collect_group_events(
                     observer,
@@ -451,7 +467,7 @@ def test_group_mute_all_role_permission_matrix(
                     assert_api,
                     events[0],
                     event_type=event_type,
-                    data={"groupId": group_id, "isAllMuted": True},
+                    data={"groupId": group_id, "isMuted": True},
                 )
             with _allure_step("动作端 解除全员禁言"):
                 response = actor.call("GroupManager", Cmd.unMuteAllMembers.value, info={"groupId": group_id})
@@ -482,7 +498,7 @@ def test_group_mute_all_role_permission_matrix(
                     assert_api,
                     events[0],
                     event_type=event_type,
-                    data={"groupId": group_id, "isAllMuted": False},
+                    data={"groupId": group_id, "isMuted": False},
                 )
         _restore_owner_if_needed(device_a, assert_api, switched=switched, user_a=user_a)
         switched = False
@@ -496,6 +512,7 @@ def test_group_mute_all_role_permission_matrix(
             members=[user_c] if role == _ROLE_ADMIN else [user_b, user_c],
             admins=[user_b] if role == _ROLE_ADMIN else [],
             permission_type=2,
+            member_count_value=3,
             is_all_member_muted=False,
         )
     finally:
@@ -573,7 +590,7 @@ def test_group_allow_list_role_permission_matrix(
                     assert_api,
                     events[0],
                     event_type=event_type,
-                    data={"groupId": group_id, "members": [target_user]},
+                    data={"groupId": group_id, "whitelist": [target_user]},
                 )
             target_device_name = "deviceB" if role == _ROLE_OWNER else "deviceA"
             with _allure_step("动作端 查询白名单成员状态"):
@@ -621,7 +638,7 @@ def test_group_allow_list_role_permission_matrix(
                     assert_api,
                     events[0],
                     event_type=event_type,
-                    data={"groupId": group_id, "members": [target_user]},
+                    data={"groupId": group_id, "whitelist": [target_user]},
                 )
         _restore_owner_if_needed(device_a, assert_api, switched=switched, user_a=user_a)
         switched = False
@@ -635,6 +652,7 @@ def test_group_allow_list_role_permission_matrix(
             members=[user_c] if role == _ROLE_ADMIN else [user_b, user_c],
             admins=[user_b] if role == _ROLE_ADMIN else [],
             permission_type=2,
+            member_count_value=3,
         )
     finally:
         _restore_owner_if_needed(device_a, assert_api, switched=switched, user_a=user_a)
@@ -656,6 +674,7 @@ def test_group_blocklist_admin_member_role_matrix(
     """管理员可增删群黑名单；普通成员返回管理员权限错误且状态不变。"""
     group_id = ""
     group_name = ""
+    switched = False
     try:
         with _allure_step("测试准备：创建测试群并建立成员前置"):
             group_id, group_name = _create_role_group(
@@ -668,11 +687,20 @@ def test_group_blocklist_admin_member_role_matrix(
                 user_c=user_c,
                 prefix="blocklist",
             )
-        with _allure_step("B 加入群黑名单"):
-            response = device_b.call(
+        actor, actor_name, target_device, target_user, switched = _actor_and_target(
+            device_a,
+            device_b,
+            assert_api,
+            role=role,
+            user_a=user_a,
+            user_b=user_b,
+            user_c=user_c,
+        )
+        with _allure_step(f"{actor_name} 将目标成员加入群黑名单"):
+            response = actor.call(
                 "GroupManager",
                 Cmd.blockMembers.value,
-                info={"groupId": group_id, "members": [user_c]},
+                info={"groupId": group_id, "members": [target_user]},
             )
         if role == _ROLE_MEMBER:
             with _allure_step("验证移出群黑名单返回的错误码与错误文案"):
@@ -696,47 +724,41 @@ def test_group_blocklist_admin_member_role_matrix(
                     response,
                     manager="GroupManager",
                     cmd=Cmd.blockMembers.value,
-                    device="deviceB",
+                    device=actor_name,
                     result=True,
                 )
-            event_types = {"onGroupMembersExited", "onGroupMemberExited"}
             with _allure_step("等待并校验目标业务事件"):
                 events = collect_group_events(
-                    device_a,
-                    expected_event_types=event_types,
+                    target_device,
+                    expected_event_types={"onGroupUserRemoved"},
                     group_id=group_id,
-                    required_all_event_types=event_types,
+                    allow_missing_group_id=True,
+                    required_all_event_types={"onGroupUserRemoved"},
                     timeout=10.0,
                 )
-            events_by_type = {event["eventType"]: event for event in events}
             with _allure_step("验证群业务状态、事件与关键字段"):
-                _assert_event(
+                assert_group_events(
                     assert_api,
-                    events_by_type["onGroupMembersExited"],
-                    event_type="onGroupMembersExited",
-                    data={"groupId": group_id, "userIds": [user_c]},
-                )
-            with _allure_step("验证群业务状态、事件与关键字段"):
-                _assert_event(
-                    assert_api,
-                    events_by_type["onGroupMemberExited"],
-                    event_type="onGroupMemberExited",
-                    data={"groupId": group_id, "member": user_c},
+                    events,
+                    expected_event_types={"onGroupUserRemoved"},
+                    group_id=group_id,
+                    allow_missing_group_id=True,
+                    required_all_event_types={"onGroupUserRemoved"},
                 )
             with _allure_step("验证群业务状态、事件与关键字段"):
                 _assert_server_user_list(
-                    device_b,
+                    actor,
                     assert_api,
-                    device_name="deviceB",
+                    device_name=actor_name,
                     cmd=Cmd.getGroupBlockListFromServer.value,
                     group_id=group_id,
-                    expected_users=[user_c],
+                    expected_users=[target_user],
                 )
-            with _allure_step("B 移出群黑名单"):
-                response = device_b.call(
+            with _allure_step(f"{actor_name} 将目标成员移出群黑名单"):
+                response = actor.call(
                     "GroupManager",
                     Cmd.unblockMembers.value,
-                    info={"groupId": group_id, "members": [user_c]},
+                    info={"groupId": group_id, "members": [target_user]},
                 )
             with _allure_step("验证群业务状态、事件与关键字段"):
                 _assert_call(
@@ -744,18 +766,22 @@ def test_group_blocklist_admin_member_role_matrix(
                     response,
                     manager="GroupManager",
                     cmd=Cmd.unblockMembers.value,
-                    device="deviceB",
+                    device=actor_name,
                     result=True,
                 )
             with _allure_step("验证群业务状态、事件与关键字段"):
                 _assert_server_user_list(
-                    device_b,
+                    actor,
                     assert_api,
-                    device_name="deviceB",
+                    device_name=actor_name,
                     cmd=Cmd.getGroupBlockListFromServer.value,
                     group_id=group_id,
                     expected_users=[],
                 )
+            remaining_members = [] if role == _ROLE_ADMIN else [user_b, user_c]
+            remaining_admins = [user_b] if role == _ROLE_ADMIN else []
+            _restore_owner_if_needed(device_a, assert_api, switched=switched, user_a=user_a)
+            switched = False
             _fetch_group(
                 device_a,
                 assert_api,
@@ -763,12 +789,14 @@ def test_group_blocklist_admin_member_role_matrix(
                 group_id=group_id,
                 group_name=group_name,
                 owner=user_a,
-                members=[],
-                admins=[user_b],
+                members=remaining_members,
+                admins=remaining_admins,
                 permission_type=2,
+                member_count_value=2 if role == _ROLE_ADMIN else 3,
                 block_list=[],
             )
     finally:
+        _restore_owner_if_needed(device_a, assert_api, switched=switched, user_a=user_a)
         if group_id:
             with _allure_step("测试后置：销毁测试群并恢复群状态"):
                 destroy_group(device_a, assert_api, group_id)
@@ -854,10 +882,10 @@ def test_group_metadata_admin_member_role_matrix(
                 with _allure_step("等待并校验目标业务事件"):
                     events = collect_group_events(
                         device_a,
-                        expected_event_types={"onSpecificationDidUpdate"},
+                        expected_event_types={"onGroupSpecificationDidUpdate"},
                         group_id=group_id,
                         allow_missing_group_id=True,
-                        required_all_event_types={"onSpecificationDidUpdate"},
+                        required_all_event_types={"onGroupSpecificationDidUpdate"},
                         timeout=10.0,
                     )
                 expected_desc = "auto-test group" if cmd == Cmd.updateGroupSubject.value else ""
@@ -865,7 +893,7 @@ def test_group_metadata_admin_member_role_matrix(
                     _assert_event(
                         assert_api,
                         events[0],
-                        event_type="onSpecificationDidUpdate",
+                        event_type="onGroupSpecificationDidUpdate",
                         data={
                             "group": {
                                 "groupId": group_id,
@@ -893,6 +921,7 @@ def test_group_metadata_admin_member_role_matrix(
                 members=[user_c],
                 admins=[user_b],
                 permission_type=2,
+                member_count_value=3,
                 expected_desc="",
                 expected_ext="denied-ext",
             )
@@ -941,6 +970,7 @@ def test_group_destroy_owner_only_role_denied(
             members=[user_c] if role == _ROLE_ADMIN else [user_b, user_c],
             admins=[user_b] if role == _ROLE_ADMIN else [],
             permission_type=2,
+            member_count_value=3,
         )
     finally:
         if group_id:
@@ -996,6 +1026,7 @@ def test_group_message_block_role_matrix(
             members=[user_c] if role == _ROLE_ADMIN else [user_b, user_c],
             admins=[user_b] if role == _ROLE_ADMIN else [],
             permission_type=_PERMISSION_TYPE[role],
+            member_count_value=3,
             message_blocked=True,
         )
         with _allure_step("动作端 取消屏蔽群消息"):
@@ -1019,6 +1050,7 @@ def test_group_message_block_role_matrix(
             members=[user_c] if role == _ROLE_ADMIN else [user_b, user_c],
             admins=[user_b] if role == _ROLE_ADMIN else [],
             permission_type=_PERMISSION_TYPE[role],
+            member_count_value=3,
             message_blocked=False,
         )
     finally:

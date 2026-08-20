@@ -6,7 +6,7 @@ from tests.group.allure_helpers import _allure_step
 
 from src import Cmd
 from tests.group.group_helpers import (
-    assert_group_members_exact,
+    assert_group_members_from_server,
     assert_group_snapshot,
     assert_no_group_event,
     collect_group_events,
@@ -110,7 +110,14 @@ def _fetch_group(
         join_approval_required=configs["joinApprovalRequired"],
         device=device_name,
     )
-    assert_group_members_exact(response, members, err_prefix="入群申请服务端快照")
+    assert_group_members_from_server(
+        device,
+        assert_api,
+        group_id=group_id,
+        device_name=device_name,
+        expected_members=members,
+        err_prefix="入群申请",
+    )
 
 
 def _request_join(

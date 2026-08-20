@@ -143,6 +143,28 @@ def _wait_recall_info(device, *, real_id: str, timeout: float = 60.0) -> dict:
     )
 
 
+def _wait_message_absent(device, *, real_id: str, timeout: float = 5.0) -> dict:
+    """撤回事件到达后，等待本地消息删除完成；超时仍保留最后响应供断言报错。"""
+    deadline = time.monotonic() + timeout
+    last_response = None
+    while time.monotonic() < deadline:
+        last_response = device.call(
+            "ChatManager",
+            Cmd.getMessage.value,
+            info={"msgId": real_id},
+        )
+        result = last_response.get("result")
+        if result is None or result == {}:
+            return last_response
+        time.sleep(0.5)
+    return last_response or {
+        "manager": "ChatManager",
+        "cmd": Cmd.getMessage.value,
+        "device": device_name(device),
+        "result": None,
+    }
+
+
 def _wait_content_changed(device, *, real_id: str, timeout: float = 60.0) -> dict:
     deadline = time.monotonic() + timeout
     seen: list[dict] = []
@@ -643,12 +665,8 @@ def test_group_offline_cmd_deliver_online_only_not_received_after_login(
                 assert seen_target == [], (
                     f"{device_name(endpoint)} deliverOnlineOnly 群 CMD 不应离线投递: {seen_target}"
                 )
-            with _allure_step("动作端 执行群消息操作"):
-                local = endpoint.call(
-                    "ChatManager",
-                    Cmd.getMessage.value,
-                    info={"msgId": real_id},
-                )
+            with _allure_step("等待本地撤回消息删除完成"):
+                local = _wait_message_absent(endpoint, real_id=real_id)
             with _allure_step("验证执行群消息操作返回的响应 result 与关键字段"):
                 assert_call_result(
                     assert_api,
@@ -928,12 +946,8 @@ def test_group_offline_message_recalled_before_first_recipient_login(
                     ignore_keys={"timestamp", "sequence"},
                 )
             # 5.0 无 onMessagesRecalled（唯一撤回事件 onMessagesRecalledInfo，已在上方断言）
-            with _allure_step("动作端 执行群消息操作"):
-                local = endpoint.call(
-                    "ChatManager",
-                    Cmd.getMessage.value,
-                    info={"msgId": real_id},
-                )
+            with _allure_step("等待本地撤回消息删除完成"):
+                local = _wait_message_absent(endpoint, real_id=real_id)
             with _allure_step("验证执行群消息操作返回的响应 result 与关键字段"):
                 assert_call_result(
                     assert_api,

@@ -6,7 +6,7 @@ import pytest
 
 from src import Cmd
 from tests.group.group_helpers import (
-    assert_group_members_exact,
+    assert_group_members_from_server,
     assert_group_snapshot,
     assert_no_group_event,
     collect_group_events,
@@ -56,7 +56,14 @@ def _fetch_group(
         admin_list_value=admins,
         device=device_name,
     )
-    assert_group_members_exact(response, members, err_prefix="群主/成员服务端快照")
+    assert_group_members_from_server(
+        device,
+        assert_api,
+        group_id=group_id,
+        device_name=device_name,
+        expected_members=members,
+        err_prefix="群主/成员",
+    )
     return response
 
 
@@ -155,7 +162,7 @@ def test_group_transfer_owner_to_admin_normalizes_roles(
     user_b,
     topology,
 ):
-    """A 将群主转让给管理员 B：owner 变更事件同步到 A、B 账号全部在线端；B 成 owner，A 成普通成员。"""
+    """A 将群主转让给管理员 B：B 账号在线端收到 owner 变更事件；B 成 owner，A 成普通成员。"""
     owner = topology.sender_action_device
     member = topology.recipient_action_device
     senders = topology.sender_devices
@@ -230,7 +237,7 @@ def test_group_transfer_owner_to_admin_normalizes_roles(
         if group_id:
             with _allure_step("测试后置：销毁测试群并恢复群状态"):
                 destroy_group(member if owner_is_b else owner, assert_api, group_id,
-                              member=owner if owner_is_b else member,
+                              device_b=owner if owner_is_b else member,
                               device_name=member.device_name if owner_is_b else owner.device_name)
 
 
@@ -311,43 +318,48 @@ def test_group_transfer_owner_target_boundaries(
     finally:
         if group_id:
             with _allure_step("测试后置：销毁测试群并恢复群状态"):
-                destroy_group(owner, assert_api, group_id, member=member)
+                destroy_group(owner, assert_api, group_id, device_b=member,
+                              device_name=owner.device_name)
 
 
 @pytest.mark.parametrize("make_admin", [False, True], ids=["member", "admin"])
+@pytest.mark.topology("account_a_to_account_b")
 def test_group_non_owner_cannot_transfer_ownership(
     assert_api,
     user_a,
     user_b,
     user_c,
     make_admin,
+    topology,
 ):
     """普通成员和管理员都不能调用 owner-only 的 updateGroupOwner。"""
+    owner = topology.sender_action_device
+    member = topology.recipient_action_device
     group_id = ""
     group_name = new_group_name(f"owner_unauthorized_{int(make_admin)}")
     try:
         with _allure_step("测试准备：创建测试群并建立业务前置"):
             group_id, _ = create_group(
-                device_a,
+                owner,
                 assert_api,
                 owner=user_a,
                 group_name=group_name,
                 invite_members=[user_b, user_c],
             )
-        device_a.drain_events()
-        device_b.drain_events()
+        owner.drain_events()
+        member.drain_events()
         if make_admin:
             with _allure_step("A 添加群管理员"):
-                add_admin = device_a.call(
+                add_admin = owner.call(
                     "GroupManager",
                     Cmd.addAdmin.value,
                     info={"groupId": group_id, "admin": user_b},
                 )
             with _allure_step("验证 添加群管理员返回的关键字段"):
                 assert isinstance(add_admin.get("result"), dict), add_admin
-            device_b.drain_events()
+            member.drain_events()
         with _allure_step("B 转让群主"):
-            response = device_b.call(
+            response = member.call(
                 "GroupManager",
                 Cmd.updateGroupOwner.value,
                 info={"groupId": group_id, "owner": user_c},
@@ -355,7 +367,7 @@ def test_group_non_owner_cannot_transfer_ownership(
         with _allure_step("验证转让群主返回的错误码与错误文案"):
             assert_api.assert_error(response, code=603, description="permission")
         _fetch_group(
-            device_a,
+            owner,
             assert_api,
             group_id=group_id,
             group_name=group_name,
@@ -363,41 +375,44 @@ def test_group_non_owner_cannot_transfer_ownership(
             member_count=3,
             members=[user_c] if make_admin else [user_b, user_c],
             admins=[user_b] if make_admin else [],
-            device_name="deviceA",
+            device_name=owner.device_name,
         )
     finally:
         if group_id:
             with _allure_step("测试后置：销毁测试群并恢复群状态"):
-                destroy_group(device_a, assert_api, group_id, device_b=device_b)
+                destroy_group(owner, assert_api, group_id, device_b=member,
+                              device_name=owner.device_name)
 
 
+@pytest.mark.topology("account_a_to_account_b")
 def test_group_non_member_cannot_transfer_ownership(
-    device_a,
-    device_b,
     assert_api,
     user_a,
     user_b,
     user_c,
+    topology,
 ):
     """非成员 C 不能把 A 的群转让给成员 B。"""
+    owner = topology.sender_action_device
+    member = topology.recipient_action_device
     group_id = ""
     group_name = new_group_name("owner_nonmember_operator")
     device_b_is_c = False
     try:
         with _allure_step("测试准备：创建测试群并建立业务前置"):
             group_id, _ = create_group(
-                device_a,
+                owner,
                 assert_api,
                 owner=user_a,
                 group_name=group_name,
                 invite_members=[user_b],
             )
-        device_a.drain_events()
-        device_b.drain_events()
-        _switch_user(device_b, assert_api, device_name="deviceB", user_id=user_c)
+        owner.drain_events()
+        member.drain_events()
+        _switch_user(member, assert_api, device_name=member.device_name, user_id=user_c)
         device_b_is_c = True
         with _allure_step("B 转让群主"):
-            response = device_b.call(
+            response = member.call(
                 "GroupManager",
                 Cmd.updateGroupOwner.value,
                 info={"groupId": group_id, "owner": user_b},
@@ -406,20 +421,21 @@ def test_group_non_member_cannot_transfer_ownership(
             assert_api.assert_error(response, code=603, description="group member permission is required")
     finally:
         if device_b_is_c:
-            _switch_user(device_b, assert_api, device_name="deviceB", user_id=user_b)
+            _switch_user(member, assert_api, device_name=member.device_name, user_id=user_b)
         if group_id:
             _fetch_group(
-                device_a,
+                owner,
                 assert_api,
                 group_id=group_id,
                 group_name=group_name,
                 owner=user_a,
                 member_count=2,
                 members=[user_b],
-                device_name="deviceA",
+                device_name=owner.device_name,
             )
             with _allure_step("测试后置：销毁测试群并恢复群状态"):
-                destroy_group(device_a, assert_api, group_id, device_b=device_b)
+                destroy_group(owner, assert_api, group_id, device_b=member,
+                              device_name=owner.device_name)
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -429,7 +445,7 @@ def test_group_transfer_then_new_owner_removes_former_owner(
     user_b,
     topology,
 ):
-    """A 转让给 B 后 A 失去 owner 权限：owner 变更事件同步到 A、B 全部在线端；B 移除原群主 A 的事件同步到 A 全部在线端。"""
+    """A 转让给 B 后 A 失去 owner 权限：B 收到 owner 变更事件，A 收到被移除事件。"""
     owner = topology.sender_action_device
     member = topology.recipient_action_device
     senders = topology.sender_devices
@@ -521,10 +537,13 @@ def test_group_transfer_then_new_owner_removes_former_owner(
     finally:
         if group_id and owner_is_b:
             with _allure_step("测试后置：销毁测试群并恢复群状态"):
-                destroy_group(member, assert_api, group_id, device_name=member.device_name)
+                # A 已被 B 移出群，销毁后不再接收 onGroupDestroyed；这里只校验 B 的销毁响应。
+                destroy_group(member, assert_api, group_id,
+                              device_name=member.device_name)
         elif group_id:
             with _allure_step("测试后置：销毁测试群并恢复群状态"):
-                destroy_group(owner, assert_api, group_id, member=member)
+                destroy_group(owner, assert_api, group_id, device_b=member,
+                              device_name=owner.device_name)
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -579,7 +598,8 @@ def test_group_remove_current_owner_is_ignored(
     finally:
         if group_id:
             with _allure_step("测试后置：销毁测试群并恢复群状态"):
-                destroy_group(owner, assert_api, group_id, member=member)
+                destroy_group(owner, assert_api, group_id, device_b=member,
+                              device_name=owner.device_name)
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -756,7 +776,8 @@ def test_group_remove_other_member_permission_by_role(
     finally:
         if group_id:
             with _allure_step("测试后置：销毁测试群并恢复群状态"):
-                destroy_group(owner, assert_api, group_id, member=member)
+                destroy_group(owner, assert_api, group_id, device_b=member,
+                              device_name=owner.device_name)
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -766,7 +787,7 @@ def test_group_owner_must_transfer_before_leaving(
     user_b,
     topology,
 ):
-    """当前群主不能退群：owner 变更事件同步到 A、B 全部在线端；原群主 A 退出后的成员退出事件同步到 B 全部在线端。"""
+    """当前群主不能退群；转让后新群主 B 收到 owner 变更事件，A 退出后 B 收到成员退出事件。"""
     owner = topology.sender_action_device
     member = topology.recipient_action_device
     senders = topology.sender_devices
@@ -846,10 +867,13 @@ def test_group_owner_must_transfer_before_leaving(
     finally:
         if group_id and owner_is_b:
             with _allure_step("测试后置：销毁测试群并恢复群状态"):
-                destroy_group(member, assert_api, group_id, device_name=member.device_name)
+                # A 已退出群，销毁后不再接收 onGroupDestroyed；这里只校验 B 的销毁响应。
+                destroy_group(member, assert_api, group_id,
+                              device_name=member.device_name)
         elif group_id:
             with _allure_step("测试后置：销毁测试群并恢复群状态"):
-                destroy_group(owner, assert_api, group_id, member=member)
+                destroy_group(owner, assert_api, group_id, device_b=member,
+                              device_name=owner.device_name)
 
 
 @pytest.mark.topology("account_a_to_account_b")

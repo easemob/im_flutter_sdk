@@ -7,6 +7,7 @@ from tests.group.allure_helpers import _allure_step
 from src import Cmd
 from tests.group.group_helpers import (
     assert_group_snapshot,
+    assert_group_members_from_server,
     assert_no_group_event,
     create_group,
     new_group_name,
@@ -48,8 +49,10 @@ def _assert_server_members(
     group_name: str,
     user_a: str,
     members: list[str],
+    is_public: bool = False,
+    join_approval_required: bool = False,
 ) -> None:
-    # 5.0：getGroupFromServer 移除 fetchMembers 参数 → 快照不含成员列表
+    admins: list[str] = []
     response = device_a.call(
         "GroupManager",
         Cmd.getGroupSpecificationFromServer.value,
@@ -62,16 +65,20 @@ def _assert_server_members(
         group_id=group_id,
         group_name=group_name,
         owner=user_a,
+        member_count_value=1 + len(admins) + len(members),
+        admin_list_value=admins,
+        is_public=is_public,
+        join_approval_required=join_approval_required,
     )
-    # 成员列表单独分页拉取（5.0）
-    members_resp = device_a.call(
-        "GroupManager",
-        Cmd.getGroupMemberListFromServer.value,
-        info={"groupId": group_id, "pageSize": 20, "cursor": ""},
-    )
-    member_ids = [m.get("member") if isinstance(m, dict) else m for m in ((members_resp.get("result") or {}).get("list") or [])]
-    missing = [m for m in members if m not in member_ids]
-    assert not missing, f"成员列表缺少 {missing}: 实际 {member_ids}"
+    with _allure_step("查询并校验服务端分页普通成员列表"):
+        assert_group_members_from_server(
+            device_a,
+            assert_api,
+            group_id=group_id,
+            device_name=device_name(device_a),
+            expected_members=members,
+            err_prefix="离线群组最终状态",
+        )
 
 
 def _create_pending_invitation(
@@ -135,9 +142,13 @@ def test_group_offline_invitation_received_and_processed_after_login(
     group_name = new_group_name(f"offline_invitation_{action}")
     decline_reason = f"offline-decline-{action}"
     try:
-        set_auto_accept_group_invitation(
-            device_b, assert_api, device_name=device_name(device_b), enabled=False
-        )
+        for endpoint in recipient_devices:
+            set_auto_accept_group_invitation(
+                endpoint,
+                assert_api,
+                device_name=device_name(endpoint),
+                enabled=False,
+            )
         with _allure_step("测试准备：切换账号设备在线状态"):
             logout_group_account_devices(recipient_devices, assert_api)
         with _allure_step("测试准备：创建测试群并建立成员前置"):
@@ -322,9 +333,13 @@ def test_group_offline_owner_receives_invitation_result_after_relogin(
     group_name = new_group_name(f"offline_owner_invitation_result_{action}")
     decline_reason = f"owner-offline-decline-{action}"
     try:
-        set_auto_accept_group_invitation(
-            device_b, assert_api, device_name=device_name(device_b), enabled=False
-        )
+        for endpoint in recipient_devices:
+            set_auto_accept_group_invitation(
+                endpoint,
+                assert_api,
+                device_name=device_name(endpoint),
+                enabled=False,
+            )
         with _allure_step("测试准备：创建测试群并建立成员前置"):
             group_id = _create_pending_invitation(
                 device_a,
@@ -565,6 +580,8 @@ def test_group_offline_owner_receives_join_application_and_processes_after_login
                 group_name=group_name,
                 user_a=user_a,
                 members=members,
+                is_public=True,
+                join_approval_required=True,
             )
         for endpoint in recipient_devices:
             with _allure_step("验证执行群组业务操作返回的响应 result 与关键字段"):
@@ -708,6 +725,8 @@ def test_group_offline_applicant_receives_application_result_after_relogin(
                 group_name=group_name,
                 user_a=user_a,
                 members=members,
+                is_public=True,
+                join_approval_required=True,
             )
         for endpoint in recipient_devices:
             with _allure_step("验证执行群组业务操作返回的响应 result 与关键字段"):

@@ -484,9 +484,8 @@ def _send_group_message(
 
 
 @pytest.fixture
-def message_group(device_a, device_a_sec, device_b, device_b_sec, assert_api, user_a, user_b):
+def message_group(device_a, device_b, assert_api, user_a, user_b):
     _drain_devices(device_a, device_b)
-    device_b_sec.drain_events(timeout=0.5)
     group_id, _ = create_group(
         device_a,
         assert_api,
@@ -495,7 +494,6 @@ def message_group(device_a, device_a_sec, device_b, device_b_sec, assert_api, us
         invite_members=[user_b],
     )
     time.sleep(float(os.getenv("GROUP_MESSAGE_MEMBER_SETTLE_SECONDS", "5")))
-    device_b_sec.drain_events(timeout=0.5)
     try:
         yield group_id
     finally:

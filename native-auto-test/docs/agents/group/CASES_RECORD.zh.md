@@ -111,6 +111,10 @@
 
 ## getGroupMemberListFromServer
 
+5.0 成员断言约定：`getGroupSpecificationFromServer` 返回的 `EMGroup.memberList` 只作为群详情快照，
+不再作为完整成员列表的权威来源。需要验证完整成员时，分别断言群详情中的 `owner/adminList`、
+`memberCount`，并通过 `getGroupMemberListFromServer` 分页断言普通成员列表；5.0 实测分页列表不包含群主和管理员。
+
 正常 cases
 28. `tests/group/test_group_member_list.py::test_group_get_group_member_list_from_server_success`
     创建群并邀请成员后拉取服务端成员列表，校验包含受邀成员且当前端语义下不包含群主。
@@ -683,6 +687,8 @@
 
 - `test_group_offline_invitation_application.py`：邀请/入群申请的离线接收、处理结果和最终成员状态。
 - `test_group_offline_member_state.py`：移除、拉黑、解散、主动退群后的离线状态恢复。
+- Android 5.0 离线解散回放的 `onGroupDestroyed` 以 `groupId` 为稳定关联键；`groupName`
+  按 API 可空语义允许目标群名、空字符串或 `null`，错误的非空群名仍判失败。
 - `test_group_offline_message_delivery.py`：文本、命令、撤回、内容变更、回执和会话状态的离线多端投递。
 - `test_group_offline_roles_and_configuration.py`：管理员、群主、群配置、禁言、白名单、成员属性和共享文件的离线终态。
 

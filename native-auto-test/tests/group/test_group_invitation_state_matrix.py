@@ -6,7 +6,7 @@ from tests.group.allure_helpers import _allure_step
 
 from src import Cmd
 from tests.group.group_helpers import (
-    assert_group_members_exact,
+    assert_group_members_from_server,
     assert_group_snapshot,
     assert_no_group_event,
     collect_group_events,
@@ -103,7 +103,14 @@ def _fetch_group(device_a, assert_api, *, group_id: str, group_name: str,
         owner=owner,
         member_count_value=1 + len(members),
     )
-    assert_group_members_exact(response, members, err_prefix="邀请状态服务端快照")
+    assert_group_members_from_server(
+        device_a,
+        assert_api,
+        group_id=group_id,
+        device_name="deviceA",
+        expected_members=members,
+        err_prefix="邀请状态",
+    )
 
 
 @pytest.mark.parametrize(

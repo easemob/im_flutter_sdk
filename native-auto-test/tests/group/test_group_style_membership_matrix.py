@@ -6,7 +6,7 @@ from tests.group.allure_helpers import _allure_step
 
 from src import Cmd
 from tests.group.group_helpers import (
-    assert_group_members_exact,
+    assert_group_members_from_server,
     assert_group_snapshot,
     assert_no_group_event,
     collect_group_events,
@@ -71,7 +71,14 @@ def _fetch_group(device, assert_api, *, group_id: str, group_name: str, owner: s
         join_approval_required=style == 2,
         device=device_name,
     )
-    assert_group_members_exact(response, members, err_prefix="服务端群成员快照")
+    assert_group_members_from_server(
+        device,
+        assert_api,
+        group_id=group_id,
+        device_name=device_name,
+        expected_members=members,
+        err_prefix="服务端群成员",
+    )
     return response
 
 
@@ -176,13 +183,7 @@ def test_group_join_public_group_rejects_every_non_open_style(
     [
         pytest.param(0, id="private-owner"),
         pytest.param(1, id="private-member"),
-        pytest.param(
-            3,
-            marks=pytest.mark.skip(
-                reason="known SDK/server contract gap: apply API auto-joins PublicOpenJoin",
-            ),
-            id="public-open",
-        ),
+        pytest.param(3, id="public-open"),
     ],
 )
 def test_group_request_to_join_rejects_every_non_approval_style(

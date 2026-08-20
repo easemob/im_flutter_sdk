@@ -282,7 +282,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void getCurrentDeviceId(JSONObject param, String channelName, Result result) throws JSONException {
-        // 5.0 新构建：透传原生 EMClient.getDeviceInfo()（返回 hid/os/os-version；不再手动造 DeviceUuidFactory）
+        // 5.0 原生 EMClient 提供 getDeviceInfo()，直接透传原生返回值。
         asyncRunnable(() -> onSuccess(result, channelName, EMClient.getInstance().getDeviceInfo()));
     }
 

@@ -7,7 +7,7 @@ from tests.group.allure_helpers import _allure_step
 from src import Cmd, GroupChangeEvent
 from tests.group.group_helpers import (
     assert_group_events,
-    assert_group_members_exact,
+    assert_group_members_from_server,
     collect_group_events,
     create_group,
     destroy_group,
@@ -94,7 +94,14 @@ def test_group_inviter_user_success(device_a, device_b, assert_api, user_a, user
         with _allure_step("验证查询服务端群详情返回的关键字段"):
             assert member_count(resp_group) == 2, f"inviterUser 后 memberCount 应为 2: {resp_group}"
         with _allure_step("验证查询服务端群详情返回的关键字段"):
-            assert_group_members_exact(resp_group, [user_b], err_prefix="inviterUser 后")
+            assert_group_members_from_server(
+                device_a,
+                assert_api,
+                group_id=group_id,
+                device_name="deviceA",
+                expected_members=[user_b],
+                err_prefix="inviterUser 后",
+            )
     finally:
         if group_id:
             with _allure_step("测试后置：销毁测试群并恢复群状态"):

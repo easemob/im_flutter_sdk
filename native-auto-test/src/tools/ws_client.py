@@ -788,7 +788,7 @@ class DeviceConnection:
         except (TypeError, ValueError):
             return False
 
-    def drain_events(self, timeout: float = 2.0) -> None:
+    def drain_events(self, timeout: float = 0.5) -> None:
         """清空当前连接上积压的推送/响应，避免影响后续 receive_message。登录后调用。"""
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:

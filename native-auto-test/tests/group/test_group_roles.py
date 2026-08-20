@@ -240,7 +240,8 @@ def test_group_add_admin_and_remove_admin_success(topology, assert_api):
 @pytest.mark.topology("account_a_to_account_b")
 def test_group_update_owner_success(topology, assert_api):
     """
-    多端拓扑：A 转让群 owner 给 B；owner 变更事件同步到 A/B 全部在线端，B 全部端查询群 owner 一致。
+    多端拓扑：A 转让群 owner 给 B；B 全部在线端收到 owner 变更事件并查询群 owner 一致。
+    按官方 E2E 只要求新群主收到 owner_changed，不强制旧群主 A 收到同名回调。
     """
     sender = topology.sender_action_device
     recipients = topology.recipient_devices
@@ -304,29 +305,6 @@ def test_group_update_owner_success(topology, assert_api):
                     group_id=group_id,
                     required_all_event_types={"onGroupOwnerChanged"},
                 )
-        with _allure_step("A 全部在线端也收到 owner 变更事件"):
-            for endpoint in topology.sender_devices:
-                owner_changed_a_events = collect_group_events(
-                    endpoint,
-                    expected_event_types={
-                        GroupChangeEvent.ON_OWNER_CHANGED.value,
-                        "onGroupOwnerChanged",
-                    },
-                    group_id=group_id,
-                    required_all_event_types={"onGroupOwnerChanged"},
-                    timeout=10.0,
-                )
-                assert_group_events(
-                    assert_api,
-                    owner_changed_a_events,
-                    expected_event_types={
-                        GroupChangeEvent.ON_OWNER_CHANGED.value,
-                        "onGroupOwnerChanged",
-                    },
-                    group_id=group_id,
-                    required_all_event_types={"onGroupOwnerChanged"},
-                )
-
         with _allure_step("B 全部在线端查询群规格 owner 均为 B（账号级服务端状态一致）"):
             for endpoint in recipients:
                 resp_get_after_owner_change = endpoint.call(
@@ -340,4 +318,10 @@ def test_group_update_owner_success(topology, assert_api):
     finally:
         if group_id:
             with _allure_step("测试后置：销毁测试群并恢复群状态"):
-                destroy_group(sender, assert_api, group_id, device_b=topology.recipient_action_device)
+                # 转让完成后只有 B 是群主，由新群主负责销毁；A 再调用会返回 603。
+                destroy_group(
+                    topology.recipient_action_device,
+                    assert_api,
+                    group_id,
+                    device_name=topology.recipient_action_device.device_name,
+                )

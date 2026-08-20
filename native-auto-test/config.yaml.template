@@ -1,6 +1,17 @@
 # =============================================================
 # native-auto-test 配置文件（copy 为 config.yaml 后按需修改）
-# 必配项：rest_api（base_url + auth_token）+ sdk_options.app_key
+#
+# 【必须填写】
+# 1. rest_api.base_url
+# 2. rest_api.auth_token
+# 3. sdk_options.app_key
+#
+# 当前默认 Scenario 的账号使用 provision: rest 创建，因此 REST 两项不能为空。
+# 如果只运行不需要 REST 前置的本地 Case，仍建议保留有效配置，避免切换模块后启动失败。
+#
+# 【不在本文件填写】
+# Android/iOS 设备 serial 在 config/scenarios/*.yaml 中，必须按本机设备修改。
+# 测试账号、设备拓扑和 SDK 版本也在 Scenario 中配置。
 # websocket：managed 模式默认即可，topic 由框架按 runId/逻辑设备自动生成，不用配置
 # =============================================================
 
@@ -18,20 +29,20 @@ websocket:
 
 # REST 用户管理（【必配】创建/删除测试账号；presence/好友等 case 需要）
 rest_api:
-  base_url: "http://a1.easemob.com/your_org_name/your_app_name"
-  auth_token: "Bearer Token"
-  verify_ssl: false        # 仅测试环境临时绕过证书校验
+  base_url: "http://a1.easemob.com/your_org_name/your_app_name"  # 必填
+  auth_token: "Bearer Token"                                    # 必填
+  verify_ssl: false                                               # 可选，默认 false；仅测试环境使用
 
 # Flutter SDK EMOptions 配置（【必配 app_key】与 im_flutter_test 被测 App 的 appKey 对应）
 # 脚本 sync_sdk_config.py 会读取此节生成 Dart 配置注入被测 App
 sdk_options:
-  app_key: "your_org_name#your_app_name"
+  app_key: "your_org_name#your_app_name"  # 必填，必须与被测 App 使用的 appKey 一致
   # rest_server: "https://a1-hsb.easemob.com"
   # im_server: "42.193.118.34"
   # im_port: 6717
-  auto_login: true
-  debug_mode: true
-  enable_dns_config: true
+  auto_login: false             # 测试框架显式 login；不要依赖旧会话自动登录
+  debug_mode: true              # 可选
+  enable_dns_config: true       # 可选
   sync_data_web_socket_server: "140.143.132.6"
   sync_data_web_socket_port: 8086
   require_ack: true

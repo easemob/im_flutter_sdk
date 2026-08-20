@@ -53,11 +53,14 @@ def _assert_message_lookup_on_devices(
     ignore_keys=None,
 ) -> None:
     for endpoint in devices:
-        response = endpoint.call(
-            "ChatManager",
-            Cmd.getMessage.value,
-            info={"msgId": msg_id},
-        )
+        if expected_result is None:
+            response = _wait_message_absent(endpoint, msg_id=msg_id)
+        else:
+            response = endpoint.call(
+                "ChatManager",
+                Cmd.getMessage.value,
+                info={"msgId": msg_id},
+            )
         assert_api.assert_response_matches(
             response,
             expected={
@@ -68,6 +71,28 @@ def _assert_message_lookup_on_devices(
             },
             ignore_keys=ignore_keys,
         )
+
+
+def _wait_message_absent(device, *, msg_id: str, timeout: float = 5.0) -> dict:
+    """撤回事件到达后等待本地消息删除；超时仍返回最后响应供严格断言失败。"""
+    deadline = time.monotonic() + timeout
+    last_response = None
+    while time.monotonic() < deadline:
+        last_response = device.call(
+            "ChatManager",
+            Cmd.getMessage.value,
+            info={"msgId": msg_id},
+        )
+        result = last_response.get("result")
+        if result is None or result == {}:
+            return last_response
+        time.sleep(0.5)
+    return last_response or {
+        "manager": "ChatManager",
+        "cmd": Cmd.getMessage.value,
+        "device": _device_name(device),
+        "result": None,
+    }
 
 
 def _send_online_text(

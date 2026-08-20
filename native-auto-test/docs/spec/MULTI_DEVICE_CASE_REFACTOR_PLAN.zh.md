@@ -126,7 +126,7 @@
   - 邀请、接受后，通知目标账号的 A 主端和副端都验证好友事件或严格最终好友列表。
 - [ ] `tests/contact/test_contact.py::test_friend_add_decline_and_verify_not_friends`
   - 拒绝后，邀请方 A 两端都验证拒绝事件或严格最终无好友关系。
-- [ ] `tests/contact/test_contact.py::test_contact_remark_set_then_list_includes_remark`
+- [ ] `tests/contact/test_contact.py::test_contact_remark_set_success`
 - [ ] `tests/contact/test_contact.py::test_contact_remark_not_preserved_after_delete_and_readd`
   - 仅在原生事件确实会跨同账号端同步时改；否则保留为服务端最终态双端读取验证。
 - [-] `tests/contact/test_friend_info_sync.py::*`

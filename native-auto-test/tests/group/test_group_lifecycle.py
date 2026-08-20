@@ -110,7 +110,8 @@ def test_group_create_group(topology, assert_api):
 @pytest.mark.topology("account_a_to_account_b")
 def test_group_get_group(topology, assert_api):
     """
-    多端拓扑：A 建群并邀请 B；A 全部在线端查询群快照一致（账号级服务端状态）。
+    多端拓扑：A 建群并邀请 B；A 的主端和副端先消费成员同步事件，
+    再分别查询本地群缓存，验证多设备本地状态一致。
     """
     sender = topology.sender_action_device
     owner_user = topology.sender_user
@@ -127,7 +128,30 @@ def test_group_get_group(topology, assert_api):
                 group_name=group_name,
                 invite_members=[member_user],
             )
-        with _allure_step("A 全部在线端查询群快照一致"):
+        with _allure_step("A 全部在线端消费成员加入同步事件"):
+            for endpoint in topology.sender_devices:
+                owner_events = collect_group_events(
+                    endpoint,
+                    expected_event_types={
+                        "onGroupMembersJoined",
+                        "onGroupMemberJoined",
+                    },
+                    group_id=group_id,
+                    required_all_event_types={"onGroupMembersJoined"},
+                    timeout=10.0,
+                )
+                assert_group_events(
+                    assert_api,
+                    owner_events,
+                    expected_event_types={
+                        "onGroupMembersJoined",
+                        "onGroupMemberJoined",
+                    },
+                    group_id=group_id,
+                    required_all_event_types={"onGroupMembersJoined"},
+                    expected_member=member_user,
+                )
+        with _allure_step("A 全部在线端查询本地群快照一致"):
             for endpoint in topology.sender_devices:
                 resp_get = endpoint.call("GroupManager", Cmd.getGroupWithId.value, info={"groupId": group_id})
                 assert_group_snapshot(
@@ -138,6 +162,7 @@ def test_group_get_group(topology, assert_api):
                     group_name=group_name,
                     owner=owner_user,
                     member_count_value=2,
+                    device=endpoint.device_name,
                 )
     finally:
         if group_id:

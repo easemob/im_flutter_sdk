@@ -465,7 +465,7 @@ def test_group_download_shared_file_nonexistent_group_current_behavior(device_a,
     """
     前置：使用固定不存在的 groupId/fileId 和宿主机保存路径。
     步骤：A 调用 downloadGroupSharedFile。
-    预期与断言：当前 Android Wrapper 真实同步返回 `result=true`；本 case 仅冻结该现状。
+    预期与断言：5.0 原生返回群组不存在错误 `600`，并包含真实错误文案。
     """
     with _allure_step("A 下载群共享文件"):
         resp = device_a.call(
@@ -474,15 +474,10 @@ def test_group_download_shared_file_nonexistent_group_current_behavior(device_a,
             info={"groupId": _NONEXISTENT_GROUP_ID, "fileId": "1", "savePath": "/private/tmp"},
         )
     with _allure_step("验证 下载群共享文件返回的关键字段"):
-        assert_api.assert_response_matches(
+        assert_api.assert_error(
             resp,
-            expected={
-                "manager": "GroupManager",
-                "cmd": Cmd.downloadGroupSharedFile.value,
-                "device": "deviceA",
-                "result": True,
-            },
-            ignore_keys={"sequence"},
+            code=600,
+            description="do not find this group",
         )
 
 

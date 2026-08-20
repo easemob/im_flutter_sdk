@@ -221,7 +221,7 @@ def _send_text_and_wait_received(device_a, device_b, assert_api, user_a: str, us
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.sendMessage.value,
-            "device": sender.device_name,
+            "device": device_a.device_name,
             "result": {
                 "msgId": str(temp_id),
                 "from": user_a,
@@ -416,7 +416,7 @@ def test_chat_fetch_reaction_list_invalid_msg_id(device_a, assert_api):
             expected={
                 "manager": "ChatManager",
                 "cmd": Cmd.fetchReactionList.value,
-                "device": sender.device_name,
+                "device": device_a.device_name,
                 "result": {"__invalid_msg_id__": []},
             },
             ignore_keys={"sequence"},

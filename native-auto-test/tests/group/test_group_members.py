@@ -18,7 +18,7 @@ def _allure_step(name: str):
 from tests.group.group_helpers import (
     assert_no_group_event,
     assert_group_events,
-    assert_group_members_exact,
+    assert_group_members_from_server,
     assert_group_snapshot,
     collect_group_events,
     create_group,
@@ -192,7 +192,14 @@ def test_group_add_remove_members(assert_api, user_a, user_b, topology):
         with _allure_step("验证查询服务端群详情返回的关键字段"):
             assert member_count(resp_get_after_add) == 2, f"addMembers 后 memberCount 预期 2: {resp_get_after_add}"
         with _allure_step("验证查询服务端群详情返回的关键字段"):
-            assert_group_members_exact(resp_get_after_add, [user_b], err_prefix="addMembers 后")
+            assert_group_members_from_server(
+                owner,
+                assert_api,
+                group_id=group_id,
+                device_name=owner.device_name,
+                expected_members=[user_b],
+                err_prefix="addMembers 后",
+            )
 
         with _allure_step("A 移除群成员"):
             resp_remove = owner.call(
@@ -327,7 +334,14 @@ def test_group_add_remove_members(assert_api, user_a, user_b, topology):
         with _allure_step("验证查询服务端群详情返回的关键字段"):
             assert member_count(resp_get_after_remove) == 1, f"removeMembers 后 memberCount 预期 1: {resp_get_after_remove}"
         with _allure_step("验证查询服务端群详情返回的关键字段"):
-            assert_group_members_exact(resp_get_after_remove, [], err_prefix="removeMembers 后")
+            assert_group_members_from_server(
+                owner,
+                assert_api,
+                group_id=group_id,
+                device_name=owner.device_name,
+                expected_members=[],
+                err_prefix="removeMembers 后",
+            )
     finally:
         if group_id:
             with _allure_step("测试后置：销毁测试群并恢复群状态"):
@@ -389,7 +403,7 @@ def test_group_join_and_leave_public_group(topology, assert_api):
                     expected={
                         "type": "event",
                         "eventType": "onGroupMembersJoined",
-                        "data": {"groupId": group_id, "members": [member_user]},
+                        "data": {"groupId": group_id, "userIds": [member_user]},
                     },
                     ignore_keys={"timestamp", "sequence"},
                 )
@@ -400,7 +414,11 @@ def test_group_join_and_leave_public_group(topology, assert_api):
                     Cmd.getGroupMemberListFromServer.value,
                     info={"groupId": group_id, "pageSize": 20, "cursor": ""},
                 )
-                member_ids = [m.get("member") for m in (members_resp.get("result") or {}).get("list", [])]
+                member_items = (members_resp.get("result") or {}).get("list", [])
+                member_ids = [
+                    item.get("member") if isinstance(item, dict) else item
+                    for item in member_items
+                ]
                 assert member_user in member_ids, f"加入后成员快照缺少 B: member_user={member_user}, members={member_ids}"
 
         with _allure_step(f"{joiner.device_name} 退出公开群"):
@@ -412,7 +430,7 @@ def test_group_join_and_leave_public_group(topology, assert_api):
                     "manager": "GroupManager",
                     "cmd": Cmd.leaveGroup.value,
                     "device": joiner.device_name,
-                    "result": None,
+                    "result": True,
                 },
                 ignore_keys={"sequence"},
             )
@@ -421,18 +439,18 @@ def test_group_join_and_leave_public_group(topology, assert_api):
             for endpoint in topology.sender_devices:
                 owner_leave_events = collect_group_events(
                     endpoint,
-                    expected_event_types={"onGroupMemberExited"},
+                    expected_event_types={"onGroupMembersExited"},
                     group_id=group_id,
-                    required_all_event_types={"onGroupMemberExited"},
+                    required_all_event_types={"onGroupMembersExited"},
                     timeout=10.0,
                 )
                 owner_leave_by_type = {event["eventType"]: event for event in owner_leave_events}
                 assert_api.assert_response_matches(
-                    owner_leave_by_type["onGroupMemberExited"],
+                    owner_leave_by_type["onGroupMembersExited"],
                     expected={
                         "type": "event",
-                        "eventType": "onGroupMemberExited",
-                        "data": {"groupId": group_id, "member": member_user},
+                        "eventType": "onGroupMembersExited",
+                        "data": {"groupId": group_id, "userIds": [member_user]},
                     },
                     ignore_keys={"timestamp", "sequence"},
                 )
@@ -443,7 +461,11 @@ def test_group_join_and_leave_public_group(topology, assert_api):
                     Cmd.getGroupMemberListFromServer.value,
                     info={"groupId": group_id, "pageSize": 20, "cursor": ""},
                 )
-                member_ids = [m.get("member") for m in (members_resp.get("result") or {}).get("list", [])]
+                member_items = (members_resp.get("result") or {}).get("list", [])
+                member_ids = [
+                    item.get("member") if isinstance(item, dict) else item
+                    for item in member_items
+                ]
                 assert member_user not in member_ids, f"退出后成员快照仍含 B: member_user={member_user}, members={member_ids}"
     finally:
         if group_id:

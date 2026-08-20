@@ -4,6 +4,8 @@
 """
 from __future__ import annotations
 
+import time
+
 from src import Cmd
 
 
@@ -118,36 +120,56 @@ def login_preserving_offline_events(
 
 
 def restore_user_login(device, *, user_id: str, password: str = "1") -> None:
-    """供 finally 使用：尽力恢复指定用户登录，不覆盖 case 的原始异常。"""
-    try:
-        current_response = device.call("Client", Cmd.getCurrentUser.value, info={})
-        current_user = current_response.get("result")
-        if current_user != user_id:
-            if isinstance(current_user, str) and current_user:
-                try:
-                    device.call(
-                        "Client",
-                        Cmd.logout.value,
-                        info={"unbindToken": False},
-                    )
-                except Exception:
-                    pass
-            from src.rest_api.user_api import fetch_user_token
+    """供 finally 使用：恢复指定用户并确认 SDK 连接已恢复。"""
+    last_error: Exception | None = None
+    for attempt in range(2):
+        try:
+            current_response = device.call("Client", Cmd.getCurrentUser.value, info={})
+            current_user = current_response.get("result")
+            connected_response = device.call("Client", Cmd.isConnected.value, info={})
+            connected = connected_response.get("result") is True
 
-            token = fetch_user_token(user_id, password).get("access_token", "")
-            device.call(
-                "Client",
-                Cmd.login.value,
-                info={
-                    "userId": user_id,
-                    "pwdOrToken": token,
-                    "isPassword": False,
-                },
-            )
-        device.call("Client", Cmd.startCallback.value, info={})
-        device.drain_events(timeout=0.5)
-    except Exception:
-        pass
+            # 正常路径不重复登录；只有用户不对或 SDK 已断开时才恢复登录。
+            if current_user != user_id or not connected:
+                if isinstance(current_user, str) and current_user:
+                    try:
+                        device.call(
+                            "Client",
+                            Cmd.logout.value,
+                            info={"unbindToken": False},
+                        )
+                    except Exception:
+                        pass
+                from src.rest_api.user_api import fetch_user_token
+
+                token = fetch_user_token(user_id, password).get("access_token", "")
+                device.call(
+                    "Client",
+                    Cmd.login.value,
+                    info={
+                        "userId": user_id,
+                        "pwdOrToken": token,
+                        "isPassword": False,
+                    },
+                )
+
+            device.call("Client", Cmd.startCallback.value, info={})
+            final_connected = device.call("Client", Cmd.isConnected.value, info={})
+            if final_connected.get("result") is not True:
+                raise RuntimeError(
+                    f"restore login did not restore SDK connection: {final_connected}"
+                )
+            device.drain_events(timeout=0.5)
+            return
+        except Exception as error:
+            last_error = error
+            if attempt == 0:
+                time.sleep(0.5)
+
+    raise RuntimeError(
+        f"failed to restore offline test device login: device={device_name(device)}, "
+        f"user={user_id}, error={last_error}"
+    ) from last_error
 
 
 def set_accept_invitation_always(

@@ -264,7 +264,7 @@ def test_chat_translate_message_nonexistent_message(device_a, assert_api, user_a
         "direction": 0,
         "body": {"type": 0, "content": "ghost"},
     }
-    info = {"message": fake_msg, "targetLanguages": ["zh-Hans"]}
+    info = {"message": fake_msg, "languages": ["zh-Hans"]}
     resp_tr = device_a.call("ChatManager", Cmd.translateMessage.value, info=info)
     # 仅校验响应信封结构；不忽略 result/error（该用例暂跳过，恢复时再收紧预期）
     assert_api.assert_response_matches(

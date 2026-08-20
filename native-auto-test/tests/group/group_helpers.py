@@ -83,6 +83,85 @@ def assert_group_members_exact(resp: dict, expected_members: list[str], *, err_p
     )
 
 
+def fetch_group_member_list_from_server(
+    device,
+    assert_api,
+    *,
+    group_id: str,
+    device_name: str,
+    page_size: int = 200,
+) -> list[str]:
+    """通过 5.0 分页接口获取普通成员列表（不含群主和管理员）。"""
+    cursor: str | None = None
+    members: list[str] = []
+    while True:
+        info = {"groupId": group_id, "pageSize": page_size}
+        if cursor:
+            info["cursor"] = cursor
+        response = device.call(
+            "GroupManager",
+            Cmd.getGroupMemberListFromServer.value,
+            info=info,
+        )
+        assert_api.assert_response_matches(
+            response,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.getGroupMemberListFromServer.value,
+                "device": device_name,
+            },
+            ignore_keys={"sequence", "result"},
+        )
+        result = response.get("result")
+        assert isinstance(result, dict), (
+            "getGroupMemberListFromServer result 不是分页对象: "
+            f"{response}"
+        )
+        page = result.get("list")
+        assert isinstance(page, list), (
+            "getGroupMemberListFromServer result.list 不是 list: "
+            f"{response}"
+        )
+        assert all(isinstance(member, str) and member for member in page), (
+            "getGroupMemberListFromServer result.list 含非法成员: "
+            f"{response}"
+        )
+        members.extend(page)
+        next_cursor = result.get("cursor")
+        assert next_cursor is None or isinstance(next_cursor, str), (
+            "getGroupMemberListFromServer result.cursor 类型异常: "
+            f"{response}"
+        )
+        if not next_cursor:
+            return members
+        assert next_cursor != cursor, (
+            "getGroupMemberListFromServer 分页游标未前进: "
+            f"cursor={cursor!r}, next_cursor={next_cursor!r}, response={response}"
+        )
+        cursor = next_cursor
+
+
+def assert_group_members_from_server(
+    device,
+    assert_api,
+    *,
+    group_id: str,
+    device_name: str,
+    expected_members: list[str],
+    err_prefix: str,
+) -> None:
+    actual = fetch_group_member_list_from_server(
+        device,
+        assert_api,
+        group_id=group_id,
+        device_name=device_name,
+    )
+    assert sorted(actual) == sorted(expected_members), (
+        f"{err_prefix}分页成员列表不一致: expected={sorted(expected_members)}, "
+        f"actual={sorted(actual)}"
+    )
+
+
 def event_type(evt: dict) -> str:
     v = evt.get("eventType")
     assert isinstance(v, str) and v, f"群组回调 eventType 非法: {evt}"
@@ -683,7 +762,7 @@ def assert_group_snapshot(
     owner: str,
     expected_desc: str = "auto-test group",
     expected_ext: str = "auto-ext",
-    max_user_count_value: int = 200,
+    max_user_count_value: int | None = None,
     member_count_value: int | None = None,
     member_list_value: list[str] | None = None,
     admin_list_value: list[str] | None = None,
@@ -698,6 +777,9 @@ def assert_group_snapshot(
     permission_type: int = 2,
     device: str = "deviceA",
 ) -> None:
+    if max_user_count_value is None:
+        max_user_count_value = get_group_create_max_count()
+
     expected_result = {
         "groupId": group_id,
         "name": group_name,
@@ -803,12 +885,15 @@ def create_group(
     group_name: str,
     invite_members: list[str],
     style: int = 0,
-    max_count: int = 200,
+    max_count: int | None = None,
     invite_need_confirm: bool = False,
     expected_member_count: int | None = None,
     device_name: str = "deviceA",
     is_member_allow_to_invite: bool | None = None,
 ):
+    if max_count is None:
+        max_count = get_group_create_max_count()
+
     configs = group_style_configs(style)
     resp_create = device_a.call(
         "GroupManager",

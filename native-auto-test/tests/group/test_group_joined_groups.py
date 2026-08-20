@@ -29,7 +29,6 @@ def _joined_group_expected(
     owner: str,
     permission_type: int,
     member_count: int,
-    member_list: list[str] | None = None,
 ) -> dict:
     return {
         "owner": owner,
@@ -45,7 +44,6 @@ def _joined_group_expected(
         "muteList": [],
         "isMemberAllowToInvite": False,
         "messageBlocked": False,
-        "memberList": member_list or [],
         "blockList": [],
         "name": group_name,
         "maxUserCount": 200,
@@ -78,9 +76,15 @@ def _assert_joined_target(
     assert isinstance(result, list), f"{cmd} result 不是 list: {resp}"
     target = [item for item in result if isinstance(item, dict) and item.get("groupId") == group_id]
     expected_target = [] if expected_group is None else [expected_group]
-    assert target == expected_target, (
-        f"{cmd} 目标群投影不匹配: expected={expected_target}, actual={target}, resp={resp}"
+    assert len(target) == len(expected_target), (
+        f"{cmd} 目标群数量不匹配: expected={expected_target}, actual={target}, resp={resp}"
     )
+    if expected_target:
+        # 5.0 本地 EMGroup 快照可能额外带 memberList；只严格校验本 case 声明的稳定字段。
+        assert_api.assert_response_matches(
+            target[0],
+            expected=expected_target[0],
+        )
 
 
 def _assert_both_joined_lists(
@@ -230,7 +234,6 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
             owner=user_a,
             permission_type=0,
             member_count=2,
-            member_list=[user_b],
         )
 
         with _allure_step("等待并校验目标业务事件"):

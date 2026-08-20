@@ -1178,7 +1178,23 @@ class _DeviceChannelWrapper:
     def call(self, manager: str, cmd: str, info: dict | None = None, **kwargs):
         req = {"manager": manager, "cmd": cmd, "info": info or {}, "device": self._device, **kwargs}
         self.require_capability(manager, cmd)
-        resp = self._conn.call(manager, cmd, info, **kwargs)
+        retry_count = max(1, int(os.getenv("MANAGED_RUNNER_RETRY_ATTEMPTS", "3")))
+        retry_delay = max(0.1, float(os.getenv("MANAGED_RUNNER_RETRY_DELAY_SECONDS", "1")))
+        resp = {}
+        for attempt in range(retry_count):
+            resp = self._conn.call(manager, cmd, info, **kwargs)
+            error = resp.get("error") if isinstance(resp, dict) else None
+            description = error.get("description", "") if isinstance(error, dict) else ""
+            if "Runner is not registered:" not in str(description):
+                break
+            if attempt < retry_count - 1:
+                print(
+                    f"[managed-ws] runner unavailable, retrying "
+                    f"device={self._device} cmd={cmd} "
+                    f"attempt={attempt + 2}/{retry_count}",
+                    flush=True,
+                )
+                time.sleep(retry_delay)
         report_response = self._conn.last_transport_response or resp
         _attach_request_response_allure(
             _api_step_name(manager, cmd, self._device, info),
@@ -1236,7 +1252,7 @@ class _DeviceChannelWrapper:
             event = _AllureEventPayload(event, source_device=self._device)
         return event
 
-    def drain_events(self, timeout: float = 2.0) -> None:
+    def drain_events(self, timeout: float = 0.5) -> None:
         self._conn.drain_events(timeout=timeout)
 
     def begin_case(self, case_id: str) -> int:
@@ -1827,6 +1843,7 @@ def case_event_context(request, phase1_scenario, device_pool):
         pass
     with _allure_step("测试准备：建立设备事件上下文"):
         for device in devices:
+            device.drain_events(timeout=0.5)
             device.begin_case(case_id)
             device.attach_execution_context(include_parameters=not topology_roles)
     try:

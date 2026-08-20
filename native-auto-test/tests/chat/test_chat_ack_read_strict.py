@@ -45,7 +45,7 @@ def test_chat_ack_message_read_invalid_msg_id(device_b, assert_api, user_a):
             expected={
                 "manager": "ChatManager",
                 "cmd": Cmd.ackMessageRead.value,
-                "device": action_recipient.device_name,
+                "device": device_b.device_name,
                 # 原生实际：两端一致 110 "messages is empty"（wrapper 透传后确认）
                 "result": {"code": 110, "description": "messages is empty"},
             },

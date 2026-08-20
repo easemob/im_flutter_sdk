@@ -188,7 +188,7 @@ def _assert_download_api_with_progress(device, assert_api, *, cmd: str, message:
         expected={
             "manager": "ChatManager",
             "cmd": cmd,
-            "device": device_b.device_name,
+            "device": device.device_name,
             "result": {
                 "msgId": "{{msgId}}",
                 "body": {"type": ne(None), "fileStatus": ne(None)},
@@ -327,7 +327,7 @@ def _assert_combine_inner_download_api_with_progress(device, assert_api, *, cmd:
         expected={
             "manager": "ChatManager",
             "cmd": cmd,
-            "device": device_b.device_name,
+            "device": device.device_name,
             "result": {
                 "msgId": "{{msgId}}",
                 "body": {"type": ne(None), "fileStatus": ne(None)},

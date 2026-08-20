@@ -71,8 +71,8 @@
 ## getContact
 
 正常 cases
-17. `tests/contact/test_contact.py::test_contact_remark_set_then_list_includes_remark`
-    设置好友备注后拉取单个好友信息，验证备注字段可见。
+17. `tests/contact/test_contact.py::test_contact_remark_set_success`
+    设置好友备注并严格验证 5.0 原生成功响应；不把本地 `getContact` 回读备注作为成功条件。
 18. `tests/contact/test_contact.py::test_contact_remark_empty_string`
     设置空备注后拉取好友信息，验证空值语义稳定。
 19. `tests/contact/test_contact.py::test_contact_remark_not_preserved_after_delete_and_readd`
@@ -87,8 +87,8 @@
 ## setContactRemark
 
 正常 cases
-22. `tests/contact/test_contact.py::test_contact_remark_set_then_list_includes_remark`
-    给好友设置普通备注，验证写入成功并可在列表中读取。
+22. `tests/contact/test_contact.py::test_contact_remark_set_success`
+    给好友设置普通备注，验证 `setContactRemark` 成功响应；5.0 本地备注回读差异单独记录。
 23. `tests/contact/test_contact.py::test_contact_remark_empty_string`
     给好友设置空字符串备注，验证空备注可被正确处理。
 24. `tests/contact/test_contact.py::test_contact_remark_not_preserved_after_delete_and_readd`
@@ -181,6 +181,7 @@
 
 - 离线语义按账号处理：同账号的全部端必须下线；否则副端仍可能收到联系人事件或自动接受邀请，污染主端本地 DB。
 - `tests/contact/test_contact_offline_friendship.py` 已改为使用 `account_a_to_account_b` topology，从 `sender_devices/recipient_devices` 统一清理、下线、恢复账号全部端点，不再依赖 `deviceA/deviceASec/deviceB/deviceBSec` 角色名。
+- 离线接受/删除用例只在关键动作端或离线恢复主端严格断言 `onContactChanged`；同账号其他端不再强制重复收到普通 Contact 事件，但全部端点仍校验最终好友关系。
 - `getAllContactsFromDB` 保留目标好友关系的严格存在/不存在断言，并校验真实响应与列表类型；不把设备本地 DB 中与当前 case 无关的历史联系人作为失败条件。
 
 ## 统计

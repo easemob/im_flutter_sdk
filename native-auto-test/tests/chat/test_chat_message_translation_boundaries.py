@@ -160,7 +160,7 @@ def _custom_message(device_a, device_b, assert_api, user_a, user_b):
 
 
 def _translate(device_a, assert_api, msg, languages):
-    return device_a.call("ChatManager", Cmd.translateMessage.value, info={"message": msg, "targetLanguages": languages})
+    return device_a.call("ChatManager", Cmd.translateMessage.value, info={"message": msg, "languages": languages})
 
 
 def _expected_translated_message(msg, *, languages):
@@ -202,7 +202,11 @@ def test_chat_translate_message_unsupported_language(device_a, device_b, assert_
     with _allure_step("验证：chat translate message unsupported language"):
         msg = _text_message(device_a, device_b, assert_api, user_a, user_b, f"translate-unsupported-{uuid.uuid4().hex[:6]}")
         resp = _translate(device_a, assert_api, msg, ["xx-INVALID"])
-        _assert_translation_result(assert_api, resp, msg, ["xx-INVALID"])
+        assert_api.assert_error(
+            resp,
+            code=1110,
+            description="Translation parameter error",
+        )
 
 
 def test_chat_translate_custom_message(device_a, device_b, assert_api, user_a, user_b):

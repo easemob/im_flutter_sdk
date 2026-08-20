@@ -8,7 +8,12 @@ import pytest
 from tests.group.allure_helpers import _allure_step
 
 from src import Cmd
-from tests.group.group_helpers import assert_group_snapshot, create_group, new_group_name
+from tests.group.group_helpers import (
+    assert_group_members_from_server,
+    assert_group_snapshot,
+    create_group,
+    new_group_name,
+)
 from tests.group.group_offline_helpers import (
     assert_call_result,
     assert_joined_group_projection,
@@ -38,9 +43,15 @@ def _create_member_group(
     user_b: str,
     name_prefix: str,
     style: int = 0,
+    sender_devices=(),
+    recipient_devices=(),
 ) -> tuple[str, str]:
-    device_a.drain_events(timeout=0.5)
-    device_b.drain_events(timeout=0.5)
+    endpoints = []
+    for endpoint in (*sender_devices, *recipient_devices, device_a, device_b):
+        if endpoint is not None and not any(endpoint is item for item in endpoints):
+            endpoints.append(endpoint)
+    for endpoint in endpoints:
+        endpoint.drain_events(timeout=0.5)
     group_name = new_group_name(name_prefix)
     group_id, _ = create_group(
         device_a,
@@ -51,8 +62,8 @@ def _create_member_group(
         style=style,
     )
     time.sleep(float(os.getenv("GROUP_OFFLINE_MEMBER_SETTLE_SECONDS", "3")))
-    device_a.drain_events(timeout=0.5)
-    device_b.drain_events(timeout=0.5)
+    for endpoint in endpoints:
+        endpoint.drain_events(timeout=0.5)
     return group_id, group_name
 
 
@@ -65,6 +76,8 @@ def _assert_owner_server_state(
     user_a: str,
     member_count: int,
     block_list: list[str],
+    members: list[str],
+    admins: list[str] | None = None,
     style: int = 0,
 ) -> None:
     response = device_a.call(
@@ -79,19 +92,21 @@ def _assert_owner_server_state(
         group_id=group_id,
         group_name=group_name,
         owner=user_a,
+        member_count_value=member_count,
+        admin_list_value=admins or [],
         block_list_value=block_list,
         is_public=style in (2, 3),
         join_approval_required=style == 2,
-        # 5.0 快照不含成员（getGroupFromServer 移除 fetchMembers）→ 成员单独分页拉取验证
     )
-    members_resp = device_a.call(
-        "GroupManager",
-        Cmd.getGroupMemberListFromServer.value,
-        info={"groupId": group_id, "pageSize": 20, "cursor": ""},
-    )
-    member_ids = [m.get("member") if isinstance(m, dict) else m for m in ((members_resp.get("result") or {}).get("list") or [])]
-    # 5.0 asyncFetchGroupMembers 返回非 owner 成员（4.x memberCount 含 owner）→ 期望 = member_count - 1
-    assert len(member_ids) == member_count - 1, f"成员数不匹配: 预期 {member_count - 1}, 实际 {len(member_ids)}: {member_ids}"
+    with _allure_step("查询并校验服务端分页普通成员列表"):
+        assert_group_members_from_server(
+            device_a,
+            assert_api,
+            group_id=group_id,
+            device_name=device_name(device_a),
+            expected_members=members,
+            err_prefix="离线成员终态",
+        )
 
 
 def _assert_member_group_absent(
@@ -129,6 +144,7 @@ def _assert_member_terminal_event(
     event_type: str,
     group_id: str,
     group_name: str,
+    allow_empty_group_name: bool = False,
 ) -> None:
     event = wait_group_event(
         device_b,
@@ -136,14 +152,31 @@ def _assert_member_terminal_event(
         group_id=group_id,
         timeout=30.0,
     )
+    if not allow_empty_group_name:
+        assert_api.assert_response_matches(
+            event,
+            expected={
+                "type": "event",
+                "eventType": event_type,
+                "data": {"groupId": group_id, "groupName": group_name},
+            },
+            ignore_keys={"timestamp", "sequence"},
+        )
+        return
+
     assert_api.assert_response_matches(
         event,
         expected={
             "type": "event",
             "eventType": event_type,
-            "data": {"groupId": group_id, "groupName": group_name},
+            "data": {"groupId": group_id},
         },
-        ignore_keys={"timestamp", "sequence"},
+        ignore_keys={"timestamp", "sequence", "data.groupName"},
+    )
+    actual_group_name = (event.get("data") or {}).get("groupName")
+    assert actual_group_name in (None, "", group_name), (
+        "onGroupDestroyed.groupName 只能是目标群名、空字符串或 null: "
+        f"expected={group_name!r}, actual={actual_group_name!r}, event={event}"
     )
 
 
@@ -193,6 +226,8 @@ def test_group_offline_member_removed_state_after_login(
                 user_a=user_a,
                 user_b=user_b,
                 name_prefix="offline_member_removed",
+                sender_devices=sender_devices,
+                recipient_devices=recipient_devices,
             )
         with _allure_step("测试准备：切换账号设备在线状态"):
             logout_group_account_devices(recipient_devices, assert_api)
@@ -230,6 +265,7 @@ def test_group_offline_member_removed_state_after_login(
                 group_name=group_name,
                 user_a=user_a,
                 member_count=1,
+                members=[],
                 block_list=[],
             )
         for endpoint in recipient_devices:
@@ -271,6 +307,8 @@ def test_group_offline_member_blocked_state_after_login(
                 user_b=user_b,
                 name_prefix="offline_member_blocked",
                 style=3,
+                sender_devices=sender_devices,
+                recipient_devices=recipient_devices,
             )
         with _allure_step("测试准备：切换账号设备在线状态"):
             logout_group_account_devices(recipient_devices, assert_api)
@@ -308,6 +346,7 @@ def test_group_offline_member_blocked_state_after_login(
                 group_name=group_name,
                 user_a=user_a,
                 member_count=1,
+                members=[],
                 block_list=[user_b],
                 style=3,
             )
@@ -330,6 +369,7 @@ def test_group_offline_member_blocked_state_after_login(
                 group_name=group_name,
                 user_a=user_a,
                 member_count=1,
+                members=[],
                 block_list=[user_b],
                 style=3,
             )
@@ -368,6 +408,8 @@ def test_group_offline_group_destroyed_state_after_login(
                 user_a=user_a,
                 user_b=user_b,
                 name_prefix="offline_group_destroyed",
+                sender_devices=sender_devices,
+                recipient_devices=recipient_devices,
             )
         with _allure_step("测试准备：切换账号设备在线状态"):
             logout_group_account_devices(recipient_devices, assert_api)
@@ -396,6 +438,7 @@ def test_group_offline_group_destroyed_state_after_login(
                     event_type="onGroupDestroyed",
                     group_id=group_id,
                     group_name=group_name,
+                    allow_empty_group_name=True,
                 )
             with _allure_step("验证群业务状态、事件与关键字段"):
                 _assert_member_group_absent(endpoint, assert_api, group_id=group_id)
@@ -435,6 +478,8 @@ def test_group_offline_member_leave_state_persists_after_relogin(
                 user_a=user_a,
                 user_b=user_b,
                 name_prefix="offline_member_leave",
+                sender_devices=sender_devices,
+                recipient_devices=recipient_devices,
             )
         with _allure_step("B 退出群"):
             left = device_b.call(
@@ -463,6 +508,7 @@ def test_group_offline_member_leave_state_persists_after_relogin(
                 group_name=group_name,
                 user_a=user_a,
                 member_count=1,
+                members=[],
                 block_list=[],
             )
         for endpoint in recipient_devices:

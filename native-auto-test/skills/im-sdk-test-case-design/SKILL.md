@@ -12,7 +12,11 @@ description: 设计、实现或审查 IM SDK 的 native-auto-test 用例。用�
 1. 阅读 `native-auto-test/docs/agents/AGENTS.zh.md`；它是权威规范。
 2. 阅读目标模块的 `docs/agents/<module>/CASES_RECORD.zh.md` 和 `CASES_DEFERRED.zh.md`。
 3. 检查 manager、cmd、事件 key、model、已有 helper 和相关 scenario。
-4. 阅读 [references/topology-and-assertions.md](references/topology-and-assertions.md)。
+4. 阅读 `config/api_matrix/{android,ios}.yaml` 及对应的 events Matrix，确认 API/Event 是否受当前版本支持。
+5. 阅读 `config/api_matrix/protocol-android-ios-5.0-pure-native-map.md`，确认统一协议与 Android/iOS 5.0 原生 API/Event 的对应关系。
+6. 阅读 [references/topology-and-assertions.md](references/topology-and-assertions.md)。
+
+API Matrix 是能力门禁，协议映射文档是原生对应关系；二者都不能用旧版本 E2E 或猜测结果替代。
 
 ## 先写设计卡
 
@@ -33,10 +37,38 @@ description: 设计、实现或审查 IM SDK 的 native-auto-test 用例。用�
 
 | 被测目标 | 选择 |
 |---|---|
-| 参数边界、固定错误码、纯查询、单端配置/登录 | 普通 API Case；只声明实际需要的 device fixture。 |
-| 消息投递、已读、撤回、reaction、账号级同步或“在线端都应收到” | 多端拓扑 Case；使用 `@pytest.mark.topology(...)` 和 `topology` fixture。 |
-| API 只影响当前端，但需要另一账号作为前置 | 普通双端 Case；不要为了设备数量改 topology。 |
+| 参数边界、固定错误码、纯查询、单端配置/登录 | 普通 API Case；只声明实际需要的 device fixture，默认不加 topology。 |
+| A/B 两个账号参与，但只验证动作端 response 或一个明确观察端 | 普通双端 Case；直接使用 `device_a`、`device_b` fixture，不因为有两个账号就加 topology。 |
+| 消息投递、已读、撤回、reaction、账号级同步，或契约明确要求“同账号所有在线端都收到” | 多端拓扑 Case；使用 `@pytest.mark.topology(...)` 和 `topology` fixture。 |
+| 需要先让多个端点离线，再逐端恢复并验证离线回放 | 离线拓扑 Case；按账号遍历 topology 端点，不写死主端/副端数量。 |
 | 平台专属能力 | 平台专项 Case；在描述和 skip 中写明平台、SDK 与恢复条件。 |
+
+### 普通 Case、拓扑 Case 和离线 Case 的边界
+
+- **普通 Case**：测试 API 的输入、response、错误码或当前端本地状态。即使默认 Scenario 启动四台设备，也只使用和断言 Case 需要的端点。
+- **普通双端 Case**：A/B 只是业务参与者，例如 A 添加 B、B 接受邀请；直接声明并使用 `device_a`、`device_b`。如果只验证一个指定观察端的事件，不升级为 topology。函数内部可以写 `action_device = device_a` 作为可读别名，但 `action_device` 不是普通 Case 的 fixture。
+- **拓扑 Case**：验收目标是账号端点集合的行为。必须从 `topology` 取得 `sender_action_device`、`recipient_action_device`、`sender_devices`、`recipient_devices` 并遍历相关端点；禁止假设固定有主端和副端各一个。
+- **离线 Case**：重点是下线期间产生的消息/事件如何在恢复后回放。动作只执行一次；事件是否每个端点重复收到由 SDK 语义决定，不能用动作端收到事件代替副端验证。
+- **三账号 Case**：`user_c` 只是服务端参与者时，不要虚构 `device_c`；只有 Scenario 明确给 C 配置设备，才把 C 放入 topology。
+
+判定口诀：**只测一次 API = 普通；测端点集合 = 拓扑；涉及下线/恢复 = 离线拓扑**。`scenario` 决定有哪些真实设备，`topology` 决定本 Case 中哪些设备承担动作和观察；两者不是一回事。
+
+普通双端与拓扑双端对照：
+
+```python
+# 普通双端：只验证 A 的动作结果和 B 的一个目标事件
+async def test_add_contact(device_a, device_b, user_a, user_b, assert_api):
+    action_device = device_a
+    observer_device = device_b
+    ...
+
+# 拓扑双端：验证 A/B 账号下 topology 声明的全部相关端点
+@pytest.mark.topology("account_a_to_account_b")
+async def test_message_delivery(topology, assert_api):
+    action_device = topology.sender_action_device
+    for endpoint in topology.recipient_devices:
+        ...
+```
 
 多端 Case 必须遍历 `topology.sender_devices` 与 `topology.recipient_devices` 中和业务语义相关的端点；不得写死“两个接收端”。同一 Case 在 scenario 增加 Android、iOS、Web、Harmony 端时无需修改。
 
@@ -51,8 +83,21 @@ description: 设计、实现或审查 IM SDK 的 native-auto-test 用例。用�
 - API 动作只在 `sender_action_device` 或 `recipient_action_device` 执行一次，避免副端重复 accept/decline/remove 等业务动作。
 - 对账号级离线回放事件，按 SDK 语义在每个重新登录 endpoint 上用 `groupId`/`msgId` 等业务键等待并断言；如果事件是一次性动作结果，则其他 endpoint 至少验证相同的最终本地/服务端状态，不重复执行动作。
 - `finally` 必须恢复两个账号的全部 endpoint，并恢复自动接受邀请等账号/客户端选项；清理不能只恢复 `deviceA/deviceB`。
-- 统一从 topology 取 `action_device`、`*_devices` 和用户 ID；不得在离线 Case 中写死 `deviceA/deviceB/deviceASec/deviceBSec`。
+- 拓扑/离线 Case 统一从 topology 取 `sender_action_device`、`recipient_action_device`、`*_devices` 和用户 ID；不得在离线 Case 中写死 `deviceA/deviceB/deviceASec/deviceBSec`。普通双端 Case 才使用 `device_a`、`device_b` fixture。
 - 只有整个文件的所有 Case 都使用同一个 topology 时才把 marker 放入模块级 `pytestmark`；混合普通 API 与拓扑 Case 时，marker 放在具体函数前，避免无关 Case 启动全部设备。
+
+离线 Case 的最小生命周期：
+
+```text
+测试准备：确定 topology 角色与端点
+→ 按账号让相关端点全部离线
+→ 只在 action_device 执行一次发送/群操作
+→ 按端点逐一恢复登录并等待该端点的离线回放
+→ 每个端点断言事件或最终状态
+→ finally 恢复所有端点和被修改的 SDK option
+```
+
+副端不重复执行 accept/decline/remove 等业务动作；如果 SDK 只保证最终状态，副端校验 DB/服务端状态，不伪造重复事件断言。
 
 ## 实现断言与业务步骤
 
@@ -92,6 +137,12 @@ description: 设计、实现或审查 IM SDK 的 native-auto-test 用例。用�
 ## 验证与交付
 
 默认仅运行修改的单条 Case 或文件，并使用用户选择的 scenario。保留用户已有的 pytest 调用方式；仅 SDK/测试 App 代码变更才构建/安装 APK，Python Case 改动不构建。
+
+构建规则：
+
+- 只改 Python Case、断言或测试 helper：不构建 App。
+- 修改 `im_flutter_test`、Wrapper、JAR 或 SO：使用 pytest 的 `--build`，或先执行 `flutter build apk --flavor sdk500 --debug`。
+- `--build` 按 Scenario 选择 SDK 版本构建并安装 APK；不加时复用 `config/artifacts.yaml` 指向的产物。
 
 - [ ] 已选择普通 API 或多端拓扑，并符合业务语义。
 - [ ] 多端 Case 未写死设备数量，已遍历相关 topology 端点。

@@ -558,12 +558,11 @@ def test_chat_send_and_received(topology, assert_api):
     with _allure_step("汇总：目标账号的全部在线端均收到同一服务端消息"):
         assert received_roles == list(topology.recipient_roles)
 
-def test_chat_send_to_self_event(device_a, device_a_sec, assert_api, user_a):
-    """发消息给自己：发送账号两个在线端（device_a + device_a_sec）均收到并落库。"""
-    with _allure_step("验证：发消息给自己：发送账号两个在线端（device_a + device_a_sec）均收到并落库。"):
+def test_chat_send_to_self_event(device_a, assert_api, user_a):
+    """发消息给自己：发送账号主端收到成功事件（5.0 self 消息无接收事件，不验证副端接收）。"""
+    with _allure_step("验证：发消息给自己：主端收到成功事件"):
         try:
             device_a.drain_events()
-            device_a_sec.drain_events()
         except Exception:
             pass
         content = f"self-msg-{uuid.uuid4().hex[:6]}"
@@ -736,10 +735,14 @@ def test_chat_translate_message_basic(topology, assert_api):
     with _allure_step(f"{sender.device_name} 查询待翻译消息"):
         resp_get = sender.call("ChatManager", Cmd.getMessage.value, info={"msgId": real_id})
     msg_obj = get_result(resp_get)
+    assert isinstance(msg_obj, dict), f"getMessage 未返回有效消息: {resp_get}"
+    assert str(msg_obj.get("msgId")) == str(real_id), (
+        f"getMessage 返回消息 ID 不一致: expected={real_id}, actual={msg_obj}"
+    )
     with _allure_step(f"{sender.device_name} 请求将消息翻译为简体中文"):
         resp_tr = sender.call(
             "ChatManager", Cmd.translateMessage.value,
-            info={"message": msg_obj, "targetLanguages": ["zh-Hans"]},
+            info={"message": msg_obj, "languages": ["zh-Hans"]},
         )
     with _allure_step("确认翻译接口返回当前文本消息"):
         assert_api.assert_response_matches(

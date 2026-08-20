@@ -252,7 +252,7 @@ def test_chat_modify_media_attributes(topology, assert_api, type_key):
                          "thumbnailLocalPath", "thumbnailRemotePath", "thumbnailSecret", "thumbnailStatus",
                          "width", "height", "duration", "isGif", "sendOriginalImage", "hasDeliverAck"},
         )
-        event = _wait_changed(device_b, msg_id=message["msgId"])
+        event = _wait_changed(topology.recipient_action_device, msg_id=message["msgId"])
         changed = ((event.get("data") or {}).get("message") or {})
         assert_api.assert_response_matches(
             event,
