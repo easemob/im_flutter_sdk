@@ -645,9 +645,19 @@ def test_group_member_invitation_permission_depends_on_style(
             with _allure_step("验证执行群组业务操作返回的错误码与错误文案"):
                 assert_api.assert_error(response, code=603, description="invite is not allowed")
             with _allure_step("验证 添加群管理员返回的关键字段"):
-                assert_no_group_event(device_a, group_id=group_id, event_types=joined_events)
+                assert_no_group_event(
+                    device_a,
+                    group_id=group_id,
+                    event_types=joined_events,
+                    target_user_ids={user_c},
+                )
             with _allure_step("验证 添加群管理员返回的关键字段"):
-                assert_no_group_event(device_b, group_id=group_id, event_types=joined_events)
+                assert_no_group_event(
+                    device_b,
+                    group_id=group_id,
+                    event_types=joined_events,
+                    target_user_ids={user_c},
+                )
             _fetch_group(
                 device_a,
                 assert_api,
@@ -820,7 +830,8 @@ def test_group_public_open_join_rejects_when_group_is_full(
             assert_no_group_event(
                 device_a,
                 group_id=group_id,
-                event_types={"onGroupMembersJoined"}  # 5.0 只派发批量事件（无单数 onGroupMemberJoined）,
+                event_types={"onGroupMembersJoined"},  # 5.0 只派发批量事件（无单数 onGroupMemberJoined）
+                target_user_ids={user_c},
             )
     finally:
         if device_b_is_c:

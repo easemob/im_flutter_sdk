@@ -252,6 +252,7 @@ def assert_no_group_event(
     *,
     group_id: str,
     event_types: set[str],
+    target_user_ids: set[str] | None = None,
     timeout: float = 2.0,
 ) -> None:
     deadline = time.monotonic() + timeout
@@ -262,8 +263,15 @@ def assert_no_group_event(
         if event.get("eventType") not in event_types:
             continue
         data = event.get("data")
-        if isinstance(data, dict) and data.get("groupId") == group_id:
-            raise AssertionError(f"不应收到群事件: eventTypes={sorted(event_types)}, event={event}")
+        if not isinstance(data, dict) or data.get("groupId") != group_id:
+            continue
+        if target_user_ids is not None:
+            actual_user_ids = data.get("userIds")
+            if not isinstance(actual_user_ids, list):
+                raise AssertionError(f"群成员事件缺少 userIds: event={event}")
+            if not set(actual_user_ids).intersection(target_user_ids):
+                continue
+        raise AssertionError(f"不应收到群事件: eventTypes={sorted(event_types)}, event={event}")
 
 
 def _assert_any_non_empty_str_field(
