@@ -9,6 +9,10 @@ import time
 from src import Cmd
 
 
+_RESTORE_CONNECT_TIMEOUT = 10.0
+_RESTORE_CONNECT_POLL_INTERVAL = 0.25
+
+
 def device_name(device) -> str:
     """Return the configured runner/device name without assuming a topology role."""
     return getattr(device, "device_name", None) or getattr(device, "_device", "device")
@@ -120,9 +124,12 @@ def login_preserving_offline_events(
 
 
 def restore_user_login(device, *, user_id: str, password: str = "1") -> None:
-    """供 finally 使用：恢复指定用户并确认 SDK 连接已恢复。"""
+    """供 finally 使用：恢复指定用户并等待 SDK 异步连接完成。"""
     last_error: Exception | None = None
+    deadline = time.monotonic() + _RESTORE_CONNECT_TIMEOUT
     for attempt in range(2):
+        if time.monotonic() >= deadline:
+            break
         try:
             current_response = device.call("Client", Cmd.getCurrentUser.value, info={})
             current_user = current_response.get("result")
@@ -143,7 +150,7 @@ def restore_user_login(device, *, user_id: str, password: str = "1") -> None:
                 from src.rest_api.user_api import fetch_user_token
 
                 token = fetch_user_token(user_id, password).get("access_token", "")
-                device.call(
+                login_response = device.call(
                     "Client",
                     Cmd.login.value,
                     info={
@@ -152,19 +159,32 @@ def restore_user_login(device, *, user_id: str, password: str = "1") -> None:
                         "isPassword": False,
                     },
                 )
+                if not login_response.get("result"):
+                    raise RuntimeError(
+                        f"restore login returned unsuccessful response: {login_response}"
+                    )
 
             device.call("Client", Cmd.startCallback.value, info={})
-            final_connected = device.call("Client", Cmd.isConnected.value, info={})
-            if final_connected.get("result") is not True:
-                raise RuntimeError(
-                    f"restore login did not restore SDK connection: {final_connected}"
+            final_connected = None
+            while time.monotonic() < deadline:
+                final_connected = device.call("Client", Cmd.isConnected.value, info={})
+                if final_connected.get("result") is True:
+                    device.drain_events(timeout=0.5)
+                    return
+                time.sleep(
+                    min(
+                        _RESTORE_CONNECT_POLL_INTERVAL,
+                        max(0.0, deadline - time.monotonic()),
+                    )
                 )
-            device.drain_events(timeout=0.5)
-            return
+            raise RuntimeError(
+                f"restore login did not restore SDK connection within "
+                f"{_RESTORE_CONNECT_TIMEOUT:.1f}s: {final_connected}"
+            )
         except Exception as error:
             last_error = error
-            if attempt == 0:
-                time.sleep(0.5)
+            if attempt == 0 and time.monotonic() < deadline:
+                time.sleep(min(0.5, max(0.0, deadline - time.monotonic())))
 
     raise RuntimeError(
         f"failed to restore offline test device login: device={device_name(device)}, "
