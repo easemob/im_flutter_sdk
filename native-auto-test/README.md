@@ -140,6 +140,8 @@ iOS：将新版本 Wrapper 差异放到 `im_flutter_sdk_ios/ios/Classes/sdk501/`
 bash im_flutter_sdk/scripts/merge_ios_sdk.sh sdk501
 ```
 
+5.0 直接编译 `im_flutter_sdk_ios/ios/Classes/base500/`；5.1 及以后才由脚本生成临时目录 `Classes/generated/active/`。该目录已加入 `.gitignore`，不要手动修改或提交。
+
 依赖切换遵循 `docs/specs/dependency-spec.md`：本地 JAR/SO/XCFramework 与远程依赖只能启用一种。
 
 ### 3.4 增加测试 App flavor 和 Scenario

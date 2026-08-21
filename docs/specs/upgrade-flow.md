@@ -42,7 +42,7 @@
   - 命名规范：`docs/specs/naming-convention.md`
   - 规范自检：`im_flutter_sdk/scripts/speckit.sh check`
   - Android 构建：`im_flutter_sdk/scripts/speckit.sh android`（或 `flutter build apk --flavor sdkXXX`）
-  - iOS 合并 + 安装 Pods：`im_flutter_sdk/scripts/merge_ios_sdk.sh sdkXXX`（5.0 用默认）→ `im_flutter_sdk/scripts/speckit.sh ios`
+  - iOS：5.0 直接使用 `Classes/base500/`；5.1+ 执行 `im_flutter_sdk/scripts/merge_ios_sdk.sh sdkXXX` 生成 `Classes/generated/active/`，再安装 Pods；生成目录不提交。
   - iOS 构建（模拟器）：`im_flutter_sdk/scripts/speckit.sh ios-build`
   - wrapper 差异检查：`im_flutter_sdk/scripts/check_wrapper_diffs.sh`（Android 冗余文件）
 

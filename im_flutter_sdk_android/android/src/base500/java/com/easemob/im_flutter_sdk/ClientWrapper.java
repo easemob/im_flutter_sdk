@@ -333,7 +333,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     private void kickDevice(JSONObject param, String channelName, Result result) throws JSONException {
         // 5.0 统一 token 版
         String username = param.getString("userId");
-        String token = param.getString("password");
+        String token = param.getString("token");
         String resource = param.getString("resource");
         asyncRunnable(()->{
             try {
@@ -348,7 +348,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     private void kickAllDevices(JSONObject param, String channelName, Result result) throws JSONException {
         // 5.0 统一 token 版
         String username = param.getString("userId");
-        String token = param.getString("password");
+        String token = param.getString("token");
         asyncRunnable(()->{
             try {
                 EMClient.getInstance().kickAllDevicesWithToken(username, token);
@@ -383,7 +383,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     private void getLoggedInDevicesFromServer(JSONObject param, String channelName, Result result) throws JSONException {
         // 5.0 改为异步 fetchLoggedInDevicesFromServerWithToken
         String username = param.getString("userId");
-        String token = param.getString("password");
+        String token = param.getString("token");
         EMClient.getInstance().fetchLoggedInDevicesFromServerWithToken(username, token, new EMValueWrapperCallBack<List<EMDeviceInfo>>(result, channelName) {
             @Override
             public void onSuccess(List<EMDeviceInfo> devices) {

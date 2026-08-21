@@ -44,7 +44,7 @@
         [self updateImPushStyle:call.arguments
                     channelName:call.method
                          result:result];
-    } else if ([ChatBindDeviceToken isEqualToString:call.method] || [ChatUpdateFCMPushToken isEqualToString:call.method]) {
+    } else if ([ChatBindDeviceToken isEqualToString:call.method]) {
         [self  bindAPNsDeviceToken:call.arguments
                        channelName:call.method
                             result:result];
@@ -146,7 +146,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:aDisplayName];
+                           object:(aError == nil ? @YES : nil)];
     }];
     
 }

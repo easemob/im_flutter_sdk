@@ -88,5 +88,8 @@ im_flutter_sdk_android/android/libs/easemob-sdk-*/
 im_flutter_sdk_ios/ios/HyphenateChat.xcframework/
 im_flutter_sdk_ios/ios/ShengwangInfra_iOS/
 
+# Generated iOS wrapper selected by the SDK flavor; source lives in base500/sdkXXX.
+im_flutter_sdk_ios/ios/Classes/generated/
+
 # Pods are typically not committed from example app
 im_flutter_sdk/example/ios/Pods/

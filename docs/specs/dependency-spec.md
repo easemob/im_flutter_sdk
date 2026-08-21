@@ -18,6 +18,8 @@
   - 远程依赖（改为远程时，注释掉 `files(...)`，取消注释 `sdkXXXApi 'io.hyphenate:hyphenate-chat:<ver>'`）
 
 - iOS
+  - Wrapper 基线：`im_flutter_sdk_ios/ios/Classes/base500/`；版本目录 `Classes/sdkXXX/` 只放相对 5.0 的最终差异。
+  - `sdk500` 直接编译 `Classes/base500/`；其他版本构建前执行 `im_flutter_sdk/scripts/merge_ios_sdk.sh sdkXXX`，生成 `Classes/generated/active/`；`generated/` 不提交，也不要手动修改。
   - 切换方式（手动编辑 `im_flutter_sdk_ios/ios/im_flutter_sdk_ios.podspec`）
     - 默认本地依赖：
       - `s.vendored_frameworks = 'HyphenateChat.xcframework', 'ShengwangInfra_iOS/aosl.xcframework'`

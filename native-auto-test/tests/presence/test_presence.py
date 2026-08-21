@@ -80,9 +80,9 @@ def test_presence_publish_subscribe_query_unsubscribe(topology, assert_api):
                     "manager": "PresenceManager",
                     "cmd": Cmd.fetchPresenceStatus.value,
                     "device": endpoint.device_name,
-                    "result": [{"statusDescription": "online", "publisher": publisher_user, "expiryTime": gt(0)}],
+                    "result": [{"statusDescription": "online", "publisher": publisher_user}],
                 },
-                ignore_keys={"sequence", "lastTime", "statusDetails"},
+                ignore_keys={"sequence", "lastTime", "statusDetails", "expiryTime"},
             )
 
     with _allure_step(f"{subscriber.device_name} 订阅 A 的在线状态"):

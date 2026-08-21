@@ -2,6 +2,9 @@
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html
 #
 Pod::Spec.new do |s|
+  ios_sdk_flavor = ENV['IM_IOS_SDK_FLAVOR'].to_s
+  wrapper_source_dir = ios_sdk_flavor.empty? || ios_sdk_flavor == 'sdk500' ? 'Classes/base500' : 'Classes/generated/active'
+
   s.name             = 'im_flutter_sdk_ios'
   s.version          = '4.15.2'
   s.summary          = 'A new flutter plugin project.'
@@ -13,10 +16,9 @@ A new flutter plugin project.
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
 
-  s.source_files = 'Classes/merged/**/*'
-  s.public_header_files = 'Classes/merged/**/*.h'
-  # 注意：pod install 前先运行 im_flutter_sdk/scripts/merge_ios_sdk.sh 生成 Classes/merged/
-  # （基线 base500 + 版本差异合并，同 Android 的 mergeWrapperSrc 机制）
+  s.source_files = "#{wrapper_source_dir}/**/*"
+  s.public_header_files = "#{wrapper_source_dir}/**/*.h"
+  # sdk500 直接编译 Classes/base500；其他版本先由脚本生成 generated/active。
 
   s.dependency 'Flutter'
   s.ios.deployment_target = '12.0'

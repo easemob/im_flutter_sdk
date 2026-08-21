@@ -2045,9 +2045,22 @@ def pytest_sessionstart(session):
         subprocess.run([npm, "install"], cwd=web_runner, check=True)
         subprocess.run([npm, "run", "build"], cwd=web_runner, check=True)
 
-    if any(role.platform == "ios" for role in scenario.roles.values()):
-        # iOS：先由 merge_ios_sdk.sh 生成 merged（基线 base500 + 版本差异），再 flutter build ios --simulator
-        # （pod install 由 flutter build 自动执行；iOS manifest 用 runtime 占位，无需刷新 hash）
+    ios_flavors = set()
+    for role in scenario.roles.values():
+        if role.platform != "ios":
+            continue
+        parts = role.sdk_version.split(".")
+        ios_flavors.add(f"sdk{parts[0]}{int(parts[1]):02d}")
+
+    if len(ios_flavors) > 1:
+        raise RuntimeError(
+            "同一个 iOS Scenario 不能混用多个 SDK 版本："
+            + ", ".join(sorted(ios_flavors))
+        )
+
+    if ios_flavors:
+        # iOS：5.0 直接编译 base500；其他版本先生成 generated/active，
+        # 再刷新本地 Podspec/Pods，最后构建；manifest 用 runtime 占位。
         import shutil
         import subprocess
 
@@ -2059,13 +2072,32 @@ def pytest_sessionstart(session):
             Path(__file__).resolve().parent.parent.parent
             / "im_flutter_sdk" / "scripts" / "merge_ios_sdk.sh"
         )
-        if merge_script.is_file():
-            subprocess.run(["bash", str(merge_script)], cwd=merge_script.parent, check=True)
+        ios_flavor = next(iter(ios_flavors))
+        build_env = os.environ.copy()
+        build_env["IM_IOS_SDK_FLAVOR"] = ios_flavor
+        if ios_flavor == "sdk500":
+            print("[build] iOS sdk500 直接使用 Classes/base500，无需生成临时 Wrapper")
+        elif merge_script.is_file():
+            subprocess.run(
+                ["bash", str(merge_script), ios_flavor],
+                cwd=merge_script.parent,
+                check=True,
+            )
         else:
-            print(f"[build] merge_ios_sdk.sh 不存在，跳过 merged 生成: {merge_script}")
+            raise RuntimeError(f"[build] merge_ios_sdk.sh 不存在，无法构建 iOS {ios_flavor}: {merge_script}")
+        pod = shutil.which("pod")
+        if not pod:
+            raise RuntimeError("pod not found; install CocoaPods before building iOS")
+        subprocess.run(
+            [pod, "install"],
+            cwd=flutter_test / "ios",
+            env=build_env,
+            check=True,
+        )
         subprocess.run(
             [flutter, "build", "ios", "--simulator"],
             cwd=flutter_test,
+            env=build_env,
             check=True,
         )
 

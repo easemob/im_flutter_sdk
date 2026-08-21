@@ -433,7 +433,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:(aError == nil ? @YES : @NO)];
     }];
 }
 
@@ -481,10 +481,10 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 - (void)kickDevice:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *username = param[@"userId"];
-    NSString *pwdOrToken = param[@"password"];
+    NSString *token = param[@"token"];
     NSString *resource = param[@"resource"];
     // 5.0 统一 token 踢设备（移除密码分支）
-    [EMClient.sharedClient kickDeviceWithUserId:username token:pwdOrToken resource:resource completion:^(EMError * _Nullable aError) {
+    [EMClient.sharedClient kickDeviceWithUserId:username token:token resource:resource completion:^(EMError * _Nullable aError) {
         [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:nil];
     }];
 }
@@ -492,9 +492,9 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 - (void)kickAllDevices:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *username = param[@"userId"];
-    NSString *pwdOrToken = param[@"password"];
+    NSString *token = param[@"token"];
     // 5.0 统一 token 踢全部设备（移除密码分支）
-    [EMClient.sharedClient kickAllDevicesWithUserId:username token:pwdOrToken completion:^(EMError * _Nullable aError) {
+    [EMClient.sharedClient kickAllDevicesWithUserId:username token:token completion:^(EMError * _Nullable aError) {
         [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:nil];
     }];
 }
@@ -574,7 +574,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     [EMClient.sharedClient renewToken:newAgoraToken completion:^(EMError * _Nullable aError) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
-                            error:nil
+                            error:aError
                            object:nil];
     }];
 }
@@ -582,9 +582,9 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 - (void)getLoggedInDevicesFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *username = param[@"userId"];
-    NSString *pwdOrToken = param[@"password"];
+    NSString *token = param[@"token"];
     // 5.0 统一 token（移除密码分支）
-    [EMClient.sharedClient getLoggedInDevicesFromServerWithUserId:username token:pwdOrToken completion:^(NSArray * _Nullable aList, EMError * _Nullable aError) {
+    [EMClient.sharedClient getLoggedInDevicesFromServerWithUserId:username token:token completion:^(NSArray * _Nullable aList, EMError * _Nullable aError) {
         NSMutableArray *list = [NSMutableArray array];
         for (EMDeviceConfig *deviceInfo in aList) {
             [list addObject:[deviceInfo toJson]];
@@ -966,7 +966,6 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 
 // shenwang
 - (void)changeAppId:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-#if defined(AgoraChat)
     __weak typeof(self)weakSelf = self;
     NSString *appId = param[@"appId"];
     EMError *aError = [EMClient.sharedClient changeAppId:appId];
@@ -974,7 +973,6 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
                   channelName:aChannelName
                         error:aError
                        object:(aError == nil ? @YES : @NO)];
-#endif
 }
 
 

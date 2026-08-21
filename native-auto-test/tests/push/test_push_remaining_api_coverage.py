@@ -278,17 +278,23 @@ def test_push_vendor_token_update_current_environment(device_a, assert_api, cmd,
         )
 
 
-def test_push_apns_token_update_android_missing_plugin(device_a):
-    """updateAPNsPushToken：Android 模拟器不适用 APNs，MissingPlugin 记录为平台/桥接缺口。"""
+def test_push_apns_token_update_android_missing_plugin(device_a, assert_api, phase1_scenario):
+    """updateAPNsPushToken：仅在 Android 验证 MissingPlugin，iOS 不执行该平台缺口用例。"""
+    platform = phase1_scenario.roles["device_a"].platform
+    if platform != "android":
+        pytest.skip("该用例仅验证 Android 的 MissingPluginException")
+
     with _allure_step("调用 Android 不适用的 APNs 令牌接口并记录平台缺口"):
         resp = device_a.call(
             "PushManager",
             Cmd.updateAPNsPushToken.value,
             info={"token": "apns-token-api-coverage"},
         )
-        if resp.get("success") is False and "MissingPluginException" in str((resp.get("error") or {}).get("description", "")):
-            pytest.xfail("updateAPNsPushToken 在 Android 模拟器当前返回 MissingPluginException，记录为平台/桥接缺口。")
-        pytest.fail(f"updateAPNsPushToken 已不再返回 MissingPluginException，需按真实返回重新修订 case: {resp!r}")
+        if resp.get("success") is False and "MissingPluginException" in str(
+            (resp.get("error") or {}).get("description", "")
+        ):
+            pytest.xfail("updateAPNsPushToken 在 Android 模拟器当前返回 MissingPluginException。")
+        pytest.fail(f"Android updateAPNsPushToken 返回了非预期结果: {resp!r}")
 
 
 def test_push_sync_conversations_silent_mode_current_environment(device_a, assert_api):

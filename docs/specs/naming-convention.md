@@ -36,8 +36,8 @@
 
 ```
 基线：src/base500/java（Android）/ Classes/base500（iOS）= 5.0 全套 wrapper
-差异：sdk423 / sdk424 = 只放有变动的 wrapper（同名覆盖基线）
-合并：Android mergeWrapperSrc（Gradle）/ iOS merge_ios_sdk.sh
+差异：sdkXXX = 只放相对 base500 的最终差异 wrapper（同名覆盖基线）
+生成：Android mergeWrapperSrc（Gradle）/ iOS merge_ios_sdk.sh；iOS 输出到 `Classes/generated/active/`，不提交
 5.1 以后：新建 sdk501 目录，只放差异文件，复用基线
 ```
 
