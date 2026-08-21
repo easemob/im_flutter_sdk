@@ -268,7 +268,10 @@
     NSString *msgId = param[@"msgId"];
     EMChatMessage *msg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msgId];
     [EMClient.sharedClient.chatManager sendMessageReadReceipts:msg ? @[msg] : @[] completion:^(EMError * _Nullable error) {
-        [weakSelf wrapperCallBack:result channelName:aChannelName error:error object:nil];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:(error == nil ? @YES : @NO)];
     }];
 }
 
@@ -297,7 +300,10 @@
     __weak typeof(self) weakSelf = self;
     NSString *convId = param[@"convId"];
     [EMClient.sharedClient.chatManager clearConversationUnreadMessageCount:convId completion:^(EMError * _Nullable error) {
-        [weakSelf wrapperCallBack:result channelName:aChannelName error:error object:nil];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:(error == nil ? @YES : @NO)];
     }];
 }
 

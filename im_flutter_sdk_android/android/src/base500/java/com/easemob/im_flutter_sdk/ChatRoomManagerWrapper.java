@@ -203,11 +203,10 @@ public class ChatRoomManagerWrapper extends Wrapper implements MethodChannel.Met
 
     private void leaveChatRoom(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
         String roomId = param.getString("roomId");
-
-        asyncRunnable(() -> {
-            EMClient.getInstance().chatroomManager().leaveChatRoom(roomId);
-            onSuccess(result, channelName, true);
-        });
+        EMClient.getInstance().chatroomManager().leaveChatRoom(
+                roomId,
+                new EMWrapperCallBack(result, channelName, true)
+        );
     }
 
     private void fetchPublicChatRoomsFromServer(JSONObject param, String channelName, MethodChannel.Result result)

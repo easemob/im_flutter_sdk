@@ -237,7 +237,8 @@ def test_chat_modify_media_attributes(topology, assert_api, type_key):
             "ChatManager", Cmd.modifyMessage.value,
             info={"msgId": message["msgId"], "attributes": attributes},
         )
-        _assert_delivery_ack_boolean(response.get("result") or {}, source=f"modifyMessage({type_key}).result")
+        # 先判断 modifyMessage 是否真实成功；错误响应（例如 305）不是消息对象，
+        # 不能先按成功结果检查 hasDeliverAck，否则会掩盖真正的能力/服务端错误。
         assert_api.assert_response_matches(
             response,
             expected={"manager": "ChatManager", "cmd": Cmd.modifyMessage.value,
@@ -252,6 +253,7 @@ def test_chat_modify_media_attributes(topology, assert_api, type_key):
                          "thumbnailLocalPath", "thumbnailRemotePath", "thumbnailSecret", "thumbnailStatus",
                          "width", "height", "duration", "isGif", "sendOriginalImage", "hasDeliverAck"},
         )
+        _assert_delivery_ack_boolean(response.get("result") or {}, source=f"modifyMessage({type_key}).result")
         event = _wait_changed(topology.recipient_action_device, msg_id=message["msgId"])
         changed = ((event.get("data") or {}).get("message") or {})
         assert_api.assert_response_matches(

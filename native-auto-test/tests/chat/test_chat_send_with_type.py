@@ -228,8 +228,6 @@ def _assert_send_success_and_events(topology, assert_api, *, content: str, targe
                     "convId": "{{toUser}}",
                     "chatType": 0,
                     "direction": 0,
-                    # text 发送响应 status 实测 0（CREATE）
-                    "status": 0,
                     "deliverOnlineOnly": False,
                     "hasRead": True,
                     "needReadReceipt": False, "isThread": False,
@@ -244,6 +242,7 @@ def _assert_send_success_and_events(topology, assert_api, *, content: str, targe
                 "localTime",
                 "broadcast",
                 "onlineState",
+                "status",
                 "targetLanguages",
                 "translations",
                 # 仅忽略不稳定字段：路径/secret

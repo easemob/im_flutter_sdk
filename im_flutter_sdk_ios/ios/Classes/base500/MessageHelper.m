@@ -82,7 +82,8 @@
     // 5.0 以 needReadReceipt 为准（替代 4.x hasReadAck/needGroupAck）
     ret[@"needReadReceipt"] = @(self.isNeedReadReceipt);
     ret[@"serverTime"] = @(self.timestamp);
-    ret[@"groupAckCount"] = @(self.groupReadReceiptCount);
+    // 5.0：groupAckCount → readReceiptCount
+    ret[@"readReceiptCount"] = @(self.groupReadReceiptCount);
     ret[@"attributes"] = self.ext;
     if (self.webhookEnv) {
         ret[@"webhookEnv"] = self.webhookEnv;

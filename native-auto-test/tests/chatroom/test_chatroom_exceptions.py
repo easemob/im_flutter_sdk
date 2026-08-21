@@ -58,13 +58,10 @@ def test_chatroom_leave_room_nonexistent(device_b, assert_api):
 
 
 def test_chatroom_leave_room_empty_id(device_b, assert_api):
-    with _allure_step("使用空聊天室 ID 离开并验证幂等成功语义"):
+    with _allure_step("使用空聊天室 ID 离开并验证参数错误码"):
         resp = device_b.call("ChatRoomManager", Cmd.leaveChatRoom.value, info={"roomId": ""})
-        assert_api.assert_response_matches(
-            resp,
-            expected={"manager": "ChatRoomManager", "cmd": Cmd.leaveChatRoom.value, "device": "deviceB", "result": True},
-            ignore_keys={"sequence"},
-        )
+        # Android/iOS 均透传原生参数校验；描述文案由平台 SDK 决定。
+        assert_api.assert_error(resp, code=700, description=None)
 
 
 def test_chatroom_fetch_room_info_empty_id(device_a, assert_api):

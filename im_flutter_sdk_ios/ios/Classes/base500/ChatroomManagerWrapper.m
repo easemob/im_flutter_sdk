@@ -274,7 +274,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:(aError == nil ? @YES : @NO)];
     }];
 }
 

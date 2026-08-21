@@ -392,7 +392,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:(aError == nil ? @YES : @NO)];
     }];
 }
 
@@ -468,7 +468,7 @@
     [weakSelf wrapperCallBack:result
                   channelName:aChannelName
                         error:error
-                       object:nil];
+                       object:@YES];
 }
 
 - (void)getUnreadMessageCount:(NSDictionary *)param
