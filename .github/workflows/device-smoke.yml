@@ -38,6 +38,16 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Enable KVM group perms
+        # The ubuntu-24.04 runner image has /dev/kvm but the runner user is
+        # not in the kvm group (actions/runner-images#8542). Without this
+        # udev rule the emulator silently falls back to ~10x slower software
+        # emulation and the job times out before the app starts.
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       - name: Run no-login smoke on Android emulator
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
@@ -45,12 +55,9 @@ jobs:
           arch: x86_64
           profile: pixel_6
           disable-animations: true
-          script: |
-            mkdir -p artifacts
-            cd im_flutter_sdk/example
-            flutter pub get
-            set -o pipefail
-            flutter test integration_test/no_login_presence_test.dart -d emulator-5554 2>&1 | tee ../../artifacts/android-no-login-smoke.log
+          # Multi-line scripts are not run in one shell session by the
+          # runner, so the real steps live in a wrapper script.
+          script: bash tool/ci/run_android_emulator_test.sh integration_test/no_login_presence_test.dart android-no-login-smoke.log
 
       - name: Upload Android smoke log
         if: always()
@@ -64,7 +71,7 @@ jobs:
   ios:
     name: iOS no-login Presence smoke
     runs-on: macos-26
-    timeout-minutes: 45
+    timeout-minutes: 25
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     steps:
@@ -79,18 +86,12 @@ jobs:
           cache: true
 
       - name: Run no-login smoke on iOS simulator
-        run: |
-          mkdir -p artifacts
-          simulator_udid="$(./tool/ci/boot_ios_simulator.sh)"
-          echo "Using iOS simulator $simulator_udid"
-          cd im_flutter_sdk/example
-          flutter pub get
-          set -o pipefail
-          flutter test integration_test/no_login_presence_test.dart -d "$simulator_udid" 2>&1 | tee ../../artifacts/ios-no-login-smoke.log
+        run: ./tool/ci/run_ios_simulator_test.sh integration_test/no_login_presence_test.dart ios-no-login-smoke.log
 
       - name: Collect iOS diagnostics after failure
         if: failure()
-        run: xcrun simctl diagnose --output artifacts/ios-sim-diagnose.tar.gz
+        # --output expects a directory; the archive name is generated.
+        run: xcrun simctl diagnose -b --output artifacts || true
 
       - name: Upload iOS smoke evidence
         if: always()
@@ -99,6 +100,6 @@ jobs:
           name: flutter-device-smoke-ios-${{ github.run_id }}
           path: |
             artifacts/ios-no-login-smoke.log
-            artifacts/ios-sim-diagnose.tar.gz
+            artifacts/*diagnose*.tar.gz
           if-no-files-found: warn
           retention-days: 7
