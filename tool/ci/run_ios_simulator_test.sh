@@ -3,7 +3,21 @@
 #
 # On iOS 26 simulators `flutter test` sometimes never discovers the Dart VM
 # Service of the launched app: it prints "0 tests passed." right after the
-# Xcode build and then never exits. Two defenses against that flake:
+# Xcode build and then never exits. This is a known race condition in the
+# flutter tool: _IOSSimulatorLogReader passes an async function as the
+# StreamController.broadcast onListen callback, so the simctl log-stream
+# process is not awaited before the app launches. If the app prints its VM
+# Service URI before the log process is ready, the URI is missed permanently
+# and the test run hangs. Upstream references (issue still open, unfixed on
+# master as of 2026-08):
+#   issue: https://github.com/flutter/flutter/issues/181771
+#   fix PR (closed unmerged on process grounds, direction endorsed by the
+#     team): https://github.com/flutter/flutter/pull/183448
+#   second fix PR (closed unmerged, stale draft):
+#     https://github.com/flutter/flutter/pull/187643
+# This watchdog is only a mitigation: it re-rolls the race with a rebooted
+# simulator. Remove it once the upstream fix lands in the Flutter version
+# pinned by the workflows (FLUTTER_VERSION). Two defenses:
 #   1. the attempt is killed as soon as the log shows "0 tests passed."
 #      (or when it exceeds WATCHDOG_SECONDS), so the step fails fast instead
 #      of hanging until the job timeout;
