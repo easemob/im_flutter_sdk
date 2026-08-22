@@ -90,8 +90,10 @@ jobs:
 
       - name: Collect iOS diagnostics after failure
         if: failure()
-        # --output expects a directory; the archive name is generated.
-        run: xcrun simctl diagnose -b --output artifacts || true
+        # Xcode 26 simctl only accepts --output=<path> (equals form) and
+        # pauses on an interactive "Press ENTER" prompt unless stdin is fed.
+        # The archive is written as <path>.tar.gz next to the given path.
+        run: echo | xcrun simctl diagnose -b --output=artifacts/diagnose || true
 
       - name: Upload iOS smoke evidence
         if: always()
@@ -99,7 +101,7 @@ jobs:
         with:
           name: flutter-device-smoke-ios-${{ github.run_id }}
           path: |
-            artifacts/ios-no-login-smoke.log
+            artifacts/ios-no-login-smoke.log*
             artifacts/*diagnose*.tar.gz
           if-no-files-found: warn
           retention-days: 7
