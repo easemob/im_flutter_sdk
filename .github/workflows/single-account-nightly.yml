@@ -46,6 +46,16 @@ jobs:
           ./tool/ci/write_e2e_dart_defines.sh "$RUNNER_TEMP/flutter-single-account.json"
           echo "E2E_CONFIG_PATH=$RUNNER_TEMP/flutter-single-account.json" >> "$GITHUB_ENV"
 
+      - name: Enable KVM group perms
+        # The ubuntu-24.04 runner image has /dev/kvm but the runner user is
+        # not in the kvm group (actions/runner-images#8542). Without this
+        # udev rule the emulator silently falls back to ~10x slower software
+        # emulation and the job times out before the app starts.
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       - name: Run login and local database suite on Android emulator
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
@@ -53,12 +63,9 @@ jobs:
           arch: x86_64
           profile: pixel_6
           disable-animations: true
-          script: |
-            mkdir -p artifacts
-            cd im_flutter_sdk/example
-            flutter pub get
-            set -o pipefail
-            flutter test integration_test/single_account_local_test.dart -d emulator-5554 --dart-define-from-file="$E2E_CONFIG_PATH" 2>&1 | tee ../../artifacts/android-single-account.log
+          # Multi-line scripts are not run in one shell session by the
+          # runner, so the real steps live in a wrapper script.
+          script: bash tool/ci/run_android_emulator_test.sh integration_test/single_account_local_test.dart android-single-account.log
 
       - name: Remove protected test configuration
         if: always()
@@ -78,7 +85,7 @@ jobs:
     needs: android
     if: ${{ always() }}
     runs-on: macos-26
-    timeout-minutes: 50
+    timeout-minutes: 25
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     environment: flutter-single-account
@@ -103,18 +110,12 @@ jobs:
           echo "E2E_CONFIG_PATH=$RUNNER_TEMP/flutter-single-account.json" >> "$GITHUB_ENV"
 
       - name: Run login and local database suite on iOS simulator
-        run: |
-          mkdir -p artifacts
-          simulator_udid="$(./tool/ci/boot_ios_simulator.sh)"
-          echo "Using iOS simulator $simulator_udid"
-          cd im_flutter_sdk/example
-          flutter pub get
-          set -o pipefail
-          flutter test integration_test/single_account_local_test.dart -d "$simulator_udid" --dart-define-from-file="$E2E_CONFIG_PATH" 2>&1 | tee ../../artifacts/ios-single-account.log
+        run: ./tool/ci/run_ios_simulator_test.sh integration_test/single_account_local_test.dart ios-single-account.log
 
       - name: Collect iOS diagnostics after failure
         if: failure()
-        run: xcrun simctl diagnose --output artifacts/ios-sim-diagnose.tar.gz
+        # --output expects a directory; the archive name is generated.
+        run: xcrun simctl diagnose -b --output artifacts || true
 
       - name: Remove protected test configuration
         if: always()
@@ -127,6 +128,6 @@ jobs:
           name: flutter-single-account-ios-${{ github.run_id }}
           path: |
             artifacts/ios-single-account.log
-            artifacts/ios-sim-diagnose.tar.gz
+            artifacts/*diagnose*.tar.gz
           if-no-files-found: warn
           retention-days: 7
