@@ -2,9 +2,9 @@
 # Runs a flutter integration test on a booted iOS simulator with a watchdog.
 #
 # On iOS 26 simulators `flutter test` sometimes never discovers the Dart VM
-# Service of the launched app: it prints "0 tests passed" right after the
+# Service of the launched app: it prints "0 tests passed." right after the
 # Xcode build and then never exits. Two defenses against that flake:
-#   1. the attempt is killed as soon as the log shows "0 tests passed"
+#   1. the attempt is killed as soon as the log shows "0 tests passed."
 #      (or when it exceeds WATCHDOG_SECONDS), so the step fails fast instead
 #      of hanging until the job timeout;
 #   2. a zero-test attempt is retried once with a freshly rebooted simulator.
@@ -44,7 +44,9 @@ run_attempt() {
   (
     elapsed=0
     while kill -0 "$test_pid" 2>/dev/null; do
-      if grep -qF "0 tests passed" "$attempt_log" 2>/dev/null; then
+      # Match "0 tests passed." exactly: the VM-service flake ends the line
+      # with a period, while a real failure prints "0 tests passed, N failed."
+      if grep -qE "0 tests passed\." "$attempt_log" 2>/dev/null; then
         echo "Watchdog: flutter test found 0 tests (VM service not discovered); killing it" >&2
         kill -TERM "$test_pid" 2>/dev/null || true
         sleep 15
@@ -89,7 +91,7 @@ while (( attempt <= max_attempts )); do
   if [[ "$status" -eq 0 ]]; then
     break
   fi
-  if (( attempt < max_attempts )) && grep -qF "0 tests passed" "$attempt_log"; then
+  if (( attempt < max_attempts )) && grep -qE "0 tests passed\." "$attempt_log"; then
     echo "Retrying: attempt $attempt discovered 0 tests (flaky VM service discovery on iOS 26 simulators)" >&2
     attempt=$((attempt + 1))
   else
