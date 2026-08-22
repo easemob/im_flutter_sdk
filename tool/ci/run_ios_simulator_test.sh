@@ -20,12 +20,14 @@ echo "Using iOS simulator $simulator_udid"
 cd "$repo_root/im_flutter_sdk/example"
 flutter pub get
 
-extra_args=()
+# Note: keep the array non-empty; expanding an empty array under set -u
+# fails on macOS's bash 3.2, which is what the GitHub macOS runners use.
+command=(flutter test "$test_target" -d "$simulator_udid")
 if [[ -n "${E2E_CONFIG_PATH:-}" ]]; then
-  extra_args+=(--dart-define-from-file="$E2E_CONFIG_PATH")
+  command+=(--dart-define-from-file="$E2E_CONFIG_PATH")
 fi
 
-flutter test "$test_target" -d "$simulator_udid" "${extra_args[@]}" >"$log_file" 2>&1 &
+"${command[@]}" >"$log_file" 2>&1 &
 test_pid=$!
 (
   sleep "$watchdog_seconds"
@@ -38,7 +40,9 @@ watchdog_pid=$!
 
 status=0
 wait "$test_pid" || status=$?
+# Reap the watchdog so bash does not print a "Terminated" job notice.
 kill "$watchdog_pid" 2>/dev/null || true
+wait "$watchdog_pid" 2>/dev/null || true
 
 cat "$log_file"
 if [[ "$status" -ne 0 ]]; then
