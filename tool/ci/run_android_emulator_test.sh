@@ -15,10 +15,12 @@ mkdir -p "$repo_root/artifacts"
 cd "$repo_root/im_flutter_sdk/example"
 flutter pub get
 
-extra_args=()
+# Keep the array non-empty: expanding an empty array under set -u fails
+# on bash 3.2 (e.g. when this script is run locally on macOS).
+command=(flutter test "$test_target" -d emulator-5554)
 if [[ -n "${E2E_CONFIG_PATH:-}" ]]; then
-  extra_args+=(--dart-define-from-file="$E2E_CONFIG_PATH")
+  command+=(--dart-define-from-file="$E2E_CONFIG_PATH")
 fi
 
 set -o pipefail
-flutter test "$test_target" -d emulator-5554 "${extra_args[@]}" 2>&1 | tee "$repo_root/artifacts/$log_name"
+"${command[@]}" 2>&1 | tee "$repo_root/artifacts/$log_name"
