@@ -1,0 +1,10 @@
+{
+  "artifactId": "ios-4.24.0-runner",
+  "platform": "ios",
+  "sdkVersion": "4.24.0",
+  "appVersion": "1.0.0",
+  "wrapperCommit": "runtime",
+  "nativeSdkSha256": "runtime",
+  "artifactSha256": "runtime",
+  "capabilities": ["*"]
+}

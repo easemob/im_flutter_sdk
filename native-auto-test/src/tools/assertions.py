@@ -71,7 +71,7 @@ def assert_error(resp: dict[str, Any], code: int | None = None, description: str
         return
     err = get_error(resp)
     if code is not None and err.get("code") != code:
-        pytest.fail(f"Expected error code {code}, got {err.get(code)}")
+        pytest.fail(f"Expected error code {code}, got {err.get('code')}")
     if description is not None and description not in str(err.get("description", "")):
         pytest.fail(f"Expected error description containing {description}, got {err}")
 
@@ -115,19 +115,53 @@ def assert_response_matches(
     expected: dict[str, Any],
     context: dict[str, Any] | None = None,
     ignore_keys: set[str] | frozenset[str] | None = None,
+    allow_extra_fields: bool = True,
 ) -> None:
     """
     包装 response_match.assert_response_matches：
-    - 正常模式：严格断言
+    - 正常模式：断言 expected 中声明的字段；实际响应中的未声明字段不参与比较
     - 发现模式（CASES_DISCOVER=1）：打印实际/预期与差异，不抛错
+    - allow_extra_fields=False：显式启用完整结构严格断言
     """
     if not _discover_mode():
         from .response_match import assert_response_matches as _raw
-        return _raw(actual, expected, context, ignore_keys)
+        return _raw(
+            actual,
+            expected,
+            context,
+            ignore_keys,
+            allow_extra_fields,
+        )
     resolved = resolve_expected(expected, context or {})
-    ok, diffs = compare_response(actual, resolved, ignore_keys=ignore_keys)
+    ok, diffs = compare_response(
+        actual,
+        resolved,
+        ignore_keys=ignore_keys,
+        allow_extra_fields=allow_extra_fields,
+    )
     print("[DISCOVER] assert_response_matches skipped. Expected vs Actual:")
     print("  - expected:\n" + _pretty(resolved))
     print("  - actual:\n" + _pretty(actual))
     if not ok:
         print("  - diffs:\n  * " + "\n  * ".join(diffs))
+
+
+def assert_event_matches(
+    actual: dict[str, Any],
+    expected: dict[str, Any],
+    context: dict[str, Any] | None = None,
+    ignore_keys: set[str] | frozenset[str] | None = None,
+) -> None:
+    """断言跨平台事件的公共字段。
+
+    事件允许 Android/iOS/Web 在消息对象中附带未声明字段；expected 中声明的
+    字段仍必须存在且值正确。普通 API 响应也默认采用同样的字段子集规则；
+    需要完整结构校验时显式传入 ``allow_extra_fields=False``。
+    """
+    return assert_response_matches(
+        actual,
+        expected,
+        context=context,
+        ignore_keys=ignore_keys,
+        allow_extra_fields=True,
+    )

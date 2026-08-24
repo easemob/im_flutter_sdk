@@ -1,0 +1,4 @@
+interface:
+  display_name: "IM SDK 自动化用例设计"
+  short_description: "IM SDK 用例、多端拓扑、断言与 Allure 规范"
+  default_prompt: "使用 $im-sdk-test-case-design 设计或改造 IM SDK 自动化用例及其 Allure 报告。"

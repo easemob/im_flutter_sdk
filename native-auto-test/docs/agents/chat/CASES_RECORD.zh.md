@@ -5,6 +5,7 @@
 - ChatThread API 属于群组场景，相关 5 个 cases 已迁移到 `tests/group/`；本台账仅保留单聊 ChatManager 与单聊消息公共 API，不重复记录 Thread 用例。
 - 每条 case 以全局序号编号；统计按“当前记录条目数”计算。
 - 暂缓与 skip 项统一写 `CASES_DEFERRED.zh.md`。
+- Allure：Chat 活动用例已补充按业务目标命名的步骤；消息/回调/离线用例保留原有断言与拓扑流程，跳过项继续展示明确原因。
 
 ## getConversation
 
@@ -52,7 +53,7 @@
 
 正常 cases
 13. `tests/chat/test_chat_crud.py::test_chat_send_and_received`
-   A 发送消息到 B，双端校验发送成功响应与接收回调字段。
+   场景拓扑：动作发送端发送；发送账号的其他在线端收到 `direction=0` 的同账号出站同步并可 `getMessage` 查询（`hasDeliverAck` 在该同步事件中端侧返回不稳定，不作为契约）；接收账号的全部在线端均收到 `direction=1` 的入站消息并可查询；动作发送端严格断言与接收在线端数量一致的送达回执。Android 4.23 四端实机通过。
 14. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_text_basic`
    发送基础文本消息，验证普通文本类型发送与接收成功。
 15. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_text_with_languages`
@@ -84,7 +85,7 @@
 24. `tests/chat/test_chat.py::test_chat_translate_message_nonexistent_message`（当前可为 skip/环境语义，暂缓细节见 deferred）
    不存在消息执行翻译，当前环境可能 skip，语义冻结在 deferred 中维护。
 25. `tests/chat/test_chat_crud.py::test_chat_translate_message_recalled_message`
-   对已撤回消息执行翻译，验证异常对象状态下接口返回语义。
+   接收账号全部在线端收到原消息、撤回信息和撤回消息本体，验证已撤回消息的回调传播语义。
 
 ## recallMessage / modifyMessage
 
@@ -106,7 +107,7 @@
 
 正常 cases
 31. `tests/chat/test_chat_crud.py::test_chat_ack_message_read_success`
-   对有效消息回执已读，按当前 Android 实测冻结同步响应 `result=True` 与发送方已读事件。
+   场景拓扑：B 发消息后，A 主/副端均收到；A 主端回执已读，B 断言 `onMessagesRead`。5.0 使用 `needReadReceipt` 表示请求已读回执、`isPeerRead` 表示对方是否已读；当前修改待 Android 5.0 实机回归。
 32. `tests/chat/test_chat_ack_read_strict.py::test_chat_ack_message_read_success_with_event`
    已读回执成功后按当前 Android 实测冻结同步响应 `result=True`，并补充校验发送方已读事件。
 33. `tests/chat/test_chat_s3_non_message_ops.py::test_chat_ack_conversation_read_success_with_event`
@@ -391,7 +392,7 @@
 122. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_recall_message_receiver_recalled_info_event`
    覆盖 `recallMessage` 正常撤回链路，发送方撤回已送达单聊消息后，接收方收到 `onMessagesRecalledInfo` 事件；按真实模拟器返回断言 `recallMsgId`、`convId`、`msg` 与 `ext`，消息体兼容 `translations` 且 `receiverList` 可选。
 123. `tests/chat/test_chat_reaction_fetch.py::test_chat_reaction_change_event_received_by_sender`
-   覆盖 `addReaction` 正常事件链路，接收方给单聊消息添加 reaction 后，发送方和接收方均收到 `onMessageReactionDidChange` 事件；按真实模拟器返回分别断言 `convId`、`msgId`、`operations`、`reactions` 与 `isAddedBySelf`。
+   场景拓扑：动作发送端发送消息后，发送账号其他在线端同步原消息并可 `getMessage` 查询，接收账号全部在线端收到消息；接收动作端添加 reaction 后，发送账号与接收账号的全部在线端均收到 `messageReactionDidChange`。严格断言 `convId`、`msgId`、`operations`、`reactions` 与 `isAddedBySelf`；Android 4.23 四端实机通过。
 124. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_conversation_marks_and_fetch_options`
    覆盖 `addRemoteAndLocalConversationsMark`、`deleteRemoteAndLocalConversationsMark`、`fetchConversationsByOptions`，标记会话后按 options 拉取并校验 mark，再删除标记。
 125. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_message_count_and_search_options_boundaries`
@@ -407,7 +408,7 @@
 群消息回执的正常与边界 case 已迁移到 `tests/group/test_group_message_send.py`，Chat 模块不再重复统计。
 
 ## 统计
-- 当前记录 case 条目总数：`173`
+- 当前记录 case 条目总数：`132`
 
 ## 单聊发送类型覆盖审计（2026-07-23）
 
@@ -445,11 +446,11 @@
 
 正常 cases
 131. `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_location_message_send_receive`
-   5556 发送位置消息，5558 收到位置消息；按真实日志断言 `body.type=3`、经纬度、地址和建筑名。
+   场景拓扑：B 通过原生 `sendMessage` 发送 `body.type=3` 位置消息，A 主/副端均断言经纬度、地址和建筑名；本轮 Android 4.23 真实设备通过。
 132. `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_voice_message_send_receive`
    5556 发送语音消息，5558 收到语音消息；按真实日志断言 `body.type=4`、`displayName=voice.mp3`、发送端 `fileStatus=3`、接收端 `fileStatus=0` 和 `duration=1`。动态路径、secret、remotePath、fileSize 不写死。
 133. `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_custom_message_send_receive`
-   5556 发送自定义消息，5558 收到自定义消息；断言真实 `event` 和 `params`。
+   场景拓扑：B 通过原生 `sendMessage` 发送 `body.type=7` 自定义消息，A 主/副端均断言真实 `event` 和 `params`；本轮 Android 4.23 真实设备通过。
 134. `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_message_delivery_ack[txt-payload0]`
    开启 `requireDeliveryAck=true` 后，文本消息收到 `onMessagesDelivered`，断言真实消息 ID、发送方、接收方、会话和文本 body。
 135. `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_message_delivery_ack[custom-payload1]`
@@ -481,7 +482,7 @@
 ## 单聊文档启用场景补齐（5556/5558 实测）
 
 145. `tests/chat/test_chat_text_boundaries_and_location_delivery.py::*`
-   覆盖空文本、特殊字符、250 字符、请求 `from` 与登录用户不一致，以及位置消息送达回执。发送响应、发送成功、接收和送达事件均保留参与者、会话、方向、状态、已读/送达字段及完整 body；不匹配 `from` 实测异步返回 `500 Message is invalid`。
+   覆盖空文本、特殊字符、250 字符、请求 `from` 与登录用户不一致，以及位置消息送达回执。文本边界 case 场景拓扑改造中：B 发文本后 A 主/副端均收并验证送达；其余断言保持原有参与者、会话、方向、状态、已读/送达字段及完整 body；待本轮 Android 4.23 真实设备回归。不匹配 `from` 实测异步返回 `500 Message is invalid`。
 146. `tests/chat/test_chat_typed_message_pin_flows.py::*` 与 `tests/chat/test_chat_message_pin_boundaries.py::*`
    覆盖位置/自定义消息由收发双方交叉置顶和取消置顶，以及类型消息撤回后置顶边界；按真实模拟器返回，原始发送方执行 pin/unpin 时仅接收方收到 `onMessagePinChanged`，接收方执行 pin/unpin 当前不产生该回调；通过 `fetchPinnedMessages` 校验最终服务端状态，并保留消息类型、方向、状态、已读/送达等字段。
 147. `tests/chat/test_chat_report_and_thumbnail_additional.py::test_chat_receiver_reports_text_message` 与 `test_chat_report_text_message_parameter_boundaries[*]`
@@ -495,7 +496,7 @@
 151. `tests/chat/test_chat_conversation_marks_boundaries.py::test_chat_conversation_mark_idempotent_and_remove_unmarked` 与 `test_chat_conversation_mark_self_current_behavior`
    覆盖重复标记、重复取消、取消未标记、标记自己；正常场景通过目标会话投影断言 `type/isPinned/isThread/marks`，当前环境标记自己会话实测返回 `result=null`。
 152. `tests/chat/test_chat_message_modification_matrix.py::*` 与 `tests/chat/test_chat_s4_message_content_changed.py::test_chat_modify_custom_message_content_changed_event`
-   覆盖文本 body/ext/同时修改、空 ID、不存在 ID、非发送者、自定义内容、CMD 不支持、语音/图片/视频 ext 与 body 不支持。修改成功结果及接收端内容变更事件保留 operator、attributes、类型、方向、状态及送达字段。
+   覆盖文本 body/ext/同时修改、空 ID、不存在 ID、非发送者、自定义内容、CMD 不支持、语音/图片/视频 ext 与 body 不支持。自定义消息 case 额外验证接收账号的全部在线端都收到原消息及内容变更回调；修改成功结果及回调保留 operator、attributes、类型、方向、状态及送达字段。
 153. `tests/chat/test_chat_crud.py::test_chat_fetch_support_languages_success`
    获取真实支持语言列表；严格校验每项恰好包含非空 `nativeName/code/name`、code 唯一，并固定校验 `zh-Hans` 与 `en` 的真实三字段内容，不再使用 `result != None` 弱断言。
 154. `tests/chat/test_chat_attachment_download_and_history_boundaries.py::*` 与 `tests/chat/test_chat_s423_message_callback_and_combine.py::test_attachment_messages_send_receive_and_public_download_methods`
@@ -504,91 +505,6 @@
    覆盖 direction=DOWN、start/end 时间范围和 msgTypes `[1]`、`[0,1]`、`[7]`、`[0,7]`。先等待目标消息进入漫游存储，再以真实 ID 验证筛选结果，避免把服务端归档延迟误判为过滤行为。
 156. `tests/chat/test_chat_recall_and_message_read_ack.py::*`、`tests/chat/test_chat_ack_read_strict.py::*` 与 `tests/chat/test_chat_s3_non_message_ops.py::test_chat_ack_conversation_read_*`
    覆盖文档启用的消息/会话已读 ACK 正常和边界链路；在 `requireDeliveryAck=true` 环境中保留并按阶段断言真实 `hasDeliverAck`，不将该重要字段加入忽略集。
-
-## 好友单聊离线回放专项（5554/5556 实测）
-
-正常 cases
-157. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_text_message_received_after_login`
-   B 离线期间接收文本；关联同步临时 ID、发送成功真实 ID和 B 重登后的 `onMessagesReceived`，严格断言参与者、会话、方向、状态、送达状态及正文。
-158. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_media_message_received_after_login[*]`
-   参数化覆盖 file/image/video/voice 四类离线媒体；冻结真实 `type/displayName/fileStatus/duration`，仅忽略动态路径、URL、secret、文件尺寸和时间字段。
-159. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_cmd_message_received_after_login`
-   普通 CMD 在 B 离线期间进入离线队列；B 重登后通过 `onCmdMessagesReceived` 收到同一 msgId/action，顶层 `deliverOnlineOnly=false`。
-160. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_deliver_online_only_not_received_after_login`
-   CMD body 设置 `deliverOnlineOnly=true` 时，发送方仍收到成功终态，但 B 重登后无目标 CMD 回调且 `getMessage` 返回 null；真实日志中消息顶层 `deliverOnlineOnly` 仍为 false。
-161. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_multiple_text_messages_and_unread_count`
-   B 离线期间积压三条文本；B 重登收到包含三个真实 msgId 的聚合事件，`getUnreadMsgCount=3`，latest message 为第三条。
-162. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_delivery_ack_after_recipient_login`
-   B 离线时 A 不提前收到送达回执；B 重登并接收消息后，A 收到同一 msgId 的 `onMessagesDelivered` 且 `hasDeliverAck=true`。
-163. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_sender_receives_message_read_after_relogin`
-   A 离线期间 B 回执单条已读；A 重登收到同一 msgId 的 `onMessagesRead`，`hasReadAck/hasDeliverAck` 均为 true。
-164. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_recall_after_relogin`
-   B 已收消息后离线，A 撤回；B 重登同时收到 `onMessagesRecalledInfo/onMessagesRecalled`，并确认本地 `getMessage` 为 null。
-165. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_content_change_after_relogin`
-   B 已收消息后离线，A 修改正文；B 重登收到 `onMessageContentChanged` 的操作者、时间和新正文，本地查询返回相同修改结果。
-166. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_location_message_received_after_login`
-   B 离线期间 A 发送位置消息；B 重登收到同一真实 msgId，严格断言经纬度、唯一地址和建筑物名称。
-167. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_custom_message_received_after_login`
-   B 离线期间 A 发送自定义消息；B 重登收到同一真实 msgId、唯一 event 和完整 params。
-168. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_combine_message_received_after_login`
-   先在线发送两条真实源消息，再让 B 离线并使用其服务端 msgId 构造 combine；发送构造响应、成功事件和离线接收事件分别冻结真实 `fileStatus=3/1/3`，标题、摘要和兼容文本完整断言。
-169. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_sender_receives_conversation_read_after_relogin`
-   A 离线期间 B 调用 `ackConversationRead`；A 重登只接受真实 `onConversationRead`，严格断言 `from=B/to=A`，不兼容其他候选事件名。
-170. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_sender_receives_reaction_add_after_relogin`
-   A 离线期间 B 添加 Reaction；A 重登收到 `operate=1` 的原始变化事件，严格断言操作者、Reaction、count、自身标记和用户列表，并通过 `fetchReactionList` 确认最终状态。
-171. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_sender_receives_reaction_remove_after_relogin`
-   消息已有 Reaction 后 A 离线，B 移除；A 重登事件真实返回 `operate=0/count=0/isAddedBySelf=false/userList=[]`，最终查询返回空 Reaction 列表。
-172. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_message_pin_after_relogin`
-   B 离线期间 A 置顶消息；B 重登收到 `MessagePinOperation.Pin`，严格断言消息、会话和操作者，并通过 `fetchPinnedMessages` 精确确认目标消息。
-173. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_message_unpin_after_relogin`
-   消息已置顶后 B 离线，A 取消置顶；B 重登收到 `MessagePinOperation.Unpin`，最终置顶列表严格为空。
-
-## 单聊离线能力扩展专项（5554/5556 实测）
-
-174. `tests/chat/test_chat_offline_message_extended_delivery.py::test_chat_offline_typed_delivery_ack_after_recipient_login[*]`
-   参数化覆盖 file/image/video/voice/location/custom。B 离线期间 A 发送消息，B 重登收到同一真实 msgId 后，A 才收到 `onMessagesDelivered`；严格断言各类型 body 和 `hasDeliverAck=true`，媒体只忽略真实动态路径、URL、secret、大小与时间。
-175. `tests/chat/test_chat_offline_message_extended_delivery.py::test_chat_offline_combine_delivery_ack_after_recipient_login`
-   使用两条真实源消息构造 combine，固定构造响应/发送成功/B 离线接收/A 送达的 `fileStatus=3/1/3/1`，并断言标题、摘要和兼容文本。
-176. `tests/chat/test_chat_offline_message_extended_delivery.py::test_chat_offline_text_automatic_translation_after_recipient_login`
-   带 `targetLanguages=[zh-Hans]` 的唯一英文文本在 B 离线期间发送；真实服务端返回 `translations.zh-Hans=离线翻译-<suffix>`，B 重登后目标语言和翻译正文一致。
-177. `tests/chat/test_chat_offline_message_extended_delivery.py::test_chat_offline_received_media_downloads_after_recipient_login[*]`
-   使用 B 离线回放事件中的原始 file/image/video/voice 消息对象执行下载。附件响应/成功事件固定 `fileStatus=0/1`；image 缩略图下载成功，video 缩略图当前真实返回 `onMessageError 403/Failed to download the file`，按错误语义严格覆盖而非伪造成功。
-178. `tests/chat/test_chat_offline_message_extended_delivery.py::test_chat_offline_mixed_backlog_local_state_after_recipient_login`
-   B 离线期间积压 text/location/custom/combine；回放按真实事件分组但以四个已知 msgId 集合关联，逐条严格校验 `getMessage`，历史查询命中四个目标 ID，拉取历史前会话未读为 4，latest 为 combine。日志确认 `fetchHistoryMessages` 会把旧漫游消息重新载入本地，因此未读必须在该调用前断言。
-179. `tests/chat/test_chat_offline_message_extended_operations.py::test_chat_offline_text_recalled_before_first_recipient_login`
-   B 首次接收前 A 已撤回文本；B 重登收到不含 `msg` 的 `onMessagesRecalledInfo`，`onMessagesRecalled.messages=[]`，本地 `getMessage=null`，不会先回放原消息。
-180. `tests/chat/test_chat_offline_message_extended_operations.py::test_chat_offline_text_modified_before_first_recipient_login`
-   B 首次接收前 A 已修改文本；B 重登不派发独立内容变更事件，而是直接收到同一 msgId 的最终正文，A 收到最终正文送达事件；B 本地消息保留 operator 三字段。
-181. `tests/chat/test_chat_offline_message_extended_operations.py::test_chat_offline_typed_message_read_after_sender_relogin[*]`
-   参数化覆盖 file/image/video/voice/location/custom。A 离线期间 B 对已收消息发送已读回执，A 重登收到各类型真实 body 的 `onMessagesRead`，`hasReadAck/hasDeliverAck` 均为 true。
-182. `tests/chat/test_chat_offline_message_extended_operations.py::test_chat_offline_combine_message_read_after_sender_relogin`
-   A 离线期间 B 已读 combine；A 重登收到同一 msgId、`fileStatus=1` 的发送方 body 和双 ACK 状态。
-183. `tests/chat/test_chat_offline_message_extended_operations.py::test_chat_offline_typed_message_recall_after_recipient_relogin[*]`
-   参数化覆盖 file/image/video/voice/location/custom。B 已收消息后离线，A 撤回；B 重登收到完整 `onMessagesRecalledInfo/onMessagesRecalled` 并确认本地删除。voice 初收为 `fileStatus=0`，撤回回放按真实服务端原消息固定为 `3`，不忽略该字段。
-184. `tests/chat/test_chat_offline_message_extended_operations.py::test_chat_offline_combine_message_recall_after_recipient_relogin`
-   B 已收 combine 后离线，A 撤回；重登回放保留标题、摘要、兼容文本及接收端 `fileStatus=3`，随后本地消息为空。
-185. `tests/chat/test_chat_offline_message_extended_operations.py::test_chat_offline_custom_body_modified_after_recipient_relogin`
-   B 已收 custom 后离线，A 修改 event/params；B 重登收到最终 custom body、操作者与操作时间，本地消息保留 operatorId/operatorTime/operatorCount。
-186. `tests/chat/test_chat_offline_message_extended_operations.py::test_chat_offline_media_attributes_modified_after_recipient_relogin[*]`
-   参数化覆盖 file/image/video/voice attributes 修改；B 重登收到最终 attributes、媒体 body 与操作者信息，并验证本地保存。voice 内容变更回放及本地状态按真实日志为 `fileStatus=1`。
-
-### 扩展专项真实回归
-
-- 扩展投递文件完整 strict：`13 passed`（500.05s），0 failed/skip。
-- 扩展后操作文件：全量会话 `20 passed, 1 failed`（782.47s）；唯一失败的 voice 撤回按真实 `fileStatus=3` 修正后单点 strict `1 passed`（51.18s），因此 21 个节点均已有 strict 通过证据。
-- 扩展文件共收集 `34 items`；当前无新增 skip/xfail。CMD delivery receipt、显式 `translateMessage` 非空结果、非 CMD online-only、强制停止 App、网络断开和既有桥接缺口仍保持原 deferred/排除边界。
-
-异常 cases
-- 无。本专项包含 online-only 负向业务语义，但不把当前环境中偶发的离线回调缺失作为 SDK 异常契约。
-
-### 本轮真实回归
-
-- discovery 输出：`out/offline_friend_chat_20260730/`，包含 WebSocket 预期/实际差异和两台设备 ADB 日志。
-- strict：Contact `5 passed`；Chat 离线投递（媒体展开）`9 passed`；Chat 消息后操作 `3 passed`。
-- 日志修正：file/image/video 接收端 `fileStatus=3`，voice 为 `0`；CMD online-only 开关位于 body，消息顶层字段实测仍为 false。
-- 第二批 P0 discovery/ADB 输出：`out/offline_p0_20260730_AZaG1M/`，包含双设备 logcat、分模块 discovery 和 strict 输出。
-- 第二批 P0 strict：新增 10 items `10 passed`（317.18s）；三个离线文件完整回归 `27 passed`（775.00s），0 failed/skip。
-- 第二批日志修正：combine 的构造响应、发送成功、离线接收 `fileStatus` 分别为 `3/1/3`；Reaction 移除事件保留 count=0 的聚合项，最终查询才返回空列表；会话已读固定为 `onConversationRead`；pin/unpin 均在离线观察方重登时补发。
 
 ### 本轮严格回归口径
 
@@ -604,6 +520,13 @@
 - 真实日志：重新构建安装后，两台 App 初始化日志均显示 `requireDeliveryAck: true`；发送端收到 `onMessagesDelivered`，事件消息使用真实服务端 msgId 且 `hasDeliverAck=true`，后续 `onMessagesRead` 同样保留 `hasDeliverAck=true`。
 - 断言同步：本地会话、按 ID 加载及关键字检索的公共消息准备断言由旧环境的 `false` 收紧为 `true`，没有忽略该字段。`loadMessagesWithIds` 在查询前显式等待每条消息对应的送达事件，消除连续发消息时本地状态尚未刷新的竞争。
 - 验证：原始 `test_chat_ack_message_read_success_with_event` 单例严格通过；最终受影响范围同 session 聚合回归 `19 passed, 0 failed, 0 skipped`。CMD 送达 case 仍维持原有 skip，恢复条件不变。
+
+### 5.0 离线消息的多端前置
+
+- `test_chat_offline_message_delivery.py`、`test_chat_offline_message_operations.py`、`test_chat_offline_message_extended_delivery.py`、`test_chat_offline_message_extended_operations.py` 均通过 `account_a_to_account_b` topology 取得账号全部端点，不再写死 `deviceB/deviceBSec`。
+- 账号进入离线阶段时，统一调用 `logout_account_devices(topology.sender_devices/recipient_devices)`，同账号所有端点必须同时下线；否则副端仍可能先收到消息、回执或操作事件，污染“尚未重新登录”的前置条件。
+- 用例业务步骤只恢复 topology 指定的动作端，用于验证“动作端重新登录后的离线事件”；`finally` 统一调用 `restore_account_devices` 恢复发送/接收账号全部端点，并清理好友与消息状态，避免影响下一个 case。
+- 媒体 `status/fileStatus/thumbnailStatus` 仍按消息阶段断言：发送阶段与离线重登接收阶段不混用；仅对已确认的 5.0 时序差异做局部忽略，不能用离线断言掩盖在线行为问题。
 
 ### 指定 14 条回归修复（2026-07-15，5556/5558）
 

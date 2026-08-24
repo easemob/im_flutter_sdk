@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pytest
+from tests.group.allure_helpers import _allure_step
 
 from src import Cmd
 
@@ -21,10 +22,12 @@ _NONEXISTENT_GROUP_ID = "nonexistent_group_999999"
         Cmd.isMemberInWhiteListFromServer.value,
     ],
 )
+
 def test_group_server_state_list_nonexistent_group(device_a, assert_api, cmd):
     info = {"groupId": _NONEXISTENT_GROUP_ID}
     if cmd in (Cmd.getGroupBlockListFromServer.value, Cmd.getGroupMuteListFromServer.value):
         info.update({"pageNum": 1, "pageSize": 20})
-    resp = device_a.call("GroupManager", cmd, info=info)
-    assert_api.assert_error(resp, code=600, description="do not find this group")
-
+    with _allure_step("A 执行群组业务操作"):
+        resp = device_a.call("GroupManager", cmd, info=info)
+    with _allure_step("验证执行群组业务操作返回的错误码与错误文案"):
+        assert_api.assert_error(resp, code=600, description="do not find this group")

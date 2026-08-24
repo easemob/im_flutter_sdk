@@ -18,6 +18,15 @@ allprojects {
 }
 apply plugin: 'com.android.library'
 
+def flutterProperties = new Properties()
+rootProject.file('local.properties').withInputStream {
+    flutterProperties.load(it)
+}
+def flutterSdkRoot = flutterProperties.getProperty('flutter.sdk')
+def flutterEngineRevision = file(
+    "${flutterSdkRoot}/bin/internal/engine.version"
+).text.trim()
+
 android {
     if (project.android.hasProperty('namespace')) {
         namespace = 'com.easemob.im_flutter_sdk'
@@ -30,10 +39,47 @@ android {
     defaultConfig {
         minSdk = 21
     }
-    // 默认固定为本地依赖（目录不带版本号）。如需改为远程依赖，请按下方 dependencies 段注释切换。
+    // 拓扑：src/base500/ = 5.0 基线（wrapper + jar + jniLibs 全部）；flavor 只放相对基线的差异。
+    // 注意：Java 源集不支持同名文件跨目录覆盖（main + flavor 同名 .java 会 duplicate class），
+    // 所以差异版本通过「基线复制 + 差异覆盖」合并到 build/mergedSrc/<flavor>/java 再编译。
+    // app 侧同 flavor 名自动匹配本 library 的 flavor。
+    flavorDimensions 'chatSdk'
+    productFlavors {
+        sdk423 {
+            dimension 'chatSdk'
+        }
+        sdk500 {
+            dimension 'chatSdk'
+        }
+    }
+    // 差异 wrapper 合并任务：基线复制 + flavor 差异覆盖。
+    // 未来新增版本（如 5.1）：新建 src/sdk501/ 只放差异文件，并在 sourceSets 里加一行配置。
+    def mergeWrapperSrc = { flavorName, extraSrc ->
+        def t = tasks.register("merge${flavorName.capitalize()}WrapperSrc") {
+            def dest = layout.buildDirectory.dir("mergedSrc/${flavorName}/java")
+            inputs.dir('src/base500/java')
+            extraSrc.each { inputs.dir(it) }
+            outputs.dir(dest)
+            doLast {
+                def out = dest.get().asFile
+                delete out
+                copy { from 'src/base500/java'; into out }
+                extraSrc.each { src -> copy { from src; into out } }
+            }
+        }
+        return t
+    }
+    // 每个 flavor：java 只编译合并后的 wrapper 目录；jniLibs 指向各自版本的 .so。
     sourceSets {
-        main {
-            jniLibs.srcDirs = ['./libs/easemob-sdk/libs']
+        sdk423 {
+            java.srcDirs = []
+            java.srcDir(mergeWrapperSrc('sdk423', ['src/sdk423/java']))
+            jniLibs.srcDirs = ['src/sdk423/jniLibs']
+        }
+        sdk500 {
+            // 5.0 = 基线，直接编译 base500，无差异。
+            java.srcDirs = ['src/base500/java']
+            jniLibs.srcDirs = ['src/base500/jniLibs']
         }
     }
 }
@@ -44,13 +90,14 @@ tasks.withType(JavaCompile){
 
 dependencies {
     api 'androidx.appcompat:appcompat:1.1.0'
+    // 手动作为 Android library 引入时，编译期仍需要 Flutter embedding；
+    // 运行期由宿主 Flutter App 提供。
+    compileOnly "io.flutter:flutter_embedding_debug:1.0.0-${flutterEngineRevision}"
 
-    // 本地依赖（默认）：修改为实际 JAR 文件名即可
-    // 替换 JAR 后务必：flutter clean → 删除各模块 build/ → example/android 下 ./gradlew clean → 再编译。
-
-    implementation files('./libs/easemob-sdk/libs/hyphenatechat_4.23.0.jar')
-    // 远程依赖（改为远程时，注释掉上面的 implementation files(...)，取消下一行注释）
-    // implementation 'io.hyphenate:hyphenate-chat:4.19.1'
-    // 仅包含 android/libs 根目录下的 *.jar（子目录里的 JAR 只走上面的显式 implementation files）
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    // 本地依赖（默认）：按 flavor 引对应版本的 JAR。替换 JAR 后务必 clean 再编译。
+    sdk423Api files('./src/sdk423/libs/hyphenatechat_4.23.0.jar')
+    sdk500Api files('./src/base500/libs/hyphenatechat_5.0.0.jar')
+    // 远程依赖（改为远程时，注释掉上面的 files(...)，取消下一行注释）
+    // sdk423Api 'io.hyphenate:hyphenate-chat:4.23.0'
+    // sdk500Api 'io.hyphenate:hyphenate-chat:5.0.0'
 }

@@ -6,6 +6,7 @@ import pytest
 
 from src import Cmd, gt
 from tests.chatroom.chatroom_helpers import (
+    _allure_step,
     assert_join_chatroom_response,
     assert_chatroom_event,
     collect_chatroom_events,
@@ -20,27 +21,22 @@ pytestmark = [pytest.mark.client, pytest.mark.chatroom]
 def test_chatroom_join_public_chatroom_success(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="join", desc_prefix="join")
     try:
-        resp = device_b.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
-        assert_join_chatroom_response(assert_api, resp, device="deviceB", room_id=room_id)
-
-        members_resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomMembers.value,
-            info={"roomId": room_id, "cursor": "", "pageSize": 20},
-        )
-        assert_api.assert_response_matches(
-            members_resp,
-            expected={
-                "manager": "ChatRoomManager",
-                "cmd": Cmd.fetchChatRoomMembers.value,
-                "device": "deviceA",
-                "result": {
-                    "cursor": "",
-                    "list": [user_b],
+        with _allure_step("B 加入聊天室并验证加入响应"):
+            resp = device_b.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
+            assert_join_chatroom_response(assert_api, resp, device="deviceB", room_id=room_id)
+        with _allure_step("A 分页查询聊天室成员并验证包含 B"):
+            members_resp = device_a.call(
+                "ChatRoomManager", Cmd.fetchChatRoomMembers.value,
+                info={"roomId": room_id, "cursor": "", "pageSize": 20},
+            )
+            assert_api.assert_response_matches(
+                members_resp,
+                expected={
+                    "manager": "ChatRoomManager", "cmd": Cmd.fetchChatRoomMembers.value,
+                    "device": "deviceA", "result": {"cursor": "", "list": [user_b]},
                 },
-            },
-            ignore_keys={"sequence"},
-        )
+                ignore_keys={"sequence"},
+            )
     finally:
         safe_delete_chatroom(room_id)
 
@@ -150,7 +146,7 @@ def _assert_joiner_ext_delivered_to_observer(
     for _ in range(12):
         observer_events = collect_chatroom_events(
             observer_device,
-            expected_event_types={"onMemberJoinedFromChatRoom"},
+            expected_event_types={"onRoomMemberJoined"},
             chatroom_id=room_id,
             timeout=0.5,
             require_event=False,
@@ -170,7 +166,7 @@ def _assert_joiner_ext_delivered_to_observer(
         # 仅收集加入方自身事件用于失败诊断，不参与匹配判定。
         self_events = collect_chatroom_events(
             joiner_device,
-            expected_event_types={"onMemberJoinedFromChatRoom"},
+            expected_event_types={"onRoomMemberJoined"},
             chatroom_id=room_id,
             timeout=0.5,
             require_event=False,
@@ -188,7 +184,7 @@ def _assert_joiner_ext_delivered_to_observer(
     assert_chatroom_event(
         assert_api,
         matching_event,
-        event_type="onMemberJoinedFromChatRoom",
+        event_type="onRoomMemberJoined",
         room_id=room_id,
         participant=joiner_user,
         ext=ext,
@@ -207,18 +203,19 @@ def test_chatroom_join_with_ext_member_joined_callback(
     # 用 user_c 建房，避免 A/B 任一方作为 REST 初始成员污染“真实加入”语义。
     room_id, _ = create_chatroom_or_skip(owner=user_c, name_prefix="join_ext", desc_prefix="join_ext")
     try:
-        _assert_joiner_ext_delivered_to_observer(
-            assert_api,
-            room_id=room_id,
-            observer_device=device_b,
-            observer_device_name="deviceB",
-            observer_join_result_shape="room",
-            observer_user=user_b,
-            joiner_device=device_a,
-            joiner_device_name="deviceA",
-            joiner_result_shape="room",
-            joiner_user=user_a,
-            ext=_join_ext(user_a, user_b, "聊天室加入用户A"),
-        )
+        with _allure_step("观察端加入聊天室，再验证加入方携带 ext 的成员事件"):
+            _assert_joiner_ext_delivered_to_observer(
+                assert_api,
+                room_id=room_id,
+                observer_device=device_b,
+                observer_device_name="deviceB",
+                observer_join_result_shape="room",
+                observer_user=user_b,
+                joiner_device=device_a,
+                joiner_device_name="deviceA",
+                joiner_result_shape="room",
+                joiner_user=user_a,
+                ext=_join_ext(user_a, user_b, "聊天室加入用户A"),
+            )
     finally:
         safe_delete_chatroom(room_id)

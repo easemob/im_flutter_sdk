@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "extractorVersion": 1,
+  "sdkVersion": "5.0.0",
+  "inputs": {
+    "androidJar": {
+      "jar": "hyphenatechat_5.0.0.jar",
+      "jarSha256": "462254bf020b333f565bd29c9e35967d538c17c802e9061058d9afbe88a763c3",
+      "documentation": "hyphenate-api-doc.zip",
+      "documentationSha256": "eae69b9dddc8c8033686db9c00a3c18d248bdacf8f9a0d310c865a4ccb25cfc8",
+      "publicBoundary": "Vendor API documentation type list",
+      "signatureSource": "javap -public -constants"
+    },
+    "iosFramework": {
+      "framework": "HyphenateChat.xcframework",
+      "frameworkInfoPlistSha256": "7d49aa5855aee79926a6cdc2a0f9ca55750a2f09406cf27d96968525ef14c206",
+      "frameworkBinarySha256": "71edf645f532b2f643002babf5d7403b11ebcfdd079a3cf37c0cb15257765d23",
+      "publicHeadersSha256": "2a4857053f5a8038b8ee1e78ea468cfac27111289e737eff81b512a84b1c6a30",
+      "publicBoundary": "All headers in HyphenateChat.framework/Headers",
+      "signatureSource": "Apple Clang -extract-api"
+    }
+  },
+  "counts": {
+    "androidTypes": 101,
+    "androidMembers": 1513,
+    "iosHeaders": 72,
+    "iosSymbols": 1175,
+    "iosRelationships": 1137
+  }
+}

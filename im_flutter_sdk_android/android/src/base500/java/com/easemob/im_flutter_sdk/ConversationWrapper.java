@@ -1,0 +1,554 @@
+package com.easemob.im_flutter_sdk;
+
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
+import io.flutter.plugin.common.MethodChannel.Result;
+
+import com.hyphenate.EMValueCallBack;
+import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMConversation;
+import com.hyphenate.chat.EMMessage;
+import com.hyphenate.exceptions.HyphenateException;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+
+public class ConversationWrapper extends Wrapper implements MethodCallHandler{
+
+    ConversationWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
+        super(flutterPluginBinding, channelName);
+    }
+
+    /**
+     * Helper class to parse conversation parameters from JSONObject and get EMConversation instance.
+     */
+    private static class ConversationParams {
+        final String convId;
+        final EMConversation.EMConversationType type;
+        final boolean isThread;
+
+        ConversationParams(JSONObject params) throws JSONException {
+            this.convId = params.getString("convId");
+            this.type = EnumTools.conversationTypeFromInt(params.getInt("type"));
+            this.isThread = params.optBoolean("isThread", false);
+        }
+
+        EMConversation getConversation() {
+            return EMClient.getInstance().chatManager().getConversation(convId, type, true, isThread);
+        }
+    }
+
+    @Override
+    protected boolean dispatchMethodCall(
+            String method,
+            JSONObject params,
+            Result result
+    ) throws Exception {
+        if (MethodKey.getUnreadMsgCount.equals(method)) {
+            getUnreadMsgCount(params, method, result);
+            return true;
+        }
+        else if (MethodKey.markAllMessagesAsRead.equals(method)) {
+            markAllMessagesAsRead(params, method, result);
+            return true;
+        }
+        else if (MethodKey.markMessageAsRead.equals(method)) {
+            markMessageAsRead(params, method, result);
+            return true;
+        }
+        else if (MethodKey.syncConversationExt.equals(method)) {
+            syncConversationExt(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeMessage.equals(method)) {
+            removeMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.deleteMessageByIds.equals(method)) {
+            deleteMessageByIds(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getLatestMessage.equals(method)) {
+            getLatestMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getLatestMessageFromOthers.equals(method)) {
+            getLatestMessageFromOthers(params, method, result);
+            return true;
+        }
+        else if (MethodKey.clearAllMessages.equals(method)) {
+            clearAllMessages(params, method, result);
+            return true;
+        }
+        else if (MethodKey.deleteMessagesWithTs.equals(method)) {
+            deleteMessagesWithTs(params, method, result);
+            return true;
+        }
+        else if (MethodKey.appendMessage.equals(method)) {
+            appendMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.insertMessage.equals(method)) {
+            insertMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.updateConversationMessage.equals(method)) {
+            updateConversationMessage(params, method, result);
+            return true;
+        }
+        else if (MethodKey.loadMsgWithId.equals(method)) {
+            loadMsgWithId(params, method, result);
+            return true;
+        }
+        else if (MethodKey.loadMsgWithStartId.equals(method)) {
+            loadMsgWithStartId(params, method, result);
+            return true;
+        }
+        else if (MethodKey.loadMsgWithKeywords.equals(method)) {
+            loadMsgWithKeywords(params, method, result);
+            return true;
+        }
+        else if (MethodKey.loadMsgWithMsgType.equals(method)) {
+            loadMsgWithMsgType(params, method, result);
+            return true;
+        }
+        else if (MethodKey.loadMsgWithTime.equals(method)) {
+            loadMsgWithTime(params, method, result);
+            return true;
+        }
+        else if (MethodKey.messageCount.equals(method)) {
+            messageCount(params, method, result);
+            return true;
+        }
+        else if (MethodKey.removeMsgFromServerWithTimeStamp.equals(method)) {
+            removeMsgFromServerWithTimeStamp(params, method, result);
+            return true;
+        }
+        else if (MethodKey.pinnedMessages.equals(method)) {
+            pinnedMessages(params, method, result);
+            return true;
+        }
+        else if (MethodKey.conversationRemindType.equals(method)) {
+            remindType(params, method, result);
+            return true;
+        }
+        else if (MethodKey.conversationSearchMsgsByOptions.equals(method)) {
+            searchMsgByOptions(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getConversationName.equals(method)) {
+            getConversationName(params, method, result);
+            return true;
+        }
+        else if (MethodKey.getConversationAvatar.equals(method)) {
+            getConversationAvatar(params, method, result);
+            return true;
+        }
+        else if (MethodKey.conversationGetLocalMessageCount.equals(method)) {
+            getLocalMessageCount(params, method, result);
+            return true;
+        }
+        else if (MethodKey.conversationDeleteServerMessageWithIds.equals(method)) {
+            deleteLocalAndServerMessages(params, method, result);
+            return true;
+        }
+        else if (MethodKey.conversationDeleteServerMessageWithTime.equals(method)) {
+            deleteLocalAndServerMessagesByTime(params, method, result);
+            return true;
+        }
+
+        return super.dispatchMethodCall(method, params, result);
+    }
+
+
+
+    private void getUnreadMsgCount(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        asyncHeavyWorkRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            onSuccess(result, channelName,  conversation.getUnreadMsgCount());   
+        });
+    }
+
+    private void markAllMessagesAsRead(JSONObject params, String channelName, Result result) throws JSONException {
+        // 5.0 移到 EMChatManager.asyncClearConversationUnreadMessageCount
+        ConversationParams conversationParams = new ConversationParams(params);
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            EMClient.getInstance().chatManager().asyncClearConversationUnreadMessageCount(conversation.conversationId(), new EMWrapperCallBack(result, channelName, true));
+        });
+    }
+
+    private void markMessageAsRead(JSONObject params, String channelName, Result result) throws JSONException {
+        // 5.0 改为 asyncSendMessageReadReceipts(List<EMMessage>)
+        String msgId = params.getString("msgId");
+        asyncRunnable(()->{
+            // 【透传原生】不本地拦截
+            EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
+            List<EMMessage> msgs = new ArrayList<>();
+            if (msg != null) {
+                msgs.add(msg);
+            }
+            EMClient.getInstance().chatManager().asyncSendMessageReadReceipts(msgs, new EMWrapperCallBack(result, channelName, true));
+        });
+    }
+
+    private void syncConversationExt(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        JSONObject ext = params.getJSONObject("ext");
+        String jsonStr = "";
+        if (ext.length() != 0) {
+            jsonStr = ext.toString();
+        }
+        String finalJsonStr = jsonStr;
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            conversation.setExtField(finalJsonStr);
+            onSuccess(result, channelName, true);
+        });
+    }
+
+    private void removeMessage(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        String msgId = params.getString("msgId");
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            conversation.removeMessage(msgId);
+            onSuccess(result, channelName, true);
+        });
+    }
+
+    private void deleteMessageByIds(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        List<String> messageIds = new ArrayList<>();
+        if (params.has("messageIds")){
+            JSONArray array = params.getJSONArray("messageIds");
+            for (int i = 0; i < array.length(); i++) {
+                messageIds.add(array.getString(i));
+            }
+        }
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            for (int i = 0; i < messageIds.size(); i++) {
+                conversation.removeMessage(messageIds.get(i));
+            }
+            onSuccess(result, channelName, true);
+        });
+    }
+
+    private void getLatestMessage(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            EMMessage msg = conversation.getLastMessage();
+            onSuccess(result, channelName, msg != null ? MessageHelper.toJson(msg) : null);
+        });
+    }
+
+    private void getLatestMessageFromOthers(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            EMMessage msg = conversation.getLatestMessageFromOthers();
+            onSuccess(result, channelName, msg != null ? MessageHelper.toJson(msg) : null);
+        });
+    }
+
+    private void clearAllMessages(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            conversation.clearAllMessages();
+            onSuccess(result, channelName, true);
+        });
+    }
+
+    private void deleteMessagesWithTs(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        long startTs = params.getLong("startTs");
+        long endTs = params.getLong("endTs");
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            // 【透传原生】原生返回值直接透传（不转错误）
+            boolean success = conversation.removeMessages(startTs, endTs);
+            onSuccess(result, channelName, success);
+        });
+    }
+
+
+
+    private void insertMessage(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        JSONObject msg = params.getJSONObject("msg");
+        EMMessage message = MessageHelper.fromJson(msg);
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            conversation.insertMessage(message);
+            onSuccess(result, channelName, true);
+        });
+    }
+
+    private void appendMessage(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        JSONObject msg = params.getJSONObject("msg");
+        EMMessage message = MessageHelper.fromJson(msg);
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            if (message != null) {
+                conversation.appendMessage(message);
+            }
+            onSuccess(result, channelName, true);
+        });
+    }
+
+    private void updateConversationMessage(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        // 【透传原生】不本地拦截
+        EMMessage msg = MessageHelper.fromJson(params.getJSONObject("msg"));
+        EMMessage dbMsg = EMClient.getInstance().chatManager().getMessage(msg.getMsgId());
+        HelpTool.mergeMessage(msg, dbMsg);
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            conversation.updateMessage(dbMsg);
+            onSuccess(result, channelName, true);
+        });
+    }
+
+    private void loadMsgWithId(JSONObject params, String channelName, Result result) throws JSONException {
+        String msgId = params.getString("msgId");
+        // cmd 语义 = 会话级（ConversationManager.loadMsgWithId，传 conv）→ Conversation.getMessage（对齐 iOS + cmd 归属）
+        ConversationParams conversationParams = new ConversationParams(params);
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            EMMessage msg = conversation.getMessage(msgId);
+            if(msg == null) {
+                onSuccess(result, channelName, null);
+            }else {
+                onSuccess(result, channelName, MessageHelper.toJson(msg));
+            }
+        });
+    }
+
+    private void loadMsgWithStartId(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        String startId = params.getString("startId");
+        int pageSize = params.getInt("count");
+        EMConversation.EMSearchDirection direction = EnumTools.searchDirectionFromInt(params.getInt("direction"));
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            List<EMMessage> msgList = conversation.loadMoreMsgFromDB(startId, pageSize, direction);
+            List<Map> messages = new ArrayList<>();
+            for(EMMessage msg: msgList) {
+                messages.add(MessageHelper.toJson(msg));
+            }
+            onSuccess(result, channelName, messages);
+        });
+    }
+
+    private void loadMsgWithKeywords(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        String keywords = params.getString("keywords");
+        List<String> senders = new ArrayList<>();
+        String sender = null;
+        if (params.has("senders")) {
+
+            JSONArray jsonArray = params.getJSONArray("senders");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                senders.add(jsonArray.getString(i));
+            }
+        } else {
+            if (params.has("from")) {
+                sender = params.getString("from");
+                senders.add(sender);
+            }
+        }
+
+        int count = params.getInt("count");
+        long timestamp = params.getLong("timestamp");
+        EMConversation.EMSearchDirection direction = EnumTools.searchDirectionFromInt(params.getInt("direction"));
+        EMConversation.EMMessageSearchScope scope;
+        if(params.has("searchScope")) {
+            scope = EMConversation.EMMessageSearchScope.values()[params.getInt("searchScope")];
+        }else {
+            scope = EMConversation.EMMessageSearchScope.ALL;
+        }
+
+        List<String> finalSenders = senders;
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            conversation.asyncSearchMsgFromDB(keywords, timestamp, count, finalSenders, direction, scope, new EMValueWrapperCallBack<List<EMMessage>>(result, channelName) {
+                @Override
+                public void onSuccess(List<EMMessage> msgList) {
+                    List<Map> messages = new ArrayList<>();
+                    for(EMMessage msg: msgList) {
+                        messages.add(MessageHelper.toJson(msg));
+                    }
+                    super.updateObject(messages);
+                }
+            });
+        });
+    }
+
+    private void loadMsgWithMsgType(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        long timestamp = params.getLong("timestamp");
+        String sender = null;
+        if (params.has("sender")) {
+            sender = params.getString("sender");
+        }
+        int count = params.getInt("count");
+        EMConversation.EMSearchDirection direction = EnumTools.searchDirectionFromInt(params.getInt("direction"));
+        EMMessage.Type type = EnumTools.messageBodyTypeFromInt(params.getInt("msgType"));
+        EMMessage.Type finalType = type;
+        String finalSender = sender;
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            List<EMMessage> msgList = conversation.searchMsgFromDB(finalType, timestamp, count, finalSender, direction);
+            List<Map> messages = new ArrayList<>();
+            for(EMMessage msg: msgList) {
+                messages.add(MessageHelper.toJson(msg));
+            }
+            onSuccess(result, channelName, messages);
+        });
+    }
+
+    private void loadMsgWithTime(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        long startTime = params.getLong("startTime");
+        long endTime = params.getLong("endTime");
+        int count = params.getInt("count");
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            List<EMMessage> msgList = conversation.searchMsgFromDB(startTime, endTime, count);
+            List<Map> messages = new ArrayList<>();
+            for(EMMessage msg: msgList) {
+                messages.add(MessageHelper.toJson(msg));
+            }
+            onSuccess(result, channelName, messages);
+        });
+    }
+
+    private void messageCount(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            onSuccess(result, channelName,  conversation.getAllMsgCount());
+        });
+    } 
+
+    private void removeMsgFromServerWithTimeStamp(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        long timestamp = params.getLong("timestamp");
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            conversation.removeMessagesFromServer(timestamp, new EMWrapperCallBack(result, channelName, null));
+        });
+    }
+
+    private void pinnedMessages(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            List<EMMessage> msgList = conversation.pinnedMessages();
+            List<Map> messages = new ArrayList<>();
+            for(EMMessage msg: msgList) {
+                messages.add(MessageHelper.toJson(msg));
+            }
+            onSuccess(result, channelName, messages);
+        });
+    }
+
+
+    // 481
+    private void remindType(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            onSuccess(result, channelName, EnumTools.remindTypeToInt(conversation.pushRemindType()));
+        });
+    }
+
+    private void searchMsgByOptions(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        JSONArray ja = params.getJSONArray("types");
+        Set<EMMessage.Type> types = new HashSet<>();
+        for (int i = 0; i < ja.length(); i++) {
+            int iType = ja.getInt(i);
+            types.add(EnumTools.messageBodyTypeFromInt(iType));
+        }
+        long ts = params.getLong("ts");
+        int count = params.getInt("count");
+        String from = params.optString("from");
+        EMConversation.EMSearchDirection direction = EnumTools.searchDirectionFromInt(params.getInt("direction"));
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            List<EMMessage> msgList = conversation.searchMsgFromDB(types, ts, count, from, direction);
+            List<Map> messages = new ArrayList<>();
+            for(EMMessage msg: msgList) {
+                messages.add(MessageHelper.toJson(msg));
+            }
+            onSuccess(result, channelName, messages);
+        });
+    }
+
+    private void getConversationName(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        asyncRunnable(()-> {
+            EMConversation conversation = conversationParams.getConversation();
+            onSuccess(result, channelName, conversation.getConversationName());
+        });
+    }
+
+    private void getConversationAvatar(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        asyncRunnable(()-> {
+            EMConversation conversation = conversationParams.getConversation();
+            onSuccess(result, channelName, conversation.getConversationAvatar());
+        });
+    }
+
+    private void getLocalMessageCount(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        long startMs = params.optLong("startTs");
+        long endMs = params.optLong("endTs");
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            int count = conversation.getAllMsgCount(startMs, endMs);
+            onSuccess(result, channelName, count);
+        });
+    }
+
+    private void deleteLocalAndServerMessages(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        List<String> messageIds = new ArrayList<>();
+        if (params.has("msgIds")){
+            JSONArray array = params.getJSONArray("msgIds");
+            for (int i = 0; i < array.length(); i++) {
+                messageIds.add(array.getString(i));
+            }
+        }
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            conversation.removeMessagesFromServer(messageIds, new EMWrapperCallBack(result, channelName,null));
+        });
+    }
+
+    private void deleteLocalAndServerMessagesByTime(JSONObject params, String channelName, Result result) throws JSONException {
+        ConversationParams conversationParams = new ConversationParams(params);
+        long beforeMs = params.optLong("beforeTs");
+        asyncRunnable(()->{
+            EMConversation conversation = conversationParams.getConversation();
+            conversation.removeMessagesFromServer(beforeMs, new EMWrapperCallBack(result, channelName,null));
+        });
+    }
+
+}

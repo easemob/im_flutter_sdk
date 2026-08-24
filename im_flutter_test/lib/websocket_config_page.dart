@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
-import 'bridge/event_bridge_handler.dart';
 import 'bridge/im_websocket_bridge.dart';
+import 'runner/runner_info.dart';
 
 /// WebSocket 桥接配置页：配置 URL/topic、手动连接/断开、查看与清空请求响应列表。
 class WebSocketConfigPage extends StatefulWidget {
-  const WebSocketConfigPage({super.key});
+  const WebSocketConfigPage({required this.runnerInfo, super.key});
+
+  final RunnerInfo runnerInfo;
 
   @override
   State<WebSocketConfigPage> createState() => _WebSocketConfigPageState();
@@ -24,7 +26,7 @@ class _WebSocketConfigPageState extends State<WebSocketConfigPage> {
     super.initState();
     _urlController.text = kDefaultBridgeWebSocketBaseUrl;
     _topicController.text = kDefaultBridgeWebSocketTopic;
-    _deviceController.text = 'deviceA';
+    _deviceController.text = widget.runnerInfo.deviceName;
     IMWebSocketBridge.instance.onLog = _onLog;
   }
 
@@ -71,9 +73,7 @@ class _WebSocketConfigPageState extends State<WebSocketConfigPage> {
         url: connectUrl,
         deviceName: deviceName.isEmpty ? null : deviceName,
       );
-      // Register event handlers to forward events to WebSocket
-      EventBridgeHandler.instance.registerAllHandlers();
-      if (mounted) _showSnack('已连接并注册事件处理器');
+      if (mounted) _showSnack('已连接');
     } catch (e) {
       if (mounted) _showSnack('连接失败: $e');
     } finally {
@@ -84,8 +84,6 @@ class _WebSocketConfigPageState extends State<WebSocketConfigPage> {
   Future<void> _disconnect() async {
     setState(() => _connecting = true);
     try {
-      // Unregister event handlers
-      EventBridgeHandler.instance.unregisterAllHandlers();
       await IMWebSocketBridge.instance.stop();
       if (mounted) _showSnack('已断开并取消注册事件处理器');
     } finally {
@@ -108,7 +106,9 @@ class _WebSocketConfigPageState extends State<WebSocketConfigPage> {
     final connected = IMWebSocketBridge.instance.isConnected;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('WebSocket 桥接配置'),
+        title: Text(
+          '${widget.runnerInfo.platform} ${widget.runnerInfo.sdkVersion}',
+        ),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -159,7 +159,8 @@ class _WebSocketConfigPageState extends State<WebSocketConfigPage> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: _connecting || !connected ? null : _disconnect,
+                        onPressed:
+                            _connecting || !connected ? null : _disconnect,
                         child: const Text('断开'),
                       ),
                     ),
@@ -272,13 +273,15 @@ class _LogTileState extends State<_LogTile> {
               ),
               if (_expanded) ...[
                 const SizedBox(height: 8),
-                const Text('请求:', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('请求:',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 SelectableText(
                   item.request,
                   style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
                 ),
                 const SizedBox(height: 4),
-                const Text('响应:', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('响应:',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 SelectableText(
                   item.response,
                   style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),

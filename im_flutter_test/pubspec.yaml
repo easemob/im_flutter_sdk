@@ -1,5 +1,5 @@
 name: im_flutter_test
-description: "环信 Flutter SDK 自动化测试桥接端（被测设备 App）。依赖发布版 im_flutter_sdk，承载 WebSocket 桥接与测试脚手架。"
+description: "环信原生 SDK 自动化测试 Runner。通过 im_flutter_sdk_interface 承载 WebSocket 桥接与测试脚手架。"
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -16,11 +16,7 @@ dependencies:
   # 读取 native-auto-test/config.yaml（通过 assets 软链）。
   yaml: ^3.1.2
 
-  # 依赖发布版 SDK（path 本地引入；发布版本直接走 im_flutter_sdk 目录）。
-  im_flutter_sdk:
-    path: ../im_flutter_sdk
-
-  # 桥接用到 Client / callNativeMethod（ManagerMixin），来自接口包。
+  # 唯一 SDK 调用边界：Client / ManagerMixin / MethodChannel。
   im_flutter_sdk_interface:
     path: ../im_flutter_sdk_interface
 

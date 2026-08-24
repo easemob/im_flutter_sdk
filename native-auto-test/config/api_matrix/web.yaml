@@ -1,0 +1,16 @@
+platform: web
+
+# Web 4.23 只声明当前浏览器 Runner 已适配的真实 SDK API。
+# 不把 Android/iOS API 继承进来，未实现的调用会在 capability 阶段明确 skip。
+base:
+  version: 4.23.0
+  apis:
+    - Client.init
+    - Client.getCurrentDeviceId
+    - Client.isConnected
+    - Client.login
+    - Client.logout
+    - Client.startCallback
+    - ChatManager.addReaction
+    - ChatManager.getMessage
+    - ChatManager.sendMessage

@@ -7,6 +7,8 @@
   - 2) 命名统一：以 Android 端命名为基准统一 Dart 与 iOS；保持 `MethodKey`/`Channel`/`Event` 三侧一致。
   - 3) Wrapper 修改：
     - Android：在 `im_flutter_sdk_android/android/src/.../Wrapper*.java` 增加/调整对应方法与回调派发；确保序列化字段与 Dart 模型一致。
+      - API 命令统一由公共 `Wrapper.onMethodCall` 完成参数转换、异常处理与 `OnceResult` 防重复回复；各 Manager 仅在 `dispatchMethodCall` 中用显式 `if/else` 映射 `MethodKey`，未知命令返回 `false` 交由公共入口回复 `notImplemented`。
+      - 原生事件监听仍由各 Manager 的 `registerEaseListener` / `unRegisterEaseListener` 维护，不属于 API 命令分发；调整 API 路由时不得删除或改写事件监听生命周期。
     - iOS：在 `im_flutter_sdk_ios/ios/Classes/*Helper.m` 或 `*Wrapper.m` 同步实现，使用与 Android 一致的方法名和参数键。
   - 4) Dart 对齐：
     - 方法 key：`lib/src/internal/chat_method_keys.dart` 与原生保持一一对应。
@@ -15,6 +17,14 @@
   - 5) 端到端验证：
     - 示例工程运行基础用例；新增/变更 API 写最小调用样例（可临时置于 example）。
     - Android 与 iOS 分别完成本地构建验证（参见 `docs/specs/dependency-spec.md`）。
+
+## 5.0 原生 API 基线
+
+- 5.0 升级的原生真相源位于 `docs/native-api/5.0/`；提取阶段不得读取或复用现有 Flutter wrapper。
+- Android 公开边界以厂商 API 文档中的类型为准，方法、字段、枚举与回调签名从 5.0.0 JAR 提取。
+- iOS 公开边界以 `HyphenateChat.framework/Headers` 全部头文件为准，声明和符号关系由 Apple Clang 提取。
+- 使用 `im_flutter_sdk/scripts/extract_native_api.py` 重新生成；`manifest.json` 中的输入哈希和数量用于检查基线漂移。
+- wrapper 适配时再以 Android 命名为基准建立 Android/iOS/Dart 映射；不得反向用旧 wrapper 补写原生基线。
 
 - 命名与兼容性
   - 若 Android/iOS/Dart 命名不一致：统一改为 Android 命名；如需兼容旧名，在 Dart 层提供过渡别名，并标注弃用。
@@ -30,3 +40,18 @@
   - [ ] Dart 模型字段、`fromJson`/`toJson` 与原生序列化一致
   - [ ] 示例工程可编译（Android assembleDebug；iOS pod install + xcodebuild）
   - [ ] 依赖切换规范符合 `docs/specs/dependency-spec.md`（目录名不带版本，jar 可带版本）
+
+## 自动化 Runner 的 interface 直连边界
+
+- `im_flutter_test` 只依赖 `im_flutter_sdk_interface`，通过
+  `Client.instance` 和各 Manager 的 `callNativeMethod` 路由。
+- Android 4.23 Runner 直接注册 `im_flutter_sdk_android`，不复制正式
+  Wrapper 的业务 API，也不经过 `im_flutter_sdk` Dart 业务层。
+- 若某个公开 Dart API 原先由 Dart 组合多个原生调用实现，而 interface 直连
+  缺少对应命令，只有当该命令本身代表真实 SDK 能力时才允许补到平台 Wrapper。
+  Android MVP 的 `UserInfoManager.fetchOwnInfo` 按“当前登录用户 ID +
+  fetchUserInfoByUserId”实现。
+- `TestControlChannel` 只能承载 Runner 信息、网络/进程控制和升级快照；不得
+  承载登录、联系人、消息、群组等业务 API。
+- Android MVP 新增的正式 Wrapper 命令在进入发布版本前，仍须按本规范补齐
+  iOS、Dart key/导出和跨端构建验收。

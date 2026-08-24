@@ -12,6 +12,7 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Map;
 
 
@@ -56,35 +57,51 @@ class EMWrapperCallBack implements EMCallBack {
     Result result;
     String channelName;
     Object object;
+    // result 只能提交一次：原生回调重复/超时后再回调 → 第二次忽略（防 "Reply already submitted" 崩溃）
+    private final AtomicBoolean submitted = new AtomicBoolean(false);
 
     void post(Runnable runnable) {
         ImFlutterSdkPlugin.handler.post(runnable);
     }
 
+    private void submitOnce(Runnable runnable) {
+        post(() -> {
+            if (submitted.compareAndSet(false, true)) {
+                runnable.run();
+            } else {
+                EMLog.e("callback", "duplicate result submission ignored (already replied)");
+            }
+        });
+    }
+
     @Override
     public void onSuccess() {
-        post(() -> {
-            Map<String, Object> data = new HashMap<>();
-            if (object != null) {
+        submitOnce(() -> {
+            if (object == null) {
+                result.success(null);  // 无返回 → 真 null（对齐基类 onSuccess）
+            } else {
+                Map<String, Object> data = new HashMap<>();
                 data.put(channelName, object);
+                result.success(data);
             }
-            result.success(data);
         });
     }
 
     public void updateObject(Object object) {
-        post(()-> {
-            Map<String, Object> data = new HashMap<>();
-            if (object != null) {
+        submitOnce(()-> {
+            if (object == null) {
+                result.success(null);  // 无返回 → 真 null
+            } else {
+                Map<String, Object> data = new HashMap<>();
                 data.put(channelName, object);
+                result.success(data);
             }
-            result.success(data);
         });
     }
 
     @Override
     public void onError(int code, String desc) {
-        post(() -> {
+        submitOnce(() -> {
             Map<String, Object> data = new HashMap<>();
             data.put("error", ErrorHelper.toJson(code, desc));
             EMLog.e("callback", desc);
@@ -135,9 +152,21 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
 
     private MethodChannel.Result result;
     private String channelName;
+    // result 只能提交一次：原生回调重复/超时后再回调 → 第二次忽略（防 "Reply already submitted" 崩溃）
+    private final AtomicBoolean submitted = new AtomicBoolean(false);
 
     public void post(Runnable runnable) {
         ImFlutterSdkPlugin.handler.post(runnable);
+    }
+
+    private void submitOnce(Runnable runnable) {
+        post(() -> {
+            if (submitted.compareAndSet(false, true)) {
+                runnable.run();
+            } else {
+                EMLog.e("callback", "duplicate result submission ignored (already replied)");
+            }
+        });
     }
 
     @Override
@@ -147,7 +176,7 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
 
     @Override
     public void onError(int code, String desc) {
-        post(() -> {
+        submitOnce(() -> {
             Map<String, Object> data = new HashMap<>();
             data.put("error", ErrorHelper.toJson(code, desc));
             EMLog.e("callback", "onError");
@@ -156,7 +185,7 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
     }
 
     public void updateObject(Object object) {
-        post(()-> {
+        submitOnce(()-> {
             Map<String, Object> data = new HashMap<>();
             if (object != null) {
                 data.put(channelName, object);

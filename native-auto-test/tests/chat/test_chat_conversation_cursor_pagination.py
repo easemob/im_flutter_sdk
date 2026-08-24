@@ -6,9 +6,15 @@ import uuid
 import pytest
 
 from src import Cmd
+from src.test_flow.event_waiters import wait_for_text_event as _wait_text_event
 from tests.chat._utils import build_text
 
-pytestmark = [pytest.mark.client, pytest.mark.chat]
+pytestmark = [
+    pytest.mark.client,
+    pytest.mark.chat,
+    # 5.0 移除 cursor 分页（会话查询返回纯 list，无 cursor/pageSize 语义）→ 整个文件 skip
+    pytest.mark.skip(reason="5.0 移除 cursor 分页（getConversationsFromServerWithCursor 等返回纯 list，无 cursor 语义）"),
+]
 
 
 def _assert_call(assert_api, response, *, manager, cmd, device, result):
@@ -22,9 +28,12 @@ def _assert_call(assert_api, response, *, manager, cmd, device, result):
 def _switch_user(device, assert_api, *, device_name, user_id):
     logout = device.call("Client", Cmd.logout.value, info={"unbindToken": False})
     _assert_call(assert_api, logout, manager="Client", cmd=Cmd.logout.value, device=device_name, result=True)
+    # 5.0 统一 token 登录：密码需先 REST 换 token（直接传密码被拒 202）
+    from src.rest_api.user_api import fetch_user_token
+    _tok = fetch_user_token(user_id, "1").get("access_token", "")
     login = device.call(
         "Client", Cmd.login.value,
-        info={"userId": user_id, "pwdOrToken": "1", "isPassword": True},
+        info={"userId": user_id, "pwdOrToken": _tok, "isPassword": False},
     )
     _assert_call(assert_api, login, manager="Client", cmd=Cmd.login.value, device=device_name, result=user_id)
     callback = device.call("Client", Cmd.startCallback.value, info={})
@@ -33,7 +42,7 @@ def _switch_user(device, assert_api, *, device_name, user_id):
 
 
 def _ensure_friend(device_a, device_b, assert_api, *, user_a, peer):
-    contacts = device_a.call("ContactManager", Cmd.getAllContactsFromServer.value, info={})
+    contacts = device_a.call("ContactManager", Cmd.getAllContactsFromDB.value, info={})
     if peer in (contacts.get("result") or []):
         return
     add = device_a.call(
@@ -48,24 +57,6 @@ def _ensure_friend(device_a, device_b, assert_api, *, user_a, peer):
                  device="deviceB", result=user_a)
 
 
-def _wait_text_event(device, event_type, *, content, timeout=30.0):
-    deadline = time.monotonic() + timeout
-    seen = []
-    while time.monotonic() < deadline:
-        event = device.receive_message(match_event_type=event_type, timeout=2)
-        if event:
-            seen.append(event)
-        if event_type == Cmd.onMessageSuccess.value:
-            message = ((event or {}).get("data") or {}).get("msg") or {}
-            if (message.get("body") or {}).get("content") == content:
-                return event, message
-            continue
-        for message in (((event or {}).get("data") or {}).get("messages") or []):
-            if isinstance(message, dict) and (message.get("body") or {}).get("content") == content:
-                return event, message
-    pytest.fail(f"未收到文本消息事件: eventType={event_type}, content={content!r}, seen={seen}")
-
-
 def _assert_text_event(assert_api, event_type, message, *, msg_id, user_a, peer,
                        content, direction, conv_id, has_read, has_deliver_ack):
     assert_api.assert_response_matches(
@@ -73,8 +64,7 @@ def _assert_text_event(assert_api, event_type, message, *, msg_id, user_a, peer,
         expected={"type": "event", "eventType": event_type, "data": {"messages": [{
             "msgId": msg_id, "from": user_a, "to": peer, "convId": conv_id,
             "chatType": 0, "direction": direction, "status": 2,
-            "hasRead": has_read, "hasReadAck": False, "hasDeliverAck": has_deliver_ack,
-            "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+            "hasRead": has_read, "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
             "deliverOnlineOnly": False,
             "body": {"type": 0, "content": content, "translations": {}},
         }]}},
@@ -94,9 +84,8 @@ def _send_and_wait_server_conversation(device_a, device_b, assert_api, *, user_a
         response,
         expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA", "result": {
             "msgId": temp_id, "from": user_a, "to": peer, "convId": peer,
-            "chatType": 0, "direction": 0, "status": 0, "hasRead": True,
-            "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
-            "isThread": False, "isContentReplaced": False,
+            "chatType": 0, "direction": 0, "hasRead": True,
+            "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
             "body": {"type": 0, "content": content},
         }},
         ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState",
@@ -106,21 +95,16 @@ def _send_and_wait_server_conversation(device_a, device_b, assert_api, *, user_a
     real_id = sent.get("msgId")
     _assert_text_event(
         assert_api, Cmd.onMessageSuccess.value, sent, msg_id=real_id, user_a=user_a, peer=peer,
-        content=content, direction=0, conv_id=peer, has_read=True, has_deliver_ack=False,
+        content=content, direction=0, conv_id=peer, has_read=True, has_deliver_ack=None,
     )
     _, received = _wait_text_event(device_b, Cmd.onMessagesReceived.value, content=content)
     _assert_text_event(
         assert_api, Cmd.onMessagesReceived.value, received, msg_id=real_id, user_a=user_a, peer=peer,
-        content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True,
-    )
-    _, delivered = _wait_text_event(device_a, Cmd.onMessagesDelivered.value, content=content)
-    _assert_text_event(
-        assert_api, Cmd.onMessagesDelivered.value, delivered, msg_id=real_id, user_a=user_a, peer=peer,
-        content=content, direction=0, conv_id=peer, has_read=True, has_deliver_ack=True,
+        content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=None,
     )
     deadline = time.monotonic() + 60
     while time.monotonic() < deadline:
-        conversations = device_a.call("ChatManager", Cmd.getConversationsFromServer.value, info={})
+        conversations = device_a.call("ChatManager", Cmd.loadAllConversations.value, info={})
         if any(isinstance(item, dict) and item.get("convId") == peer
                for item in (conversations.get("result") or [])):
             return
@@ -138,6 +122,7 @@ def _page_projection(response):
     ]
 
 
+@pytest.mark.skip(reason="5.0 移除服务端拉会话/options cursor 分页（fetchConversationsByOptions 残留）")
 def test_chat_conversation_pinned_and_marked_cursor_pagination(
     device_a, device_b, assert_api, user_a, user_b, user_c,
 ):
@@ -163,7 +148,7 @@ def test_chat_conversation_pinned_and_marked_cursor_pagination(
         deadline = time.monotonic() + 30
         pinned_by_peer = {}
         while time.monotonic() < deadline:
-            conversations = device_a.call("ChatManager", Cmd.getConversationsFromServer.value, info={})
+            conversations = device_a.call("ChatManager", Cmd.loadAllConversations.value, info={})
             pinned_by_peer = {
                 item.get("convId"): item
                 for item in (conversations.get("result") or [])

@@ -31,6 +31,29 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+**/build/
+
+# Test/runtime caches and generated reports
+**/.dart_tool/
+**/.pytest_cache/
+**/__pycache__/
+**/.venv/
+**/allure-results/
+**/allure-report/
+**/out/
+**/report.html
+
+# Web/build outputs
+**/node_modules/
+**/dist/
+*.apk
+*.aab
+*.ipa
+*.xcarchive/
+
+# Local test configuration (use the checked-in templates instead)
+/native-auto-test/config.yaml
+/im_flutter_test/assets/config.yaml
 
 # Do not commit lock files
 **/*.lock

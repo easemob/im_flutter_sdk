@@ -5,9 +5,25 @@ import time
 from src import Cmd, GroupChangeEvent
 from src.tools.group_capacity import get_group_create_max_count
 
+# 群组事件名已统一为 onGroupXxx（Android/iOS Wrapper 与 Python
+# GroupChangeEvent 枚举一致），Case 硬编码也已对齐，无需归一化。
 
-def new_group_name(prefix: str = "auto_group") -> str:
-    return f"{prefix}_{int(time.time() * 1000)}"
+
+_GROUP_STYLE_CONFIGS: dict[int, dict[str, bool]] = {
+    # 兼容 4.x case 的 style 别名；真正发给 5.0 的请求使用三个布尔字段。
+    0: {"isPublic": False, "joinApprovalRequired": False, "allowInvites": False},
+    1: {"isPublic": False, "joinApprovalRequired": False, "allowInvites": True},
+    2: {"isPublic": True, "joinApprovalRequired": True, "allowInvites": False},
+    3: {"isPublic": True, "joinApprovalRequired": False, "allowInvites": False},
+}
+
+
+def group_style_configs(style: int) -> dict[str, bool]:
+    """将旧 style 场景别名转换为 Android 5.0 的 EMGroupConfigs 字段。"""
+    try:
+        return dict(_GROUP_STYLE_CONFIGS[style])
+    except KeyError as error:
+        raise ValueError(f"不支持的 group style: {style}; expected 0/1/2/3") from error
 
 
 def build_group_options(
@@ -17,16 +33,19 @@ def build_group_options(
     invite_need_confirm: bool = False,
     ext: str = "auto-ext",
 ) -> dict:
-    """构造 Group options；未显式指定容量时采用当前运行场景。"""
+    """构造 5.0 EMGroupConfigs；style 仅作为现有 case 的兼容别名。"""
     if max_count is None:
         max_count = get_group_create_max_count()
-
     return {
-        "style": style,
+        **group_style_configs(style),
         "maxCount": max_count,
         "inviteNeedConfirm": invite_need_confirm,
         "ext": ext,
     }
+
+
+def new_group_name(prefix: str = "auto_group") -> str:
+    return f"{prefix}_{int(time.time() * 1000)}"
 
 
 def extract_group_id(resp: dict) -> str:
@@ -64,6 +83,85 @@ def assert_group_members_exact(resp: dict, expected_members: list[str], *, err_p
     )
 
 
+def fetch_group_member_list_from_server(
+    device,
+    assert_api,
+    *,
+    group_id: str,
+    device_name: str,
+    page_size: int = 200,
+) -> list[str]:
+    """通过 5.0 分页接口获取普通成员列表（不含群主和管理员）。"""
+    cursor: str | None = None
+    members: list[str] = []
+    while True:
+        info = {"groupId": group_id, "pageSize": page_size}
+        if cursor:
+            info["cursor"] = cursor
+        response = device.call(
+            "GroupManager",
+            Cmd.getGroupMemberListFromServer.value,
+            info=info,
+        )
+        assert_api.assert_response_matches(
+            response,
+            expected={
+                "manager": "GroupManager",
+                "cmd": Cmd.getGroupMemberListFromServer.value,
+                "device": device_name,
+            },
+            ignore_keys={"sequence", "result"},
+        )
+        result = response.get("result")
+        assert isinstance(result, dict), (
+            "getGroupMemberListFromServer result 不是分页对象: "
+            f"{response}"
+        )
+        page = result.get("list")
+        assert isinstance(page, list), (
+            "getGroupMemberListFromServer result.list 不是 list: "
+            f"{response}"
+        )
+        assert all(isinstance(member, str) and member for member in page), (
+            "getGroupMemberListFromServer result.list 含非法成员: "
+            f"{response}"
+        )
+        members.extend(page)
+        next_cursor = result.get("cursor")
+        assert next_cursor is None or isinstance(next_cursor, str), (
+            "getGroupMemberListFromServer result.cursor 类型异常: "
+            f"{response}"
+        )
+        if not next_cursor:
+            return members
+        assert next_cursor != cursor, (
+            "getGroupMemberListFromServer 分页游标未前进: "
+            f"cursor={cursor!r}, next_cursor={next_cursor!r}, response={response}"
+        )
+        cursor = next_cursor
+
+
+def assert_group_members_from_server(
+    device,
+    assert_api,
+    *,
+    group_id: str,
+    device_name: str,
+    expected_members: list[str],
+    err_prefix: str,
+) -> None:
+    actual = fetch_group_member_list_from_server(
+        device,
+        assert_api,
+        group_id=group_id,
+        device_name=device_name,
+    )
+    assert sorted(actual) == sorted(expected_members), (
+        f"{err_prefix}分页成员列表不一致: expected={sorted(expected_members)}, "
+        f"actual={sorted(actual)}"
+    )
+
+
 def event_type(evt: dict) -> str:
     v = evt.get("eventType")
     assert isinstance(v, str) and v, f"群组回调 eventType 非法: {evt}"
@@ -80,11 +178,12 @@ def collect_group_events(
     timeout: float = 10.0,
     idle_grace_window: float = 0.8,
 ) -> list[dict]:
+    expected_norm = set(expected_event_types)
     required_all = set(required_all_event_types or set())
     for required_type in required_all:
-        assert required_type in expected_event_types, (
+        assert required_type in expected_norm, (
             f"required 事件必须包含在 expected_event_types 中: required={required_type}, "
-            f"expected={sorted(expected_event_types)}"
+            f"expected={sorted(expected_norm)}"
         )
 
     deadline = time.monotonic() + timeout
@@ -127,7 +226,7 @@ def collect_group_events(
             if not isinstance(evt_type, str):
                 continue
             seen_event_types.append(evt_type)
-            if evt_type not in expected_event_types:
+            if evt_type not in expected_norm:
                 continue
 
             if group_id is not None:
@@ -141,6 +240,8 @@ def collect_group_events(
                 elif actual_gid != group_id:
                     continue
 
+            if isinstance(item, dict):
+                item["eventType"] = evt_type
             matched.append(item)
             matched_types.add(evt_type)
             last_matched_at = now
@@ -151,6 +252,7 @@ def assert_no_group_event(
     *,
     group_id: str,
     event_types: set[str],
+    target_user_ids: set[str] | None = None,
     timeout: float = 2.0,
 ) -> None:
     deadline = time.monotonic() + timeout
@@ -161,8 +263,15 @@ def assert_no_group_event(
         if event.get("eventType") not in event_types:
             continue
         data = event.get("data")
-        if isinstance(data, dict) and data.get("groupId") == group_id:
-            raise AssertionError(f"不应收到群事件: eventTypes={sorted(event_types)}, event={event}")
+        if not isinstance(data, dict) or data.get("groupId") != group_id:
+            continue
+        if target_user_ids is not None:
+            actual_user_ids = data.get("userIds")
+            if not isinstance(actual_user_ids, list):
+                raise AssertionError(f"群成员事件缺少 userIds: event={event}")
+            if not set(actual_user_ids).intersection(target_user_ids):
+                continue
+        raise AssertionError(f"不应收到群事件: eventTypes={sorted(event_types)}, event={event}")
 
 
 def _assert_any_non_empty_str_field(
@@ -287,7 +396,8 @@ def _assert_list_field_contains_user(
 
 
 def _assert_member_field(data: dict, *, expected_member: str | None, evt: dict) -> None:
-    member_keys = ("member", "userId", "username", "admin", "applicant", "invitee", "accepter", "decliner")
+    # administrator 是生产 Wrapper 对 onGroupAdminAdded 的成员字段
+    member_keys = ("member", "userId", "username", "admin", "administrator", "applicant", "invitee", "accepter", "decliner")
     member_list_keys = ("members", "userIds", "users", "admins")
     for key in member_keys:
         if key not in data:
@@ -339,12 +449,12 @@ def assert_group_event_data_fields(
     invitation_events = {
         GroupChangeEvent.ON_INVITATION_RECEIVED.value,
         GroupChangeEvent.ON_AUTO_ACCEPT_INVITATION.value,
-        "onAutoAcceptInvitationFromGroup",
+        "onGroupAutoAcceptInvitation",
     }
     if event_type_value in invitation_events:
         _assert_any_non_empty_str_field(
             data,
-            ("inviter", "from", "operator"),
+            ("inviter", "from", "operator", "operatorId"),
             field_label="inviter",
             expected_value=expected_inviter,
             evt=evt,
@@ -360,7 +470,7 @@ def assert_group_event_data_fields(
     request_join_received_events = {
         GroupChangeEvent.ON_REQUEST_TO_JOIN_RECEIVED.value,
         "onGroupRequestToJoinReceived",
-        "onRequestToJoinReceivedFromGroup",
+        "onGroupRequestToJoinReceived",
     }
     if event_type_value in request_join_received_events:
         _assert_member_field(data, expected_member=expected_member, evt=evt)
@@ -375,12 +485,12 @@ def assert_group_event_data_fields(
     request_join_accepted_events = {
         GroupChangeEvent.ON_REQUEST_TO_JOIN_ACCEPTED.value,
         "onGroupRequestToJoinAccepted",
-        "onRequestToJoinAcceptedFromGroup",
+        "onGroupRequestToJoinAccepted",
     }
     if event_type_value in request_join_accepted_events:
         _assert_any_non_empty_str_field(
             data,
-            ("accepter", "accepter", "operator", "owner", "admin"),
+            ("accepter", "accepter", "operator", "operatorId", "owner", "admin"),
             field_label="accepter",
             evt=evt,
         )
@@ -389,12 +499,12 @@ def assert_group_event_data_fields(
     request_join_declined_events = {
         GroupChangeEvent.ON_REQUEST_TO_JOIN_DECLINED.value,
         "onGroupRequestToJoinDeclined",
-        "onRequestToJoinDeclinedFromGroup",
+        "onGroupRequestToJoinDeclined",
     }
     if event_type_value in request_join_declined_events:
         _assert_any_non_empty_str_field(
             data,
-            ("decliner", "operator", "owner", "admin"),
+            ("decliner", "operator", "operatorId", "owner", "admin"),
             field_label="decliner",
             evt=evt,
         )
@@ -406,16 +516,16 @@ def assert_group_event_data_fields(
         )
         return
 
-    if event_type_value == "onMemberJoinedFromGroup":
+    if event_type_value == "onGroupMemberJoined":
         _assert_member_field(data, expected_member=expected_member, evt=evt)
         return
 
-    if event_type_value in {"onMembersJoinedFromGroup", "onMembersExitedFromGroup"}:
+    if event_type_value in {"onGroupMembersJoined", "onGroupMembersExited"}:
         expected_members = [expected_member] if expected_member else None
         _assert_member_list_field(data, expected_members=expected_members, evt=evt)
         return
 
-    if event_type_value == "onAllowListRemovedFromGroup":
+    if event_type_value == "onGroupWhiteListRemoved":
         _assert_list_field_contains_user(
             data,
             ("members", "whitelist", "allowList"),
@@ -428,14 +538,14 @@ def assert_group_event_data_fields(
     admin_events = {
         GroupChangeEvent.ON_ADMIN_ADDED.value,
         GroupChangeEvent.ON_ADMIN_REMOVED.value,
-        "onAdminAddedFromGroup",
-        "onAdminRemovedFromGroup",
+        "onGroupAdminAdded",
+        "onGroupAdminRemoved",
     }
     if event_type_value in admin_events:
         _assert_member_field(data, expected_member=expected_member, evt=evt)
         return
 
-    if event_type_value in {GroupChangeEvent.ON_OWNER_CHANGED.value, "onOwnerChangedFromGroup"}:
+    if event_type_value in {GroupChangeEvent.ON_OWNER_CHANGED.value, "onGroupOwnerChanged"}:
         _assert_any_non_empty_str_field(
             data,
             ("newOwner", "owner", "to"),
@@ -444,7 +554,7 @@ def assert_group_event_data_fields(
         )
         _assert_any_non_empty_str_field(
             data,
-            ("oldOwner", "from", "operator"),
+            ("oldOwner", "from", "operator", "operatorId"),
             field_label="oldOwner",
             evt=evt,
         )
@@ -457,7 +567,7 @@ def assert_group_event_data_fields(
     if event_type_value in mute_list_events:
         _assert_list_field_contains_user(
             data,
-            ("members", "muted", "muteList"),
+            ("members", "muted", "mutes", "muteList"),  # 5.0 两端事件字段为 mutes
             field_label="muteList",
             expected_member=expected_member,
             evt=evt,
@@ -489,7 +599,7 @@ def assert_group_event_data_fields(
     if event_type_value in {
         GroupChangeEvent.ON_ATTRIBUTES_CHANGED_OF_MEMBER.value,
         "onGroupAttributesChangedOfMember",
-        "onAttributesChangedOfGroupMember",
+        "onGroupAttributesChangedOfMember",
     }:
         _assert_member_field(data, expected_member=expected_member, evt=evt)
         _assert_any_dict_field(
@@ -502,13 +612,17 @@ def assert_group_event_data_fields(
 
     removed_events = {
         GroupChangeEvent.ON_USER_REMOVED.value,
-        "onUserRemovedFromGroup",
-        "onLeaveFromGroup",
+        "onGroupUserRemoved",
     }
     if event_type_value in removed_events:
         assert any(isinstance(data.get(key), str) for key in ("groupName", "name")), (
             f"群组回调 data 缺少 groupName/name 字符串字段，data={data}, evt={evt}"
         )
+        return
+
+    # onGroupMemberExited 的 SDK 回调只带 groupId + member，无 groupName
+    if event_type_value == "onGroupMemberExited":
+        _assert_member_field(data, expected_member=expected_member, evt=evt)
         return
 
     invitation_feedback_events = {
@@ -547,7 +661,7 @@ def assert_group_event_data_fields(
 
     if event_type_value in {
         GroupChangeEvent.ON_SPECIFICATION_DID_UPDATE.value,
-        "onSpecificationDidUpdate",
+        "onGroupSpecificationDidUpdate",
     }:
         _assert_any_dict_field(
             data,
@@ -618,12 +732,13 @@ def assert_group_events(
     expected_member: str | None = None,
 ) -> None:
     assert events, "群组回调列表为空"
+    expected_norm = set(expected_event_types)
     required_all = set(required_all_event_types or set())
     seen_types: set[str] = set()
 
     for evt in events:
         evt_type = event_type(evt)
-        assert evt_type in expected_event_types, (
+        assert evt_type in expected_norm, (
             f"群组回调事件类型不在 expected 中: eventType={evt_type}, expected={sorted(expected_event_types)}, evt={evt}"
         )
         assert_group_event(
@@ -663,10 +778,11 @@ def assert_group_snapshot(
     mute_list_value: list[str] | None = None,
     allow_list_value: list[str] | None = None,
     is_member_allow_to_invite: bool = False,
+    is_public: bool = False,
+    join_approval_required: bool = False,
     is_all_member_muted: bool = False,
     message_blocked: bool = False,
     permission_type: int = 2,
-    is_member_only: bool = True,
     device: str = "deviceA",
 ) -> None:
     if max_user_count_value is None:
@@ -687,7 +803,8 @@ def assert_group_snapshot(
         "isDisabled": False,
         "isAllMemberMuted": is_all_member_muted,
         "permissionType": permission_type,
-        "isMemberOnly": is_member_only,
+        "isPublic": is_public,
+        "joinApprovalRequired": join_approval_required,
         "isMemberAllowToInvite": is_member_allow_to_invite,
         "messageBlocked": message_blocked,
     }
@@ -780,13 +897,12 @@ def create_group(
     invite_need_confirm: bool = False,
     expected_member_count: int | None = None,
     device_name: str = "deviceA",
+    is_member_allow_to_invite: bool | None = None,
 ):
-    options = build_group_options(
-        style=style,
-        max_count=max_count,
-        invite_need_confirm=invite_need_confirm,
-    )
+    if max_count is None:
+        max_count = get_group_create_max_count()
 
+    configs = group_style_configs(style)
     resp_create = device_a.call(
         "GroupManager",
         Cmd.createGroup.value,
@@ -795,7 +911,12 @@ def create_group(
             "desc": "auto-test group",
             "inviteMembers": invite_members,
             "inviteReason": "auto-case",
-            "options": options,
+            "options": {
+                **configs,
+                "maxCount": max_count,
+                "inviteNeedConfirm": invite_need_confirm,
+                "ext": "auto-ext",
+            },
         },
     )
     gid = extract_group_id(resp_create)
@@ -808,9 +929,15 @@ def create_group(
         group_name=group_name,
         owner=owner,
         member_count_value=(1 + len(invite_members) if expected_member_count is None else expected_member_count),
-        max_user_count_value=options["maxCount"],
-        is_member_allow_to_invite=(style == 1),
-        is_member_only=(style != 3),
+        max_user_count_value=max_count,
+        # 快照字段必须和创建请求中的 5.0 configs 保持一致；可显式传参覆盖
+        is_member_allow_to_invite=(
+            is_member_allow_to_invite
+            if is_member_allow_to_invite is not None
+            else configs["allowInvites"]
+        ),
+        is_public=configs["isPublic"],
+        join_approval_required=configs["joinApprovalRequired"],
         device=device_name,
     )
     return gid, resp_create

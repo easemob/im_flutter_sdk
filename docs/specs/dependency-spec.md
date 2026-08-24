@@ -6,15 +6,16 @@
   - 本地依赖目录名不带版本号；JAR/Framework 文件名可带版本。
   - 本地依赖资产不纳入 Git：Android 的 `android/libs/easemob-sdk/` 整目录、iOS 的 `ios/HyphenateChat.xcframework/` 与 `ios/ShengwangInfra_iOS/` 由 `.gitignore` 忽略；请在本地放置后再构建。
 
-- Android
-  - 本地目录（不带版本号）: `im_flutter_sdk_android/android/libs/easemob-sdk/`
-  - JAR 可带版本，例如: `hyphenatechat_4.20.0.jar`
-  - 切换方式（手动编辑 `im_flutter_sdk_android/android/build.gradle`）
-    - 默认本地依赖：
-      - `sourceSets.main.jniLibs.srcDirs = ['./libs/easemob-sdk/libs']`
-      - `implementation files('./libs/easemob-sdk/libs/hyphenatechat_4.20.0.jar')`
-    - 远程依赖：将上面的本地 `implementation` 注释掉，取消注释下面一行：
-      - `implementation 'io.hyphenate:hyphenate-chat:4.19.1'`
+- Android（多版本 flavor 拓扑，main 不含 wrapper）
+  - 基线：`im_flutter_sdk_android/android/src/base500/` = 5.0 全部资产（`java/` 全套 wrapper + `libs/` jar + `jniLibs/` so，唯一基线，不随版本复制）；flavor `sdk500` 仅是构建入口，资产全在 base500
+  - 差异：`src/<flavor>/java/` 只放相对基线的差异 wrapper（同名文件）；构建时由 build.gradle 的 merge 任务将「基线复制 + 差异覆盖」合并到 `build/mergedSrc/<flavor>/java/` 再编译
+  - jar / jniLibs：`src/<flavor>/libs/`、`src/<flavor>/jniLibs/`（jar 可带版本，如 `hyphenatechat_5.0.0.jar`）
+  - 新增 SDK 版本（如 5.1）：
+    1. 放 jar + jniLibs 到 `src/sdk501/{libs,jniLibs}`
+    2. `src/sdk501/java/` 只写相对 5.0 基线的差异 wrapper（不变的不要复制）
+    3. `build.gradle` 加 `productFlavors.sdk501` 与 `sourceSets.sdk501`（复用 `mergeWrapperSrc`）
+    4. 验证：`flutter build apk --debug --flavor sdk501` + `scripts/check_wrapper_diffs.sh`
+  - 远程依赖（改为远程时，注释掉 `files(...)`，取消注释 `sdkXXXApi 'io.hyphenate:hyphenate-chat:<ver>'`）
 
 - iOS
   - 切换方式（手动编辑 `im_flutter_sdk_ios/ios/im_flutter_sdk_ios.podspec`）

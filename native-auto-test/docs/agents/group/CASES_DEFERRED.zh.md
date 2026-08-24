@@ -5,8 +5,6 @@
 - 已通过现有 SDK 和真实双设备 ADB 补齐的四种群类型、邀请/申请状态、群主转让、成员移除、
   公开群边界、Joined Groups 状态迁移、公开群 cursor 分页、公告角色和共享文件角色不再列为
   deferred。
-- 群邀请/申请、群消息、成员终态、角色及配置的 SDK logout/login 离线专项已补齐 31 items，
-  没有新增 deferred；仅保留下述缺少外部触发入口的群状态项。
 
 ## group state
 

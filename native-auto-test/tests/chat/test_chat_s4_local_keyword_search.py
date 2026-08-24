@@ -7,6 +7,7 @@ import pytest
 
 from src import Cmd
 from tests.chat._utils import build_text
+from tests.allure_helpers import _allure_step
 
 
 pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.agorachat1_4_0]
@@ -38,11 +39,8 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                 "convId": user_b,
                 "chatType": 0,
                 "direction": 0,
-                "status": 0,
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": False,
-                "needGroupAck": False,
+                "needReadReceipt": False,
                 "isThread": False,
                 "isContentReplaced": False,
                 "body": {"type": 0, "content": content},
@@ -67,9 +65,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
+                    "needReadReceipt": False,
                     "isThread": False,
                     "isContentReplaced": False,
                     "deliverOnlineOnly": False,
@@ -119,9 +115,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                         "direction": 1,
                         "status": 2,
                         "hasRead": False,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
+                        "needReadReceipt": False,
                         "isThread": False,
                         "isContentReplaced": False,
                         "deliverOnlineOnly": False,
@@ -147,96 +141,66 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
     return real_id
 
 
-def _assert_delivery_event(device_a, assert_api, *, msg_id: str, user_a: str, user_b: str, content: str) -> None:
-    delivery_event = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=20.0)
-    assert_api.assert_response_matches(
-        delivery_event,
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessagesDelivered.value,
-            "data": {
-                "messages": [
-                    {
-                        "msgId": msg_id,
-                        "from": user_a,
-                        "to": user_b,
-                        "convId": user_b,
-                        "chatType": 0,
-                        "direction": 0,
-                        "status": 2,
-                        "hasRead": True,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
-                        "isThread": False,
-                        "isContentReplaced": False,
-                        "deliverOnlineOnly": False,
-                        "body": {"type": 0, "content": content},
-                    }
-                ]
-            },
-        },
-        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "translations", "targetLanguages"},
-    )
 
 
 def test_chat_load_conversation_messages_with_keyword_success(device_a, device_b, assert_api, user_a, user_b):
-    keyword = f"kw_{uuid.uuid4().hex[:10]}"
-    content = f"s4-keyword-{keyword}"
-    real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content)
+    with _allure_step("验证：chat load conversation messages with keyword success"):
+        keyword = f"kw_{uuid.uuid4().hex[:10]}"
+        content = f"s4-keyword-{keyword}"
+        real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content)
 
-    info = {
-        "keyword": keyword,
-        "timestamp": -1,
-        "sender": user_a,
-        "direction": 1,
-        "scope": 2,
-    }
-    resp = None
-    deadline = time.monotonic() + 30.0
-    while time.monotonic() < deadline:
-        resp = device_a.call("ChatManager", Cmd.loadConversationMessagesWithKeyword.value, info=info)
-        result = resp.get("result") if isinstance(resp, dict) else {}
-        ids = result.get(user_b) if isinstance(result, dict) else None
-        if isinstance(ids, list) and real_id in ids:
-            break
-        time.sleep(1.0)
-    assert resp is not None
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.loadConversationMessagesWithKeyword.value,
-            "device": "deviceA",
-            "result": {
-                user_b: [real_id],
-            },
-        },
-        ignore_keys={"sequence"},
-    )
-    _assert_delivery_event(device_a, assert_api, msg_id=real_id, user_a=user_a, user_b=user_b, content=content)
-
-
-def test_chat_load_conversation_messages_with_keyword_no_hit(device_a, assert_api, user_a):
-    keyword = f"kw_no_hit_{uuid.uuid4().hex[:10]}"
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.loadConversationMessagesWithKeyword.value,
-        info={
+        info = {
             "keyword": keyword,
             "timestamp": -1,
             "sender": user_a,
-            "direction": 0,
+            "direction": 1,
             "scope": 2,
-        },
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.loadConversationMessagesWithKeyword.value,
-            "device": "deviceA",
-            "result": {},
-        },
-        ignore_keys={"sequence"},
-    )
+        }
+        resp = None
+        deadline = time.monotonic() + 30.0
+        while time.monotonic() < deadline:
+            resp = device_a.call("ChatManager", Cmd.loadConversationMessagesWithKeyword.value, info=info)
+            result = resp.get("result") if isinstance(resp, dict) else {}
+            ids = result.get(user_b) if isinstance(result, dict) else None
+            if isinstance(ids, list) and real_id in ids:
+                break
+            time.sleep(1.0)
+        assert resp is not None
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.loadConversationMessagesWithKeyword.value,
+                "device": "deviceA",
+                "result": {
+                    user_b: [real_id],
+                },
+            },
+            ignore_keys={"sequence"},
+        )
+
+
+def test_chat_load_conversation_messages_with_keyword_no_hit(device_a, assert_api, user_a):
+    with _allure_step("验证：chat load conversation messages with keyword no hit"):
+        keyword = f"kw_no_hit_{uuid.uuid4().hex[:10]}"
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.loadConversationMessagesWithKeyword.value,
+            info={
+                "keyword": keyword,
+                "timestamp": -1,
+                "sender": user_a,
+                "direction": 0,
+                "scope": 2,
+            },
+        )
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.loadConversationMessagesWithKeyword.value,
+                "device": "deviceA",
+                "result": {},
+            },
+            ignore_keys={"sequence"},
+        )

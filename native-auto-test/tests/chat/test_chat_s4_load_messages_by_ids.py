@@ -6,6 +6,7 @@ import pytest
 
 from src import Cmd
 from tests.chat._utils import build_text
+from tests.allure_helpers import _allure_step
 
 
 pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.agorachat1_4_0]
@@ -37,12 +38,8 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                 "convId": user_b,
                 "chatType": 0,
                 "direction": 0,
-                "status": 0,
                 "hasRead": True,
-                "hasReadAck": False,
-                "hasDeliverAck": False,
-                "needGroupAck": False,
-                "isThread": False,
+                "needReadReceipt": False, "isThread": False,
                 "isContentReplaced": False,
                 "body": {"type": 0, "content": content},
             },
@@ -66,10 +63,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                     "direction": 0,
                     "status": 2,
                     "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "isThread": False,
+                    "needReadReceipt": False, "isThread": False,
                     "isContentReplaced": False,
                     "deliverOnlineOnly": False,
                     "body": {"type": 0, "content": content},
@@ -118,10 +112,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                         "direction": 1,
                         "status": 2,
                         "hasRead": False,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
-                        "isThread": False,
+                        "needReadReceipt": False, "isThread": False,
                         "isContentReplaced": False,
                         "deliverOnlineOnly": False,
                         "body": {"type": 0, "content": content},
@@ -142,47 +133,6 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
         ):
             real_id = str(msg.get("msgId"))
             break
-
-    delivery_event = device_a.receive_message(
-        match_event_type=Cmd.onMessagesDelivered.value,
-        timeout=20.0,
-    )
-    assert_api.assert_response_matches(
-        delivery_event,
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessagesDelivered.value,
-            "data": {
-                "messages": [
-                    {
-                        "msgId": real_id,
-                        "from": user_a,
-                        "to": user_b,
-                        "convId": user_b,
-                        "chatType": 0,
-                        "direction": 0,
-                        "status": 2,
-                        "hasRead": True,
-                        "hasReadAck": False,
-                        "hasDeliverAck": True,
-                        "needGroupAck": False,
-                        "isThread": False,
-                        "isContentReplaced": False,
-                        "deliverOnlineOnly": False,
-                        "body": {"type": 0, "content": content},
-                    }
-                ]
-            },
-        },
-        ignore_keys={
-            "timestamp",
-            "sequence",
-            "serverTime",
-            "localTime",
-            "translations",
-            "targetLanguages",
-        },
-    )
 
     return real_id
 
@@ -212,9 +162,10 @@ def _assert_loaded_messages_contains_ids(resp: dict, expected_ids: list[str], us
         assert msg.get("direction") == 0, f"msg.direction 不匹配: {msg}"
         assert msg.get("status") == 2, f"msg.status 不匹配: {msg}"
         assert msg.get("hasRead") is True, f"msg.hasRead 不匹配: {msg}"
-        assert msg.get("hasReadAck") is False, f"msg.hasReadAck 不匹配: {msg}"
-        assert msg.get("hasDeliverAck") is True, f"msg.hasDeliverAck 不匹配: {msg}"
-        assert msg.get("needGroupAck") is False, f"msg.needGroupAck 不匹配: {msg}"
+        assert msg.get("needReadReceipt") is False, f"msg.needReadReceipt 不匹配: {msg}"
+        # 5.0 无送达回执机制 → hasDeliverAck 恒 False
+        assert msg.get("hasDeliverAck") is False, f"msg.hasDeliverAck 不匹配: {msg}"
+        assert msg.get("needReadReceipt") is False, f"msg.needReadReceipt 不匹配: {msg}"
         assert msg.get("isThread") is False, f"msg.isThread 不匹配: {msg}"
         assert msg.get("isContentReplaced") is False, f"msg.isContentReplaced 不匹配: {msg}"
         if "deliverOnlineOnly" in msg:
@@ -222,68 +173,70 @@ def _assert_loaded_messages_contains_ids(resp: dict, expected_ids: list[str], us
 
 
 def test_chat_load_messages_with_ids_single_and_multi_success(device_a, device_b, assert_api, user_a, user_b):
-    content_1 = f"s4-load-by-ids-{uuid.uuid4().hex[:8]}-1"
-    content_2 = f"s4-load-by-ids-{uuid.uuid4().hex[:8]}-2"
-    msg_id_1 = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content_1)
-    msg_id_2 = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content_2)
+    with _allure_step("验证：chat load messages with ids single and multi success"):
+        content_1 = f"s4-load-by-ids-{uuid.uuid4().hex[:8]}-1"
+        content_2 = f"s4-load-by-ids-{uuid.uuid4().hex[:8]}-2"
+        msg_id_1 = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content_1)
+        msg_id_2 = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content_2)
 
-    # 单 ID
-    resp_single = device_a.call(
-        "ChatManager",
-        Cmd.loadMessagesWithIds.value,
-        info={
-            "messageIds": [msg_id_1],
-            "conversationId": user_b,
-        },
-    )
-    assert_api.assert_response_matches(
-        resp_single,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.loadMessagesWithIds.value,
-            "device": "deviceA",
-        },
-        ignore_keys={"sequence", "result"},
-    )
-    _assert_loaded_messages_contains_ids(resp_single, [msg_id_1], user_a, user_b)
+        # 单 ID
+        resp_single = device_a.call(
+            "ChatManager",
+            Cmd.loadMessagesWithIds.value,
+            info={
+                "messageIds": [msg_id_1],
+                "conversationId": user_b,
+            },
+        )
+        assert_api.assert_response_matches(
+            resp_single,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.loadMessagesWithIds.value,
+                "device": "deviceA",
+            },
+            ignore_keys={"sequence", "result"},
+        )
+        _assert_loaded_messages_contains_ids(resp_single, [msg_id_1], user_a, user_b)
 
-    # 多 ID（含不存在 ID，验证稳定忽略语义）
-    resp_multi = device_a.call(
-        "ChatManager",
-        Cmd.loadMessagesWithIds.value,
-        info={
-            "messageIds": [msg_id_1, msg_id_2, "__not_exists_msg_id__"],
-            "conversationId": user_b,
-        },
-    )
-    assert_api.assert_response_matches(
-        resp_multi,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.loadMessagesWithIds.value,
-            "device": "deviceA",
-        },
-        ignore_keys={"sequence", "result"},
-    )
-    _assert_loaded_messages_contains_ids(resp_multi, [msg_id_1, msg_id_2], user_a, user_b)
+        # 多 ID（含不存在 ID，验证稳定忽略语义）
+        resp_multi = device_a.call(
+            "ChatManager",
+            Cmd.loadMessagesWithIds.value,
+            info={
+                "messageIds": [msg_id_1, msg_id_2, "__not_exists_msg_id__"],
+                "conversationId": user_b,
+            },
+        )
+        assert_api.assert_response_matches(
+            resp_multi,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.loadMessagesWithIds.value,
+                "device": "deviceA",
+            },
+            ignore_keys={"sequence", "result"},
+        )
+        _assert_loaded_messages_contains_ids(resp_multi, [msg_id_1, msg_id_2], user_a, user_b)
 
 
 def test_chat_load_messages_with_ids_empty_ids(device_a, assert_api, user_b):
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.loadMessagesWithIds.value,
-        info={
-            "messageIds": [],
-            "conversationId": user_b,
-        },
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.loadMessagesWithIds.value,
-            "device": "deviceA",
-            "result": {"code": 110, "description": "Invalid parameter"},
-        },
-        ignore_keys={"sequence"},
-    )
+    with _allure_step("验证：chat load messages with ids empty ids"):
+        resp = device_a.call(
+            "ChatManager",
+            Cmd.loadMessagesWithIds.value,
+            info={
+                "messageIds": [],
+                "conversationId": user_b,
+            },
+        )
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatManager",
+                "cmd": Cmd.loadMessagesWithIds.value,
+                "device": "deviceA",
+                "result": {"code": 110, "description": "Invalid parameter"},
+            },
+            ignore_keys={"sequence"},
+        )

@@ -1,6 +1,7 @@
 """好友申请离线链路：接收方/申请方重新登录后的事件与关系状态。"""
 from __future__ import annotations
 
+import time
 import uuid
 
 import pytest
@@ -8,18 +9,68 @@ import pytest
 from src import Cmd
 from src.sdk_api.event_keys import ContactChangeEvent
 from src.test_flow.offline_test_flow import (
-    login_preserving_offline_events,
-    logout_for_offline,
-    restore_user_login,
+    login_account_devices,
+    logout_account_devices,
+    restore_account_devices,
     set_accept_invitation_always,
 )
+from tests.allure_helpers import _allure_step
 
 
-pytestmark = [pytest.mark.client, pytest.mark.contact]
+pytestmark = [
+    pytest.mark.client,
+    pytest.mark.contact,
+    pytest.mark.topology("account_a_to_account_b"),
+]
 
 
-def _cleanup_relation(device_a, device_b, user_a: str, user_b: str) -> None:
-    for device, target in ((device_a, user_b), (device_b, user_a)):
+def _device_name(device) -> str:
+    return getattr(device, "_device", "device")
+
+
+def _unique_devices(primary, extras=()):
+    devices = [] if primary is None else [primary]
+    for device in extras:
+        if device is not None and all(device is not existing for existing in devices):
+            devices.append(device)
+    return tuple(devices)
+
+
+def _wait_contact_absent(devices, target: str, *, timeout: float = 8.0) -> None:
+    """等待删除事件落入 5.0 各端本地联系人 DB；最终断言仍由用例完成。"""
+    deadline = time.monotonic() + timeout
+    while True:
+        absent = True
+        for device in devices:
+            try:
+                response = device.call(
+                    "ContactManager",
+                    Cmd.getAllContactsFromDB.value,
+                    info={},
+                )
+                contacts = response.get("result")
+                if not isinstance(contacts, list) or target in contacts:
+                    absent = False
+            except Exception:
+                absent = False
+        if absent or time.monotonic() >= deadline:
+            return
+        time.sleep(0.25)
+
+
+def _cleanup_relation(
+    device_a,
+    device_b,
+    user_a: str,
+    user_b: str,
+    *,
+    account_a_devices=(),
+    account_b_devices=(),
+) -> None:
+    account_a = _unique_devices(device_a, account_a_devices)
+    account_b = _unique_devices(device_b, account_b_devices)
+    for device in account_a:
+        target = user_b
         try:
             device.call(
                 "ContactManager",
@@ -36,28 +87,63 @@ def _cleanup_relation(device_a, device_b, user_a: str, user_b: str) -> None:
             )
         except Exception:
             pass
-    device_a.drain_events(timeout=0.5)
-    device_b.drain_events(timeout=0.5)
+    for device in account_b:
+        target = user_a
+        try:
+            device.call(
+                "ContactManager",
+                Cmd.deleteContact.value,
+                info={"userId": target, "keepConversation": True},
+            )
+        except Exception:
+            pass
+        try:
+            device.call(
+                "ContactManager",
+                Cmd.removeUserFromBlockList.value,
+                info={"userId": target},
+            )
+        except Exception:
+            pass
+    for device in (*account_a, *account_b):
+        device.drain_events(timeout=0.5)
+    _wait_contact_absent(account_a, user_b)
+    _wait_contact_absent(account_b, user_a)
 
 
 def _restore_case_state(
     device_a,
     device_b,
+    assert_api,
     *,
     user_a: str,
     user_b: str,
+    account_a_devices=(),
+    account_b_devices=(),
 ) -> None:
-    restore_user_login(device_a, user_id=user_a)
-    restore_user_login(device_b, user_id=user_b)
-    try:
-        device_b.call(
-            "Client",
-            Cmd.updateAcceptInvitationAlways.value,
-            info={"acceptInvitationAlways": False},
+    account_a = _unique_devices(device_a, account_a_devices)
+    account_b = _unique_devices(device_b, account_b_devices)
+    restore_account_devices(account_a, user_id=user_a)
+    restore_account_devices(account_b, user_id=user_b)
+    _set_accept_invitation_always(account_b, assert_api, enabled=False)
+    _cleanup_relation(
+        device_a,
+        device_b,
+        user_a,
+        user_b,
+        account_a_devices=account_a_devices,
+        account_b_devices=account_b_devices,
+    )
+
+
+def _set_accept_invitation_always(devices, assert_api, enabled: bool) -> None:
+    for device in devices:
+        set_accept_invitation_always(
+            device,
+            assert_api,
+            device_name=_device_name(device),
+            enabled=enabled,
         )
-    except Exception:
-        pass
-    _cleanup_relation(device_a, device_b, user_a, user_b)
 
 
 def _assert_contact_response(
@@ -96,7 +182,7 @@ def _add_contact_offline(
         assert_api,
         response,
         cmd=Cmd.addContact.value,
-        device_name="deviceA",
+        device_name=_device_name(device_a),
         result=user_b,
     )
 
@@ -123,25 +209,100 @@ def _assert_contact_event(
     )
 
 
+def _assert_contact_event_on_devices(
+    devices,
+    assert_api,
+    *,
+    event_type: str,
+    user_id: str,
+    reason: str | None = None,
+) -> None:
+    for device in _unique_devices(None, devices):
+        _assert_contact_event_on_device(
+            device,
+            assert_api,
+            event_type=event_type,
+            user_id=user_id,
+            reason=reason,
+        )
+
+
+def _assert_contact_event_on_device(
+    device,
+    assert_api,
+    *,
+    event_type: str,
+    user_id: str,
+    reason: str | None = None,
+) -> None:
+    """验证一个主观察端事件，不把副端重复回调当成统一契约。"""
+    event = device.receive_message(
+        match_event_type=event_type,
+        timeout=20.0,
+    )
+    _assert_contact_event(
+        assert_api,
+        event,
+        event_type=event_type,
+        user_id=user_id,
+        reason=reason,
+    )
+
+
 def _assert_contacts(
     device,
     assert_api,
     *,
     device_name: str,
-    expected: list[str],
+    target_user: str,
+    expected_present: bool,
 ) -> None:
-    response = device.call(
-        "ContactManager",
-        Cmd.getAllContactsFromServer.value,
-        info={},
-    )
-    _assert_contact_response(
-        assert_api,
+    """校验目标好友关系，不把其他历史联系人当成本用例结果。"""
+    deadline = time.monotonic() + 10.0
+    response = device.call("ContactManager", Cmd.getAllContactsFromDB.value, info={})
+    contacts = response.get("result")
+    while (
+        not isinstance(contacts, list)
+        or (target_user in contacts) is not expected_present
+    ) and time.monotonic() < deadline:
+        time.sleep(0.25)
+        response = device.call("ContactManager", Cmd.getAllContactsFromDB.value, info={})
+        contacts = response.get("result")
+    assert_api.assert_response_matches(
         response,
-        cmd=Cmd.getAllContactsFromServer.value,
-        device_name=device_name,
-        result=expected,
+        expected={
+            "manager": "ContactManager",
+            "cmd": Cmd.getAllContactsFromDB.value,
+            "device": device_name,
+        },
+        ignore_keys={"sequence"},
     )
+    assert isinstance(contacts, list), (
+        f"getAllContactsFromDB.result 应为 list，实际 {contacts!r}"
+    )
+    actual_present = target_user in contacts
+    assert actual_present is expected_present, (
+        "联系人关系状态不符合预期: "
+        f"target={target_user!r}, expected_present={expected_present}, "
+        f"actual_contacts={contacts!r}"
+    )
+
+
+def _assert_contacts_on_devices(
+    devices,
+    assert_api,
+    *,
+    target_user: str,
+    expected_present: bool,
+) -> None:
+    for device in _unique_devices(None, devices):
+        _assert_contacts(
+            device,
+            assert_api,
+            device_name=_device_name(device),
+            target_user=target_user,
+            expected_present=expected_present,
+        )
 
 
 def _prepare_offline_invitation(
@@ -152,35 +313,32 @@ def _prepare_offline_invitation(
     user_a: str,
     user_b: str,
     reason: str,
+    account_a_devices=(),
+    account_b_devices=(),
+    event_devices=None,
 ) -> dict:
-    _cleanup_relation(device_a, device_b, user_a, user_b)
-    set_accept_invitation_always(
+    account_a = _unique_devices(device_a, account_a_devices)
+    account_b = _unique_devices(device_b, account_b_devices)
+    _cleanup_relation(
+        device_a,
         device_b,
-        assert_api,
-        device_name="deviceB",
-        enabled=False,
+        user_a,
+        user_b,
+        account_a_devices=account_a_devices,
+        account_b_devices=account_b_devices,
     )
-    logout_for_offline(device_b, assert_api, device_name="deviceB")
+    _set_accept_invitation_always(account_b, assert_api, enabled=False)
+    logout_account_devices(account_b, assert_api)
     _add_contact_offline(device_a, assert_api, user_b=user_b, reason=reason)
-    login_preserving_offline_events(
-        device_b,
+    login_account_devices(account_b, assert_api, user_id=user_b)
+    _assert_contact_event_on_devices(
+        account_b if event_devices is None else event_devices,
         assert_api,
-        device_name="deviceB",
-        user_id=user_b,
-    )
-    invited = device_b.receive_message(
-        match_event_type=ContactChangeEvent.INVITED.value,
-        timeout=20.0,
-    )
-    assert invited is not None, "B 重新登录后未收到离线好友申请"
-    _assert_contact_event(
-        assert_api,
-        invited,
         event_type=ContactChangeEvent.INVITED.value,
         user_id=user_a,
         reason=reason,
     )
-    return invited
+    return True
 
 
 def _establish_friendship(
@@ -190,14 +348,20 @@ def _establish_friendship(
     *,
     user_a: str,
     user_b: str,
+    account_a_devices=(),
+    account_b_devices=(),
 ) -> None:
-    _cleanup_relation(device_a, device_b, user_a, user_b)
-    set_accept_invitation_always(
+    account_a = _unique_devices(device_a, account_a_devices)
+    account_b = _unique_devices(device_b, account_b_devices)
+    _cleanup_relation(
+        device_a,
         device_b,
-        assert_api,
-        device_name="deviceB",
-        enabled=False,
+        user_a,
+        user_b,
+        account_a_devices=account_a_devices,
+        account_b_devices=account_b_devices,
     )
+    _set_accept_invitation_always(account_b, assert_api, enabled=False)
     reason = f"offline-delete-friend-{uuid.uuid4().hex[:8]}"
     add = device_a.call(
         "ContactManager",
@@ -208,16 +372,12 @@ def _establish_friendship(
         assert_api,
         add,
         cmd=Cmd.addContact.value,
-        device_name="deviceA",
+        device_name=_device_name(device_a),
         result=user_b,
     )
-    invited = device_b.receive_message(
-        match_event_type=ContactChangeEvent.INVITED.value,
-        timeout=20.0,
-    )
-    _assert_contact_event(
+    _assert_contact_event_on_device(
+        device_b,
         assert_api,
-        invited,
         event_type=ContactChangeEvent.INVITED.value,
         user_id=user_a,
         reason=reason,
@@ -231,424 +391,402 @@ def _establish_friendship(
         assert_api,
         accepted,
         cmd=Cmd.acceptInvitation.value,
-        device_name="deviceB",
+        device_name=_device_name(device_b),
         result=user_a,
     )
-    added_on_b = device_b.receive_message(
-        match_event_type=ContactChangeEvent.CONTACT_ADD.value,
-        timeout=20.0,
-    )
-    _assert_contact_event(
-        assert_api,
-        added_on_b,
-        event_type=ContactChangeEvent.CONTACT_ADD.value,
-        user_id=user_a,
-    )
-    accepted_on_a = device_a.receive_message(
-        match_event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
-        timeout=20.0,
-    )
-    _assert_contact_event(
-        assert_api,
-        accepted_on_a,
+    _assert_contact_event_on_device(
+        device_a, assert_api,
         event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
         user_id=user_b,
     )
-    added_on_a = device_a.receive_message(
-        match_event_type=ContactChangeEvent.CONTACT_ADD.value,
-        timeout=20.0,
-    )
-    _assert_contact_event(
-        assert_api,
-        added_on_a,
-        event_type=ContactChangeEvent.CONTACT_ADD.value,
-        user_id=user_b,
-    )
-    _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[user_b])
-    _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[user_a])
+    _assert_contacts_on_devices(account_a, assert_api, target_user=user_b, expected_present=True)
+    _assert_contacts_on_devices(account_b, assert_api, target_user=user_a, expected_present=True)
     device_a.drain_events(timeout=0.5)
     device_b.drain_events(timeout=0.5)
 
 
 def test_contact_offline_invitation_received_after_login(
-    device_a,
-    device_b,
+    topology,
     assert_api,
-    user_a,
-    user_b,
 ):
     """B 先离线，A 发起申请；B 登录收到邀请，但双方仍不是好友。"""
+    device_a = topology.sender_action_device
+    device_b = topology.recipient_action_device
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
+    account_a_devices = topology.sender_devices
+    account_b_devices = topology.recipient_devices
     reason = f"offline-invite-{uuid.uuid4().hex[:8]}"
     try:
-        _prepare_offline_invitation(
+        with _allure_step("测试准备：让接收账号全部端点离线并发送好友申请"):
+            _prepare_offline_invitation(
+                device_a,
+                device_b,
+                assert_api,
+                user_a=user_a,
+                user_b=user_b,
+                reason=reason,
+                account_a_devices=account_a_devices,
+                account_b_devices=account_b_devices,
+            )
+        with _allure_step("接收账号逐端登录并验证离线好友申请已消费"):
+            _assert_contacts_on_devices(account_a_devices, assert_api, target_user=user_b, expected_present=False)
+            _assert_contacts_on_devices(account_b_devices, assert_api, target_user=user_a, expected_present=False)
+    finally:
+        _restore_case_state(
             device_a,
             device_b,
             assert_api,
             user_a=user_a,
             user_b=user_b,
-            reason=reason,
+            account_a_devices=account_a_devices,
+            account_b_devices=account_b_devices,
         )
-        _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
-        _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
-    finally:
-        _restore_case_state(device_a, device_b, user_a=user_a, user_b=user_b)
 
 
 def test_contact_offline_invitation_accept_after_login(
-    device_a,
-    device_b,
+    topology,
     assert_api,
-    user_a,
-    user_b,
 ):
     """B 登录收到离线申请后同意，A 收到接受与联系人新增事件。"""
+    device_a = topology.sender_action_device
+    device_b = topology.recipient_action_device
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
+    account_a_devices = topology.sender_devices
+    account_b_devices = topology.recipient_devices
     reason = f"offline-accept-{uuid.uuid4().hex[:8]}"
     try:
-        _prepare_offline_invitation(
+        with _allure_step("测试准备：发送好友申请并让接收账号恢复全部端点"):
+            _prepare_offline_invitation(
+                device_a,
+                device_b,
+                assert_api,
+                user_a=user_a,
+                user_b=user_b,
+                reason=reason,
+                account_a_devices=account_a_devices,
+                account_b_devices=account_b_devices,
+                event_devices=(device_b,),
+            )
+        with _allure_step("接收账号动作端同意好友申请并验证响应"):
+            response = device_b.call(
+                "ContactManager",
+                Cmd.acceptInvitation.value,
+                info={"userId": user_a},
+            )
+            _assert_contact_response(
+                assert_api,
+                response,
+                cmd=Cmd.acceptInvitation.value,
+                device_name=_device_name(device_b),
+                result=user_a,
+            )
+        with _allure_step("验证关键接受事件及双方全部端点的最终好友状态"):
+            _assert_contact_event_on_device(
+                device_a, assert_api,
+                event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
+                user_id=user_b,
+            )
+            _assert_contacts_on_devices(account_a_devices, assert_api, target_user=user_b, expected_present=True)
+            _assert_contacts_on_devices(account_b_devices, assert_api, target_user=user_a, expected_present=True)
+    finally:
+        _restore_case_state(
             device_a,
             device_b,
             assert_api,
             user_a=user_a,
             user_b=user_b,
-            reason=reason,
+            account_a_devices=account_a_devices,
+            account_b_devices=account_b_devices,
         )
-        response = device_b.call(
-            "ContactManager",
-            Cmd.acceptInvitation.value,
-            info={"userId": user_a},
-        )
-        _assert_contact_response(
-            assert_api,
-            response,
-            cmd=Cmd.acceptInvitation.value,
-            device_name="deviceB",
-            result=user_a,
-        )
-        added_on_b = device_b.receive_message(
-            match_event_type=ContactChangeEvent.CONTACT_ADD.value,
-            timeout=20.0,
-        )
-        _assert_contact_event(
-            assert_api,
-            added_on_b,
-            event_type=ContactChangeEvent.CONTACT_ADD.value,
-            user_id=user_a,
-        )
-        accepted = device_a.receive_message(
-            match_event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
-            timeout=20.0,
-        )
-        _assert_contact_event(
-            assert_api,
-            accepted,
-            event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
-            user_id=user_b,
-        )
-        added = device_a.receive_message(
-            match_event_type=ContactChangeEvent.CONTACT_ADD.value,
-            timeout=20.0,
-        )
-        _assert_contact_event(
-            assert_api,
-            added,
-            event_type=ContactChangeEvent.CONTACT_ADD.value,
-            user_id=user_b,
-        )
-        _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[user_b])
-        _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[user_a])
-    finally:
-        _restore_case_state(device_a, device_b, user_a=user_a, user_b=user_b)
 
 
 def test_contact_offline_invitation_decline_after_login(
-    device_a,
-    device_b,
+    topology,
     assert_api,
-    user_a,
-    user_b,
 ):
     """B 登录收到离线申请后拒绝，A 收到拒绝事件且双方保持非好友。"""
+    device_a = topology.sender_action_device
+    device_b = topology.recipient_action_device
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
+    account_a_devices = topology.sender_devices
+    account_b_devices = topology.recipient_devices
     reason = f"offline-decline-{uuid.uuid4().hex[:8]}"
     try:
-        _prepare_offline_invitation(
+        with _allure_step("测试准备：发送好友申请并让接收账号恢复全部端点"):
+            _prepare_offline_invitation(
+                device_a,
+                device_b,
+                assert_api,
+                user_a=user_a,
+                user_b=user_b,
+                reason=reason,
+                account_a_devices=account_a_devices,
+                account_b_devices=account_b_devices,
+            )
+        with _allure_step("接收账号动作端拒绝好友申请并验证响应"):
+            response = device_b.call(
+                "ContactManager",
+                Cmd.declineInvitation.value,
+                info={"userId": user_a},
+            )
+            _assert_contact_response(
+                assert_api,
+                response,
+                cmd=Cmd.declineInvitation.value,
+                device_name=_device_name(device_b),
+                result=user_a,
+            )
+        with _allure_step("验证拒绝事件及双方全部端点的非好友状态"):
+            _assert_contact_event_on_devices(
+                account_a_devices, assert_api,
+                event_type=ContactChangeEvent.INVITATION_DECLINED.value,
+                user_id=user_b,
+            )
+            _assert_contacts_on_devices(account_a_devices, assert_api, target_user=user_b, expected_present=False)
+            _assert_contacts_on_devices(account_b_devices, assert_api, target_user=user_a, expected_present=False)
+    finally:
+        _restore_case_state(
             device_a,
             device_b,
             assert_api,
             user_a=user_a,
             user_b=user_b,
-            reason=reason,
+            account_a_devices=account_a_devices,
+            account_b_devices=account_b_devices,
         )
-        response = device_b.call(
-            "ContactManager",
-            Cmd.declineInvitation.value,
-            info={"userId": user_a},
-        )
-        _assert_contact_response(
-            assert_api,
-            response,
-            cmd=Cmd.declineInvitation.value,
-            device_name="deviceB",
-            result=user_a,
-        )
-        declined = device_a.receive_message(
-            match_event_type=ContactChangeEvent.INVITATION_DECLINED.value,
-            timeout=20.0,
-        )
-        _assert_contact_event(
-            assert_api,
-            declined,
-            event_type=ContactChangeEvent.INVITATION_DECLINED.value,
-            user_id=user_b,
-        )
-        _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
-        _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
-    finally:
-        _restore_case_state(device_a, device_b, user_a=user_a, user_b=user_b)
 
 
 def test_contact_offline_requester_receives_accept_after_relogin(
-    device_a,
-    device_b,
+    topology,
     assert_api,
-    user_a,
-    user_b,
 ):
     """B 收到申请后让 A 离线；B 同意，A 重登收到离线接受结果。"""
+    device_a = topology.sender_action_device
+    device_b = topology.recipient_action_device
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
+    account_a_devices = topology.sender_devices
+    account_b_devices = topology.recipient_devices
     reason = f"offline-requester-accept-{uuid.uuid4().hex[:8]}"
     try:
-        _prepare_offline_invitation(
+        with _allure_step("测试准备：发送好友申请后让申请账号全部端点离线"):
+            _prepare_offline_invitation(
+                device_a,
+                device_b,
+                assert_api,
+                user_a=user_a,
+                user_b=user_b,
+                reason=reason,
+                account_a_devices=account_a_devices,
+                account_b_devices=account_b_devices,
+                event_devices=(device_b,),
+            )
+            logout_account_devices(account_a_devices, assert_api)
+        with _allure_step("接收账号同意好友申请并验证动作端响应"):
+            response = device_b.call(
+                "ContactManager",
+                Cmd.acceptInvitation.value,
+                info={"userId": user_a},
+            )
+            _assert_contact_response(
+                assert_api,
+                response,
+                cmd=Cmd.acceptInvitation.value,
+                device_name=_device_name(device_b),
+                result=user_a,
+            )
+        with _allure_step("申请账号全部端点重新登录并验证离线接受事件与最终好友状态"):
+            login_account_devices(account_a_devices, assert_api, user_id=user_a)
+            _assert_contact_event_on_device(
+                device_a, assert_api,
+                event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
+                user_id=user_b,
+            )
+            _assert_contacts_on_devices(account_a_devices, assert_api, target_user=user_b, expected_present=True)
+            _assert_contacts_on_devices(account_b_devices, assert_api, target_user=user_a, expected_present=True)
+    finally:
+        _restore_case_state(
             device_a,
             device_b,
             assert_api,
             user_a=user_a,
             user_b=user_b,
-            reason=reason,
+            account_a_devices=account_a_devices,
+            account_b_devices=account_b_devices,
         )
-        logout_for_offline(device_a, assert_api, device_name="deviceA")
-        response = device_b.call(
-            "ContactManager",
-            Cmd.acceptInvitation.value,
-            info={"userId": user_a},
-        )
-        _assert_contact_response(
-            assert_api,
-            response,
-            cmd=Cmd.acceptInvitation.value,
-            device_name="deviceB",
-            result=user_a,
-        )
-        added_on_b = device_b.receive_message(
-            match_event_type=ContactChangeEvent.CONTACT_ADD.value,
-            timeout=20.0,
-        )
-        _assert_contact_event(
-            assert_api,
-            added_on_b,
-            event_type=ContactChangeEvent.CONTACT_ADD.value,
-            user_id=user_a,
-        )
-        login_preserving_offline_events(
-            device_a,
-            assert_api,
-            device_name="deviceA",
-            user_id=user_a,
-        )
-        accepted = device_a.receive_message(
-            match_event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
-            timeout=20.0,
-        )
-        _assert_contact_event(
-            assert_api,
-            accepted,
-            event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
-            user_id=user_b,
-        )
-        added = device_a.receive_message(
-            match_event_type=ContactChangeEvent.CONTACT_ADD.value,
-            timeout=20.0,
-        )
-        _assert_contact_event(
-            assert_api,
-            added,
-            event_type=ContactChangeEvent.CONTACT_ADD.value,
-            user_id=user_b,
-        )
-        _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[user_b])
-        _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[user_a])
-    finally:
-        _restore_case_state(device_a, device_b, user_a=user_a, user_b=user_b)
 
 
 def test_contact_offline_requester_receives_decline_after_relogin(
-    device_a,
-    device_b,
+    topology,
     assert_api,
-    user_a,
-    user_b,
 ):
     """B 收到申请后让 A 离线；B 拒绝，A 重登收到离线拒绝结果。"""
+    device_a = topology.sender_action_device
+    device_b = topology.recipient_action_device
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
+    account_a_devices = topology.sender_devices
+    account_b_devices = topology.recipient_devices
     reason = f"offline-requester-decline-{uuid.uuid4().hex[:8]}"
     try:
-        _prepare_offline_invitation(
+        with _allure_step("测试准备：发送好友申请后让申请账号全部端点离线"):
+            _prepare_offline_invitation(
+                device_a,
+                device_b,
+                assert_api,
+                user_a=user_a,
+                user_b=user_b,
+                reason=reason,
+                account_a_devices=account_a_devices,
+                account_b_devices=account_b_devices,
+            )
+            logout_account_devices(account_a_devices, assert_api)
+        with _allure_step("接收账号拒绝好友申请并验证动作端响应"):
+            response = device_b.call(
+                "ContactManager",
+                Cmd.declineInvitation.value,
+                info={"userId": user_a},
+            )
+            _assert_contact_response(
+                assert_api,
+                response,
+                cmd=Cmd.declineInvitation.value,
+                device_name=_device_name(device_b),
+                result=user_a,
+            )
+        with _allure_step("申请账号全部端点重新登录并验证离线拒绝事件与最终状态"):
+            login_account_devices(account_a_devices, assert_api, user_id=user_a)
+            _assert_contact_event_on_devices(
+                account_a_devices, assert_api,
+                event_type=ContactChangeEvent.INVITATION_DECLINED.value,
+                user_id=user_b,
+            )
+            _assert_contacts_on_devices(account_a_devices, assert_api, target_user=user_b, expected_present=False)
+            _assert_contacts_on_devices(account_b_devices, assert_api, target_user=user_a, expected_present=False)
+    finally:
+        _restore_case_state(
             device_a,
             device_b,
             assert_api,
             user_a=user_a,
             user_b=user_b,
-            reason=reason,
+            account_a_devices=account_a_devices,
+            account_b_devices=account_b_devices,
         )
-        logout_for_offline(device_a, assert_api, device_name="deviceA")
-        response = device_b.call(
-            "ContactManager",
-            Cmd.declineInvitation.value,
-            info={"userId": user_a},
-        )
-        _assert_contact_response(
-            assert_api,
-            response,
-            cmd=Cmd.declineInvitation.value,
-            device_name="deviceB",
-            result=user_a,
-        )
-        login_preserving_offline_events(
-            device_a,
-            assert_api,
-            device_name="deviceA",
-            user_id=user_a,
-        )
-        declined = device_a.receive_message(
-            match_event_type=ContactChangeEvent.INVITATION_DECLINED.value,
-            timeout=20.0,
-        )
-        _assert_contact_event(
-            assert_api,
-            declined,
-            event_type=ContactChangeEvent.INVITATION_DECLINED.value,
-            user_id=user_b,
-        )
-        _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
-        _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
-    finally:
-        _restore_case_state(device_a, device_b, user_a=user_a, user_b=user_b)
 
 
 def test_contact_offline_recipient_receives_delete_after_relogin(
-    device_a,
-    device_b,
+    topology,
     assert_api,
-    user_a,
-    user_b,
 ):
     """B 离线期间 A 删除好友；B 重登收到删除事件且双方关系清空。"""
+    device_a = topology.sender_action_device
+    device_b = topology.recipient_action_device
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
+    account_a_devices = topology.sender_devices
+    account_b_devices = topology.recipient_devices
     try:
-        _establish_friendship(
+        with _allure_step("测试准备：建立好友关系并让接收账号全部端点离线"):
+            _establish_friendship(
+                device_a,
+                device_b,
+                assert_api,
+                user_a=user_a,
+                user_b=user_b,
+                account_a_devices=account_a_devices,
+                account_b_devices=account_b_devices,
+            )
+            logout_account_devices(account_b_devices, assert_api)
+        with _allure_step("申请账号删除好友并验证动作响应"):
+            deleted = device_a.call(
+                "ContactManager",
+                Cmd.deleteContact.value,
+                info={"userId": user_b, "keepConversation": True},
+            )
+            _assert_contact_response(
+                assert_api,
+                deleted,
+                cmd=Cmd.deleteContact.value,
+                device_name=_device_name(device_a),
+                result=user_b,
+            )
+        with _allure_step("接收账号全部端点重新登录并验证主端离线删除事件与最终状态"):
+            login_account_devices(account_b_devices, assert_api, user_id=user_b)
+            _assert_contact_event_on_device(
+                device_b, assert_api,
+                event_type=ContactChangeEvent.CONTACT_DELETE.value,
+                user_id=user_a,
+            )
+            _assert_contacts_on_devices(account_a_devices, assert_api, target_user=user_b, expected_present=False)
+            _assert_contacts_on_devices(account_b_devices, assert_api, target_user=user_a, expected_present=False)
+    finally:
+        _restore_case_state(
             device_a,
             device_b,
             assert_api,
             user_a=user_a,
             user_b=user_b,
+            account_a_devices=account_a_devices,
+            account_b_devices=account_b_devices,
         )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
-        deleted = device_a.call(
-            "ContactManager",
-            Cmd.deleteContact.value,
-            info={"userId": user_b, "keepConversation": True},
-        )
-        _assert_contact_response(
-            assert_api,
-            deleted,
-            cmd=Cmd.deleteContact.value,
-            device_name="deviceA",
-            result=user_b,
-        )
-        deleted_on_a = device_a.receive_message(
-            match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
-            timeout=20.0,
-        )
-        _assert_contact_event(
-            assert_api,
-            deleted_on_a,
-            event_type=ContactChangeEvent.CONTACT_DELETE.value,
-            user_id=user_b,
-        )
-        login_preserving_offline_events(
-            device_b,
-            assert_api,
-            device_name="deviceB",
-            user_id=user_b,
-        )
-        deleted_on_b = device_b.receive_message(
-            match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
-            timeout=20.0,
-        )
-        _assert_contact_event(
-            assert_api,
-            deleted_on_b,
-            event_type=ContactChangeEvent.CONTACT_DELETE.value,
-            user_id=user_a,
-        )
-        _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
-        _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
-    finally:
-        _restore_case_state(device_a, device_b, user_a=user_a, user_b=user_b)
 
 
 def test_contact_offline_requester_receives_peer_delete_after_relogin(
-    device_a,
-    device_b,
+    topology,
     assert_api,
-    user_a,
-    user_b,
 ):
     """A 离线期间 B 删除好友；A 重登收到删除事件且双方关系清空。"""
+    device_a = topology.sender_action_device
+    device_b = topology.recipient_action_device
+    user_a = topology.sender_user
+    user_b = topology.recipient_user
+    account_a_devices = topology.sender_devices
+    account_b_devices = topology.recipient_devices
     try:
-        _establish_friendship(
+        with _allure_step("测试准备：建立好友关系并让申请账号全部端点离线"):
+            _establish_friendship(
+                device_a,
+                device_b,
+                assert_api,
+                user_a=user_a,
+                user_b=user_b,
+                account_a_devices=account_a_devices,
+                account_b_devices=account_b_devices,
+            )
+            logout_account_devices(account_a_devices, assert_api)
+        with _allure_step("接收账号删除好友并验证动作响应"):
+            deleted = device_b.call(
+                "ContactManager",
+                Cmd.deleteContact.value,
+                info={"userId": user_a, "keepConversation": True},
+            )
+            _assert_contact_response(
+                assert_api,
+                deleted,
+                cmd=Cmd.deleteContact.value,
+                device_name=_device_name(device_b),
+                result=user_a,
+            )
+        with _allure_step("申请账号全部端点重新登录并验证主端离线删除事件与最终状态"):
+            login_account_devices(account_a_devices, assert_api, user_id=user_a)
+            _assert_contact_event_on_device(
+                device_a, assert_api,
+                event_type=ContactChangeEvent.CONTACT_DELETE.value,
+                user_id=user_b,
+            )
+            _assert_contacts_on_devices(account_a_devices, assert_api, target_user=user_b, expected_present=False)
+            _assert_contacts_on_devices(account_b_devices, assert_api, target_user=user_a, expected_present=False)
+    finally:
+        _restore_case_state(
             device_a,
             device_b,
             assert_api,
             user_a=user_a,
             user_b=user_b,
+            account_a_devices=account_a_devices,
+            account_b_devices=account_b_devices,
         )
-        logout_for_offline(device_a, assert_api, device_name="deviceA")
-        deleted = device_b.call(
-            "ContactManager",
-            Cmd.deleteContact.value,
-            info={"userId": user_a, "keepConversation": True},
-        )
-        _assert_contact_response(
-            assert_api,
-            deleted,
-            cmd=Cmd.deleteContact.value,
-            device_name="deviceB",
-            result=user_a,
-        )
-        deleted_on_b = device_b.receive_message(
-            match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
-            timeout=20.0,
-        )
-        _assert_contact_event(
-            assert_api,
-            deleted_on_b,
-            event_type=ContactChangeEvent.CONTACT_DELETE.value,
-            user_id=user_a,
-        )
-        login_preserving_offline_events(
-            device_a,
-            assert_api,
-            device_name="deviceA",
-            user_id=user_a,
-        )
-        deleted_on_a = device_a.receive_message(
-            match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
-            timeout=20.0,
-        )
-        _assert_contact_event(
-            assert_api,
-            deleted_on_a,
-            event_type=ContactChangeEvent.CONTACT_DELETE.value,
-            user_id=user_b,
-        )
-        _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
-        _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
-    finally:
-        _restore_case_state(device_a, device_b, user_a=user_a, user_b=user_b)

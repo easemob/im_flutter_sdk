@@ -16,6 +16,10 @@
 - Do not create `.agents/` in this repo; use `skills/` for repo-local skills. Use `$CODEX_HOME/skills` for user-global skills when needed.
 
 - Assertions: 禁止自证式 result 断言；优先断言信封字段 + 关键业务字段，或使用类型/条件与 ignore_keys。
+- Test-support protocol（非 SDK API，不进 5.0 API 矩阵）
+  - `Client.startCallback`（Android `ListenerHandle.startCallback` / iOS `startCallBack:`）：wrapper 事件转发开关。
+    用途：登录后开启事件转发（setup 阶段原生事件先缓冲，startCallback 后补发）—— conftest 测试前置调用，保持后开。
+    原生 4.x/5.0 均无此 API，仅测试支撑。
 
 See: `docs/agents/AGENTS.zh.md`（中文总规范）。
 

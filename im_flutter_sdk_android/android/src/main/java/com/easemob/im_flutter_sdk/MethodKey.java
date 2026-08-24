@@ -122,6 +122,8 @@ public class MethodKey {
 
     static final String onMessageReactionDidChange = "messageReactionDidChange";
     static final String onMessageContentChanged = "onMessageContentChanged";
+    /// 5.0 EMMessageListener.onMessageChanged（本地消息变更回调）
+    static final String onMessageChanged = "onMessageChanged";
 
 
     /// EMMessage listener
@@ -247,6 +249,8 @@ public class MethodKey {
     static final String removeMemberAttributesFromGroup = "removeMemberAttributesFromGroup";
     static final String fetchMemberAttributesFromGroup = "fetchMemberAttributesFromGroup";
     static final String fetchMembersAttributesFromGroup = "fetchMembersAttributesFromGroup";
+    /// 5.0 EMGroupManager.asyncFetchGroupMemberAllAttributes（拉取单成员全部属性）
+    static final String fetchMemberAllAttributes = "fetchMemberAllAttributes";
     static final String fetchJoinedGroupCount = "fetchJoinedGroupCount";
 
     /// EMGroupManagerListener
@@ -276,6 +280,7 @@ public class MethodKey {
     static final String updateOwnUserInfoWithType = "updateOwnUserInfoWithType";
     static final String fetchUserInfoById = "fetchUserInfoById";
     static final String fetchUserInfoByIdWithType = "fetchUserInfoByIdWithType";
+    static final String fetchOwnInfo = "fetchOwnInfo";
 
     /// EMPresenceManager methods
     static final String presenceWithDescription = "publishPresenceWithDescription";
@@ -286,6 +291,16 @@ public class MethodKey {
 
     /// EMPresenceManagerListener
     static final String onPresenceStatusChanged = "onPresenceStatusChanged";
+
+    /// EMContactListener.onContactInfoUpdate（好友信息更新）
+    static final String onContactInfoUpdate = "onContactInfoUpdate";
+
+    /// EMGroupChangeListener.onUserGroupNamecardUpdated（群成员名片更新）
+    static final String onUserGroupNamecardUpdated = "onUserGroupNamecardUpdated";
+
+    /// EMUserInfoManagerListener（用户信息更新）
+    static final String onSelfUserInfoUpdate = "onSelfUserInfoUpdate";
+    static final String onUserInfoUpdate = "onUserInfoUpdate";
 
     /// EMChatThreadManager methods
     static final String fetchChatThreadDetail = "fetchChatThreadDetail";
@@ -381,4 +396,52 @@ public class MethodKey {
     // 4.15.2
     static final String loadConversationMessagesWithKeyword = "loadConversationMessagesWithKeyword";
     static final String loadMessagesWithIds = "loadMessagesWithIds";
+    static final String updateGroupConfigs = "updateGroupConfigs";
+    static final String updateGroupExtension = "updateGroupExtension";
+    static final String getGroupMessageReadReceipts = "getGroupMessageReadReceipts";
+    static final String searchMessagesFromServer = "searchMessagesFromServer";
+    static final String deleteConversations = "deleteConversations";
+    static final String getPushConfigsFromServer = "getPushConfigsFromServer";
+    static final String saveMessage = "saveMessage";
+    static final String cleanConversationsMemoryCache = "cleanConversationsMemoryCache";
+    static final String getConversationsByType = "getConversationsByType";
+    static final String filterConversationsFromDB = "filterConversationsFromDB";
+    static final String setVoiceMessageListened = "setVoiceMessageListened";
+    static final String voiceMessageToText = "voiceMessageToText";
+    static final String voiceFileToText = "voiceFileToText";
+    static final String notifyTokenExpired = "notifyTokenExpired";
+    static final String sendFCMTokenToServer = "sendFCMTokenToServer";
+    static final String sendHonorPushTokenToServer = "sendHonorPushTokenToServer";
+    static final String getRTCTokenInfoWithChannelName = "getRTCTokenInfoWithChannelName";
+    static final String getUserIdsWithRTCUids = "getUserIdsWithRTCUids";
+    static final String saveBlackList = "saveBlackList";
+    static final String blockUser = "blockUser";
+    static final String unblockUser = "unblockUser";
+    static final String fetchGroupBlackList = "fetchGroupBlackList";
+    static final String getGroupNamecard = "getGroupNamecard";
+    static final String removeUserFromGroup = "removeUserFromGroup";
+    static final String updateGroupNamecard = "updateGroupNamecard";
+    static final String fetchChatRoomAllAttributesFromServer = "fetchChatRoomAllAttributesFromServer";
+    static final String setChatroomAttribute = "setChatroomAttribute";
+    static final String setChatroomAttributeForced = "setChatroomAttributeForced";
+    static final String removeChatRoomAttributeFromServer = "removeChatRoomAttributeFromServer";
+    static final String removeChatRoomAttributeFromServerForced = "removeChatRoomAttributeFromServerForced";
+    static final String getUserInfoWithUserId = "getUserInfoWithUserId";
+    static final String getUserInfoWithUserIds = "getUserInfoWithUserIds";
+    static final String subscribeUsersInfo = "subscribeUsersInfo";
+    static final String unsubscribeUsersInfo = "unsubscribeUsersInfo";
+    static final String fetchSubscribedUsers = "fetchSubscribedUsers";
+
+    // ---- 5.0 数据同步/数据库/会话名/群成员（check_wrapper_diffs 补全）----
+    static final String setDataSyncType = "setDataSyncType";
+    static final String getDataSyncType = "getDataSyncType";
+    static final String isDatabaseOpened = "isDatabaseOpened";
+    static final String getConversationName = "getConversationName";
+    static final String getConversationAvatar = "getConversationAvatar";
+    static final String getUsers = "getUsers";
+    static final String onDataSyncStart = "onDataSyncStart";
+    static final String onDataSyncFinish = "onDataSyncFinish";
+    static final String onDatabaseOpened = "onDatabaseOpened";
+    static final String onConversationUnreadMessageCountCleared = "onConversationUnreadMessageCountCleared";
+    static final String onAllConversationsUnreadMessageCountCleared = "onAllConversationsUnreadMessageCountCleared";
 }

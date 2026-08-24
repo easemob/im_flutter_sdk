@@ -296,3 +296,32 @@ def delete_user(username: str) -> None:
         if e.code != 404:
             body = e.read().decode() if e.fp else ""
             raise RuntimeError(f"删除用户 {username} 失败 HTTP {e.code}: {body}") from e
+
+
+def fetch_user_token(username: str, password: str, ttl: int = 0) -> dict:
+    """用账号密码换取用户 token（供 5.0 loginWithToken 登录使用）。
+
+    对应 REST: POST {base_url}/token, body {"grant_type":"password","username","password","ttl"}。
+    返回 {"access_token": ..., "expires_in": ..., "user": {...}}。
+    """
+    base = get_rest_base_url().rstrip("/")
+    if not base:
+        raise RuntimeError("rest_api.base_url 需在 config.yaml 的 rest_api 中配置")
+    url = f"{base}/token"
+    body = {
+        "grant_type": "password",
+        "username": username,
+        "password": password,
+        "ttl": str(ttl),
+    }
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(body).encode("utf-8"),
+        method="POST",
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
+    )
+    raw = _urlopen(req, timeout=30).read().decode("utf-8")
+    return json.loads(raw) if raw.strip() else {}

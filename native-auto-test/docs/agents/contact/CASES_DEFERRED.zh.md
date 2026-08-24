@@ -13,7 +13,8 @@
   - API：`getAllContactIds`
   - 原因：当前原生通道未实现 direct cmd，实测返回 `MissingPluginException`；本地 ID 成功语义已由 `getAllContactsFromDB` 覆盖。
   - 恢复条件：桥接补齐后按真实返回重新 discovery 并改为 strict 断言。
-- `tests/contact/test_friend_info_sync.py::test_friend_info_auto_sync_after_login`
+- 官方 4.x `test_friend_info_auto_sync_after_login`
   - API/事件：`onFriendStartSync` / `onFriendSyncFinished`
-  - 原因：当前实测重新登录后未稳定派发好友信息同步开始/结束回调。
-  - 恢复条件：SDK/服务端确认并稳定派发后，去掉 xfail 并按真实事件体 strict 断言。
+  - 原因：5.0 原生 SDK 已移除这些好友同步回调，不再迁移到 5.0。
+  - 替代：`tests/contact/test_friend_info_sync.py::test_contact_data_sync_events_after_relogin`
+    验证 5.0 的 `onDataSyncStart` / `onDataSyncFinish`。

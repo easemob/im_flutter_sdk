@@ -5,7 +5,11 @@ import time
 from collections.abc import Callable
 
 from src import Cmd
-from src.test_flow.offline_test_flow import restore_user_login
+from src.test_flow.offline_test_flow import (
+    login_preserving_offline_events,
+    logout_account_devices,
+    restore_account_devices,
+)
 from tests.group.group_helpers import assert_group_snapshot
 
 
@@ -28,6 +32,36 @@ def assert_call_result(
         },
         ignore_keys={"sequence"},
     )
+
+
+def device_name(device) -> str:
+    """返回 topology endpoint 的展示名，不依赖 deviceA/deviceB 字面角色。"""
+    return getattr(device, "device_name", None) or getattr(device, "_device", "device")
+
+
+def unique_devices(devices) -> tuple:
+    """按 topology 顺序去重 endpoint。"""
+    result = []
+    for device in devices:
+        if device is not None and not any(device is item for item in result):
+            result.append(device)
+    return tuple(result)
+
+
+def login_group_account_devices(devices, assert_api, *, user_id: str) -> None:
+    """按 endpoint 逐台恢复同一账号，并保留各端离线事件供用例读取。"""
+    for device in unique_devices(devices):
+        login_preserving_offline_events(
+            device,
+            assert_api,
+            device_name=device_name(device),
+            user_id=user_id,
+        )
+
+
+def logout_group_account_devices(devices, assert_api) -> None:
+    """让同一账号的全部 endpoint 下线，形成真正的账号级离线窗口。"""
+    logout_account_devices(unique_devices(devices), assert_api)
 
 
 def set_auto_accept_group_invitation(
@@ -60,25 +94,30 @@ def restore_group_users(
     user_a: str,
     user_b: str,
     restore_group_invitation_option: bool = False,
+    sender_devices=(),
+    recipient_devices=(),
 ) -> None:
     """finally 中恢复默认账号；不覆盖原始测试失败。"""
-    restore_user_login(device_a, user_id=user_a)
-    restore_user_login(device_b, user_id=user_b)
+    sender_devices = unique_devices(sender_devices or (device_a,))
+    recipient_devices = unique_devices(recipient_devices or (device_b,))
+    restore_account_devices(sender_devices, user_id=user_a)
+    restore_account_devices(recipient_devices, user_id=user_b)
     if restore_group_invitation_option:
+        for device in recipient_devices:
+            try:
+                set_auto_accept_group_invitation(
+                    device,
+                    assert_api,
+                    device_name=device_name(device),
+                    enabled=True,
+                )
+            except Exception:
+                pass
+    for device in (*sender_devices, *recipient_devices):
         try:
-            set_auto_accept_group_invitation(
-                device_b,
-                assert_api,
-                device_name="deviceB",
-                enabled=True,
-            )
+            device.drain_events(timeout=0.5)
         except Exception:
             pass
-    try:
-        device_a.drain_events(timeout=0.5)
-        device_b.drain_events(timeout=0.5)
-    except Exception:
-        pass
 
 
 def safe_destroy_group(device_a, group_id: str) -> None:
@@ -146,7 +185,7 @@ def assert_joined_group_projection(
     member_count: int | None = None,
 ) -> None:
     """对本次动态 groupId 做本地和服务端 joined groups 目标投影。"""
-    for cmd in (Cmd.getJoinedGroups.value, Cmd.getJoinedGroupsFromServer.value):
+    for cmd in (Cmd.getJoinedGroups.value,):  # 5.0 移除 getJoinedGroupsFromServer，改用本地 getJoinedGroups
         response = device.call("GroupManager", cmd, info={})
         result = response.get("result")
         assert isinstance(result, list), f"{cmd} result 不是 list: {response}"

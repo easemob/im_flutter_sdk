@@ -8,6 +8,7 @@
 """
 from __future__ import annotations
 
+import time
 from typing import Any
 
 from .. import Cmd
@@ -49,8 +50,15 @@ class ContactTestFlow:
             )
         )
 
-    def delete_friend(self, initiator: Any, friend_user_id: str, *, keep_conversation: bool = True) -> None:
-        """在 initiator 连接上删除好友并消费 CONTACT_DELETE。"""
+    def delete_friend(
+        self,
+        initiator: Any,
+        friend_user_id: str,
+        *,
+        keep_conversation: bool = True,
+        expect_event: bool = True,
+    ) -> None:
+        """删除好友；业务链路默认消费 CONTACT_DELETE，清理阶段可只完成删除。"""
         self._api.assert_success(
             initiator.call(
                 "ContactManager",
@@ -58,14 +66,35 @@ class ContactTestFlow:
                 info={"userId": friend_user_id, "keepConversation": keep_conversation},
             )
         )
-        assert initiator.receive_message(
-            match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
-            timeout=10.0,
-        )
+        if expect_event:
+            assert initiator.receive_message(
+                match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
+                timeout=10.0,
+            )
+        else:
+            initiator.drain_events(timeout=1.0)
 
-    def get_all_contacts_from_server(self, device: Any) -> dict[str, Any]:
-        """拉取指定 device 的好友列表原始响应，由用例层 assert_response_matches。"""
-        return device.call("ContactManager", Cmd.getAllContactsFromServer.value, info={})
+    def get_all_contacts_from_db(self, device: Any) -> dict[str, Any]:
+        """读取指定 device 的 5.0 本地好友列表原始响应。"""
+        return device.call("ContactManager", Cmd.getAllContactsFromDB.value, info={})
+
+    def wait_for_all_contacts_from_db(
+        self,
+        device: Any,
+        expected: list[str],
+        *,
+        timeout: float = 10.0,
+        interval: float = 0.25,
+    ) -> dict[str, Any]:
+        """等待 5.0 本地联系人 DB 完成好友事件后的最终一致，再返回原始响应。"""
+        deadline = time.monotonic() + timeout
+        response = self.get_all_contacts_from_db(device)
+        while time.monotonic() < deadline:
+            if response.get("result") == expected:
+                return response
+            time.sleep(interval)
+            response = self.get_all_contacts_from_db(device)
+        return response
 
     def get_block_list(self, device: Any) -> dict[str, Any]:
         """拉取指定 device 的黑名单原始响应，由用例层 assert_response_matches。"""

@@ -44,30 +44,9 @@
 36. 当用户决定暂时隔离已确认或待契约确认的 7 个 Group 场景时，测试应仅对对应参数添加带明确原因的 `skip`，保留原严格断言实现；其他矩阵参数不得被一并跳过，修复或契约确认后应删除对应 skip 并恢复验证。
 37. 当测试发送群消息时，case 应归档在 `tests/group`，并对 `txt/file/image/video/voice/location/cmd/custom/combine` 九种公开发送类型分别覆盖发送响应、发送方 `onMessageSuccess` 和接收方消息回调。
 38. 当群消息到达接收方时，测试应严格断言 `chatType=1`、`to/convId=groupId`、收发双方、方向、消息状态和类型特有 body；CMD 消息应通过 `onCmdMessagesReceived` 接收，其余类型应通过 `onMessagesReceived` 接收。
-39. 当群消息需要群回执时，`ackGroupMessageRead` 的正常和非法 ID 场景应归档在 `tests/group`；正常场景应使用真实动态 groupId/msgId 关联双端消息事件，并在 read-ack 后验证 `groupAckCount`。
+39. 当群消息需要群回执时，`ackGroupMessageRead` 与 `asyncFetchGroupAcks` 的正常和非法 ID 场景应归档在 `tests/group`，并继续使用真实动态 groupId/msgId 关联同步响应与双端消息事件。
 40. 当 ChatThread case 需要群消息作为父消息时，ChatThread API 与群父消息前置链路应统一归档在 `tests/group`；父消息仍不得重复计为独立群消息发送 case，Chat 模块不得继续保留同一批 ChatThread 测试文件。
 41. 当群消息目标为空或群不存在时，测试应使用文本消息覆盖共享群目标校验，关联临时 msgId 与异步失败终态，并确认另一真实设备未收到目标消息。
 42. 当从未入群、主动退出或被群主移除的用户发送群消息时，测试应分别覆盖三种成员状态，冻结真实错误，并严格确认群主设备没有收到该消息。
 43. 当群消息使用 `txt/location/cmd/custom/combine` 缺失类型必填字段或媒体四类型使用不存在设备路径时，测试应复用单聊已确认的构造边界，不因 `chatType=1` 重复测试与群权限无关的动态类型错误；仅在真实返回受 chatType 影响时保留独立 Group case。
 44. 当共享目标和成员状态已经由文本消息覆盖时，九种类型正常矩阵与共享异常矩阵应分别统计；不得用笛卡尔积重复相同服务端权限语义，也不得因此漏掉群独有的未入群、退出后和被移除后状态。
-45. 当 A 发送 `needGroupAck=true` 的群文本消息、B 收到该消息并成功调用 `ackGroupMessageRead` 时，测试应使用同一真实 `groupId/msgId` 关联发送响应、接收事件和回执请求，不得使用固定或伪造消息 ID。
-46. 当 B 完成 `ackGroupMessageRead` 后，A 应对同一真实 `msgId` 调用 `MessageManager/groupAckCount`，并在有界最终一致性窗口内严格断言返回计数为 `1`。
-47. 本轮群回执 case 仅保留 read-ack 后的 count 验证；不增加 `onGroupMessageRead`、`onReadAckForGroupMessageUpdated`、`asyncFetchGroupAcks` 或非法 ID 查询/计数断言。
-48. 当 B 在群邀请产生前已经通过 SDK logout 离线时，A 创建 `inviteNeedConfirm=true` 的群并邀请 B；B 重新登录后应按真实 ADB/WebSocket 日志严格断言 `onInvitationReceivedFromGroup` 的群、邀请人和原因字段，并确认 B 在显式处理前仍不是群成员。
-49. 当 B 上线处理离线群邀请时，测试应分别覆盖接受和拒绝；接受后验证 B 的权限、成员列表和 joined groups，拒绝后验证 B 保持非成员，邀请方结果事件必须按真实日志冻结。
-50. 当 A 在 B 处理待确认邀请前离线时，测试应分别覆盖 B 接受和拒绝；A 重新登录后必须按真实日志验证邀请处理结果事件，若当前 SDK/服务端未回放则保留原始证据并以服务端最终成员状态验收，不得制造本地事件。
-51. 当审批群申请产生前群主 A 已离线时，B 调用 `requestToJoinPublicGroup`；A 重新登录后应按真实日志严格断言 `onRequestToJoinReceivedFromGroup`，随后分别覆盖同意和拒绝并验证最终成员状态。
-52. 当 B 已提交入群申请后离线且 A 同意或拒绝时，B 重新登录后应按真实日志验证 `onRequestToJoinAcceptedFromGroup` 或 `onRequestToJoinDeclinedFromGroup`，并通过服务端群快照和 joined groups 验证最终状态。
-53. 当 B 已是群成员并离线时，A 发送群文本；B 重新登录后应严格断言目标 `onMessagesReceived` 的真实 msgId、群会话、方向、状态和正文，并验证本地消息可查询。
-54. 当 B 离线期间积压多条群文本时，测试应按本次真实 msgId 集合关联所有回放消息，并在历史拉取前验证群会话未读数和最新消息；不得依赖异步回调顺序。
-55. 当群 CMD 设置 `deliverOnlineOnly=true` 且 B 离线时，A 的发送终态应按真实日志冻结；B 重新登录后应通过独立事件窗口和本地查询共同证明目标 CMD 未被离线投递。当前公开 builder 仅对 CMD 暴露该开关，不为普通文本伪造参数。
-56. 当 A 发送 `needGroupAck=true` 的群文本、B 上线接收并发送 read ACK 时，既有 `groupAckCount=1` case 继续作为在线基线；当 A 在 B 发送 ACK 前离线时，A 重登后应按真实日志先同步服务端回执状态，再通过同一真实 msgId 查询 count 并严格断言为 `1`；同步返回仅作为刷新动作，不增加回执详情或回调业务断言。
-57. 当 B 在首次上线接收离线群消息前 A 撤回该消息时，测试应按真实日志冻结 B 重登后的撤回事件、原消息是否回放和本地最终状态；不得套用单聊语义。
-58. 当 B 已收到群消息后离线且 A 撤回时，测试应严格断言 B 重登后的撤回信息和本地最终状态；当 A 在 B 离线期间修改群消息时，应按真实日志断言修改事件或最终消息正文，并验证本地最终状态。
-59. 当 B 已是群成员并离线时，A 移出 B、将 B 加入群黑名单或解散群；B 重登后应分别验证真实离线事件（若派发）、服务端成员/黑名单/群存在性和本地 joined groups 最终状态；黑名单场景还必须真实调用公开群加入 API，并严格断言不可重新加入。
-60. 当 B 主动退出群后再执行 logout/login 时，测试应验证退出状态在重新登录后保持：B 不在服务端成员列表和本地/服务端 joined groups 中，且不能以旧本地群对象冒充成员状态。
-61. 当 B 离线期间被设为管理员、移除管理员或成为新群主时，测试应按真实日志验证角色事件（若派发），并以 `owner/adminList/memberList/permissionType` 的服务端与本地最终状态作为必达验收。
-62. 当 B 离线期间 A 修改群名称、描述、头像、扩展字段或公告时，测试应分别覆盖每个 API 的同步响应和服务端最终值；重新登录后的事件是否回放只能按真实 ADB 冻结。
-63. 当 B 离线期间 A 执行单成员禁言/解除、全员禁言/解除、白名单加入/移出、成员属性修改或共享文件上传/删除时，测试应严格断言操作响应和相应查询 API 的最终状态；若有离线事件则同时严格断言稳定业务字段。
-64. 当任一群离线 case 结束时，无论成功或失败，都必须恢复 A/B 默认登录用户、B 的 `autoAcceptGroupInvitation=true` 基线并清理本次动态群；清理失败不得覆盖原始测试失败。
-65. 当实现群离线 cases 时，文件名和测试函数名必须显式包含 `offline`，分别归档邀请申请、消息、成员终态和角色配置；所有 expected 必须来自本轮真实 ADB/WebSocket discovery，事件缺失不得通过 xfail、宽松断言或伪造回调宣称覆盖。

@@ -7,6 +7,7 @@ import pytest
 
 from src import Cmd
 from tests.chat._utils import build_text
+from tests.allure_helpers import _allure_step
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
@@ -62,8 +63,8 @@ def _assert_message_event(assert_api, event_type, message, *, msg_id, user_a, us
         expected={"type": "event", "eventType": event_type, "data": {"messages": [{
             "msgId": msg_id, "from": user_a, "to": user_b, "convId": conv_id,
             "chatType": 0, "direction": direction, "status": 2,
-            "hasRead": has_read, "hasReadAck": False, "hasDeliverAck": has_deliver_ack,
-            "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+            "hasRead": has_read,
+            "isThread": False, "isContentReplaced": False,
             "deliverOnlineOnly": False, "body": body,
         }]}},
         ignore_keys={"timestamp", "sequence", "localTime", "serverTime", "broadcast", "onlineState",
@@ -80,8 +81,8 @@ def _text_message(device_a, device_b, assert_api, user_a, user_b, content):
         resp,
         expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA",
                   "result": {"msgId": temp_id, "from": user_a, "to": user_b, "convId": user_b,
-                             "chatType": 0, "direction": 0, "status": 0, "hasRead": True,
-                             "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
+                             "chatType": 0, "direction": 0, "hasRead": True,
+                             "hasDeliverAck": False,
                              "isThread": False, "isContentReplaced": False,
                              "body": {"type": 0, "content": content}}},
         ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState",
@@ -108,12 +109,7 @@ def _text_message(device_a, device_b, assert_api, user_a, user_b, content):
         assert_api, Cmd.onMessagesReceived.value, received, msg_id=msg["msgId"], user_a=user_a, user_b=user_b,
         body=body, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True,
     )
-    delivered = _wait_message_list_event(device_a, Cmd.onMessagesDelivered.value, msg_id=msg["msgId"])
-    _assert_message_event(
-        assert_api, Cmd.onMessagesDelivered.value, delivered, msg_id=msg["msgId"], user_a=user_a, user_b=user_b,
-        body=body, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True,
-    )
-    return delivered
+    return msg
 
 
 def _custom_message(device_a, device_b, assert_api, user_a, user_b):
@@ -123,18 +119,18 @@ def _custom_message(device_a, device_b, assert_api, user_a, user_b):
     device_a.drain_events(); device_b.drain_events()
     resp_send = device_a.call(
         "ChatManager",
-        Cmd.sendMessageWithType.value,
-        info={"type": "custom", "payload": {"targetId": user_b, "event": event_name, "params": params},
-              "chatType": 0},
+        Cmd.sendMessage.value,
+        info={"to": user_b, "chatType": 0, "direction": 0,
+              "body": {"type": 7, "event": event_name, "params": params}},
     )
     temp_id = ((resp_send.get("result") or {}).get("msgId"))
     assert temp_id, resp_send
     assert_api.assert_response_matches(
         resp_send,
-        expected={"manager": "ChatManager", "cmd": Cmd.sendMessageWithType.value, "device": "deviceA",
+        expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA",
                   "result": {"msgId": temp_id, "from": user_a, "to": user_b, "convId": user_b,
-                             "chatType": 0, "direction": 0, "status": 1, "hasRead": True,
-                             "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
+                             "chatType": 0, "direction": 0,  "hasRead": True,
+                             "hasDeliverAck": False,
                              "isThread": False, "isContentReplaced": False, "body": body}},
         ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState", "deliverOnlineOnly"},
     )
@@ -160,16 +156,11 @@ def _custom_message(device_a, device_b, assert_api, user_a, user_b):
         assert_api, Cmd.onMessagesReceived.value, received, msg_id=msg["msgId"], user_a=user_a, user_b=user_b,
         body=body, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True,
     )
-    delivered = _wait_message_list_event(device_a, Cmd.onMessagesDelivered.value, msg_id=msg["msgId"])
-    _assert_message_event(
-        assert_api, Cmd.onMessagesDelivered.value, delivered, msg_id=msg["msgId"], user_a=user_a, user_b=user_b,
-        body=body, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True,
-    )
-    return delivered
+    return msg
 
 
 def _translate(device_a, assert_api, msg, languages):
-    return device_a.call("ChatManager", Cmd.translateMessage.value, info={"message": msg, "targetLanguages": languages})
+    return device_a.call("ChatManager", Cmd.translateMessage.value, info={"message": msg, "languages": languages})
 
 
 def _expected_translated_message(msg, *, languages):
@@ -182,8 +173,8 @@ def _expected_translated_message(msg, *, languages):
             "msgId": "{{msgId}}", "from": msg.get("from"), "to": msg.get("to"),
             "convId": msg.get("convId"), "chatType": msg.get("chatType"),
             "direction": msg.get("direction"), "status": msg.get("status"),
-            "hasRead": msg.get("hasRead"), "hasReadAck": msg.get("hasReadAck"),
-            "hasDeliverAck": msg.get("hasDeliverAck"), "needGroupAck": msg.get("needGroupAck"),
+            "hasRead": msg.get("hasRead"),
+            "hasDeliverAck": msg.get("hasDeliverAck"),
             "isThread": msg.get("isThread"), "isContentReplaced": msg.get("isContentReplaced"),
             "body": {**body, "targetLanguages": languages, "translations": {}},
         },
@@ -201,18 +192,26 @@ def _assert_translation_result(assert_api, resp, msg, languages):
 
 
 def test_chat_translate_message_empty_languages(device_a, device_b, assert_api, user_a, user_b):
-    msg = _text_message(device_a, device_b, assert_api, user_a, user_b, f"translate-empty-{uuid.uuid4().hex[:6]}")
-    resp = _translate(device_a, assert_api, msg, [])
-    _assert_translation_result(assert_api, resp, msg, [])
+    with _allure_step("验证：chat translate message empty languages"):
+        msg = _text_message(device_a, device_b, assert_api, user_a, user_b, f"translate-empty-{uuid.uuid4().hex[:6]}")
+        resp = _translate(device_a, assert_api, msg, [])
+        _assert_translation_result(assert_api, resp, msg, [])
 
 
 def test_chat_translate_message_unsupported_language(device_a, device_b, assert_api, user_a, user_b):
-    msg = _text_message(device_a, device_b, assert_api, user_a, user_b, f"translate-unsupported-{uuid.uuid4().hex[:6]}")
-    resp = _translate(device_a, assert_api, msg, ["xx-INVALID"])
-    _assert_translation_result(assert_api, resp, msg, ["xx-INVALID"])
+    with _allure_step("验证：chat translate message unsupported language"):
+        msg = _text_message(device_a, device_b, assert_api, user_a, user_b, f"translate-unsupported-{uuid.uuid4().hex[:6]}")
+        resp = _translate(device_a, assert_api, msg, ["xx-INVALID"])
+        assert_api.assert_error(
+            resp,
+            code=1110,
+            description="Translation parameter error",
+        )
 
 
 def test_chat_translate_custom_message(device_a, device_b, assert_api, user_a, user_b):
-    msg = _custom_message(device_a, device_b, assert_api, user_a, user_b)
-    resp = _translate(device_a, assert_api, msg, ["zh-Hans"])
-    assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.translateMessage.value, "device": "deviceA", "result": {"code": 1, "description": "General error"}}, ignore_keys={"sequence"})
+    with _allure_step("验证：chat translate custom message"):
+        msg = _custom_message(device_a, device_b, assert_api, user_a, user_b)
+        resp = _translate(device_a, assert_api, msg, ["zh-Hans"])
+        # 只看 errorcode（leader 要求）：描述两端不同，code 一致 1
+        assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.translateMessage.value, "device": "deviceA", "result": {"code": 1}}, ignore_keys={"sequence"})

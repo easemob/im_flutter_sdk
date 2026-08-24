@@ -7,6 +7,7 @@ import pytest
 
 from src import Cmd
 from tests.chat._utils import build_text
+from tests.allure_helpers import _allure_step
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
@@ -31,8 +32,7 @@ def _assert_text_event(assert_api, event_type, message, *, msg_id, user_a, user_
         expected={"type": "event", "eventType": event_type, "data": {"messages": [{
             "msgId": msg_id, "from": user_a, "to": user_b, "convId": conv_id,
             "chatType": 0, "direction": direction, "status": 2,
-            "hasRead": has_read, "hasReadAck": False, "hasDeliverAck": has_deliver_ack,
-            "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+            "hasRead": has_read, "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
             "deliverOnlineOnly": False,
             "body": {"type": 0, "content": content, "translations": {}},
         }]}},
@@ -51,9 +51,8 @@ def _send_text_message(device_a, device_b, assert_api, user_a, user_b, content):
         response,
         expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA", "result": {
             "msgId": temp_id, "from": user_a, "to": user_b, "convId": user_b,
-            "chatType": 0, "direction": 0, "status": 0, "hasRead": True,
-            "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
-            "isThread": False, "isContentReplaced": False,
+            "chatType": 0, "direction": 0, "hasRead": True,
+            "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
             "body": {"type": 0, "content": content},
         }},
         ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState",
@@ -67,7 +66,7 @@ def _send_text_message(device_a, device_b, assert_api, user_a, user_b, content):
             _assert_text_event(
                 assert_api, Cmd.onMessageSuccess.value, message, msg_id=message["msgId"],
                 user_a=user_a, user_b=user_b, content=content,
-                direction=0, conv_id=user_b, has_read=True, has_deliver_ack=False,
+                direction=0, conv_id=user_b, has_read=True, has_deliver_ack=None,
             )
             return message
     pytest.fail(f"未收到文本发送成功事件: {content}")
@@ -75,43 +74,36 @@ def _send_text_message(device_a, device_b, assert_api, user_a, user_b, content):
 
 
 def test_chat_download_thumbnail_for_text_message(device_a, device_b, assert_api, user_a, user_b):
-    content = f"thumbnail-text-{uuid.uuid4().hex[:8]}"
-    message = _send_text_message(device_a, device_b, assert_api, user_a, user_b, content)
-    response = device_a.call("ChatManager", Cmd.downloadThumbnail.value, info={"message": message})
-    assert_api.assert_response_matches(
-        response,
-        expected={"manager": "ChatManager", "cmd": Cmd.downloadThumbnail.value, "device": "deviceA", "result": {
-            "msgId": message["msgId"], "from": user_a, "to": user_b, "convId": user_b,
-            "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
-            "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
-            "isThread": False, "isContentReplaced": False,
-            "body": {"type": 0, "content": content, "targetLanguages": [], "translations": {}},
-        }},
-        ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState", "deliverOnlineOnly"},
-    )
-    event = device_a.receive_message(match_event_type=Cmd.onMessageError.value, timeout=20)
-    assert_api.assert_response_matches(
-        event,
-        expected={"type": "event", "eventType": Cmd.onMessageError.value, "data": {
-            "msgId": message["msgId"],
-            "msg": {"msgId": message["msgId"], "from": user_a, "to": user_b, "convId": user_b,
-                    "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
-                    "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False,
-                    "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
-                    "body": {"type": 0, "content": content, "translations": {}}},
-            "error": {"code": 403, "description": "Failed to download the file"},
-        }},
-        ignore_keys={"timestamp", "sequence", "localTime", "serverTime"},
-    )
-    received = _wait_message_list_event(device_b, Cmd.onMessagesReceived.value, msg_id=message["msgId"])
-    _assert_text_event(
-        assert_api, Cmd.onMessagesReceived.value, received, msg_id=message["msgId"],
-        user_a=user_a, user_b=user_b, content=content,
-        direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True,
-    )
-    delivered = _wait_message_list_event(device_a, Cmd.onMessagesDelivered.value, msg_id=message["msgId"])
-    _assert_text_event(
-        assert_api, Cmd.onMessagesDelivered.value, delivered, msg_id=message["msgId"],
-        user_a=user_a, user_b=user_b, content=content,
-        direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True,
-    )
+    with _allure_step("验证：chat download thumbnail for text message"):
+        content = f"thumbnail-text-{uuid.uuid4().hex[:8]}"
+        message = _send_text_message(device_a, device_b, assert_api, user_a, user_b, content)
+        response = device_a.call("ChatManager", Cmd.downloadThumbnail.value, info={"message": message})
+        assert_api.assert_response_matches(
+            response,
+            expected={"manager": "ChatManager", "cmd": Cmd.downloadThumbnail.value, "device": "deviceA", "result": {
+                "msgId": message["msgId"], "from": user_a, "to": user_b, "convId": user_b,
+                "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
+                "needReadReceipt": False, "isThread": False, "isContentReplaced": False,
+                "body": {"type": 0, "content": content, "targetLanguages": [], "translations": {}},
+            }},
+            ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState", "deliverOnlineOnly"},
+        )
+        event = device_a.receive_message(match_event_type=Cmd.onMessageError.value, timeout=20)
+        assert_api.assert_response_matches(
+            event,
+            expected={"type": "event", "eventType": Cmd.onMessageError.value, "data": {
+                "msgId": message["msgId"],
+                "msg": {"msgId": message["msgId"], "from": user_a, "to": user_b, "convId": user_b,
+                        "chatType": 0, "direction": 0, "status": 2, "hasRead": True,
+                        "needReadReceipt": False, "isThread": False, "isContentReplaced": False, "deliverOnlineOnly": False,
+                        "body": {"type": 0, "content": content, "translations": {}}},
+                "error": {"code": 403, "description": "Failed to download the file"},
+            }},
+            ignore_keys={"timestamp", "sequence", "localTime", "serverTime"},
+        )
+        received = _wait_message_list_event(device_b, Cmd.onMessagesReceived.value, msg_id=message["msgId"])
+        _assert_text_event(
+            assert_api, Cmd.onMessagesReceived.value, received, msg_id=message["msgId"],
+            user_a=user_a, user_b=user_b, content=content,
+            direction=1, conv_id=user_a, has_read=False, has_deliver_ack=None,
+        )

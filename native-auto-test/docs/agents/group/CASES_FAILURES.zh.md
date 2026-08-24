@@ -20,18 +20,6 @@
 - `im_flutter_test` 已注册并原样转发 `onInvitationDeclinedFromGroup`、
   `onRequestToJoinAcceptedFromGroup` 等事件，不会改写 `invitee/accepter/reason`。
 
-## 群组离线专项结果
-
-- 第六阶段新增的 31 个离线再上线 items 在补齐真实回放事件断言后，联合 strict 为
-  `31 passed, 1 warning in 391.78s`，没有新增未解决的严格失败。
-- 离线邀请拒绝仍复现本文件 Case 1 的既有问题：拒绝接口成功、最终成员状态正确，但邀请方
-  没有拒绝结果事件。离线 case 按真实日志断言负向事件窗口和最终状态，不重复新增失败编号。
-- 离线 read-ack 在发送方重登后需先调用 `asyncFetchGroupAcks` 同步服务端状态，随后
-  `groupAckCount=1`；测试不校验回执详情，未扩大用户限定的 count-only 范围。
-- 名称/描述更新、禁言成员检查和白名单列表均使用本轮真实 ADB/WebSocket 返回收紧；这些
-  case 已通过，不以 discovery 阶段的预设差异记录为失败。
-- 证据目录：`out/group_offline_20260730_185752/`。
-
 | Case | 复核结论 | 定位依据 |
 |---|---|---|
 | 1 | **Android Flutter SDK 适配错误，不能归因于开关。** Dart 发送 `inviter`，Android 插件却读取 `userId`，最终把 `null` 作为 inviter 传给原生 `asyncDeclineInvitation`；这足以解释接口成功但邀请方收不到拒绝回调。 | `group_manager.dart` 的 `declineInvitation` 写入 `inviter`；Android `GroupManagerWrapper.declineInvitationFromGroup` 读取 `userId`；iOS 同接口正确读取 `inviter`。 |

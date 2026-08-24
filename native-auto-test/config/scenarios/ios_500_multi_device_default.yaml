@@ -1,0 +1,72 @@
+# =============================================================
+# 场景：iOS 5.0 多设备（2 账号 × 2 端 = 4 个 iOS 模拟器）
+# 拓扑模型：account_a → device_a/device_a_sec；account_b → device_b/device_b_sec
+# case 用 @pytest.mark.topology("account_a_to_account_b") 引用拓扑，
+# topology fixture 提供动作端 + 全部在线端供遍历（场景加端 case 不改）。
+# =============================================================
+
+name: ios-500-multi-device-default
+# 场景名（--scenario 选择，Allure 显示）
+
+accounts:
+  # 逻辑用户：provision=rest 表示用 REST API 自动创建测试账号（跑完删除）
+  account_a:
+    provision: rest
+  account_b:
+    provision: rest
+  # account_c 保留给群组 case 的 user_c；本场景未配设备（无 Runner，不能登录）
+  account_c:
+    provision: rest
+
+devices:
+  # 每个 device = 一个端（iOS 模拟器 + App 实例）；role 名即 case 的 fixture 名（device_a...）
+  # device_name: Allure 展示名 | platform: ios | sdk_version: 被测版本
+  # account: 登录账号（同 account = 多端在线）
+  # serial: iOS 模拟器 UDID（xcrun simctl list devices 查看；只首次按实际输出改）
+  device_a:
+    device_name: deviceA
+    platform: ios
+    sdk_version: 5.0.0
+    account: account_a
+    serial: 5C30BD0D-D2E0-40CE-8A4A-CAB975887F6E
+
+  device_a_sec:
+    device_name: deviceASec
+    platform: ios
+    sdk_version: 5.0.0
+    account: account_a
+    serial: 18221F32-8721-4714-B705-4968099E82FE
+
+  device_b:
+    device_name: deviceB
+    platform: ios
+    sdk_version: 5.0.0
+    account: account_b
+    serial: EE7B2CEE-7E25-43E6-8B83-8CE432CBE97D
+
+  device_b_sec:
+    device_name: deviceBSec
+    platform: ios
+    sdk_version: 5.0.0
+    account: account_b
+    serial: BB23EE36-CFBD-4274-858E-0393F8BD7438
+
+topologies:
+  # 拓扑 = "发送方 → 接收方"链路；case 遍历 sender_devices/recipient_devices
+  account_a_to_account_b:
+    sender:
+      account: account_a
+      action_device: device_a          # 动作端：唯一调用 API 的端
+      include_all_devices: true        # true=包含发送账号全部端（验证多端同步）；
+                                       # false=只含动作端（默认，基础投递用）
+    recipient:
+      account: account_b
+      action_device: device_b          # 接收动作端：回执/已读等后续动作由它执行
+                                       #（接收端默认全端，无需写 include_all_devices）
+
+runner:
+  start_emulators: false       # false=模拟器预先手动启动；true=自动启动（需配置）
+  device_ready_timeout: 180    # 设备/App 就绪等待秒数
+  hello_timeout: 30            # App 与本地 server 握手超时
+  start_retry: 1               # App 启动重试次数
+  keep_device_alive: true      # true=跑完保留模拟器（方便复跑）；false=跑完关闭
