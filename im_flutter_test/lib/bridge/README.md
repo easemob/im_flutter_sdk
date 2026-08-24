@@ -2,7 +2,7 @@
 
 cases 与 im_flutter_sdk **均连接同一 WebSocket 服务**，通过该服务收发请求/响应。
 
-默认连接：`ws://140.143.132.6:2000/iov/websocket/dual?topic=adc`。可通过 `start(topic: ...)` 自定义 topic，或通过 `start(url: ...)` 指定完整 URL。
+默认连接：`ws://140.143.132.6:4000/iov/websocket/dual?topic=adc`。可通过 `start(topic: ...)` 自定义 topic，或通过 `start(url: ...)` 指定完整 URL。
 
 ## 使用方式（Flutter 侧）
 
@@ -19,7 +19,7 @@ await IMWebSocketBridge.instance.start(topic: 'my_topic');
 
 // 指定完整 URL
 await IMWebSocketBridge.instance.start(
-  url: 'ws://140.143.132.6:2000/iov/websocket/dual?topic=adc',
+  url: 'ws://140.143.132.6:4000/iov/websocket/dual?topic=adc',
 );
 ```
 
@@ -107,7 +107,7 @@ import urllib.parse
 import websockets
 
 # 与 im_flutter_sdk 使用同一 WebSocket 服务；topic 需与 Flutter 端 start(topic='...') 一致
-BASE = "ws://140.143.132.6:2000/iov/websocket/dual"
+BASE = "ws://140.143.132.6:4000/iov/websocket/dual"
 TOPIC = "adc"  # 可自定义，与 Flutter 端一致即可
 BRIDGE_WS_URL = f"{BASE}?topic={urllib.parse.quote(TOPIC)}"
 
