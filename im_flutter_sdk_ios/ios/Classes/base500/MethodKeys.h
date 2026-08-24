@@ -259,6 +259,8 @@ static NSString *const ChatDownloadGroupSharedFile = @"downloadGroupSharedFile";
 static NSString *const ChatRemoveGroupSharedFile = @"removeGroupSharedFile";
 static NSString *const ChatUpdateGroupAnnouncement = @"updateGroupAnnouncement";
 static NSString *const ChatUpdateGroupExt = @"updateGroupExt";
+static NSString *const ChatUpdateGroupExtension = @"updateGroupExtension";
+static NSString *const ChatUpdateGroupConfigs = @"updateGroupConfigs";
 static NSString *const ChatJoinPublicGroup = @"joinPublicGroup";
 static NSString *const ChatRequestToJoinPublicGroup = @"requestToJoinPublicGroup";
 static NSString *const ChatAcceptJoinApplication = @"acceptJoinApplication";
@@ -269,6 +271,7 @@ static NSString *const ChatSetMemberAttributesFromGroup = @"setMemberAttributesF
 static NSString *const ChatRemoveMemberAttributesFromGroup = @"removeMemberAttributesFromGroup";
 static NSString *const ChatFetchMemberAttributesFromGroup = @"fetchMemberAttributesFromGroup";
 static NSString *const ChatFetchMembersAttributesFromGroup = @"fetchMembersAttributesFromGroup";
+static NSString *const ChatFetchMemberAllAttributes = @"fetchMemberAllAttributes";
 static NSString *const ChatFetchJoinedGroupCount = @"fetchJoinedGroupCount";
 
 static NSString *const ChatOnGroupChanged = @"onGroupChanged";
@@ -301,6 +304,7 @@ static NSString *const ChatUpdateOwnUserInfo = @"updateOwnUserInfo";
 static NSString *const ChatUpdateOwnUserInfoWithType = @"updateOwnUserInfoWithType";
 static NSString *const ChatFetchUserInfoById = @"fetchUserInfoById";
 static NSString *const ChatFetchUserInfoByIdWithType = @"fetchUserInfoByIdWithType";
+static NSString *const ChatFetchOwnInfo = @"fetchOwnInfo";
 
 
 #pragma make - EMPresenceManagerWrapper

@@ -141,14 +141,60 @@ public class UserInfoManagerWrapper extends Wrapper implements MethodCallHandler
         // 【透传原生】不本地检查登录（原生处理）
         String currentUser = EMClient.getInstance().getCurrentUser();
 
-        EMUserInfo info = userInfoFromJson(param);
-        info.setUserId(currentUser);
-        EMClient.getInstance().userInfoManager().updateOwnInfo(info, new EMValueWrapperCallBack<String>(result, channelName) {
-            @Override
-            public void onSuccess(String object) {
-                updateObject(userInfoToJson(info));
-            }
-        });
+        // updateOwnInfo 接收的是完整 EMUserInfo。若直接用本次参数新建对象，
+        // 未传入的字段会以空值发送给原生并覆盖服务端已有值。先读取当前资料，
+        // 再只覆盖本次显式传入的字段，保留部分更新语义。
+        EMClient.getInstance().userInfoManager().fetchUserInfoByUserId(
+                new String[]{currentUser},
+                new EMValueWrapperCallBack<Map<String, EMUserInfo>>(result, channelName) {
+                    @Override
+                    public void onSuccess(Map<String, EMUserInfo> object) {
+                        EMUserInfo existing = object == null ? null : object.get(currentUser);
+                        if (existing == null) {
+                            existing = new EMUserInfo();
+                        }
+                        mergeUserInfo(existing, param);
+                        existing.setUserId(currentUser);
+                        final EMUserInfo info = existing;
+                        EMClient.getInstance().userInfoManager().updateOwnInfo(
+                                info,
+                                new EMValueWrapperCallBack<String>(result, channelName) {
+                                    @Override
+                                    public void onSuccess(String ignored) {
+                                        updateObject(userInfoToJson(info));
+                                    }
+                                }
+                        );
+                    }
+                }
+        );
+    }
+
+    private static void mergeUserInfo(EMUserInfo target, JSONObject json) {
+        if (json.has("nickName")) {
+            target.setNickname(json.optString("nickName", null));
+        }
+        if (json.has("avatarUrl")) {
+            target.setAvatarUrl(json.optString("avatarUrl", null));
+        }
+        if (json.has("mail")) {
+            target.setEmail(json.optString("mail", null));
+        }
+        if (json.has("phone")) {
+            target.setPhoneNumber(json.optString("phone", null));
+        }
+        if (json.has("gender")) {
+            target.setGender(json.optInt("gender", 0));
+        }
+        if (json.has("sign")) {
+            target.setSignature(json.optString("sign", null));
+        }
+        if (json.has("birth")) {
+            target.setBirth(json.optString("birth", null));
+        }
+        if (json.has("ext")) {
+            target.setExt(json.optString("ext", null));
+        }
     }
 
     private void updateOwnUserInfoWithType(JSONObject param, String channelName, Result result) throws JSONException {

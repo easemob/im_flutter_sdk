@@ -60,8 +60,11 @@
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
     ret[@"maxCount"] = @(self.maxUsers);
     ret[@"ext"] = self.ext;
-    ret[@"style"] = @(self.isPublic ? 2 : 0);
     ret[@"inviteNeedConfirm"] = @(self.IsInviteNeedConfirm);
+    // iOS 5.0 使用三个布尔字段，与 Android 5.0 GroupOptionsHelper 对齐。
+    ret[@"isPublic"] = @(self.isPublic);
+    ret[@"joinApprovalRequired"] = @(self.joinApprovalRequired);
+    ret[@"allowInvites"] = @(self.allowInvites);
     return ret;
 }
 
@@ -70,10 +73,10 @@
     options.maxUsers = [dict[@"maxCount"] intValue];
     options.ext = dict[@"ext"];
     options.IsInviteNeedConfirm = [dict[@"inviteNeedConfirm"] boolValue];
-    // 5.0: style 枚举(0-3) → isPublic/joinApprovalRequired/allowInvites 布尔（对齐 Android GroupOptionsHelper）
-    options.isPublic = [dict[@"style"] intValue] >= 2;            // style 2/3
-    options.allowInvites = [dict[@"style"] intValue] > 0;         // style 1/2/3（补：之前漏，isMemberAllowToInvite 恒 false）
-    options.joinApprovalRequired = [dict[@"style"] intValue] == 2; // style 2（补）
+    // iOS 5.0 使用 EMGroupConfigs 三布尔字段；style 仅属于 4.x 协议。
+    options.isPublic = [dict[@"isPublic"] boolValue];
+    options.joinApprovalRequired = [dict[@"joinApprovalRequired"] boolValue];
+    options.allowInvites = [dict[@"allowInvites"] boolValue];
     return options;
 }
 
@@ -84,6 +87,7 @@
 - (NSDictionary *)toJson {
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
     data[@"fileId"] = self.fileId;
+    // 共享文件列表和 onGroupSharedFileAdded 事件与 Android 保持一致，字段名为 name。
     data[@"name"] = self.fileName;
     data[@"owner"] = self.fileOwner;
     data[@"createTime"] = @(self.createdAt);

@@ -1,0 +1,96 @@
+# Web 5.0 Wrapper 实际转发的统一协议 Event 清单
+# 事件协议名与 Android/Python case 对齐；未列出的 Web 原生通知不会被伪造转发。
+# 本文件用于事件能力核对，不参与 capability skip。
+platform: web
+sdk_version: 5.0.0
+
+events:
+  ChatManager:
+    - onMessagesReceived
+    - onMessageSuccess
+    - onMessagesRead
+    - onMessagesDelivered
+    - onMessagesRecalledInfo
+    - onMessageContentChanged
+    - onMessagePinChanged
+    - messageReactionDidChange
+    - onConversationUpdate
+
+  Client:
+    - onConnected
+    - onDisconnected
+    - onDataSyncStart
+    - onDataSyncFinish
+    - onTokenWillExpire
+    - onTokenDidExpire
+    - onError
+
+  ContactManager:
+    - onContactChanged
+    - onContactInvited
+    - onContactDeleted
+    - onContactAdded
+    - onFriendRequestDeclined
+    - onFriendRequestAccepted
+    - onContactInfoUpdate
+
+  GroupManager:
+    - onGroupInvitationReceived
+    - onGroupRequestToJoinReceived
+    - onGroupRequestToJoinAccepted
+    - onGroupRequestToJoinDeclined
+    - onGroupInvitationAccepted
+    - onGroupInvitationDeclined
+    - onGroupUserRemoved
+    - onGroupDestroyed
+    - onGroupAutoAcceptInvitation
+    - onGroupMuteListAdded
+    - onGroupMuteListRemoved
+    - onGroupWhiteListAdded
+    - onGroupWhiteListRemoved
+    - onGroupAllMemberMuteStateChanged
+    - onGroupAdminAdded
+    - onGroupAdminRemoved
+    - onGroupOwnerChanged
+    - onGroupMembersJoined
+    - onGroupMembersExited
+    - onGroupAnnouncementChanged
+    - onGroupSharedFileAdded
+    - onGroupSharedFileDeleted
+    - onGroupSpecificationDidUpdate
+    - onGroupStateChanged
+    - onGroupAttributesChangedOfMember
+    - onUserGroupNamecardUpdated
+
+  ChatRoomManager:
+    - onRoomDestroyed
+    - onRoomMemberJoined
+    - onRoomMemberExited
+    - onRoomRemoved
+    - onRoomMuteListAdded
+    - onRoomMuteListRemoved
+    - onRoomWhiteListAdded
+    - onRoomWhiteListRemoved
+    - onRoomAllMemberMuteStateChanged
+    - onRoomAdminAdded
+    - onRoomAdminRemoved
+    - onRoomOwnerChanged
+    - onRoomAnnouncementChanged
+    - onRoomSpecificationChanged
+    - onRoomAttributesDidUpdated
+    - onRoomAttributesDidRemoved
+
+  PresenceManager:
+    - onPresenceStatusChanged
+
+  ChatThreadManager:
+    - onChatThreadCreate
+    - onChatThreadUpdate
+    - onChatThreadDestroy
+    - onUserKickOutOfChatThread
+
+  UserInfoManager:
+    - onSelfUserInfoUpdate
+    - onUserInfoUpdate
+
+  PushManager: []

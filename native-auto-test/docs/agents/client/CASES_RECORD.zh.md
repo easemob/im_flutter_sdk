@@ -103,7 +103,7 @@ Allure：客户端登录、会话边界与多设备查询用例已补充业务�
 
 异常/边界 cases
 27. `tests/client/test_client_remaining_api_coverage.py::test_client_session_sensitive_api_boundaries[renewToken-info0-expected_result0]`
-    覆盖 `renewToken` 空 token 边界，冻结实测错误 `104/New token is invalid`。
+    覆盖 `renewToken` 空 token 边界，只断言错误码 `104`；Android/iOS 的 description 不参与断言。
 28. `tests/client/test_client_remaining_api_coverage.py::test_client_session_sensitive_api_boundaries[changeAppKey-info1-expected_result1]`
     覆盖 `changeAppKey` 空 appKey 边界，冻结实测错误 `110/appkey is null or empty`。
 29. `tests/client/test_client_remaining_api_coverage.py::test_client_session_sensitive_api_boundaries[getLoggedInDevicesFromServer-info2-expected_result2]`

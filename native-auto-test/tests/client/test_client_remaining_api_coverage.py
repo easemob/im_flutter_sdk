@@ -195,7 +195,7 @@ def test_client_update_runtime_setting_success(device_a, assert_api, cmd, info):
 @pytest.mark.parametrize(
     ("cmd", "info", "expected_result"),
     [
-        # renewToken：空 token 边界，不改变当前密码登录态。
+        # renewToken：空 token 边界；Android/iOS 文案大小写和标点不同，只断言 code。
         (
             Cmd.renewToken.value,
             {"agora_token": ""},

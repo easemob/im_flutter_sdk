@@ -6,6 +6,8 @@
 """
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from src import Cmd
@@ -135,15 +137,27 @@ def test_user_info_update_own_with_type_nickname(device_a, assert_api, user_a):
             Cmd.updateOwnUserInfoWithType.value,
             info={"userInfoType": 0, "userInfoValue": "nick-by-type"},
         )
+
         assert_api.assert_response_matches(
             resp,
             expected={
                 "manager": "UserInfoManager",
                 "cmd": Cmd.updateOwnUserInfoWithType.value,
                 "device": "deviceA",
-                "result": '{"gender":"0","nickname":"nick-by-type","sign":"sign-mod"}',
             },
-            ignore_keys={"sequence"},
+            # Android 原生返回的是当前完整用户资料 JSON 字符串；其中 mail、gender、sign
+            # 可能来自前序用例状态，本 case 只负责验证昵称更新。
+            ignore_keys={"sequence", "result"},
+        )
+
+        result = resp.get("result")
+        assert isinstance(result, str), f"updateOwnUserInfoWithType.result 应为 JSON 字符串: {resp}"
+        try:
+            result_data = json.loads(result)
+        except json.JSONDecodeError as exc:
+            raise AssertionError(f"updateOwnUserInfoWithType.result 不是有效 JSON: {resp}") from exc
+        assert result_data.get("nickname") == "nick-by-type", (
+            f"updateOwnUserInfoWithType 未更新昵称: expected='nick-by-type', actual={result_data}"
         )
 
 

@@ -168,23 +168,9 @@ def _assert_delivered_message(
     user_b: str,
     body: dict,
     ignore_keys: set[str],
-    allowed_file_status: set[int] | None = None,
 ) -> None:
     # 5.0：hasReadAck/needGroupAck 无此字段（已删）；送达回执需 needReadReceipt=true；实证字段值：
     # needReadReceipt=True、isPeerRead=False（��达时对方未读）、readReceiptCount=0、hasDeliverAck=True
-    if allowed_file_status is not None:
-        messages = ((event.get("data") or {}).get("messages")) or []
-        target = next(
-            (message for message in messages if str(message.get("msgId")) == str(real_id)),
-            None,
-        )
-        actual_file_status = ((target or {}).get("body") or {}).get("fileStatus")
-        assert actual_file_status in allowed_file_status, (
-            f"onMessagesDelivered 返回非法 fileStatus: "
-            f"expected one of {sorted(allowed_file_status)}, actual={actual_file_status}, event={event}"
-        )
-        body = {**body, "fileStatus": actual_file_status}
-
     assert_api.assert_response_matches(
         event,
         expected={
@@ -273,8 +259,7 @@ def _assert_download_response(
                 "body": body,
             },
         },
-        # 5.0 下载响应严格校验 status=2；fileStatus 由调用方限制为 0/1，
-        # 仅保留路径等媒体元数据动态。
+        # 下载响应严格校验消息身份和终态 status；媒体状态由本地 endpoint 决定。
         ignore_keys=_MEDIA_DYNAMIC_KEYS | {"sequence", "hasDeliverAck"},
     )
 
@@ -378,14 +363,6 @@ def _download_media_on_endpoint(
             continue
         response_body = dict(current_body)
         success_body = dict(current_body)
-        if "fileStatus" in response_body:
-            actual_file_status = ((response.get("result") or {}).get("body") or {}).get("fileStatus")
-            assert actual_file_status in {0, 1}, (
-                f"downloadAttachment 返回非法 fileStatus: "
-                f"expected one of [0, 1], actual={actual_file_status}, response={response}"
-            )
-            response_body["fileStatus"] = actual_file_status
-            success_body["fileStatus"] = 1
         _assert_download_response(
             assert_api,
             response,
@@ -457,8 +434,16 @@ def test_chat_offline_typed_delivery_ack_after_recipient_login(
                 need_read_receipt=True,
             )
             login_account_devices(recipient_devices, assert_api, user_id=user_b)
+            delivery_ignore_keys = set(ignore_keys)
+            if "fileStatus" in body:
+                # 送达回执只验证投递语义；媒体 fileStatus 反映发送端当前媒体状态，
+                # 不能把它固定为发送初始值 0。下载用例单独验证下载状态。
+                delivery_ignore_keys.add("fileStatus")
             for endpoint in recipient_devices:
                 received = _wait_message_event(endpoint, Cmd.onMessagesReceived.value, real_id=real_id)
+                received_ignore_keys = set(ignore_keys) | _DELIVERY_FLAG_KEYS
+                if "fileStatus" in body:
+                    received_ignore_keys.add("fileStatus")
                 _assert_received_message(
                     assert_api,
                     received,
@@ -467,7 +452,7 @@ def test_chat_offline_typed_delivery_ack_after_recipient_login(
                     user_a=user_a,
                     user_b=user_b,
                     body=received_body,
-                    ignore_keys=ignore_keys | _DELIVERY_FLAG_KEYS,
+                    ignore_keys=received_ignore_keys,
                 )
             for endpoint in sender_devices:
                 delivered = _wait_message_event(endpoint, Cmd.onMessagesDelivered.value, real_id=real_id)
@@ -478,7 +463,7 @@ def test_chat_offline_typed_delivery_ack_after_recipient_login(
                     user_a=user_a,
                     user_b=user_b,
                     body=body,
-                    ignore_keys=ignore_keys,
+                    ignore_keys=delivery_ignore_keys,
                 )
         finally:
             _restore_case(
@@ -699,7 +684,6 @@ def test_chat_offline_combine_delivery_ack_after_recipient_login(
                         "fileStatus": 1,
                     },
                     ignore_keys=_COMBINE_DYNAMIC_KEYS,
-                    allowed_file_status={1, 3},
                 )
         finally:
             _restore_case(
@@ -876,6 +860,24 @@ def test_chat_offline_mixed_backlog_local_state_after_recipient_login(
                     device_name=_device_name(endpoint),
                     result=True,
                 )
+                # clear/mark 返回成功不代表 iOS 本地 unread cache 已经刷新；
+                # 必须确认归零后再 logout，否则旧消息会污染本次 expected=4。
+                unread_response = None
+                deadline = time.monotonic() + 5.0
+                while time.monotonic() < deadline:
+                    unread_response = endpoint.call(
+                        "ConversationManager",
+                        Cmd.getUnreadMsgCount.value,
+                        info={"convId": user_a, "type": 0},
+                    )
+                    if unread_response.get("result") == 0:
+                        break
+                    time.sleep(0.25)
+                else:
+                    raise AssertionError(
+                        f"{_device_name(endpoint)} mixed backlog 清理后未读数未归零: "
+                        f"expected=0, actual={unread_response}"
+                    )
             device_a.drain_events(timeout=0.5)
             for endpoint in recipient_devices:
                 endpoint.drain_events(timeout=0.5)

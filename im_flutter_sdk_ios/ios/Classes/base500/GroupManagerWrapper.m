@@ -135,17 +135,35 @@
                 channelName:call.method
                      result:result];
     }
+    else if ([ChatRemoveUserFromGroup isEqualToString:call.method])
+    {
+        [self removeUserFromGroup:call.arguments
+                      channelName:call.method
+                           result:result];
+    }
     else if ([ChatBlockMembers isEqualToString:call.method])
     {
         [self blockMembers:call.arguments
                channelName:call.method
                     result:result];
     }
+    else if ([ChatBlockUser isEqualToString:call.method])
+    {
+        [self blockUser:call.arguments
+            channelName:call.method
+                 result:result];
+    }
     else if ([ChatUnblockMembers isEqualToString:call.method])
     {
         [self unblockMembers:call.arguments
                  channelName:call.method
                       result:result];
+    }
+    else if ([ChatUnblockUser isEqualToString:call.method])
+    {
+        [self unblockUser:call.arguments
+              channelName:call.method
+                   result:result];
     }
     else if([ChatUpdateGroupSubject isEqualToString:call.method])
     {
@@ -267,6 +285,18 @@
                  channelName:call.method
                       result:result];
     }
+    else if([ChatUpdateGroupExtension isEqualToString:call.method])
+    {
+        [self updateGroupExt:call.arguments
+                 channelName:call.method
+                      result:result];
+    }
+    else if([ChatUpdateGroupConfigs isEqualToString:call.method])
+    {
+        [self updateGroupConfigs:call.arguments
+                      channelName:call.method
+                           result:result];
+    }
     else if([ChatJoinPublicGroup isEqualToString:call.method])
     {
         [self joinPublicGroup:call.arguments
@@ -311,6 +341,9 @@
     }
     else if ([ChatFetchMemberAttributesFromGroup isEqualToString:call.method]) {
         [self fetchMemberAttributes:call.arguments channelName:call.method result:result];
+    }
+    else if ([ChatFetchMemberAllAttributes isEqualToString:call.method]) {
+        [self fetchMemberAllAttributes:call.arguments channelName:call.method result:result];
     }
     else if ([ChatFetchMembersAttributesFromGroup isEqualToString:call.method]) {
         [self fetchMembersAttributes:call.arguments channelName:call.method result:result];
@@ -359,7 +392,16 @@
 
 - (void)getGroupWithId:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    EMGroup *group = [EMGroup groupWithId:param[@"groupId"]];
+    NSString *groupId = param[@"groupId"];
+    // Android getGroup 只查询本地已缓存群；iOS groupWithId: 即使本地不存在也会构造对象。
+    // 这里按 Android 5.0 协议只从本地已加入群中查找，不存在时返回 null。
+    EMGroup *group = nil;
+    for (EMGroup *candidate in [EMClient.sharedClient.groupManager getJoinedGroups]) {
+        if ([candidate.groupId isEqualToString:groupId]) {
+            group = candidate;
+            break;
+        }
+    }
     [weakSelf wrapperCallBack:result
                   channelName:aChannelName
                         error:nil
@@ -549,7 +591,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:@(YES)];
     }];
 }
 
@@ -562,7 +604,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:@(YES)];
     }];
     
 }
@@ -591,7 +633,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:@(YES)];
     }];
 }
 
@@ -604,7 +646,43 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:@(YES)];
+    }];
+}
+
+- (void)removeUserFromGroup:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *username = param[@"username"];
+    NSArray *members = username ? @[username] : @[];
+    [EMClient.sharedClient.groupManager removeMembers:members
+                                             fromGroup:param[@"groupId"]
+                                            completion:^(EMGroup *aGroup, EMError *aError) {
+        // Android 单用户协议无业务返回值。
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:nil];
+    }];
+}
+
+- (void)blockUser:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *username = param[@"username"];
+    NSArray *members = username ? @[username] : @[];
+    [EMClient.sharedClient.groupManager blockMembers:members
+                                           fromGroup:param[@"groupId"]
+                                          completion:^(EMGroup *aGroup, EMError *aError) {
+        // Android 单用户协议无业务返回值。
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:nil];
+    }];
+}
+
+- (void)unblockUser:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *username = param[@"username"];
+    NSArray *members = username ? @[username] : @[];
+    [EMClient.sharedClient.groupManager unblockMembers:members
+                                             fromGroup:param[@"groupId"]
+                                            completion:^(EMGroup *aGroup, EMError *aError) {
+        // Android 单用户协议无业务返回值。
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:aError object:nil];
     }];
 }
 
@@ -617,7 +695,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:nil];
     }];
 }
 
@@ -630,7 +708,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:nil];
     }];
 }
 
@@ -642,7 +720,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:nil];
+                           object:@(YES)];
     }];
 }
 
@@ -668,7 +746,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:nil];
         
     }];
 }
@@ -681,7 +759,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:nil];
     }];
 }
 
@@ -694,7 +772,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:(aGroup ? [aGroup toJson] : nil)];
     }];
 }
 
@@ -783,7 +861,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:@(YES)];
     }];
 }
 
@@ -795,7 +873,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:@(YES)];
     }];
 }
 
@@ -809,11 +887,18 @@
         
     } completion:^(EMGroupSharedFile *aSharedFile, EMError *aError)
      {
-        // 透传原生文件对象（对齐 Android EMValueCallBack<EMMucSharedFile>）
+        // Android 的上传成功响应使用 fileName；列表和事件仍使用 GroupHelper 的 name。
+        NSDictionary *uploadFile = aSharedFile ? @{
+            @"fileId": aSharedFile.fileId ?: @"",
+            @"fileName": aSharedFile.fileName ?: @"",
+            @"owner": aSharedFile.fileOwner ?: @"",
+            @"createTime": @(aSharedFile.createdAt),
+            @"fileSize": @(aSharedFile.fileSize),
+        } : nil;
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
-                            error:aError
-                           object:(aSharedFile ? [aSharedFile toJson] : nil)];
+                           error:aError
+                           object:uploadFile];
     }];
 }
 
@@ -862,7 +947,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:nil];
     }];
     
 }
@@ -880,6 +965,26 @@
     }];
 }
 
+- (void)updateGroupConfigs:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    EMGroupConfigs *configs = [EMGroupConfigs fromJson:param[@"options"] ?: @{}];
+    EMGroupConfigsType types = EMGroupConfigsTypeAllowInvites
+        | EMGroupConfigsTypeMaxUsers
+        | EMGroupConfigsTypeInviteNeedConfirm
+        | EMGroupConfigsTypeJoinApprovalRequired
+        | EMGroupConfigsTypeIsPublic
+        | EMGroupConfigsTypeExt;
+    [EMClient.sharedClient.groupManager updateGroupWithId:param[@"groupId"]
+                                                    types:types
+                                                  configs:configs
+                                               completion:^(EMGroup *group, EMError *error) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:[group toJson]];
+    }];
+}
+
 - (void)joinPublicGroup:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     
@@ -889,7 +994,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:nil];
     }];
 }
 
@@ -902,7 +1007,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:nil];
     }];
 }
 
@@ -915,7 +1020,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:nil];
     }];
 }
 
@@ -929,7 +1034,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:nil];
     }];
 }
 
@@ -1027,6 +1132,22 @@
     }];
 }
 
+- (void)fetchMemberAllAttributes:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *groupId = param[@"groupId"];
+    NSString *userId = param[@"userId"];
+    [EMClient.sharedClient.groupManager fetchMemberAttribute:groupId
+                                                      userId:userId
+                                                  completion:^(NSDictionary<NSString *,NSString *> *properties, EMError *aError) {
+        // Android 5.0 返回 {userId: {key: value}}；iOS 原生返回内层属性字典。
+        NSDictionary *object = properties ? @{userId: properties} : nil;
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:object];
+    }];
+}
+
 - (void)fetchMembersAttributes:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     
@@ -1074,7 +1195,7 @@
             @"groupId":aGroupId,
             @"groupName": aGroupName,
             @"inviter":aInviter,
-            @"message":aMessage
+            @"reason":aMessage ?: @""
         };
         [weakSelf.channel invokeMethod:ChatOnGroupChanged
                              arguments:map];
@@ -1091,7 +1212,9 @@
         NSDictionary *map = @{
             @"type":@"onGroupInvitationAccepted",
             @"groupId":aGroup.groupId,
-            @"invitee":aInvitee
+            @"invitee":aInvitee,
+            // iOS 原生回调不提供 reason，保持跨平台协议字段完整。
+            @"reason":@""
         };
         [weakSelf.channel invokeMethod:ChatOnGroupChanged
                              arguments:map];
@@ -1127,7 +1250,7 @@
         NSDictionary *map = @{
             @"type":@"onGroupAutoAcceptInvitation",
             @"groupId":aGroup.groupId,
-            @"message":aMessage,
+            @"inviteMessage":aMessage ?: @"",
             @"inviter":aInviter
         };
         [weakSelf.channel invokeMethod:ChatOnGroupChanged
@@ -1168,6 +1291,7 @@
         NSDictionary *map = @{
             @"type":@"onGroupRequestToJoinReceived",
             @"groupId":aGroup.groupId,
+            @"groupName":aGroup.groupName ?: @"",
             @"applicant":aUsername,
             @"reason":aReason
         };

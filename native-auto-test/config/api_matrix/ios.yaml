@@ -186,6 +186,7 @@ base:
   - GroupManager.addWhiteList
   - GroupManager.blockGroup
   - GroupManager.blockMembers
+  - GroupManager.blockUser
   - GroupManager.clearAllGroupsFromDB
   - GroupManager.createGroup
   - GroupManager.declineInvitationFromGroup
@@ -196,6 +197,7 @@ base:
   - GroupManager.fetchGroupMembersInfo
   - GroupManager.fetchJoinedGroupCount
   - GroupManager.fetchMemberAttributesFromGroup
+  - GroupManager.fetchMemberAllAttributes
   - GroupManager.fetchMembersAttributesFromGroup
   - GroupManager.getGroupAnnouncementFromServer
   - GroupManager.getGroupBlockListFromServer
@@ -219,6 +221,7 @@ base:
   - GroupManager.removeGroupSharedFile
   - GroupManager.removeMemberAttributesFromGroup
   - GroupManager.removeMembers
+  - GroupManager.removeUserFromGroup
   - GroupManager.removeWhiteList
   - GroupManager.requestToJoinPublicGroup
   - GroupManager.setMemberAttributesFromGroup
@@ -226,10 +229,13 @@ base:
   - GroupManager.unMuteMembers
   - GroupManager.unblockGroup
   - GroupManager.unblockMembers
+  - GroupManager.unblockUser
   - GroupManager.updateDescription
   - GroupManager.updateGroupAnnouncement
   - GroupManager.updateGroupAvatar
+  - GroupManager.updateGroupConfigs
   - GroupManager.updateGroupExt
+  - GroupManager.updateGroupExtension
   - GroupManager.updateGroupNamecard
   - GroupManager.updateGroupOwner
   - GroupManager.updateGroupSubject
@@ -262,6 +268,7 @@ base:
   - PushManager.updateFCMPushToken
   - PushManager.updateImPushStyle
   - PushManager.updatePushNickname
+  - UserInfoManager.fetchOwnInfo
   - UserInfoManager.fetchSubscribedUsers
   - UserInfoManager.fetchUserInfoById
   - UserInfoManager.fetchUserInfoByIdWithType

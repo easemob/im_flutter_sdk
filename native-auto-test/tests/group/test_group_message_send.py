@@ -592,6 +592,74 @@ def test_group_message_ack_boundary_methods(device_a, assert_api):
 
 
 @pytest.mark.topology("account_a_to_account_b")
+def test_group_message_read_ack_updates_count(topology, message_group, assert_api):
+    """B 对真实群消息发送已读回执后，A 的群已读数量变为 1。"""
+    sender = topology.sender_action_device
+    recipient = topology.recipient_action_device
+    group_id = message_group
+    content = f"group-read-ack-{uuid.uuid4().hex[:8]}"
+
+    send_resp = sender.call(
+        "ChatManager",
+        Cmd.sendMessage.value,
+        info=_build_group_text(
+            topology.sender_user,
+            group_id,
+            content,
+            need_group_ack=True,
+        ),
+    )
+    temp_id = ((send_resp.get("result") or {}).get("msgId"))
+    assert temp_id, f"群消息发送响应未返回临时 msgId: {send_resp}"
+    success_evt = _wait_success(sender, temp_id=temp_id)
+    real_id = (((success_evt.get("data") or {}).get("msg")) or {}).get("msgId")
+    assert real_id, f"群消息成功事件未返回真实 msgId: {success_evt}"
+
+    _wait_received(
+        recipient,
+        event_type=Cmd.onMessagesReceived.value,
+        real_id=str(real_id),
+    )
+    ack_resp = recipient.call(
+        "ChatManager",
+        Cmd.ackGroupMessageRead.value,
+        info={"msgId": str(real_id), "group_id": group_id, "content": "read"},
+    )
+    assert_api.assert_response_matches(
+        ack_resp,
+        expected={
+            "manager": "ChatManager",
+            "cmd": Cmd.ackGroupMessageRead.value,
+            "device": recipient.device_name,
+            "result": True,
+        },
+        ignore_keys={"sequence"},
+    )
+
+    count_resp = {}
+    for attempt in range(10):
+        count_resp = sender.call(
+            "MessageManager",
+            Cmd.groupAckCount.value,
+            info={"msgId": str(real_id)},
+        )
+        if count_resp.get("result") == 1:
+            break
+        if attempt < 9:
+            time.sleep(1.0)
+    assert_api.assert_response_matches(
+        count_resp,
+        expected={
+            "manager": "MessageManager",
+            "cmd": Cmd.groupAckCount.value,
+            "device": sender.device_name,
+            "result": 1,
+        },
+        ignore_keys={"sequence"},
+    )
+
+
+@pytest.mark.topology("account_a_to_account_b")
 def test_group_message_fetch_acks_success(topology, assert_api):
     """B 创建群并邀请 A，A 发送群消息；验证 A 副端同步、B 全部在线端接收及群回执查询。"""
     sender = topology.sender_action_device
@@ -656,7 +724,8 @@ def test_group_message_fetch_acks_success(topology, assert_api):
                         "body": {"targetLanguages": [], "translations": {}, "type": 0, "content": content},
                     },
                 },
-                ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly"},
+                # 初始 sendMessage 响应的 status 属于平台/时序状态；后续成功事件仍严格校验终态。
+                ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly", "status"},
             )
         with _allure_step(f"等待 {sender.device_name} 的消息发送成功回调（onMessageSuccess）"):
             success_evt = _wait_success(sender, temp_id=temp_id)
@@ -805,10 +874,21 @@ def test_group_message_fetch_acks_success(topology, assert_api):
                     "manager": "ChatManager",
                     "cmd": Cmd.asyncFetchGroupAcks.value,
                     "device": sender.device_name,
-                    "result": {"cursor": "", "list": []},
                 },
-                ignore_keys={"sequence"},
+                ignore_keys={"sequence", "result"},
             )
+            fetch_result = fetch_resp.get("result")
+            assert isinstance(fetch_result, dict), f"群回执查询 result 不是对象: {fetch_resp}"
+            assert isinstance(fetch_result.get("cursor"), str), (
+                f"群回执查询 cursor 类型错误: {fetch_resp}"
+            )
+            receipts = fetch_result.get("list")
+            assert isinstance(receipts, list), f"群回执查询 list 不是数组: {fetch_resp}"
+            for receipt in receipts:
+                assert isinstance(receipt, dict), f"群回执明细不是对象: {receipt}"
+                assert str(receipt.get("msgId")) == str(real_id), (
+                    f"群回执明细关联了其他消息: expected={real_id}, actual={receipt}"
+                )
     finally:
         if group_id:
             with _allure_step("测试后置：销毁测试群并恢复群状态"):

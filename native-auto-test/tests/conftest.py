@@ -2004,6 +2004,8 @@ def upgrade_runner(
 
 def pytest_sessionstart(session):
     """Build the selected platform Runners before running tests if --build is set."""
+    import subprocess
+
     if not session.config.getoption("--build", default=False):
         return
     scenario_path = str(session.config.getoption("--scenario") or "")
@@ -2042,8 +2044,14 @@ def pytest_sessionstart(session):
         if not npm:
             raise RuntimeError("npm not found; Web Runner requires Node.js/npm")
         web_runner = Path(__file__).resolve().parent.parent / "web_runner"
+        web_versions = sorted({role.sdk_version for role in scenario.roles.values() if role.platform == "web"})
         subprocess.run([npm, "install"], cwd=web_runner, check=True)
-        subprocess.run([npm, "run", "build"], cwd=web_runner, check=True)
+        for web_version in web_versions:
+            subprocess.run(
+                [npm, "run", "build", "--", "--sdk-version", web_version],
+                cwd=web_runner,
+                check=True,
+            )
 
     ios_flavors = set()
     for role in scenario.roles.values():

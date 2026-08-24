@@ -1,9 +1,14 @@
 artifacts:
   web:
     4.23.0:
-      path: ../web_runner/dist
+      path: ../web_runner/dist/sdk423
       manifest: artifact_manifests/web-4.23.0.json
       flavor: web423
+      application_id: native-auto-test-web-runner
+    5.0.0:
+      path: ../web_runner/dist/sdk500
+      manifest: artifact_manifests/web-5.0.0.json
+      flavor: web500
       application_id: native-auto-test-web-runner
   ios:
     4.24.0:

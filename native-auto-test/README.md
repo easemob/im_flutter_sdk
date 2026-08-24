@@ -1,20 +1,10 @@
 # Native API 自动化测试
 
-本目录是 Python 用例端，通过 managed WebSocket 驱动 `im_flutter_test`，验证 Android/iOS 原生 IM SDK 的 API 和回调。
+Python pytest 用例通过 managed WebSocket 驱动 Android、iOS 测试 App 或浏览器 Runner，验证统一协议下的 API 响应和事件回调。
 
-默认使用 Android 5.0 场景：`android_500_multi_device_default`。
+当前基线：Android 5.0、iOS 5.0、Web 5.0。
 
-## 1. 环境准备
-
-需要：
-
-- Python 3.12（推荐）
-- Android SDK、`adb`、已启动的 Android 模拟器
-- Flutter：只有构建或修改测试 App 时需要
-
-以下命令默认从仓库根目录 `im_flutter_sdk/` 执行。
-
-首次执行：
+## 快速开始
 
 ```bash
 cd native-auto-test
@@ -23,255 +13,167 @@ python3.12 -m venv .venv
 cp config.yaml.template config.yaml
 ```
 
-`config.yaml` 只放本机或测试环境配置，不要提交真实 token、密码或服务地址。
+完成初始化后，pytest 命令默认都在 `native-auto-test/` 目录执行。
 
-复制模板后必须填写：
+`config.yaml` 至少填写：
 
-- `rest_api.base_url`：当前 Scenario 使用 `provision: rest` 时必填；
-- `rest_api.auth_token`：创建/删除测试账号所需的 REST token；
-- `sdk_options.app_key`：必须与测试 App 构建时使用的 App Key 一致。
+- `rest_api.base_url`
+- `rest_api.auth_token`
+- `sdk_options.app_key`
 
-设备 `serial` 不在 `config.yaml` 中配置，而是在 `config/scenarios/*.yaml` 中按本机 `adb devices` 结果修改。
+不要提交真实 token、密码或服务地址。
 
-启动模拟器后确认设备在线：
+### Android / iOS
+
+先确认本机设备：
 
 ```bash
-adb devices
+adb devices                 # Android
+xcrun simctl list devices   # iOS
 ```
 
-将本机 `adb devices` 显示的序列号，填写到自己实际使用的 Scenario YAML 中；不要假设仓库里的 serial 对所有机器都相同。默认 Scenario 是：
+然后修改对应 Scenario 中的 `serial`，使用本机实际设备序列号。不要直接假设仓库里的 serial 在其他机器上可用。
+
+常用 Scenario：
 
 ```text
 config/scenarios/android_500_multi_device_default.yaml
+config/scenarios/ios_500_multi_device_default.yaml
 ```
 
-如果本机设备数量或序列号不同，请复制/修改对应 Scenario 后，通过 `--scenario` 指定自己的 YAML；账号、SDK 版本和拓扑保持不变即可。
+### Web
 
-## 2. 构建 Android 5.0 测试 App
+Web 使用本地浏览器 Runner，不需要 `serial`：
 
-已有 APK 时可以直接跑测试。修改 Wrapper、原生 JAR/SO 或测试 App 后，先构建：
-
-```bash
-cd im_flutter_test
-flutter build apk --flavor sdk500 --debug
+```text
+config/scenarios/web_500_multi_device_default.yaml
 ```
 
-然后回到本目录运行 pytest。也可以加 `--build`，让测试流程自动构建：
+需要 Chrome，可用 `NATIVE_TEST_CHROME` 或 Scenario 中的 `browser` 指定浏览器路径。
 
-```bash
-cd native-auto-test
-.venv/bin/python -m pytest --build \
-  --scenario android_500_multi_device_default \
-  tests/client/test_client.py::test_client_login_success -q -s
-```
+## 构建和运行
 
-使用规则：
-
-- 只改 Python case：不需要构建 App。
-- 改 `im_flutter_test`、Wrapper、JAR 或 SO：使用 `--build`，或先手动执行上面的 Flutter 构建命令。
-- `--build` 会按 Scenario 的 SDK 版本构建并安装对应 APK；不加时复用 `config/artifacts.yaml` 中的产物。
-
-## 3. 升级到下一个原生 SDK 版本
-
-以新增 Android `5.1.0` 为例。不要覆盖 `base500`；它是 Android 5.0 的基线。
-
-### 3.1 先确认原生 API
-
-先拿到新版本 JAR、SO 和 iOS XCFramework，再生成原生 API 基线。API 基线不能从旧 Dart 或旧 Wrapper 反推：
-
-```bash
-python3 im_flutter_sdk/scripts/extract_native_api.py \
-  --android-jar /path/to/hyphenatechat_5.1.0.jar \
-  --android-doc /path/to/hyphenate-api-doc-5.1.0.zip \
-  --ios-framework /path/to/HyphenateChat-5.1.0.xcframework \
-  --output docs/native-api/5.1
-```
-
-然后对照 `docs/native-api/5.0/`，确认新增、删除、改名、参数和回调变化。
-
-### 3.2 更新 API Matrix 和映射
-
-保留 5.0 的 `base`，在对应版本的 `versions` 下记录相对上一版本的变化：
-
-```yaml
-versions:
-  5.1.0:
-    added:
-      - ChatManager.newApi
-    removed:
-      - ChatManager.oldApi
-    changed:
-      - ChatManager.changedApi
-```
-
-需要同步检查：
-
-- `config/api_matrix/android.yaml`、`ios.yaml`：API 能力和版本差异；
-- `android-events.yaml`、`ios-events.yaml`：新版本真实存在且 Wrapper 实际转发的事件；
-- `android_mapping.yaml`、`ios_mapping.yaml`：统一协议名到原生 API 的映射；
-- `protocol-android-ios-5.0-pure-native-map.md`：跨端协议和原生名称对照，若是 5.1 可新增对应版本文档。
-
-生成映射（输入必须是新版本原生基线）：
-
-```bash
-python3 im_flutter_sdk/scripts/extract_api_mapping.py
-python3 im_flutter_sdk/scripts/extract_ios_mapping.py
-```
-
-当前两个 mapping 脚本默认读取 5.0 基线并覆盖统一的 mapping 文件；升级到 5.1 前要先把脚本中的 API 输入目录、Wrapper 目录和输出文件改成 5.1，或给脚本补版本参数，确认无误后再执行。不要直接执行它们去覆盖 5.0 mapping，也不要手写生成文件中标记为自动生成的内容。
-
-### 3.3 接入 Wrapper 和原生依赖
+只改 Python 用例时，不需要构建；修改测试 App、Wrapper、JAR、SO、XCFramework 或 Web IIFE 时使用 `--build`。
 
 Android：
 
-```text
-im_flutter_sdk_android/android/src/sdk501/libs/hyphenatechat_5.1.0.jar
-im_flutter_sdk_android/android/src/sdk501/jniLibs/<abi>/*.so
-im_flutter_sdk_android/android/src/sdk501/java/...  # 只放相对 base500 的差异 Wrapper
-```
-
-在 `im_flutter_sdk_android/android/build.gradle` 中新增 `sdk501` flavor、`sourceSets.sdk501` 和对应的 `sdk501Api files(...)`。Wrapper 采用“`base500` 基线 + `sdk501` 差异合并”，不要把整套 5.0 Java 文件复制到新版本目录。
-
-若新增的是公开 SDK 能力，还要同步 Android/iOS Wrapper、Dart method/event key、模型和接口导出；若只是测试桥接命令，只增加真实存在的 Wrapper 转发和序列化，不要为了测试伪造 SDK API。
-
-iOS：将新版本 Wrapper 差异放到 `im_flutter_sdk_ios/ios/Classes/sdk501/`，再合并基线：
-
-```bash
-bash im_flutter_sdk/scripts/merge_ios_sdk.sh sdk501
-```
-
-5.0 直接编译 `im_flutter_sdk_ios/ios/Classes/base500/`；5.1 及以后才由脚本生成临时目录 `Classes/generated/active/`。该目录已加入 `.gitignore`，不要手动修改或提交。
-
-依赖切换遵循 `docs/specs/dependency-spec.md`：本地 JAR/SO/XCFramework 与远程依赖只能启用一种。
-
-### 3.4 增加测试 App flavor 和 Scenario
-
-在 `im_flutter_test/android/app/build.gradle` 增加 `sdk501`，并让它依赖 `im_flutter_sdk_android` 的 `sdk501Implementation`。然后新增：
-
-```text
-config/scenarios/android_510_multi_device_default.yaml
-```
-
-其中角色的 `sdk_version` 写 `5.1.0`，`serial` 写团队实际使用的模拟器序列号；Scenario 只描述设备和拓扑，不在 case 中写死设备名。
-
-构建：
-
-```bash
-cd im_flutter_test
-flutter build apk --flavor sdk501 --debug
-```
-
-运行：
-
 ```bash
 cd native-auto-test
+.venv/bin/python -m pytest --build -q -ra -s \
+  --scenario android_500_multi_device_default \
+  tests/chat/test_chat_crud.py::test_chat_send_and_received
+```
+
+iOS：
+
+```bash
+.venv/bin/python -m pytest --build -q -ra -s \
+  --scenario ios_500_multi_device_default \
+  tests/chat/test_chat_crud.py::test_chat_send_and_received
+```
+
+Web：
+
+```bash
+.venv/bin/python -m pytest --build -q -ra -s \
+  --scenario web_500_multi_device_default \
+  tests/chat/test_chat_crud.py::test_chat_send_and_received
+```
+
+运行文件或模块：
+
+```bash
 .venv/bin/python -m pytest -q -ra -s \
-  --scenario android_510_multi_device_default \
-  tests/client/test_client.py::test_client_login_success
-```
-
-## 4. Artifact 配置、Manifest 和构建产物
-
-`config/artifacts.yaml` 是“SDK 版本 → APK/App 产物”的目录，不是 API Matrix。新增版本时增加对应条目：
-
-```yaml
-android:
-  5.1.0:
-    path: ../../im_flutter_test/build/app/outputs/flutter-apk/app-sdk501-debug.apk
-    manifest: artifact_manifests/android-5.1.0.json
-    flavor: sdk501
-    application_id: com.easemob.im_flutter_test
-    activity: .MainActivity
-```
-
-iOS 同样增加 `ios.<版本>` 条目，`path` 指向 `Runner.app`，`flavor` 写对应的 Flutter flavor，`manifest` 指向 `artifact_manifests/ios-<版本>.json`。当前 iOS/Web manifest 使用 `artifactSha256: runtime`，不要求提交 `.app` 目录；Android manifest 才由脚本对 APK 计算实际 SHA-256。
-
-构建 APK 后，在 `native-auto-test` 目录生成 Manifest：
-
-```bash
-.venv/bin/python scripts/generate_manifests.py --version 5.1.0
-```
-
-Manifest 会记录并校验：`sdkVersion`、`artifactSha256`、原生 JAR 的 `nativeSdkSha256`、`wrapperCommit` 和 API capabilities。不要手填 hash，也不要把本机 APK、`.venv`、构建目录和测试结果提交到 Git；`config/artifact_manifests/*.json`、`config/artifacts.yaml`、API Matrix 和 Scenario 是应提交的配置/元数据。
-
-版本升级后至少执行：
-
-```bash
-cd /Users/andy_muyu/Documents/Project/im_flutter_sdk
-bash im_flutter_sdk/scripts/speckit.sh check
-python3 im_flutter_sdk/scripts/check_protocol_consistency.py
-bash im_flutter_sdk/scripts/check_wrapper_diffs.sh
-git diff --check
-```
-
-## 5. 运行用例
-
-推荐参数：
-
-- `-q`：简洁输出
-- `-s`：实时显示日志
-- `-ra`：最后显示 skip/error 原因
-- `--tb=short`：显示简短堆栈
-- `--scenario`：指定平台、SDK、账号和设备拓扑
-
-单个用例：
-
-```bash
-.venv/bin/python -m pytest -q -ra --tb=short -s \
   --scenario android_500_multi_device_default \
-  tests/chat/test_chat_crud.py::test_chat_ack_message_read_success
-```
+  tests/chat/test_chat_crud.py
 
-单个文件：
-
-```bash
-.venv/bin/python -m pytest -q -ra --tb=short -s \
-  --scenario android_500_multi_device_default \
-  tests/group/test_group_moderation.py
-```
-
-模块目录：
-
-```bash
-.venv/bin/python -m pytest -q -ra --tb=short -s \
+.venv/bin/python -m pytest -q -ra -s \
   --scenario android_500_multi_device_default \
   tests/chat
 ```
 
-指定多个用例时，直接在命令末尾继续写测试路径；默认不要加 `--maxfail=1`，这样一次能看到全部失败项。
+默认不要加 `--maxfail=1`，一次查看全部失败项。单个失败用例确认后再单独重跑。
 
-## 6. 用例和拓扑约定
+## 三端适配原则
 
-- 普通单设备或双账号用例：直接使用 `device_a`、`device_b` 等 fixture。
-- 需要多端、离线或明确验证事件方向的用例：使用
-  `@pytest.mark.topology("account_a_to_account_b")`。
-- 拓扑用例中使用 `sender`、`recipient`、`recipients` 表示角色，不要在断言里写死 `deviceA`、`deviceB`。
-- 当前默认场景中，A/B 各有主端和副端；`user_c` 是服务端账号，默认没有设备端。
-- 是否启动副端由场景拓扑决定，不要为了统一而给每个用例都加 topology。
+同一业务语义使用同一个协议名；各平台 Wrapper 负责把协议映射到自己的原生 API。
 
-写、改或审查用例前先阅读：
+| 平台 | 测试入口 | 适配位置 |
+|---|---|---|
+| Android | Flutter 测试 App | `im_flutter_sdk_android/android/src/base500`；后续版本放 `sdk510`、`sdk520` 等差异目录 |
+| iOS | Flutter 测试 App | `im_flutter_sdk_ios/ios/Classes/base500`；后续版本放对应版本差异目录 |
+| Web | 浏览器 Runner | `im_flutter_sdk_web/src/index.js`；5.0 原生 IIFE 放 `im_flutter_sdk_web/vendor/base500/` |
 
-```text
-skills/im-sdk-test-case-design/SKILL.md
-```
+测试桥接在 `im_flutter_test/`，pytest 工具和用例在 `native-auto-test/`。发布层 SDK 不因普通测试用例增加而修改；只有 SDK 本身新增公开能力时才改发布层。
 
-这个 skill 是用例设计入口，规定普通 API、普通双端、多端拓扑和离线 Case 的选择边界，以及 topology 角色、Allure 步骤和严格断言要求。普通双端直接使用 `device_a`、`device_b` fixture；`action_device`、`observer_device` 只能是函数内部别名。默认 Scenario 即使启动四台设备，也不代表所有 Case 都要加 topology；只有验收目标是端点集合行为，或涉及多端离线恢复时才使用 topology。
+## 新增下一个 SDK 版本
 
-API 适配时同时查看：
+以 5.1.0 为例，顺序如下：
 
-```text
-config/api_matrix/android.yaml                         Android 版本 API 能力
-config/api_matrix/ios.yaml                              iOS 版本 API 能力
-config/api_matrix/android-events.yaml                   Android 回调能力
-config/api_matrix/ios-events.yaml                      iOS 回调能力
-config/api_matrix/protocol-android-ios-5.0-pure-native-map.md
-```
+1. 准备 Android JAR/SO、iOS XCFramework 或 Web IIFE，并确认真实原生 API、参数和事件。
+2. 新增版本差异目录：
 
-其中 Matrix 决定用例是否支持/skip；协议映射文档记录统一协议与 Android/iOS 5.0 原生 API、Event 的对应关系。不要只根据旧版本 E2E 猜测 5.0 API。
+   ```text
+   android/src/sdk510/
+   ios/Classes/sdk510/
+   web/vendor/sdk510/
+   ```
 
-## 7. 报告
+   Android/iOS 只放相对 5.0 的差异，不复制整套基线文件。
+3. 在 `im_flutter_test` 增加对应 flavor，并新增 Scenario，例如：
 
-生成 Allure：
+   ```text
+   config/scenarios/android_510_multi_device_default.yaml
+   config/scenarios/ios_510_multi_device_default.yaml
+   config/scenarios/web_510_multi_device_default.yaml
+   ```
+
+4. 更新 `config/artifacts.yaml` 和 `config/artifact_manifests/`，记录版本、产物路径、SHA256、Wrapper 版本和 capabilities。
+5. 更新对应 API Matrix：
+
+   ```yaml
+   base:
+     version: 5.0.0
+     apis: [...]
+
+   versions:
+     5.1.0:
+       added:
+         - ChatManager.newApi
+       removed:
+         - ChatManager.oldApi
+   ```
+
+   API 改名按“旧 API `removed` + 新 API `added`”记录。不要在版本节点下写完整 `apis` 快照，也不要用版本级 `changed`。
+6. 公共语义继续使用 Android 对齐的协议名；只有平台独有能力才放到：
+
+   ```yaml
+   android_only_native: []
+   ios_only_native: []
+   web_only_native: []
+   ```
+
+   独有能力必须有真实 Wrapper 和真实原生实现，不能为了让 case 通过而构造假结果。
+7. 按实际变更更新对应文件，不需要每次全部修改：
+
+   - API 能力变化：更新对应平台的 `config/api_matrix/*.yaml`；
+   - 回调新增、删除或字段变化：更新对应的 `*-events.yaml` 和 Wrapper；当前基线清单为 `android-events.yaml`、`ios-events.yaml`、`web-events.yaml`；
+   - 公共协议名或跨端原生映射变化：更新对应 Wrapper 和 API Matrix；映射 YAML 只用于升级核对，不是运行测试的必需文件。
+
+## 普通、拓扑和离线用例
+
+- 普通单设备或普通双端：使用 `device_a`、`device_b`。
+- 多端、离线、或明确验证事件投递端集合：使用 `@pytest.mark.topology(...)`。
+- 拓扑用例使用 `sender`、`recipient`、`recipients` 等角色变量，避免在断言中写死 `deviceA`、`deviceB`。
+- 默认多设备 Scenario 会启动多台设备，但不代表所有 case 都要使用拓扑。
+- 离线用例需要明确谁下线、谁执行动作、谁恢复登录，以及恢复后验证哪些端点；不能只因为启动了副端就要求所有端收到事件。
+- 修改或新增用例前阅读：
+
+  ```text
+  skills/im-sdk-test-case-design/SKILL.md
+  ```
+
+## Allure 和结果
 
 ```bash
 .venv/bin/python -m pytest -q \
@@ -280,47 +182,31 @@ config/api_matrix/protocol-android-ios-5.0-pure-native-map.md
 allure serve out/allure-results
 ```
 
-生成 HTML：
+用例应在 Allure 中记录前置、关键动作、设备/平台/SDK 参数和最终断言；详细测试设计放在 `docs/`，不要把长篇 case 说明塞进 README。
+
+## 提交前检查
+
+以下检查从仓库根目录执行：
 
 ```bash
-.venv/bin/python -m pytest \
-  --scenario android_500_multi_device_default \
-  tests/chat --html=out/report.html --self-contained-html
+cd ..
+bash im_flutter_sdk/scripts/speckit.sh check
+git diff --check
 ```
 
-## 8. 常见问题
+修改依赖或原生 Wrapper 后，再执行对应平台构建；修改版本产物后重新生成 Manifest。不要提交 `.venv`、构建目录、APK/APP、浏览器 profile、测试结果或本机配置。
 
-### Runner is not registered / Runner hello timeout
-
-通常是模拟器未在线、serial 不匹配、测试 App 未启动或 Runner 被上一轮进程占用。先检查：
-
-```bash
-adb devices
-```
-
-确认场景中的 `serial`、APK 和设备数量正确后，重新启动一轮 pytest。
-
-### `code=2 Network is unavailable`
-
-这是 SDK/服务连接失败，不是可以忽略的断言。确认模拟器和本机网络、服务地址及登录状态；全量运行时若前序用例留下异常连接，先结束 pytest 后重新跑失败用例。
-
-### `code=300 Server is unreachable`
-
-先确认这是 SDK 返回的真实错误还是测试 Relay 的占位响应。错误用例应严格断言真实错误码和描述，不能为了通过而忽略响应。
-
-## 9. 目录速查
+## 目录速查
 
 ```text
-config/scenarios/   场景：账号、设备、SDK 版本、拓扑
-config/api_matrix/  各版本 API 能力
-config/artifacts.yaml  SDK 版本与 APK/flavor 的对应关系
-im_flutter_test/    测试 App、Runner 和事件桥接
-src/                WebSocket、断言和测试流程工具
-tests/              按模块组织的 pytest 用例
-```
-
-常用检查：
-
-```bash
-git diff --check
+config/scenarios/       设备、账号、SDK 版本和拓扑
+config/api_matrix/      API/事件能力和跨端协议映射
+config/artifacts.yaml   SDK 版本与测试产物
+im_flutter_test/        测试 App、WebSocket 桥接和事件转发
+im_flutter_sdk_android/ Android 原生依赖与 Wrapper
+im_flutter_sdk_ios/    iOS 原生依赖与 Wrapper
+im_flutter_sdk_web/    Web IIFE 与 Web Wrapper
+src/                    pytest 驱动、断言和测试流程工具
+tests/                  按模块组织的用例
+docs/                   版本差异、测试设计和问题记录
 ```

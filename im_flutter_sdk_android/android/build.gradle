@@ -74,11 +74,13 @@ android {
         sdk423 {
             java.srcDirs = []
             java.srcDir(mergeWrapperSrc('sdk423', ['src/sdk423/java']))
+            manifest.srcFile('src/base500/AndroidManifest.xml')
             jniLibs.srcDirs = ['src/sdk423/jniLibs']
         }
         sdk500 {
-            // 5.0 = 基线，直接编译 base500，无差异。
+            // 5.0 = 基线，直接编译 base500，无差异；公共 Java 与 Manifest 也在基线目录。
             java.srcDirs = ['src/base500/java']
+            manifest.srcFile('src/base500/AndroidManifest.xml')
             jniLibs.srcDirs = ['src/base500/jniLibs']
         }
     }

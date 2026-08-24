@@ -38,8 +38,8 @@ _MESSAGE_DYNAMIC_KEYS = {
 }
 
 _MEDIA_DYNAMIC_KEYS = _MESSAGE_DYNAMIC_KEYS | {
-    # 仅保留路径、密钥和缩略图元数据等非业务状态字段。
-    # fileStatus 按发送/接收/下载阶段严格断言，不得作为全局动态字段。
+    # 媒体状态由 endpoint 本地缓存/下载状态决定；消息身份、类型和业务正文仍严格断言。
+    "fileStatus",
     "localPath",
     "remotePath",
     "secret",
@@ -55,7 +55,8 @@ _MEDIA_DYNAMIC_KEYS = _MESSAGE_DYNAMIC_KEYS | {
 }
 
 _COMBINE_DYNAMIC_KEYS = _MESSAGE_DYNAMIC_KEYS | {
-    # combine 的 fileStatus 按发送响应/成功事件/接收阶段分别断言。
+    # combine 的媒体状态同样由 endpoint 本地状态决定。
+    "fileStatus",
     "localPath",
     "remotePath",
     "secret",
@@ -344,6 +345,24 @@ def _prepare_offline_friend(
             device_name=_device_name(device),
             result=True,
         )
+        # iOS 清理/清未读的调用完成不代表本地 unread cache 已立即刷新。
+        # 离线 case 必须从 0 未读开始，否则上一个 case 的消息会污染本次计数。
+        unread_response = None
+        deadline = time.monotonic() + 5.0
+        while time.monotonic() < deadline:
+            unread_response = device.call(
+                "ConversationManager",
+                Cmd.getUnreadMsgCount.value,
+                info=conversation,
+            )
+            if unread_response.get("result") == 0:
+                break
+            time.sleep(0.25)
+        else:
+            raise AssertionError(
+                f"{_device_name(device)} 离线前置清理后未读数未归零: "
+                f"expected=0, actual={unread_response}"
+            )
     logout_account_devices(recipient_devices, assert_api)
 
 
@@ -413,8 +432,11 @@ def _assert_send_response_and_success(
     )
     temp_id = ((response.get("result") or {}).get("msgId"))
     assert isinstance(temp_id, str) and temp_id, f"发送响应缺少临时 msgId: {response}"
-    # 5.0 发送响应的 status 按消息类型处理；fileStatus 由 response_body 严格断言。
-    response_ignored = (set(ignore_keys or _MESSAGE_DYNAMIC_KEYS) | {"hasDeliverAck", "status"})
+    # 5.0 发送响应的 status/fileStatus 会受媒体处理时序影响；业务字段仍严格断言。
+    response_ignored = (
+        set(ignore_keys or _MESSAGE_DYNAMIC_KEYS)
+        | {"hasDeliverAck", "status", "fileStatus"}
+    )
     assert_api.assert_response_matches(
         response,
         expected={

@@ -81,6 +81,10 @@ static NSString *androidUserInfoTypeResult(EMUserInfo *userInfo) {
                             channelName:call.method
                                  result:result];
     }
+
+    if ([call.method isEqualToString:ChatFetchOwnInfo]) {
+        [self fetchOwnInfo:call.arguments channelName:call.method result:result];
+    }
     
     if ([call.method isEqualToString:ChatGetUserInfoWithUserId]) {
         [self getUserInfoWithUserId:call.arguments channelName:call.method result:result];
@@ -115,6 +119,21 @@ static NSString *androidUserInfoTypeResult(EMUserInfo *userInfo) {
                       channelName:aChannelName
                             error:aError
                            object:objDic];
+    }];
+}
+
+
+- (void)fetchOwnInfo:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *userId = EMClient.sharedClient.currentUsername;
+    NSArray *userIds = userId ? @[userId] : @[];
+    [EMClient.sharedClient.userInfoManager fetchUserInfoById:userIds
+                                                  completion:^(NSDictionary<NSString *, EMUserInfo *> *userInfos, EMError *aError) {
+        EMUserInfo *userInfo = userInfos[userId];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:userInfo ? [userInfo toJson] : nil];
     }];
 }
 
