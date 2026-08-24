@@ -9,16 +9,16 @@ set -euo pipefail
 # - Optionally builds Android and/or iOS to verify
 
 # USAGE
-#   HY_CHAT_VERSION=4.23.0 ./scripts/update_hyphenate.sh all --build
+#   HY_CHAT_VERSION=5.0.0 ./scripts/update_hyphenate.sh all --build
 #   ./scripts/update_hyphenate.sh android
 #   ./scripts/update_hyphenate.sh ios --no-build
 # ENV VARS
-#   HY_CHAT_VERSION   Target HyphenateChat version (default: 4.23.0)
+#   HY_CHAT_VERSION   Target HyphenateChat version (default: 5.0.0)
 #   IOS_PLATFORM      iOS minimum deployment target (default: 12.0)
 #   JDK17_HOME        Path to JDK 17 (auto-detected if not provided)
 #   REPO_ROOT         Repo root (auto-detected to this script's parent if not provided)
 
-HY_CHAT_VERSION="${HY_CHAT_VERSION:-4.23.0}"
+HY_CHAT_VERSION="${HY_CHAT_VERSION:-5.0.0}"
 IOS_PLATFORM="${IOS_PLATFORM:-12.0}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="${REPO_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"

@@ -28,18 +28,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-    }
-
-    flavorDimensions += "chatSdk"
-    productFlavors {
-        sdk423 {
-            dimension = "chatSdk"
-            buildConfigField "String", "CHAT_SDK_VERSION", "\"4.23.0\""
-        }
-        sdk500 {
-            dimension = "chatSdk"
-            buildConfigField "String", "CHAT_SDK_VERSION", "\"5.0.0\""
-        }
+        buildConfigField "String", "CHAT_SDK_VERSION", "\"5.0.0\""
     }
 
     buildFeatures {
@@ -60,8 +49,6 @@ flutter {
 }
 
 dependencies {
-    // 每个产物只解析一个真实原生 SDK 版本；不能通过运行时字符串伪装版本。
-    // 4.23 基线直接复用发布平台 Wrapper；测试 App 不再复制业务 API。
-    sdk423Implementation project(":im_flutter_sdk_android")
-    sdk500Implementation project(":im_flutter_sdk_android")
+    // 测试 App 只链接当前 checkout 的 Android 5.0 SDK。
+    implementation project(":im_flutter_sdk_android")
 }

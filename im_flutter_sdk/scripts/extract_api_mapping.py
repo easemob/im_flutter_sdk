@@ -4,7 +4,7 @@
 输入：
   - docs/native-api/<ver>/android-api.json  : javap 提取的原生类型/成员（extract_native_api.py 产物）
   - im_flutter_sdk_android/android/src/main/java/.../MethodKey.java : 协议名常量
-  - im_flutter_sdk_android/android/src/base500/java/.../Wrapper*.java : wrapper 注册/事件转发
+  - im_flutter_sdk_android/android/src/main/java/.../Wrapper*.java : wrapper 注册/事件转发
 
 输出：
   - native-auto-test/config/api_matrix/android_mapping.yaml
@@ -21,7 +21,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]  # im_flutter_sdk/
 keys_value: dict[str, str] = {}  # MethodKey 常量名 -> 值（wrapper_event_pairs 使用）
 METHOD_KEY = ROOT / "im_flutter_sdk_android/android/src/main/java/com/easemob/im_flutter_sdk/MethodKey.java"
-WRAPPER_DIR = ROOT / "im_flutter_sdk_android/android/src/base500/java/com/easemob/im_flutter_sdk"
+WRAPPER_DIR = ROOT / "im_flutter_sdk_android/android/src/main/java/com/easemob/im_flutter_sdk"
 API_JSON = ROOT / "docs/native-api/5.0/android-api.json"
 OUT = ROOT / "native-auto-test/config/api_matrix/android_mapping.yaml"
 

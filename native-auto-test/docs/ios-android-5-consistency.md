@@ -201,9 +201,9 @@
 ## 相关文件
 
 ```
-Android 原生 SDK: im_flutter_sdk_android/android/src/base500/libs/hyphenatechat_5.0.0.jar（javap -c 反编译）
+Android 原生 SDK: im_flutter_sdk_android/android/src/main/libs/hyphenatechat_5.0.0.jar（javap -c 反编译）
 Android native so: /Users/andy_muyu/Documents/5.0/easemob-sdk-5.0.0/libs/armeabi-v7a/libhyphenate.so（strings）
 iOS 原生 SDK:     im_flutter_sdk_ios/ios/HyphenateChat.xcframework（strings 提取）
-Android wrapper:  im_flutter_sdk_android/android/src/base500/java/com/easemob/im_flutter_sdk/
-iOS wrapper:      im_flutter_sdk_ios/ios/Classes/base500/
+Android wrapper:  im_flutter_sdk_android/android/src/main/java/com/easemob/im_flutter_sdk/
+iOS wrapper:      im_flutter_sdk_ios/ios/Classes/
 ```

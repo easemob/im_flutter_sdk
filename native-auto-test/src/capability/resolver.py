@@ -75,7 +75,7 @@ class ApiMatrix:
             item = delta or {}
             versions[str(version)] = {
                 # A version may provide a complete capability snapshot when
-                # it is a separate runtime (for example Web 4.23 vs Web 5.0)
+                # it is a separate runtime (for example Web 5.0 vs a future tag)
                 # rather than an incremental SDK revision.
                 "apis": set(item["apis"]) if "apis" in item else None,
                 "added": set(item.get("added") or []),

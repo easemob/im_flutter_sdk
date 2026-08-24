@@ -1,11 +1,11 @@
 {
-  "artifactId": "android-5.0.0-4ffcf31",
+  "artifactId": "android-5.0.0-a643963",
   "platform": "android",
   "sdkVersion": "5.0.0",
   "appVersion": "1.0.0",
   "wrapperCommit": "runtime",
   "nativeSdkSha256": "runtime",
-  "artifactSha256": "514355c5e5386397c3026f51a8971d2d5ea0d66e6ee8eeb49dc6374dafc240e5",
+  "artifactSha256": "4ff9a09e8d0cbcf4c4b609a9738ec3302df8710b946b25ae04bcb098fd6fb27b",
   "capabilities": [
     "ChatManager.ackConversationRead",
     "ChatManager.ackGroupMessageRead",

@@ -1,36 +1,20 @@
 artifacts:
   web:
-    4.23.0:
-      path: ../web_runner/dist/sdk423
-      manifest: artifact_manifests/web-4.23.0.json
-      flavor: web423
-      application_id: native-auto-test-web-runner
     5.0.0:
-      path: ../web_runner/dist/sdk500
+      path: ../web_runner/dist
       manifest: artifact_manifests/web-5.0.0.json
-      flavor: web500
+      flavor: main
       application_id: native-auto-test-web-runner
   ios:
-    4.24.0:
-      path: ../../im_flutter_test/build/ios/iphonesimulator/Runner.app
-      manifest: artifact_manifests/ios-4.24.0.json
-      flavor: sdk424
-      application_id: com.easemob.imFlutterTest
     5.0.0:
       path: ../../im_flutter_test/build/ios/iphonesimulator/Runner.app
       manifest: artifact_manifests/ios-5.0.0.json
-      flavor: sdk500
+      flavor: main
       application_id: com.easemob.imFlutterTest
   android:
-    4.23.0:
-      path: ../../im_flutter_test/build/app/outputs/flutter-apk/app-sdk423-debug.apk
-      manifest: artifact_manifests/android-4.23.0.json
-      flavor: sdk423
-      application_id: com.easemob.im_flutter_test
-      activity: .MainActivity
     5.0.0:
-      path: ../../im_flutter_test/build/app/outputs/flutter-apk/app-sdk500-debug.apk
+      path: ../../im_flutter_test/build/app/outputs/flutter-apk/app-debug.apk
       manifest: artifact_manifests/android-5.0.0.json
-      flavor: sdk500
+      flavor: main
       application_id: com.easemob.im_flutter_test
       activity: .MainActivity

@@ -19,8 +19,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 
-AND_METHOD_KEY = ROOT / "im_flutter_sdk_android/android/src/base500/java/com/easemob/im_flutter_sdk/MethodKey.java"
-IOS_METHOD_KEYS = ROOT / "im_flutter_sdk_ios/ios/Classes/base500/MethodKeys.h"
+AND_METHOD_KEY = ROOT / "im_flutter_sdk_android/android/src/main/java/com/easemob/im_flutter_sdk/MethodKey.java"
+IOS_METHOD_KEYS = ROOT / "im_flutter_sdk_ios/ios/Classes/MethodKeys.h"
 PY_CMD_KEYS = ROOT / "native-auto-test/src/sdk_api/cmd_keys.py"
 AND_YAML = ROOT / "native-auto-test/config/api_matrix/android.yaml"
 IOS_YAML = ROOT / "native-auto-test/config/api_matrix/ios.yaml"

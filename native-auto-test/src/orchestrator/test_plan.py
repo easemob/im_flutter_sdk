@@ -16,7 +16,6 @@ DEVICE_ROLE_NAMES = frozenset(
 )
 
 FIXTURE_DEVICE_REQUIREMENTS = {
-    "upgrade_runner": frozenset({"device_a"}),
     "api_device_a": frozenset({"device_a"}),
     "api_device_b": frozenset({"device_b"}),
     "listener_a": frozenset({"device_a"}),

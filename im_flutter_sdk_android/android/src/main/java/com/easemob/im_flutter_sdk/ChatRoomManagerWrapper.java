@@ -203,10 +203,10 @@ public class ChatRoomManagerWrapper extends Wrapper implements MethodChannel.Met
 
     private void leaveChatRoom(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
         String roomId = param.getString("roomId");
-        EMClient.getInstance().chatroomManager().leaveChatRoom(
-                roomId,
-                new EMWrapperCallBack(result, channelName, true)
-        );
+        // 5.0 官方协议：退出聊天室使用无回调接口，Wrapper 统一返回成功。
+        // 不存在或未加入的聊天室按幂等操作处理，不把原生回调错误 702 暴露给协议层。
+        EMClient.getInstance().chatroomManager().leaveChatRoom(roomId);
+        onSuccess(result, channelName, true);
     }
 
     private void fetchPublicChatRoomsFromServer(JSONObject param, String channelName, MethodChannel.Result result)

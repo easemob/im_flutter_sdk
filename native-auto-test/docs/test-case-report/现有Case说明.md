@@ -5,8 +5,8 @@
 
 ## 统计
 
-- pytest 实例：**803**
-- 测试函数：**548**
+- pytest 实例：**799**
+- 测试函数：**544**
 - 参数化展开实例：**255**
 
 | 模块 | pytest 实例 | 测试函数 |
@@ -15,13 +15,12 @@
 | chatroom | 144 | 70 |
 | client | 27 | 11 |
 | contact | 37 | 37 |
-| group | 298 | 191 |
-| phase1 | 5 | 5 |
+| group | 299 | 192 |
 | presence | 10 | 10 |
 | push | 9 | 7 |
 | user_info | 12 | 12 |
 
-- 普通：769
+- 普通：765
 - 5.0 不可用：34
 
 ## chat
@@ -5287,7 +5286,7 @@
 ### 16. `im_flutter_sdk/native-auto-test/tests/chatroom/test_chatroom_management_boundaries.py::test_chatroom_member_self_checks_empty_room_id[isMemberInChatRoomMuteList]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/chatroom/test_chatroom_management_boundaries.py::test_chatroom_member_self_checks_empty_room_id[isMemberInChatRoomMuteList]`
-- 业务说明：白名单/禁言自查接口：roomId 为空时，按方法分别冻结 700/Chat room ID is 无效
+- 业务说明：白名单/禁言自查接口：roomId 为空时返回 700；description 由平台 SDK 决定
 - 类型：普通
 - 状态/版本说明：普通
 - 前置条件：
@@ -5299,13 +5298,13 @@
   1. 操作：使用空聊天室 ID 查询成员状态并验证参数错误
      - 预期：返回当前代码断言的错误或空结果，业务状态不被错误修改，且不产生意外事件。
 - 关键断言：
-  1. 校验异常返回：错误码 700，错误描述“Chat room ID is invalid”。
+  1. 校验异常返回：错误码 700。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
 ### 17. `im_flutter_sdk/native-auto-test/tests/chatroom/test_chatroom_management_boundaries.py::test_chatroom_member_self_checks_empty_room_id[isMemberInChatRoomWhiteListFromServer]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/chatroom/test_chatroom_management_boundaries.py::test_chatroom_member_self_checks_empty_room_id[isMemberInChatRoomWhiteListFromServer]`
-- 业务说明：白名单/禁言自查接口：roomId 为空时，按方法分别冻结 700/Chat room ID is 无效
+- 业务说明：白名单/禁言自查接口：roomId 为空时返回 700；description 由平台 SDK 决定
 - 类型：普通
 - 状态/版本说明：普通
 - 前置条件：
@@ -5317,7 +5316,7 @@
   1. 操作：使用空聊天室 ID 查询成员状态并验证参数错误
      - 预期：返回当前代码断言的错误或空结果，业务状态不被错误修改，且不产生意外事件。
 - 关键断言：
-  1. 校验异常返回：错误码 700，错误描述“Chat room ID is invalid”。
+  1. 校验异常返回：错误码 700。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
 ### 18. `im_flutter_sdk/native-auto-test/tests/chatroom/test_chatroom_membership_checks.py::test_chatroom_member_mute_list_check_reflects_server_state`
@@ -6701,7 +6700,7 @@
 ### 90. `im_flutter_sdk/native-auto-test/tests/chatroom/test_chatroom_exceptions.py::test_chatroom_leave_room_empty_id`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/chatroom/test_chatroom_exceptions.py::test_chatroom_leave_room_empty_id`
-- 业务说明：使用空聊天室 ID 离开并验证幂等成功语义
+- 业务说明：使用空聊天室 ID 离开并验证参数错误码
 - 类型：普通
 - 状态/版本说明：普通
 - 前置条件：
@@ -6710,10 +6709,10 @@
   3. 接口响应与事件断言工具已初始化。
   4. 服务端所需权限及目标对象已准备。
 - 详细步骤与对应预期：
-  1. 操作：使用空聊天室 ID 离开并验证幂等成功语义
+  1. 操作：使用空聊天室 ID 离开并验证参数错误码
      - 预期：返回当前代码断言的错误或空结果，业务状态不被错误修改，且不产生意外事件。
 - 关键断言：
-  1. 校验关键字段：result。
+  1. 校验异常返回：错误码 700。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
 ### 91. `im_flutter_sdk/native-auto-test/tests/chatroom/test_chatroom_exceptions.py::test_chatroom_leave_room_nonexistent`
@@ -9228,7 +9227,30 @@
   2. 校验关键字段：msgId。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 11. `im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_admin_upload_remove_shared_file_notifies_owner`
+### 11. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_read_ack_updates_count`
+
+- 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_read_ack_updates_count`
+- 业务说明：B 对真实群消息发送已读回执后，A 的群已读数量变为 1
+- 类型：普通
+- 状态/版本说明：普通
+- 前置条件：
+  1. WebSocket 测试桥接和被测 Flutter App 已连接，pytest fixtures 可正常工作。
+  2. 用例所需的设备拓扑、账号和在线设备集合已准备。
+  3. 接口响应与事件断言工具已初始化。
+  4. 服务端所需权限及目标对象已准备。
+- 详细步骤与对应预期：
+  1. 操作：A 发送一条需要群已读回执的文本消息。
+     - 预期：操作成功，返回结果和后续业务状态符合当前代码断言。
+  2. 操作：B 接收该群消息并发送已读回执。
+     - 预期：操作成功，返回结果和后续业务状态符合当前代码断言。
+  3. 操作：A 查询该消息的群已读数量，确认数量变为 1。
+     - 预期：返回结构、关键字段、列表内容或数量符合当前代码断言。
+- 关键断言：
+  1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
+  2. 校验关键字段：msgId、content、result。
+  3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
+
+### 12. `im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_admin_upload_remove_shared_file_notifies_owner`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_admin_upload_remove_shared_file_notifies_owner`
 - 业务说明：管理员 B 上传/删除共享文件：新增/删除事件同步到 owner 账号（A）全部在线端；B 全端收管理员提升事件
@@ -9258,7 +9280,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 12. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_owner_removes_admin_success`
+### 13. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_owner_removes_admin_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_owner_removes_admin_success`
 - 业务说明：管理员仍可由群主移除：移除事件同步到接收账号全部在线端
@@ -9292,7 +9314,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 13. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_member`
+### 14. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_member`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_member`
 - 业务说明：批量移除忽略 owner/非成员、移除有效成员：移除事件同步到接收账号全部在线端
@@ -9321,7 +9343,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 14. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_non_owner_cannot_transfer_ownership[member]`
+### 15. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_non_owner_cannot_transfer_ownership[member]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_non_owner_cannot_transfer_ownership[member]`
 - 业务说明：普通成员和管理员都不能调用 owner-only 的 updateGroupOwner
@@ -9351,7 +9373,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 15. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_non_owner_cannot_transfer_ownership[admin]`
+### 16. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_non_owner_cannot_transfer_ownership[admin]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_non_owner_cannot_transfer_ownership[admin]`
 - 业务说明：普通成员和管理员都不能调用 owner-only 的 updateGroupOwner
@@ -9381,7 +9403,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 16. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_remove_other_member_permission_by_role[member]`
+### 17. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_remove_other_member_permission_by_role[member]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_remove_other_member_permission_by_role[member]`
 - 业务说明：普通成员无权移除其他成员；管理员移除普通成员：退出事件同步到 owner 与操作管理员账号全部在线端
@@ -9416,7 +9438,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 17. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_remove_other_member_permission_by_role[admin]`
+### 18. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_remove_other_member_permission_by_role[admin]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_remove_other_member_permission_by_role[admin]`
 - 业务说明：普通成员无权移除其他成员；管理员移除普通成员：退出事件同步到 owner 与操作管理员账号全部在线端
@@ -9451,7 +9473,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 18. `im_flutter_sdk/native-auto-test/tests/group/test_group_announcement.py::test_group_owner_update_announcement_notifies_member`
+### 19. `im_flutter_sdk/native-auto-test/tests/group/test_group_announcement.py::test_group_owner_update_announcement_notifies_member`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_announcement.py::test_group_owner_update_announcement_notifies_member`
 - 业务说明：前置：A 为群主，B 已入群且双方建群事件已消费
@@ -9485,7 +9507,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 19. `im_flutter_sdk/native-auto-test/tests/group/test_group_announcement.py::test_group_admin_update_announcement_notifies_owner`
+### 20. `im_flutter_sdk/native-auto-test/tests/group/test_group_announcement.py::test_group_admin_update_announcement_notifies_owner`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_announcement.py::test_group_admin_update_announcement_notifies_owner`
 - 业务说明：前置：A 为群主、B 已入群；A 将 B 设置为管理员并消费管理员变更事件
@@ -9519,7 +9541,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 20. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_auto_accept_when_confirmation_required`
+### 21. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_auto_accept_when_confirmation_required`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_auto_accept_when_confirmation_required`
 - 业务说明：前置：A/B 已登录；B 的 autoAcceptGroupInvitation 显式设置为 true
@@ -9553,7 +9575,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 21. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_explicit_accept_when_auto_accept_disabled`
+### 22. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_explicit_accept_when_auto_accept_disabled`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_explicit_accept_when_auto_accept_disabled`
 - 业务说明：前置：A/B 已登录；B 的自动接受邀请基线为 true
@@ -9587,7 +9609,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 22. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_explicit_decline_when_auto_accept_disabled`
+### 23. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_explicit_decline_when_auto_accept_disabled`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_explicit_decline_when_auto_accept_disabled`
 - 业务说明：前置：A/B 已登录；B 的自动接受邀请基线为 true
@@ -9621,7 +9643,7 @@
   2. 校验关键字段：from、result、list。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 23. `im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_owner_upload_remove_shared_file_notifies_member`
+### 24. `im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_owner_upload_remove_shared_file_notifies_member`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_owner_upload_remove_shared_file_notifies_member`
 - 业务说明：前置：B 为群主、A 已入群；B 所在测试 App 已将默认素材准备为 Android 本地文件
@@ -9641,7 +9663,7 @@
 - 关键断言：
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
 
-### 24. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_block_unblock_members_success`
+### 25. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_block_unblock_members_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_block_unblock_members_success`
 - 业务说明：群主封禁/解封成员：移除事件同步到接收账号全部在线端
@@ -9673,7 +9695,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 25. `im_flutter_sdk/native-auto-test/tests/group/test_group_metadata.py::test_group_update_description`
+### 26. `im_flutter_sdk/native-auto-test/tests/group/test_group_metadata.py::test_group_update_description`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_metadata.py::test_group_update_description`
 - 业务说明：群主更新群描述：变更事件同步到群成员全部在线端
@@ -9707,7 +9729,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 26. `im_flutter_sdk/native-auto-test/tests/group/test_group_metadata.py::test_group_update_subject`
+### 27. `im_flutter_sdk/native-auto-test/tests/group/test_group_metadata.py::test_group_update_subject`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_metadata.py::test_group_update_subject`
 - 业务说明：群主更新群名称：变更事件同步到群成员全部在线端
@@ -9741,7 +9763,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 27. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_mute_unmute_members_success`
+### 28. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_mute_unmute_members_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_mute_unmute_members_success`
 - 业务说明：群主禁言/解禁成员：禁言列表变更事件同步到接收账号全部在线端
@@ -9771,7 +9793,7 @@
 - 关键断言：
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
 
-### 28. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_mute_all_unmute_all_success`
+### 29. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_mute_all_unmute_all_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_mute_all_unmute_all_success`
 - 业务说明：群主全员禁言/解禁：状态变更事件同步到接收账号全部在线端
@@ -9801,7 +9823,7 @@
 - 关键断言：
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
 
-### 29. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_add_remove_white_list_success`
+### 30. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_add_remove_white_list_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_add_remove_white_list_success`
 - 业务说明：群主添加/移除白名单：白名单变更事件同步到接收账号全部在线端
@@ -9833,7 +9855,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 30. `im_flutter_sdk/native-auto-test/tests/group/test_group_members.py::test_group_add_remove_members`
+### 31. `im_flutter_sdk/native-auto-test/tests/group/test_group_members.py::test_group_add_remove_members`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_members.py::test_group_add_remove_members`
 - 业务说明：群主添加/移除成员：加入与移除事件同步到收发账号全部在线端
@@ -9867,7 +9889,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 31. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_target_boundaries[empty]`
+### 32. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_target_boundaries[empty]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_target_boundaries[empty]`
 - 业务说明：转让给当前 owner 幂等成功；其他无效目标返回稳定错误且 owner 不变；接收账号全部在线端不触发 owner 变更事件
@@ -9895,7 +9917,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 32. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_target_boundaries[current-owner-idempotent]`
+### 33. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_target_boundaries[current-owner-idempotent]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_target_boundaries[current-owner-idempotent]`
 - 业务说明：转让给当前 owner 幂等成功；其他无效目标返回稳定错误且 owner 不变；接收账号全部在线端不触发 owner 变更事件
@@ -9923,7 +9945,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 33. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_target_boundaries[non-member]`
+### 34. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_target_boundaries[non-member]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_target_boundaries[non-member]`
 - 业务说明：转让给当前 owner 幂等成功；其他无效目标返回稳定错误且 owner 不变；接收账号全部在线端不触发 owner 变更事件
@@ -9951,7 +9973,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 34. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_target_boundaries[nonexistent]`
+### 35. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_target_boundaries[nonexistent]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_target_boundaries[nonexistent]`
 - 业务说明：转让给当前 owner 幂等成功；其他无效目标返回稳定错误且 owner 不变；接收账号全部在线端不触发 owner 变更事件
@@ -9979,7 +10001,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 35. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_combine`
+### 36. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_combine`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_combine`
 - 业务说明：A 合并同群两条真实文本消息并发送，B 全部在线端收到关联同一群会话的合并消息
@@ -9999,7 +10021,7 @@
 - 关键断言：
   1. 校验关键字段：msgId、content。
 
-### 36. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_to_admin_normalizes_roles`
+### 37. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_to_admin_normalizes_roles`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_to_admin_normalizes_roles`
 - 业务说明：A 将群主转让给管理员 B：B 账号在线端收到 owner 变更事件；B 成 owner，A 成普通成员
@@ -10031,7 +10053,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 37. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[video]`
+### 38. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[video]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[video]`
 - 业务说明：A 向包含 B 的群发送指定类型消息：A 全部在线端同步、B 全部在线端接收
@@ -10050,7 +10072,7 @@
   1. 当前测试步骤的同步响应、异步事件和最终业务状态满足代码断言。
   2. 任一关键字段、回调、列表、数量或最终状态不符时，Case 判定失败。
 
-### 38. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[image]`
+### 39. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[image]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[image]`
 - 业务说明：A 向包含 B 的群发送指定类型消息：A 全部在线端同步、B 全部在线端接收
@@ -10069,7 +10091,7 @@
   1. 当前测试步骤的同步响应、异步事件和最终业务状态满足代码断言。
   2. 任一关键字段、回调、列表、数量或最终状态不符时，Case 判定失败。
 
-### 39. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[location]`
+### 40. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[location]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[location]`
 - 业务说明：A 向包含 B 的群发送指定类型消息：A 全部在线端同步、B 全部在线端接收
@@ -10088,7 +10110,7 @@
   1. 当前测试步骤的同步响应、异步事件和最终业务状态满足代码断言。
   2. 任一关键字段、回调、列表、数量或最终状态不符时，Case 判定失败。
 
-### 40. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[file]`
+### 41. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[file]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[file]`
 - 业务说明：A 向包含 B 的群发送指定类型消息：A 全部在线端同步、B 全部在线端接收
@@ -10107,7 +10129,7 @@
   1. 当前测试步骤的同步响应、异步事件和最终业务状态满足代码断言。
   2. 任一关键字段、回调、列表、数量或最终状态不符时，Case 判定失败。
 
-### 41. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[voice]`
+### 42. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[voice]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[voice]`
 - 业务说明：A 向包含 B 的群发送指定类型消息：A 全部在线端同步、B 全部在线端接收
@@ -10126,7 +10148,7 @@
   1. 当前测试步骤的同步响应、异步事件和最终业务状态满足代码断言。
   2. 任一关键字段、回调、列表、数量或最终状态不符时，Case 判定失败。
 
-### 42. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[custom]`
+### 43. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[custom]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[custom]`
 - 业务说明：A 向包含 B 的群发送指定类型消息：A 全部在线端同步、B 全部在线端接收
@@ -10145,7 +10167,7 @@
   1. 当前测试步骤的同步响应、异步事件和最终业务状态满足代码断言。
   2. 任一关键字段、回调、列表、数量或最终状态不符时，Case 判定失败。
 
-### 43. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[cmd]`
+### 44. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[cmd]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[cmd]`
 - 业务说明：A 向包含 B 的群发送指定类型消息：A 全部在线端同步、B 全部在线端接收
@@ -10164,7 +10186,7 @@
   1. 当前测试步骤的同步响应、异步事件和最终业务状态满足代码断言。
   2. 任一关键字段、回调、列表、数量或最终状态不符时，Case 判定失败。
 
-### 44. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[txt]`
+### 45. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[txt]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_receive_by_type[txt]`
 - 业务说明：A 向包含 B 的群发送指定类型消息：A 全部在线端同步、B 全部在线端接收
@@ -10183,7 +10205,7 @@
   1. 当前测试步骤的同步响应、异步事件和最终业务状态满足代码断言。
   2. 任一关键字段、回调、列表、数量或最终状态不符时，Case 判定失败。
 
-### 45. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_then_new_owner_removes_former_owner`
+### 46. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_then_new_owner_removes_former_owner`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_transfer_then_new_owner_removes_former_owner`
 - 业务说明：A 转让给 B 后 A 失去 owner 权限：B 收到 owner 变更事件，A 收到被移除事件
@@ -10218,7 +10240,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 46. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_fetch_acks_success`
+### 47. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_fetch_acks_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_fetch_acks_success`
 - 业务说明：B 创建群并邀请 A，A 发送群消息；验证 A 副端同步、B 全部在线端接收及群回执查询
@@ -10251,7 +10273,7 @@
   2. 校验关键字段：msgId、from、to、convId、chatType、direction、status、hasRead、content、result、list、cursor。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 47. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_block_members_non_member`
+### 48. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_block_members_non_member`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_block_members_non_member`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -10276,7 +10298,7 @@
   1. 校验异常返回：错误码 603，错误描述“are not members of this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 48. `im_flutter_sdk/native-auto-test/tests/group/test_group_chat_thread_remaining_api_coverage.py::test_chat_thread_destroy_event_received_by_group_member`
+### 49. `im_flutter_sdk/native-auto-test/tests/group/test_group_chat_thread_remaining_api_coverage.py::test_chat_thread_destroy_event_received_by_group_member`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_chat_thread_remaining_api_coverage.py::test_chat_thread_destroy_event_received_by_group_member`
 - 业务说明：destroyChatThread：子区创建后由 owner 解散，收发账号全部在线端收到 onChatThreadDestroy 事件
@@ -10302,7 +10324,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 49. `im_flutter_sdk/native-auto-test/tests/group/test_group_chat_thread_remaining_api_coverage.py::test_chat_thread_fetch_members_and_latest_message`
+### 50. `im_flutter_sdk/native-auto-test/tests/group/test_group_chat_thread_remaining_api_coverage.py::test_chat_thread_fetch_members_and_latest_message`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_chat_thread_remaining_api_coverage.py::test_chat_thread_fetch_members_and_latest_message`
 - 业务说明：fetchChatThreadMember / fetchLast消息WithChatThreads：成员列表包含 A/B，新建子区未发线程消息时最新消息映射为空
@@ -10329,7 +10351,7 @@
   1. 校验关键字段：result、list、cursor。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 50. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_remove_current_owner_is_ignored`
+### 51. `im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_remove_current_owner_is_ignored`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_owner_removal_matrix.py::test_group_remove_current_owner_is_ignored`
 - 业务说明：removeMembers 单独传当前群主返回成功但状态不变；接收账号全部在线端不触发移除事件
@@ -10355,7 +10377,7 @@
 - 关键断言：
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
 
-### 51. `im_flutter_sdk/native-auto-test/tests/group/test_group_chat_thread_remaining_api_coverage.py::test_chat_thread_update_name_and_leave`
+### 52. `im_flutter_sdk/native-auto-test/tests/group/test_group_chat_thread_remaining_api_coverage.py::test_chat_thread_update_name_and_leave`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_chat_thread_remaining_api_coverage.py::test_chat_thread_update_name_and_leave`
 - 业务说明：updateChatThreadSubject / leaveChatThread：更新子区名称后，收发账号全部在线端收到事件，B 退出子区
@@ -10389,7 +10411,7 @@
   2. 校验关键字段：msgId、result、list、cursor。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 52. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_owner_receives_join_application_and_processes_after_login[accept]`
+### 53. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_owner_receives_join_application_and_processes_after_login[accept]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_owner_receives_join_application_and_processes_after_login[accept]`
 - 业务说明：审批群群主 A 先离线，B 申请后 A 重登接收申请并同意或拒绝
@@ -10424,7 +10446,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 53. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_owner_receives_join_application_and_processes_after_login[decline]`
+### 54. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_owner_receives_join_application_and_processes_after_login[decline]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_owner_receives_join_application_and_processes_after_login[decline]`
 - 业务说明：审批群群主 A 先离线，B 申请后 A 重登接收申请并同意或拒绝
@@ -10459,7 +10481,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 54. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_member_attributes_final_state`
+### 55. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_member_attributes_final_state`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_member_attributes_final_state`
 - 业务说明：A 离线期间 B 修改自己的群成员属性；A 重登后按成员 ID 查询到同一属性
@@ -10490,7 +10512,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 55. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_owner_receives_invitation_result_after_relogin[accept]`
+### 56. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_owner_receives_invitation_result_after_relogin[accept]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_owner_receives_invitation_result_after_relogin[accept]`
 - 业务说明：A 在 B 处理邀请时离线，A 重登收到接受或拒绝结果并核验成员状态
@@ -10525,7 +10547,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 56. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_owner_receives_invitation_result_after_relogin[decline]`
+### 57. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_owner_receives_invitation_result_after_relogin[decline]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_owner_receives_invitation_result_after_relogin[decline]`
 - 业务说明：A 在 B 处理邀请时离线，A 重登收到接受或拒绝结果并核验成员状态
@@ -10560,7 +10582,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 57. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_multiple_text_messages_and_conversation_state`
+### 58. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_multiple_text_messages_and_conversation_state`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_multiple_text_messages_and_conversation_state`
 - 业务说明：B 离线积压三条群文本；重登验证完整集合、未读数 3 和最新消息
@@ -10594,7 +10616,7 @@
   2. 校验关键字段：msgId、convId、direction、status、content、result、list。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 58. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_announcement_final_state`
+### 59. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_announcement_final_state`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_announcement_final_state`
 - 业务说明：B 离线期间 A 更新公告；B 重登从公告查询 API 得到同一动态值
@@ -10627,7 +10649,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 59. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_member_state.py::test_group_offline_member_blocked_state_after_login`
+### 60. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_member_state.py::test_group_offline_member_blocked_state_after_login`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_member_state.py::test_group_offline_member_blocked_state_after_login`
 - 业务说明：B 离线期间被加入群黑名单；重登后成员移除且服务端黑名单包含 B
@@ -10662,7 +10684,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 60. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_member_mute_unmute_final_state`
+### 61. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_member_mute_unmute_final_state`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_member_mute_unmute_final_state`
 - 业务说明：B 离线期间被禁言/解除禁言；每次重登均从服务端名单验证最终状态
@@ -10696,7 +10718,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 61. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_admin_add_remove_final_state`
+### 62. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_admin_add_remove_final_state`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_admin_add_remove_final_state`
 - 业务说明：B 离线期间被设为/移出管理员；每次重登均验证本地角色和服务端 adminList
@@ -10728,7 +10750,7 @@
 - 关键断言：
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
 
-### 62. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_member_state.py::test_group_offline_member_removed_state_after_login`
+### 63. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_member_state.py::test_group_offline_member_removed_state_after_login`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_member_state.py::test_group_offline_member_removed_state_after_login`
 - 业务说明：B 离线期间被移出；重登收到真实终态事件且本地/服务端均不再入群
@@ -10757,7 +10779,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 63. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_metadata_final_state[avatarUrl]`
+### 64. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_metadata_final_state[avatarUrl]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_metadata_final_state[avatarUrl]`
 - 业务说明：B 离线期间更新名称/描述/头像/扩展；重登后按真实服务端字段验收
@@ -10787,7 +10809,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 64. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_metadata_final_state[desc]`
+### 65. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_metadata_final_state[desc]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_metadata_final_state[desc]`
 - 业务说明：B 离线期间更新名称/描述/头像/扩展；重登后按真实服务端字段验收
@@ -10817,7 +10839,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 65. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_metadata_final_state[ext]`
+### 66. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_metadata_final_state[ext]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_metadata_final_state[ext]`
 - 业务说明：B 离线期间更新名称/描述/头像/扩展；重登后按真实服务端字段验收
@@ -10847,7 +10869,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 66. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_metadata_final_state[name]`
+### 67. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_metadata_final_state[name]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_metadata_final_state[name]`
 - 业务说明：B 离线期间更新名称/描述/头像/扩展；重登后按真实服务端字段验收
@@ -10877,7 +10899,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 67. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_allow_list_add_remove_final_state`
+### 68. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_allow_list_add_remove_final_state`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_allow_list_add_remove_final_state`
 - 业务说明：B 离线期间加入/移出白名单；每次重登均从服务端白名单验证
@@ -10910,7 +10932,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 68. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_owner_transfer_final_state`
+### 69. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_owner_transfer_final_state`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_owner_transfer_final_state`
 - 业务说明：B 离线期间接任群主；重登后本地和服务端 owner/permissionType 均为新群主
@@ -10944,7 +10966,7 @@
 - 关键断言：
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
 
-### 69. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_mute_all_unmute_all_final_state`
+### 70. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_mute_all_unmute_all_final_state`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_mute_all_unmute_all_final_state`
 - 业务说明：B 离线期间全员禁言/解除；每次重登均查询 isAllMemberMuted
@@ -10973,7 +10995,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 70. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_member_state.py::test_group_offline_group_destroyed_state_after_login`
+### 71. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_member_state.py::test_group_offline_group_destroyed_state_after_login`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_member_state.py::test_group_offline_group_destroyed_state_after_login`
 - 业务说明：B 离线期间群被解散；重登收到解散事件且本地/服务端 joined 投影为空
@@ -11002,7 +11024,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 71. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_shared_file_upload_delete_final_state`
+### 72. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_shared_file_upload_delete_final_state`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_shared_file_upload_delete_final_state`
 - 业务说明：B 离线期间上传/删除共享文件；每次重登均从服务端文件列表验证终态
@@ -11038,7 +11060,7 @@
   2. 校验关键字段：result、list。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 72. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_text_message_received_after_login`
+### 73. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_text_message_received_after_login`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_text_message_received_after_login`
 - 业务说明：B 离线时 A 发群文本；B 重登收到同一真实 消息 ID 和群会话正文
@@ -11067,7 +11089,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：msgId、content。
 
-### 73. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_cmd_deliver_online_only_not_received_after_login`
+### 74. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_cmd_deliver_online_only_not_received_after_login`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_cmd_deliver_online_only_not_received_after_login`
 - 业务说明：B 离线时群 CMD 设置 deliver在线Only=true；重登无旧事件且本地无消息
@@ -11101,7 +11123,7 @@
   2. 校验关键字段：msgId、from、to、convId、chatType、direction、status、hasRead、hasDeliverAck、result、list。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 74. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_applicant_receives_application_result_after_relogin[accept]`
+### 75. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_applicant_receives_application_result_after_relogin[accept]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_applicant_receives_application_result_after_relogin[accept]`
 - 业务说明：B 申请审批群后离线，A 处理；B 重登收到审批结果并验证最终状态
@@ -11136,7 +11158,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 75. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_applicant_receives_application_result_after_relogin[decline]`
+### 76. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_applicant_receives_application_result_after_relogin[decline]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_applicant_receives_application_result_after_relogin[decline]`
 - 业务说明：B 申请审批群后离线，A 处理；B 重登收到审批结果并验证最终状态
@@ -11171,7 +11193,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 76. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_sender_reads_ack_count_after_relogin`
+### 77. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_sender_reads_ack_count_after_relogin`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_sender_reads_ack_count_after_relogin`
 - 业务说明：B 收到群消息后在 A 离线期间发送 已读回执；A 重登最终查询 count=1
@@ -11207,7 +11229,7 @@
   2. 校验关键字段：msgId、from、to、chatType、direction、status、content、result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 77. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_message_recalled_before_first_recipient_login`
+### 78. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_message_recalled_before_first_recipient_login`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_message_recalled_before_first_recipient_login`
 - 业务说明：B 首次接收前 A 撤回群文本；B 重登验证撤回回放和本地最终删除
@@ -11241,7 +11263,7 @@
   2. 校验关键字段：msgId、convId、content、result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 78. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_invitation_received_and_processed_after_login[accept]`
+### 79. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_invitation_received_and_processed_after_login[accept]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_invitation_received_and_processed_after_login[accept]`
 - 业务说明：B 先离线，重登收到群邀请并接受或拒绝，验证权限和最终成员状态
@@ -11276,7 +11298,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 79. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_invitation_received_and_processed_after_login[decline]`
+### 80. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_invitation_received_and_processed_after_login[decline]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_invitation_application.py::test_group_offline_invitation_received_and_processed_after_login[decline]`
 - 业务说明：B 先离线，重登收到群邀请并接受或拒绝，验证权限和最终成员状态
@@ -11311,7 +11333,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 80. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_recipient_receives_recall_after_relogin`
+### 81. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_recipient_receives_recall_after_relogin`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_recipient_receives_recall_after_relogin`
 - 业务说明：B 已收群文本后离线，A 撤回；B 重登验证撤回事件和本地最终删除
@@ -11347,7 +11369,7 @@
   2. 校验关键字段：msgId、convId、direction、status、content、result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 81. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_recipient_receives_content_change_after_relogin`
+### 82. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_recipient_receives_content_change_after_relogin`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_message_delivery.py::test_group_offline_recipient_receives_content_change_after_relogin`
 - 业务说明：B 已收群文本后离线，A 修改正文；B 重登验证修改事件和本地最终正文
@@ -11383,7 +11405,7 @@
   2. 校验关键字段：msgId、direction、status、content、result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 82. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_member_state.py::test_group_offline_member_leave_state_persists_after_relogin`
+### 83. `im_flutter_sdk/native-auto-test/tests/group/test_group_offline_member_state.py::test_group_offline_member_leave_state_persists_after_relogin`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_offline_member_state.py::test_group_offline_member_leave_state_persists_after_relogin`
 - 业务说明：B 主动退群后 logout/login；成员数、joined groups 和本地群对象保持退出终态
@@ -11412,10 +11434,10 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 83. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_request_to_join_rejects_every_non_approval_style[private-member]`
+### 84. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_request_to_join_permission_by_style[private-member]`
 
-- 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_request_to_join_rejects_every_non_approval_style[private-member]`
-- 业务说明：`requestToJoinPublicGroup` 只允许 PublicJoinNeedApproval(style=2)
+- 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_request_to_join_permission_by_style[private-member]`
+- 业务说明：5.0 入群申请/自动入群：私有群拒绝，PublicOpenJoin(style=3) 自动入群
 - 类型：普通
 - 状态/版本说明：普通
 - 前置条件：
@@ -11443,10 +11465,10 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 84. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_request_to_join_rejects_every_non_approval_style[private-owner]`
+### 85. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_request_to_join_permission_by_style[private-owner]`
 
-- 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_request_to_join_rejects_every_non_approval_style[private-owner]`
-- 业务说明：`requestToJoinPublicGroup` 只允许 PublicJoinNeedApproval(style=2)
+- 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_request_to_join_permission_by_style[private-owner]`
+- 业务说明：5.0 入群申请/自动入群：私有群拒绝，PublicOpenJoin(style=3) 自动入群
 - 类型：普通
 - 状态/版本说明：普通
 - 前置条件：
@@ -11474,10 +11496,10 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 85. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_request_to_join_rejects_every_non_approval_style[public-open]`
+### 86. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_request_to_join_permission_by_style[public-open]`
 
-- 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_request_to_join_rejects_every_non_approval_style[public-open]`
-- 业务说明：`requestToJoinPublicGroup` 只允许 PublicJoinNeedApproval(style=2)
+- 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_request_to_join_permission_by_style[public-open]`
+- 业务说明：5.0 入群申请/自动入群：私有群拒绝，PublicOpenJoin(style=3) 自动入群
 - 类型：普通
 - 状态/版本说明：普通
 - 前置条件：
@@ -11505,7 +11527,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 86. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_empty_name`
+### 87. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_empty_name`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_empty_name`
 - 业务说明：A 创建群
@@ -11530,7 +11552,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 87. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[desc_multiline-desc-line1\nline2\nline3-None]`
+### 88. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[desc_multiline-desc-line1\nline2\nline3-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[desc_multiline-desc-line1\nline2\nline3-None]`
 - 业务说明：A 创建群
@@ -11557,7 +11579,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 88. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[desc_space_only-desc- -None]`
+### 89. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[desc_space_only-desc- -None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[desc_space_only-desc- -None]`
 - 业务说明：A 创建群
@@ -11584,7 +11606,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 89. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[desc_symbols-desc-desc_!@#$%^&*()[]{}<>?/\\|-None]`
+### 90. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[desc_symbols-desc-desc_!@#$%^&*()[]{}<>?/\\|-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[desc_symbols-desc-desc_!@#$%^&*()[]{}<>?/\\|-None]`
 - 业务说明：A 创建群
@@ -11611,7 +11633,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 90. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[group_name_mixed_symbols-groupName-group-name_!@#$%^&*()[]{}-None]`
+### 91. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[group_name_mixed_symbols-groupName-group-name_!@#$%^&*()[]{}-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[group_name_mixed_symbols-groupName-group-name_!@#$%^&*()[]{}-None]`
 - 业务说明：A 创建群
@@ -11638,7 +11660,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 91. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[group_name_tabs-groupName-\tgroup\tname\t-None]`
+### 92. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[group_name_tabs-groupName-\tgroup\tname\t-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[group_name_tabs-groupName-\tgroup\tname\t-None]`
 - 业务说明：A 创建群
@@ -11665,7 +11687,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 92. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[invite_reason_multiline-inviteReason-reason line1\nreason line2-None]`
+### 93. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[invite_reason_multiline-inviteReason-reason line1\nreason line2-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[invite_reason_multiline-inviteReason-reason line1\nreason line2-None]`
 - 业务说明：A 创建群
@@ -11692,7 +11714,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 93. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[invite_reason_space_only-inviteReason- -None]`
+### 94. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[invite_reason_space_only-inviteReason- -None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[invite_reason_space_only-inviteReason- -None]`
 - 业务说明：A 创建群
@@ -11719,7 +11741,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 94. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[invite_reason_symbols-inviteReason-reason_!@#$%^&*()[]{}<>?/\\|-None]`
+### 95. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[invite_reason_symbols-inviteReason-reason_!@#$%^&*()[]{}<>?/\\|-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs[invite_reason_symbols-inviteReason-reason_!@#$%^&*()[]{}<>?/\\|-None]`
 - 业务说明：A 创建群
@@ -11746,7 +11768,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 95. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[options_ext_too_long_1025-overrides2-None]`
+### 96. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[options_ext_too_long_1025-overrides2-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[options_ext_too_long_1025-overrides2-None]`
 - 业务说明：A 创建群
@@ -11773,7 +11795,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 96. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[options_max_count_zero-overrides3-expect_error3]`
+### 97. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[options_max_count_zero-overrides3-expect_error3]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[options_max_count_zero-overrides3-expect_error3]`
 - 业务说明：A 创建群
@@ -11800,7 +11822,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 97. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[options_max_count_negative-overrides4-expect_error4]`
+### 98. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[options_max_count_negative-overrides4-expect_error4]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[options_max_count_negative-overrides4-expect_error4]`
 - 业务说明：A 创建群
@@ -11827,7 +11849,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 98. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[options_style_out_of_range-overrides5-None]`
+### 99. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[options_style_out_of_range-overrides5-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[options_style_out_of_range-overrides5-None]`
 - 业务说明：A 创建群
@@ -11854,7 +11876,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 99. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[desc_too_long_513-overrides0-None]`
+### 100. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[desc_too_long_513-overrides0-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[desc_too_long_513-overrides0-None]`
 - 业务说明：A 创建群
@@ -11881,7 +11903,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 100. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[invite_reason_too_long_1025-overrides1-None]`
+### 101. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[invite_reason_too_long_1025-overrides1-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs[invite_reason_too_long_1025-overrides1-None]`
 - 业务说明：A 创建群
@@ -11908,7 +11930,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 101. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_invite_members_abnormal_inputs[invite_members_duplicate_user-invite_members0-None]`
+### 102. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_invite_members_abnormal_inputs[invite_members_duplicate_user-invite_members0-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_invite_members_abnormal_inputs[invite_members_duplicate_user-invite_members0-None]`
 - 业务说明：A 创建群
@@ -11935,7 +11957,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 102. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_invite_members_abnormal_inputs[invite_members_contains_nonexistent_user-invite_members1-expect_error1]`
+### 103. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_invite_members_abnormal_inputs[invite_members_contains_nonexistent_user-invite_members1-expect_error1]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_invite_members_abnormal_inputs[invite_members_contains_nonexistent_user-invite_members1-expect_error1]`
 - 业务说明：A 创建群
@@ -11962,7 +11984,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 103. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_max_count_less_than_invite_members`
+### 104. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_max_count_less_than_invite_members`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_max_count_less_than_invite_members`
 - 业务说明：A 创建群
@@ -11983,7 +12005,7 @@
   1. 校验异常返回：错误码 604，错误描述“The group member capacity is reached”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 104. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[avatar_url_ftp_protocol-overrides5-None]`
+### 105. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[avatar_url_ftp_protocol-overrides5-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[avatar_url_ftp_protocol-overrides5-None]`
 - 业务说明：A 创建群
@@ -12010,7 +12032,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 105. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[avatar_url_not_url-overrides4-None]`
+### 106. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[avatar_url_not_url-overrides4-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[avatar_url_not_url-overrides4-None]`
 - 业务说明：A 创建群
@@ -12037,7 +12059,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 106. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[avatar_url_too_long-overrides6-expect_error6]`
+### 107. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[avatar_url_too_long-overrides6-expect_error6]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[avatar_url_too_long-overrides6-expect_error6]`
 - 业务说明：A 创建群
@@ -12064,7 +12086,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 107. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[group_name_control_chars-overrides3-None]`
+### 108. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[group_name_control_chars-overrides3-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[group_name_control_chars-overrides3-None]`
 - 业务说明：A 创建群
@@ -12091,7 +12113,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 108. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[group_name_space_only-overrides0-None]`
+### 109. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[group_name_space_only-overrides0-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[group_name_space_only-overrides0-None]`
 - 业务说明：A 创建群
@@ -12118,7 +12140,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 109. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[group_name_too_long_256-overrides1-None]`
+### 110. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[group_name_too_long_256-overrides1-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[group_name_too_long_256-overrides1-None]`
 - 业务说明：A 创建群
@@ -12145,7 +12167,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 110. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[group_name_too_long_512-overrides2-None]`
+### 111. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[group_name_too_long_512-overrides2-None]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs[group_name_too_long_512-overrides2-None]`
 - 业务说明：A 创建群
@@ -12172,7 +12194,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 111. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_optional_fields_empty[options_ext_empty-overrides4]`
+### 112. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_optional_fields_empty[options_ext_empty-overrides4]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_optional_fields_empty[options_ext_empty-overrides4]`
 - 业务说明：A 创建群
@@ -12197,7 +12219,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 112. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_optional_fields_empty[avatar_url_empty-overrides0]`
+### 113. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_optional_fields_empty[avatar_url_empty-overrides0]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_optional_fields_empty[avatar_url_empty-overrides0]`
 - 业务说明：A 创建群
@@ -12222,7 +12244,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 113. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_optional_fields_empty[desc_empty-overrides1]`
+### 114. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_optional_fields_empty[desc_empty-overrides1]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_optional_fields_empty[desc_empty-overrides1]`
 - 业务说明：A 创建群
@@ -12247,7 +12269,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 114. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_optional_fields_empty[invite_members_empty-overrides2]`
+### 115. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_optional_fields_empty[invite_members_empty-overrides2]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_optional_fields_empty[invite_members_empty-overrides2]`
 - 业务说明：A 创建群
@@ -12272,7 +12294,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 115. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_optional_fields_empty[invite_reason_empty-overrides3]`
+### 116. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_optional_fields_empty[invite_reason_empty-overrides3]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_optional_fields_empty[invite_reason_empty-overrides3]`
 - 业务说明：A 创建群
@@ -12297,7 +12319,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 116. `im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_wrong_inviter_does_not_consume_pending[accept]`
+### 117. `im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_wrong_inviter_does_not_consume_pending[accept]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_wrong_inviter_does_not_consume_pending[accept]`
 - 业务说明：错误 inviter 处理邀请应失败，随后正确 inviter 仍可接受同一 pending
@@ -12330,7 +12352,7 @@
   3. 校验关键字段：result、list。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 117. `im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_wrong_inviter_does_not_consume_pending[decline]`
+### 118. `im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_wrong_inviter_does_not_consume_pending[decline]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_wrong_inviter_does_not_consume_pending[decline]`
 - 业务说明：错误 inviter 处理邀请应失败，随后正确 inviter 仍可接受同一 pending
@@ -12363,7 +12385,7 @@
   3. 校验关键字段：result、list。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 118. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_message_block_role_matrix[member]`
+### 119. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_message_block_role_matrix[member]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_message_block_role_matrix[member]`
 - 业务说明：冻结三种群角色屏蔽/取消屏蔽群消息的真实 SDK 行为
@@ -12390,7 +12412,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 119. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_message_block_role_matrix[admin]`
+### 120. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_message_block_role_matrix[admin]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_message_block_role_matrix[admin]`
 - 业务说明：冻结三种群角色屏蔽/取消屏蔽群消息的真实 SDK 行为
@@ -12417,7 +12439,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 120. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_message_block_role_matrix[owner]`
+### 121. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_message_block_role_matrix[owner]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_message_block_role_matrix[owner]`
 - 业务说明：冻结三种群角色屏蔽/取消屏蔽群消息的真实 SDK 行为
@@ -12444,7 +12466,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 121. `im_flutter_sdk/native-auto-test/tests/group/test_group_capacity.py::test_group_options_use_active_capacity_unless_boundary_value_is_explicit`
+### 122. `im_flutter_sdk/native-auto-test/tests/group/test_group_capacity.py::test_group_options_use_active_capacity_unless_boundary_value_is_explicit`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_capacity.py::test_group_options_use_active_capacity_unless_boundary_value_is_explicit`
 - 业务说明：防止 3000 场景漏传给建群请求，或覆盖 maxCount=2 的容量边界用例
@@ -12461,7 +12483,7 @@
   1. 校验关键字段：from。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 122. `im_flutter_sdk/native-auto-test/tests/group/test_group_capacity.py::test_group_capacity_rejects_non_positive_values[-1]`
+### 123. `im_flutter_sdk/native-auto-test/tests/group/test_group_capacity.py::test_group_capacity_rejects_non_positive_values[-1]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_capacity.py::test_group_capacity_rejects_non_positive_values[-1]`
 - 业务说明：防止错误的运行参数创建无效容量群并污染真实测试环境
@@ -12478,7 +12500,7 @@
   1. 当前测试步骤的同步响应、异步事件和最终业务状态满足代码断言。
   2. 任一关键字段、回调、列表、数量或最终状态不符时，Case 判定失败。
 
-### 123. `im_flutter_sdk/native-auto-test/tests/group/test_group_capacity.py::test_group_capacity_rejects_non_positive_values[0]`
+### 124. `im_flutter_sdk/native-auto-test/tests/group/test_group_capacity.py::test_group_capacity_rejects_non_positive_values[0]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_capacity.py::test_group_capacity_rejects_non_positive_values[0]`
 - 业务说明：防止错误的运行参数创建无效容量群并污染真实测试环境
@@ -12495,7 +12517,7 @@
   1. 当前测试步骤的同步响应、异步事件和最终业务状态满足代码断言。
   2. 任一关键字段、回调、列表、数量或最终状态不符时，Case 判定失败。
 
-### 124. `im_flutter_sdk/native-auto-test/tests/group/test_group_capacity.py::test_group_capacity_defaults_to_200_and_accepts_3000_override`
+### 125. `im_flutter_sdk/native-auto-test/tests/group/test_group_capacity.py::test_group_capacity_defaults_to_200_and_accepts_3000_override`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_capacity.py::test_group_capacity_defaults_to_200_and_accepts_3000_override`
 - 业务说明：防止默认群容量漂移，或扩容场景没有将常规建群容量切换为 3000
@@ -12511,7 +12533,7 @@
 - 关键断言：
   1. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 125. `im_flutter_sdk/native-auto-test/tests/group/test_group_capacity.py::test_group_snapshot_default_uses_active_capacity`
+### 126. `im_flutter_sdk/native-auto-test/tests/group/test_group_capacity.py::test_group_snapshot_default_uses_active_capacity`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_capacity.py::test_group_snapshot_default_uses_active_capacity`
 - 业务说明：防止未传 max_user_count_value 的群快照断言在 3000 场景退回 200
@@ -12528,7 +12550,7 @@
   1. 校验关键字段：from、result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 126. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_non_member_cannot_process_join_application[accept]`
+### 127. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_non_member_cannot_process_join_application[accept]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_non_member_cannot_process_join_application[accept]`
 - 业务说明：非成员不能处理其他用户的有效 pending 申请
@@ -12556,7 +12578,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 127. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_non_member_cannot_process_join_application[decline]`
+### 128. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_non_member_cannot_process_join_application[decline]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_non_member_cannot_process_join_application[decline]`
 - 业务说明：非成员不能处理其他用户的有效 pending 申请
@@ -12584,7 +12606,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 128. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_server_state_lists.py::test_group_server_state_list_nonexistent_group[getGroupBlockListFromServer]`
+### 129. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_server_state_lists.py::test_group_server_state_list_nonexistent_group[getGroupBlockListFromServer]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_server_state_lists.py::test_group_server_state_list_nonexistent_group[getGroupBlockListFromServer]`
 - 业务说明：A 执行群组业务操作
@@ -12604,7 +12626,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 129. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_server_state_lists.py::test_group_server_state_list_nonexistent_group[getGroupMuteListFromServer]`
+### 130. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_server_state_lists.py::test_group_server_state_list_nonexistent_group[getGroupMuteListFromServer]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_server_state_lists.py::test_group_server_state_list_nonexistent_group[getGroupMuteListFromServer]`
 - 业务说明：A 执行群组业务操作
@@ -12624,7 +12646,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 130. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_server_state_lists.py::test_group_server_state_list_nonexistent_group[getGroupWhiteListFromServer]`
+### 131. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_server_state_lists.py::test_group_server_state_list_nonexistent_group[getGroupWhiteListFromServer]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_server_state_lists.py::test_group_server_state_list_nonexistent_group[getGroupWhiteListFromServer]`
 - 业务说明：A 执行群组业务操作
@@ -12644,7 +12666,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 131. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_server_state_lists.py::test_group_server_state_list_nonexistent_group[isMemberInWhiteListFromServer]`
+### 132. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_server_state_lists.py::test_group_server_state_list_nonexistent_group[isMemberInWhiteListFromServer]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_server_state_lists.py::test_group_server_state_list_nonexistent_group[isMemberInWhiteListFromServer]`
 - 业务说明：A 执行群组业务操作
@@ -12664,7 +12686,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 132. `im_flutter_sdk/native-auto-test/tests/group/test_group.py::test_group_member_count_local_then_server_sync`
+### 133. `im_flutter_sdk/native-auto-test/tests/group/test_group.py::test_group_member_count_local_then_server_sync`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group.py::test_group_member_count_local_then_server_sync`
 - 业务说明：复现流程： 1) 邀请别人入群（addMembers） 2) getGroupWithId（本地）读取人数 3) getGroupSpecificationFromServer（服务端）读取人数 4) 再次 getGroupWithId（本地）读取人数，验证与服务端一致 说明： - 若本地人数与服务端人数不一致，则判定“复现到问题”； - 若未出现不一致，则该环境下未复现，使用 skip 标记
@@ -12697,7 +12719,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 133. `im_flutter_sdk/native-auto-test/tests/group/test_group_member_info.py::test_group_fetch_members_info_contains_updated_own_profile`
+### 134. `im_flutter_sdk/native-auto-test/tests/group/test_group_member_info.py::test_group_fetch_members_info_contains_updated_own_profile`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_member_info.py::test_group_fetch_members_info_contains_updated_own_profile`
 - 业务说明：更新本人昵称/头像后，fetchGroupMembersInfo 返回的本人 EMGroupMemberInfo 字段保持一致
@@ -12729,7 +12751,7 @@
   2. 校验关键字段：result、cursor。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 134. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_destroy_owner_only_role_denied[member]`
+### 135. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_destroy_owner_only_role_denied[member]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_destroy_owner_only_role_denied[member]`
 - 业务说明：管理员和普通成员不能解散群，失败后群仍可由群主查询和清理
@@ -12754,7 +12776,7 @@
   1. 校验异常返回：错误码 603。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 135. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_destroy_owner_only_role_denied[admin]`
+### 136. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_destroy_owner_only_role_denied[admin]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_destroy_owner_only_role_denied[admin]`
 - 业务说明：管理员和普通成员不能解散群，失败后群仍可由群主查询和清理
@@ -12779,7 +12801,7 @@
   1. 校验异常返回：错误码 603。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 136. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_metadata_admin_member_role_matrix[member]`
+### 137. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_metadata_admin_member_role_matrix[member]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_metadata_admin_member_role_matrix[member]`
 - 业务说明：管理员可修改群名称、描述、扩展；普通成员返回群字段权限错误
@@ -12812,7 +12834,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 137. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_metadata_admin_member_role_matrix[admin]`
+### 138. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_metadata_admin_member_role_matrix[admin]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_metadata_admin_member_role_matrix[admin]`
 - 业务说明：管理员可修改群名称、描述、扩展；普通成员返回群字段权限错误
@@ -12845,7 +12867,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 138. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_blocklist_admin_member_role_matrix[member]`
+### 139. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_blocklist_admin_member_role_matrix[member]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_blocklist_admin_member_role_matrix[member]`
 - 业务说明：管理员可增删群黑名单；普通成员返回管理员权限错误且状态不变
@@ -12878,7 +12900,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 139. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_blocklist_admin_member_role_matrix[admin]`
+### 140. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_blocklist_admin_member_role_matrix[admin]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_blocklist_admin_member_role_matrix[admin]`
 - 业务说明：管理员可增删群黑名单；普通成员返回管理员权限错误且状态不变
@@ -12911,7 +12933,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 140. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes.py::test_group_fetch_member_attributes_nonexistent_group`
+### 141. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes.py::test_group_fetch_member_attributes_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes.py::test_group_fetch_member_attributes_nonexistent_group`
 - 业务说明：A 执行群组业务操作
@@ -12931,7 +12953,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 141. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes.py::test_group_fetch_members_attributes_nonexistent_group`
+### 142. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes.py::test_group_fetch_members_attributes_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes.py::test_group_fetch_members_attributes_nonexistent_group`
 - 业务说明：A 执行群组业务操作
@@ -12951,7 +12973,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 142. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_announcement.py::test_group_get_announcement_nonexistent_group`
+### 143. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_announcement.py::test_group_get_announcement_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_announcement.py::test_group_get_announcement_nonexistent_group`
 - 业务说明：A 查询群公告
@@ -12971,7 +12993,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 143. `im_flutter_sdk/native-auto-test/tests/group/test_group_member_list.py::test_group_get_group_member_list_from_server_success`
+### 144. `im_flutter_sdk/native-auto-test/tests/group/test_group_member_list.py::test_group_get_group_member_list_from_server_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_member_list.py::test_group_get_group_member_list_from_server_success`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -12996,7 +13018,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 144. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_list.py::test_group_get_group_member_list_from_server_invalid_paging[-1-20]`
+### 145. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_list.py::test_group_get_group_member_list_from_server_invalid_paging[-1-20]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_list.py::test_group_get_group_member_list_from_server_invalid_paging[-1-20]`
 - 业务说明：A 查询服务端成员列表
@@ -13019,7 +13041,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 145. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_list.py::test_group_get_group_member_list_from_server_invalid_paging[0-20]`
+### 146. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_list.py::test_group_get_group_member_list_from_server_invalid_paging[0-20]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_list.py::test_group_get_group_member_list_from_server_invalid_paging[0-20]`
 - 业务说明：A 查询服务端成员列表
@@ -13042,7 +13064,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 146. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_list.py::test_group_get_group_member_list_from_server_invalid_paging[1--1]`
+### 147. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_list.py::test_group_get_group_member_list_from_server_invalid_paging[1--1]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_list.py::test_group_get_group_member_list_from_server_invalid_paging[1--1]`
 - 业务说明：A 查询服务端成员列表
@@ -13065,7 +13087,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 147. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_list.py::test_group_get_group_member_list_from_server_invalid_paging[1-0]`
+### 148. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_list.py::test_group_get_group_member_list_from_server_invalid_paging[1-0]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_list.py::test_group_get_group_member_list_from_server_invalid_paging[1-0]`
 - 业务说明：A 查询服务端成员列表
@@ -13088,7 +13110,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 148. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_list.py::test_group_get_group_member_list_from_server_nonexistent_group`
+### 149. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_list.py::test_group_get_group_member_list_from_server_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_list.py::test_group_get_group_member_list_from_server_nonexistent_group`
 - 业务说明：A 查询服务端成员列表
@@ -13108,7 +13130,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 149. `im_flutter_sdk/native-auto-test/tests/group/test_group_lifecycle.py::test_group_get_group_from_server`
+### 150. `im_flutter_sdk/native-auto-test/tests/group/test_group_lifecycle.py::test_group_get_group_from_server`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_lifecycle.py::test_group_get_group_from_server`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -13133,7 +13155,7 @@
   1. 当前测试步骤的同步响应、异步事件和最终业务状态满足代码断言。
   2. 任一关键字段、回调、列表、数量或最终状态不符时，Case 判定失败。
 
-### 150. `im_flutter_sdk/native-auto-test/tests/group/test_group_lifecycle.py::test_group_get_group_from_server_after_destroy`
+### 151. `im_flutter_sdk/native-auto-test/tests/group/test_group_lifecycle.py::test_group_get_group_from_server_after_destroy`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_lifecycle.py::test_group_get_group_from_server_after_destroy`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -13159,7 +13181,7 @@
   2. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 151. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_get_group_from_server_nonexistent`
+### 152. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_get_group_from_server_nonexistent`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_get_group_from_server_nonexistent`
 - 业务说明：A 查询服务端群详情
@@ -13179,7 +13201,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 152. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_get_group_with_id_nonexistent`
+### 153. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_get_group_with_id_nonexistent`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_get_group_with_id_nonexistent`
 - 业务说明：A 查询本地群详情
@@ -13199,7 +13221,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 153. `im_flutter_sdk/native-auto-test/tests/group/test_group_file_list.py::test_group_get_group_file_list_from_server_success`
+### 154. `im_flutter_sdk/native-auto-test/tests/group/test_group_file_list.py::test_group_get_group_file_list_from_server_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_file_list.py::test_group_get_group_file_list_from_server_success`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -13224,7 +13246,7 @@
   1. 校验关键字段：result、list。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 154. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_file_list.py::test_group_get_group_file_list_from_server_nonexistent_group[0-20]`
+### 155. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_file_list.py::test_group_get_group_file_list_from_server_nonexistent_group[0-20]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_file_list.py::test_group_get_group_file_list_from_server_nonexistent_group[0-20]`
 - 业务说明：A 查询群共享文件列表
@@ -13244,7 +13266,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 155. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_file_list.py::test_group_get_group_file_list_from_server_nonexistent_group[1-0]`
+### 156. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_file_list.py::test_group_get_group_file_list_from_server_nonexistent_group[1-0]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_file_list.py::test_group_get_group_file_list_from_server_nonexistent_group[1-0]`
 - 业务说明：A 查询群共享文件列表
@@ -13264,7 +13286,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 156. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_file_list.py::test_group_get_group_file_list_from_server_nonexistent_group[1-20]`
+### 157. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_file_list.py::test_group_get_group_file_list_from_server_nonexistent_group[1-20]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_file_list.py::test_group_get_group_file_list_from_server_nonexistent_group[1-20]`
 - 业务说明：A 查询群共享文件列表
@@ -13284,7 +13306,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 157. `im_flutter_sdk/native-auto-test/tests/group/test_group_server_state_lists.py::test_group_get_group_block_list_from_server_success`
+### 158. `im_flutter_sdk/native-auto-test/tests/group/test_group_server_state_lists.py::test_group_get_group_block_list_from_server_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_server_state_lists.py::test_group_get_group_block_list_from_server_success`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -13309,7 +13331,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 158. `im_flutter_sdk/native-auto-test/tests/group/test_group_server_state_lists.py::test_group_get_group_mute_list_from_server_success`
+### 159. `im_flutter_sdk/native-auto-test/tests/group/test_group_server_state_lists.py::test_group_get_group_mute_list_from_server_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_server_state_lists.py::test_group_get_group_mute_list_from_server_success`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -13334,7 +13356,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 159. `im_flutter_sdk/native-auto-test/tests/group/test_group_server_state_lists.py::test_group_get_group_white_list_and_member_check_success`
+### 160. `im_flutter_sdk/native-auto-test/tests/group/test_group_server_state_lists.py::test_group_get_group_white_list_and_member_check_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_server_state_lists.py::test_group_get_group_white_list_and_member_check_success`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -13363,7 +13385,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 160. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_public_groups_count.py::test_group_fetch_joined_group_count_with_extra_info`
+### 161. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_public_groups_count.py::test_group_fetch_joined_group_count_with_extra_info`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_public_groups_count.py::test_group_fetch_joined_group_count_with_extra_info`
 - 业务说明：A 查询已加入群数量
@@ -13383,7 +13405,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 161. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_joined_groups.py::test_group_get_joined_groups_from_server_with_extra_info_fields`
+### 162. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_joined_groups.py::test_group_get_joined_groups_from_server_with_extra_info_fields`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_joined_groups.py::test_group_get_joined_groups_from_server_with_extra_info_fields`
 - 业务说明：A 查询服务端已加入群列表
@@ -13402,7 +13424,7 @@
 - 关键断言：
   1. 校验关键字段：cursor。
 
-### 162. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_joined_groups.py::test_group_get_joined_groups_with_extra_info_fields`
+### 163. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_joined_groups.py::test_group_get_joined_groups_with_extra_info_fields`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_joined_groups.py::test_group_get_joined_groups_with_extra_info_fields`
 - 业务说明：A 查询本地已加入群列表
@@ -13422,7 +13444,7 @@
   1. 当前测试步骤的同步响应、异步事件和最终业务状态满足代码断言。
   2. 任一关键字段、回调、列表、数量或最终状态不符时，Case 判定失败。
 
-### 163. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_public_groups_count.py::test_group_get_public_groups_from_server_invalid_paging[-1-20]`
+### 164. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_public_groups_count.py::test_group_get_public_groups_from_server_invalid_paging[-1-20]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_public_groups_count.py::test_group_get_public_groups_from_server_invalid_paging[-1-20]`
 - 业务说明：A 查询公开群列表
@@ -13445,7 +13467,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 164. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_public_groups_count.py::test_group_get_public_groups_from_server_invalid_paging[0-20]`
+### 165. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_public_groups_count.py::test_group_get_public_groups_from_server_invalid_paging[0-20]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_public_groups_count.py::test_group_get_public_groups_from_server_invalid_paging[0-20]`
 - 业务说明：A 查询公开群列表
@@ -13468,7 +13490,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 165. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_public_groups_count.py::test_group_get_public_groups_from_server_invalid_paging[1--1]`
+### 166. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_public_groups_count.py::test_group_get_public_groups_from_server_invalid_paging[1--1]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_public_groups_count.py::test_group_get_public_groups_from_server_invalid_paging[1--1]`
 - 业务说明：A 查询公开群列表
@@ -13491,7 +13513,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 166. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_public_groups_count.py::test_group_get_public_groups_from_server_invalid_paging[1-0]`
+### 167. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_public_groups_count.py::test_group_get_public_groups_from_server_invalid_paging[1-0]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_public_groups_count.py::test_group_get_public_groups_from_server_invalid_paging[1-0]`
 - 业务说明：A 查询公开群列表
@@ -13514,7 +13536,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 167. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_non_member_cannot_invite_user[add-members]`
+### 168. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_non_member_cannot_invite_user[add-members]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_non_member_cannot_invite_user[add-members]`
 - 业务说明：即使 style=1 允许成员邀请，非成员仍不能调用任一邀请 API
@@ -13539,7 +13561,7 @@
   1. 校验异常返回：错误码 603，错误描述“group member permission is required”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 168. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_non_member_cannot_invite_user[inviter-user]`
+### 169. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_non_member_cannot_invite_user[inviter-user]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_non_member_cannot_invite_user[inviter-user]`
 - 业务说明：即使 style=1 允许成员邀请，非成员仍不能调用任一邀请 API
@@ -13564,7 +13586,7 @@
   1. 校验异常返回：错误码 603，错误描述“group member permission is required”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 169. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_accept_invitation_from_group_without_pending_invite`
+### 170. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_accept_invitation_from_group_without_pending_invite`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_accept_invitation_from_group_without_pending_invite`
 - 业务说明：B 接受入群邀请
@@ -13584,7 +13606,7 @@
   1. 校验异常返回：错误码 600，错误描述“does not exist”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 170. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_accept_join_application_nonexistent_group`
+### 171. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_accept_join_application_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_accept_join_application_nonexistent_group`
 - 业务说明：A 同意入群申请
@@ -13605,7 +13627,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 171. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_accept_join_application_nonexistent_user`
+### 172. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_accept_join_application_nonexistent_user`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_accept_join_application_nonexistent_user`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -13630,7 +13652,7 @@
   1. 校验异常返回：错误码 600，错误描述“doesn”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 172. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_decline_invitation_from_group_without_pending_invite`
+### 173. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_decline_invitation_from_group_without_pending_invite`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_decline_invitation_from_group_without_pending_invite`
 - 业务说明：B 拒绝入群邀请
@@ -13650,7 +13672,7 @@
   1. 校验异常返回：错误码 600，错误描述“does not exist”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 173. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_decline_join_application_nonexistent_group`
+### 174. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_decline_join_application_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_decline_join_application_nonexistent_group`
 - 业务说明：A 拒绝入群申请
@@ -13671,7 +13693,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 174. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_empty_reason_uses_server_default`
+### 175. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_empty_reason_uses_server_default`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_empty_reason_uses_server_default`
 - 业务说明：空申请原因应被服务端规范化，并且 pending 仍可被正常拒绝
@@ -13700,7 +13722,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：to、result。
 
-### 175. `im_flutter_sdk/native-auto-test/tests/group/test_group_chat_thread_user_removed.py::test_chat_thread_remove_member_updates_member_list`
+### 176. `im_flutter_sdk/native-auto-test/tests/group/test_group_chat_thread_user_removed.py::test_chat_thread_remove_member_updates_member_list`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_chat_thread_user_removed.py::test_chat_thread_remove_member_updates_member_list`
 - 业务说明：链路： 1) A 建群并邀请 B 2) B 在群里发父消息 3) A 用父消息创建子区并让 B 加入 4) A 把 B 从子区移除 5) 查询子区成员，断言 A 仍在且 B 已被移除 当前 Android 实测 removeMemberFromChatThread 成功后不派发 onUserKickOutOfChatThread，因此按 SDK 可查询的真实成员状态验收移除结果
@@ -13734,7 +13756,7 @@
   2. 校验关键字段：msgId、from、to、convId、chatType、direction、status、hasRead、content、result、list、cursor。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 176. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_processing_permission_by_role[member-accept]`
+### 177. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_processing_permission_by_role[member-accept]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_processing_permission_by_role[member-accept]`
 - 业务说明：普通成员不能处理申请；管理员按原生权限接收并处理申请
@@ -13769,7 +13791,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 177. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_processing_permission_by_role[member-decline]`
+### 178. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_processing_permission_by_role[member-decline]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_processing_permission_by_role[member-decline]`
 - 业务说明：普通成员不能处理申请；管理员按原生权限接收并处理申请
@@ -13804,7 +13826,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 178. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_processing_permission_by_role[admin-accept]`
+### 179. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_processing_permission_by_role[admin-accept]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_processing_permission_by_role[admin-accept]`
 - 业务说明：普通成员不能处理申请；管理员按原生权限接收并处理申请
@@ -13839,7 +13861,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 179. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_processing_permission_by_role[admin-decline]`
+### 180. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_processing_permission_by_role[admin-decline]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_processing_permission_by_role[admin-decline]`
 - 业务说明：普通成员不能处理申请；管理员按原生权限接收并处理申请
@@ -13874,7 +13896,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 180. `im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_remove_shared_file_nonexistent_group`
+### 181. `im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_remove_shared_file_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_remove_shared_file_nonexistent_group`
 - 业务说明：前置：使用固定不存在的 groupId 和 fileId
@@ -13894,7 +13916,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 181. `im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_upload_shared_file_nonexistent_group`
+### 182. `im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_upload_shared_file_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_upload_shared_file_nonexistent_group`
 - 业务说明：前置：使用固定不存在的 groupId 和显式 Android 不可读路径
@@ -13914,7 +13936,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 182. `im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_download_shared_file_nonexistent_group_current_behavior`
+### 183. `im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_download_shared_file_nonexistent_group_current_behavior`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_download_shared_file_nonexistent_group_current_behavior`
 - 业务说明：前置：使用固定不存在的 groupId/fileId 和宿主机保存路径
@@ -13934,7 +13956,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 183. `im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_upload_shared_file_invalid_path`
+### 184. `im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_upload_shared_file_invalid_path`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_upload_shared_file_invalid_path`
 - 业务说明：前置：A 为群主，显式设备路径在 Android 中不存在
@@ -13959,7 +13981,7 @@
   1. 校验异常返回：错误码 401，错误描述“Invalid file”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 184. `im_flutter_sdk/native-auto-test/tests/group/test_group_joined_groups.py::test_group_joined_lists_follow_invite_remove_readd_and_member_leave`
+### 185. `im_flutter_sdk/native-auto-test/tests/group/test_group_joined_groups.py::test_group_joined_lists_follow_invite_remove_readd_and_member_leave`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_joined_groups.py::test_group_joined_lists_follow_invite_remove_readd_and_member_leave`
 - 业务说明：前置：A 为群主，B 初始不是目标群成员，B 的自动接受邀请开关为 true
@@ -13993,7 +14015,7 @@
   2. 校验关键字段：result、list。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 185. `im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_upload_shared_file_explicit_host_path_is_invalid`
+### 186. `im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_upload_shared_file_explicit_host_path_is_invalid`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_shared_files.py::test_group_upload_shared_file_explicit_host_path_is_invalid`
 - 业务说明：前置：A 为群主；传入的 `/private/tmp/...` 是 macOS 宿主机路径，不存在于 Android
@@ -14018,7 +14040,7 @@
   1. 校验异常返回：错误码 401，错误描述“Invalid file”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 186. `im_flutter_sdk/native-auto-test/tests/group/test_group_public_groups_count.py::test_group_fetch_joined_group_count_success`
+### 187. `im_flutter_sdk/native-auto-test/tests/group/test_group_public_groups_count.py::test_group_fetch_joined_group_count_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_public_groups_count.py::test_group_fetch_joined_group_count_success`
 - 业务说明：前置：A 已登录，当前账号可能已加入零个或多个共享环境群组
@@ -14038,7 +14060,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 187. `im_flutter_sdk/native-auto-test/tests/group/test_group_public_groups_count.py::test_group_get_public_groups_from_server_success`
+### 188. `im_flutter_sdk/native-auto-test/tests/group/test_group_public_groups_count.py::test_group_get_public_groups_from_server_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_public_groups_count.py::test_group_get_public_groups_from_server_success`
 - 业务说明：前置：A 已登录，公开群列表允许包含共享环境已有数据
@@ -14061,7 +14083,7 @@
   2. 校验关键字段：result、list、cursor。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 188. `im_flutter_sdk/native-auto-test/tests/group/test_group_public_groups_count.py::test_group_public_groups_cursor_paginates_two_created_groups`
+### 189. `im_flutter_sdk/native-auto-test/tests/group/test_group_public_groups_count.py::test_group_public_groups_cursor_paginates_two_created_groups`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_public_groups_count.py::test_group_public_groups_cursor_paginates_two_created_groups`
 - 业务说明：前置：A 已登录；测试依次创建两个名称唯一的 PublicOpenJoin（style=3）公开群
@@ -14089,7 +14111,7 @@
   2. 校验关键字段：result、list、cursor。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 189. `im_flutter_sdk/native-auto-test/tests/group/test_group_joined_groups.py::test_group_get_joined_groups_local_contains_created_group`
+### 190. `im_flutter_sdk/native-auto-test/tests/group/test_group_joined_groups.py::test_group_get_joined_groups_local_contains_created_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_joined_groups.py::test_group_get_joined_groups_local_contains_created_group`
 - 业务说明：前置：A 已登录且尚未创建本 case 的目标群
@@ -14113,7 +14135,7 @@
 - 关键断言：
   1. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 190. `im_flutter_sdk/native-auto-test/tests/group/test_group_joined_groups.py::test_group_get_joined_groups_contains_created_group`
+### 191. `im_flutter_sdk/native-auto-test/tests/group/test_group_joined_groups.py::test_group_get_joined_groups_contains_created_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_joined_groups.py::test_group_get_joined_groups_contains_created_group`
 - 业务说明：前置：A 已登录且尚未创建本 case 的目标群
@@ -14137,7 +14159,7 @@
 - 关键断言：
   1. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 191. `im_flutter_sdk/native-auto-test/tests/group/test_group_members.py::test_group_join_public_group_rejects_private_member_invite_group`
+### 192. `im_flutter_sdk/native-auto-test/tests/group/test_group_members.py::test_group_join_public_group_rejects_private_member_invite_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_members.py::test_group_join_public_group_rejects_private_member_invite_group`
 - 业务说明：前置：A/B 已登录，A 创建 PrivateMemberCanInvite（style=1）私有群，B 不是成员
@@ -14163,7 +14185,7 @@
   2. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 192. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_members_role_permission_matrix[member]`
+### 193. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_members_role_permission_matrix[member]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_members_role_permission_matrix[member]`
 - 业务说明：群主/管理员可禁言与解除禁言；普通成员被拒绝且状态不变
@@ -14197,7 +14219,7 @@
   2. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 193. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_members_role_permission_matrix[admin]`
+### 194. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_members_role_permission_matrix[admin]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_members_role_permission_matrix[admin]`
 - 业务说明：群主/管理员可禁言与解除禁言；普通成员被拒绝且状态不变
@@ -14231,7 +14253,7 @@
   2. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 194. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_members_role_permission_matrix[owner]`
+### 195. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_members_role_permission_matrix[owner]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_members_role_permission_matrix[owner]`
 - 业务说明：群主/管理员可禁言与解除禁言；普通成员被拒绝且状态不变
@@ -14265,7 +14287,7 @@
   2. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 195. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_all_role_permission_matrix[member]`
+### 196. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_all_role_permission_matrix[member]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_all_role_permission_matrix[member]`
 - 业务说明：群主/管理员可切换全员禁言；普通成员被拒绝且状态不变
@@ -14299,7 +14321,7 @@
   2. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 196. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_all_role_permission_matrix[admin]`
+### 197. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_all_role_permission_matrix[admin]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_all_role_permission_matrix[admin]`
 - 业务说明：群主/管理员可切换全员禁言；普通成员被拒绝且状态不变
@@ -14333,7 +14355,7 @@
   2. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 197. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_all_role_permission_matrix[owner]`
+### 198. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_all_role_permission_matrix[owner]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_mute_all_role_permission_matrix[owner]`
 - 业务说明：群主/管理员可切换全员禁言；普通成员被拒绝且状态不变
@@ -14367,7 +14389,7 @@
   2. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 198. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_allow_list_role_permission_matrix[member]`
+### 199. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_allow_list_role_permission_matrix[member]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_allow_list_role_permission_matrix[member]`
 - 业务说明：群主/管理员可增删白名单；普通成员被拒绝且白名单保持为空
@@ -14402,7 +14424,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 199. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_allow_list_role_permission_matrix[admin]`
+### 200. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_allow_list_role_permission_matrix[admin]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_allow_list_role_permission_matrix[admin]`
 - 业务说明：群主/管理员可增删白名单；普通成员被拒绝且白名单保持为空
@@ -14437,7 +14459,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 200. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_allow_list_role_permission_matrix[owner]`
+### 201. `im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_allow_list_role_permission_matrix[owner]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_role_permission_matrix.py::test_group_allow_list_role_permission_matrix[owner]`
 - 业务说明：群主/管理员可增删白名单；普通成员被拒绝且白名单保持为空
@@ -14472,7 +14494,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 201. `im_flutter_sdk/native-auto-test/tests/group/test_group_member_attributes_remove.py::test_group_remove_member_attributes_success`
+### 202. `im_flutter_sdk/native-auto-test/tests/group/test_group_member_attributes_remove.py::test_group_remove_member_attributes_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_member_attributes_remove.py::test_group_remove_member_attributes_success`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -14506,7 +14528,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 202. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes_remove.py::test_group_remove_member_attributes_empty_keys`
+### 203. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes_remove.py::test_group_remove_member_attributes_empty_keys`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes_remove.py::test_group_remove_member_attributes_empty_keys`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -14531,7 +14553,7 @@
   1. 校验异常返回：错误码 205，错误描述“Invalid parameter”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 203. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes_remove.py::test_group_remove_member_attributes_nonexistent_group`
+### 204. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes_remove.py::test_group_remove_member_attributes_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes_remove.py::test_group_remove_member_attributes_nonexistent_group`
 - 业务说明：A 删除成员属性
@@ -14551,7 +14573,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 204. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes_remove.py::test_group_remove_member_attributes_nonexistent_key`
+### 205. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes_remove.py::test_group_remove_member_attributes_nonexistent_key`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes_remove.py::test_group_remove_member_attributes_nonexistent_key`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -14576,7 +14598,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 205. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_members.py::test_group_remove_members_non_member`
+### 206. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_members.py::test_group_remove_members_non_member`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_members.py::test_group_remove_members_non_member`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -14601,7 +14623,7 @@
   1. 校验异常返回：错误码 603，错误描述“are not members of this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 206. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_roles.py::test_group_remove_admin_nonexistent_group`
+### 207. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_roles.py::test_group_remove_admin_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_roles.py::test_group_remove_admin_nonexistent_group`
 - 业务说明：A 移除群管理员
@@ -14622,7 +14644,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 207. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_members.py::test_group_add_members_empty_members`
+### 208. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_members.py::test_group_add_members_empty_members`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_members.py::test_group_add_members_empty_members`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -14647,7 +14669,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 208. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_members.py::test_group_add_members_nonexistent_group`
+### 209. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_members.py::test_group_add_members_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_members.py::test_group_add_members_nonexistent_group`
 - 业务说明：A 添加群成员
@@ -14667,7 +14689,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 209. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_members.py::test_group_add_members_nonexistent_user`
+### 210. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_members.py::test_group_add_members_nonexistent_user`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_members.py::test_group_add_members_nonexistent_user`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -14692,7 +14714,7 @@
   1. 校验异常返回：错误码 603，错误描述“doesn”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 210. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_roles.py::test_group_add_admin_non_member`
+### 211. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_roles.py::test_group_add_admin_non_member`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_roles.py::test_group_add_admin_non_member`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -14717,7 +14739,7 @@
   1. 校验异常返回：错误码 600，错误描述“doesn”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 211. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_roles.py::test_group_add_admin_nonexistent_group`
+### 212. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_roles.py::test_group_add_admin_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_roles.py::test_group_add_admin_nonexistent_group`
 - 业务说明：A 添加群管理员
@@ -14738,7 +14760,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 212. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[private-member-add-members]`
+### 213. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[private-member-add-members]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[private-member-add-members]`
 - 业务说明：通用 inviterUser API 应覆盖 style=1/2/3 的群主邀请链路
@@ -14768,7 +14790,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 213. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[private-member-inviter-user]`
+### 214. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[private-member-inviter-user]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[private-member-inviter-user]`
 - 业务说明：通用 inviterUser API 应覆盖 style=1/2/3 的群主邀请链路
@@ -14798,7 +14820,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 214. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[public-approval-add-members]`
+### 215. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[public-approval-add-members]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[public-approval-add-members]`
 - 业务说明：通用 inviterUser API 应覆盖 style=1/2/3 的群主邀请链路
@@ -14828,7 +14850,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 215. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[public-approval-inviter-user]`
+### 216. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[public-approval-inviter-user]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[public-approval-inviter-user]`
 - 业务说明：通用 inviterUser API 应覆盖 style=1/2/3 的群主邀请链路
@@ -14858,7 +14880,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 216. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[public-open-add-members]`
+### 217. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[public-open-add-members]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[public-open-add-members]`
 - 业务说明：通用 inviterUser API 应覆盖 style=1/2/3 的群主邀请链路
@@ -14888,7 +14910,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 217. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[public-open-inviter-user]`
+### 218. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[public-open-inviter-user]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_owner_can_invite_for_each_remaining_style[public-open-inviter-user]`
 - 业务说明：通用 inviterUser API 应覆盖 style=1/2/3 的群主邀请链路
@@ -14918,7 +14940,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 218. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_duplicate_join_application_keeps_single_pending_request`
+### 219. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_duplicate_join_application_keeps_single_pending_request`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_duplicate_join_application_keeps_single_pending_request`
 - 业务说明：同一用户重复申请时，两次通知可见，但只保留一个可处理的 pending
@@ -14945,7 +14967,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 校验关键字段：result。
 
-### 219. `im_flutter_sdk/native-auto-test/tests/group/test_group_members.py::test_group_members_batch_join_exit_new_events`
+### 220. `im_flutter_sdk/native-auto-test/tests/group/test_group_members.py::test_group_members_batch_join_exit_new_events`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_members.py::test_group_members_batch_join_exit_new_events`
 - 业务说明：校验新事件名： - onMembersJoinedFromGroup - onMembersExitedFromGroup
@@ -14977,7 +14999,7 @@
   2. 校验关键字段：result、list。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 220. `im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_cannot_be_processed_twice[accept-then-decline]`
+### 221. `im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_cannot_be_processed_twice[accept-then-decline]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_cannot_be_processed_twice[accept-then-decline]`
 - 业务说明：邀请首次处理后 pending 消失，重复或反向处理应失败且不改变首次结果
@@ -15010,7 +15032,7 @@
   3. 校验关键字段：result、list。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 221. `im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_cannot_be_processed_twice[accept-twice]`
+### 222. `im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_cannot_be_processed_twice[accept-twice]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_cannot_be_processed_twice[accept-twice]`
 - 业务说明：邀请首次处理后 pending 消失，重复或反向处理应失败且不改变首次结果
@@ -15043,7 +15065,7 @@
   3. 校验关键字段：result、list。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 222. `im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_cannot_be_processed_twice[decline-then-accept]`
+### 223. `im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_cannot_be_processed_twice[decline-then-accept]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_cannot_be_processed_twice[decline-then-accept]`
 - 业务说明：邀请首次处理后 pending 消失，重复或反向处理应失败且不改变首次结果
@@ -15076,7 +15098,7 @@
   3. 校验关键字段：result、list。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 223. `im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_cannot_be_processed_twice[decline-twice]`
+### 224. `im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_cannot_be_processed_twice[decline-twice]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_cannot_be_processed_twice[decline-twice]`
 - 业务说明：邀请首次处理后 pending 消失，重复或反向处理应失败且不改变首次结果
@@ -15109,7 +15131,7 @@
   3. 校验关键字段：result、list。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 224. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_cannot_be_processed_twice[accept-then-decline]`
+### 225. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_cannot_be_processed_twice[accept-then-decline]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_cannot_be_processed_twice[accept-then-decline]`
 - 业务说明：一个 pending 申请只能处理一次，重复或反向处理不得改变首次结果
@@ -15140,7 +15162,7 @@
   3. 校验关键字段：result、list。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 225. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_cannot_be_processed_twice[accept-twice]`
+### 226. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_cannot_be_processed_twice[accept-twice]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_cannot_be_processed_twice[accept-twice]`
 - 业务说明：一个 pending 申请只能处理一次，重复或反向处理不得改变首次结果
@@ -15171,7 +15193,7 @@
   3. 校验关键字段：result、list。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 226. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_cannot_be_processed_twice[decline-then-accept]`
+### 227. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_cannot_be_processed_twice[decline-then-accept]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_cannot_be_processed_twice[decline-then-accept]`
 - 业务说明：一个 pending 申请只能处理一次，重复或反向处理不得改变首次结果
@@ -15202,7 +15224,7 @@
   3. 校验关键字段：result、list。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 227. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_cannot_be_processed_twice[decline-twice]`
+### 228. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_cannot_be_processed_twice[decline-twice]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_cannot_be_processed_twice[decline-twice]`
 - 业务说明：一个 pending 申请只能处理一次，重复或反向处理不得改变首次结果
@@ -15233,7 +15255,7 @@
   3. 校验关键字段：result、list。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 228. `im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_valid_group_without_pending_is_rejected[accept]`
+### 229. `im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_valid_group_without_pending_is_rejected[accept]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_valid_group_without_pending_is_rejected[accept]`
 - 业务说明：有效群中没有待处理邀请时，接受和拒绝都返回稳定错误
@@ -15259,7 +15281,7 @@
   2. 校验关键字段：list。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 229. `im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_valid_group_without_pending_is_rejected[decline]`
+### 230. `im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_valid_group_without_pending_is_rejected[decline]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_invitation_state_matrix.py::test_group_invitation_valid_group_without_pending_is_rejected[decline]`
 - 业务说明：有效群中没有待处理邀请时，接受和拒绝都返回稳定错误
@@ -15285,7 +15307,7 @@
   2. 校验关键字段：list。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 230. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_valid_group_without_pending_is_rejected[accept]`
+### 231. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_valid_group_without_pending_is_rejected[accept]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_valid_group_without_pending_is_rejected[accept]`
 - 业务说明：有效审批群中不存在 pending 申请时，同意和拒绝都应返回稳定错误
@@ -15311,7 +15333,7 @@
   2. 校验关键字段：list。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 231. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_valid_group_without_pending_is_rejected[decline]`
+### 232. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_valid_group_without_pending_is_rejected[decline]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_application_state_matrix.py::test_group_join_application_valid_group_without_pending_is_rejected[decline]`
 - 业务说明：有效审批群中不存在 pending 申请时，同意和拒绝都应返回稳定错误
@@ -15337,7 +15359,7 @@
   2. 校验关键字段：list。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 232. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_rejects_invalid_group_target[empty]`
+### 233. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_rejects_invalid_group_target[empty]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_rejects_invalid_group_target[empty]`
 - 业务说明：A 向空或不存在 groupId 发送群文本时应失败，B 不得收到目标消息
@@ -15356,7 +15378,7 @@
   1. 校验异常返回：错误码 500。
   2. 校验关键字段：content。
 
-### 233. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_rejects_invalid_group_target[nonexistent]`
+### 234. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_rejects_invalid_group_target[nonexistent]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_rejects_invalid_group_target[nonexistent]`
 - 业务说明：A 向空或不存在 groupId 发送群文本时应失败，B 不得收到目标消息
@@ -15375,7 +15397,7 @@
   1. 校验异常返回：错误码 500。
   2. 校验关键字段：content。
 
-### 234. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_public_open_join_rejects_blocked_user`
+### 235. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_public_open_join_rejects_blocked_user`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_public_open_join_rejects_blocked_user`
 - 业务说明：B 被移入群黑名单并移出后，不得通过 PublicOpenJoin 重新加入
@@ -15410,7 +15432,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 235. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_public_open_join_rejects_duplicate_membership`
+### 236. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_public_open_join_rejects_duplicate_membership`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_public_open_join_rejects_duplicate_membership`
 - 业务说明：B 成功加入 PublicOpenJoin 后再次 join，不得重复增加成员或重复发送加入事件
@@ -15442,7 +15464,7 @@
   2. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 236. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_rejects_non_member_states[left]`
+### 237. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_rejects_non_member_states[left]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_rejects_non_member_states[left]`
 - 业务说明：B 从未入群、主动退出或被移除后发送群文本均应失败，群主 A 不得收到消息
@@ -15477,7 +15499,7 @@
   3. 校验关键字段：content、result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 237. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_rejects_non_member_states[never-member]`
+### 238. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_rejects_non_member_states[never-member]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_rejects_non_member_states[never-member]`
 - 业务说明：B 从未入群、主动退出或被移除后发送群文本均应失败，群主 A 不得收到消息
@@ -15512,7 +15534,7 @@
   3. 校验关键字段：content、result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 238. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_rejects_non_member_states[removed]`
+### 239. `im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_rejects_non_member_states[removed]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_message_send.py::test_group_message_send_rejects_non_member_states[removed]`
 - 业务说明：B 从未入群、主动退出或被移除后发送群文本均应失败，群主 A 不得收到消息
@@ -15547,7 +15569,7 @@
   3. 校验关键字段：content、result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 239. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_blocking.py::test_group_block_idempotent`
+### 240. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_blocking.py::test_group_block_idempotent`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_blocking.py::test_group_block_idempotent`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -15574,7 +15596,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 240. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_blocking.py::test_group_block_nonexistent_group`
+### 241. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_blocking.py::test_group_block_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_blocking.py::test_group_block_nonexistent_group`
 - 业务说明：A 屏蔽群消息
@@ -15594,7 +15616,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 241. `im_flutter_sdk/native-auto-test/tests/group/test_group_blocking.py::test_group_block_then_unblock_success`
+### 242. `im_flutter_sdk/native-auto-test/tests/group/test_group_blocking.py::test_group_block_then_unblock_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_blocking.py::test_group_block_then_unblock_success`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -15626,7 +15648,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 242. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_block_unblock_members_nonexistent_group[blockMembers]`
+### 243. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_block_unblock_members_nonexistent_group[blockMembers]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_block_unblock_members_nonexistent_group[blockMembers]`
 - 业务说明：A 执行群组业务操作
@@ -15646,7 +15668,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 243. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_block_unblock_members_nonexistent_group[unblockMembers]`
+### 244. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_block_unblock_members_nonexistent_group[unblockMembers]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_block_unblock_members_nonexistent_group[unblockMembers]`
 - 业务说明：A 执行群组业务操作
@@ -15666,7 +15688,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 244. `im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_clear_all_groups_from_local_success`
+### 245. `im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_clear_all_groups_from_local_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_clear_all_groups_from_local_success`
 - 业务说明：clearAllGroupsFromLocal：清理本地群缓存，实测成功返回 None
@@ -15687,7 +15709,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 245. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_create_group_invites_member_for_each_remaining_style[private-member]`
+### 246. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_create_group_invites_member_for_each_remaining_style[private-member]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_create_group_invites_member_for_each_remaining_style[private-member]`
 - 业务说明：createGroup.inviteMembers 应覆盖 style=1/2/3 的直接邀请入群链路
@@ -15712,7 +15734,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 246. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_create_group_invites_member_for_each_remaining_style[public-approval]`
+### 247. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_create_group_invites_member_for_each_remaining_style[public-approval]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_create_group_invites_member_for_each_remaining_style[public-approval]`
 - 业务说明：createGroup.inviteMembers 应覆盖 style=1/2/3 的直接邀请入群链路
@@ -15737,7 +15759,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 247. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_create_group_invites_member_for_each_remaining_style[public-open]`
+### 248. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_create_group_invites_member_for_each_remaining_style[public-open]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_create_group_invites_member_for_each_remaining_style[public-open]`
 - 业务说明：createGroup.inviteMembers 应覆盖 style=1/2/3 的直接邀请入群链路
@@ -15762,7 +15784,7 @@
   1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 248. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_destroy_group_empty_group_id`
+### 249. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_destroy_group_empty_group_id`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_destroy_group_empty_group_id`
 - 业务说明：A 销毁测试群
@@ -15779,10 +15801,10 @@
   2. 操作：验证销毁测试群返回的错误码与错误文案
      - 预期：返回当前代码断言的错误或空结果，业务状态不被错误修改，且不产生意外事件。
 - 关键断言：
-  1. 校验异常返回：错误码 600，错误描述“Group ID is invalid”。
+  1. 校验异常返回：错误码 600。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 249. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_destroy_group_nonexistent`
+### 250. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_destroy_group_nonexistent`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_lifecycle.py::test_group_destroy_group_nonexistent`
 - 业务说明：A 销毁测试群
@@ -15802,7 +15824,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 250. `im_flutter_sdk/native-auto-test/tests/group/test_group_chat_thread_remaining_api_coverage.py::test_chat_thread_fetch_detail_and_lists`
+### 251. `im_flutter_sdk/native-auto-test/tests/group/test_group_chat_thread_remaining_api_coverage.py::test_chat_thread_fetch_detail_and_lists`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_chat_thread_remaining_api_coverage.py::test_chat_thread_fetch_detail_and_lists`
 - 业务说明：fetchChatThreadDetail/getThread会话/joined/parent 列表：创建并加入子区后校验详情、线程会话和列表
@@ -15836,7 +15858,7 @@
   2. 校验关键字段：msgId、convId、result、cursor。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 251. `im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_fetch_members_info_empty_group_id`
+### 252. `im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_fetch_members_info_empty_group_id`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_fetch_members_info_empty_group_id`
 - 业务说明：fetchGroupMembersInfo：groupId 为空字符串时，冻结真实错误返回
@@ -15858,7 +15880,7 @@
   3. 校验关键字段：cursor。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 252. `im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_fetch_members_info_invalid_limit`
+### 253. `im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_fetch_members_info_invalid_limit`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_fetch_members_info_invalid_limit`
 - 业务说明：fetchGroupMembersInfo：limit=0 的分页边界，并比对成员资料与当前用户资料一致
@@ -15887,7 +15909,7 @@
   1. 校验关键字段：result、list、cursor。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 253. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_direct_invite_ignores_auto_accept_disabled_when_confirmation_not_required`
+### 254. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_direct_invite_ignores_auto_accept_disabled_when_confirmation_not_required`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_direct_invite_ignores_auto_accept_disabled_when_confirmation_not_required`
 - 业务说明：inviteNeedConfirm=false 时，即使 B 关闭自动接受，也应由服务端直接加入
@@ -15921,7 +15943,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 254. `im_flutter_sdk/native-auto-test/tests/group/test_group_inviter.py::test_group_inviter_user_success`
+### 255. `im_flutter_sdk/native-auto-test/tests/group/test_group_inviter.py::test_group_inviter_user_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_inviter.py::test_group_inviter_user_success`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -15953,7 +15975,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 255. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_inviter.py::test_group_inviter_user_empty_members`
+### 256. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_inviter.py::test_group_inviter_user_empty_members`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_inviter.py::test_group_inviter_user_empty_members`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -15978,7 +16000,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 256. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_inviter.py::test_group_inviter_user_nonexistent_group`
+### 257. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_inviter.py::test_group_inviter_user_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_inviter.py::test_group_inviter_user_nonexistent_group`
 - 业务说明：A 邀请成员
@@ -15999,7 +16021,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 257. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_inviter.py::test_group_inviter_user_nonexistent_user`
+### 258. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_inviter.py::test_group_inviter_user_nonexistent_user`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_inviter.py::test_group_inviter_user_nonexistent_user`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -16024,7 +16046,7 @@
   1. 校验异常返回：错误码 603，错误描述“doesn”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 258. `im_flutter_sdk/native-auto-test/tests/group/test_group_membership_checks.py::test_group_is_member_in_white_list_and_mute_list_success`
+### 259. `im_flutter_sdk/native-auto-test/tests/group/test_group_membership_checks.py::test_group_is_member_in_white_list_and_mute_list_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_membership_checks.py::test_group_is_member_in_white_list_and_mute_list_success`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -16053,7 +16075,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 259. `im_flutter_sdk/native-auto-test/tests/group/test_group_membership_checks.py::test_group_is_member_in_white_list_and_mute_list_nonexistent_group`
+### 260. `im_flutter_sdk/native-auto-test/tests/group/test_group_membership_checks.py::test_group_is_member_in_white_list_and_mute_list_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_membership_checks.py::test_group_is_member_in_white_list_and_mute_list_nonexistent_group`
 - 业务说明：A 执行群组业务操作
@@ -16073,7 +16095,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 260. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_join_public_group_rejects_every_non_open_style[private-member]`
+### 261. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_join_public_group_rejects_every_non_open_style[private-member]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_join_public_group_rejects_every_non_open_style[private-member]`
 - 业务说明：joinPublicGroup 拒绝私有群（style 0/1，603）；public-approval(style=2)/public-open(style=3) 5.0 允许加入（公开群）
@@ -16101,7 +16123,7 @@
   2. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 261. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_join_public_group_rejects_every_non_open_style[private-owner]`
+### 262. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_join_public_group_rejects_every_non_open_style[private-owner]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_join_public_group_rejects_every_non_open_style[private-owner]`
 - 业务说明：joinPublicGroup 拒绝私有群（style 0/1，603）；public-approval(style=2)/public-open(style=3) 5.0 允许加入（公开群）
@@ -16129,7 +16151,7 @@
   2. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 262. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_members.py::test_group_leave_group_non_member`
+### 263. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_members.py::test_group_leave_group_non_member`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_members.py::test_group_leave_group_non_member`
 - 业务说明：B 退出群
@@ -16149,7 +16171,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 263. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_public_open_join_rejects_when_group_is_full`
+### 264. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_public_open_join_rejects_when_group_is_full`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_public_open_join_rejects_when_group_is_full`
 - 业务说明：maxCount=2 的公开自由群已包含 A+B 时，C 不得加入
@@ -16177,7 +16199,7 @@
   2. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 264. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[addWhiteList-info4-600-do not find this group]`
+### 265. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[addWhiteList-info4-600-do not find this group]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[addWhiteList-info4-600-do not find this group]`
 - 业务说明：A 执行群组业务操作
@@ -16196,7 +16218,7 @@
 - 关键断言：
   1. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 265. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[muteAllMembers-info2-600-do not find this group]`
+### 266. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[muteAllMembers-info2-600-do not find this group]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[muteAllMembers-info2-600-do not find this group]`
 - 业务说明：A 执行群组业务操作
@@ -16215,7 +16237,7 @@
 - 关键断言：
   1. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 266. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[muteMembers-info0-600-do not find this group]`
+### 267. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[muteMembers-info0-600-do not find this group]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[muteMembers-info0-600-do not find this group]`
 - 业务说明：A 执行群组业务操作
@@ -16234,7 +16256,7 @@
 - 关键断言：
   1. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 267. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[removeWhiteList-info5-600-do not find this group]`
+### 268. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[removeWhiteList-info5-600-do not find this group]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[removeWhiteList-info5-600-do not find this group]`
 - 业务说明：A 执行群组业务操作
@@ -16253,7 +16275,7 @@
 - 关键断言：
   1. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 268. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[unMuteAllMembers-info3-600-do not find this group]`
+### 269. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[unMuteAllMembers-info3-600-do not find this group]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[unMuteAllMembers-info3-600-do not find this group]`
 - 业务说明：A 执行群组业务操作
@@ -16272,7 +16294,7 @@
 - 关键断言：
   1. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 269. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[unMuteMembers-info1-600-do not find this group]`
+### 270. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[unMuteMembers-info1-600-do not find this group]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[unMuteMembers-info1-600-do not find this group]`
 - 业务说明：A 执行群组业务操作
@@ -16291,7 +16313,7 @@
 - 关键断言：
   1. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 270. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[updateGroupExt-info6-600-do not find this group]`
+### 271. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[updateGroupExt-info6-600-do not find this group]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[updateGroupExt-info6-600-do not find this group]`
 - 业务说明：A 执行群组业务操作
@@ -16310,7 +16332,7 @@
 - 关键断言：
   1. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 271. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_request_to_join_public_group_nonexistent_group`
+### 272. `im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_request_to_join_public_group_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_join_requests_and_invitations.py::test_group_request_to_join_public_group_nonexistent_group`
 - 业务说明：B 申请加入公开群
@@ -16330,7 +16352,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 272. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes.py::test_group_set_member_attributes_empty_attributes`
+### 273. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes.py::test_group_set_member_attributes_empty_attributes`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes.py::test_group_set_member_attributes_empty_attributes`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -16355,7 +16377,7 @@
   1. 校验异常返回：错误码 205，错误描述“Invalid parameter”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 273. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes.py::test_group_set_member_attributes_nonexistent_group`
+### 274. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes.py::test_group_set_member_attributes_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_member_attributes.py::test_group_set_member_attributes_nonexistent_group`
 - 业务说明：A 执行群组业务操作
@@ -16375,7 +16397,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 274. `im_flutter_sdk/native-auto-test/tests/group/test_group_member_attributes.py::test_group_set_and_fetch_member_attributes_success`
+### 275. `im_flutter_sdk/native-auto-test/tests/group/test_group_member_attributes.py::test_group_set_and_fetch_member_attributes_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_member_attributes.py::test_group_set_and_fetch_member_attributes_success`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -16405,7 +16427,7 @@
   2. 校验关键字段：result。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 275. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[add-members-private-member-admin-allowed]`
+### 276. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[add-members-private-member-admin-allowed]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[add-members-private-member-admin-allowed]`
 - 业务说明：style=0 仅群主可邀请；style=1 的普通成员和管理员均可邀请
@@ -16440,7 +16462,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 276. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[add-members-private-member-normal-member-allowed]`
+### 277. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[add-members-private-member-normal-member-allowed]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[add-members-private-member-normal-member-allowed]`
 - 业务说明：style=0 仅群主可邀请；style=1 的普通成员和管理员均可邀请
@@ -16475,7 +16497,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 277. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[add-members-private-owner-admin-denied]`
+### 278. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[add-members-private-owner-admin-denied]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[add-members-private-owner-admin-denied]`
 - 业务说明：style=0 仅群主可邀请；style=1 的普通成员和管理员均可邀请
@@ -16510,7 +16532,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 278. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[add-members-private-owner-normal-member-denied]`
+### 279. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[add-members-private-owner-normal-member-denied]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[add-members-private-owner-normal-member-denied]`
 - 业务说明：style=0 仅群主可邀请；style=1 的普通成员和管理员均可邀请
@@ -16545,7 +16567,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 279. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[inviter-user-private-member-admin-allowed]`
+### 280. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[inviter-user-private-member-admin-allowed]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[inviter-user-private-member-admin-allowed]`
 - 业务说明：style=0 仅群主可邀请；style=1 的普通成员和管理员均可邀请
@@ -16580,7 +16602,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 280. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[inviter-user-private-member-normal-member-allowed]`
+### 281. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[inviter-user-private-member-normal-member-allowed]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[inviter-user-private-member-normal-member-allowed]`
 - 业务说明：style=0 仅群主可邀请；style=1 的普通成员和管理员均可邀请
@@ -16615,7 +16637,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 281. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[inviter-user-private-owner-admin-denied]`
+### 282. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[inviter-user-private-owner-admin-denied]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[inviter-user-private-owner-admin-denied]`
 - 业务说明：style=0 仅群主可邀请；style=1 的普通成员和管理员均可邀请
@@ -16650,7 +16672,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 282. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[inviter-user-private-owner-normal-member-denied]`
+### 283. `im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[inviter-user-private-owner-normal-member-denied]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[inviter-user-private-owner-normal-member-denied]`
 - 业务说明：style=0 仅群主可邀请；style=1 的普通成员和管理员均可邀请
@@ -16685,7 +16707,7 @@
   3. 校验关键字段：result。
   4. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 283. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_blocking.py::test_group_unblock_idempotent`
+### 284. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_blocking.py::test_group_unblock_idempotent`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_blocking.py::test_group_unblock_idempotent`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -16710,7 +16732,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 284. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_blocking.py::test_group_unblock_nonexistent_group`
+### 285. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_blocking.py::test_group_unblock_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_blocking.py::test_group_unblock_nonexistent_group`
 - 业务说明：A 取消屏蔽群消息
@@ -16730,7 +16752,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 285. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_announcement.py::test_group_update_announcement_empty`
+### 286. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_announcement.py::test_group_update_announcement_empty`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_announcement.py::test_group_update_announcement_empty`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -16759,7 +16781,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 286. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_announcement.py::test_group_update_announcement_nonexistent_group`
+### 287. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_announcement.py::test_group_update_announcement_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_announcement.py::test_group_update_announcement_nonexistent_group`
 - 业务说明：A 更新群公告
@@ -16779,7 +16801,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 287. `im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_abnormal_values[]`
+### 288. `im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_abnormal_values[]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_abnormal_values[]`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -16804,7 +16826,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 288. `im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_abnormal_values[https://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]`
+### 289. `im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_abnormal_values[https://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_abnormal_values[https://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -16829,7 +16851,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 289. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_description_empty`
+### 290. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_description_empty`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_description_empty`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -16854,7 +16876,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 290. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_description_nonexistent_group`
+### 291. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_description_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_description_nonexistent_group`
 - 业务说明：A 执行群组业务操作
@@ -16874,7 +16896,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 291. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_description_too_long`
+### 292. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_description_too_long`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_description_too_long`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -16899,7 +16921,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 292. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_update_group_ext_success`
+### 293. `im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_update_group_ext_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_moderation.py::test_group_update_group_ext_success`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -16924,7 +16946,7 @@
   1. 当前测试步骤的同步响应、异步事件和最终业务状态满足代码断言。
   2. 任一关键字段、回调、列表、数量或最终状态不符时，Case 判定失败。
 
-### 293. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_roles.py::test_group_update_owner_nonexistent_group`
+### 294. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_roles.py::test_group_update_owner_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_roles.py::test_group_update_owner_nonexistent_group`
 - 业务说明：A 转让群主
@@ -16945,7 +16967,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 294. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_subject_empty`
+### 295. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_subject_empty`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_subject_empty`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -16970,7 +16992,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 295. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_subject_nonexistent_group`
+### 296. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_subject_nonexistent_group`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_subject_nonexistent_group`
 - 业务说明：A 更新群名称
@@ -16990,7 +17012,7 @@
   1. 校验异常返回：错误码 600，错误描述“do not find this group”。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 296. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_subject_too_long`
+### 297. `im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_subject_too_long`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_exceptions_metadata.py::test_group_update_subject_too_long`
 - 业务说明：测试准备：创建测试群并建立业务前置
@@ -17015,7 +17037,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 297. `im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_success`
+### 298. `im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_success`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_success`
 - 业务说明：updateGroupAvatar：群主更新群头像 URL，返回群对象中 avatarUrl 为新值
@@ -17040,7 +17062,7 @@
   1. 校验关键字段：result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
-### 298. `im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_empty_group_id`
+### 299. `im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_empty_group_id`
 
 - 代码：`im_flutter_sdk/native-auto-test/tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_empty_group_id`
 - 业务说明：updateGroupAvatar：groupId 为空字符串时，冻结真实错误返回
@@ -17060,116 +17082,6 @@
   1. 校验异常返回：错误码 600，错误描述“Group ID is invalid”。
   2. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
   3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
-
-## phase1
-
-### 1. `im_flutter_sdk/native-auto-test/tests/phase1/test_device_topologies.py::test_same_account_second_device_sees_user_info_update`
-
-- 代码：`im_flutter_sdk/native-auto-test/tests/phase1/test_device_topologies.py::test_same_account_second_device_sees_user_info_update`
-- 业务说明：同账号多端：A 修改服务端属性，A 全部在线端最终读取到同一结果
-- 类型：多设备
-- 状态/版本说明：普通
-- 前置条件：
-  1. WebSocket 测试桥接和被测 Flutter App 已连接，pytest fixtures 可正常工作。
-  2. 用例所需的设备拓扑、账号和在线设备集合已准备。
-  3. 接口响应与事件断言工具已初始化。
-- 详细步骤与对应预期：
-  1. 操作：A 更新用户昵称并验证请求成功
-     - 预期：操作成功，返回结果和后续业务状态符合当前代码断言。
-  2. 操作：A 全部在线端查询用户资料并验证昵称同步
-     - 预期：在规定超时时间内收到对应结果或事件，并核对关键 ID、内容、状态和来源信息。
-- 关键断言：
-  1. 校验关键字段：result。
-  2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
-
-### 2. `im_flutter_sdk/native-auto-test/tests/phase1/test_device_topologies.py::test_third_party_message_reaches_both_same_account_devices`
-
-- 代码：`im_flutter_sdk/native-auto-test/tests/phase1/test_device_topologies.py::test_third_party_message_reaches_both_same_account_devices`
-- 业务说明：组合拓扑：B 发给 A，A 的全部在线端都收到同一条消息
-- 类型：多设备
-- 状态/版本说明：普通
-- 前置条件：
-  1. WebSocket 测试桥接和被测 Flutter App 已连接，pytest fixtures 可正常工作。
-  2. 用例所需的设备拓扑、账号和在线设备集合已准备。
-  3. 接口响应与事件断言工具已初始化。
-- 详细步骤与对应预期：
-  1. 操作：测试准备：清理相关设备的历史事件
-     - 预期：在规定超时时间内收到对应结果或事件，并核对关键 ID、内容、状态和来源信息。
-  2. 操作：B 向 A 发送文本消息并验证发送成功
-     - 预期：操作成功，返回结果和后续业务状态符合当前代码断言。
-  3. 操作：A 全部在线端分别接收消息并验证 消息 ID 一致
-     - 预期：返回结构、关键字段、列表内容或数量符合当前代码断言。
-  4. 操作：A 主端和副端分别接收消息并验证 消息 ID 一致
-     - 预期：返回结构、关键字段、列表内容或数量符合当前代码断言。
-- 关键断言：
-  1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
-  2. 校验关键字段：msgId、from、to、content。
-  3. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
-
-### 3. `im_flutter_sdk/native-auto-test/tests/phase1/test_offline_sync.py::test_offline_message_sync_keeps_case_event_cursor`
-
-- 代码：`im_flutter_sdk/native-auto-test/tests/phase1/test_offline_sync.py::test_offline_message_sync_keeps_case_event_cursor`
-- 业务说明：测试准备：清理收发设备历史事件
-- 类型：离线
-- 多设备校验：否。本 Case 只验证指定设备的离线同步或重新登录结果。
-- 状态/版本说明：普通
-- 前置条件：
-  1. WebSocket 测试桥接和被测 Flutter App 已连接，pytest fixtures 可正常工作。
-  2. 设备A、设备B已启动并登录，账号状态可用。
-  3. 用例涉及的用户关系、会话或群组基础数据已准备。
-  4. 接口响应与事件断言工具已初始化。
-  5. 本 Case 仅验证指定设备的离线/重登结果，不代表多设备校验。
-- 详细步骤与对应预期：
-  1. 操作：测试准备：清理收发设备历史事件
-     - 预期：在规定超时时间内收到对应结果或事件，并核对关键 ID、内容、状态和来源信息。
-  2. 操作：A 断开网络并验证进入离线状态
-     - 预期：返回结构、关键字段、列表内容或数量符合当前代码断言。
-  3. 操作：B 向离线的 A 发送文本消息并验证发送成功
-     - 预期：操作成功，返回结果和后续业务状态符合当前代码断言。
-  4. 操作：A 恢复网络并验证重新连接
-     - 预期：返回结构、关键字段、列表内容或数量符合当前代码断言。
-  5. 操作：A 恢复后接收离线消息并验证消息内容
-     - 预期：返回结构、关键字段、列表内容或数量符合当前代码断言。
-- 关键断言：
-  1. 校验相关事件在规定时间内到达或按用例要求不产生事件，并核对事件类型及关键数据。
-  2. 校验关键字段：from、to、content。
-
-### 4. `im_flutter_sdk/native-auto-test/tests/phase1/test_version_capability.py::test_fetch_group_members_info_version_capability`
-
-- 代码：`im_flutter_sdk/native-auto-test/tests/phase1/test_version_capability.py::test_fetch_group_members_info_version_capability`
-- 业务说明：同一 case：4.10 在调用前 Skip，4.14 调用真实新增 API 并成功
-- 类型：普通
-- 状态/版本说明：普通
-- 前置条件：
-  1. WebSocket 测试桥接和被测 Flutter App 已连接，pytest fixtures 可正常工作。
-  2. 设备A已启动并登录，账号状态可用。
-  3. 接口响应与事件断言工具已初始化。
-- 详细步骤与对应预期：
-  1. 操作：确认设备支持成员详情能力并创建测试群
-     - 预期：步骤结果符合当前代码断言，并保持业务状态正确。
-  2. 操作：查询群成员详情并验证分页结果结构
-     - 预期：返回结构、关键字段、列表内容或数量符合当前代码断言。
-  3. 操作：测试后置：销毁能力验证测试群
-     - 预期：返回结构、关键字段、列表内容或数量符合当前代码断言。
-- 关键断言：
-  1. 校验关键字段：result、list、cursor。
-  2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
-
-### 5. `im_flutter_sdk/native-auto-test/tests/phase1/test_upgrade_423_to_500.py::test_message_data_after_423_to_500_upgrade`
-
-- 代码：`im_flutter_sdk/native-auto-test/tests/phase1/test_upgrade_423_to_500.py::test_message_data_after_423_to_500_upgrade`
-- 业务说明：Android 4.23 → 5.0 覆盖安装（同 application_id）：验证升级后消息数据保留
-- 类型：普通
-- 状态/版本说明：普通
-- 前置条件：
-  1. WebSocket 测试桥接和被测 Flutter App 已连接，pytest fixtures 可正常工作。
-  2. 测试账号已创建并登录，当前 Case 所需的基础数据已准备。
-- 详细步骤与对应预期：
-  1. 操作：执行 4.23 到 5.0 覆盖升级并验证消息数据保留
-     - 预期：返回结构、关键字段、列表内容或数量符合当前代码断言。
-- 关键断言：
-  1. 校验关键字段：result、list、cursor。
-  2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。
 
 ## presence
 
@@ -17784,5 +17696,5 @@
   1. 操作：按昵称类型更新当前用户昵称并验证结果
      - 预期：操作成功，返回结果和后续业务状态符合当前代码断言。
 - 关键断言：
-  1. 校验关键字段：result。
+  1. 校验关键字段：from、result。
   2. 任一固定错误码、关键 ID、回调类型、列表内容、数量或最终状态不符时，Case 判定失败。

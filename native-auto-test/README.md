@@ -2,7 +2,7 @@
 
 Python pytest 用例通过 managed WebSocket 驱动 Android、iOS 测试 App 或浏览器 Runner，验证统一协议下的 API 响应和事件回调。
 
-当前基线：Android 5.0、iOS 5.0、Web 5.0。
+当前只维护 SDK 5.0：Android 5.0、iOS 5.0、Web 5.0。其他版本不在本分支构建或运行。
 
 ## 快速开始
 
@@ -100,65 +100,17 @@ Web：
 
 | 平台 | 测试入口 | 适配位置 |
 |---|---|---|
-| Android | Flutter 测试 App | `im_flutter_sdk_android/android/src/base500`；后续版本放 `sdk510`、`sdk520` 等差异目录 |
-| iOS | Flutter 测试 App | `im_flutter_sdk_ios/ios/Classes/base500`；后续版本放对应版本差异目录 |
-| Web | 浏览器 Runner | `im_flutter_sdk_web/src/index.js`；5.0 原生 IIFE 放 `im_flutter_sdk_web/vendor/base500/` |
+| Android | Flutter 测试 App | `im_flutter_sdk_android/android/src/main`，当前 checkout 只包含 Android 5.0 |
+| iOS | Flutter 测试 App | `im_flutter_sdk_ios/ios/Classes`，当前 checkout 只包含 iOS 5.0 |
+| Web | 浏览器 Runner | `im_flutter_sdk_web/src/index.js`；5.0 原生 IIFE 放 `im_flutter_sdk_web/vendor/` |
 
 测试桥接在 `im_flutter_test/`，pytest 工具和用例在 `native-auto-test/`。发布层 SDK 不因普通测试用例增加而修改；只有 SDK 本身新增公开能力时才改发布层。
 
-## 新增下一个 SDK 版本
+## 后续版本
 
-以 5.1.0 为例，顺序如下：
+当前分支不支持多版本混编或混跑。将来升级 SDK 时，从 5.0 的 Git tag 创建新分支，在同样的单版本目录中替换原生依赖和 Wrapper，再同步更新 Scenario、Artifact Manifest、API Matrix 和事件清单。
 
-1. 准备 Android JAR/SO、iOS XCFramework 或 Web IIFE，并确认真实原生 API、参数和事件。
-2. 新增版本差异目录：
-
-   ```text
-   android/src/sdk510/
-   ios/Classes/sdk510/
-   web/vendor/sdk510/
-   ```
-
-   Android/iOS 只放相对 5.0 的差异，不复制整套基线文件。
-3. 在 `im_flutter_test` 增加对应 flavor，并新增 Scenario，例如：
-
-   ```text
-   config/scenarios/android_510_multi_device_default.yaml
-   config/scenarios/ios_510_multi_device_default.yaml
-   config/scenarios/web_510_multi_device_default.yaml
-   ```
-
-4. 更新 `config/artifacts.yaml` 和 `config/artifact_manifests/`，记录版本、产物路径、SHA256、Wrapper 版本和 capabilities。
-5. 更新对应 API Matrix：
-
-   ```yaml
-   base:
-     version: 5.0.0
-     apis: [...]
-
-   versions:
-     5.1.0:
-       added:
-         - ChatManager.newApi
-       removed:
-         - ChatManager.oldApi
-   ```
-
-   API 改名按“旧 API `removed` + 新 API `added`”记录。不要在版本节点下写完整 `apis` 快照，也不要用版本级 `changed`。
-6. 公共语义继续使用 Android 对齐的协议名；只有平台独有能力才放到：
-
-   ```yaml
-   android_only_native: []
-   ios_only_native: []
-   web_only_native: []
-   ```
-
-   独有能力必须有真实 Wrapper 和真实原生实现，不能为了让 case 通过而构造假结果。
-7. 按实际变更更新对应文件，不需要每次全部修改：
-
-   - API 能力变化：更新对应平台的 `config/api_matrix/*.yaml`；
-   - 回调新增、删除或字段变化：更新对应的 `*-events.yaml` 和 Wrapper；当前基线清单为 `android-events.yaml`、`ios-events.yaml`、`web-events.yaml`；
-   - 公共协议名或跨端原生映射变化：更新对应 Wrapper 和 API Matrix；映射 YAML 只用于升级核对，不是运行测试的必需文件。
+目录约定保持不变：Android 使用 `android/src/main`，iOS 使用 `ios/Classes`，Web 使用 `vendor/im-sdk-web.iife.js`。不要重新引入 `base500`、`sdkXXX` 或 Wrapper 合并目录。
 
 ## 普通、拓扑和离线用例
 
@@ -173,7 +125,7 @@ Web：
   skills/im-sdk-test-case-design/SKILL.md
   ```
 
-## Allure 和结果
+## Allure
 
 ```bash
 .venv/bin/python -m pytest -q \
@@ -182,7 +134,7 @@ Web：
 allure serve out/allure-results
 ```
 
-用例应在 Allure 中记录前置、关键动作、设备/平台/SDK 参数和最终断言；详细测试设计放在 `docs/`，不要把长篇 case 说明塞进 README。
+详细测试设计和 SDK 差异记录放在 `docs/`，README 只保留运行方式。
 
 ## 提交前检查
 

@@ -13,7 +13,7 @@
 | `test_group_create_group_max_count_less_than_invite_members` | `604 / The group member capacity is reached` | 创建成功，`maxUserCount=3`，`memberCount=3` | iOS 原生参数归一化差异；应修 SDK/确认协议 |
 | `test_group_create_group_desc_reason_options_abnormal_inputs[options_max_count_zero-*]` | `110 / maxUsers should be greater than 0` | 创建成功，`maxUserCount=3` | iOS 原生未按 Android 校验非正 maxCount |
 | `test_group_create_group_desc_reason_options_abnormal_inputs[options_max_count_negative-*]` | `110 / maxUsers should be greater than 0` | 创建成功，`maxUserCount=3` | 同上 |
-| `test_group_public_open_join_rejects_when_group_is_full` | `maxCount=2` 时 A+B 已满，C 加入返回 `604` | iOS 将容量归一化为 `3`，C 可以加入 | 同一组容量归一化差异；不新增 D 用户绕过，不修改 case 预期 |
+| `test_group_public_open_join_rejects_when_group_is_full` | 创建快照应为 `maxUserCount=2`，随后满员加入应返回 `604` | 当前在创建快照阶段即返回 `maxUserCount=3`，case 尚未执行 C 加入断言 | iOS 原生容量归一化差异；不新增 D 用户绕过，不修改 case 预期 |
 | `test_group_get_group_from_server_nonexistent` | `600 / do not find this group` | `result=null` | iOS 原生未返回错误对象 |
 | `test_group_get_group_from_server_after_destroy` | `600 / do not find this group` | `result=null` | iOS 原生未返回错误对象 |
 | `test_group_download_shared_file_nonexistent_group_current_behavior` | `600 / do not find this group` | `result=null` | iOS 原生未返回错误对象 |
@@ -26,7 +26,8 @@
 
 | 类型 | iOS 5.0 实测 | 处理 |
 |---|---|---|
-| 成员属性空参数 | `110` | Android 为 `205`；原生参数校验差异，不能随意改 case |
+| `test_group_set_member_attributes_empty_attributes` | `110` | Android 为 `205`；原生参数校验差异，不能随意改 case |
+| `test_group_remove_member_attributes_empty_keys` | `110` | Android 为 `205`；原生参数校验差异，不能随意改 case |
 | `style=3` / 公开免审核群入群 | 请求成功并自动入群 | 与 4.x 的 `603` 预期不同；这是 5.0 三布尔语义变化，不是普通错误码差异 |
 | 群详情成员列表 | `memberList` 与 `adminList` 的组合可能受原生缓存/操作阶段影响 | 完整成员校验使用 `getGroupMemberListFromServer`，管理员单独校验 |
 

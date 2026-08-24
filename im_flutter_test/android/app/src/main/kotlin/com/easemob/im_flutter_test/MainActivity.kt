@@ -10,7 +10,7 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        // 4.23 / 5.0 统一使用生产 Wrapper（im_flutter_sdk_android）；410/414 旧路径已移除
+        // 当前 checkout 统一使用 Android 5.0 Wrapper（im_flutter_sdk_android）。
         val plugin = Class
             .forName("com.easemob.im_flutter_sdk.ImFlutterSdkPlugin")
             .getDeclaredConstructor()

@@ -5,9 +5,8 @@ import { build } from "esbuild";
 const versionFlag = process.argv.indexOf("--sdk-version");
 const sdkVersion = versionFlag >= 0 ? process.argv[versionFlag + 1] : "5.0.0";
 if (!sdkVersion) throw new Error("--sdk-version requires a value");
-const [major = "0", minor = "0"] = sdkVersion.split(".");
-const flavor = `sdk${major}${String(Number.parseInt(minor, 10) || 0).padStart(2, "0")}`;
-const outDir = resolve("dist", flavor);
+if (sdkVersion !== "5.0.0") throw new Error(`only Web 5.0.0 is supported, got ${sdkVersion}`);
+const outDir = resolve("dist");
 await mkdir(outDir, { recursive: true });
 await build({
   entryPoints: ["src/main.js"],
@@ -22,11 +21,9 @@ await build({
 });
 await copyFile("index.html", resolve(outDir, "index.html"));
 
-if (Number.parseInt(major, 10) >= 5) {
-  await copyFile(
-    resolve("../../im_flutter_sdk_web/vendor/base500/im-sdk-web.iife.js"),
-    resolve(outDir, "im-sdk-web.iife.js"),
-  );
-}
+await copyFile(
+  resolve("../../im_flutter_sdk_web/vendor/im-sdk-web.iife.js"),
+  resolve(outDir, "im-sdk-web.iife.js"),
+);
 
 console.log(`[web-build] sdkVersion=${sdkVersion} output=${outDir}`);

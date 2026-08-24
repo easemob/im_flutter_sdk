@@ -4,7 +4,5 @@
   "private": true,
   "type": "module",
   "exports": "./src/index.js",
-  "dependencies": {
-    "easemob-websdk": "4.23.0"
-  }
+  "dependencies": {}
 }

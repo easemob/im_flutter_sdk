@@ -166,11 +166,9 @@ public final class TestControlBridge implements MethodChannel.MethodCallHandler 
     }
 
     private Map<String, Object> runnerInfo() {
-        // capabilities 由 Artifact Manifest 和 API Matrix 管理，
-        // 测试 Runner 不硬编码；sdk423 使用生产 ImFlutterSdkPlugin
-        // 支持全部 API。
+        // capabilities 由 Artifact Manifest 和 API Matrix 管理，测试 Runner 不硬编码。
         Map<String, Object> info = new HashMap<>();
-        info.put("runnerId", intentString("runnerId", BuildConfig.FLAVOR));
+        info.put("runnerId", intentString("runnerId", "main"));
         info.put("deviceName", intentString("runnerDevice", "deviceA"));
         info.put("runId", intentString("runnerRunId", ""));
         info.put("logicalDevice", intentString("runnerLogicalDevice", ""));

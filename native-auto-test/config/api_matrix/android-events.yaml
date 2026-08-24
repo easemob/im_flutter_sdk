@@ -1,5 +1,5 @@
 # 统一协议 Event 清单（Android 5.0 wrapper 实际转发）
-# 来源：im_flutter_sdk_android base500 wrapper invokeMethod 全量提取
+# 来源：im_flutter_sdk_android 5.0 main wrapper invokeMethod 全量提取
 # 用途：测试开发查事件名、矩阵对齐、能力透明；不参与 capability 检查（receive_message 不校验）
 sdk_version: 5.0.0
 
