@@ -1,7 +1,7 @@
 pytest>=7.0
 pytest-asyncio>=0.21
 pytest-html>=3.2
-websockets>=11.0
+websockets>=11.0,<17.0
 pyyaml>=6.0
 # 需 >=2.14 才能与 pytest 8.x 兼容（否则报 'str' has no attribute 'iter_parents'）
 allure-pytest>=2.14

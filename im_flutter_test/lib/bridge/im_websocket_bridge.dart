@@ -14,7 +14,7 @@ import 'package:im_flutter_sdk/src/tools/em_log.dart';
 
 /// Default WebSocket server base URL (without query). Used with [topic] to build full URL.
 const String kDefaultBridgeWebSocketBaseUrl =
-    'ws://140.143.132.6:4000/iov/websocket/dual';
+    'ws://127.0.0.1:4000/iov/websocket/dual';
 
 /// Default topic when using [kDefaultBridgeWebSocketBaseUrl].
 const String kDefaultBridgeWebSocketTopic = 'adc';

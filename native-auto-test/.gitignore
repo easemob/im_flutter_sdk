@@ -16,3 +16,6 @@ out/
 
 # Local config with secrets
 config.yaml
+
+# Local WebSocket relay runtime state
+.local/

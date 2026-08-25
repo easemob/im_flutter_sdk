@@ -4,13 +4,24 @@
 
 PY ?= python3
 SKILL_CREATOR ?= $(HOME)/.codex/skills/.system/skill-creator
+ADB ?= adb
+WS_HOST ?= 127.0.0.1
+WS_PORT ?= 4000
+WS_PATH ?= /iov/websocket/dual
+WS_STATE_DIR ?= $(CURDIR)/.local
 
-.PHONY: help ws-call ws-wait create-users delete-user \
+.PHONY: help ws-bridge-up ws-bridge-down test-local ws-bridge-local ws-bridge-reverse \
+        ws-call ws-wait create-users delete-user \
         contact-establish contact-delete contact-block contact-unblock \
         skills-validate test test-allure test-html test-chat-strict test-chat-discover clean
 
 help:
 	@echo "Available targets:"
+	@echo "  ws-bridge-up       Start relay, configure emulator reverse, write local env"
+	@echo "  ws-bridge-down     Remove reverse and stop the managed local relay"
+	@echo "  test-local         Run pytest with generated local WS env [ARGS]"
+	@echo "  ws-bridge-local    Start local topic relay [WS_HOST, WS_PORT, WS_PATH]"
+	@echo "  ws-bridge-reverse  Reverse WS_PORT for online Android emulators [ADB]"
 	@echo "  ws-call            MANAGER, CMD [, INFO, DEVICE, TOPIC, EVENT, EVENT_TIMEOUT]"
 	@echo "  ws-wait            [DEVICE, TOPIC] (one of CMD or EVENT)"
 	@echo "  create-users       USERS='u1 u2' or FROM_FILE=users.json [PASSWORD=1]"
@@ -23,6 +34,34 @@ help:
 	@echo "  test               Run pytest (pass ARGS=... to forward extra args)"
 	@echo "  test-allure        Run pytest with --alluredir=out/allure-results"
 	@echo "  test-html          Run pytest with HTML report to out/report.html"
+
+# --- Local WebSocket relay ---
+ws-bridge-up:
+	PY="$(PY)" ADB="$(ADB)" WS_HOST="$(WS_HOST)" WS_PORT="$(WS_PORT)" \
+	  WS_PATH="$(WS_PATH)" WS_STATE_DIR="$(WS_STATE_DIR)" \
+	  bash scripts/ws_bridge_local.sh up
+
+ws-bridge-down:
+	PY="$(PY)" ADB="$(ADB)" WS_HOST="$(WS_HOST)" WS_PORT="$(WS_PORT)" \
+	  WS_PATH="$(WS_PATH)" WS_STATE_DIR="$(WS_STATE_DIR)" \
+	  bash scripts/ws_bridge_local.sh down
+
+test-local:
+	@test -f "$(WS_STATE_DIR)/ws-bridge.env" || { \
+	  echo "本地 WebSocket 环境不存在，请先执行 make ws-bridge-up"; exit 2; \
+	}
+	@PY="$(PY)" WS_HOST="$(WS_HOST)" WS_PORT="$(WS_PORT)" \
+	  WS_PATH="$(WS_PATH)" WS_STATE_DIR="$(WS_STATE_DIR)" \
+	  bash scripts/ws_bridge_local.sh check
+	@set -a; . "$(WS_STATE_DIR)/ws-bridge.env"; set +a; \
+	  $(PY) -m pytest $(ARGS)
+
+ws-bridge-local:
+	$(PY) -m src.tools.ws_relay_server \
+	  --host "$(WS_HOST)" --port "$(WS_PORT)" --path "$(WS_PATH)"
+
+ws-bridge-reverse:
+	ADB="$(ADB)" WS_PORT="$(WS_PORT)" bash scripts/adb_reverse_ws_bridge.sh
 
 # --- WebSocket calls ---
 ws-call:
