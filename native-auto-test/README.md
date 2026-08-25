@@ -4,6 +4,8 @@ Python pytest 用例通过 managed WebSocket 驱动 Android、iOS 测试 App 或
 
 当前只维护 SDK 5.0：Android 5.0、iOS 5.0、Web 5.0。其他版本不在本分支构建或运行。
 
+给团队成员看的项目流程和 Case 设计说明见：[docs/project-overview.md](docs/project-overview.md)。
+
 ## 快速开始
 
 ```bash

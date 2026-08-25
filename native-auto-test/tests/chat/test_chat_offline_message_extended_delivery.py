@@ -259,8 +259,8 @@ def _assert_download_response(
                 "body": body,
             },
         },
-        # 下载响应严格校验消息身份和终态 status；媒体状态由本地 endpoint 决定。
-        ignore_keys=_MEDIA_DYNAMIC_KEYS | {"sequence", "hasDeliverAck"},
+        # 下载响应严格校验消息身份和终态 status；媒体状态、读取状态由本地 endpoint 决定。
+        ignore_keys=_MEDIA_DYNAMIC_KEYS | {"sequence", "hasDeliverAck", "hasRead"},
     )
 
 
@@ -296,8 +296,8 @@ def _assert_download_success_event(
                 },
             },
         },
-        # success 事件仍严格校验消息身份、正文和完成事件；仅忽略 endpoint 动态媒体字段。
-        ignore_keys=_MEDIA_DYNAMIC_KEYS | {"hasDeliverAck"},
+        # success 事件仍严格校验消息身份、正文和完成事件；忽略 endpoint 动态媒体/读取状态字段。
+        ignore_keys=_MEDIA_DYNAMIC_KEYS | {"hasDeliverAck", "hasRead"},
     )
 
 

@@ -4,7 +4,7 @@
 
 原则：Wrapper 透传原生结果；测试 case 保持业务断言，不为了 pass 把 iOS 返回值改成 Android 返回值。下表中的“Bug/差异”在原生修复或确认前保留失败，不改成平台分支绕过。
 
-## Group
+## Group模块
 
 ### 错误结果/空结果差异
 
@@ -31,17 +31,51 @@
 | `style=3` / 公开免审核群入群 | 请求成功并自动入群 | 与 4.x 的 `603` 预期不同；这是 5.0 三布尔语义变化，不是普通错误码差异 |
 | 群详情成员列表 | `memberList` 与 `adminList` 的组合可能受原生缓存/操作阶段影响 | 完整成员校验使用 `getGroupMemberListFromServer`，管理员单独校验 |
 
-## Chat
+## Chat模块
 
 ### 动态字段
 
-`status`、`fileStatus`、`thumbnailStatus`、`fileSize` 受发送/同步/下载阶段影响，Android 与 iOS 可能不同。局部媒体字段不固定断言，但继续严格校验 msgId、消息类型、正文、错误码和关键事件；不在 Wrapper 中构造状态值。
+当前测试不会把所有状态字段统一放进 `ignore_keys`，而是按字段语义和消息阶段处理。
+
+| 字段 | 所在位置 | 当前断言方式 | 原因 |
+|---|---|---|---|
+| `status` | 消息外层 | 默认严格断言；成功终态通常校验 `2`，错误事件按业务校验终态。只有发送响应等明确存在竞态的局部 helper 才忽略 | 它代表消息发送/处理状态，属于核心业务结果，不能全局忽略 |
+| `fileStatus` | 媒体消息 `body` | 初始构造或明确下载阶段可校验固定值；跨端接收、离线回放、下载完成回调等 endpoint 状态不稳定时，由 `_MEDIA_DYNAMIC_KEYS` 局部忽略 | 状态由本地媒体缓存和下载时序决定 |
+| `thumbnailStatus` | 图片/视频消息 `body` | 与 `fileStatus` 相同，在媒体动态断言集合中局部忽略 | 不同设备的缩略图下载进度可能不同 |
+| `fileSize` | 媒体消息 `body` | 不作为跨端下载阶段的固定断言字段 | 发送、同步和下载阶段可能尚未填充或取值不同 |
+
+当前代码中的具体规则：
+
+- `_MESSAGE_DYNAMIC_KEYS` 不包含 `status`，所以普通文本、历史消息和稳定终态默认仍会检查 `status`；
+- `_MEDIA_DYNAMIC_KEYS` 包含 `fileStatus`、`thumbnailStatus` 及媒体路径/大小等字段，媒体接收和下载 helper 只在这些动态位置忽略；
+- 下载响应和 `onMessageSuccess` 下载事件额外局部忽略 `hasRead`，因为本地读取状态可能在下载时已发生变化；
+- 初始发送或明确的媒体 body 仍可断言 `fileStatus=0`，不能因为动态场景而全部忽略；
+- 不能简单写成 `fileStatus in {0,1,2,3}`，否则只验证“返回了某个枚举值”，无法验证真实业务状态。
+
+已观察到的 iOS 5.0 差异包括：下载响应中 `fileStatus` 出现过预期 `0`、实际 `1`，合并消息送达回执中出现过预期 `1`、实际 `3`。因此这些位置按 endpoint/阶段局部处理，不修改 Wrapper 伪造状态值；消息 ID、类型、正文、错误码和关键事件仍严格校验。
 
 ### 原生能力/错误差异
 
 消息编辑、历史消息、会话查库、Reaction 边界等失败，先按 iOS 原生结果记录，不把 Android 错误码或成功结果写入 iOS 预期。`modifyMessage` 返回 `305 / Sorry, edit is not available` 时，优先确认 AppKey/服务端能力。
 
-## ChatRoom
+### 当前 Chat 失败记录
+
+以下差异均基于 iOS 5.0 实测记录，不能统一归类为 iOS Wrapper Bug。Wrapper 当前原则是透传原生结果；只有确认协议字段或序列化错误时才修改 Wrapper。
+
+| Case | iOS 5.0 实测/现象 | 处理结论 |
+|---|---|---|
+| `test_chat_modify_message_empty_id` | `code=500 / Message is invalid`（Android 为 `code=1 / messageId is empty`） | iOS 原生错误码和文案均不同；先确认统一协议，再决定 Case 只断言 code、做平台差异断言或由 Wrapper 归一化 |
+| `test_chat_add_reaction_too_long_reaction` | `addReaction` 响应通过，但未收到 `onReactionChange` | 先确认超长 reaction 是否应被服务端接受；合法则排查事件投递，非法则改为断言错误响应，不能只删除事件断言 |
+| `test_chat_add_reaction_special_char_reaction` | 换行/Tab reaction 响应通过，但未收到 `onReactionChange` | 与超长 reaction 同处理，先确认边界语义，不直接判定为多端投递问题 |
+| `test_chat_delete_remote_conversation_empty_conv_id` | 预期 `303`，iOS 原生透传 `107` | 原生错误码差异，不是 Wrapper 构造；先确认统一协议，再决定只断言 code 或修 Wrapper 归一化 |
+| `test_chat_fetch_history_messages_empty_conv_id` | `110 / Invalid parameter` | 原生回调非空 `EMCursorResult`，Wrapper 序列化为 `result={"cursor":"","list":[]}`，没有 `code`/`description` | 不是 Wrapper 构造错误码，而是 iOS 原生直接返回空分页结果；与 Android 错误语义不同 |
+| `test_chat_fetch_history_messages_by_options_empty_conv_id` | `110 / Invalid parameter` | 原生回调非空 `EMCursorResult`，Wrapper 序列化为 `result={"cursor":"","list":[]}`，没有 `code`/`description` | 同上；不能把 iOS 的空结果当成 Android 的 `110` |
+| `test_conversation_type_keyword_and_options_search_current_behavior` | 全量运行曾出现空结果预期实际返回 1 条记录；本次 iOS 5.0 单跑通过 | 更像全量运行时的本地数据库/会话残留或时序污染；保留空列表断言，先隔离会话或清理后复测，不直接放宽断言 |
+| `test_conversation_invalid_message_id_boundaries` | iOS 原生返回 `code=3 / Database operation failed`；Android 原生 `conversation.getMessage(msgId)` 返回 `null`，Wrapper 再通过 `onSuccess(..., null)` 输出 `result=null` | 已确认的平台原生查询语义和 Wrapper 返回形态均不同；如需跨端统一，在 Wrapper 归一化，否则保留平台差异记录 |
+
+
+
+## ChatRoom模块
 
 | 类型 | iOS 5.0 实测 |
 |---|---|
@@ -49,7 +83,7 @@
 | 空属性 map | `303 / Unknown server error`，不是 Android 的 `110` |
 | 成员/退出事件 | 目标成员事件可能不稳定；保留目标成员和目标 ext 的严格匹配 |
 
-## Push
+## Push模块
 
 `updateFCMPushToken` 不是 Android-only：
 
@@ -58,7 +92,7 @@
 
 这是两端原生配置/错误码差异，不能在 iOS Wrapper 中改成 `110`。`updateAPNsPushToken` 的 Android MissingPlugin 用例仍是平台独有能力。
 
-## UserInfo
+## UserInfo模块
 
 `fetchUserInfoById` 传空 `userIds`：Android 原生返回 `205 / userIds is empty`；iOS 5.0 实测成功返回空结果。该差异需要确认 iOS 原生校验策略，不能把空结果当作有效用户信息查询成功。
 
