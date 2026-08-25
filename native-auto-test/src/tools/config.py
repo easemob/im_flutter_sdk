@@ -1,4 +1,5 @@
 """加载 config.yaml 中的 WebSocket 配置。"""
+import os
 from pathlib import Path
 from typing import Any
 
@@ -25,7 +26,7 @@ def load_config() -> dict[str, Any]:
         else:
             _CONFIG = {
                 "websocket": {
-                    "base_url": "ws://140.143.132.6:4000/iov/websocket/dual",
+                    "base_url": "ws://127.0.0.1:4000/iov/websocket/dual",
                     "default_topic": "adc",
                     "connect_timeout": 10,
                     "response_timeout": 30,
@@ -35,6 +36,9 @@ def load_config() -> dict[str, Any]:
 
 
 def get_ws_base_url() -> str:
+    env_url = os.getenv("WS_BASE_URL", "").strip()
+    if env_url:
+        return env_url
     return load_config()["websocket"]["base_url"]
 
 

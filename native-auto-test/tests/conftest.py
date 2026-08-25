@@ -482,13 +482,29 @@ def user_c(created_test_users):
     """设备 A 对应用户名（session 内创建，teardown 删除）。"""
     return created_test_users[2]
 
+def _is_tools_only_session(request: pytest.FixtureRequest) -> bool:
+    """Return whether every collected item belongs to device-free tooling tests."""
+    tools_dir = Path(__file__).resolve().parent / "tools"
+    items = request.session.items
+    return bool(items) and all(
+        Path(item.path).resolve().is_relative_to(tools_dir) for item in items
+    )
+
+
 @pytest.fixture(scope="session", autouse=True)
-def global_login_logout(device_a, device_b, created_test_users):
+def global_login_logout(request: pytest.FixtureRequest):
     """
     全 session 只执行一次（autouse=True）：
     - setup：用 created_test_users 的两人在 device_a/device_b 上登录并清空回调。
     - teardown：登出两设备。用户删除由 created_test_users 的 teardown 负责。
     """
+    if _is_tools_only_session(request):
+        yield
+        return
+
+    device_a = request.getfixturevalue("device_a")
+    device_b = request.getfixturevalue("device_b")
+    created_test_users = request.getfixturevalue("created_test_users")
     user_a, user_b, user_c = created_test_users
     _session_login(device_a, device_b, user_a, user_b, SESSION_PWD)
     yield

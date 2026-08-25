@@ -20,12 +20,169 @@
 - Python 3.9+
 - 安装依赖：`pip install -r requirements.txt`
 
+`requirements.txt` 将 `websockets` 限制为 `>=11.0,<17.0`。当前 relay 和现有
+`ws_client.py` 都依赖 legacy API；在两者一起迁移到新 asyncio API 前，不要移除该
+上限，否则重建虚拟环境可能安装已删除 legacy API 的版本。
+
 ## 配置
 
 `cp config.yaml.template config.yaml`
 - `websocket.base_url`：WS 服务地址（与 Flutter 端一致）。
 - `websocket.default_topic`：默认 topic（与 Flutter 端 `IMWebSocketBridge.instance.start(topic: '...')` 一致）。
 - 多端测试时可在 `topics` 下为不同 device 配置不同 topic。
+
+## 本地 WebSocket 桥接
+
+仓库内置按 topic 转发的本地 WebSocket relay，可让 pytest 与本机 Android
+模拟器中的 `im_flutter_test` 通讯，不依赖公共桥接服务器。它只替代测试控制桥，
+不替代 MSync、Gateway 或 SDK 的 `syncDataWebSocketServer`，也不提供 TLS、鉴权、
+消息持久化或离线队列。
+
+### 1. 一键启动
+
+进入 Python 虚拟环境后，在 `native-auto-test` 中执行：
+
+```bash
+source .flutter-vnev/bin/activate
+make ws-bridge-up
+```
+
+该命令会一次完成：
+
+- 验证当前 Python 能够导入 `websockets` 和本地 relay 模块；
+- 后台启动本地 relay，默认监听 `127.0.0.1:4000`；
+- 扫描所有在线的 `emulator-*` Android 模拟器；
+- 为每台模拟器设置并回读 `adb reverse tcp:4000 tcp:4000`；
+- 生成仅供本机使用的 `.local/ws-bridge.env`，供 pytest 临时加载本地地址。
+
+这里的“一键”覆盖 Python/control 侧前置，不会自动操作 Flutter App 页面。App 的
+URL、topic、device 和“连接”动作仍按下一节手工配置。
+
+默认桥接地址为：
+
+```text
+ws://127.0.0.1:4000/iov/websocket/dual
+```
+
+`.local/` 已加入 Git ignore，运行状态包括：
+
+| 文件 | 用途 |
+|---|---|
+| `.local/ws-bridge.pid` | 当前项目启动的 relay PID |
+| `.local/ws-bridge.env` | 唯一覆盖项 `WS_BASE_URL` |
+| `.local/ws-bridge.log` | relay 运行日志，不记录消息正文 |
+| `.local/ws-bridge.lock/` | lifecycle 操作期间的临时互斥锁，命令结束后自动删除 |
+
+脚本不会修改 `config.yaml`、App 页面配置、REST 配置或业务账号。如果 `adb` 不在
+PATH 中，可以显式提供其路径：
+
+```bash
+make ws-bridge-up \
+  ADB="$HOME/Library/Android/sdk/platform-tools/adb"
+```
+
+需要自定义端口时，启动、App 地址和停止命令都使用同一个 `WS_PORT`：
+
+```bash
+make ws-bridge-up WS_PORT=5000
+```
+
+### 2. 连接 Flutter 测试 App
+
+先断开旧连接，再在两台 App 的“WebSocket 桥接配置”页面填写。topic 必须与
+本机 `config.yaml` 的 `topics.deviceA/deviceB` 完全一致：
+
+| 设备 | URL | Topic | Device |
+|---|---|---|---|
+| A | `ws://127.0.0.1:4000/iov/websocket/dual` | `topics.deviceA` 的值 | `deviceA` |
+| B | `ws://127.0.0.1:4000/iov/websocket/dual` | `topics.deviceB` 的值 | `deviceB` |
+
+两台 App 都显示“已连接并注册事件处理器”后再运行 pytest。
+
+### 3. 运行本地桥接用例
+
+使用 `make test-local` 自动加载 `.local/ws-bridge.env`，无需导出环境变量，也不会
+写回 `config.yaml`：
+
+```bash
+make test-local ARGS="-q 'tests/group/test_group_lifecycle.py::test_group_create_group'"
+```
+
+参数化 nodeid 也应保留单引号，例如：
+
+```bash
+make test-local ARGS="-q 'tests/group/test_file.py::test_case[value]'"
+```
+
+`test-local` 会在 pytest 前验证 env、PID、受管进程身份和真实 WebSocket 握手。
+环境文件缺失、relay 已退出或握手失败时会明确失败，不会继续运行 pytest。
+
+### 4. 一键停止
+
+```bash
+make ws-bridge-down
+```
+
+该命令会删除在线模拟器的对应 reverse，只停止 PID 和命令身份都匹配当前项目 relay
+的进程，并删除 env/PID 文件；日志保留在 `.local/ws-bridge.log`。重复执行安全，不会
+终止 PID 文件偶然指向的其他进程。down 会从 `.local/ws-bridge.env` 自动恢复实际
+host、port 和 path，因此使用自定义 `WS_PORT` 启动后，无需在 down 时重复传入端口。
+
+如果 reverse 清理失败、PID 身份不匹配或 relay 无法停止，down 会非零退出并保留
+PID/env 管理文件，不会打印“已停止”。修复错误后再次执行 down 即可继续清理。使用过
+自定义 `ADB` 路径时仍应在 down 中提供同一个 `ADB`，因为该路径不写入环境文件。
+
+`up`、`down`、`check` 会互斥访问同一个 `.local/` 状态目录。如果另一条 lifecycle
+命令仍在运行，竞争命令会立即报出持锁 PID 并退出，不会覆盖 PID/env 或回滚对方状态。
+如果上一次命令异常退出，后续命令确认持锁 PID 已不存在后会自动回收陈旧锁；持锁 PID
+仍存活时不会强制删除锁。
+
+恢复远程桥接时，在 Flutter App 中断开本地地址并填写远程 URL，然后正常执行 pytest
+即可；`test-local` 只影响它启动的 pytest 子进程，不会污染父 shell。
+
+### 5. 手工诊断
+
+日常流程不需要下面两个命令。只有排查 relay 或 reverse 某一层时，才分别使用：
+
+```bash
+# 前台启动 relay，按 Ctrl-C 停止
+make ws-bridge-local
+
+# 只添加模拟器 reverse，不启动 relay
+make ws-bridge-reverse WS_PORT=4000
+```
+
+常见只读检查：
+
+```bash
+# Mac 是否监听 4000
+lsof -nP -iTCP:4000 -sTCP:LISTEN
+
+# 模拟器是否在线
+adb devices
+
+# 模拟器是否映射本地 relay
+adb -s emulator-5554 reverse --list
+
+# 后台 relay 日志
+tail -f .local/ws-bridge.log
+```
+
+如果 pytest 连接成功但 App 没反应，依次核对：本地 listener、每台模拟器的
+reverse、App URL、App topic/device 和 `config.yaml` 的 A/B topic；不要把 relay
+连接问题归因到 IM 服务链路。
+
+### 6. 无设备工具测试
+
+本地桥接的回归测试不需要模拟器、测试账号或外部 WebSocket：
+
+```bash
+./.flutter-vnev/bin/python -m pytest -q tests/tools
+```
+
+当本次收集的用例全部位于 `tests/tools` 时，根级 session fixture 会显式跳过设备登录
+和测试用户创建；该隔离不再依赖 tools 目录中的同名 fixture 覆盖。如果同一 pytest
+session 同时收集业务 E2E 和 tools 用例，仍会按业务 E2E 要求执行一次 session 登录。
 
 ## 运行用例
 
