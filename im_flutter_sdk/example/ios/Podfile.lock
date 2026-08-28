@@ -71,13 +71,13 @@ SPEC CHECKSUMS:
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
   file_picker: a0560bc09d61de87f12d246fc47d2119e6ef37be
-  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
   HyphenateChat: 8b17b7416e155012486a135e508a2523b04f2e62
   im_flutter_sdk_ios: 3eebe784ac95b1b249864f654fccb0db275c0cab
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   ShengwangInfra_iOS: 0ae2d429ec428cdbaebb39ac883ec64c5c20f7bb
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
 
-PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
+PODFILE CHECKSUM: 3ba3a73b1b12adcf321a227a745625fe0888cc82
 
 COCOAPODS: 1.16.2
