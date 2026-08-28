@@ -17,7 +17,7 @@ A new flutter plugin project.
   s.public_header_files = 'im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/include/im_flutter_sdk_ios/**/*.h'
 
   s.dependency 'Flutter'
-  s.dependency 'HyphenateChat','4.22.1'
+  s.dependency 'HyphenateChat','4.22.2'
   # s.dependency 'ShengwangChat_iOS','1.3.2'
   # 注释掉本地 framework，使用 CocoaPods 依赖
   # s.ios.vendored_frameworks = 'framework/HyphenateChat.xcframework', 'framework/aosl.xcframework'
