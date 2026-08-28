@@ -1,6 +1,6 @@
 ## 4.22.0
 - 安卓依赖 SDK 升级到 4.22.1；
-- iOS依赖 SDK 升级到 4.22.1；
+- iOS依赖 SDK 升级到 4.22.2；
 - 公开 API 命名统一为 `Chat` 前缀，与海外版 agora_chat_sdk 对齐：
   - 原 `EM` 前缀的类、枚举等公开名字统一改名，如 `EMClient` → `ChatClient`、`EMOptions` → `ChatOptions`、`EMMessage` → `ChatMessage`；
   - 旧名字通过 `em_compat.dart` 中以 `@Deprecated` 标记的 typedef 保留，现有代码无需修改即可继续编译运行，建议逐步迁移到新名字，旧名字将在未来大版本移除；
@@ -8,7 +8,7 @@
   - 深路径导入（如 `package:im_flutter_sdk/src/models/em_options.dart`）不再兼容，请统一从包入口 `package:im_flutter_sdk/im_flutter_sdk.dart` 导入；
 - iOS 支持 Swift Package Manager 集成，与 CocoaPods 方式并存：
   - iOS 插件源码迁移至 `Sources/im_flutter_sdk_ios` 目录，CocoaPods 与 SPM 共用同一份源码；
-  - SPM 方式集成时，原生 SDK 通过 Swift 包 `HyphenateChat_iOS`（4.22.1）依赖；
+  - SPM 方式集成时，原生 SDK 通过 Swift 包 `HyphenateChat_iOS`（4.22.2）依赖；
   - iOS 最低支持版本提升至 13.0；
 - 新增图片消息原图（大图）下载 `downloadBigImage` API；
 - 新增语音转文字 `voiceMessageToText` 和 `voiceFileToText` API；
