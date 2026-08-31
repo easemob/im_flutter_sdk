@@ -9,15 +9,22 @@ const config = {
   webSocketBaseUrl: required("webSocketBaseUrl"),
   topic: query.get("topic") || "",
   appKey: required("appKey"),
-  artifactId: query.get("artifactId") || "web-4.23.0-runner",
-  wrapperCommit: query.get("wrapperCommit") || "web-4.23.0",
+  artifactId: query.get("artifactId") || "web-5.0.0-runner",
+  wrapperCommit: query.get("wrapperCommit") || "web-5.0.0",
   nativeSdkSha256: query.get("nativeSdkSha256") || "runtime",
+  sdkVersion: query.get("sdkVersion") || "5.0.0",
 };
 
 const status = document.querySelector("#status");
 let socket;
 let reconnectTimer;
-const wrapper = createWebSdkWrapper({ appKey: config.appKey, emit, onStatus: setStatus });
+const wrapper = createWebSdkWrapper({
+  appKey: config.appKey,
+  deviceId: config.logicalDevice || config.deviceName || config.runnerId,
+  sdkVersion: config.sdkVersion,
+  emit,
+  onStatus: setStatus,
+});
 
 connectBridge();
 
@@ -36,7 +43,7 @@ function connectBridge() {
       deviceName: config.deviceName, runId: config.runId,
       logicalDevice: config.logicalDevice, artifactId: config.artifactId,
       wrapperCommit: config.wrapperCommit, nativeSdkSha256: config.nativeSdkSha256,
-      platform: "web", sdkVersion: "4.23.0", appVersion: "1.0.0",
+      platform: "web", sdkVersion: config.sdkVersion, appVersion: "1.0.0",
     });
   });
   socket.addEventListener("message", async ({ data }) => {
@@ -71,7 +78,7 @@ function response(request, result) {
 function emit(eventType, data) {
   send({
     type: "event", eventType, data, runId: config.runId, runnerId: config.runnerId,
-    device: config.deviceName, platform: "web", sdkVersion: "4.23.0", timestamp: Date.now(),
+    device: config.deviceName, platform: "web", sdkVersion: config.sdkVersion, timestamp: Date.now(),
   });
 }
 

@@ -22,7 +22,7 @@ def _assert_error_result(
     *,
     cmd: str,
     code: int,
-    description: str,
+    description: str | None,
     device: str = "deviceA",
 ) -> None:
     assert_api.assert_response_matches(
@@ -31,10 +31,7 @@ def _assert_error_result(
             "manager": "ChatRoomManager",
             "cmd": cmd,
             "device": device,
-            "result": {
-                "code": code,
-                "description": description,
-            },
+            "result": {"code": code},
         },
         ignore_keys={"sequence"},
     )
@@ -434,7 +431,7 @@ def test_chatroom_remove_attributes_empty_keys(device_a, assert_api, user_a):
     ],
 )
 def test_chatroom_member_self_checks_empty_room_id(device_a, assert_api, cmd):
-    """白名单/禁言自查接口：roomId 为空时，按方法分别冻结 700/Chat room ID is invalid。"""
+    """白名单/禁言自查接口：roomId 为空时返回 700；description 由平台 SDK 决定。"""
     with _allure_step("使用空聊天室 ID 查询成员状态并验证参数错误"):
         resp = device_a.call("ChatRoomManager", cmd, info={"roomId": ""})
-        _assert_error_result(assert_api, resp, cmd=cmd, code=700, description="Chat room ID is invalid")
+        _assert_error_result(assert_api, resp, cmd=cmd, code=700, description=None)

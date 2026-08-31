@@ -1,94 +1,152 @@
-import WebIM from "easemob-websdk";
-
-import { canonicalMessage, chatType, createEventAdapter } from "./event_adapter.js";
+import { createClientWrapper } from "./ClientWrapper.js";
+import { createChatManagerWrapper } from "./ChatManagerWrapper.js";
+import { createChatRoomManagerWrapper } from "./ChatRoomManagerWrapper.js";
+import { createChatThreadManagerWrapper } from "./ChatThreadManagerWrapper.js";
+import { createContactManagerWrapper } from "./ContactManagerWrapper.js";
+import { createConversationWrapper } from "./ConversationWrapper.js";
+import { createGroupManagerWrapper } from "./GroupManagerWrapper.js";
+import { createMessageWrapper } from "./MessageWrapper.js";
+import { createPresenceManagerWrapper } from "./PresenceManagerWrapper.js";
+import { createPushManagerWrapper } from "./PushManagerWrapper.js";
+import { createUserInfoManagerWrapper } from "./UserInfoManagerWrapper.js";
+import * as protocolHelper from "./ProtocolHelper.js";
 
 /**
- * Web SDK 4.23 adapter for the native-auto-test protocol.
- *
- * This package intentionally exposes Manager/cmd names used by pytest rather
- * than leaking Web SDK method names into case code.
+ * Web 5.0 wrapper entry point. The native IIFE is loaded by the browser runner.
  */
-export function createWebSdkWrapper({ appKey, emit, onStatus = () => {} }) {
+export function createWebSdkWrapper({
+  appKey,
+  deviceId = "webim",
+  emit,
+  onStatus = () => {},
+}) {
+  return createWeb5SdkWrapper({ appKey, deviceId, emit, onStatus });
+}
+
+function createWeb5SdkWrapper({ appKey, deviceId, emit, onStatus }) {
+  const sdk = globalThis.IMSDK;
+  if (!sdk?.ChatClient?.init) throw new Error("Web 5.0 SDK global IMSDK is not loaded");
+
   let currentUser = "";
   const messages = new Map();
-  const connection = new WebIM.connection({
+  const client = sdk.ChatClient.init({
     appKey,
-    delivery: true,
-    isFixedDeviceId: true,
+    managers: [
+      sdk.ChatManager,
+      sdk.ChatRoomManager,
+      sdk.ChatThreadManager,
+      sdk.ContactManager,
+      sdk.GroupManager,
+      sdk.PresenceManager,
+      sdk.PushManager,
+      sdk.UserInfoManager,
+    ].filter(Boolean),
+    enableDeliveryReceipt: true,
+    // Web 5.0 contact sync requires the userInfo:read capability, provided by
+    // the registered UserInfoManager below. Keep contact state synchronized on
+    // every device so topology cases can validate the complete account state.
+    enableSyncData: ["conversation", "contact"],
+    useFixedDeviceId: true,
+    deviceId: String(deviceId || "webim"),
   });
-  const adapter = createEventAdapter({ emit, currentUser: () => currentUser });
+  const chat = client.chatManager;
+  const chatRooms = client.chatRoomManager;
+  const chatThreads = client.chatThreadManager;
+  const contacts = client.contactManager;
+  const groups = client.groupManager;
+  const presence = client.presenceManager;
+  const push = client.pushManager;
+  const userInfo = client.userInfoManager;
 
-  connection.addEventHandler("native-auto-test", {
-    onConnected: () => onStatus("IM connected"),
-    onDisconnected: () => onStatus("IM disconnected"),
-    onTextMessage: (message) => {
-      const canonical = adapter.onTextMessage(message);
-      messages.set(canonical.msgId, canonical);
-    },
-    onDeliveredMessage: (message) => adapter.onDeliveredMessage(message),
-    onReactionChange: (event) => adapter.onReactionChange(event),
-    onError: (error) => adapter.onError(error),
-  });
-
-  return {
-    async invoke(manager, cmd, info = {}) {
-      if (manager === "Client") return invokeClient(cmd, info);
-      if (manager === "ChatManager") return invokeChat(cmd, info);
-      throw new Error(`Web Wrapper does not support ${manager}.${cmd}`);
-    },
+  const managers = {
+    ChatManager: chat,
+    ChatRoomManager: chatRooms,
+    ChatThreadManager: chatThreads,
+    ContactManager: contacts,
+    GroupManager: groups,
+    PresenceManager: presence,
+    PushManager: push,
+    UserInfoManager: userInfo,
   };
 
-  async function invokeClient(cmd, info) {
-    if (cmd === "init" || cmd === "startCallback") return null;
-    if (cmd === "isConnected") return connection.isOpened();
-    if (cmd === "getCurrentDeviceId") return String(connection.deviceId || "");
-    if (cmd === "login") {
-      currentUser = String(info.userId || "");
-      const result = await connection.open({
-        user: currentUser,
-        ...(info.isPassword === false
-          ? { accessToken: info.pwdOrToken }
-          : { pwd: info.pwdOrToken }),
-      });
-      return result || currentUser;
-    }
-    if (cmd === "logout") {
-      connection.close();
-      currentUser = "";
-      return null;
-    }
-    throw new Error(`Web Wrapper does not support Client.${cmd}`);
+  const h = protocolHelper;
+
+  const clientWrapper = createClientWrapper({
+    client,
+    emit,
+    onStatus,
+    getCurrentUser: () => currentUser,
+    setCurrentUser: (value) => { currentUser = value; },
+    messages,
+  });
+  const chatWrapper = createChatManagerWrapper({
+    manager: chat,
+    emit,
+    registerEvents,
+    h,
+    currentUser: () => currentUser,
+    messages,
+  });
+  const chatRoomWrapper = createChatRoomManagerWrapper({ manager: chatRooms, emit, registerEvents, h });
+  const chatThreadWrapper = createChatThreadManagerWrapper({ manager: chatThreads, emit, registerEvents, h });
+  const contactWrapper = createContactManagerWrapper({ manager: contacts, client, emit, registerEvents, h });
+  const groupWrapper = createGroupManagerWrapper({ manager: groups, emit, registerEvents, h });
+  const presenceWrapper = createPresenceManagerWrapper({ manager: presence, emit, registerEvents, h });
+  const pushWrapper = createPushManagerWrapper({ manager: push, h });
+  const userInfoWrapper = createUserInfoManagerWrapper({ manager: userInfo, currentUser: () => currentUser, h });
+  const messageWrapper = createMessageWrapper({ chat, chatThreads, h });
+  const conversationWrapper = createConversationWrapper({ chat, h });
+  const managerWrappers = {
+    ChatManager: chatWrapper,
+    ChatRoomManager: chatRoomWrapper,
+    ChatThreadManager: chatThreadWrapper,
+    ContactManager: contactWrapper,
+    GroupManager: groupWrapper,
+    PresenceManager: presenceWrapper,
+    PushManager: pushWrapper,
+    UserInfoManager: userInfoWrapper,
+  };
+  const wrapperCommandMap = Object.fromEntries(
+    Object.entries(managerWrappers).map(([name, wrapper]) => [name, wrapper.commands || {}]),
+  );
+
+  clientWrapper.registerManagerEvents();
+  chatWrapper.registerManagerEvents();
+  chatRoomWrapper.registerManagerEvents();
+  chatThreadWrapper.registerManagerEvents();
+  contactWrapper.registerManagerEvents();
+  groupWrapper.registerManagerEvents();
+  presenceWrapper.registerManagerEvents();
+
+  async function invoke(manager, cmd, info = {}) {
+    if (manager === "Client") return clientWrapper.invoke(cmd, info);
+    if (manager === "MessageManager") return messageWrapper.invoke(cmd, info);
+    if (manager === "ConversationManager") return conversationWrapper.invoke(cmd, info);
+    if (manager === "ContactManager" && !hasMappedCommand(manager, cmd)) return contactWrapper.invoke(cmd, info);
+    if (manager === "ChatManager" && !hasMappedCommand(manager, cmd)) return chatWrapper.invoke(cmd, info);
+    if (hasMappedCommand(manager, cmd)) return invokeMapped(manager, cmd, info);
+    throw new Error(`Web 5.0 wrapper does not support ${manager}.${cmd}`);
   }
 
-  async function invokeChat(cmd, info) {
-    if (cmd === "sendMessage") {
-      const body = info.body || {};
-      if (body.type !== 0) throw new Error("Web Wrapper MVP only supports text messages");
-      const raw = WebIM.message.create({
-        chatType: chatType(info.chatType),
-        type: "txt",
-        to: info.to,
-        msg: body.content,
-      });
-      const sent = await connection.send(raw);
-      const tempId = String(sent.localMsgId || raw.id || "");
-      const realId = String(sent.serverMsgId || tempId);
-      const canonical = canonicalMessage(
-        { ...raw, id: realId, from: currentUser, to: info.to, msg: body.content },
-        { direction: 0, currentUser },
-      );
-      messages.set(realId, canonical);
-      emit("onMessageSuccess", { msgId: tempId, msg: canonical });
-      return { ...canonical, msgId: tempId };
-    }
-    if (cmd === "getMessage") return messages.get(String(info.msgId)) || null;
-    if (cmd === "addReaction") {
-      await connection.addReaction({
-        messageId: String(info.msgId),
-        reaction: String(info.reaction),
-      });
-      return null;
-    }
-    throw new Error(`Web Wrapper does not support ChatManager.${cmd}`);
+  function hasMappedCommand(manager, cmd) {
+    return Boolean(wrapperCommandMap[manager]?.[cmd]);
   }
+
+  async function invokeMapped(manager, cmd, info) {
+    const target = managers[manager];
+    const operation = wrapperCommandMap[manager]?.[cmd];
+    if (!target || !operation) throw new Error(`Web 5.0 wrapper does not support ${manager}.${cmd}`);
+    const result = await operation(target, info);
+    return h.jsonSafe(result);
+  }
+
+  function registerEvents(manager, entries) {
+    if (!manager?.addEventHandler) return;
+    const handler = {};
+    for (const [name, callback] of entries) handler[name] = callback;
+    const key = manager.constructor?.key || manager.constructor?.name || "manager";
+    manager.addEventHandler(`native-auto-test-${key}`, handler);
+  }
+
+  return { invoke };
 }

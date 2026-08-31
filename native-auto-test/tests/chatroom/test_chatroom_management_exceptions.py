@@ -318,7 +318,7 @@ def test_chatroom_management_api_empty_room_id(device_a, assert_api, cmd, info, 
                 resp,
                 expected={
                     "manager": "ChatRoomManager", "cmd": cmd, "device": "deviceA",
-                    "result": {"code": expected_code, "description": ""},
+                    "result": {"code": expected_code},
                 },
                 ignore_keys={"sequence"},
             )

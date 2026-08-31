@@ -90,6 +90,7 @@ class WebBrowserDevice:
                 "wrapperCommit": wrapper_commit,
                 "nativeSdkSha256": native_sdk_sha256,
                 "appKey": self.app_key,
+                "sdkVersion": self.role.sdk_version,
             }
         )
         url = f"http://127.0.0.1:{self._server.server_port}/index.html?{query}"

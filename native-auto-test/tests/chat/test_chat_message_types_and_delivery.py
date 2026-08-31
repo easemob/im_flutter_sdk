@@ -188,10 +188,9 @@ def _send_type_and_receive(
             "type": 4,
             "displayName": "voice.mp3",
             "duration": payload["duration"],
-            # voice 发送响应 fileStatus 实测 0（发送方本地态）→ 锁 0
-            "fileStatus": 0,
         }
-        body_ignore = {"localPath", "remotePath", "secret", "fileSize"}
+        # fileStatus 由本地媒体状态/下载时序决定，不固定发送或接收瞬间的值。
+        body_ignore = {"localPath", "remotePath", "secret", "fileSize", "fileStatus"}
     elif type_key == "cmd":
         expected_body = {
             "type": 6,
@@ -270,10 +269,7 @@ def _send_type_and_receive(
         m for m in (((received_evt.get("data") or {}).get("messages")) or [])
         if isinstance(m, dict) and str(m.get("msgId")) == str(real_id)
     )
-    receive_body = received.get("body") or {}
     receive_expected_body = dict(expected_body)
-    if type_key == "voice":
-        receive_expected_body["fileStatus"] = 0
     assert_api.assert_event_matches(
         {"type": "event", "eventType": received_evt.get("eventType"), "data": {"messages": [received]}},
         expected={

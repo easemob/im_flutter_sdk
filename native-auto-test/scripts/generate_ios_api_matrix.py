@@ -28,6 +28,6 @@ for filename, manager in manager_by_file.items():
             unmapped.append(f"{filename}:{constant}")
 if unmapped:
     raise SystemExit("unmapped iOS dispatch constants: " + ", ".join(sorted(unmapped)))
-lines = ["platform: ios", "", "base:", "  version: 4.24.0", "  apis:"]
+lines = ["platform: ios", "", "base:", "  version: 5.0.0", "  apis:"]
 lines += [f"    - {api}" for api in sorted(apis)]
 (root / "config/api_matrix/ios.yaml").write_text("\n".join(lines) + "\n")

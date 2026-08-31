@@ -6,6 +6,8 @@
 """
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from src import Cmd
@@ -68,7 +70,7 @@ def test_user_info_update_own_set_and_modify(device_a, assert_api, user_a):
             expected={
                 "manager": "UserInfoManager",
                 "cmd": Cmd.updateOwnUserInfo.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": {
                     "nickName": "nick-init",
                     "sign": "sign-init",
@@ -91,18 +93,40 @@ def test_user_info_update_own_set_and_modify(device_a, assert_api, user_a):
             expected={
                 "manager": "UserInfoManager",
                 "cmd": Cmd.updateOwnUserInfo.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": {
                     "nickName": "nick-mod",
                     "sign": "sign-mod",
-                    "mail": "",
                     "userId": user_a,
-                    "gender": 0,
                 },
             },
-            # 仅更新 nick/sign 时服务端返回的 gender 可能与首次设置不一致，不作为本步断言
-            ignore_keys={"sequence", "ext", "avatarUrl", "phone", "birth"},
-        )
+        # 仅更新 nick/sign 时服务端返回的 gender 可能与首次设置不一致，不作为本步断言
+        ignore_keys={"sequence", "ext", "avatarUrl", "phone", "birth"},
+    )
+
+    # 更新接口返回对象在 Android/iOS 上的字段形态不同；最终资料必须通过查询结果验证。
+    resp_fetch = device_a.call(
+        "UserInfoManager",
+        Cmd.fetchUserInfoById.value,
+        info={"userIds": [user_a]},
+    )
+    assert_api.assert_response_matches(
+        resp_fetch,
+        expected={
+            "manager": "UserInfoManager",
+            "cmd": Cmd.fetchUserInfoById.value,
+            "device": device_a.device_name,
+            "result": {
+                user_a: {
+                    "userId": user_a,
+                    "nickName": "nick-mod",
+                    "sign": "sign-mod",
+                    "mail": "aa",
+                },
+            },
+        },
+        ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS,
+    )
 
 
 def test_user_info_update_own_with_type_nickname(device_a, assert_api, user_a):
@@ -113,15 +137,27 @@ def test_user_info_update_own_with_type_nickname(device_a, assert_api, user_a):
             Cmd.updateOwnUserInfoWithType.value,
             info={"userInfoType": 0, "userInfoValue": "nick-by-type"},
         )
+
         assert_api.assert_response_matches(
             resp,
             expected={
                 "manager": "UserInfoManager",
                 "cmd": Cmd.updateOwnUserInfoWithType.value,
-                "device": "deviceA",
-                "result": '{"gender":"0","nickname":"nick-by-type","sign":"sign-mod"}',
+                "device": device_a.device_name,
             },
-            ignore_keys={"sequence"},
+            # Android 原生返回的是当前完整用户资料 JSON 字符串；其中 mail、gender、sign
+            # 可能来自前序用例状态，本 case 只负责验证昵称更新。
+            ignore_keys={"sequence", "result"},
+        )
+
+        result = resp.get("result")
+        assert isinstance(result, str), f"updateOwnUserInfoWithType.result 应为 JSON 字符串: {resp}"
+        try:
+            result_data = json.loads(result)
+        except json.JSONDecodeError as exc:
+            raise AssertionError(f"updateOwnUserInfoWithType.result 不是有效 JSON: {resp}") from exc
+        assert result_data.get("nickname") == "nick-by-type", (
+            f"updateOwnUserInfoWithType 未更新昵称: expected='nick-by-type', actual={result_data}"
         )
 
 
@@ -148,7 +184,7 @@ def test_user_info_update_then_fetch_user_info_by_id(device_a, assert_api, user_
             expected={
                 "manager": "UserInfoManager",
                 "cmd": Cmd.fetchUserInfoById.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": {
                     user_a: {
                         "userId": user_a,
@@ -185,7 +221,7 @@ def test_user_info_update_then_fetch_own_info(device_a, assert_api, user_a):
             expected={
                 "manager": "UserInfoManager",
                 "cmd": Cmd.fetchOwnInfo.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": {
                     "userId": user_a,
                     "nickName": "nick-own-info",
@@ -223,7 +259,7 @@ def test_user_info_update_then_fetch_user_info_by_id_with_type(device_a, assert_
             expected={
                 "manager": "UserInfoManager",
                 "cmd": Cmd.fetchUserInfoByIdWithType.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": {
                     user_a: {
                         "userId": user_a,
@@ -271,7 +307,7 @@ def test_user_info_update_then_all_fetch_paths_in_one_flow(device_a, assert_api,
             expected={
                 "manager": "UserInfoManager",
                 "cmd": Cmd.fetchUserInfoById.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": {user_a: expected_full},
             },
             ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS,
@@ -287,7 +323,7 @@ def test_user_info_update_then_all_fetch_paths_in_one_flow(device_a, assert_api,
             expected={
                 "manager": "UserInfoManager",
                 "cmd": Cmd.fetchUserInfoByIdWithType.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": {user_a: expected_partial},
             },
             ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS
@@ -318,7 +354,7 @@ def test_user_info_update_own_nickname_empty(device_a, assert_api, user_a):
             expected={
                 "manager": "UserInfoManager",
                 "cmd": Cmd.updateOwnUserInfo.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": {
                     "userId": user_a,
                 },
@@ -340,7 +376,7 @@ def test_user_info_fetch_by_id_normal(device_a, assert_api, user_a, user_b):
             expected={
                 "manager": "UserInfoManager",
                 "cmd": Cmd.fetchUserInfoById.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": {
                     user_a: {"userId": user_a},
                     user_b: {"userId": user_b},
@@ -366,7 +402,7 @@ def test_user_info_fetch_by_id_with_type_normal(device_a, assert_api, user_a, us
             expected={
                 "manager": "UserInfoManager",
                 "cmd": Cmd.fetchUserInfoByIdWithType.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": {
                     user_a: {"userId": user_a},
                     user_b: {"userId": user_b},
@@ -389,7 +425,7 @@ def test_user_info_fetch_by_id_empty_user_ids(device_a, assert_api):
             expected={
                 "manager": "UserInfoManager",
                 "cmd": Cmd.fetchUserInfoById.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": {"code": 205, "description": "userIds is empty"}
             },
             ignore_keys={"sequence"},

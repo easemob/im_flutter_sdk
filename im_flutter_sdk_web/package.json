@@ -1,10 +1,8 @@
 {
   "name": "im_flutter_sdk_web",
-  "version": "4.23.0-test.0",
+  "version": "5.0.0-test.0",
   "private": true,
   "type": "module",
   "exports": "./src/index.js",
-  "dependencies": {
-    "easemob-websdk": "4.23.0"
-  }
+  "dependencies": {}
 }

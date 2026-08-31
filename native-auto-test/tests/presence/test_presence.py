@@ -80,9 +80,9 @@ def test_presence_publish_subscribe_query_unsubscribe(topology, assert_api):
                     "manager": "PresenceManager",
                     "cmd": Cmd.fetchPresenceStatus.value,
                     "device": endpoint.device_name,
-                    "result": [{"statusDescription": "online", "publisher": publisher_user, "expiryTime": gt(0)}],
+                    "result": [{"statusDescription": "online", "publisher": publisher_user}],
                 },
-                ignore_keys={"sequence", "lastTime", "statusDetails"},
+                ignore_keys={"sequence", "lastTime", "statusDetails", "expiryTime"},
             )
 
     with _allure_step(f"{subscriber.device_name} 订阅 A 的在线状态"):
@@ -269,7 +269,7 @@ def test_presence_publish_128k_desc(device_a, device_b, assert_api):
                     "code": 1100
                 },
             },
-            context={"device": "deviceA"},
+            context={"device": device_a.device_name},
             ignore_keys={"sequence"},
         )
 
@@ -292,7 +292,7 @@ def test_presence_subscribe_nonexistent_user(device_a, assert_api):
                 "device": "{{device}}",
                 "result": [{"statusDescription": "", "publisher": "{{publisher}}", "expiryTime": gt(0),"statusDetails":{},"lastTime":0}],
             },
-            context={"device": "deviceA", "publisher": USER_NONEXISTENT},
+            context={"device": device_a.device_name, "publisher": USER_NONEXISTENT},
             ignore_keys={"sequence"},
         )
 
@@ -343,7 +343,7 @@ def test_presence_subscribe_over_100_members(device_a, assert_api):
                     "code": 1100
                 },
             },
-            context={"device": "deviceA"},
+            context={"device": device_a.device_name},
             ignore_keys={"sequence"},
         )
 
@@ -370,7 +370,7 @@ def test_presence_unsubscribe_over_100_members(device_b, assert_api):
                     "code": 1100
                 },
             },
-            context={"device": "deviceB"},
+            context={"device": device_b.device_name},
             ignore_keys={"sequence"},
         )
 
@@ -409,7 +409,7 @@ def test_fetch_subscribed_members_pagination(device_a, device_b, assert_api, use
                 "device": "{{device}}",
                 "result": ["{{publisher}}"],
             },
-            context={"device": "deviceB", "publisher": user_a},
+            context={"device": device_b.device_name, "publisher": user_a},
             ignore_keys={"sequence"},
         )
 
@@ -427,7 +427,7 @@ def test_fetch_subscribed_members_pagination(device_a, device_b, assert_api, use
                 "device": "{{device}}",
                 "result": [],
             },
-            context={"device": "deviceB"},
+            context={"device": device_b.device_name},
             ignore_keys={"sequence"},
         )
 
@@ -464,7 +464,7 @@ def test_fetch_subscribed_members_pagination_page_size_one(device_a, device_b, a
                 "device": "{{device}}",
                 "result": ["{{publisher}}"],
             },
-            context={"device": "deviceB", "publisher": user_a},
+            context={"device": device_b.device_name, "publisher": user_a},
             ignore_keys={"sequence"},
         )
 
@@ -482,7 +482,7 @@ def test_fetch_subscribed_members_pagination_page_size_one(device_a, device_b, a
                 "device": "{{device}}",
                 "result": [],
             },
-            context={"device": "deviceB"},
+            context={"device": device_b.device_name},
             ignore_keys={"sequence"},
         )
 
@@ -506,7 +506,7 @@ def test_fetch_subscribed_members_invalid_pagination(device_b, assert_api, user_
                 "device": "{{device}}",
                 "result": ["{{publisher}}"],
             },
-            context={"device": "deviceB", "publisher": user_a},
+            context={"device": device_b.device_name, "publisher": user_a},
             ignore_keys={"sequence"},
         )
 

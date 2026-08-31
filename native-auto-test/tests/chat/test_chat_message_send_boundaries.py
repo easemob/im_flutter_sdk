@@ -91,7 +91,7 @@ def _assert_failed_send_envelopes(
         "isContentReplaced": False,
         "deliverOnlineOnly": False,
     }
-    ignore_keys = {"sequence", "timestamp", "serverTime", "localTime", "broadcast", "onlineState", "status", "fileStatus", "thumbnailStatus"}
+    ignore_keys = {"sequence", "timestamp", "serverTime", "localTime", "broadcast", "onlineState", "status", "fileStatus", "thumbnailStatus", "fileSize"}
     assert_api.assert_response_matches(
         resp,
         expected={

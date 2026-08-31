@@ -2155,3 +2155,31 @@ events:
     native: removeMultiDevicesDelegate:
     protocol: null
     mapping: unforwarded_or_renamed
+  - manager: GroupManager
+    native: blockMembers:fromGroup:completion:
+    protocol: blockUser
+    mapping: singleton_members
+  - manager: GroupManager
+    native: unblockMembers:fromGroup:completion:
+    protocol: unblockUser
+    mapping: singleton_members
+  - manager: GroupManager
+    native: removeMembers:fromGroup:completion:
+    protocol: removeUserFromGroup
+    mapping: singleton_members
+  - manager: GroupManager
+    native: fetchMemberAttribute:userId:completion:
+    protocol: fetchMemberAllAttributes
+    mapping: wrap_result_with_user_id
+  - manager: GroupManager
+    native: updateGroupWithId:types:configs:completion:
+    protocol: updateGroupConfigs
+    mapping: strip_params
+  - manager: GroupManager
+    native: updateGroupExtWithId:ext:completion:
+    protocol: updateGroupExtension
+    mapping: strip_params
+  - manager: UserInfoManager
+    native: fetchUserInfoById:completion:
+    protocol: fetchOwnInfo
+    mapping: current_username_then_fetch

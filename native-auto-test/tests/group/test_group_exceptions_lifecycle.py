@@ -592,7 +592,8 @@ def test_group_destroy_group_empty_group_id(device_a, assert_api):
     with _allure_step("A 销毁测试群"):
         resp = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": ""})
     with _allure_step("验证销毁测试群返回的错误码与错误文案"):
-        assert_api.assert_error(resp, code=600, description="Group ID is invalid")
+        # iOS/Android 仅文案大小写不同；错误码才是跨端稳定契约。
+        assert_api.assert_error(resp, code=600)
 
 
 def test_group_get_group_with_id_nonexistent(device_a, assert_api):

@@ -1,0 +1,51 @@
+name: web-500-multi-device-default
+
+accounts:
+  account_a: {provision: rest}
+  account_b: {provision: rest}
+  # account_c 供群组 Case 使用；复用已有 Web Runner，不单独配置 device_c。
+  account_c: {provision: rest}
+
+# Web devices run as independent local Chrome profiles.  No Android/iOS
+# serial is required; set `browser` only when Chrome is not auto-discovered.
+devices:
+  device_a:
+    device_name: deviceA
+    platform: web
+    sdk_version: 5.0.0
+    account: account_a
+
+  device_a_sec:
+    device_name: deviceASec
+    platform: web
+    sdk_version: 5.0.0
+    account: account_a
+
+  device_b:
+    device_name: deviceB
+    platform: web
+    sdk_version: 5.0.0
+    account: account_b
+
+  device_b_sec:
+    device_name: deviceBSec
+    platform: web
+    sdk_version: 5.0.0
+    account: account_b
+
+topologies:
+  account_a_to_account_b:
+    sender: {account: account_a, action_device: device_a, include_all_devices: true}
+    recipient: {account: account_b, action_device: device_b}
+
+  account_b_to_account_a:
+    sender: {account: account_b, action_device: device_b, include_all_devices: true}
+    recipient: {account: account_a, action_device: device_a}
+
+runner:
+  start_emulators: false
+  device_ready_timeout: 120
+  hello_timeout: 30
+  start_retry: 1
+  keep_device_alive: true
+  web_app_key: ${NATIVE_TEST_APP_KEY:-easemob-demo#wanganqi2}

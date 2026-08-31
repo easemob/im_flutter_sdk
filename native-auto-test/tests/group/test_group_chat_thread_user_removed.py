@@ -104,6 +104,8 @@ def test_chat_thread_remove_member_updates_member_list(device_a, device_b, asser
                     "receiverList",
                     "groupAckCount",
                     "deliverOnlineOnly",
+                    # 初始 sendMessage 响应是创建阶段状态，iOS 5.0 可能返回 1，终态事件仍严格校验。
+                    "status",
                 },
             )
         with _allure_step("验证发送群消息返回的关键字段"):

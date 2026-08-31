@@ -186,6 +186,7 @@ base:
   - GroupManager.addWhiteList
   - GroupManager.blockGroup
   - GroupManager.blockMembers
+  - GroupManager.blockUser
   - GroupManager.clearAllGroupsFromDB
   - GroupManager.createGroup
   - GroupManager.declineInvitationFromGroup
@@ -196,6 +197,7 @@ base:
   - GroupManager.fetchGroupMembersInfo
   - GroupManager.fetchJoinedGroupCount
   - GroupManager.fetchMemberAttributesFromGroup
+  - GroupManager.fetchMemberAllAttributes
   - GroupManager.fetchMembersAttributesFromGroup
   - GroupManager.getGroupAnnouncementFromServer
   - GroupManager.getGroupBlockListFromServer
@@ -219,6 +221,7 @@ base:
   - GroupManager.removeGroupSharedFile
   - GroupManager.removeMemberAttributesFromGroup
   - GroupManager.removeMembers
+  - GroupManager.removeUserFromGroup
   - GroupManager.removeWhiteList
   - GroupManager.requestToJoinPublicGroup
   - GroupManager.setMemberAttributesFromGroup
@@ -226,10 +229,13 @@ base:
   - GroupManager.unMuteMembers
   - GroupManager.unblockGroup
   - GroupManager.unblockMembers
+  - GroupManager.unblockUser
   - GroupManager.updateDescription
   - GroupManager.updateGroupAnnouncement
   - GroupManager.updateGroupAvatar
+  - GroupManager.updateGroupConfigs
   - GroupManager.updateGroupExt
+  - GroupManager.updateGroupExtension
   - GroupManager.updateGroupNamecard
   - GroupManager.updateGroupOwner
   - GroupManager.updateGroupSubject
@@ -262,6 +268,7 @@ base:
   - PushManager.updateFCMPushToken
   - PushManager.updateImPushStyle
   - PushManager.updatePushNickname
+  - UserInfoManager.fetchOwnInfo
   - UserInfoManager.fetchSubscribedUsers
   - UserInfoManager.fetchUserInfoById
   - UserInfoManager.fetchUserInfoByIdWithType
@@ -285,46 +292,3 @@ ios_only_native:
 - registerPushKitToken
 - unBindPushKitToken
 - unRegisterPushKitTokenWithCompletion
-versions:
-  4.24.0:
-    removed: []
-    added:
-    - ChatManager.reportMessage
-    - ChatRoomManager.createChatRoom
-    - ChatRoomManager.destroyChatRoom
-    - ChatRoomManager.getAllChatRooms
-    - Client.createAccount
-    - Client.loginWithAgoraToken
-    - Client.updateRequireAckSetting
-    - ChatManager.cleanConversationsMemoryCache
-    - ChatManager.deleteConversations
-    - ChatManager.filterConversationsFromDB
-    - ChatManager.getGroupMessageReadReceipts
-    - ChatManager.searchMessagesFromServer
-    - ChatManager.voiceFileToText
-    - ChatManager.voiceMessageToText
-    - ChatRoomManager.fetchChatRoomAllAttributesFromServer
-    - ChatRoomManager.removeChatRoomAttributeFromServer
-    - ChatRoomManager.removeChatRoomAttributeFromServerForced
-    - ChatRoomManager.setChatroomAttribute
-    - ChatRoomManager.setChatroomAttributeForced
-    - Client.changeAppId
-    - Client.getRTCTokenInfoWithChannelName
-    - Client.getUserIdsWithRTCUids
-      - Client.sendFCMTokenToServer
-    - Client.sendHonorPushTokenToServer
-    - ContactManager.saveBlackList
-    - GroupManager.fetchGroupBlackList
-    - GroupManager.fetchGroupMembersInfo
-    - GroupManager.getGroupNamecard
-    - GroupManager.updateGroupAvatar
-    - GroupManager.updateGroupNamecard
-    - UserInfoManager.fetchSubscribedUsers
-    - UserInfoManager.fetchUserInfoById
-    - UserInfoManager.fetchUserInfoByIdWithType
-    - UserInfoManager.getUserInfoWithUserId
-    - UserInfoManager.getUserInfoWithUserIds
-    - UserInfoManager.subscribeUsersInfo
-    - UserInfoManager.unsubscribeUsersInfo
-    - UserInfoManager.updateOwnUserInfo
-    - UserInfoManager.updateOwnUserInfoWithType

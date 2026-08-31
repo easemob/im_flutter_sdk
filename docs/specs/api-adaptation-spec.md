@@ -45,7 +45,7 @@
 
 - `im_flutter_test` 只依赖 `im_flutter_sdk_interface`，通过
   `Client.instance` 和各 Manager 的 `callNativeMethod` 路由。
-- Android 4.23 Runner 直接注册 `im_flutter_sdk_android`，不复制正式
+  - Android 5.0 Runner 直接注册 `im_flutter_sdk_android`，不复制正式
   Wrapper 的业务 API，也不经过 `im_flutter_sdk` Dart 业务层。
 - 若某个公开 Dart API 原先由 Dart 组合多个原生调用实现，而 interface 直连
   缺少对应命令，只有当该命令本身代表真实 SDK 能力时才允许补到平台 Wrapper。

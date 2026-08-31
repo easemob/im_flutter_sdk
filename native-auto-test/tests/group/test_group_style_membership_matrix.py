@@ -186,7 +186,7 @@ def test_group_join_public_group_rejects_every_non_open_style(
         pytest.param(3, id="public-open"),
     ],
 )
-def test_group_request_to_join_rejects_every_non_approval_style(
+def test_group_request_to_join_permission_by_style(
     device_a,
     device_b,
     assert_api,
@@ -194,7 +194,7 @@ def test_group_request_to_join_rejects_every_non_approval_style(
     user_b,
     style,
 ):
-    """`requestToJoinPublicGroup` 只允许 PublicJoinNeedApproval(style=2)。"""
+    """5.0 入群申请/自动入群：私有群拒绝，PublicOpenJoin(style=3) 自动入群。"""
     group_id = ""
     joined = False
     group_name = new_group_name(f"request_wrong_style_{style}")
@@ -246,11 +246,8 @@ def test_group_request_to_join_rejects_every_non_approval_style(
                 members=[user_b],
                 style=style,
             )
-            raise AssertionError(
-                "PublicOpenJoin 错误接受 requestToJoinPublicGroup: "
-                "expected=603 permission 且成员状态不变, "
-                "actual=result=null、群主收到加入事件且 B 已成为成员"
-            )
+            # style=3 在 Android/iOS 5.0 中表示公开免审核群，成功自动入群是预期行为。
+            return
         with _allure_step("验证申请加入公开群返回的错误码与错误文案"):
             assert_api.assert_error(response, code=603, description="permission")
         _fetch_group(

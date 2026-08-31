@@ -6,7 +6,6 @@
     "build": "node scripts/build.mjs"
   },
   "dependencies": {
-    "easemob-websdk": "4.23.0",
     "im_flutter_sdk_web": "file:../../im_flutter_sdk_web"
   },
   "devDependencies": {

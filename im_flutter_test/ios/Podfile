@@ -1,5 +1,5 @@
 # Uncomment this line to define a global platform for your project
-# platform :ios, '12.0'
+platform :ios, '12.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -31,7 +31,7 @@ target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
-  # Runner 通过 interface 直连原生 Wrapper；与 Android sdk423 的直接注册一致。
+  # Runner 通过 interface 直连当前 checkout 的 iOS 5.0 Wrapper。
   pod 'im_flutter_sdk_ios', :path => '../../im_flutter_sdk_ios/ios'
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do

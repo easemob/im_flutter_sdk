@@ -47,7 +47,6 @@ from src.orchestrator import (
     ExecutionPlan,
     RunnerRegistry,
     ResourceRegistry,
-    UpgradeRunner,
 )
 from src.ws import ManagedWebSocketServer
 
@@ -1954,56 +1953,10 @@ def assert_api():
     return assertions
 
 
-@pytest.fixture
-def upgrade_runner(
-    request,
-    phase1_environment,
-    phase1_scenario,
-    device_a,
-    user_a,
-    ws_runtime,
-):
-    if phase1_environment is None or phase1_scenario is None:
-        pytest.skip("upgrade_runner requires --scenario and --manage-runners")
-    role = phase1_scenario.roles["device_a"]
-    catalog = EnvironmentManager(
-        _resolve_repo_path(
-            str(request.config.getoption("--scenario")),
-            folder="config/scenarios",
-        ),
-        _resolve_repo_path(str(request.config.getoption("--artifacts"))),
-        web_socket_base_url=ws_runtime.base_url,
-        topics={},
-    ).artifact_catalog
-    # 硬编码 4.23 → 5.0 覆盖安装（不依赖 scenario device_a 版本）
-    old_artifact = next(
-        artifact
-        for (platform, version), artifact in catalog.items()
-        if platform == "android" and version == "4.23.0"
-    )
-    new_artifact = next(
-        artifact
-        for (platform, version), artifact in catalog.items()
-        if platform == "android" and version == "5.0.0"
-    )
-    return UpgradeRunner(
-        device=phase1_environment.device_for("device_a"),
-        channel=device_a,
-        role=role,
-        old_artifact=old_artifact,
-        new_artifact=new_artifact,
-        topic=ws_runtime.topic_for(role.device_name),
-        web_socket_base_url=ws_runtime.base_url,
-        startup_timeout=phase1_scenario.startup_timeout,
-        user_id=user_a,
-        password=SESSION_PWD,
-        run_id=ws_runtime.run_id,
-        managed_web_socket=ws_runtime.mode == "managed",
-    )
-
-
 def pytest_sessionstart(session):
     """Build the selected platform Runners before running tests if --build is set."""
+    import subprocess
+
     if not session.config.getoption("--build", default=False):
         return
     scenario_path = str(session.config.getoption("--scenario") or "")
@@ -2012,28 +1965,27 @@ def pytest_sessionstart(session):
     from src.orchestrator.config import load_scenario
     path = _resolve_repo_path(scenario_path, folder="config/scenarios")
     scenario = load_scenario(path)
-    flavors = set()
-    for role in scenario.roles.values():
-        if role.platform != "android":
-            continue
-        # sdk_version like "4.23.0" → flavor like "sdk423"; "5.0.0" → "sdk500"（minor 补 2 位）
-        parts = role.sdk_version.split(".")
-        ver = f"{parts[0]}{int(parts[1]):02d}"
-        flavors.add(f"sdk{ver}")
-    for flavor in sorted(flavors):
+    android_versions = {role.sdk_version for role in scenario.roles.values() if role.platform == "android"}
+    unsupported_android = android_versions - {"5.0.0"}
+    if unsupported_android:
+        raise RuntimeError(
+            "当前仓库只支持 Android 5.0.0，scenario 使用了："
+            + ", ".join(sorted(unsupported_android))
+        )
+    if android_versions:
         import subprocess, shutil
         flutter_test = Path(__file__).resolve().parent.parent.parent / "im_flutter_test"
         flutter = os.getenv("FLUTTER_BIN") or shutil.which("flutter")
         if not flutter:
             raise RuntimeError("flutter not found; set FLUTTER_BIN")
         subprocess.run(
-            [flutter, "build", "apk", "--debug", "--flavor", flavor],
+            [flutter, "build", "apk", "--debug"],
             cwd=flutter_test,
             check=True,
         )
         # build 后 APK hash 必然变化，自动更新对应 Manifest 的
         # artifactSha256，避免下次不带 --build 时 hash 校验失败。
-        _refresh_artifact_hash(flavor, flutter_test)
+        _refresh_artifact_hash(flutter_test)
 
     if any(role.platform == "web" for role in scenario.roles.values()):
         import shutil
@@ -2042,12 +1994,31 @@ def pytest_sessionstart(session):
         if not npm:
             raise RuntimeError("npm not found; Web Runner requires Node.js/npm")
         web_runner = Path(__file__).resolve().parent.parent / "web_runner"
+        web_versions = sorted({role.sdk_version for role in scenario.roles.values() if role.platform == "web"})
+        unsupported_web = set(web_versions) - {"5.0.0"}
+        if unsupported_web:
+            raise RuntimeError(
+                "当前仓库只支持 Web 5.0.0，scenario 使用了："
+                + ", ".join(sorted(unsupported_web))
+            )
         subprocess.run([npm, "install"], cwd=web_runner, check=True)
-        subprocess.run([npm, "run", "build"], cwd=web_runner, check=True)
+        for web_version in web_versions:
+            subprocess.run(
+                [npm, "run", "build", "--", "--sdk-version", web_version],
+                cwd=web_runner,
+                check=True,
+            )
 
-    if any(role.platform == "ios" for role in scenario.roles.values()):
-        # iOS：先由 merge_ios_sdk.sh 生成 merged（基线 base500 + 版本差异），再 flutter build ios --simulator
-        # （pod install 由 flutter build 自动执行；iOS manifest 用 runtime 占位，无需刷新 hash）
+    ios_versions = {role.sdk_version for role in scenario.roles.values() if role.platform == "ios"}
+    unsupported_ios = ios_versions - {"5.0.0"}
+    if unsupported_ios:
+        raise RuntimeError(
+            "当前仓库只支持 iOS 5.0.0，scenario 使用了："
+            + ", ".join(sorted(unsupported_ios))
+        )
+
+    if ios_versions:
+        # iOS 5.0 直接编译 Classes 下的单版本 Wrapper。
         import shutil
         import subprocess
 
@@ -2055,37 +2026,37 @@ def pytest_sessionstart(session):
         flutter = os.getenv("FLUTTER_BIN") or shutil.which("flutter")
         if not flutter:
             raise RuntimeError("flutter not found; set FLUTTER_BIN")
-        merge_script = (
-            Path(__file__).resolve().parent.parent.parent
-            / "im_flutter_sdk" / "scripts" / "merge_ios_sdk.sh"
+        build_env = os.environ.copy()
+        pod = shutil.which("pod")
+        if not pod:
+            raise RuntimeError("pod not found; install CocoaPods before building iOS")
+        subprocess.run(
+            [pod, "install"],
+            cwd=flutter_test / "ios",
+            env=build_env,
+            check=True,
         )
-        if merge_script.is_file():
-            subprocess.run(["bash", str(merge_script)], cwd=merge_script.parent, check=True)
-        else:
-            print(f"[build] merge_ios_sdk.sh 不存在，跳过 merged 生成: {merge_script}")
         subprocess.run(
             [flutter, "build", "ios", "--simulator"],
             cwd=flutter_test,
+            env=build_env,
             check=True,
         )
 
 
-def _refresh_artifact_hash(flavor: str, flutter_test: Path) -> None:
-    """重新计算 flavor APK 的 SHA-256 并写回 Artifact Manifest。"""
+def _refresh_artifact_hash(flutter_test: Path) -> None:
+    """重新计算 Android 5.0 APK 的 SHA-256 并写回 Artifact Manifest。"""
     import hashlib
     import json
 
-    apk = flutter_test / "build" / "app" / "outputs" / "flutter-apk" / f"app-{flavor}-debug.apk"
+    apk = flutter_test / "build" / "app" / "outputs" / "flutter-apk" / "app-debug.apk"
     if not apk.is_file():
         print(f"[build] APK not found after build: {apk}")
         return
     digest = hashlib.sha256(apk.read_bytes()).hexdigest()
-    version = flavor.replace("sdk", "")
-    # sdk423 → 4.23.0
-    dotted = f"{version[0]}.{int(version[1:])}.0"
     manifest_path = (
         Path(__file__).resolve().parent.parent
-        / "config" / "artifact_manifests" / f"android-{dotted}.json"
+        / "config" / "artifact_manifests" / "android-5.0.0.json"
     )
     if not manifest_path.is_file():
         print(f"[build] manifest not found: {manifest_path}")
@@ -2111,6 +2082,5 @@ def pytest_configure(config):
         "markers",
         "topology(*names): named scenario topologies required by this case",
     )
-    config.addinivalue_line("markers", "agorachat4_23_0: AgoraChat SDK 4.23.0 release coverage tests")
     config.addinivalue_line("markers", "phase1: first-stage multi-version runner acceptance")
     config.addinivalue_line("markers", "upgrade: coverage-install data retention tests")

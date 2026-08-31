@@ -622,7 +622,6 @@ def test_chat_manager_message_object_boundary_methods(device_a, assert_api, user
                     "convId": user_b,
                     "chatType": 0,
                     "direction": 0,
-                    "body": updated_body,
                 },
             },
             ignore_keys={
@@ -642,7 +641,33 @@ def test_chat_manager_message_object_boundary_methods(device_a, assert_api, user
             },
         )
 
-        resp_resend = device_a.call("ChatManager", Cmd.resendMessage.value, info=message)
+        # updateChatMessage 的响应对象和本地数据库对象分开验证：
+        # iOS 原生 completion 可能返回一个未刷新 body 的消息对象，不能只看响应就判断落库结果。
+        resp_loaded = device_a.call("ChatManager", Cmd.getMessage.value, info={"msgId": msg_id})
+        loaded_result = resp_loaded.get("result") if isinstance(resp_loaded, dict) else None
+        loaded_body = loaded_result.get("body") if isinstance(loaded_result, dict) else None
+        update_result = resp_update.get("result") if isinstance(resp_update, dict) else None
+        update_body = update_result.get("body") if isinstance(update_result, dict) else None
+        def _body_core(body):
+            return {
+                "type": body.get("type"),
+                "content": body.get("content"),
+            } if isinstance(body, dict) else body
+
+        expected_body_core = _body_core(updated_body)
+        assert _body_core(loaded_body) == expected_body_core, (
+            "updateChatMessage 未更新本地消息 body: "
+            f"expected={expected_body_core}, actual={loaded_body}, "
+            f"updateResponseBody={update_body}, getMessageResponse={resp_loaded}"
+        )
+        assert _body_core(update_body) == expected_body_core, (
+            "updateChatMessage 响应仍返回旧 body: "
+            f"expected={expected_body_core}, actual={update_body}, getMessageResponse={resp_loaded}"
+        )
+
+        # iOS 5.0 原生 resendMessage 直接发送传入对象；这里显式传入更新后的消息，
+        # 不依赖 Android wrapper 按 msgId 回查本地数据库的额外行为。
+        resp_resend = device_a.call("ChatManager", Cmd.resendMessage.value, info=updated)
         assert_api.assert_response_matches(
             resp_resend,
             expected={

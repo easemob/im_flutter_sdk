@@ -52,7 +52,7 @@ class ApiMatrix:
         platform: str,
         base_version: str,
         base_apis: set[str],
-        versions: dict[str, dict[str, set[str]]],
+        versions: dict[str, dict[str, Any]],
     ) -> None:
         self.platform = platform
         self.base_version = base_version
@@ -74,6 +74,10 @@ class ApiMatrix:
         for version, delta in (raw.get("versions") or {}).items():
             item = delta or {}
             versions[str(version)] = {
+                # A version may provide a complete capability snapshot when
+                # it is a separate runtime (for example Web 5.0 vs a future tag)
+                # rather than an incremental SDK revision.
+                "apis": set(item["apis"]) if "apis" in item else None,
                 "added": set(item.get("added") or []),
                 "removed": set(item.get("removed") or []),
                 "changed": set((item.get("changed") or {}).keys()),
@@ -95,6 +99,8 @@ class ApiMatrix:
             if _version_key(version) > _version_key(sdk_version):
                 break
             delta = self.versions[version]
+            if delta.get("apis") is not None:
+                apis = set(delta["apis"])
             apis.update(delta["added"])
             apis.difference_update(delta["removed"])
             # "changed" remains supported; its codec/adapter is version-specific.

@@ -32,13 +32,13 @@
 3. wrapper 实现：Android MethodKey.java / iOS MethodKeys.h + wrapper 方法体
 ```
 
-## 多版本模式（5.0 基线 + 差异增量）
+## 单版本模式（当前 checkout）
 
 ```
-基线：src/base500/java（Android）/ Classes/base500（iOS）= 5.0 全套 wrapper
-差异：sdk423 / sdk424 = 只放有变动的 wrapper（同名覆盖基线）
-合并：Android mergeWrapperSrc（Gradle）/ iOS merge_ios_sdk.sh
-5.1 以后：新建 sdk501 目录，只放差异文件，复用基线
+Android：src/main/java + src/main/libs + src/main/jniLibs
+iOS：Classes/ + HyphenateChat.xcframework
+Web：src/ + vendor/im-sdk-web.iife.js
+不同 SDK 版本通过 Git 分支/tag 切换，不在同一 checkout 中并行编译。
 ```
 
 ## 平台差异处理
@@ -61,7 +61,7 @@ python3 im_flutter_sdk/scripts/check_protocol_consistency.py
 ```
 1. javap diff 原生（API + Listener 事件）
 2. 查映射文件定位协议名 → wrapper 改差异
-3. 构建验证（sdk501 flavor / merge_ios_sdk.sh sdk501）
-4. matrix yaml 记录 removed/added（versions 链）
+3. 构建验证当前 checkout 的单版本产物
+4. 新版本在独立分支/tag 中更新 matrix 基线
 5. 事件核对：javap Listener diff → wrapper 转发决策
 ```

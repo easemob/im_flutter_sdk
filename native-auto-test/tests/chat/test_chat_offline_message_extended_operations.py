@@ -28,8 +28,10 @@ from tests.chat.test_chat_offline_message_delivery import (
 
 # 5.0 已读/送达回执需发送标记 needReadReceipt=true（否则接收端 asyncSendMessageReadReceipts 跳过、服务端不发送达确认）
 _DELIVERY_FLAG_KEYS = {"needReadReceipt"}
-# 5.0 在线接收媒体消息 body.fileStatus 实测 0（离线重登接收为 3）→ 接收时机相关，嵌套路径不锁
+# 5.0 媒体 body.fileStatus 由 endpoint 本地状态决定；已读/撤回事件也可能返回
+# 发送完成或离线回放后的状态，不能把它固定为发送时的 0/1/3。
 _MEDIA_BODY_DYNAMIC = {"data.messages[0].body.fileStatus"}
+_MEDIA_RECALL_BODY_DYNAMIC = {"data.infos[0].msg.body.fileStatus"}
 from tests.chat.test_chat_offline_message_operations import (
     _assert_message_lookup_on_devices,
     _wait_content_changed,
@@ -197,7 +199,7 @@ def _send_online_typed(
         user_a=user_a,
         user_b=user_b,
         body=received_body,
-        # fileStatus 是 Android 5.0 的 endpoint 本地状态；不锁 4.x 固定值。
+        # fileStatus 是 5.0 endpoint 的本地状态；不锁 4.x 或某个平台的固定值。
         ignore_keys=ignore_keys | _DELIVERY_FLAG_KEYS,
     )
     return real_id, received
@@ -493,7 +495,8 @@ def test_chat_offline_typed_message_read_after_sender_relogin(
                 user_a=user_a,
                 user_b=user_b,
                 body=sent_body,
-                ignore_keys=ignore_keys,
+                ignore_keys=ignore_keys
+                | (_MEDIA_BODY_DYNAMIC if "fileStatus" in sent_body else set()),
             )
         finally:
             _restore_case(
@@ -569,7 +572,8 @@ def test_chat_offline_typed_message_recall_after_recipient_relogin(
                 user_a=user_a,
                 user_b=user_b,
                 body=recall_body,
-                ignore_keys=ignore_keys,
+                ignore_keys=ignore_keys
+                | (_MEDIA_RECALL_BODY_DYNAMIC if "fileStatus" in recall_body else set()),
             )
             _assert_message_lookup_on_devices(
                 recipient_devices,
@@ -639,7 +643,7 @@ def test_chat_offline_combine_message_read_after_sender_relogin(
                 user_a=user_a,
                 user_b=user_b,
                 body=sender_body,
-                ignore_keys=_COMBINE_DYNAMIC_KEYS,
+                ignore_keys=_COMBINE_DYNAMIC_KEYS | _MEDIA_BODY_DYNAMIC,
             )
         finally:
             _restore_case(
@@ -698,7 +702,7 @@ def test_chat_offline_combine_message_recall_after_recipient_relogin(
                 user_a=user_a,
                 user_b=user_b,
                 body=received_body,
-                ignore_keys=_COMBINE_DYNAMIC_KEYS,
+                ignore_keys=_COMBINE_DYNAMIC_KEYS | _MEDIA_RECALL_BODY_DYNAMIC,
             )
             _assert_message_lookup_on_devices(
                 recipient_devices,

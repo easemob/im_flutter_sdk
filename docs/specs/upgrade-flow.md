@@ -8,16 +8,15 @@
   - speckit 使用说明：docs/skills/speckit.md
 
 - 步骤 1：确定依赖形态（本地 or 远程）
-  - Android 本地：jar 与 so 置于 `im_flutter_sdk_android/android/src/<flavor>/libs/` 与 `.../jniLibs/`（目录不带版本；jar 可带版本号）。
-  - Android 远程：`im_flutter_sdk_android/android/build.gradle` 取消 `sdkXXXApi 'io.hyphenate:hyphenate-chat:<ver>'` 注释，注释掉本地 `files(...)`。
+  - Android 本地：当前 checkout 的 jar、so 和 Wrapper 分别位于 `im_flutter_sdk_android/android/src/main/libs/`、`.../jniLibs/`、`.../java/`。
+  - Android 远程：通过当前版本分支/tag 的 `im_flutter_sdk_android/android/build.gradle` 切换依赖，不能在同一 checkout 并行保留多个版本。
   - iOS 本地：在 `im_flutter_sdk_ios/ios/` 下替换 `HyphenateChat.xcframework` 与 `ShengwangInfra_iOS/aosl.xcframework`，podspec 使用 `s.vendored_frameworks`。
   - iOS 远程：podspec 取消 `s.dependency 'HyphenateChat', '>= <ver>'` 与 `s.dependency 'ShengwangChat_iOS', '>= <ver>'` 注释，注释掉 `vendored_frameworks`。
 
-- 步骤 2：更新版本号与资产（Android 多版本 flavor 拓扑）
-  - 基线：`src/base500/` = 5.0 全部资产（wrapper + jar + jniLibs），**不要动**；`sdk500` flavor 仅是构建入口。
-  - 新版本：jar 放 `src/sdkXXX/libs/`、so 放 `src/sdkXXX/jniLibs/`、差异 wrapper 放 `src/sdkXXX/java/`（只放有差异的，同名文件构建时自动覆盖基线）。
-  - `build.gradle`：新增 `productFlavors.sdkXXX` + `sourceSets.sdkXXX`（复用 `mergeWrapperSrc`）。
-  - API 差异记录：更新 `native-auto-test/config/api_matrix/android.yaml`（versions.<新版本>.removed/added）。
+- 步骤 2：更新版本号与资产（Git 分支/tag）
+  - 当前 5.0：所有 Android Wrapper、JAR、so 都在 `src/main/`，iOS Wrapper 都在 `ios/Classes/`。
+  - 新版本：从 `v5.0.0` 创建独立分支，替换当前单版本目录中的原生资产和 Wrapper；完成后创建新的版本 tag。
+  - API Matrix：新版本分支直接以自身版本作为 `base.version`，不在 5.0 checkout 中维护旧版本增量表。
   - iOS：
     - 本地：替换 `.xcframework` 目录；
     - 远程：更新 `podspec` 中的 `>= <ver>` 约束。
@@ -26,7 +25,7 @@
   - 从 `im_flutter_sdk_android/CHANGELOG.md`、`im_flutter_sdk_ios/CHANGELOG.md` 提取“新增/修改”的 API/事件。
   - 按 `docs/specs/api-adaptation-spec.md` 执行三端对齐：
     - Dart：`lib/src/internal/chat_method_keys.dart`、`lib/src/internal/em_event_keys.dart`、`lib/src/managers/*.dart`、`lib/src/models/*.dart`
-    - Android：`im_flutter_sdk_android/android/src/base500/java/com/easemob/im_flutter_sdk/*.java`（基线）或 `src/<flavor>/java`（版本差异）
+    - Android：`im_flutter_sdk_android/android/src/main/java/com/easemob/im_flutter_sdk/*.java`
     - iOS：`im_flutter_sdk_ios/ios/Classes/*.m`、`*.h`
   - 快速核对命令（示例）：
     - `rg -n "getCurrentDeviceId|loadConversationMessagesWithKeyword|loadMessagesWithIds|onStreamMessagesReceived" im_flutter_sdk im_flutter_sdk_android im_flutter_sdk_ios`
@@ -42,7 +41,7 @@
   - 命名规范：`docs/specs/naming-convention.md`
   - 规范自检：`im_flutter_sdk/scripts/speckit.sh check`
   - Android 构建：`im_flutter_sdk/scripts/speckit.sh android`（或 `flutter build apk --flavor sdkXXX`）
-  - iOS 合并 + 安装 Pods：`im_flutter_sdk/scripts/merge_ios_sdk.sh sdkXXX`（5.0 用默认）→ `im_flutter_sdk/scripts/speckit.sh ios`
+  - iOS：当前 checkout 直接使用 `Classes/` 单版本 Wrapper；切换 5.1 时通过 Git 分支/tag 替换同一目录，不生成临时 Wrapper。
   - iOS 构建（模拟器）：`im_flutter_sdk/scripts/speckit.sh ios-build`
   - wrapper 差异检查：`im_flutter_sdk/scripts/check_wrapper_diffs.sh`（Android 冗余文件）
 

@@ -400,8 +400,22 @@ def test_conversation_load_message_and_message_lists(device_a, device_b, assert_
 def test_conversation_type_keyword_and_options_search_current_behavior(device_a, device_b, assert_api, user_a, user_b):
     """loadMessagesWithMsgType/loadMessagesWithKeyword/conversationSearchMsgsByOptions：使用空数量/唯一关键词边界冻结空列表返回。"""
     with _allure_step("验证：loadMessagesWithMsgType/loadMessagesWithKeyword/conversationSearchMsgsByOptions：使用空数量/唯一关键词边界冻结空列表返回。"):
-        keyword = f"conv-search-{uuid.uuid4().hex[:8]}"
         conv_a = _conversation(user_b)
+
+        # 搜索接口读取本地会话消息；固定账号在全量运行中可能残留前序消息。
+        resp_clear = device_a.call("ConversationManager", Cmd.clearAllMessages.value, info=conv_a)
+        assert_api.assert_response_matches(
+            resp_clear,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.clearAllMessages.value,
+                "device": "deviceA",
+                "result": True,
+            },
+            ignore_keys={"sequence"},
+        )
+
+        keyword = f"conv-search-{uuid.uuid4().hex[:8]}"
 
         resp_by_type = device_a.call(
             "ConversationManager",

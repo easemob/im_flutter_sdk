@@ -3,12 +3,12 @@
 
 用法：
     python scripts/generate_manifests.py [--platform android]
-    python scripts/generate_manifests.py --version 4.23.0   # 只生成指定版本
+    python scripts/generate_manifests.py --version 5.0.0   # 只生成指定版本
 
 数据来源（避免手写导致三方不一致）：
   - capabilities    ← api_matrix/{platform}.yaml 对应版本的 API 集合
   - artifactSha256  ← 对 APK 文件实际计算
-  - nativeSdkSha256 ← 对原生 SDK jar 实际计算（从 flavor 依赖推断）
+  - nativeSdkSha256 ← 对原生 SDK jar 实际计算
   - wrapperCommit   ← git rev-parse HEAD
 """
 from __future__ import annotations
@@ -45,14 +45,6 @@ def git_rev(short: bool = True) -> str:
         return ""
 
 
-def flavor_to_version(flavor: str) -> str:
-    """sdk423 → 4.23.0"""
-    digits = flavor.removeprefix("sdk")
-    if len(digits) < 2:
-        raise ValueError(f"unexpected flavor: {flavor}")
-    return f"{digits[0]}.{digits[1:]}."
-
-
 def _vkey(value: str) -> tuple[int, ...]:
     parts: list[int] = []
     for part in value.split("."):
@@ -62,17 +54,18 @@ def _vkey(value: str) -> tuple[int, ...]:
 
 
 def native_sdk_sha256(version: str, flavor: str) -> str:
-    """原生 SDK jar 的 sha256。优先从 im_flutter_sdk_android 的 libs 推断，
+    """原生 SDK jar 的 sha256。优先从 Android 5.0 单版本 libs 推断，
     找不到则返回空字符串（由环境校验兜底）。"""
     candidates = [
         FLUTTER_TEST / "android" / "app" / "libs" / f"hyphenatechat_{version}.jar",
+        PROJECT_ROOT / "im_flutter_sdk_android" / "android" / "src" / "main" / "libs" / f"hyphenatechat_{version}.jar",
         PROJECT_ROOT / "im_flutter_sdk_android" / "android" / "libs" / "easemob-sdk" / "libs" / f"hyphenatechat_{version}.jar",
     ]
     for path in candidates:
         if path.is_file():
             return sha256(path)
-    # 兜底：搜 im_flutter_sdk_android 下所有 jar，取版本匹配的
-    for jar in (PROJECT_ROOT / "im_flutter_sdk_android" / "android" / "libs").rglob("*.jar"):
+    # 兜底：搜 Android 单版本依赖目录下所有 jar，取版本匹配的
+    for jar in (PROJECT_ROOT / "im_flutter_sdk_android" / "android" / "src" / "main" / "libs").rglob("*.jar"):
         if version in jar.name:
             return sha256(jar)
     return ""
@@ -81,7 +74,7 @@ def native_sdk_sha256(version: str, flavor: str) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate artifact manifests")
     parser.add_argument("--platform", default="android", choices=["android"])
-    parser.add_argument("--version", default="", help="只生成指定版本，如 4.23.0")
+    parser.add_argument("--version", default="", help="只生成指定版本，如 5.0.0")
     args = parser.parse_args()
 
     platform = args.platform

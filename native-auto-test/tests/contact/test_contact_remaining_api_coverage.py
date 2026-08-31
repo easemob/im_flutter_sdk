@@ -32,7 +32,7 @@ def test_contact_get_all_contacts_from_db_after_server_sync(
             expected={
                 "manager": "ContactManager",
                 "cmd": Cmd.getAllContactsFromDB.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": [user_b],
             },
             ignore_keys={"sequence"},
@@ -60,7 +60,7 @@ def test_contact_get_block_list_from_db_after_server_sync(
             expected={
                 "manager": "ContactManager",
                 "cmd": Cmd.getBlockListFromServer.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": [user_b],
             },
             ignore_keys={"sequence"},
@@ -76,7 +76,7 @@ def test_contact_get_block_list_from_db_after_server_sync(
             expected={
                 "manager": "ContactManager",
                 "cmd": Cmd.getBlockListFromDB.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": [user_b],
             },
             ignore_keys={"sequence"},
@@ -117,7 +117,7 @@ def test_contact_get_self_ids_on_other_platform_returns_list(
                 expected={
                     "manager": "ContactManager",
                     "cmd": Cmd.getSelfIdsOnOtherPlatform.value,
-                    "device": "deviceA",
+                    "device": device_a.device_name,
                     "result": [],
                 },
                 ignore_keys={"sequence"},

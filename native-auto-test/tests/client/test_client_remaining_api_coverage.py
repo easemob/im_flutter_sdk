@@ -195,22 +195,22 @@ def test_client_update_runtime_setting_success(device_a, assert_api, cmd, info):
 @pytest.mark.parametrize(
     ("cmd", "info", "expected_result"),
     [
-        # renewToken：空 token 边界，不改变当前密码登录态。
+        # renewToken：空 token 边界；Android/iOS 文案大小写和标点不同，只断言 code。
         (
             Cmd.renewToken.value,
             {"agora_token": ""},
-            {"code": 104, "description": "New token is invalid"},
+            {"code": 104},
         ),
         # changeAppKey：已登录状态下修改 appKey 的非法状态边界。
         (
             Cmd.changeAppKey.value,
             {"appKey": ""},
-            {"code": 110, "description": "appkey is null or empty"},
+            {"code": 110},
         ),
-        # getLoggedInDevicesFromServer/fetchLoggedInDevices：错误账号/token 边界。
+        # getLoggedInDevicesFromServer/fetchLoggedInDevices：无效 token 边界。
         (
             Cmd.getLoggedInDevicesFromServer.value,
-            {"userId": "__invalid_user__", "password": "__invalid_pwd__"},
+            {"userId": "__invalid_user__", "token": "__invalid_token__"},
             {"code": 204, "description": "User does not exist"},
         ),
         # kickDevice：错误账号/token 与空 resource 边界，不影响当前设备。
@@ -218,15 +218,15 @@ def test_client_update_runtime_setting_success(device_a, assert_api, cmd, info):
             Cmd.kickDevice.value,
             {
                 "userId": "__invalid_user__",
-                "password": "__invalid_pwd__",
+                "token": "__invalid_token__",
                 "resource": "",
             },
             {"code": 205, "description": "Invalid parameter"},
         ),
-        # kickAllDevices：错误账号/token 边界，不影响当前设备。
+        # kickAllDevices：无效 token 边界，不影响当前设备。
         (
             Cmd.kickAllDevices.value,
-            {"userId": "__invalid_user__", "password": "__invalid_pwd__"},
+            {"userId": "__invalid_user__", "token": "__invalid_token__"},
             {"code": 204, "description": "User does not exist"},
         ),
         # loginWithAgoraToken：非法账号与空 token 边界，不应切换当前密码登录态。
