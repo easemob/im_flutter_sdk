@@ -20,6 +20,7 @@ let socket;
 let reconnectTimer;
 const wrapper = createWebSdkWrapper({
   appKey: config.appKey,
+  deviceId: config.logicalDevice || config.deviceName || config.runnerId,
   sdkVersion: config.sdkVersion,
   emit,
   onStatus: setStatus,

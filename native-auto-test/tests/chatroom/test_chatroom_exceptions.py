@@ -117,7 +117,7 @@ def test_chatroom_fetch_public_chat_rooms_invalid_paging(device_a, assert_api, p
             resp,
             expected={
                 "manager": "ChatRoomManager", "cmd": Cmd.fetchPublicChatRoomsFromServer.value,
-                "device": "deviceA", "result": {"count": ge(0)},
+                "device": device_a.device_name, "result": {"count": ge(0)},
             },
             ignore_keys={"sequence", "list"},
         )

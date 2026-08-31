@@ -9,38 +9,34 @@ fail(){ echo "[FAIL] $1"; return 1; }
 
 check_android(){
   local ok=0
-  local base_dir="$ANDROID_DIR/src/main/java"
+  local libs_base="$ANDROID_DIR/libs/easemob-sdk"
+  local jni_dir="$libs_base/libs"
   local gradle_file="$ANDROID_DIR/build.gradle"
 
-  # 基线 wrapper
-  local wrapper_count
-  wrapper_count=$(find "$base_dir" -name '*.java' 2>/dev/null | wc -l | tr -d ' ')
-  if [[ -d "$base_dir" && "$wrapper_count" -gt 0 ]]; then
-    pass "Android 5.0: wrapper 存在: src/main/java ($wrapper_count 个文件)"
+  [[ -d "$libs_base" ]] && pass "Android: 本地目录存在: $libs_base" || { echo "建议：创建不带版本号目录 easemob-sdk/"; ok=1; }
+  [[ -d "$jni_dir" ]] && pass "Android: jniLibs 目录存在: $jni_dir" || { echo "建议：将 so 放到 libs/ 下"; ok=1; }
+
+  # jar 检查
+  local jar_count
+  jar_count=$(find "$jni_dir" -maxdepth 1 -name 'hyphenatechat_*.jar' 2>/dev/null | wc -l | tr -d ' ')
+  if [[ "$jar_count" != "0" ]]; then
+    pass "Android: 发现 hyphenatechat_*.jar"
   else
-    echo "建议：放置 Android 5.0 wrapper 到 src/main/java"; ok=1
+    echo "建议：放置 hyphenatechat_<ver>.jar 于 $jni_dir"; ok=1
   fi
 
-  local jar_dir="$ANDROID_DIR/src/main/libs"
-  local jni_dir="$ANDROID_DIR/src/main/jniLibs"
-  local jar_count so_count
-  jar_count=$(find "$jar_dir" -maxdepth 1 -name 'hyphenatechat_*.jar' 2>/dev/null | wc -l | tr -d ' ')
-  so_count=$(find "$jni_dir" -name '*.so' 2>/dev/null | wc -l | tr -d ' ')
-  [[ "$jar_count" -gt 0 ]] && pass "Android 5.0: JAR 存在 ($jar_count 个)" || { echo "建议：放置 hyphenatechat_5.0.0.jar 于 src/main/libs"; ok=1; }
-  [[ "$so_count" -gt 0 ]] && pass "Android 5.0: jniLibs 存在 ($so_count 个 .so)" || { echo "建议：放置 so 到 src/main/jniLibs"; ok=1; }
-
-  if grep -q "src/main/java" "$gradle_file" && ! grep -q "mergeWrapperSrc\|base500\|sdk423" "$gradle_file"; then
-    pass "Android 5.0: build.gradle 使用单一 main source set"
+  # build.gradle 检查
+  if grep -q "jniLibs.srcDirs\s*=\s*\['./libs/easemob-sdk/libs'\]" "$gradle_file"; then
+    pass "Android: jniLibs.srcDirs 指向 ./libs/easemob-sdk/libs"
   else
-    echo "建议：build.gradle 仅保留 src/main，不要使用 flavor 或 mergeWrapperSrc"; ok=1
+    echo "建议：jniLibs.srcDirs 设为 ['./libs/easemob-sdk/libs']"; ok=1
   fi
 
-  # 依赖仅启用一种（本地 files 或远程）
   local local_active remote_active
-  local_active=$(grep -E "^[[:space:]]*(api|implementation)[[:space:]]+files\(" "$gradle_file" | grep -v "^[[:space:]]*//" | wc -l | tr -d ' ')
-  remote_active=$(grep -E "^[[:space:]]*(api|implementation)[[:space:]]+'io\\.hyphenate:hyphenate-chat" "$gradle_file" | grep -v "^[[:space:]]*//" | wc -l | tr -d ' ')
-  if [[ "$local_active" -gt 0 && "$remote_active" -eq 0 ]] || [[ "$local_active" -eq 0 && "$remote_active" -gt 0 ]]; then
-    pass "Android 5.0: 依赖仅启用一种（本地 或 远程）"
+  local_active=$(grep -E "^[[:space:]]*implementation[[:space:]]+files\(" "$gradle_file" | grep -v "^[[:space:]]*//" | wc -l | tr -d ' ')
+  remote_active=$(grep -E "^[[:space:]]*implementation[[:space:]]+'io\\.hyphenate:hyphenate-chat" "$gradle_file" | grep -v "^[[:space:]]*//" | wc -l | tr -d ' ')
+  if [[ "$local_active" == "1" && "$remote_active" == "0" ]] || [[ "$local_active" == "0" && "$remote_active" == "1" ]]; then
+    pass "Android: 依赖仅启用一种（本地 或 远程）"
   else
     echo "建议：确保只启用本地或远程其中一种实现"; ok=1
   fi

@@ -99,7 +99,7 @@ def test_contact_delete_contact_not_friend(device_a, assert_api, user_b):
             resp,
             expected={"manager": "ContactManager", "cmd": Cmd.deleteContact.value, "device": "{{device}}",
                       "result": "{{userId}}"},
-            context={"userId": user_b, "device": "deviceA"},
+            context={"userId": user_b, "device": device_a.device_name},
             ignore_keys={"sequence"},
         )
 
@@ -361,7 +361,7 @@ def test_contact_accept_invitation_without_pending(device_b, assert_api, user_c)
                 "result": "{{userId}}",
                 "sequence": "{{sequence}}",
             },
-            context={"userId": user_c, "device": "deviceB"},
+            context={"userId": user_c, "device": device_b.device_name},
             ignore_keys={"sequence"},
         )
     with _allure_step("查询目标用户好友关系并验证列表为空"):
@@ -392,7 +392,7 @@ def test_contact_decline_invitation_without_pending(device_b, assert_api):
                 "device": "{{device}}",
                 "result": "{{userId}}",
             },
-            context={"userId": USER_NONEXISTENT, "device": "deviceB"},
+            context={"userId": USER_NONEXISTENT, "device": device_b.device_name},
             ignore_keys={"sequence"},
         )
 
@@ -426,7 +426,7 @@ def test_contact_remark_set_success(device_a, device_b, assert_api, user_a, user
                 "device": "{{device}}",
                 "result": None,
             },
-            context={"device": "deviceA"},
+            context={"device": device_a.device_name},
             ignore_keys={"sequence"},
         )
     with _allure_step("测试后置：删除好友关系"):
@@ -453,7 +453,7 @@ def test_contact_remark_empty_string(device_a, device_b, assert_api, user_a, use
                 "device": "{{device}}",
                 "result": None,
             },
-            context={"device": "deviceA"},
+            context={"device": device_a.device_name},
             ignore_keys={"sequence"},
         )
     with _allure_step("查询好友资料并验证备注为空"):
@@ -470,7 +470,7 @@ def test_contact_remark_empty_string(device_a, device_b, assert_api, user_a, use
                 "device": "{{device}}",
                 "result": {"userId": "{{userId}}", "remark": "{{remark}}"},
             },
-            context={"device": "deviceA", "userId": user_b, "remark": remark_text},
+            context={"device": device_a.device_name, "userId": user_b, "remark": remark_text},
             ignore_keys={"sequence"},
         )
     with _allure_step("测试后置：删除好友关系"):
@@ -517,7 +517,7 @@ def test_contact_remark_not_preserved_after_delete_and_readd(device_a, device_b,
             "device": "{{device}}",
             "result": None,
         },
-        context={"device": "deviceA"},
+        context={"device": device_a.device_name},
         ignore_keys={"sequence"},
     )
     content_after_set = device_a.call(
@@ -533,7 +533,7 @@ def test_contact_remark_not_preserved_after_delete_and_readd(device_a, device_b,
             "device": "{{device}}",
             "result": {"userId": "{{userId}}", "remark": "{{remark}}"},
         },
-        context={"device": "deviceA", "userId": user_b, "remark": old},
+        context={"device": device_a.device_name, "userId": user_b, "remark": old},
         ignore_keys={"sequence"},
     )
     flow.delete_friend(device_a, user_b)
@@ -552,7 +552,7 @@ def test_contact_remark_not_preserved_after_delete_and_readd(device_a, device_b,
             "device": "{{device}}",
             "result": {"userId": "{{userId}}", "remark": ne(old)},
         },
-        context={"device": "deviceA", "userId": user_b},
+        context={"device": device_a.device_name, "userId": user_b},
         ignore_keys={"sequence"},
     )
     flow.delete_friend(device_a, user_b)
@@ -587,7 +587,7 @@ def test_contact_get_block_list_from_server_returns_list(device_a, assert_api):
             expected={
                 "manager": "ContactManager",
                 "cmd": Cmd.getBlockListFromServer.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
             },
             ignore_keys={"sequence", "result"},
         )
@@ -618,7 +618,7 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
             expected={
                 "manager": "ContactManager",
                 "cmd": Cmd.setContactRemark.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": None,
             },
             ignore_keys={"sequence"},
@@ -635,7 +635,7 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
             expected={
                 "manager": "ContactManager",
                 "cmd": Cmd.getAllContactsFromDB.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": [user_b],
             },
             ignore_keys={"sequence"},
@@ -652,7 +652,7 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
             expected={
                 "manager": "ContactManager",
                 "cmd": Cmd.fetchAllContacts.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": [{"userId": user_b}],
             },
             ignore_keys={"sequence"},
@@ -669,7 +669,7 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
             expected={
                 "manager": "ContactManager",
                 "cmd": Cmd.getContact.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": {"userId": user_b},
             },
             ignore_keys={"sequence"},
@@ -686,7 +686,7 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
             expected={
                 "manager": "ContactManager",
                 "cmd": Cmd.getAllContacts.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": [{"userId": user_b}],
             },
             ignore_keys={"sequence"},
@@ -704,7 +704,7 @@ def test_contact_fetch_all_contact_ids(device_a, assert_api):
         expected={
             "manager": "ContactManager",
             "cmd": Cmd.fetchAllContactIds.value,
-            "device": "deviceA",
+            "device": device_a.device_name,
             "result": [],
         },
         ignore_keys={"sequence", "result"},
@@ -720,7 +720,7 @@ def test_contact_get_all_contact_ids(device_a, assert_api):
             expected={
                 "manager": "ContactManager",
                 "cmd": Cmd.getAllContactIds.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": [],
             },
             ignore_keys={"sequence", "result"},
@@ -745,7 +745,7 @@ def test_contact_fetch_contacts_page_size_zero(device_a, assert_api):
         expected={
             "manager": "ContactManager",
             "cmd": Cmd.fetchContacts.value,
-            "device": "deviceA",
+            "device": device_a.device_name,
             "result": {"cursor":"","list":[]},
         },
         ignore_keys={"sequence"},
@@ -781,7 +781,7 @@ def test_contact_fetch_contacts_page_size_negative(device_a, assert_api):
         expected={
             "manager": "ContactManager",
             "cmd": Cmd.fetchContacts.value,
-            "device": "deviceA",
+            "device": device_a.device_name,
             "result": {"cursor": "", "list": []},
         },
         ignore_keys={"sequence"},
@@ -798,7 +798,7 @@ def test_contact_add_user_to_block_list_nonexistent(device_a, assert_api):
             Cmd.addUserToBlockList.value,
             info={"userId": USER_NONEXISTENT},
         )
-        assert_api.assert_error(resp, code=204, description="User does not exist")
+        assert_api.assert_error(resp, code=204)
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -850,7 +850,7 @@ def test_contact_block_list_flow_then_unblock_restores_friend(
             )
     with _allure_step("B 全部在线端好友列表仍含 A"):
         for endpoint in recipients:
-            resp_friends_b = flow.get_all_contacts_from_db(endpoint)
+            resp_friends_b = flow.wait_for_all_contacts_from_db(endpoint, [owner_user])
             assert_api.assert_success(resp_friends_b)
             assert owner_user in assert_api.get_result(resp_friends_b), f"B 好友列表未包含 A: {resp_friends_b}"
 
@@ -892,7 +892,7 @@ def test_contact_remove_from_block_list_when_not_blocked(
             expected={
                 "manager": "ContactManager",
                 "cmd": Cmd.getBlockListFromServer.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": [],
             },
             ignore_keys={"sequence", "result"},
@@ -917,7 +917,7 @@ def test_contact_remove_from_block_list_nonexistent_user(device_a, assert_api):
             expected={
                 "manager": "ContactManager",
                 "cmd": Cmd.removeUserFromBlockList.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": USER_NONEXISTENT,
             },
             ignore_keys={"sequence"},

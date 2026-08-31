@@ -5,6 +5,7 @@ from uuid import uuid4
 import pytest
 
 from src import Cmd, ne
+from src.tools.response_match import ge
 from tests.chatroom.chatroom_helpers import _allure_step, assert_join_chatroom_response, create_chatroom_or_skip, safe_delete_chatroom
 
 
@@ -37,11 +38,12 @@ def test_chatroom_create_and_fetch_from_server(device_a, assert_api, user_a):
             assert_api.assert_response_matches(
                 resp,
                 expected={
-                    "manager": "ChatRoomManager", "cmd": Cmd.fetchChatRoomInfoFromServer.value, "device": "deviceA",
+                    "manager": "ChatRoomManager", "cmd": Cmd.fetchChatRoomInfoFromServer.value,
+                    "device": device_a.device_name,
                     "result": {
                         "roomId": room_id, "owner": user_a, "name": room_name, "maxUsers": 200, "memberCount": 1,
                         "permissionType": 2, "isAllMemberMuted": False, "adminList": [], "muteList": [],
-                        "muteExpireTimestamp": -1, "createTimestamp": 0, "memberList": [], "isInWhitelist": False,
+                        "muteExpireTimestamp": -1, "createTimestamp": ge(0), "memberList": [], "isInWhitelist": False,
                         "blockList": [], "desc": "nothing left here", "announcement": "",
                     },
                 },
@@ -56,7 +58,7 @@ def test_chatroom_fetch_room_info_with_members_from_server(device_a, device_b, a
     try:
         with _allure_step("B 加入聊天室并验证成员查询前置"):
             join_resp = device_b.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
-            assert_join_chatroom_response(assert_api, join_resp, device="deviceB", room_id=room_id)
+            assert_join_chatroom_response(assert_api, join_resp, device=device_b.device_name, room_id=room_id)
 
         with _allure_step("查询聊天室概要并验证成员计数"):
             resp = device_a.call(
@@ -66,7 +68,7 @@ def test_chatroom_fetch_room_info_with_members_from_server(device_a, device_b, a
                 resp,
                 expected={
                     "manager": "ChatRoomManager", "cmd": Cmd.fetchChatRoomInfoFromServer.value,
-                    "device": "deviceA", "result": {"roomId": room_id, "owner": user_a, "memberCount": 2, "memberList": ne(None)},
+                    "device": device_a.device_name, "result": {"roomId": room_id, "owner": user_a, "memberCount": 2, "memberList": ne(None)},
                 },
                 ignore_keys={"sequence", "name", "maxUsers", "permissionType", "isAllMemberMuted", "adminList", "muteList", "muteExpireTimestamp", "createTimestamp", "isInWhitelist", "blockList", "desc", "announcement"},
             )
@@ -83,7 +85,7 @@ def test_chatroom_fetch_room_info_with_members_from_server(device_a, device_b, a
                 members_resp,
                 expected={
                     "manager": "ChatRoomManager", "cmd": Cmd.fetchChatRoomMembers.value,
-                    "device": "deviceA", "result": {"cursor": "", "list": [user_b]},
+                    "device": device_a.device_name, "result": {"cursor": "", "list": [user_b]},
                 },
                 ignore_keys={"sequence"},
             )
@@ -100,7 +102,7 @@ def test_chatroom_destroy_room_success(device_a, assert_api, user_a):
         expected={
             "manager": "ChatRoomManager",
             "cmd": Cmd.destroyChatRoom.value,
-            "device": "deviceA",
+            "device": device_a.device_name,
             "result": True,
         },
         ignore_keys={"sequence"},

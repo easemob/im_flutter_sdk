@@ -461,14 +461,14 @@ def test_chatroom_member_exited_callback(device_a, device_b, assert_api, user_a,
         with _allure_step("A、B 加入聊天室并验证加入前置"):
             join_resp_a = device_a.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
             assert_join_chatroom_response(
-                assert_api, join_resp_a, device="deviceA", room_id=room_id, is_in_whitelist=True,
+                assert_api, join_resp_a, device=device_a.device_name, room_id=room_id, is_in_whitelist=True,
             )
             _join_chatroom_as_b_ready(device_b, assert_api, room_id)
         with _allure_step("B 主动离开并验证 A 收到成员退出事件"):
             leave_resp = device_b.call("ChatRoomManager", Cmd.leaveChatRoom.value, info={"roomId": room_id})
             assert_api.assert_response_matches(
                 leave_resp,
-                expected={"manager": "ChatRoomManager", "cmd": Cmd.leaveChatRoom.value, "device": "deviceB", "result": True},
+                expected={"manager": "ChatRoomManager", "cmd": Cmd.leaveChatRoom.value, "device": device_b.device_name, "result": True},
                 ignore_keys={"sequence"},
             )
             evt = _first_chatroom_event(
@@ -492,7 +492,7 @@ def test_chatroom_removed_and_destroyed_callbacks(device_a, device_b, assert_api
                 "ChatRoomManager", Cmd.removeChatRoomMembers.value,
                 info={"roomId": room_id, "members": [user_b]},
             )
-            _assert_success_envelope(assert_api, remove_resp, cmd=Cmd.removeChatRoomMembers.value, device="deviceA")
+            _assert_success_envelope(assert_api, remove_resp, cmd=Cmd.removeChatRoomMembers.value, device=device_a.device_name)
             removed_evt = _first_chatroom_event(
                 device_b, room_id=room_id,
                 event_types={ChatRoomEvent.ON_REMOVED_FROM_CHAT_ROOM.value, "onRoomRemoved"},

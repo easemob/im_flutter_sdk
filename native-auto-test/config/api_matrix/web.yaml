@@ -118,7 +118,6 @@ base:
     - ChatRoomManager.fetchChatRoomAnnouncement
     - ChatRoomManager.changeChatRoomSubject
     - ChatRoomManager.changeChatRoomDescription
-    - ChatRoomManager.changeChatRoomOwner
     - ChatThreadManager.createChatThread
     - ChatThreadManager.destroyChatThread
     - ChatThreadManager.fetchChatThreadDetail
@@ -187,8 +186,6 @@ base:
     - PushManager.setConversationSilentMode
     - PushManager.setPreferredNotificationLanguage
     - PushManager.setSilentModeForAll
-    - PushManager.updateFCMPushToken
-    - PushManager.updateHMSPushToken
     - UserInfoManager.fetchOwnInfo
     - UserInfoManager.fetchSubscribedUsers
     - UserInfoManager.fetchUserInfoById

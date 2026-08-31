@@ -3,30 +3,32 @@ name: web-500-multi-device-default
 accounts:
   account_a: {provision: rest}
   account_b: {provision: rest}
+  # account_c 供群组 Case 使用；复用已有 Web Runner，不单独配置 device_c。
+  account_c: {provision: rest}
 
 # Web devices run as independent local Chrome profiles.  No Android/iOS
 # serial is required; set `browser` only when Chrome is not auto-discovered.
 devices:
   device_a:
-    device_name: deviceAWeb
+    device_name: deviceA
     platform: web
     sdk_version: 5.0.0
     account: account_a
 
   device_a_sec:
-    device_name: deviceASecWeb
+    device_name: deviceASec
     platform: web
     sdk_version: 5.0.0
     account: account_a
 
   device_b:
-    device_name: deviceBWeb
+    device_name: deviceB
     platform: web
     sdk_version: 5.0.0
     account: account_b
 
   device_b_sec:
-    device_name: deviceBSecWeb
+    device_name: deviceBSec
     platform: web
     sdk_version: 5.0.0
     account: account_b

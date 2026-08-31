@@ -15,26 +15,26 @@ from tests.allure_helpers import _allure_step
 pytestmark = [pytest.mark.client]
 
 
-def _assert_success_null(assert_api, resp: dict, *, cmd: str):
+def _assert_success_null(assert_api, resp: dict, *, cmd: str, device: str):
     assert_api.assert_response_matches(
         resp,
         expected={
             "manager": "PushManager",
             "cmd": cmd,
-            "device": "deviceA",
+            "device": device,
             "result": None,
         },
         ignore_keys={"sequence"},
     )
 
 
-def _assert_push_config_update_result(assert_api, resp: dict, *, cmd: str):
+def _assert_push_config_update_result(assert_api, resp: dict, *, cmd: str, device: str):
     assert_api.assert_response_matches(
         resp,
         expected={
             "manager": "PushManager",
             "cmd": cmd,
-            "device": "deviceA",
+            "device": device,
         },
         ignore_keys={"sequence", "result"},
     )
@@ -56,7 +56,7 @@ def test_push_fetch_configs_update_nickname_and_style(device_a, assert_api):
             expected={
                 "manager": "PushManager",
                 "cmd": Cmd.getImPushConfigFromServer.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
             },
             ignore_keys={"sequence", "result"},
         )
@@ -77,7 +77,12 @@ def test_push_fetch_configs_update_nickname_and_style(device_a, assert_api):
             Cmd.updatePushNickname.value,
             info={"nickname": "push-api-coverage"},
         )
-        _assert_push_config_update_result(assert_api, nick_resp, cmd=Cmd.updatePushNickname.value)
+        _assert_push_config_update_result(
+            assert_api,
+            nick_resp,
+            cmd=Cmd.updatePushNickname.value,
+            device=device_a.device_name,
+        )
 
     with _allure_step("更新推送展示样式并验证配置更新结果"):
         style_resp = device_a.call(
@@ -85,7 +90,12 @@ def test_push_fetch_configs_update_nickname_and_style(device_a, assert_api):
             Cmd.updateImPushStyle.value,
             info={"pushStyle": 0},
         )
-        _assert_push_config_update_result(assert_api, style_resp, cmd=Cmd.updateImPushStyle.value)
+        _assert_push_config_update_result(
+            assert_api,
+            style_resp,
+            cmd=Cmd.updateImPushStyle.value,
+            device=device_a.device_name,
+        )
 
 
 def test_push_global_silent_mode_flow(device_a, assert_api):
@@ -96,7 +106,7 @@ def test_push_global_silent_mode_flow(device_a, assert_api):
             Cmd.setSilentModeForAll.value,
             info={"param": {"paramType": 0, "remindType": 0}},
         )
-        _assert_success_null(assert_api, set_resp, cmd=Cmd.setSilentModeForAll.value)
+        _assert_success_null(assert_api, set_resp, cmd=Cmd.setSilentModeForAll.value, device=device_a.device_name)
 
     with _allure_step("查询全局离线推送设置并验证配置字段"):
         fetch_resp = device_a.call("PushManager", Cmd.fetchSilentModeForAll.value, info={})
@@ -105,7 +115,7 @@ def test_push_global_silent_mode_flow(device_a, assert_api):
             expected={
                 "manager": "PushManager",
                 "cmd": Cmd.fetchSilentModeForAll.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": {
                     "expireTs": 0,
                     "convId": ne(None),
@@ -132,7 +142,7 @@ def test_push_conversation_silent_mode_flow(device_a, assert_api, user_b):
                 "param": {"paramType": 0, "remindType": 0},
             },
         )
-        _assert_success_null(assert_api, set_resp, cmd=Cmd.setConversationSilentMode.value)
+        _assert_success_null(assert_api, set_resp, cmd=Cmd.setConversationSilentMode.value, device=device_a.device_name)
 
     with _allure_step("查询单聊会话免打扰设置并验证配置"):
         fetch_resp = device_a.call(
@@ -145,7 +155,7 @@ def test_push_conversation_silent_mode_flow(device_a, assert_api, user_b):
             expected={
                 "manager": "PushManager",
                 "cmd": Cmd.fetchConversationSilentMode.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": {
                     "expireTs": 0,
                     "convId": conv_id,
@@ -169,7 +179,7 @@ def test_push_conversation_silent_mode_flow(device_a, assert_api, user_b):
             expected={
                 "manager": "PushManager",
                 "cmd": Cmd.fetchSilentModeForConversations.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": {
                     conv_id: {
                         "expireTs": 0,
@@ -190,7 +200,7 @@ def test_push_conversation_silent_mode_flow(device_a, assert_api, user_b):
             Cmd.removeConversationSilentMode.value,
             info={"convId": conv_id, "conversationType": 0},
         )
-        _assert_success_null(assert_api, remove_resp, cmd=Cmd.removeConversationSilentMode.value)
+        _assert_success_null(assert_api, remove_resp, cmd=Cmd.removeConversationSilentMode.value, device=device_a.device_name)
 
 
 def test_push_preferred_language_and_template(device_a, assert_api):
@@ -201,7 +211,7 @@ def test_push_preferred_language_and_template(device_a, assert_api):
             Cmd.setPreferredNotificationLanguage.value,
             info={"code": "en"},
         )
-        _assert_success_null(assert_api, set_lang_resp, cmd=Cmd.setPreferredNotificationLanguage.value)
+        _assert_success_null(assert_api, set_lang_resp, cmd=Cmd.setPreferredNotificationLanguage.value, device=device_a.device_name)
 
     with _allure_step("查询首选通知语言并验证为英语"):
         fetch_lang_resp = device_a.call(
@@ -214,7 +224,7 @@ def test_push_preferred_language_and_template(device_a, assert_api):
             expected={
                 "manager": "PushManager",
                 "cmd": Cmd.fetchPreferredNotificationLanguage.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": "en",
             },
             ignore_keys={"sequence"},
@@ -226,7 +236,7 @@ def test_push_preferred_language_and_template(device_a, assert_api):
             Cmd.setPushTemplate.value,
             info={"pushTemplateName": "default"},
         )
-        _assert_success_null(assert_api, set_template_resp, cmd=Cmd.setPushTemplate.value)
+        _assert_success_null(assert_api, set_template_resp, cmd=Cmd.setPushTemplate.value, device=device_a.device_name)
 
     with _allure_step("查询推送模板并验证模板名称"):
         get_template_resp = device_a.call("PushManager", Cmd.getPushTemplate.value, info={})
@@ -235,7 +245,7 @@ def test_push_preferred_language_and_template(device_a, assert_api):
             expected={
                 "manager": "PushManager",
                 "cmd": Cmd.getPushTemplate.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": "default",
             },
             ignore_keys={"sequence"},
@@ -271,7 +281,7 @@ def test_push_vendor_token_update_current_environment(device_a, assert_api, cmd,
             expected={
                 "manager": "PushManager",
                 "cmd": cmd,
-                "device": "deviceA",
+                "device": device_a.device_name,
                 "result": expected_result,
             },
             ignore_keys={"sequence"},
@@ -306,7 +316,7 @@ def test_push_sync_conversations_silent_mode_current_environment(device_a, asser
             expected={
                 "manager": "PushManager",
                 "cmd": Cmd.syncSilentModels.value,
-                "device": "deviceA",
+                "device": device_a.device_name,
             },
             ignore_keys={"sequence", "result"},
         )

@@ -43,7 +43,7 @@ def test_chatroom_update_and_fetch_announcement_success(device_a, assert_api, us
                 assert_api,
                 update_resp,
                 cmd=Cmd.updateChatRoomAnnouncement.value,
-                device="deviceA",
+                device=device_a.device_name,
             )
 
         with _allure_step("查询聊天室公告并验证等于本次设置值"):
@@ -57,7 +57,7 @@ def test_chatroom_update_and_fetch_announcement_success(device_a, assert_api, us
                 expected={
                     "manager": "ChatRoomManager",
                     "cmd": Cmd.fetchChatRoomAnnouncement.value,
-                    "device": "deviceA",
+                    "device": device_a.device_name,
                     "result": announcement,
                 },
                 ignore_keys={"sequence"},
@@ -326,7 +326,7 @@ def test_chatroom_change_subject_and_description_success(device_a, assert_api, u
                 Cmd.changeChatRoomSubject.value,
                 info={"roomId": room_id, "subject": new_subject},
             )
-            _assert_success_envelope(assert_api, subject_resp, cmd=Cmd.changeChatRoomSubject.value, device="deviceA")
+            _assert_success_envelope(assert_api, subject_resp, cmd=Cmd.changeChatRoomSubject.value, device=device_a.device_name)
 
             description_resp = device_a.call(
                 "ChatRoomManager",
@@ -337,7 +337,7 @@ def test_chatroom_change_subject_and_description_success(device_a, assert_api, u
                 assert_api,
                 description_resp,
                 cmd=Cmd.changeChatRoomDescription.value,
-                device="deviceA",
+                device=device_a.device_name,
             )
 
         with _allure_step("查询聊天室信息并验证名称和描述已更新"):
@@ -351,7 +351,7 @@ def test_chatroom_change_subject_and_description_success(device_a, assert_api, u
                 expected={
                     "manager": "ChatRoomManager",
                     "cmd": Cmd.fetchChatRoomInfoFromServer.value,
-                    "device": "deviceA",
+                    "device": device_a.device_name,
                     "result": {
                         "roomId": room_id,
                         "name": new_subject,
@@ -488,7 +488,7 @@ def test_chatroom_mute_and_unmute_all_members_success(device_a, assert_api, user
             mute_resp = device_a.call(
                 "ChatRoomManager", Cmd.muteAllChatRoomMembers.value, info={"roomId": room_id}
             )
-            _assert_success_envelope(assert_api, mute_resp, cmd=Cmd.muteAllChatRoomMembers.value, device="deviceA")
+            _assert_success_envelope(assert_api, mute_resp, cmd=Cmd.muteAllChatRoomMembers.value, device=device_a.device_name)
             fetch_after_mute = device_a.call(
                 "ChatRoomManager", Cmd.fetchChatRoomInfoFromServer.value, info={"roomId": room_id}
             )
@@ -500,7 +500,7 @@ def test_chatroom_mute_and_unmute_all_members_success(device_a, assert_api, user
             unmute_resp = device_a.call(
                 "ChatRoomManager", Cmd.unMuteAllChatRoomMembers.value, info={"roomId": room_id}
             )
-            _assert_success_envelope(assert_api, unmute_resp, cmd=Cmd.unMuteAllChatRoomMembers.value, device="deviceA")
+            _assert_success_envelope(assert_api, unmute_resp, cmd=Cmd.unMuteAllChatRoomMembers.value, device=device_a.device_name)
             fetch_after_unmute = device_a.call(
                 "ChatRoomManager", Cmd.fetchChatRoomInfoFromServer.value, info={"roomId": room_id}
             )
@@ -527,7 +527,7 @@ def test_chatroom_set_and_fetch_attributes_success(device_a, assert_api, user_a)
                     "forced": True,
                 },
             )
-            _assert_success_envelope(assert_api, set_resp, cmd=Cmd.setChatRoomAttributes.value, device="deviceA")
+            _assert_success_envelope(assert_api, set_resp, cmd=Cmd.setChatRoomAttributes.value, device=device_a.device_name)
             failures = set_resp.get("result")
             assert isinstance(failures, dict), f"setChatRoomAttributes result 应为失败 key map: {set_resp}"
             assert attr_key not in failures, f"设置聊天室属性失败: key={attr_key}, failures={failures}"
@@ -542,7 +542,7 @@ def test_chatroom_set_and_fetch_attributes_success(device_a, assert_api, user_a)
                 fetch_resp,
                 expected={
                     "manager": "ChatRoomManager", "cmd": Cmd.fetchChatRoomAttributes.value,
-                    "device": "deviceA", "result": {attr_key: attr_value},
+                    "device": device_a.device_name, "result": {attr_key: attr_value},
                 },
                 ignore_keys={"sequence"},
             )
@@ -564,7 +564,7 @@ def test_chatroom_fetch_all_attributes_success(device_a, assert_api, user_a):
                 "ChatRoomManager", Cmd.setChatRoomAttributes.value,
                 info={"roomId": room_id, "attributes": attributes, "autoDelete": False, "forced": True},
             )
-            _assert_success_envelope(assert_api, set_resp, cmd=Cmd.setChatRoomAttributes.value, device="deviceA")
+            _assert_success_envelope(assert_api, set_resp, cmd=Cmd.setChatRoomAttributes.value, device=device_a.device_name)
             failures = set_resp.get("result")
             assert isinstance(failures, dict), f"setChatRoomAttributes result 应为失败 key map: {set_resp}"
             assert not set(attributes).intersection(failures), f"设置聊天室属性失败: failures={failures}"
@@ -577,7 +577,7 @@ def test_chatroom_fetch_all_attributes_success(device_a, assert_api, user_a):
                 fetch_resp,
                 expected={
                     "manager": "ChatRoomManager", "cmd": Cmd.fetchChatRoomAttributes.value,
-                    "device": "deviceA", "result": attributes,
+                    "device": device_a.device_name, "result": attributes,
                 },
                 ignore_keys={"sequence"},
             )
@@ -599,7 +599,7 @@ def test_chatroom_fetch_attributes_by_partial_keys_success(device_a, assert_api,
                 "ChatRoomManager", Cmd.setChatRoomAttributes.value,
                 info={"roomId": room_id, "attributes": attributes, "autoDelete": False, "forced": True},
             )
-            _assert_success_envelope(assert_api, set_resp, cmd=Cmd.setChatRoomAttributes.value, device="deviceA")
+            _assert_success_envelope(assert_api, set_resp, cmd=Cmd.setChatRoomAttributes.value, device=device_a.device_name)
             failures = set_resp.get("result")
             assert isinstance(failures, dict), f"setChatRoomAttributes result 应为失败 key map: {set_resp}"
             assert not set(attributes).intersection(failures), f"设置聊天室属性失败: failures={failures}"
@@ -613,7 +613,7 @@ def test_chatroom_fetch_attributes_by_partial_keys_success(device_a, assert_api,
                 fetch_resp,
                 expected={
                     "manager": "ChatRoomManager", "cmd": Cmd.fetchChatRoomAttributes.value,
-                    "device": "deviceA", "result": {attr_key_1: attributes[attr_key_1]},
+                    "device": device_a.device_name, "result": {attr_key_1: attributes[attr_key_1]},
                 },
                 ignore_keys={"sequence"},
             )
@@ -634,12 +634,12 @@ def test_chatroom_update_attribute_overwrites_previous_value(device_a, assert_ap
                 "ChatRoomManager", Cmd.setChatRoomAttributes.value,
                 info={"roomId": room_id, "attributes": {attr_key: old_value}, "autoDelete": False, "forced": True},
             )
-            _assert_success_envelope(assert_api, first_set_resp, cmd=Cmd.setChatRoomAttributes.value, device="deviceA")
+            _assert_success_envelope(assert_api, first_set_resp, cmd=Cmd.setChatRoomAttributes.value, device=device_a.device_name)
             second_set_resp = device_a.call(
                 "ChatRoomManager", Cmd.setChatRoomAttributes.value,
                 info={"roomId": room_id, "attributes": {attr_key: new_value}, "autoDelete": False, "forced": True},
             )
-            _assert_success_envelope(assert_api, second_set_resp, cmd=Cmd.setChatRoomAttributes.value, device="deviceA")
+            _assert_success_envelope(assert_api, second_set_resp, cmd=Cmd.setChatRoomAttributes.value, device=device_a.device_name)
             failures = second_set_resp.get("result")
             assert isinstance(failures, dict), f"setChatRoomAttributes result 应为失败 key map: {second_set_resp}"
             assert attr_key not in failures, f"覆盖更新聊天室属性失败: key={attr_key}, failures={failures}"
@@ -653,7 +653,7 @@ def test_chatroom_update_attribute_overwrites_previous_value(device_a, assert_ap
                 fetch_resp,
                 expected={
                     "manager": "ChatRoomManager", "cmd": Cmd.fetchChatRoomAttributes.value,
-                    "device": "deviceA", "result": {attr_key: new_value},
+                    "device": device_a.device_name, "result": {attr_key: new_value},
                 },
                 ignore_keys={"sequence"},
             )
@@ -677,7 +677,7 @@ def test_chatroom_change_owner_success(device_a, device_b, assert_api, user_a, u
             assert_api.assert_response_matches(
                 change_resp,
                 expected={
-                    "manager": "ChatRoomManager", "cmd": Cmd.changeChatRoomOwner.value, "device": "deviceA",
+                    "manager": "ChatRoomManager", "cmd": Cmd.changeChatRoomOwner.value, "device": device_a.device_name,
                     "result": {
                         "owner": user_b, "maxUsers": 200, "permissionType": 0, "isAllMemberMuted": False,
                         "adminList": [], "memberCount": 2, "muteList": [], "muteExpireTimestamp": -1,
@@ -701,13 +701,13 @@ def test_chatroom_remove_attributes_success(device_a, assert_api, user_a):
                 "ChatRoomManager", Cmd.setChatRoomAttributes.value,
                 info={"roomId": room_id, "attributes": {attr_key: attr_value}, "autoDelete": False, "forced": True},
             )
-            _assert_success_envelope(assert_api, set_resp, cmd=Cmd.setChatRoomAttributes.value, device="deviceA")
+            _assert_success_envelope(assert_api, set_resp, cmd=Cmd.setChatRoomAttributes.value, device=device_a.device_name)
         with _allure_step("删除聊天室属性并验证查询结果为空"):
             remove_resp = device_a.call(
                 "ChatRoomManager", Cmd.removeChatRoomAttributes.value,
                 info={"roomId": room_id, "keys": [attr_key], "forced": True},
             )
-            _assert_success_envelope(assert_api, remove_resp, cmd=Cmd.removeChatRoomAttributes.value, device="deviceA")
+            _assert_success_envelope(assert_api, remove_resp, cmd=Cmd.removeChatRoomAttributes.value, device=device_a.device_name)
             failures = remove_resp.get("result")
             assert isinstance(failures, dict), f"removeChatRoomAttributes result 应为失败 key map: {remove_resp}"
             assert attr_key not in failures, f"删除聊天室属性失败: key={attr_key}, failures={failures}"
@@ -719,7 +719,7 @@ def test_chatroom_remove_attributes_success(device_a, assert_api, user_a):
                 fetch_resp,
                 expected={
                     "manager": "ChatRoomManager", "cmd": Cmd.fetchChatRoomAttributes.value,
-                    "device": "deviceA", "result": {},
+                    "device": device_a.device_name, "result": {},
                 },
                 ignore_keys={"sequence"},
             )

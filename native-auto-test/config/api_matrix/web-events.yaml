@@ -21,6 +21,8 @@ events:
     - onDisconnected
     - onDataSyncStart
     - onDataSyncFinish
+    - onOfflineMessageSyncStart
+    - onOfflineMessageSyncFinish
     - onTokenWillExpire
     - onTokenDidExpire
     - onError
