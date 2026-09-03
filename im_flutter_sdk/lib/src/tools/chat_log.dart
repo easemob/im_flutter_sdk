@@ -7,12 +7,12 @@ class ChatLog {
   static bool debugAble = kReleaseMode ? false : true;
   static bool enableCallBackLog = false;
 
-  /// Error级别的log
+  /// Error level log
   static void e(Object object, {String? tag}) {
     _printLog(tag, ' | E | ', object);
   }
 
-  /// Verbose级别的log
+  /// Verbose level log
   static void v(Object object, {String? tag}) {
     if (debugAble) {
       _printLog(tag, ' | V | ', object);

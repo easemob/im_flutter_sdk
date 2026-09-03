@@ -33,7 +33,7 @@ import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart'
 /// ```
 /// ~end
 class ChatMessage {
-  /// 消息 ID。
+  /// Message ID.
   String? _msgId;
   final String _msgLocalId = DateTime.now().millisecondsSinceEpoch.toString() +
       Random().nextInt(99999).toString();
@@ -45,7 +45,7 @@ class ChatMessage {
   /// ~end
   ///
   /// ~chinese
-  /// 消息 ID。
+  /// Message ID.
   /// ~end
   String get msgId => _msgId ?? _msgLocalId;
 
@@ -210,8 +210,8 @@ class ChatMessage {
   /// ~english
   /// Whether the message is delivered only when the recipient(s) is/are online:
   ///
-  /// - `true`：The message is delivered only when the recipient(s) is/are online. If the recipient is offline, the message is discarded.
-  /// - (Default) `false` ：The message is delivered when the recipient(s) is/are online. If the recipient(s) is/are offline, the message will not be delivered to them until they get online.
+  /// - `true`:The message is delivered only when the recipient(s) is/are online. If the recipient is offline, the message is discarded.
+  /// - (Default) `false` :The message is delivered when the recipient(s) is/are online. If the recipient(s) is/are offline, the message will not be delivered to them until they get online.
   /// ~end
   ///
   /// ~chinese

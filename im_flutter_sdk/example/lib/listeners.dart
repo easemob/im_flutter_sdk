@@ -3,8 +3,8 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'log/log_store.dart';
 import 'registry/api_entry.dart';
 
-/// init 成功后统一注册全部事件监听，所有回调写入日志（悬浮 + stdout + 落盘）。
-/// 已废弃的回调（onMessagesRecalled、onMemberExited/JoinedFromGroup 单数版）不注册。
+/// Register all event listeners after init succeeds; all callbacks are written to logs (floating + stdout + file).
+/// Deprecated callbacks (onMessagesRecalled, singular onMemberExited/JoinedFromGroup) are not registered.
 void registerAllListeners() {
   const id = 'api_tester';
   void log(String source, [Map<String, Object?>? args]) =>

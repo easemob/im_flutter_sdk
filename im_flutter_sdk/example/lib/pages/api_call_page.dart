@@ -6,8 +6,8 @@ import 'package:flutter/services.dart';
 import '../log/log_store.dart';
 import '../registry/api_entry.dart';
 
-/// API 调用页：JSON 参数 → 调真实 API → 结果 JSON 展示（可滚动、可一键复制），
-/// 同一份结果写入日志（source 为 api.<API 全限定名>）。
+/// API call page: JSON params -> call real API -> result JSON display (scrollable, one-click copy),
+/// same result also written to log (source is api.<API fully qualified name>).
 class ApiCallPage extends StatefulWidget {
   final ApiEntry entry;
   const ApiCallPage({super.key, required this.entry});

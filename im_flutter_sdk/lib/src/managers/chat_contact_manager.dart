@@ -541,7 +541,7 @@ class ChatContactManager {
   }
 
   /// ~english
-  /// Accepts a friend invitation。
+  /// Accepts a friend invitation.
   ///
   /// Param [userId] The user who sends the friend invitation.
   ///
@@ -685,7 +685,7 @@ class ChatContactManager {
   /// ~english
   /// Gets contact by userId.
   ///
-  /// Param [userId] user id。
+  /// Param [userId] user id.
   ///
   /// **Return** The contact.
   ///

@@ -4,7 +4,7 @@ import 'apis/group_apis.dart';
 import 'apis/presence_apis.dart';
 import 'apis/user_info_apis.dart';
 
-/// 第一期可搜索 API 全量注册表（init/login/logout 为页面专用，不进注册表）。
+/// Phase-1 searchable API registry (init/login/logout are page-specific and not registered).
 final List<ApiEntry> apiRegistry = [
   ...chatApis,
   ...groupApis,

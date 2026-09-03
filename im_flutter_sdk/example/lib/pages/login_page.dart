@@ -8,7 +8,7 @@ import '../registry/api_entry.dart';
 import '../sdk_state.dart';
 import 'search_page.dart';
 
-/// 登录页：密码 / token 两种方式，登录成功后 push 搜索页（可返回换号 / 退出）。
+/// Login page: password / token modes; pushes search page on success (can go back to switch account / logout).
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -23,7 +23,7 @@ class _LoginPageState extends State<LoginPage> {
   String? _result;
   bool _running = false;
 
-  /// 执行登录/退出动作并记录结果，返回是否成功。
+  /// Performs login/logout action, records the result, and returns whether it succeeded.
   Future<bool> _run(String label, Future<void> Function() action) async {
     setState(() {
       _result = null;

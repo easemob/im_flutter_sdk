@@ -75,7 +75,7 @@ class ChatConversation {
   /// ~english
   /// The conversation ID.
   ///
-  /// For one-to-one chat，the conversation ID is the username of the other party.
+  /// For one-to-one chat,the conversation ID is the username of the other party.
   /// For group chat, the conversation ID is the group ID, not the group name.
   /// For chat room, the conversation ID is the chat room ID, not the chat room name.
   /// For help desk, the conversation ID is the username of the other party.

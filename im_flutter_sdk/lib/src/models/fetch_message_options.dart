@@ -38,7 +38,7 @@ class FetchMessageOptions {
   ///
   /// Param [needSave] Whether to save the retrieved messages to the database:
   /// - `true`: Yes.
-  /// - (Default) `false`：No.
+  /// - (Default) `false`:No.
   /// ~end
   ///
   /// ~chinese
@@ -147,7 +147,7 @@ class FetchMessageOptions {
   /// ~english
   /// Whether to save the retrieved messages to the database:
   /// - `true`: Yes.
-  /// - (Default) `false`：No.
+  /// - (Default) `false`:No.
   /// ~end
   ///
   /// ~chinese

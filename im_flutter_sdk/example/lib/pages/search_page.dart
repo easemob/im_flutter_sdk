@@ -5,8 +5,8 @@ import '../registry/api_entry.dart';
 import '../registry/registry.dart';
 import 'api_call_page.dart';
 
-/// 搜索页：默认只显示提示语；输入关键字实时过滤（大小写不敏感子串，
-/// 匹配方法名 + 分组名）。只读全量清单不参与搜索。
+/// Search page: shows hint text by default; real-time keyword filtering (case-insensitive substring,
+/// matching method name + group name). Read-only full list is not included in search.
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
 

@@ -1,7 +1,7 @@
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-/// 初始化页与自动模式共用：JSON → ChatOptions。
-/// appKey 必填；其余键缺省时用 SDK 默认值，未知键忽略。
+/// Shared by init page and auto mode: JSON -> ChatOptions.
+/// appKey is required; other keys fall back to SDK defaults; unknown keys are ignored.
 ChatOptions emOptionsFromJson(Map<String, dynamic> j) {
   final appKey = j['appKey'] as String?;
   if (appKey == null || appKey.isEmpty) {
@@ -48,7 +48,7 @@ ChatOptions emOptionsFromJson(Map<String, dynamic> j) {
   );
 }
 
-/// 初始化页预填模板：只含必填字段。
+/// Init page pre-fill template: contains only required fields.
 const String emOptionsTemplate = '''{
   "appKey": "",
   "autoLogin": false,

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-/// 全局 SDK 状态：已初始化 / 已登录 / 当前账号 + 初始化 JSON 快照。
+/// Global SDK state: initialized / logged in / current account + init JSON snapshot.
 class SdkState extends ChangeNotifier {
   SdkState._();
   static final SdkState instance = SdkState._();

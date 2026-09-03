@@ -271,7 +271,7 @@ class ChatThreadManager {
   }
 
   /// ~english
-  /// Paging to get the list of Chat Threads that the current user has joined the specified group from the server。
+  /// Paging to get the list of Chat Threads that the current user has joined the specified group from the server.
   ///
   /// Param [parentId] The session id of the upper level of the sub-area
   ///

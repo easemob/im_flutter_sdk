@@ -13,11 +13,11 @@ Future<void> main() async {
   runApp(const ApiTesterApp());
 }
 
-/// 用于取 Navigator 内部的 Overlay（RootShell 在 Navigator 之上，
-/// 直接用自身 context 找不到 Overlay）。
+/// Used to get the Overlay inside Navigator (RootShell is above Navigator,
+/// cannot find Overlay with its own context directly).
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
-/// 顶部状态条：未初始化 / 已初始化，未登录 / 已登录：<userId>，不做硬性门控。
+/// Top status bar: not initialized / initialized, not logged in / logged in: <userId>; no hard gating.
 class StatusBar extends StatelessWidget {
   const StatusBar({super.key});
 
@@ -40,7 +40,7 @@ class StatusBar extends StatelessWidget {
   }
 }
 
-/// 根壳：状态条常显 + init 成功后插入悬浮日志/悬浮附件（生命周期独立于页面）。
+/// Root shell: status bar always visible + floating log/attachment inserted after init (lifecycle independent of pages).
 class RootShell extends StatefulWidget {
   final Widget? child;
   const RootShell({super.key, required this.child});
@@ -69,13 +69,13 @@ class _RootShellState extends State<RootShell> {
         }
         return Column(
           children: [
-            // 颜色包在 SafeArea 外层，让刘海/状态栏区域与状态条同色。
+            // Color wraps outside SafeArea so the notch/status bar area matches the status bar color.
             Container(
               color: Colors.blueGrey.shade700,
               child: const SafeArea(bottom: false, child: StatusBar()),
             ),
-            // 状态条已处理顶部 inset，移除页面的重复 padding，
-            // 否则 AppBar 上方会出现一段空白。
+            // Status bar already handles top inset; remove the redundant page padding,
+            // otherwise a blank space appears above the AppBar.
             Expanded(
               child: MediaQuery.removePadding(
                 context: context,
@@ -105,7 +105,7 @@ class ApiTesterApp extends StatelessWidget {
   }
 }
 
-/// 自动模式占位页：启动脚本，展示状态；日志走 stdout / 落盘通道。
+/// Auto-mode placeholder page: starts the script, shows status; logs go to stdout / file channel.
 class AutoHomePage extends StatefulWidget {
   const AutoHomePage({super.key});
 

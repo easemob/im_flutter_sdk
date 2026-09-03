@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
-/// 附件类型。
+/// Attachment kind.
 enum AttachmentKind {
   image('图片', Icons.image),
   video('视频', Icons.videocam),
@@ -16,10 +16,10 @@ enum AttachmentKind {
   const AttachmentKind(this.label, this.icon);
 }
 
-/// 一次附件选择的记录。
+/// A record of one attachment pick.
 ///
-/// 字段只取 file_picker / Flutter 框架内置能拿到的：
-/// 通用为 name/path/size/extension；图片额外带 width/height（dart:ui 解码）。
+/// Fields come only from file_picker / Flutter framework built-in values:
+/// Common fields are name/path/size/extension; images additionally have width/height (decoded via dart:ui).
 class AttachmentRecord {
   final AttachmentKind kind;
   final String name;
@@ -53,10 +53,10 @@ class AttachmentRecord {
       };
 }
 
-/// 独立的附件选择工具。
+/// Standalone attachment picker utility.
 ///
-/// 输出只有一条 [AttachmentRecord]（取消返回 null），不依赖任何页面/状态，
-/// 任何需要附件的 API 验证场景都可以直接调用：
+/// Output is a single [AttachmentRecord] (null on cancel), independent of any page/state,
+/// can be called directly in any API validation scenario that needs attachments:
 ///
 /// ```dart
 /// final record = await AttachmentPicker.pick(AttachmentKind.image);
@@ -64,7 +64,7 @@ class AttachmentRecord {
 class AttachmentPicker {
   AttachmentPicker._();
 
-  /// 选择指定类型的附件，返回记录。
+  /// Pick an attachment of the specified kind; returns the record.
   static Future<AttachmentRecord?> pick(AttachmentKind kind) async {
     final result = await FilePicker.platform.pickFiles(
       type: switch (kind) {
@@ -100,7 +100,7 @@ class AttachmentPicker {
     );
   }
 
-  /// 用框架自带的 dart:ui 解码读图片宽高；读不出来就算了（返回 null）。
+  /// Use framework built-in dart:ui decoding for image dimensions; returns null if it fails.
   static Future<(int, int)?> _imageSize(String path) async {
     try {
       final bytes = await File(path).readAsBytes();
