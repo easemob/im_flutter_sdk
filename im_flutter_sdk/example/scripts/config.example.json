@@ -1,0 +1,11 @@
+{
+  "appKey": "",
+  "autoLogin": false,
+  "debugMode": true,
+  "enableUserInfo": true,
+  "loginUser": "loginUser",
+  "loginPassword": "loginPassword",
+  "userId01": "userId01",
+  "groupId01": "",
+  "roomId01": ""
+}
