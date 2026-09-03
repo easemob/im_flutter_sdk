@@ -200,6 +200,12 @@ def set_accept_invitation_always(
     enabled: bool,
 ) -> None:
     """显式设置好友邀请自动接受模式，避免 case 顺序影响离线邀请语义。"""
+    # Web 5.0 没有 Client.acceptInvitationAlways；Web 好友申请始终走
+    # ContactManager.acceptInvitation，不能让这个移动端配置阻断离线 Case。
+    runner_info = getattr(device, "runner_info", None) or {}
+    if runner_info.get("platform") == "web":
+        return
+
     response = device.call(
         "Client",
         Cmd.updateAcceptInvitationAlways.value,

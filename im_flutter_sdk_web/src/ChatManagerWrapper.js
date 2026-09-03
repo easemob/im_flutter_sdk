@@ -1,10 +1,8 @@
 /** Web 5.0 ChatManager adapter and message/conversation event registration. */
 export function createChatManagerWrapper({ manager, emit, registerEvents, h, currentUser, messages }) {
   const commands = {
-    ackConversationRead: async (m, i) => {
-      await m.clearConversationUnreadMessageCount(h.unreadOptions(i));
-      return true;
-    },
+    ackConversationRead: (m, i) =>
+      m.clearConversationUnreadMessageCount(h.unreadOptions(i)),
     ackGroupMessageRead: async (m, i) => {
       await m.sendMessageReadReceipts(h.readReceiptOptions(i));
       return true;
@@ -16,11 +14,18 @@ export function createChatManagerWrapper({ manager, emit, registerEvents, h, cur
     addRemoteAndLocalConversationsMark: (m, i) => m.addConversationMark(h.conversationMarkOptions(i)),
     asyncFetchGroupAcks: (m, i) => m.getGroupMessageReadReceipts(h.groupReceiptOptions(i)),
     deleteAllMessageAndConversation: (m) => m.clearAllMessagesAndConversations(),
-    deleteConversation: (m, i) => m.deleteConversation(String(i.convId || i.conversationId), Boolean(i.deleteMessages)),
-    deleteConversations: (m, i) => Promise.all((i.convIds || i.conversationIds || []).map((id) => m.deleteConversation(String(id), Boolean(i.deleteMessages)))),
+    deleteConversation: (m, i) => m.deleteConversation({
+      conversationId: String(i.convId || i.conversationId || ""),
+      conversationType: h.protocolConversationType(i),
+      deleteRoamingMessages: Boolean(i.deleteMessages ?? i.deleteRoamingMessages),
+    }),
+    deleteConversations: (m, i) => Promise.all((i.convIds || i.conversationIds || []).map((id) => m.deleteConversation({
+      conversationId: String(id),
+      conversationType: h.protocolConversationType(i),
+      deleteRoamingMessages: Boolean(i.deleteMessages ?? i.deleteRoamingMessages),
+    }))),
     deleteMessagesBeforeTimestamp: (m, i) => m.removeHistoryMessages(h.historyDeleteOptions(i)),
     deleteRemoteAndLocalConversationsMark: (m, i) => m.removeConversationMark(h.conversationMarkOptions(i)),
-    deleteRemoteConversation: (m, i) => m.deleteConversation(String(i.convId || i.conversationId), true),
     downloadAndParseCombineMessage: (m, i) => m.downloadAndParseCombineMessage(i),
     downloadAttachment: (m, i) => downloadAttachment(m, i, false),
     downloadThumbnail: (m, i) => downloadAttachment(m, i, true),
@@ -32,11 +37,18 @@ export function createChatManagerWrapper({ manager, emit, registerEvents, h, cur
     getGroupMessageReadReceipts: (m, i) => m.getGroupMessageReadReceipts(h.groupReceiptOptions(i)),
     loadAllConversations: (m, i) => m.getConversationList(h.conversationListOptions(i)),
     loadConversationMessagesWithKeyword: (m, i) => m.searchMessages(h.searchOptions(i)),
-    markAllChatMsgAsRead: (m, i) => m.clearConversationUnreadMessageCount(h.unreadOptions(i)),
-    pinConversation: (m, i) => m.setConversationPinned({ conversationId: String(i.convId || i.conversationId), conversationType: h.conversationType(i.chatType || i.conversationType), pinned: Boolean(i.isPinned ?? i.pinned ?? true) }),
+    markAllChatMsgAsRead: async (m) => {
+      await m.clearAllConversationUnreadMessageCount();
+      return true;
+    },
+    pinConversation: (m, i) => m.setConversationPinned({ conversationId: String(i.convId ?? i.conversationId ?? ""), conversationType: h.conversationType(i.chatType || i.conversationType), pinned: Boolean(i.isPinned ?? i.pinned ?? true) }),
     pinMessage: (m, i) => m.pinMessage({ conversationId: String(i.convId || i.conversationId), conversationType: h.conversationType(i.chatType || i.conversationType), messageId: String(i.msgId || i.messageId), note: i.note }),
-    removeMessagesFromServerWithMsgIds: (m, i) => m.removeHistoryMessages({ conversationId: String(i.convId || i.conversationId), messageIds: i.msgIds || i.messageIds || [] }),
-    removeMessagesFromServerWithTs: (m, i) => m.removeHistoryMessages({ conversationId: String(i.convId || i.conversationId), timestamp: i.timestamp || i.ts }),
+    removeMessagesFromServerWithMsgIds: (m, i) => m.removeHistoryMessages({
+      conversationId: String(i.convId || i.conversationId || ""),
+      conversationType: h.protocolConversationType(i),
+      messageIds: i.msgIds || i.messageIds || [],
+    }),
+    removeMessagesFromServerWithTs: (m, i) => m.removeHistoryMessages(h.historyDeleteOptions(i)),
     resendMessage: (m, i) => m.sendMessage(i.message),
     searchChatMsgFromDB: (m, i) => m.searchMessages(h.searchOptions(i)),
     searchMessagesFromServer: (m, i) => m.searchMessages(h.searchOptions(i)),
@@ -80,8 +92,13 @@ export function createChatManagerWrapper({ manager, emit, registerEvents, h, cur
     if (cmd === "removeReaction") {
       return manager.removeReaction({ messageId: String(info.msgId || info.messageId), reaction: String(info.reaction) });
     }
-    if (cmd === "fetchReactionList" || cmd === "getReactionList") return manager.getReactionList({ messageId: String(info.msgId || info.messageId) });
-    if (cmd === "fetchReactionDetail" || cmd === "getReactionDetail") return manager.getReactionDetail(info);
+    if (cmd === "fetchReactionList" || cmd === "getReactionList") {
+      const result = await manager.getReactionList(h.reactionListOptions(info));
+      return h.normalizeReactionListResult(result);
+    }
+    if (cmd === "fetchReactionDetail" || cmd === "getReactionDetail") {
+      return manager.getReactionDetail(h.reactionDetailOptions(info));
+    }
     if (cmd === "fetchHistoryMessages" || cmd === "getHistoryMessages") {
       return normalizeHistoryResult(await manager.getHistoryMessages(h.historyOptions(info)));
     }
@@ -123,7 +140,14 @@ export function createChatManagerWrapper({ manager, emit, registerEvents, h, cur
   }
 
   function messageOptions(info) {
-    return { conversationId: String(info.to || info.convId || info.conversationId), conversationType: h.conversationType(info.chatType || info.conversationType), ext: info.ext, deliverOnlineOnly: info.deliverOnlineOnly, needReadReceipt: info.needReadReceipt };
+    return {
+      conversationId: String(info.to || info.convId || info.conversationId),
+      conversationType: h.conversationType(info.chatType || info.conversationType),
+      ext: info.ext,
+      deliverOnlineOnly: info.deliverOnlineOnly,
+      needReadReceipt: info.needReadReceipt,
+      ...(info.webhookEnv == null ? {} : { webhookEnv: String(info.webhookEnv) }),
+    };
   }
 
   function mediaOptions(body, options, type) {
@@ -221,9 +245,16 @@ export function createChatManagerWrapper({ manager, emit, registerEvents, h, cur
     if ([1, 2, 4, 5].includes(type)) {
       if (body.displayName == null && body.filename != null) body.displayName = body.filename;
     }
+    const direct = message.direct;
+    const directDirection = direct === "SEND" ? 0 : direct === "RECEIVE" ? 1 : undefined;
+    const senderId = String(message.from || "").split("/", 1)[0];
+    const currentUserId = String(currentUser() || "").split("/", 1)[0];
+    const inferredDirection = directDirection ?? (
+      senderId && currentUserId ? (senderId === currentUserId ? 0 : 1) : direction
+    );
     return {
       ...message,
-      direction: message.direction ?? direction,
+      direction: message.direction ?? inferredDirection,
       ...(message.status == null ? {} : { status: message.status }),
       ...(message.hasRead == null ? {} : { hasRead: message.hasRead }),
       ...(message.isPeerRead == null ? {} : { isPeerRead: message.isPeerRead }),

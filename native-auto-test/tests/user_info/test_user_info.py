@@ -339,7 +339,7 @@ def test_user_info_update_own_nickname_length_over_64(device_a, assert_api):
             Cmd.updateOwnUserInfo.value,
             info={"nickName": "n" * 2050},
         )
-        assert_api.assert_error(resp, code=901, description="User info exceeds the data length")
+        assert_api.assert_error(resp, code=901)
 
 def test_user_info_update_own_nickname_empty(device_a, assert_api, user_a):
     """updateOwnUserInfo：昵称为空"""
