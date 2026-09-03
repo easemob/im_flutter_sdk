@@ -5,8 +5,8 @@ import 'package:flutter/services.dart';
 
 import 'log_store.dart';
 
-/// 悬浮日志：init 成功后插入 Overlay，生命周期独立于页面。
-/// 常态为可拖动小球，点开为半屏面板。
+/// Floating log: inserted into Overlay after init; lifecycle independent of pages.
+/// Default is a draggable ball; tapping opens a half-screen panel.
 class FloatingLog {
   static OverlayEntry? _entry;
 
@@ -25,7 +25,7 @@ class FloatingLogWidget extends StatefulWidget {
 }
 
 class _FloatingLogWidgetState extends State<FloatingLogWidget> {
-  /// null 表示未拖动过，用屏幕尺寸算默认位（右下角上方）。
+  /// null means never dragged; default position calculated from screen size (above bottom-right corner).
   Offset? _pos;
   bool _open = false;
 
@@ -44,14 +44,14 @@ class _FloatingLogWidgetState extends State<FloatingLogWidget> {
     });
   }
 
-  /// 面板内超长内容折叠显示首尾，复制仍复制全文。
+  /// Long content in the panel is collapsed showing head and tail; copy still copies the full text.
   static String _fold(String line) {
     const limit = 400;
     if (line.length <= limit) return line;
     return '${line.substring(0, 250)} …[折叠 ${line.length - 340} 字符]… ${line.substring(line.length - 90)}';
   }
 
-  /// 面板显示为「时间 | 来源 | 内容」；复制全部仍为原始单行 JSON。
+  /// Panel displays as "time | source | content"; copy-all still produces the original single-line JSON.
   static String _display(String line) {
     try {
       final m = jsonDecode(line) as Map<String, dynamic>;
@@ -83,7 +83,7 @@ class _FloatingLogWidgetState extends State<FloatingLogWidget> {
         ),
       );
     }
-    // 展开即为全屏面板；SafeArea 保证顶部操作栏避开刘海。
+    // Expanded as a full-screen panel; SafeArea ensures the top action bar avoids the notch.
     return Positioned.fill(
       child: Material(
         elevation: 16,

@@ -4,7 +4,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import '../api_entry.dart';
 
-/// ChatManager 相关条目。
+/// ChatManager related entries.
 final chatApis = <ApiEntry>[
   ApiEntry(
     name: 'ChatManager.sendMessage',
@@ -27,10 +27,10 @@ final chatApis = <ApiEntry>[
     invoke: (p) async {
       final msg = ChatMessage.fromJson(p);
       final sent = await ChatClient.getInstance.chatManager.sendMessage(msg);
-      // sendMessage 返回的是发送前消息（本地 msgId）；发送成功后服务器会改写
-      // msgId，本地 DB 以新 id 存储。downloadBigImage / voiceMessageToText 的
-      // wrapper 按 msgId 查 DB，所以这里必须等消息状态事件拿到新 id 的消息，
-      // 否则后续步骤查不到（Android 上直接 NPE / 500）。
+      // sendMessage returns the pre-send message (local msgId); on success the server rewrites
+      // the msgId, and the local DB stores it with the new id. downloadBigImage / voiceMessageToText
+      // wrappers look up DB by msgId, so we must wait for the message status event to get the new id,
+      // otherwise subsequent steps cannot find it (direct NPE / 500 on Android).
       final localId = sent.msgId;
       const eventId = 'api_tester_send_message';
       final completer = Completer<ChatMessage>();

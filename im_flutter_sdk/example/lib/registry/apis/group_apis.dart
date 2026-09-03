@@ -2,7 +2,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import '../api_entry.dart';
 
-/// GroupManager 相关条目。
+/// GroupManager related entries.
 final groupApis = <ApiEntry>[
   ApiEntry(
     name: 'ChatGroupManager.updateGroupNamecard',

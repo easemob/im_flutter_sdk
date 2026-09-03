@@ -2,7 +2,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import '../api_entry.dart';
 
-/// PresenceManager 相关条目（复验测试反馈的 presence 问题用）。
+/// PresenceManager related entries (for re-verifying presence issues from testing).
 final presenceApis = <ApiEntry>[
   ApiEntry(
     name: 'ChatPresenceManager.subscribe',

@@ -4,15 +4,15 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
-/// 全局日志存储：内存列表 + stdout（[APITEST] 前缀单行 JSON）+ 文档目录落盘。
-/// seq 全局递增，供 AI 判断顺序与完整性。
+/// Global log store: in-memory list + stdout ([APITEST] prefix single-line JSON) + file in documents directory.
+/// seq increments globally for AI to determine order and completeness.
 class LogStore extends ChangeNotifier {
   LogStore._();
   static final LogStore instance = LogStore._();
 
   static const String stdoutPrefix = '[APITEST]';
 
-  /// 内存日志上限，超出丢弃最旧；stdout 与落盘不受影响，始终完整。
+  /// In-memory log limit; oldest entries are dropped when exceeded; stdout and file output are always complete.
   static const int maxLines = 2000;
 
   final List<String> lines = [];
@@ -22,7 +22,7 @@ class LogStore extends ChangeNotifier {
 
   String? get filePath => _file?.path;
 
-  /// 启动时调用一次：确定落盘路径并打印 log.path。
+  /// Called once at startup: determines the file path and prints log.path.
   Future<void> init() async {
     final dir = await getApplicationDocumentsDirectory();
     _file = File('${dir.path}/api_test.log');
@@ -42,7 +42,7 @@ class LogStore extends ChangeNotifier {
     print('$stdoutPrefix $line');
     final file = _file;
     if (file != null) {
-      // 串行异步落盘，避免同步写阻塞 UI；失败静默不影响主流程。
+      // Serial async file write to avoid blocking UI; failures are silently ignored.
       _writeChain = _writeChain.then((_) async {
         try {
           await file.writeAsString('$stdoutPrefix $line\n',

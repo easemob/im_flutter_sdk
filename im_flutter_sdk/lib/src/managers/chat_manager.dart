@@ -652,7 +652,7 @@ class ChatManager {
   /// Param [type] The conversation type: [ChatConversationType].
   ///
   /// Param [createIfNeed] Whether to create the conversation if the conversation is not found:
-  /// - （Default) `true`: Yes.
+  /// - (Default) `true`: Yes.
   /// - `false`: No.
   ///
   /// **Return** The conversation object found according to the conversation ID and type. The SDK returns null if the conversation is not found.
@@ -1781,7 +1781,7 @@ class ChatManager {
   ///
   /// Param [groupId] The group ID. This parameter is valid only when the chat type is group chat.
   ///
-  /// **Return** The Reaction list under the specified message ID（[ChatMessageReaction.userList] is the summary data, which only contains the information of the first three users）.
+  /// **Return** The Reaction list under the specified message ID([ChatMessageReaction.userList] is the summary data, which only contains the information of the first three users).
   ///
   /// **Throws** A description of the exception. See [ChatError].
   /// ~end
@@ -2294,7 +2294,7 @@ class ChatManager {
   /// Param [clearServerData] Whether to clear all conversations and all messages in them on the server.
   /// - true: Yes. All conversations and all messages in them will be cleared on the server side.
   ///   The current user cannot retrieve messages and conversations from the server, while this has no impact on other users.
-  /// - (Default) false：No. All local conversations and all messages in them will be cleared, while those on the server remain.
+  /// - (Default) false:No. All local conversations and all messages in them will be cleared, while those on the server remain.
   /// ~end
   ///
   /// ~chinese

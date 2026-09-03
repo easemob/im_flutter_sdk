@@ -11,19 +11,19 @@ import '../registry/api_entry.dart';
 import '../registry/registry.dart';
 import '../sdk_state.dart';
 
-/// AI 自动化脚本模式：`--dart-define=API_SCRIPT=<宿主机文件绝对路径>` 启动进入。
-/// 自动执行 init → login → 串行 steps，全部结果走同一条结构化日志通道；
-/// 任一步失败不中断，结束后输出 script.done，App 保持运行。
+/// AI automation script mode: enter via `--dart-define=API_SCRIPT=<host file absolute path>`.
+/// Automatically executes init -> login -> sequential steps; all results go through the same structured log channel;
+/// no step failure interrupts the flow; outputs script.done on completion; App keeps running.
 ///
-/// 测试数据与脚本分离：`--dart-define=API_CONFIG=<config.json 绝对路径>`，
-/// 缺省取脚本同目录下的 config.json（不存在则按空配置处理）。
-/// - init：config 中的 ChatOptions 键（见 [_optionKeys]）为底，脚本 init 覆盖；
-/// - login：脚本 login 优先，否则由 config 的 loginUser + loginToken/loginPassword 推导。
+/// Test data is separated from the script: `--dart-define=API_CONFIG=<config.json absolute path>`,
+/// defaults to config.json in the same directory as the script (empty config if not found).
+/// - init: ChatOptions keys in config (see [_optionKeys]) as base, script init overrides;
+/// - login: script login takes priority, otherwise derived from config loginUser + loginToken/loginPassword.
 ///
-/// 参数字符串引用（恰好整个字符串匹配才替换，保留原值类型）：
-/// - `$config.key` / `$config.key.sub`：取 config.json 中的值；
-/// - `$prev` / `$prev.a.b`：上一步返回的 data，点路径可深入（列表用数字下标）；
-/// - `$step.id` / `$step.id.a.b`：某个带 "id" 的 step 的 data，跨步引用。
+/// Parameter string references (replaced only on exact full-string match, preserving original value types):
+/// - `$config.key` / `$config.key.sub`: value from config.json;
+/// - `$prev` / `$prev.a.b`: data returned by the previous step, dot path for nesting (numeric index for lists);
+/// - `$step.id` / `$step.id.a.b`: data from a step with "id", cross-step reference.
 class AutoMode {
   static const String scriptPath =
       String.fromEnvironment('API_SCRIPT', defaultValue: '');
@@ -32,10 +32,10 @@ class AutoMode {
 
   static bool get enabled => scriptPath.isNotEmpty;
 
-  /// 单步默认超时（可被 step 的 "timeoutMs" 覆盖）。
+  /// Default per-step timeout (can be overridden by step's "timeoutMs").
   static const int defaultStepTimeoutMs = 30000;
 
-  /// init 允许从 config.json 继承的 ChatOptions 键。
+  /// ChatOptions keys that init can inherit from config.json.
   static const List<String> _optionKeys = [
     'appKey',
     'autoLogin',
@@ -96,8 +96,8 @@ class AutoMode {
     );
   }
 
-  /// 自动模式专用（不进注册表）：把 base64 内容写入文档目录，
-  /// 供构造图片/语音消息的 localPath 使用。
+  /// Auto-mode only (not registered): writes base64 content to the documents directory,
+  /// for use as localPath when constructing image/voice messages.
   static Future<Map<String, dynamic>> _writeBase64File(
     Map<String, dynamic> p,
   ) async {
@@ -122,7 +122,7 @@ class AutoMode {
   static Future<void> run() async {
     final store = LogStore.instance;
 
-    // config.json：脚本缺省 init/login 与 $config 引用的数据来源。
+    // config.json: default init/login and $config reference data source for the script.
     var config = <String, dynamic>{};
     var effectiveConfigPath = configPath;
     if (effectiveConfigPath.isEmpty) {
@@ -154,7 +154,7 @@ class AutoMode {
     }
     store.log('script.start', {'path': scriptPath});
 
-    // init：config 的 ChatOptions 键为底，脚本 init 覆盖。
+    // init: ChatOptions keys from config as base, script init overrides.
     try {
       final initJson = <String, dynamic>{
         for (final k in _optionKeys)
@@ -176,9 +176,9 @@ class AutoMode {
       });
     }
 
-    // login：脚本 login 优先；否则由 config 推导（loginToken 优先于 loginPassword）。
-    // 实测 4.22 native init 的 method channel 返回后 SDK 内部尚未就绪
-    //（init 成功 2ms 后 login 报 "SDK has not initialize"），失败自动重试。
+    // login: script login takes priority; otherwise derived from config (loginToken over loginPassword).
+    // Observed in 4.22: SDK internals not ready after native init method channel returns
+    //(login reports "SDK has not initialize" 2ms after init succeeds); auto-retry on failure.
     const maxLoginAttempts = 5;
     for (var attempt = 1; attempt <= maxLoginAttempts; attempt++) {
       try {
@@ -251,9 +251,9 @@ class AutoMode {
               'error': {'code': -1, 'message': '未注册的 API：$name'},
             };
           } else {
-            // 每步超时保护：native 在某些状态下可能永不回调
-            //（如实测未登录时 subscribeUsersInfo 挂死），不能让脚本整体卡死。
-            // 超时不取消底层调用，只记录后继续。
+            // Per-step timeout guard: native may never call back in certain states
+            //(e.g. subscribeUsersInfo hangs when not logged in); prevents the entire script from stalling.
+            // Timeout does not cancel the underlying call; just logs and continues.
             final timeoutMs = step['timeoutMs'] as int? ?? defaultStepTimeoutMs;
             result = await runApi(entry, params).timeout(
               Duration(milliseconds: timeoutMs),
@@ -276,7 +276,7 @@ class AutoMode {
           await Future.delayed(Duration(milliseconds: delay));
         }
       } catch (e) {
-        // 单步解析/执行异常不中断脚本，计入 failed。
+        // Per-step parse/execution errors do not interrupt the script; counted as failed.
         failed++;
         store.log('api.$name', {
           'success': false,

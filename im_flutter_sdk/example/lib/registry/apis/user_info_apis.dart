@@ -2,7 +2,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import '../api_entry.dart';
 
-/// UserInfoManager 相关条目（4.22 新增，需 ChatOptions.enableUserInfo=true）。
+/// UserInfoManager related entries (new in 4.22, requires ChatOptions.enableUserInfo=true).
 final userInfoApis = <ApiEntry>[
   ApiEntry(
     name: 'ChatUserInfoManager.subscribeUsersInfo',

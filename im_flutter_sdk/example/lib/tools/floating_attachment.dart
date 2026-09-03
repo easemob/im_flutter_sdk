@@ -4,9 +4,9 @@ import 'package:flutter/services.dart';
 import 'attachment_picker.dart';
 import 'attachment_store.dart';
 
-/// 悬浮附件选择器：init 成功后插入 Overlay，生命周期独立于页面。
-/// 常态为可拖动小球，点开为独立面板；选择结果只在面板内展示和复制，
-/// 不侵入任何 API 页面。
+/// Floating attachment picker: inserted into Overlay after init; lifecycle independent of pages.
+/// Default is a draggable ball; tapping opens a standalone panel; pick results are only shown and copied within the panel,
+/// without intruding into any API page.
 class FloatingAttachment {
   static OverlayEntry? _entry;
 
@@ -26,7 +26,7 @@ class FloatingAttachmentWidget extends StatefulWidget {
 }
 
 class _FloatingAttachmentWidgetState extends State<FloatingAttachmentWidget> {
-  /// null 表示未拖动过，用屏幕尺寸算默认位（日志球上方）。
+  /// null means never dragged; default position calculated from screen size (above the log ball).
   Offset? _pos;
   bool _open = false;
 
@@ -76,7 +76,7 @@ class _FloatingAttachmentWidgetState extends State<FloatingAttachmentWidget> {
         ),
       );
     }
-    // 展开即为全屏面板；SafeArea 保证顶部操作栏避开刘海。
+    // Expanded as a full-screen panel; SafeArea ensures the top action bar avoids the notch.
     return Positioned.fill(
       child: Material(
         elevation: 16,

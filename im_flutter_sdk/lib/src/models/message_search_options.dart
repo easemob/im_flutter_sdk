@@ -34,7 +34,7 @@ class MessageSearchOptions {
   final int ts;
 
   /// ~english
-  /// The number of messages to load， max 400.
+  /// The number of messages to load, max 400.
   /// ~end
   /// ~chinese
   /// 获取的消息条数。最大为400。

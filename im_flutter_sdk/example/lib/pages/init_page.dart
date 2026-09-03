@@ -10,7 +10,7 @@ import '../registry/api_entry.dart';
 import '../sdk_state.dart';
 import 'login_page.dart';
 
-/// 初始化页（一次性）：init 成功后不可返回重做，换配置需杀 App 重启。
+/// Init page (one-time): cannot go back to redo after init succeeds; kill the app to change config.
 class InitPage extends StatefulWidget {
   const InitPage({super.key});
 

@@ -4,8 +4,8 @@ import 'package:flutter/foundation.dart';
 
 import 'attachment_picker.dart';
 
-/// 附件选择记录存储：单例，面板开关不丢记录。
-/// 最新记录在列表头部；JSON 数组顺序与列表视觉顺序一致（从上到下）。
+/// Attachment pick record store: singleton; records persist across panel toggles.
+/// Newest record at the head; JSON array order matches visual list order (top to bottom).
 class AttachmentStore extends ChangeNotifier {
   AttachmentStore._();
   static final AttachmentStore instance = AttachmentStore._();
@@ -24,11 +24,11 @@ class AttachmentStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 整个列表的 JSON 数组（缩进格式），顺序与面板显示一致。
+  /// JSON array of the entire list (indented), order matches panel display.
   String get fullJson => const JsonEncoder.withIndent('  ')
       .convert(_records.map((r) => r.toJson()).toList());
 
-  /// 单条记录的 JSON（缩进格式）。
+  /// JSON of a single record (indented).
   static String recordJson(AttachmentRecord record) =>
       const JsonEncoder.withIndent('  ').convert(record.toJson());
 }

@@ -1,6 +1,6 @@
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-/// API 注册表条目。Flutter 无运行时反射，API 名称 → 调用必须人工注册。
+/// API registry entry. Flutter has no runtime reflection; API name -> call must be manually registered.
 class ApiEntry {
   final String name; // 'ChatManager.downloadBigImage'
   final String group; // 'ChatManager'
@@ -17,11 +17,11 @@ class ApiEntry {
   });
 }
 
-/// 把 SDK 返回值转成可 jsonEncode 的结构（模型走 toJson）。
+/// Converts SDK return values to jsonEncode-compatible structures (models via toJson).
 Object? toJsonSafe(Object? v) {
   if (v == null || v is num || v is bool || v is String) return v;
   if (v is Enum) return v.name;
-  // ChatPresence 未实现 toJson，特判序列化。
+  // ChatPresence does not implement toJson; serialized with special handling.
   if (v is ChatPresence) {
     return {
       'publisher': v.publisher,
@@ -43,7 +43,7 @@ Object? toJsonSafe(Object? v) {
   }
 }
 
-/// 统一错误格式：ChatError 取 code/description，其余取 toString。
+/// Unified error format: ChatError uses code/description, others use toString.
 Map<String, dynamic> errorToJson(Object e) {
   if (e is ChatError) {
     return {'code': e.code, 'message': e.description};
@@ -51,9 +51,9 @@ Map<String, dynamic> errorToJson(Object e) {
   return {'code': -1, 'message': e.toString()};
 }
 
-/// 调用条目并包装为统一结果：
-/// 成功 {"success": true, "data": ...}（void 返回无 data），
-/// 失败 {"success": false, "error": {"code": ..., "message": ...}}。
+/// Calls the entry and wraps the result in a unified format:
+/// Success: {"success": true, "data": ...} (void returns no data),
+/// Failure: {"success": false, "error": {"code": ..., "message": ...}}.
 Future<Map<String, dynamic>> runApi(
   ApiEntry entry,
   Map<String, dynamic> params,
