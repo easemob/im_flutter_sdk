@@ -56,7 +56,6 @@ base:
     - ChatManager.deleteConversations
     - ChatManager.deleteMessagesBeforeTimestamp
     - ChatManager.deleteRemoteAndLocalConversationsMark
-    - ChatManager.deleteRemoteConversation
     - ChatManager.downloadAndParseCombineMessage
     - ChatManager.downloadAttachment
     - ChatManager.downloadThumbnail
@@ -80,6 +79,8 @@ base:
     - ChatManager.updateChatMessage
     - ChatManager.voiceFileToText
     - ChatManager.voiceMessageToText
+    - ConversationManager.clearAllMessages
+    - ConversationManager.getUnreadMsgCount
     - ConversationManager.markAllMessagesAsRead
     - ConversationManager.pinnedMessages
     - MessageManager.chatThread
@@ -131,7 +132,6 @@ base:
     - ChatThreadManager.removeMemberFromChatThread
     - ChatThreadManager.updateChatThreadSubject
     - ContactManager.fetchAllContacts
-    - ContactManager.getAllContactsFromDB
     - ContactManager.getBlockListFromServer
     - ContactManager.getSelfIdsOnOtherPlatform
     - GroupManager.acceptInvitationFromGroup

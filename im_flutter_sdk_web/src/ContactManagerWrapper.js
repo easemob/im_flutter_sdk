@@ -2,7 +2,6 @@
 export function createContactManagerWrapper({ manager, client, emit, registerEvents, h }) {
   const commands = {
     fetchAllContacts: (m) => m.getContacts(),
-    getAllContactsFromDB: (m) => h.contactUserIds(m.getContacts()),
     getBlockListFromServer: async (m) => h.contactUserIds(await m.getBlocklist()),
     getSelfIdsOnOtherPlatform: (m) => client.getSelfIdsOnOtherPlatform(),
   };

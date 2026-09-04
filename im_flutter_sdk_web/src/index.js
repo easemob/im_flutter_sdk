@@ -90,7 +90,7 @@ function createWeb5SdkWrapper({ appKey, deviceId, emit, onStatus }) {
   const chatRoomWrapper = createChatRoomManagerWrapper({ manager: chatRooms, emit, registerEvents, h });
   const chatThreadWrapper = createChatThreadManagerWrapper({ manager: chatThreads, emit, registerEvents, h });
   const contactWrapper = createContactManagerWrapper({ manager: contacts, client, emit, registerEvents, h });
-  const groupWrapper = createGroupManagerWrapper({ manager: groups, emit, registerEvents, h });
+  const groupWrapper = createGroupManagerWrapper({ manager: groups, emit, registerEvents, h, currentUser: () => currentUser });
   const presenceWrapper = createPresenceManagerWrapper({ manager: presence, emit, registerEvents, h });
   const pushWrapper = createPushManagerWrapper({ manager: push, h });
   const userInfoWrapper = createUserInfoManagerWrapper({ manager: userInfo, currentUser: () => currentUser, h });

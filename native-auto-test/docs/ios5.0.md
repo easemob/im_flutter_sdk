@@ -70,7 +70,6 @@
 | `test_chat_delete_remote_conversation_empty_conv_id` | 预期 `303`，iOS 原生透传 `107` | 原生错误码差异，不是 Wrapper 构造；先确认统一协议，再决定只断言 code 或修 Wrapper 归一化 |
 | `test_chat_fetch_history_messages_empty_conv_id` | `110 / Invalid parameter` | 原生回调非空 `EMCursorResult`，Wrapper 序列化为 `result={"cursor":"","list":[]}`，没有 `code`/`description` | 不是 Wrapper 构造错误码，而是 iOS 原生直接返回空分页结果；与 Android 错误语义不同 |
 | `test_chat_fetch_history_messages_by_options_empty_conv_id` | `110 / Invalid parameter` | 原生回调非空 `EMCursorResult`，Wrapper 序列化为 `result={"cursor":"","list":[]}`，没有 `code`/`description` | 同上；不能把 iOS 的空结果当成 Android 的 `110` |
-| `test_conversation_type_keyword_and_options_search_current_behavior` | 全量运行曾出现空结果预期实际返回 1 条记录；本次 iOS 5.0 单跑通过 | 更像全量运行时的本地数据库/会话残留或时序污染；保留空列表断言，先隔离会话或清理后复测，不直接放宽断言 |
 | `test_conversation_invalid_message_id_boundaries` | iOS 原生返回 `code=3 / Database operation failed`；Android 原生 `conversation.getMessage(msgId)` 返回 `null`，Wrapper 再通过 `onSuccess(..., null)` 输出 `result=null` | 已确认的平台原生查询语义和 Wrapper 返回形态均不同；如需跨端统一，在 Wrapper 归一化，否则保留平台差异记录 |
 
 

@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IM 5.0 三端原生业务 API 统计与对照表</title>
+  <style>
+    :root { color-scheme: light; --bg:#f6f8fb; --surface:#fff; --ink:#172033; --muted:#667085; --line:#dfe4ec; --head:#eef3f8; --accent:#2357a6; --na:#98a2b3; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif; }
+    .wrap { max-width:1800px; margin:0 auto; padding:28px 30px 64px; }
+    h1 { margin:0 0 8px; font-size:28px; letter-spacing:.01em; }
+    h2 { margin:32px 0 10px; font-size:20px; }
+    .lead { margin:0 0 20px; color:var(--muted); }
+    .scope { padding:14px 16px; border:1px solid var(--line); border-left:4px solid var(--accent); background:var(--surface); border-radius:8px; }
+    .stats { display:grid; grid-template-columns:repeat(3,minmax(150px,1fr)); gap:10px; margin:20px 0 12px; }
+    .stat { background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
+    .stat strong { display:block; font-size:22px; color:var(--accent); }
+    .stat span { color:var(--muted); }
+    .legend { color:var(--muted); margin:8px 0 22px; }
+    .legend b { color:var(--ink); }
+    nav { position:sticky; top:0; z-index:2; display:flex; flex-wrap:wrap; gap:7px; padding:10px 0; background:rgba(246,248,251,.94); backdrop-filter:blur(6px); }
+    nav a { color:var(--accent); text-decoration:none; padding:4px 9px; border:1px solid #cbd8ec; border-radius:5px; background:#f8fbff; }
+    .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:8px; background:var(--surface); }
+    table { width:100%; min-width:1120px; border-collapse:collapse; table-layout:fixed; }
+    col.semantic { width:19%; } col.platform { width:27%; }
+    th, td { border-bottom:1px solid var(--line); border-right:1px solid var(--line); padding:10px 12px; vertical-align:top; text-align:left; overflow-wrap:anywhere; }
+    th:last-child, td:last-child { border-right:0; }
+    tr:last-child td { border-bottom:0; }
+    th { background:var(--head); font-weight:650; }
+    td:first-child { font-weight:600; color:#243b63; }
+    .api { display:block; color:#1f2937; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace; font-size:12.5px; }
+    .params { display:block; color:var(--muted); font-size:12px; margin-top:3px; }
+    .na { color:var(--na); text-align:center; font-style:italic; }
+    .mobile-only td:first-child, .web-gap td:first-child { color:#8a4b08; }
+    footer { margin-top:32px; color:var(--muted); font-size:12px; }
+    @media (max-width:720px) { .wrap { padding:20px 14px 40px; } h1 { font-size:23px; } .stats { grid-template-columns:repeat(2,1fr); } th { top:45px; } }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>IM 5.0 三端原生业务 API 统计与对照表</h1>
+    <p class="lead">三端分别统计各自原生 SDK 的业务 API；对照表只用于展示语义相近的 API、原生方法和核心参数，不展示 pytest 协议命令或 Wrapper 方法。</p>
+    <div class="scope"><b>阅读规则：</b>同一行表示语义相近，不表示三端返回值完全一致；“—”表示对应原生包中没有已确认的同等业务 API。顶部及模块统计包含平台独有 API；下方详细表展示核心语义映射和平台差异补充，不以公共语义行数量代替平台 API 数量。</div>
+    <div class="stats">
+      <div class="stat"><strong>282</strong><span>Android 5.0 原生业务 API</span></div>
+      <div class="stat"><strong>277</strong><span>iOS 5.0 原生业务 API</span></div>
+      <div class="stat"><strong>198</strong><span>Web 5.0 原生业务 API</span></div>
+    </div>
+    <p class="legend"><b>统计口径：</b>以 Android JAR、iOS Framework Headers、Web 5.0 dist 类型声明中的业务方法为事实源；同步/异步重载合并为一个业务 API，排除监听器注册、属性访问器、构造器和内部辅助方法。三端共有 193 项，Android+iOS 共有但 Web 没有 83 项，Android 独有 6 项，iOS 独有 1 项，Web 独有 5 项。</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>模块</th><th>Android 原生业务 API</th><th>iOS 原生业务 API</th><th>Web 5.0 原生业务 API</th><th>Web 未覆盖（相对 Android/iOS）</th></tr></thead>
+        <tbody>
+          <tr><td>Client / 连接与设备</td><td>36</td><td>33</td><td>9</td><td>27</td></tr>
+          <tr><td>Chat / 消息、会话与消息对象</td><td>89</td><td>87</td><td>50</td><td>41</td></tr>
+          <tr><td>Contact / 好友与黑名单</td><td>15</td><td>15</td><td>13</td><td>2</td></tr>
+          <tr><td>Group / 群组</td><td>60</td><td>60</td><td>54</td><td>8</td></tr>
+          <tr><td>ChatRoom / 聊天室</td><td>35</td><td>35</td><td>34</td><td>2</td></tr>
+          <tr><td>ChatThread / 消息话题</td><td>12</td><td>12</td><td>12</td><td>0</td></tr>
+          <tr><td>Presence / 在线状态</td><td>5</td><td>5</td><td>5</td><td>0</td></tr>
+          <tr><td>Push / 推送与免打扰</td><td>21</td><td>20</td><td>11</td><td>10</td></tr>
+          <tr><td>UserInfo / 用户资料</td><td>10</td><td>10</td><td>10</td><td>0</td></tr>
+          <tr><td>合计</td><td>282</td><td>277</td><td>198</td><td>90</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h2>业务 API 归属统计</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>归属</th><th>数量</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>Android / iOS / Web 共有</td><td>193</td><td>三端原生包均存在同等业务能力</td></tr>
+          <tr><td>Android / iOS 共有，Web 无</td><td>83</td><td>移动端原生包存在，Web 5.0 未确认同等业务 API</td></tr>
+          <tr><td>Android 独有</td><td>6</td><td>仅 Android 原生包存在</td></tr>
+          <tr><td>iOS 独有</td><td>1</td><td>仅 iOS 原生包存在</td></tr>
+          <tr><td>Web 独有</td><td>5</td><td>仅 Web 5.0 原生包存在</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <section id="platform-only">
+      <h2>平台差异示例（不重复计数）</h2>
+      <div class="table-wrap">
+        <table>
+          <colgroup><col class="semantic"><col class="platform"><col class="platform"><col class="platform"></colgroup>
+          <thead><tr><th>功能语义</th><th>Android 5.0 独有</th><th>iOS 5.0 独有</th><th>Web 5.0 独有</th></tr></thead>
+          <tbody>
+            <tr><td>Token 过期通知注入</td><td><span class="api">EMClient.notifyTokenExpired</span><span class="params">参数：无</span></td><td class="na">—</td><td class="na">—</td></tr>
+            <tr><td>HMS / Honor 厂商推送 Token</td><td><span class="api">EMClient.sendHMSPushTokenToServer / sendHonorPushTokenToServer</span><span class="params">参数：token</span></td><td class="na">—</td><td class="na">—</td></tr>
+            <tr><td>推送动作回报</td><td><span class="api">EMPushManager.reportPushAction</span><span class="params">参数：action</span></td><td class="na">—</td><td class="na">—</td></tr>
+            <tr><td>直接保存单条消息</td><td><span class="api">EMChatManager.saveMessage</span><span class="params">参数：EMMessage</span></td><td class="na">—</td><td class="na">—</td></tr>
+            <tr><td>按会话类型筛选会话</td><td><span class="api">EMChatManager.getConversationsByType</span><span class="params">参数：conversationType</span></td><td class="na">—</td><td class="na">—</td></tr>
+            <tr><td>查询数据库打开状态</td><td><span class="api">EMClient.isDatabaseOpened</span><span class="params">参数：无</span></td><td class="na">—</td><td class="na">—</td></tr>
+            <tr><td>PushKit / APNs Token 注册</td><td class="na">—</td><td><span class="api">EMClient.bindPushKitToken / registerForRemoteNotificationsWithDeviceToken</span><span class="params">参数：deviceToken</span></td><td class="na">—</td></tr>
+            <tr><td>Web 语义独有能力（5 项）</td><td class="na">—</td><td class="na">—</td><td><span class="api">ChatManager.createTextMessage / ChatManager.getGroupMessageReadUsers / ChatRoomManager.getAdminList / GroupManager.getGroupAdminList / GroupManager.getGroupInfoList</span><span class="params">参数：以各 Web 原生方法定义为准</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <nav id="nav"></nav>
+    <div id="content"></div>
+    <footer>
+      对照依据：Android 5.0 原生包及其公开业务方法、iOS 5.0 Framework Headers、Web 5.0 原生包 /Users/andy_muyu/Documents/web5.0/package/dist 的公开 .d.ts 声明。此表只做原生业务能力盘点，不包含测试 Matrix、pytest 协议命令或 Wrapper 方法。
+    </footer>
+  </main>
+  <script>
+    const groups = [
+      { id:'client', name:'Client / 连接与设备', rows:[
+        ['初始化 SDK','EMClient.init\n参数：Context, EMOptions','EMClient.initializeSDKWithOptions:\n参数：EMOptions','ChatClient.init\n参数：{ appKey|appId, managers?, serviceConfig?, ... }'],
+        ['Token 登录','EMClient.loginWithToken\n参数：userId, token','EMClient.loginWithUsername:token:completion:\n参数：userId, token','ChatClient.login\n参数：{ userId, token }'],
+        ['退出登录','EMClient.logout\n参数：无','EMClient.logout:completion:\n参数：无','ChatClient.logout\n参数：无'],
+        ['更新登录 Token','EMClient.renewToken\n参数：token','EMClient.renewToken:completion:\n参数：token','ChatClient.renewToken\n参数：token'],
+        ['登录状态','EMClient.isLoggedIn\n参数：无','EMClient.isLoggedIn\n参数：无','ChatClient.getCurrentUserId / getConnectionState\n参数：无'],
+        ['连接状态','EMClient.isConnected\n参数：无','EMClient.isConnected\n参数：无','ChatClient.getConnectionState\n参数：无'],
+        ['当前用户','EMClient.getCurrentUser\n参数：无','EMClient.currentUsername\n参数：无','ChatClient.getCurrentUserId\n参数：无'],
+        ['当前设备 / 资源标识','EMClient.getDeviceInfo\n参数：无','EMClient.getDeviceConfig:\n参数：error','ChatClient.getClientResource\n参数：无'],
+        ['RTC Token 查询','EMClient.asyncGetRTCTokenInfoWithChannelName\n参数：channelName','EMClient.getRTCTokenWithChannel:completion:\n参数：channelName','ChatClient.getRTCTokenInfo\n参数：{ channelName? }'],
+        ['RTC UID 查询用户 ID','EMClient.asyncGetUserIdsWithRTCUids\n参数：rtcUids','EMClient.getUserIdByRTCUIds:completion:\n参数：rtcUids','ChatClient.getUserIdsWithRTCUids\n参数：rtcUids'],
+        ['查询已登录设备','EMClient.fetchLoggedInDevicesFromServerWithToken\n参数：token','EMClient.getLoggedInDevicesFromServerWithUserId:token:completion:\n参数：userId, token','—'],
+        ['踢指定设备','EMClient.kickDeviceWithToken\n参数：userId, token, resource','EMClient.kickDeviceWithUserId:token:resource:completion:\n参数：userId, token, resource','—'],
+        ['踢全部设备','EMClient.kickAllDevicesWithToken\n参数：userId, token','EMClient.kickAllDevicesWithUserId:token:completion:\n参数：userId, token','—'],
+        ['上传日志','EMClient.uploadLog\n参数：无','EMClient.uploadDebugLogToServerWithCompletion:\n参数：completion','—'],
+        ['压缩 / 获取日志文件','EMClient.compressLogs\n参数：无','EMClient.getLogFilesPathWithCompletion:\n参数：completion','—'],
+        ['修改 AppKey','EMClient.changeAppkey\n参数：appKey','EMClient.changeAppkey:\n参数：appKey','—'],
+        ['修改 AppId','EMClient.changeAppId\n参数：appId','EMClient.changeAppId:\n参数：appId','—'],
+        ['设置数据同步类型','EMOptions.setDataSyncType\n参数：SyncDataType','EMOptions.setDataSyncType:\n参数：SyncDataType','—'],
+        ['读取数据同步类型','EMOptions.getDataSyncType\n参数：无','EMOptions.dataSyncType\n参数：无','—'],
+        ['开启送达回执','EMOptions.setRequireDeliveryAck\n参数：boolean','EMOptions.enableDeliveryAck\n参数：boolean','ChatClient.init\n参数：{ enableDeliveryReceipt?: boolean }'],
+        ['自动接受群邀请','EMOptions.setAutoAcceptGroupInvitation\n参数：boolean','EMOptions.autoAcceptGroupInvitation\n参数：boolean','—'],
+        ['自动下载缩略图','EMOptions.setAutoDownloadThumbnail\n参数：boolean','EMOptions.autoDownloadThumbnail\n参数：boolean','—'],
+        ['群组 / 聊天室退出时删除消息','EMOptions.setDeleteMessagesAsExitGroup / setDeleteMessagesAsExitChatRoom\n参数：boolean','EMOptions.deleteMessagesOnLeaveGroup / deleteMessagesOnLeaveChatroom\n参数：boolean','—'],
+        ['群主是否可退出聊天室','EMOptions.setRoomOwnerCanLeave\n参数：boolean','EMOptions.canChatroomOwnerLeave\n参数：boolean','—'],
+        ['按服务端时间排序消息','EMOptions.setSortMessageByServerTime\n参数：boolean','EMOptions.sortMessageByServerTime\n参数：boolean','—'],
+        ['导入消息是否视为已读','EMOptions.setRegardImportedMsgAsRead\n参数：boolean','EMOptions.regardImportMessagesAsRead\n参数：boolean','—'],
+      ]},
+      { id:'chat', name:'Chat / 消息与会话', rows:[
+        ['发送消息','EMChatManager.sendMessage\n参数：EMMessage','IEMChatManager.sendMessage:progress:completion:\n参数：EMChatMessage','ChatManager.sendMessage\n参数：Message, options?'],
+        ['创建文本消息','EMMessage.createTxtSendMessage\n参数：content, to','EMMessage.createTextMessage\n参数：text, to','ChatManager.createTextMessage\n参数：{ to, conversationType, text }'],
+        ['创建图片消息','EMMessage.createImageSendMessage\n参数：localPath, remoteUrl, to','EMMessage.createImageSendMessageWithImage\n参数：image, to','ChatManager.createImageMessage\n参数：CreateImageMessageParams'],
+        ['创建文件消息','EMMessage.createFileSendMessage\n参数：localPath, to','EMMessage.createFileMessageWithLocalPath\n参数：localPath, to','ChatManager.createFileMessage\n参数：CreateFileMessageParams'],
+        ['创建语音消息','EMMessage.createVoiceSendMessage\n参数：localPath, to','EMMessage.createVoiceMessageWithLocalPath\n参数：localPath, to','ChatManager.createVoiceMessage\n参数：CreateVoiceMessageParams'],
+        ['创建视频消息','EMMessage.createVideoSendMessage\n参数：localPath, to','EMMessage.createVideoMessageWithLocalPath\n参数：localPath, to','ChatManager.createVideoMessage\n参数：CreateVideoMessageParams'],
+        ['创建位置消息','EMMessage.createLocationSendMessage\n参数：latitude, longitude, address, to','EMMessage.createLocationMessageWithLatitude\n参数：latitude, longitude, address, to','ChatManager.createLocationMessage\n参数：CreateLocationMessageParams'],
+        ['创建命令消息','EMMessage.createCmdSendMessage\n参数：action, to','EMMessage.createCmdMessage\n参数：action, to','ChatManager.createCmdMessage\n参数：CreateCmdMessageParams'],
+        ['创建自定义消息','EMMessage.createCustomSendMessage\n参数：event, customExts, to','EMMessage.createCustomMessage\n参数：event, customExts, to','ChatManager.createCustomMessage\n参数：CreateCustomMessageParams'],
+        ['创建合并消息','EMMessage.createCombineSendMessage\n参数：msgIds, to','EMMessage.createCombineMessage\n参数：messageList, to','ChatManager.createCombineMessage\n参数：CreateCombineMessageParams'],
+        ['获取会话列表','EMChatManager.getAllConversations / getAllConversationsBySort\n参数：sort?','IEMChatManager.getAllConversations:\n参数：sort?','ChatManager.getConversationList / refreshSessionList\n参数：filter?'],
+        ['获取单个会话','EMChatManager.getConversation\n参数：conversationId, type','IEMChatManager.getConversationWithConvId: / getConversation:type:createIfNotExist:\n参数：conversationId, type','ChatManager.getCurrentConversation / setCurrentConversation\n参数：ConversationLocator'],
+        ['查询未读总数','EMChatManager.getUnreadMessageCount\n参数：无','IEMChatManager.getUnreadMessageCount\n参数：无','—'],
+        ['查询会话未读数','EMConversation.getUnreadMsgCount\n参数：无','EMConversation.unreadMessagesCount\n参数：无','—'],
+        ['清除单会话未读数','EMChatManager.asyncClearConversationUnreadMessageCount\n参数：conversationId, type','IEMChatManager.clearConversationUnreadMessageCount:completion:\n参数：conversationId, type','ChatManager.clearConversationUnreadMessageCount\n参数：{ conversationId, conversationType }'],
+        ['清除全部会话未读数','EMChatManager.asyncClearAllConversationUnreadMessageCount\n参数：无','IEMChatManager.clearAllConversationUnreadMessageCount:\n参数：completion','ChatManager.clearAllConversationUnreadMessageCount\n参数：无'],
+        ['发送单聊 / 群聊已读回执','EMChatManager.asyncSendMessageReadReceipts\n参数：conversationId, messageIds','IEMChatManager.sendMessageReadReceipts:completion:\n参数：EMChatMessage','ChatManager.sendMessageReadReceipts\n参数：{ conversationId, conversationType, messageIds }'],
+        ['查询群消息已读用户','EMChatManager.asyncFetchGroupMessageReadReceipts\n参数：messageId, groupId, pageSize, cursor','IEMChatManager.asyncFetchGroupMessageReadUsersFromServer:groupId:readReceiptId:pageSize:completion:\n参数：messageId, groupId, receiptId, pageSize','ChatManager.getGroupMessageReadUsers\n参数：{ groupId, messageId, pageSize?, cursor? }'],
+        ['查询群消息已读回执数','EMChatManager.asyncGetGroupMessageReadReceipts\n参数：messageIds, groupId','IEMChatManager.getGroupMessageReadReceipts:completion:\n参数：messageId','ChatManager.getGroupMessageReadReceipts\n参数：{ groupId, messageIds }'],
+        ['获取消息','EMChatManager.getMessage\n参数：messageId','IEMChatManager.getMessageWithMessageId:\n参数：messageId','—'],
+        ['按 ID 批量加载消息','EMChatManager.asyncLoadMessages\n参数：messageIds, conversationId','IEMChatManager.getMessages:withConversationId:completion:\n参数：messageIds, conversationId','—'],
+        ['拉取服务端历史消息','EMChatManager.asyncFetchHistoryMessages\n参数：conversationId, type, cursor, pageSize, options','IEMChatManager.fetchMessagesFromServerBy:conversationType:cursor:pageSize:option:completion:\n参数：conversationId, type, cursor, pageSize, option','ChatManager.getHistoryMessages\n参数：{ conversationId, conversationType, cursor?, pageSize?, ... }'],
+        ['本地关键词搜索消息','EMChatManager.searchMsgFromDB\n参数：keyword, timestamp, count, fromUser, direction','IEMChatManager.loadMessagesWithKeyword:timestamp:count:fromUser:searchDirection:scope:completion:\n参数：keyword, timestamp, count, fromUser, direction, scope','ChatManager.searchMessages\n参数：{ scope:"local", keyword, ... }'],
+        ['服务端搜索消息','EMChatManager.asyncSearchMessagesFromServer\n参数：keyword, pageSize, pageNum','IEMChatManager.searchMessagesFromServerWithOption:pageSize:pageNum:completion:\n参数：option, pageSize, pageNum','ChatManager.searchMessages\n参数：{ scope:"server", keyword, ... }'],
+        ['获取消息总数','EMChatManager.asyncGetMessageCount\n参数：conversationId, type','IEMChatManager.getMessageCountWithCompletion:\n参数：conversationId, type','—'],
+        ['撤回消息','EMChatManager.recallMessage / asyncRecallMessage\n参数：messageId, ext?','IEMChatManager.recallMessageWithMessageId:completion:\n参数：messageId, ext?','ChatManager.recallMessage\n参数：{ conversationId, conversationType, messageId, ext? }'],
+        ['修改已发送消息','EMChatManager.asyncModifyMessage\n参数：messageId, body, ext','IEMChatManager.modifyMessage:body:ext:completion:\n参数：message, body, ext','ChatManager.modifyMessage\n参数：{ conversationId, conversationType, messageId, message }'],
+        ['删除本地会话','EMChatManager.deleteConversation\n参数：conversationId, type, deleteMessages','IEMChatManager.deleteConversation:isDeleteMessages:completion:\n参数：conversationId, type, deleteMessages','ChatManager.deleteConversation\n参数：{ conversationId, conversationType, deleteMessages? }'],
+        ['删除服务端会话','EMChatManager.deleteConversationFromServer\n参数：conversationId, type, deleteMessages','IEMChatManager.deleteServerConversation:conversationType:isDeleteServerMessages:completion:\n参数：conversationId, type, deleteMessages','—'],
+        ['批量删除会话','EMChatManager.asyncDeleteConversations\n参数：conversationIds, deleteMessages','IEMChatManager.deleteConversations:isDeleteMessages:completion:\n参数：conversationIds, deleteMessages','—'],
+        ['删除全部消息和会话','EMChatManager.asyncDeleteAllMsgsAndConversations\n参数：conversationTypes?','IEMChatManager.deleteAllMessagesAndConversations:\n参数：completion','ChatManager.clearAllMessagesAndConversations\n参数：无'],
+        ['删除指定时间前消息','EMChatManager.deleteMessagesBeforeTimestamp\n参数：conversationId, type, timestamp','IEMChatManager.deleteMessagesBefore:completion:\n参数：conversationId, type, timestamp','—'],
+        ['导入消息','EMChatManager.importMessages\n参数：messages','IEMChatManager.importMessages:completion:\n参数：messages','—'],
+        ['添加 / 删除会话标记','EMChatManager.asyncAddConversationMark / asyncRemoveConversationMark\n参数：conversationId, type, mark','IEMChatManager.addConversationMark:mark:completion: / removeConversationMark:mark:completion:\n参数：conversationId, type, mark','ChatManager.addConversationMark / removeConversationMark\n参数：{ conversationId, conversationType, mark }'],
+        ['置顶 / 取消置顶会话','EMChatManager.asyncPinConversation\n参数：conversationId, type, pinned','IEMChatManager.pinConversation:isPinned:completionBlock:\n参数：conversationId, type, isPinned','ChatManager.setConversationPinned\n参数：{ conversationId, conversationType, pinned }'],
+        ['置顶 / 取消置顶消息','EMChatManager.asyncPinMessage / asyncUnPinMessage\n参数：conversationId, type, messageId, note?','IEMChatManager.pinMessage:completion: / unpinMessage:completion:\n参数：message, note?','ChatManager.pinMessage / unpinMessage\n参数：{ conversationId, conversationType, messageId, note? }'],
+        ['获取置顶消息','EMChatManager.asyncGetPinnedMessagesFromServer\n参数：conversationId, type','IEMChatManager.getPinnedMessagesFromServer:completion:\n参数：conversationId, type','ChatManager.getPinnedMessageList\n参数：{ conversationId, conversationType }'],
+        ['添加 / 删除 Reaction','EMChatManager.asyncAddReaction / asyncRemoveReaction\n参数：messageId, reaction','IEMChatManager.addReaction:toMessage:completion: / removeReaction:fromMessage:completion:\n参数：reaction, messageId','ChatManager.addReaction / removeReaction\n参数：{ messageId, reaction }'],
+        ['查询 Reaction 列表','EMChatManager.asyncGetReactionList\n参数：messageId, groupId, chatType','IEMChatManager.getReactionList:groupId:chatType:completion:\n参数：messageId, groupId, chatType','ChatManager.getReactionList\n参数：{ messageId, groupId?, chatType? }'],
+        ['查询 Reaction 明细','EMChatManager.asyncGetReactionDetail\n参数：messageId, reaction, cursor, pageSize','IEMChatManager.getReactionDetail:reaction:cursor:pageSize:completion:\n参数：messageId, reaction, cursor, pageSize','ChatManager.getReactionDetail\n参数：{ messageId, reaction, cursor?, pageSize? }'],
+        ['翻译消息','EMChatManager.translateMessage\n参数：message, targetLanguages','IEMChatManager.translateMessage:targetLanguages:completion:\n参数：message, targetLanguages','ChatManager.translateMessage\n参数：{ messageId, targetLanguages }'],
+        ['下载附件','EMChatManager.downloadAttachment\n参数：message, callback','IEMChatManager.downloadMessageAttachment:progress:completion:\n参数：message, progress','ChatManager.downloadAttachment\n参数：{ message }'],
+        ['下载缩略图 / 大图','EMChatManager.downloadThumbnail / downloadBigImage\n参数：message','IEMChatManager.downloadMessageThumbnail:progress:completion: / downloadBigImageAttachment:progress:completion:\n参数：message, progress','ChatManager.downloadAttachment\n参数：{ message }'],
+        ['下载并解析合并消息','EMChatManager.downloadAndParseCombineMessage\n参数：message','IEMChatManager.downloadAndParseCombineMessage:completion:\n参数：message','ChatManager.downloadAndParseCombineMessage\n参数：{ message | url, secret }'],
+        ['语音转文字','EMChatManager.voiceMessageToText / voiceFileToText\n参数：message / file, voiceParam?','IEMChatManager.voiceMessageToText:completion: / voiceFileToText:voiceParam:completion:\n参数：message / file, voiceParam?','ChatManager.voiceMessageToText / voiceFileToText\n参数：message / file, voiceParams?'],
+        ['获取翻译支持语言','EMChatManager.fetchSupportLanguages\n参数：无','IEMChatManager.fetchSupportedLanguages:\n参数：无','ChatManager.getSupportedTranslationLanguages\n参数：无'],
+        ['清理会话内存缓存','EMChatManager.cleanConversationsMemoryCache\n参数：无','IEMChatManager.cleanConversationsMemoryCache\n参数：无','—'],
+      ]},
+      { id:'conversation', name:'Conversation / 会话对象', rows:[
+        ['读取会话属性','EMConversation.getConversationName / getConversationAvatar / getType\n参数：无','EMConversation.conversationName / conversationAvatar / type\n参数：无','ChatManager.getConversationList\n参数：ConversationItem'],
+        ['读取最新消息','EMConversation.getLastMessage / getLatestMessageFromOthers\n参数：无','EMConversation.latestMessage / lastReceivedMessage\n参数：无','ChatManager.getConversationList\n参数：ConversationItem.lastMessage?'],
+        ['读取 / 设置会话扩展','EMConversation.getExtField / setExtField\n参数：无 / ext','EMConversation.ext / setExt:\n参数：无 / ext','—'],
+        ['插入 / 追加消息','EMConversation.insertMessage / appendMessage\n参数：message','EMConversation.insertMessage:error: / appendMessage:error:\n参数：message','—'],
+        ['删除本地消息','EMConversation.removeMessage\n参数：messageId','EMConversation.deleteMessageWithId:error:\n参数：messageId','—'],
+        ['清空会话消息','EMConversation.clearAllMessages\n参数：无','EMConversation.deleteAllMessages:\n参数：completion','—'],
+        ['按时间范围删除消息','EMConversation.removeMessages\n参数：startTs, endTs','EMConversation.removeMessagesStart:to:\n参数：startTs, endTs','—'],
+        ['本地消息分页 / 类型搜索','EMConversation.loadMoreMsgFromDB / searchMsgFromDB\n参数：startId, count, direction, type?','EMConversation.loadMessagesStartFromId:count:searchDirection: / loadMessagesWithType:timestamp:count:fromUser:searchDirection:\n参数：startId, count, direction, type?','—'],
+        ['会话置顶消息','EMConversation.pinnedMessages\n参数：无','EMConversation.pinnedMessages\n参数：无','—'],
+        ['会话未读数','EMConversation.getUnreadMsgCount\n参数：无','EMConversation.unreadMessagesCount\n参数：无','—'],
+      ]},
+      { id:'contact', name:'Contact / 好友与黑名单', rows:[
+        ['读取本地好友列表','EMContactManager.getContactsFromLocal\n参数：无','IEMContactManager.getContacts\n参数：无','ContactManager.getContacts\n参数：无'],
+        ['读取本地好友对象','EMContactManager.asyncFetchAllContactsFromLocal\n参数：无','IEMContactManager.getAllContacts\n参数：无','—'],
+        ['读取单个本地好友','EMContactManager.fetchContactFromLocal\n参数：userId','IEMContactManager.getContact:\n参数：userId','—'],
+        ['添加好友','EMContactManager.addContact / asyncAddContact\n参数：userId, message?','IEMContactManager.addContact:message:completion:\n参数：userId, message?','ContactManager.addContact\n参数：{ userId, message? }'],
+        ['删除好友','EMContactManager.deleteContact / asyncDeleteContact\n参数：userId','IEMContactManager.deleteContact:isDeleteConversation:completion:\n参数：userId, deleteConversation','ContactManager.deleteContact\n参数：{ userId, deleteConversation? }'],
+        ['接受 / 拒绝好友申请','EMContactManager.acceptInvitation / declineInvitation\n参数：userId','IEMContactManager.approveFriendRequestFromUser:completion: / declineFriendRequestFromUser:completion:\n参数：userId','ContactManager.acceptContactInvite / declineContactInvite\n参数：{ userId }'],
+        ['设置好友备注','EMContactManager.asyncSetContactRemark\n参数：userId, remark','IEMContactManager.setContactRemark:remark:completion:\n参数：userId, remark','ContactManager.setContactRemark\n参数：{ userId, remark }'],
+        ['读取黑名单','EMContactManager.getBlackListUsernames / getBlackListFromServer\n参数：无 / page','IEMContactManager.getBlackList / getBlackListFromServerWithCompletion:\n参数：无 / completion','ContactManager.getBlocklist\n参数：无'],
+        ['加入 / 移出黑名单','EMContactManager.addUserToBlackList / removeUserFromBlackList\n参数：userId','IEMContactManager.addUserToBlackList:completion: / removeUserFromBlackList:completion:\n参数：userId','ContactManager.addUsersToBlocklist / removeUserFromBlocklist\n参数：{ userIds }'],
+        ['其他平台自身 ID','EMContactManager.getSelfIdsOnOtherPlatform\n参数：无','IEMContactManager.getSelfIdsOnOtherPlatformWithCompletion:\n参数：completion','—'],
+      ]},
+      { id:'group', name:'Group / 群组', rows:[
+        ['读取已加入群列表','EMGroupManager.getAllGroups\n参数：无','IEMGroupManager.getJoinedGroups\n参数：无','GroupManager.getJoinedGroupList\n参数：无'],
+        ['按 ID 读取本地群','EMGroupManager.getGroup\n参数：groupId','—','GroupManager.getGroup\n参数：groupId'],
+        ['清空本地群','EMGroupManager.cleanAllGroupsFromLocal\n参数：无','IEMGroupManager.cleanAllGroupsFromDB\n参数：无','—'],
+        ['创建群','EMGroupManager.createGroup / asyncCreateGroup\n参数：subject, avatar, description, invitees, message, setting','IEMGroupManager.createGroupWithSubject:avatar:description:invitees:message:setting:completion:\n参数：subject, avatar, description, invitees, message, setting','GroupManager.createGroup\n参数：{ name, description?, avatar?, memberIds?, message?, ... }'],
+        ['读取服务端群详情','EMGroupManager.getGroupFromServer / asyncGetGroupFromServer\n参数：groupId','IEMGroupManager.getGroupSpecificationFromServerWithId:completion:\n参数：groupId, fetchMembers?','GroupManager.getGroupInfo\n参数：{ groupId }'],
+        ['读取服务端群成员','EMGroupManager.fetchGroupMembers / asyncFetchGroupMembers\n参数：groupId, cursor, pageSize','IEMGroupManager.getGroupMemberListFromServerWithId:cursor:pageSize:completion:\n参数：groupId, cursor, pageSize','GroupManager.getGroupMemberList\n参数：{ groupId, cursor?, pageSize? }'],
+        ['读取群成员详情','EMGroupManager.asyncFetchGroupMembersInfo\n参数：groupId, cursor, pageSize','IEMGroupManager.fetchGroupMemberInfoListFromServerWithGroupId:cursor:limit:completion:\n参数：groupId, cursor, limit','—'],
+        ['邀请成员入群','EMGroupManager.addUsersToGroup / inviteUser\n参数：groupId, userIds, message','IEMGroupManager.addMembers:toGroup:message:completion:\n参数：userIds, groupId, message','GroupManager.inviteUsersToGroup\n参数：{ groupId, userIds }'],
+        ['申请加入公开群','EMGroupManager.applyJoinToGroup\n参数：groupId, message','IEMGroupManager.requestToJoinPublicGroup:message:completion:\n参数：groupId, message','GroupManager.joinGroup\n参数：{ groupId, message? }'],
+        ['直接加入公开群','EMGroupManager.joinGroup / asyncJoinGroup\n参数：groupId','IEMGroupManager.joinPublicGroup:completion:\n参数：groupId','GroupManager.joinGroup\n参数：{ groupId }'],
+        ['接受 / 拒绝入群申请','EMGroupManager.acceptApplication / declineApplication\n参数：groupId, userId, reason?','IEMGroupManager.approveJoinGroupRequest:sender:completion: / declineJoinGroupRequest:sender:reason:completion:\n参数：groupId, sender, reason?','GroupManager.acceptGroupJoinRequest / rejectGroupJoinRequest\n参数：{ groupId, userId, reason? }'],
+        ['接受 / 拒绝群邀请','EMGroupManager.acceptInvitation / declineInvitation\n参数：groupId, invitee, reason?','IEMGroupManager.acceptInvitationFromGroup:inviter:completion: / declineGroupInvitation:inviter:reason:completion:\n参数：groupId, inviter, reason?','GroupManager.acceptInvitation / rejectInvitation\n参数：{ groupId, invitee, reason? }'],
+        ['退出群','EMGroupManager.leaveGroup / asyncLeaveGroup\n参数：groupId','IEMGroupManager.leaveGroup:completion:\n参数：groupId','GroupManager.leaveGroup\n参数：{ groupId }'],
+        ['销毁群','EMGroupManager.destroyGroup / asyncDestroyGroup\n参数：groupId','IEMGroupManager.destroyGroup:finishCompletion:\n参数：groupId','GroupManager.destroyGroup\n参数：{ groupId }'],
+        ['修改群名称 / 描述 / 头像 / 扩展','EMGroupManager.changeGroupName / changeGroupDescription / changeGroupAvatar / updateGroupExtension\n参数：groupId, value','IEMGroupManager.updateGroupSubject:forGroup:completion: / updateDescription:forGroup:completion: / updateGroupAvatar:groupId:completion: / updateGroupExtWithId:ext:completion:\n参数：groupId, value','GroupManager.updateGroupInfo\n参数：{ groupId, name?, description?, avatar?, ext? }'],
+        ['更新群配置','EMGroupManager.updateGroupConfigs\n参数：groupId, configs','IEMGroupManager.updateGroupWithId:types:configs:completion:\n参数：groupId, types, configs','GroupManager.updateGroupInfo\n参数：{ groupId, public?, joinApprovalRequired?, allowInvites?, maxMembers? }'],
+        ['转让群主','EMGroupManager.changeOwner / asyncChangeOwner\n参数：groupId, newOwner','IEMGroupManager.updateGroupOwner:newOwner:completion:\n参数：groupId, newOwner','GroupManager.changeGroupOwner\n参数：{ groupId, newOwner }'],
+        ['添加 / 移除管理员','EMGroupManager.addGroupAdmin / removeGroupAdmin\n参数：groupId, userId','IEMGroupManager.addAdmin:toGroup:completion: / removeAdmin:fromGroup:completion:\n参数：userId, groupId','GroupManager.addGroupAdmin / removeGroupAdmin\n参数：{ groupId, userId }'],
+        ['禁言 / 解除禁言成员','EMGroupManager.muteGroupMembers / unMuteGroupMembers\n参数：groupId, userIds, duration','IEMGroupManager.muteMembers:muteMilliseconds:fromGroup:completion: / unmuteMembers:fromGroup:completion:\n参数：userIds, duration, groupId','GroupManager.muteGroupMembers / unmuteGroupMembers\n参数：{ groupId, userIds, duration? }'],
+        ['全员禁言 / 解除全员禁言','EMGroupManager.muteAllMembers / unmuteAllMembers\n参数：groupId','IEMGroupManager.muteAllMembersFromGroup:completion: / unmuteAllMembersFromGroup:completion:\n参数：groupId','GroupManager.muteAllGroupMembers / unmuteAllGroupMembers\n参数：{ groupId }'],
+        ['读取群禁言列表','EMGroupManager.fetchGroupMuteList\n参数：groupId, pageSize, cursor','IEMGroupManager.fetchGroupMuteListFromServerWithId:pageNumber:pageSize:completion:\n参数：groupId, pageNumber, pageSize','GroupManager.getGroupMuteList\n参数：{ groupId, pageSize?, cursor? }'],
+        ['加入 / 移出群黑名单','EMGroupManager.blockUsers / unblockUsers\n参数：groupId, userIds','IEMGroupManager.blockMembers:fromGroup:completion: / unblockMembers:fromGroup:completion:\n参数：userIds, groupId','GroupManager.blockGroupMembers / unblockGroupMembers\n参数：{ groupId, userIds }'],
+        ['读取群黑名单','EMGroupManager.fetchGroupBlackList\n参数：groupId, pageSize, cursor','IEMGroupManager.getGroupBlacklistFromServerWithId:pageNumber:pageSize:completion:\n参数：groupId, pageNumber, pageSize','GroupManager.getGroupBlocklist\n参数：{ groupId, pageSize?, cursor? }'],
+        ['屏蔽 / 取消屏蔽群消息','EMGroupManager.blockGroupMessage / unblockGroupMessage\n参数：groupId','IEMGroupManager.blockGroup:completion: / unblockGroup:completion:\n参数：groupId','—'],
+        ['读取 / 修改群白名单','EMGroupManager.fetchGroupWhiteList / addToGroupWhiteList / removeFromGroupWhiteList\n参数：groupId, userIds?','IEMGroupManager.getGroupWhiteListFromServerWithId:completion: / addWhiteListMembers:fromGroup:completion:\n参数：groupId, userIds?','GroupManager.getGroupAllowlist / addUsersToGroupAllowlist / removeUsersFromGroupAllowlist\n参数：{ groupId, userIds? }'],
+        ['查询成员是否在白名单 / 禁言列表','EMGroupManager.checkIfInGroupWhiteList / asyncCheckIfInMuteList\n参数：groupId, userId','IEMGroupManager.isMemberInWhiteListFromServerWithGroupId:completion: / isMemberInMuteListFromServerWithGroupId:completion:\n参数：groupId, userId','GroupManager.checkIfInGroupAllowList / checkIfInGroupMuteList\n参数：{ groupId, userId }'],
+        ['读取 / 修改群公告','EMGroupManager.fetchGroupAnnouncement / updateGroupAnnouncement\n参数：groupId, announcement','IEMGroupManager.getGroupAnnouncementWithId:completion: / updateGroupAnnouncementWithId:announcement:completion:\n参数：groupId, announcement','GroupManager.getGroupAnnouncement / updateGroupAnnouncement\n参数：{ groupId, announcement? }'],
+        ['共享文件列表 / 上传 / 删除 / 下载','EMGroupManager.fetchGroupSharedFileList / uploadGroupSharedFile / deleteGroupSharedFile / downloadGroupSharedFile\n参数：groupId, page, fileId, filePath','IEMGroupManager.getGroupFileListWithId:pageNumber:pageSize:completion: / uploadGroupSharedFileWithId:filePath:progress:completion:\n参数：groupId, page, fileId, filePath','GroupManager.getGroupSharedFileList / uploadGroupSharedFile / deleteGroupSharedFile / downloadGroupSharedFile\n参数：{ groupId, fileId?, filePath?, pageSize?, cursor? }'],
+        ['设置 / 查询群成员属性','EMGroupManager.asyncSetGroupMemberAttributes / asyncFetchGroupMemberAllAttributes / asyncFetchGroupMembersAttributes\n参数：groupId, userId(s), attributes, keys','IEMGroupManager.setMemberAttribute:userId:attributes:completion: / fetchMemberAttribute:userId:completion: / fetchMembersAttributes:userIds:keys:completion:\n参数：groupId, userId(s), attributes, keys','GroupManager.setGroupMemberAttributes / getGroupMembersAttributes\n参数：{ groupId, userId(s), attributes? }'],
+        ['读取 / 修改群名片','EMGroupManager.getGroupNamecard / asyncUpdateGroupNamecard\n参数：groupId, userId, namecard','IEMGroupManager.getGroupNamecardWithGroupId:userId: / updateGroupNamecard:namecard:completion:\n参数：groupId, userId, namecard','—'],
+        ['查询已加入群数量','EMGroupManager.asyncGetJoinedGroupsCountFromServer\n参数：无','IEMGroupManager.getJoinedGroupsCountFromServerWithCompletion:\n参数：completion','—'],
+      ]},
+      { id:'chatroom', name:'ChatRoom / 聊天室', rows:[
+        ['加入聊天室','EMChatRoomManager.joinChatRoom\n参数：roomId, ext?, leaveOtherRooms?','IEMChatroomManager.joinChatroom:completion: / joinChatroom:ext:leaveOtherRooms:completion:\n参数：roomId, ext?, leaveOtherRooms?','ChatRoomManager.joinChatRoom\n参数：{ chatRoomId, message? }'],
+        ['离开聊天室','EMChatRoomManager.leaveChatRoom\n参数：roomId','IEMChatroomManager.leaveChatroom:completion:\n参数：roomId','ChatRoomManager.leaveChatRoom\n参数：{ chatRoomId }'],
+        ['查询公开聊天室列表','EMChatRoomManager.fetchPublicChatRoomsFromServer\n参数：pageNum, pageSize','IEMChatroomManager.getChatroomsFromServerWithPage:pageSize:completion:\n参数：page, pageSize','ChatRoomManager.getChatRoomList\n参数：{ pageNum?, pageSize? }'],
+        ['查询聊天室详情','EMChatRoomManager.fetchChatRoomFromServer\n参数：roomId, fetchMembers?','IEMChatroomManager.getChatroomSpecificationFromServerWithId:fetchMembers:completion:\n参数：roomId, fetchMembers?','ChatRoomManager.getChatRoomInfo\n参数：{ chatRoomId }'],
+        ['读取本地聊天室对象','EMChatRoomManager.getChatRoom\n参数：roomId','—','ChatRoomManager.getChatRoom\n参数：chatRoomId'],
+        ['修改聊天室主题 / 描述','EMChatRoomManager.changeChatRoomSubject / changeChatroomDescription\n参数：roomId, value','IEMChatroomManager.updateSubject:forChatroom:completion: / updateDescription:forChatroom:completion:\n参数：value, roomId','ChatRoomManager.updateChatRoomInfo\n参数：{ chatRoomId, subject?, description? }'],
+        ['转让聊天室所有者','EMChatRoomManager.changeOwner\n参数：roomId, newOwner','IEMChatroomManager.updateChatroomOwner:newOwner:completion:\n参数：roomId, newOwner','—'],
+        ['读取聊天室成员','EMChatRoomManager.fetchChatRoomMembers\n参数：roomId, pageSize, cursor','IEMChatroomManager.getChatroomMemberListFromServerWithId:cursor:pageSize:completion:\n参数：roomId, cursor, pageSize','ChatRoomManager.getMemberList\n参数：{ chatRoomId, pageSize?, cursor? }'],
+        ['移除聊天室成员','EMChatRoomManager.removeChatRoomMembers\n参数：roomId, userIds','IEMChatroomManager.removeMembers:fromChatroom:completion:\n参数：userIds, roomId','ChatRoomManager.removeMembers\n参数：{ chatRoomId, userIds }'],
+        ['添加 / 移除管理员','EMChatRoomManager.addChatRoomAdmin / removeChatRoomAdmin\n参数：roomId, userId','IEMChatroomManager.addAdmin:toChatroom:completion: / removeAdmin:fromChatroom:completion:\n参数：userId, roomId','ChatRoomManager.addAdmin / removeAdmin\n参数：{ chatRoomId, userId }'],
+        ['禁言 / 解除禁言成员','EMChatRoomManager.muteChatRoomMembers / unMuteChatRoomMembers\n参数：roomId, userIds, duration','IEMChatroomManager.muteMembers:muteMilliseconds:fromChatroom:completion: / unmuteMembers:fromChatroom:completion:\n参数：userIds, duration, roomId','ChatRoomManager.muteMembers / unmuteMembers\n参数：{ chatRoomId, userIds, duration? }'],
+        ['全员禁言 / 解除全员禁言','EMChatRoomManager.muteAllMembers / unmuteAllMembers\n参数：roomId','IEMChatroomManager.muteAllMembersFromChatroom:completion: / unmuteAllMembersFromChatroom:completion:\n参数：roomId','ChatRoomManager.muteAllMembers / unmuteAllMembers\n参数：{ chatRoomId }'],
+        ['读取聊天室禁言列表','EMChatRoomManager.fetchChatRoomMuteList\n参数：roomId, pageNum, pageSize','IEMChatroomManager.getChatroomMuteListFromServerWithId:pageNumber:pageSize:completion:\n参数：roomId, pageNumber, pageSize','ChatRoomManager.getMuteList\n参数：{ chatRoomId, pageSize?, cursor? }'],
+        ['加入 / 移出聊天室黑名单','EMChatRoomManager.blockChatroomMembers / unblockChatRoomMembers\n参数：roomId, userIds','IEMChatroomManager.blockMembers:fromChatroom:completion: / unblockMembers:fromChatroom:completion:\n参数：userIds, roomId','ChatRoomManager.blockMembers / unblockMembers\n参数：{ chatRoomId, userIds }'],
+        ['读取聊天室黑名单','EMChatRoomManager.fetchChatRoomBlackList\n参数：roomId, pageNum, pageSize','IEMChatroomManager.getChatroomBlacklistFromServerWithId:pageNumber:pageSize:completion:\n参数：roomId, pageNumber, pageSize','ChatRoomManager.getBlocklist\n参数：{ chatRoomId, pageSize?, cursor? }'],
+        ['读取 / 修改聊天室白名单','EMChatRoomManager.fetchChatRoomWhiteList / addToChatRoomWhiteList / removeFromChatRoomWhiteList\n参数：roomId, userIds?','IEMChatroomManager.getChatroomWhiteListFromServerWithId:completion: / addWhiteListMembers:fromChatroom:completion:\n参数：roomId, userIds?','ChatRoomManager.getAllowlist / addUsersToAllowlist / removeUsersFromAllowlist\n参数：{ chatRoomId, userIds? }'],
+        ['查询成员是否在白名单 / 禁言列表','EMChatRoomManager.checkIfInChatRoomWhiteList / asyncCheckIfInMuteList\n参数：roomId, userId','IEMChatroomManager.isMemberInWhiteListFromServerWithChatroomId:completion: / isMemberInMuteListFromServerWithChatroomId:completion:\n参数：roomId, userId','ChatRoomManager.checkIfInAllowList / checkIfInMuteList\n参数：{ chatRoomId, userId }'],
+        ['读取 / 修改聊天室公告','EMChatRoomManager.fetchChatRoomAnnouncement / updateChatRoomAnnouncement\n参数：roomId, announcement','IEMChatroomManager.getChatroomAnnouncementWithId:completion: / updateChatroomAnnouncementWithId:announcement:completion:\n参数：roomId, announcement','ChatRoomManager.getAnnouncement / updateAnnouncement\n参数：{ chatRoomId, announcement? }'],
+        ['读取聊天室属性','EMChatRoomManager.asyncFetchChatroomAttributesFromServer / asyncFetchChatRoomAllAttributesFromServer\n参数：roomId, keys?','IEMChatroomManager.fetchChatroomAttributes:keys:completion: / fetchChatroomAllAttributes:completion:\n参数：roomId, keys?','ChatRoomManager.getAttributes\n参数：{ chatRoomId, keys? }'],
+        ['设置聊天室属性','EMChatRoomManager.asyncSetChatroomAttributes / asyncSetChatroomAttribute\n参数：roomId, attributes, autoDelete','IEMChatroomManager.setChatroomAttributes:attributes:autoDelete:completionBlock: / setChatroomAttribute:key:value:autoDelete:completionBlock:\n参数：roomId, attributes, key, value, autoDelete','ChatRoomManager.setAttributes\n参数：{ chatRoomId, attributes }'],
+        ['删除聊天室属性','EMChatRoomManager.asyncRemoveChatRoomAttributesFromServer / asyncRemoveChatRoomAttributeFromServer\n参数：roomId, keys','IEMChatroomManager.removeChatroomAttributes:attributes:completionBlock: / removeChatroomAttribute:key:completionBlock:\n参数：roomId, keys','ChatRoomManager.removeAttributes\n参数：{ chatRoomId, keys }'],
+      ]},
+      { id:'thread', name:'ChatThread / 消息话题', rows:[
+        ['创建话题','EMChatThreadManager.createChatThread\n参数：parentMessageId, name, message','IEMThreadManager.createChatThread:messageId:parentId:completion:\n参数：name, messageId, parentId','ChatThreadManager.createChatThread\n参数：{ parentId, name, messageId }'],
+        ['查询话题列表','EMChatThreadManager.getChatThreadsFromServer\n参数：parentMessageId, pageSize, cursor','IEMThreadManager.getChatThreadsFromServerWithParentId:cursor:pageSize:completion:\n参数：parentId, cursor, pageSize','ChatThreadManager.getChatThreadList\n参数：{ parentId, pageSize?, cursor? }'],
+        ['查询已加入话题','EMChatThreadManager.getJoinedChatThreadsFromServer\n参数：pageSize, cursor','IEMThreadManager.getJoinedChatThreadsFromServerWithCursor:pageSize:completion:\n参数：cursor, pageSize','ChatThreadManager.getJoinedChatThreadList\n参数：{ parentId?, pageSize?, cursor? }'],
+        ['查询话题详情','EMChatThreadManager.getChatThreadFromServer\n参数：threadId','IEMThreadManager.getChatThreadFromSever:completion:\n参数：threadId','ChatThreadManager.getChatThreadInfo\n参数：{ chatThreadId }'],
+        ['加入 / 离开话题','EMChatThreadManager.joinChatThread / leaveChatThread\n参数：threadId','IEMThreadManager.joinChatThread:completion: / leaveChatThread:completion:\n参数：threadId','ChatThreadManager.joinChatThread / leaveChatThread\n参数：{ chatThreadId }'],
+        ['解散话题','EMChatThreadManager.destroyChatThread\n参数：threadId','IEMThreadManager.destroyChatThread:completion:\n参数：threadId','ChatThreadManager.destroyChatThread\n参数：{ chatThreadId }'],
+        ['修改话题名称','EMChatThreadManager.updateChatThreadName\n参数：threadId, name','IEMThreadManager.updateChatThreadName:threadId:completion:\n参数：name, threadId','ChatThreadManager.updateChatThreadName\n参数：{ chatThreadId, name }'],
+        ['查询话题成员','EMChatThreadManager.getChatThreadMembers\n参数：threadId, pageSize, cursor','IEMThreadManager.getChatThreadMemberListFromServerWithId:cursor:pageSize:completion:\n参数：threadId, cursor, pageSize','ChatThreadManager.getChatThreadMemberList\n参数：{ chatThreadId, pageSize?, cursor? }'],
+        ['移除话题成员','EMChatThreadManager.removeMemberFromChatThread\n参数：threadId, memberId','IEMThreadManager.removeMemberFromChatThread:threadId:completion:\n参数：memberId, threadId','ChatThreadManager.removeChatThreadMember\n参数：{ chatThreadId, memberId }'],
+        ['查询话题最新消息','EMChatThreadManager.getChatThreadLatestMessage\n参数：threadIds','IEMThreadManager.getLastMessageFromSeverWithChatThreads:completion:\n参数：threadIds','ChatThreadManager.getChatThreadLastMessageList\n参数：{ chatThreadIds }'],
+      ]},
+      { id:'presence', name:'Presence / 在线状态', rows:[
+        ['发布在线状态','EMPresenceManager.publishPresence\n参数：description','IEMPresenceManager.publishPresenceWithDescription:completion:\n参数：description','PresenceManager.publishPresence\n参数：{ description }'],
+        ['订阅在线状态','EMPresenceManager.subscribePresences\n参数：userIds, expiry','IEMPresenceManager.subscribe:expiry:completion:\n参数：userIds, expiry','PresenceManager.subscribePresence\n参数：{ userIds, expiry? }'],
+        ['取消订阅在线状态','EMPresenceManager.unsubscribePresences\n参数：userIds','IEMPresenceManager.unsubscribe:completion:\n参数：userIds','PresenceManager.unsubscribePresence\n参数：{ userIds }'],
+        ['查询在线状态','EMPresenceManager.fetchPresenceStatus\n参数：userIds','IEMPresenceManager.fetchPresenceStatus:completion:\n参数：userIds','PresenceManager.getPresenceStatus\n参数：{ userIds }'],
+        ['查询已订阅成员','EMPresenceManager.fetchSubscribedMembers\n参数：pageNum, pageSize','IEMPresenceManager.fetchSubscribedMembersWithPageNum:pageSize:Completion:\n参数：pageNum, pageSize','PresenceManager.getSubscribedPresenceList\n参数：{ pageNum?, pageSize? }'],
+      ]},
+      { id:'push', name:'Push / 推送与免打扰', rows:[
+        ['绑定设备推送 Token','EMClient.sendFCMTokenToServer / sendHMSPushTokenToServer\n参数：token','EMClient.bindFCMToken:completion: / registerForRemoteNotificationsWithDeviceToken:completion:\n参数：token','PushManager.uploadPushToken\n参数：{ deviceId, deviceToken, notifierName }'],
+        ['读取本地推送配置','EMPushManager.getPushConfigs\n参数：无','IEMPushManager.pushOptions\n参数：无','—'],
+        ['读取服务端推送配置','EMPushManager.getPushConfigsFromServer\n参数：无','IEMPushManager.getPushNotificationOptionsFromServerWithCompletion:\n参数：completion','—'],
+        ['设置 / 读取推送昵称','EMPushManager.updatePushNickname\n参数：nickname','IEMPushManager.updatePushDisplayName:completion:\n参数：displayName','—'],
+        ['设置 / 读取推送样式','EMPushManager.updatePushDisplayStyle\n参数：style','IEMPushManager.updatePushDisplayStyle:completion:\n参数：style','—'],
+        ['设置 / 读取全局免打扰','EMPushManager.setSilentModeForAll / getSilentModeForAll\n参数：rule','IEMPushManager.setSilentModeForAll:completion: / getSilentModeForAllWithCompletion:\n参数：rule','PushManager.setGlobalSilentMode / getGlobalSilentMode\n参数：{ rule } / 无'],
+        ['设置 / 读取单会话免打扰','EMPushManager.setSilentModeForConversation / getSilentModeForConversation\n参数：conversationId, type, rule','IEMPushManager.setSilentModeForConversation:conversationType:params:completion: / getSilentModeForConversation:conversationType:completion:\n参数：conversationId, type, params','PushManager.setConversationSilentMode / getConversationSilentMode\n参数：{ conversationId, conversationType, rule }'],
+        ['清除会话提醒类型','EMPushManager.clearRemindTypeForConversation\n参数：conversationId, type','IEMPushManager.clearRemindTypeForConversation:conversationType:completion:\n参数：conversationId, type','PushManager.clearConversationRemindType\n参数：{ conversationId, conversationType }'],
+        ['批量读取会话免打扰','EMPushManager.getSilentModeForConversations\n参数：conversationList','IEMPushManager.getSilentModeForConversations:completion:\n参数：conversationList','PushManager.getConversationSilentModes\n参数：{ conversationList }'],
+        ['设置 / 读取通知语言','EMPushManager.setPreferredNotificationLanguage / getPreferredNotificationLanguage\n参数：language','IEMPushManager.setPreferredNotificationLanguage:completion: / getPreferredNotificationLanguageCompletion:\n参数：language','PushManager.setPushLanguage / getPushLanguage\n参数：{ language } / 无'],
+        ['设置 / 读取推送模板','EMPushManager.setPushTemplate / getPushTemplate\n参数：template','IEMPushManager.setPushTemplate:completion: / getPushTemplate:\n参数：template','—'],
+      ]},
+      { id:'userinfo', name:'UserInfo / 用户资料', rows:[
+        ['更新当前用户全部资料','EMUserInfoManager.updateOwnInfo\n参数：UserInfo','IEMUserInfoManager.updateOwnUserInfo:completion:\n参数：UserInfo','UserInfoManager.updateOwnInfo\n参数：{ nickname?, avatarUrl?, mail?, phone?, gender?, sign?, birth?, ext? }'],
+        ['更新当前用户单个属性','EMUserInfoManager.updateOwnInfoByAttribute\n参数：attribute, value','IEMUserInfoManager.updateOwnUserInfo:withType:completion:\n参数：attribute, value','UserInfoManager.updateOwnInfoByAttribute\n参数：attribute, value'],
+        ['按用户 ID 查询资料','EMUserInfoManager.fetchUserInfoByUserId\n参数：userIds','IEMUserInfoManager.fetchUserInfoById:completion:\n参数：userIds','UserInfoManager.getUserInfoByUserId\n参数：{ userIds }'],
+        ['按用户 ID + 属性查询资料','EMUserInfoManager.fetchUserInfoByAttribute\n参数：userIds, attributes','IEMUserInfoManager.fetchUserInfoById:type:completion:\n参数：userIds, type','UserInfoManager.getUserInfoByAttribute\n参数：{ userIds, attributes }'],
+        ['本地读取用户资料','EMUserInfoManager.getUserInfoWithUserId / getUserInfoWithUserIds\n参数：userId(s)','IEMUserInfoManager.getUserInfoByIds:\n参数：userIds','—'],
+        ['订阅 / 取消订阅用户资料','EMUserInfoManager.subscribeUsersInfo / unsubscribeUsersInfo\n参数：userIds, expires?','IEMUserInfoManager.subscribeUsersInfo:completion: / unsubscribeUsersInfo:completion:\n参数：userIds, expires?','UserInfoManager.subscribeUsersInfo / unsubscribeUsersInfo\n参数：{ userIds, expires? }'],
+        ['读取已订阅用户资料','EMUserInfoManager.fetchSubscribedUsers\n参数：无','IEMUserInfoManager.fetchSubscribedUsers:\n参数：无','UserInfoManager.getSubscribedUsers\n参数：无'],
+      ]},
+    ];
+
+    function esc(value) { return value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
+    function cell(value) {
+      if (value === '—') return '<td class="na">—</td>';
+      const parts = value.split('\n');
+      return '<td><span class="api">' + esc(parts[0]) + '</span>' + (parts[1] ? '<span class="params">' + esc(parts[1]) + '</span>' : '') + '</td>';
+    }
+    const nav = document.getElementById('nav');
+    const content = document.getElementById('content');
+    const onlyLink = document.createElement('a');
+    onlyLink.href = '#platform-only';
+    onlyLink.textContent = '独有能力';
+    nav.appendChild(onlyLink);
+    for (const group of groups) {
+      const link = document.createElement('a');
+      link.href = '#' + group.id;
+      link.textContent = group.name.split(' / ')[0];
+      nav.appendChild(link);
+      const section = document.createElement('section');
+      section.id = group.id;
+      section.innerHTML = '<h2>' + esc(group.name) + '</h2><div class="table-wrap"><table><colgroup><col class="semantic"><col class="platform"><col class="platform"><col class="platform"></colgroup><thead><tr><th>功能语义</th><th>Android 5.0 原生 API / 核心参数</th><th>iOS 5.0 原生 API / 核心参数</th><th>Web 5.0 原生 API / 核心参数</th></tr></thead><tbody>' + group.rows.map(row => '<tr>' + '<td>' + esc(row[0]) + '</td>' + cell(row[1]) + cell(row[2]) + cell(row[3]) + '</tr>').join('') + '</tbody></table></div>';
+      content.appendChild(section);
+    }
+  </script>
+</body>
+</html>

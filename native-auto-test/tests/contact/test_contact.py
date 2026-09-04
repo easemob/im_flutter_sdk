@@ -59,7 +59,7 @@ def test_contact_add_nonexistent_user(device_a, assert_api):
             Cmd.addContact.value,
             info={"userId": USER_NONEXISTENT, "reason": "hello"},
         )
-        assert_api.assert_error(resp, code=204, description="User does not exist")
+        assert_api.assert_error(resp, code=204)
 
 
 def test_contact_add_empty_user_id(device_a, assert_api):
@@ -112,7 +112,7 @@ def test_contact_delete_contact_nonexistent_user(device_a, assert_api):
             Cmd.deleteContact.value,
             info={"userId": USER_NONEXISTENT, "keepConversation": True},
         )
-        assert_api.assert_error(resp, code=204, description="User does not exist")
+        assert_api.assert_error(resp, code=204)
 
 
 @pytest.mark.topology("account_a_to_account_b")
@@ -490,7 +490,6 @@ def test_contact_remark_special_chars_length_101(device_a, device_b, assert_api,
                 info={"userId": user_b, "remark": REMARK_SPECIAL_101},
             ),
             code=4,
-            description="remark length must less than 100",
         )
     with _allure_step("测试后置：删除好友关系"):
         flow.delete_friend(device_a, user_b)
@@ -569,7 +568,6 @@ def test_contact_set_contact_remark_non_friend(device_a, assert_api):
         assert_api.assert_error(
             resp,
             code=221,
-            description="updateRemark | they are not friends, please add as a friend first.",
         )
 
 

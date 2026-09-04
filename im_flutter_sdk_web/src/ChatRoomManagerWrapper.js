@@ -48,7 +48,7 @@ export function createChatRoomManagerWrapper({ manager, emit, registerEvents, h 
       await m.getChatRoomList(h.pageOptions(i)),
     ),
     fetchChatRoomInfoFromServer: fetchChatRoomInfo,
-    getChatRoom: (m, i) => m.getChatRoom(h.roomId(i)),
+    getChatRoom: async (m, i) => h.normalizeChatRoomSummary(await m.getChatRoom(h.roomId(i))),
     fetchChatRoomMembers: async (m, i) => h.normalizeChatRoomMembersResult(
       await m.getMemberList({ chatRoomId: h.roomId(i), pageSize: h.pageSize(i), cursor: i.cursor || "" }),
     ),

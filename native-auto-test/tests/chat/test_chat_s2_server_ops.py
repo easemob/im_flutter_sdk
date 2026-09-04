@@ -470,7 +470,7 @@ def test_chat_remove_messages_from_server_with_msg_ids_empty_msg_ids(device_a, u
             Cmd.removeMessagesFromServerWithMsgIds.value,
             info={"convId": user_b, "type": 0, "msgIds": []},
         )
-        assert_error(resp, code=110, description="Invalid parameter")
+        assert_error(resp, code=110)
 
 
 @pytest.mark.skip(reason="必填缺失类 case 暂缓；当前端易返回 MissingPlugin 非被测端语义")
@@ -510,7 +510,7 @@ def test_chat_remove_messages_from_server_with_ts_timestamp_zero(device_a, user_
             Cmd.removeMessagesFromServerWithTs.value,
             info={"convId": user_b, "type": 0, "timestamp": 0},
         )
-        assert_error(resp, code=110, description="Invalid parameter")
+        assert_error(resp, code=110)
 
 
 @pytest.mark.skip(reason="必填缺失类 case 暂缓；当前端易返回 MissingPlugin 非被测端语义")

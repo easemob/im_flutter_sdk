@@ -1,5 +1,11 @@
 /** Web 5.0 GroupManager adapter and group event registration. */
-export function createGroupManagerWrapper({ manager, emit, registerEvents, h }) {
+export function createGroupManagerWrapper({ manager, emit, registerEvents, h, currentUser }) {
+  const resolveMemberUserId = (info) => {
+    const userId = h.userId(info);
+    if (userId) return userId;
+    return typeof currentUser === "function" ? String(currentUser() || "") : "";
+  };
+
   const commands = {
     getJoinedGroups: (m, i) => m.getJoinedGroupList(i),
     getJoinedGroupList: (m, i) => m.getJoinedGroupList(i),
@@ -32,7 +38,7 @@ export function createGroupManagerWrapper({ manager, emit, registerEvents, h }) 
     downloadGroupSharedFile: (m, i) => m.downloadGroupSharedFile(i),
     fetchGroupBlackList: (m, i) => m.getGroupBlocklist({ groupId: h.groupId(i), pageSize: h.pageSize(i), cursor: i.cursor || "" }),
     fetchGroupMembersInfo: (m, i) => m.getGroupMemberList({ groupId: h.groupId(i), pageSize: h.pageSize(i), cursor: i.cursor || "" }),
-    fetchMemberAttributesFromGroup: (m, i) => m.getGroupMembersAttributes({ groupId: h.groupId(i), userIds: h.members(i) }),
+    fetchMemberAttributesFromGroup: (m, i) => m.getGroupMembersAttributes({ groupId: h.groupId(i), userIds: [resolveMemberUserId(i)] }),
     fetchMembersAttributesFromGroup: (m, i) => m.getGroupMembersAttributes({ groupId: h.groupId(i), userIds: h.members(i) }),
     fetchMemberAllAttributes: (m, i) => m.getGroupMembersAttributes({ groupId: h.groupId(i), userIds: h.members(i) }),
     getGroupAnnouncementFromServer: (m, i) => m.getGroupAnnouncement({ groupId: h.groupId(i) }),
@@ -57,7 +63,7 @@ export function createGroupManagerWrapper({ manager, emit, registerEvents, h }) 
     removeUserFromGroup: (m, i) => m.removeGroupMembers({ groupId: h.groupId(i), userIds: [h.userId(i)] }),
     removeWhiteList: (m, i) => m.removeUsersFromGroupAllowlist({ groupId: h.groupId(i), userIds: h.members(i) }),
     requestToJoinPublicGroup: (m, i) => m.joinGroup({ groupId: h.groupId(i), message: i.message }),
-    setMemberAttributesFromGroup: (m, i) => m.setGroupMemberAttributes({ groupId: h.groupId(i), userId: h.userId(i), attributes: i.attributes || {} }),
+    setMemberAttributesFromGroup: (m, i) => m.setGroupMemberAttributes({ groupId: h.groupId(i), userId: resolveMemberUserId(i), attributes: i.attributes || {} }),
     unMuteAllMembers: (m, i) => m.unmuteAllGroupMembers({ groupId: h.groupId(i) }),
     unMuteMembers: (m, i) => m.unmuteGroupMembers({ groupId: h.groupId(i), userIds: h.members(i) }),
     unblockMembers: (m, i) => m.unblockGroupMembers({ groupId: h.groupId(i), userIds: h.members(i) }),

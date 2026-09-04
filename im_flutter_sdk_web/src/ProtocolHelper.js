@@ -107,6 +107,42 @@ function conversationListOptions(info) {
   if (Number.isInteger(info?.mark)) options.mark = info.mark;
   return options;
 }
+function protocolConversationType(info) {
+  return conversationType(info?.chatType ?? info?.conversationType ?? info?.type);
+}
+function reactionListOptions(info) {
+  const configuredIds = info?.msgIds ?? info?.messageIds;
+  const messageId = configuredIds != null
+    ? (Array.isArray(configuredIds) ? configuredIds.map(String) : String(configuredIds))
+    : String(info?.msgId ?? info?.messageId ?? "");
+  const options = {
+    messageId,
+    conversationType: protocolConversationType(info),
+  };
+  const groupId = info?.groupId ?? info?.group_id;
+  if (groupId != null) options.groupId = String(groupId);
+  return options;
+}
+function reactionDetailOptions(info) {
+  const options = {
+    messageId: String(info?.msgId ?? info?.messageId ?? ""),
+    reaction: String(info?.reaction ?? ""),
+  };
+  if (info?.cursor != null) options.cursor = String(info.cursor);
+  if (info?.pageSize != null || info?.limit != null) options.pageSize = pageSize(info);
+  return options;
+}
+function normalizeReactionListResult(value) {
+  if (!Array.isArray(value)) return value;
+  const result = {};
+  for (const item of value) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+    const messageId = item.messageId ?? item.msgId;
+    if (messageId == null) continue;
+    result[String(messageId)] = jsonSafe(item.reactions ?? item.reactionList ?? []);
+  }
+  return result;
+}
 function roomId(info) { return String(info.chatRoomId || info.roomId || info.id || ""); }
 function normalizeChatRoomUserIdList(value) {
   const items = Array.isArray(value) ? value : [];
@@ -115,6 +151,16 @@ function normalizeChatRoomUserIdList(value) {
     const user = item?.user && typeof item.user === "object" ? item.user : item;
     return user?.userId ?? user?.username ?? user?.id ?? "";
   }).filter(Boolean).map(String);
+}
+function normalizeChatRoomPermissionType(value) {
+  if (typeof value === "number") return value;
+  switch (value) {
+    case "none": return -1;
+    case "member": return 0;
+    case "admin": return 1;
+    case "owner": return 2;
+    default: return value;
+  }
 }
 function normalizeChatRoomJoinResult(value) {
   const result = jsonSafe(value);
@@ -158,7 +204,8 @@ function normalizeChatRoomSummary(value) {
     return item.userId ?? item.username ?? item.id ?? item;
   });
   rename("maxUsers", ["maxMembers"]);
-  rename("isAllMemberMuted", ["isAllMembersMuted"]);
+  rename("permissionType", ["role"], normalizeChatRoomPermissionType);
+  rename("isAllMemberMuted", ["isAllMembersMuted", "muteAllMembers"]);
   rename("memberCount", ["affiliations_count"]);
   rename("createTimestamp", ["createdAt"]);
   rename("isInWhitelist", ["inAllowlist"]);
@@ -218,6 +265,9 @@ function normalizeChatRoomEvent(value) {
       ...normalized.chatRoomInfo,
       roomId: normalized.chatRoomInfo.roomId ?? normalized.chatRoomInfo.chatRoomId ?? normalized.chatRoomId,
     };
+  }
+  if (normalized.room && typeof normalized.room === "object" && !Array.isArray(normalized.room)) {
+    normalized.room = normalizeChatRoomSummary(normalized.room);
   }
   for (const key of ["from", "participant", "admin", "newOwner", "oldOwner"]) {
     const item = normalized[key];
@@ -427,8 +477,8 @@ function conversationMarkOptions(info) {
 function historyDeleteOptions(info) {
   return {
     conversationId: String(info.convId || info.conversationId || ""),
-    conversationType: conversationType(info.chatType || info.conversationType),
-    timestamp: info.timestamp || info.ts,
+    conversationType: protocolConversationType(info),
+    beforeTimestamp: info.timestamp ?? info.ts,
   };
 }
 function downloadOptions(info) {
@@ -626,4 +676,4 @@ function modifyOptions(info) {
 
 
 
-export { extractMessages, canonicalWeb5Message, normalizeWeb5Reaction, historyOptions, unreadOptions, groupOptions, bodyType, webMessageType, conversationType, numericChatType, jsonSafe, normalizeRecallEvent, pageSize, pageOptions, conversationListOptions, roomId, normalizeChatRoomJoinResult, normalizeChatRoomSummary, normalizeChatRoomPageResult, normalizeChatRoomMembersResult, normalizeChatRoomUserIdList, normalizeChatRoomEvent, normalizeGroupEvent, groupId, userId, userIds, members, contactUserIds, normalizeContactEvent, userInfoMap, userInfoAttribute, userInfoAttributes, normalizeUserInfoInput, normalizeUserInfoProfile, normalizeUserInfoForTypeResult, readReceiptOptions, groupReceiptOptions, conversationMarkOptions, historyDeleteOptions, downloadOptions, searchOptions, pushConversation, silentModeRule, remindTypeName, silentModeTime, silentModeConversationList, pushTokenOptions, presenceUserIds, presenceSubscriptionOptions, normalizePresenceResults, normalizeSilentModeResult, normalizeSilentModeConversations, remindTypeNumber, modifyOptions };
+export { extractMessages, canonicalWeb5Message, normalizeWeb5Reaction, historyOptions, unreadOptions, groupOptions, bodyType, webMessageType, conversationType, numericChatType, jsonSafe, normalizeRecallEvent, pageSize, pageOptions, conversationListOptions, protocolConversationType, reactionListOptions, reactionDetailOptions, normalizeReactionListResult, roomId, normalizeChatRoomJoinResult, normalizeChatRoomSummary, normalizeChatRoomPageResult, normalizeChatRoomMembersResult, normalizeChatRoomUserIdList, normalizeChatRoomEvent, normalizeGroupEvent, groupId, userId, userIds, members, contactUserIds, normalizeContactEvent, userInfoMap, userInfoAttribute, userInfoAttributes, normalizeUserInfoInput, normalizeUserInfoProfile, normalizeUserInfoForTypeResult, readReceiptOptions, groupReceiptOptions, conversationMarkOptions, historyDeleteOptions, downloadOptions, searchOptions, pushConversation, silentModeRule, remindTypeName, silentModeTime, silentModeConversationList, pushTokenOptions, presenceUserIds, presenceSubscriptionOptions, normalizePresenceResults, normalizeSilentModeResult, normalizeSilentModeConversations, remindTypeNumber, modifyOptions };
