@@ -1,0 +1,8 @@
+display_name: IM Flutter Run
+short_description: Build release APK, boot emulator, install, bridge, run pytest, generate report.
+default_prompt: |
+  Run the Flutter IM SDK E2E cases locally in one command.
+  Execute scripts/run.sh from the native-auto-test directory.
+  It builds the release APK, boots a headless emulator, installs the app,
+  starts the WS bridge, runs pytest, and generates the Allure report.
+  No Android Studio needed.

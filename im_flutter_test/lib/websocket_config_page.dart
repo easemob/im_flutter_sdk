@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 
 import 'bridge/event_bridge_handler.dart';
 import 'bridge/im_websocket_bridge.dart';
+import 'sdk_config_loader.dart';
+
+/// 本 App 实例的设备标识（deviceA/deviceB），通过构建参数 `--dart-define=DEVICE=...` 指定。
+const String kDeviceName = String.fromEnvironment('DEVICE', defaultValue: 'deviceA');
 
 /// WebSocket 桥接配置页：配置 URL/topic、手动连接/断开、查看与清空请求响应列表。
 class WebSocketConfigPage extends StatefulWidget {
@@ -26,6 +30,30 @@ class _WebSocketConfigPageState extends State<WebSocketConfigPage> {
     _topicController.text = kDefaultBridgeWebSocketTopic;
     _deviceController.text = 'deviceA';
     IMWebSocketBridge.instance.onLog = _onLog;
+    _autoConnect();
+  }
+
+  /// 从 config.yaml 读取 websocket 配置并自动建立桥接连接。
+  /// topic 优先级：topics[device] > websocket.default_topic > 默认常量。
+  /// 配置缺失/空时回退；失败不影响后续手动重连。
+  Future<void> _autoConnect() async {
+    final cfg = await SdkConfigLoader.loadWebSocketConfig();
+    final deviceTopic = await SdkConfigLoader.loadTopicForDevice(kDeviceName);
+    if (!mounted) return;
+    final baseUrl = (cfg.baseUrl == null || cfg.baseUrl!.isEmpty)
+        ? kDefaultBridgeWebSocketBaseUrl
+        : cfg.baseUrl!;
+    final topic = (deviceTopic != null && deviceTopic.isNotEmpty)
+        ? deviceTopic
+        : ((cfg.topic == null || cfg.topic!.isEmpty)
+            ? kDefaultBridgeWebSocketTopic
+            : cfg.topic!);
+    setState(() {
+      _urlController.text = baseUrl;
+      _topicController.text = topic;
+      _deviceController.text = kDeviceName;
+    });
+    await _connect();
   }
 
   @override
