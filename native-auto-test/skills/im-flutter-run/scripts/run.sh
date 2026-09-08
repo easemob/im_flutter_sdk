@@ -44,14 +44,20 @@ done
 
 fail() { echo "error: $*" >&2; exit 1; }
 
-# ---- Environment detection ----
-detect_python() {
-  local c
-  for c in "$native_auto_test/.flutter-vnev/bin/python" "$native_auto_test/.venv/bin/python"; do
-    if [[ -x "$c" ]]; then echo "$c"; return 0; fi
-  done
-  if command -v python3 >/dev/null 2>&1; then echo "python3"; return 0; fi
-  return 1
+# ---- Python environment: auto-create venv + install deps (idempotent) ----
+ensure_python_env() {
+  local venv="$native_auto_test/.venv"
+  if [[ ! -x "$venv/bin/python" ]]; then
+    command -v python3 >/dev/null 2>&1 || fail "python3 not found; install Python 3.9+"
+    echo "==> Creating Python venv ($venv) ..."
+    python3 -m venv "$venv"
+  fi
+  PY="$venv/bin/python"
+  if ! "$PY" -c "import websockets, yaml, pytest" 2>/dev/null; then
+    echo "==> Installing Python dependencies ..."
+    "$PY" -m pip install -q -r "$native_auto_test/requirements.txt"
+  fi
+  echo "==> Python ready: $PY"
 }
 
 detect_sdk_dir() {
@@ -63,7 +69,7 @@ detect_sdk_dir() {
   return 1
 }
 
-PY="$(detect_python)" || fail "no usable Python found (check native-auto-test/.flutter-vnev or .venv)"
+ensure_python_env
 SDK_DIR="$(detect_sdk_dir)" || fail "Android SDK not found (set ANDROID_HOME or ANDROID_SDK_ROOT)"
 ADB="$SDK_DIR/platform-tools/adb"
 EMULATOR="$SDK_DIR/emulator/emulator"
