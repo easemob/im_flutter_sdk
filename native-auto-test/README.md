@@ -2,6 +2,68 @@
 
 通过 WebSocket 与 Flutter demo 端通信，对环信 Flutter SDK 的 API 做自动化测试。Flutter 端需连接**同一 WebSocket 服务**且使用**相同 topic**。
 
+## 快速开始（Quick Start）
+
+无需 Flutter、无需 Android Studio、无需手动装 Android SDK。一条命令跑通双端 E2E。
+
+### 1. 下载测试框架
+
+```bash
+# 从 release 下载（推荐，不用 clone 代码）
+curl -sL https://github.com/<owner>/<repo>/releases/latest/download/native-auto-test.tar.gz | tar xz
+cd native-auto-test
+
+# 或 clone 仓库（开发者）
+git clone <repo> && cd native-auto-test
+```
+
+### 2. 配置 config.yaml
+
+```bash
+cp config.yaml.template config.yaml
+vim config.yaml
+```
+
+必填项（按你的测试环境）：
+
+```yaml
+sdk_options:
+  app_key: "你的org#你的app"        # 必填，如 "easemob#test001"
+  rest_server: "https://xxx"         # 按环境填
+
+rest_api:                            # 用于自动创建测试用户（建议填）
+  base_url: "http://xxx/org/app"
+  auth_token: "Bearer YWMt..."
+```
+
+不用改的：`websocket.base_url`（默认 `ws://127.0.0.1:4000`）、`topics.deviceA/deviceB`（默认 adc/adc01）。
+
+### 3. 一键跑
+
+```bash
+bash skills/im-flutter-run/scripts/run.sh
+```
+
+首次运行会自动安装：JDK 17+、Android cmdline-tools、emulator、platform-tools、系统镜像（android-34 default）、两个最小 AVD、Python venv + 依赖；然后下载 release 最新 APK、启动双模拟器、装 APK、注入配置、跑 pytest、生成 Allure 报告并自动打开。
+
+### 4. 常用变体
+
+```bash
+# 跑指定用例
+bash skills/im-flutter-run/scripts/run.sh -q "tests/client/test_client.py::test_client_get_current_user"
+
+# 指定 release 来源（fork 或上游）
+bash skills/im-flutter-run/scripts/run.sh --repo 20011229kk/im_flutter_sdk
+
+# 本地构建 APK（开发者模式，替代下载 release）
+bash skills/im-flutter-run/scripts/run.sh --build
+
+# CI 里跑（不弹浏览器）
+bash skills/im-flutter-run/scripts/run.sh --no-open
+```
+
+> 详细说明见 skill：`skills/im-flutter-run/SKILL.md`；模拟器准备：`skills/im-flutter-run/scripts/setup_emulator.sh`。
+
 ## WebSocket 两种用法
 
 1. **请求/响应**：`api.call(manager, cmd, info)` — 发一条请求，等一条对应响应（按 id/sequence 匹配），适合单次调用、结果断言。
