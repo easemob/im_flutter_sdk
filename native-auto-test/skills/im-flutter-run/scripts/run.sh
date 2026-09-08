@@ -44,14 +44,20 @@ done
 
 fail() { echo "error: $*" >&2; exit 1; }
 
-# ---- Environment detection ----
-detect_python() {
-  local c
-  for c in "$native_auto_test/.flutter-vnev/bin/python" "$native_auto_test/.venv/bin/python"; do
-    if [[ -x "$c" ]]; then echo "$c"; return 0; fi
-  done
-  if command -v python3 >/dev/null 2>&1; then echo "python3"; return 0; fi
-  return 1
+# ---- Python environment: auto-create venv + install deps (idempotent) ----
+ensure_python_env() {
+  local venv="$native_auto_test/.venv"
+  if [[ ! -x "$venv/bin/python" ]]; then
+    command -v python3 >/dev/null 2>&1 || fail "python3 not found; install Python 3.9+"
+    echo "==> Creating Python venv ($venv) ..."
+    python3 -m venv "$venv"
+  fi
+  PY="$venv/bin/python"
+  if ! "$PY" -c "import websockets, yaml, pytest" 2>/dev/null; then
+    echo "==> Installing Python dependencies ..."
+    "$PY" -m pip install -q -r "$native_auto_test/requirements.txt"
+  fi
+  echo "==> Python ready: $PY"
 }
 
 detect_sdk_dir() {
@@ -63,7 +69,7 @@ detect_sdk_dir() {
   return 1
 }
 
-PY="$(detect_python)" || fail "no usable Python found (check native-auto-test/.flutter-vnev or .venv)"
+ensure_python_env
 SDK_DIR="$(detect_sdk_dir)" || fail "Android SDK not found (set ANDROID_HOME or ANDROID_SDK_ROOT)"
 ADB="$SDK_DIR/platform-tools/adb"
 EMULATOR="$SDK_DIR/emulator/emulator"
@@ -144,26 +150,36 @@ echo "==> Emulator B boot completed"
 
 # ---- Install APKs ----
 echo "==> Installing release APKs ..."
-"$ADB" -s "$SERIAL_A" install -r /tmp/im-flutter-run-deviceA.apk
-"$ADB" -s "$SERIAL_B" install -r /tmp/im-flutter-run-deviceB.apk
+"$ADB" -s "$SERIAL_A" uninstall com.easemob.im_flutter_test >/dev/null 2>&1 || true
+"$ADB" -s "$SERIAL_B" uninstall com.easemob.im_flutter_test >/dev/null 2>&1 || true
+"$ADB" -s "$SERIAL_A" install /tmp/im-flutter-run-deviceA.apk
+"$ADB" -s "$SERIAL_B" install /tmp/im-flutter-run-deviceB.apk
+
+# ---- Bridge (relay + reverse for all emulator-*) ----
+echo "==> Starting local WebSocket bridge ..."
+(cd "$native_auto_test" && make ws-bridge-up PY="$PY" ADB="$ADB")
+
+# ---- First launch to create the app's external files dir ----
+echo "==> First launch (create app data dir) ..."
+"$ADB" -s "$SERIAL_A" shell am start -n com.easemob.im_flutter_test/.MainActivity >/dev/null
+"$ADB" -s "$SERIAL_B" shell am start -n com.easemob.im_flutter_test/.MainActivity >/dev/null
+sleep 6
 
 # ---- Push runtime config (startup injection; no rebuild needed) ----
 CONFIG="$native_auto_test/config.yaml"
 CONFIG_DEST="/sdcard/Android/data/com.easemob.im_flutter_test/files/config.yaml"
 if [[ -f "$CONFIG" ]]; then
   echo "==> Pushing config.yaml to both emulators ..."
+  "$ADB" -s "$SERIAL_A" shell am force-stop com.easemob.im_flutter_test
+  "$ADB" -s "$SERIAL_B" shell am force-stop com.easemob.im_flutter_test
   "$ADB" -s "$SERIAL_A" push "$CONFIG" "$CONFIG_DEST" >/dev/null
   "$ADB" -s "$SERIAL_B" push "$CONFIG" "$CONFIG_DEST" >/dev/null
 else
   echo "==> config.yaml not found ($CONFIG); App will fall back to bundled asset config"
 fi
 
-# ---- Bridge (relay + reverse for all emulator-*) ----
-echo "==> Starting local WebSocket bridge ..."
-(cd "$native_auto_test" && make ws-bridge-up PY="$PY" ADB="$ADB")
-
-# ---- Launch both apps (auto-connect) ----
-echo "==> Launching apps (auto-connect) ..."
+# ---- Relaunch apps (read external config, auto-connect) ----
+echo "==> Relaunching apps (auto-connect) ..."
 "$ADB" -s "$SERIAL_A" shell am start -n com.easemob.im_flutter_test/.MainActivity
 "$ADB" -s "$SERIAL_B" shell am start -n com.easemob.im_flutter_test/.MainActivity
 sleep 8

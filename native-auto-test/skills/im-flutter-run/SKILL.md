@@ -13,14 +13,12 @@ One-command end-to-end test run for `im_flutter_test` (release) + `native-auto-t
 
 ## Minimal Dependencies (no Android Studio required)
 
-`run.sh` auto-installs the Android toolchain on first run (idempotent), so you only need:
+`run.sh` auto-installs the full toolchain on first run (idempotent), so you only need:
 
-- Flutter SDK (`flutter` on PATH)
-- JDK 17+ (auto-installed via brew/apt if missing; otherwise `java` on PATH)
-- Python environment (prefers `native-auto-test/.flutter-vnev`, then `.venv`)
-- Optional: allure CLI (`npm i -g allure-commandline`); if missing, only the raw results path is printed
+- A network connection to GitHub and your test environment
+- Python 3.9+ (`python3` on PATH; the venv is created automatically)
 
-Auto-installed if missing: Android cmdline-tools (`sdkmanager`/`avdmanager`), `emulator`, `platform-tools`, `system-images;android-34;default` (matching host arch), and two minimal AVDs (`im_flutter_test_a` / `im_flutter_test_b`).
+Auto-installed if missing: JDK 17+, Android cmdline-tools, `emulator`, `platform-tools`, `system-images;android-34;default` (matching host arch), two minimal AVDs (`im_flutter_test_a` / `im_flutter_test_b`), and the Python venv + dependencies.
 
 ## Usage
 
