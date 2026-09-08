@@ -79,8 +79,9 @@ bash skills/im-flutter-run/scripts/run.sh --no-open
 
 ## 环境
 
-- Python 3.9+
-- 安装依赖：`pip install -r requirements.txt`
+- Python 3.10+（代码使用 `str | None` 等 PEP 604 语法，3.9 会报语法错误）
+- 安装依赖：`pip install -r requirements.txt`（或由 `run.sh` 自动创建 venv 并安装）
+- 首次运行需从 Google 下载 emulator 与系统镜像（约 1.6G），耗时几分钟，请耐心等待或配置代理
 
 `requirements.txt` 将 `websockets` 限制为 `>=11.0,<17.0`。当前 relay 和现有
 `ws_client.py` 都依赖 legacy API；在两者一起迁移到新 asyncio API 前，不要移除该

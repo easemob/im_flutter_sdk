@@ -48,7 +48,11 @@ fail() { echo "error: $*" >&2; exit 1; }
 ensure_python_env() {
   local venv="$native_auto_test/.venv"
   if [[ ! -x "$venv/bin/python" ]]; then
-    command -v python3 >/dev/null 2>&1 || fail "python3 not found; install Python 3.9+"
+    command -v python3 >/dev/null 2>&1 || fail "python3 not found; install Python 3.10+"
+    # 代码使用 `str | None` 等 PEP 604 语法，要求 Python 3.10+
+    if ! python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)'; then
+      fail "Python 3.10+ required (found: $(python3 --version 2>&1))"
+    fi
     echo "==> Creating Python venv ($venv) ..."
     python3 -m venv "$venv"
   fi

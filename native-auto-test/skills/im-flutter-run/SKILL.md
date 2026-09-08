@@ -16,7 +16,7 @@ One-command end-to-end test run for `im_flutter_test` (release) + `native-auto-t
 `run.sh` auto-installs the full toolchain on first run (idempotent), so you only need:
 
 - A network connection to GitHub and your test environment
-- Python 3.9+ (`python3` on PATH; the venv is created automatically)
+- Python 3.10+ (`python3` on PATH; the venv is created automatically)
 
 Auto-installed if missing: JDK 17+, Android cmdline-tools, `emulator`, `platform-tools`, `system-images;android-34;default` (matching host arch), two minimal AVDs (`im_flutter_test_a` / `im_flutter_test_b`), and the Python venv + dependencies.
 

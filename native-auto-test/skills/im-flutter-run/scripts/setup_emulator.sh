@@ -45,19 +45,61 @@ export ANDROID_SDK_ROOT="$SDK_ROOT"
 
 # ---- 1. JDK (17+) ----
 ensure_java() {
+  local ver=""
+
+  # 1. Check PATH java version
   if command -v java >/dev/null 2>&1; then
-    info "Java found: $(java -version 2>&1 | head -1)"
-    return 0
+    ver=$(java -version 2>&1 | head -1 | grep -oE '"[0-9]+' | tr -d '"')
+    if [[ -n "$ver" && "$ver" -ge 17 ]]; then
+      info "Java 17+ found: $(java -version 2>&1 | head -1)"
+      return 0
+    fi
+    info "Java found but too old (version ${ver:-unknown}), looking for Java 17+ ..."
   fi
-  info "Java not found, attempting auto-install ..."
+
+  # 2. macOS: prefer an already-installed Java 17 (brew openjdk@17 or java_home)
+  if [[ "$OS" == "mac" ]]; then
+    local candidates=(
+      "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
+      "/usr/local/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
+    )
+    local jh
+    jh="$(/usr/libexec/java_home -v 17 2>/dev/null || true)"
+    [[ -n "$jh" ]] && candidates+=("$jh")
+    local c
+    for c in "${candidates[@]}"; do
+      if [[ -x "$c/bin/java" ]]; then
+        export JAVA_HOME="$c"
+        export PATH="$JAVA_HOME/bin:$PATH"
+        info "Using Java 17 from: $c"
+        return 0
+      fi
+    done
+  fi
+
+  # 3. Auto-install
+  info "Java 17+ not found, attempting auto-install ..."
   if [[ "$OS" == "mac" ]] && command -v brew >/dev/null 2>&1; then
-    brew install --cask temurin17 >/dev/null 2>&1 || true
-    export JAVA_HOME="$(/usr/libexec/java_home -v 17 2>/dev/null || true)"
+    brew install --cask temurin17 || true
+    local c
+    for c in "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home" \
+             "/usr/local/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"; do
+      if [[ -x "$c/bin/java" ]]; then
+        export JAVA_HOME="$c"
+        export PATH="$JAVA_HOME/bin:$PATH"
+        info "Java 17 installed at: $c"
+        return 0
+      fi
+    done
   elif [[ "$OS" == "linux" ]] && command -v apt-get >/dev/null 2>&1; then
     sudo apt-get update -qq && sudo apt-get install -y -qq openjdk-17-jdk-headless
   fi
+
+  # Final validation
   command -v java >/dev/null 2>&1 || fail "JDK 17+ required; install it and add java to PATH"
-  info "Java installed"
+  ver=$(java -version 2>&1 | head -1 | grep -oE '"[0-9]+' | tr -d '"')
+  [[ -n "$ver" && "$ver" -ge 17 ]] || fail "JDK 17+ required (found version: ${ver:-unknown})"
+  info "Java 17+ ready: $(java -version 2>&1 | head -1)"
 }
 
 # ---- 2. cmdline-tools (sdkmanager / avdmanager) ----
@@ -90,8 +132,8 @@ ensure_emulator() {
   [[ -x "$SDK_ROOT/emulator/emulator" ]] || need="emulator"
   [[ -x "$SDK_ROOT/platform-tools/adb" ]] || need="$need platform-tools"
   if [[ -n "$need" ]]; then
-    info "Installing: $need ..."
-    yes | "$SM" --sdk_root="$SDK_ROOT" $need >/dev/null 2>&1
+    info "Installing: $need (this downloads from Google, may take a while) ..."
+    yes | "$SM" --sdk_root="$SDK_ROOT" $need
     info "Installed: $need"
   else
     info "emulator + platform-tools found, skip"
@@ -106,8 +148,8 @@ ensure_image() {
     info "system image found, skip"
     return 0
   fi
-  info "Downloading system image $IMAGE (first run only) ..."
-  yes | "$SM" --sdk_root="$SDK_ROOT" "$IMAGE" >/dev/null 2>&1
+  info "Downloading system image $IMAGE (first run only, may take a while) ..."
+  yes | "$SM" --sdk_root="$SDK_ROOT" "$IMAGE"
   info "system image installed"
 }
 
