@@ -57,7 +57,12 @@ ensure_python_env() {
     python3 -m venv "$venv"
   fi
   PY="$venv/bin/python"
-  if ! "$PY" -c "import websockets, yaml, pytest" 2>/dev/null; then
+  # uv 创建的 venv 可能没有 pip；先用 ensurepip 补齐。
+  if ! "$PY" -m pip --version >/dev/null 2>&1; then
+    echo "==> Ensuring pip ..."
+    "$PY" -m ensurepip --upgrade >/dev/null 2>&1 || true
+  fi
+  if ! "$PY" -c "import websockets, yaml, pytest, allure" 2>/dev/null; then
     echo "==> Installing Python dependencies ..."
     "$PY" -m pip install -q -r "$native_auto_test/requirements.txt"
   fi
@@ -87,28 +92,28 @@ else
   command -v curl >/dev/null 2>&1 || fail "curl not found (needed to download release APKs)"
 fi
 
-# Ensure two minimal emulators exist (auto-install JDK/cmdline-tools/emulator/image/AVDs if missing, idempotent).
+# Ensure minimal emulators exist (auto-install JDK/cmdline-tools/emulator/image/AVDs if missing, idempotent).
+# 设备列表：默认 deviceA/deviceB；未来扩展 n 个设备时，增加对应条目 + config.yaml 的 topics + AVD 即可。
 AVD_A="im_flutter_test_a"
 AVD_B="im_flutter_test_b"
+DEVICE_A="deviceA"
+DEVICE_B="deviceB"
 bash "$script_dir/setup_emulator.sh"
 
 echo "==> Environment ready: PY=$PY AVD_A=$AVD_A AVD_B=$AVD_B SDK=$SDK_DIR"
 
-# ---- Obtain APKs: download from latest release (default) or build locally (--build) ----
+# ---- Obtain APK: download from latest release (default) or build locally (--build) ----
+# 单 APK：device 标识由启动时 intent extra 传入（不区分 deviceA/deviceB 包）。
 if [[ "$BUILD_LOCAL" == "1" ]]; then
-  echo "==> Building release APKs locally (deviceA/deviceB) ..."
-  (cd "$flutter_test" && flutter build apk --release --dart-define=DEVICE=deviceA)
-  cp "$flutter_test/build/app/outputs/flutter-apk/app-release.apk" /tmp/im-flutter-run-deviceA.apk
-  (cd "$flutter_test" && flutter build apk --release --dart-define=DEVICE=deviceB)
-  cp "$flutter_test/build/app/outputs/flutter-apk/app-release.apk" /tmp/im-flutter-run-deviceB.apk
+  echo "==> Building release APK locally ..."
+  (cd "$flutter_test" && flutter build apk --release)
+  cp "$flutter_test/build/app/outputs/flutter-apk/app-release.apk" /tmp/im-flutter-run.apk
 else
-  echo "==> Downloading APKs from latest release ($GH_REPO) ..."
+  echo "==> Downloading APK from latest release ($GH_REPO) ..."
   BASE="https://github.com/$GH_REPO/releases/latest/download"
-  curl -fL --max-time 600 -o /tmp/im-flutter-run-deviceA.apk "$BASE/app-release-deviceA.apk"
-  curl -fL --max-time 600 -o /tmp/im-flutter-run-deviceB.apk "$BASE/app-release-deviceB.apk"
+  curl -fL --max-time 600 -o /tmp/im-flutter-run.apk "$BASE/app-release.apk"
 fi
-[[ -s /tmp/im-flutter-run-deviceA.apk ]] || fail "deviceA APK missing/empty"
-[[ -s /tmp/im-flutter-run-deviceB.apk ]] || fail "deviceB APK missing/empty"
+[[ -s /tmp/im-flutter-run.apk ]] || fail "APK missing/empty"
 
 # ---- Boot two emulators (fixed adb ports) ----
 SERIAL_A="emulator-5554"
@@ -152,12 +157,12 @@ echo "==> Emulator A boot completed"
 wait_boot "$SERIAL_B"
 echo "==> Emulator B boot completed"
 
-# ---- Install APKs ----
-echo "==> Installing release APKs ..."
+# ---- Install APK (same APK for all devices) ----
+echo "==> Installing release APK ..."
 "$ADB" -s "$SERIAL_A" uninstall com.easemob.im_flutter_test >/dev/null 2>&1 || true
 "$ADB" -s "$SERIAL_B" uninstall com.easemob.im_flutter_test >/dev/null 2>&1 || true
-"$ADB" -s "$SERIAL_A" install /tmp/im-flutter-run-deviceA.apk
-"$ADB" -s "$SERIAL_B" install /tmp/im-flutter-run-deviceB.apk
+"$ADB" -s "$SERIAL_A" install /tmp/im-flutter-run.apk
+"$ADB" -s "$SERIAL_B" install /tmp/im-flutter-run.apk
 
 # ---- Bridge (relay + reverse for all emulator-*) ----
 echo "==> Starting local WebSocket bridge ..."
@@ -165,8 +170,8 @@ echo "==> Starting local WebSocket bridge ..."
 
 # ---- First launch to create the app's external files dir ----
 echo "==> First launch (create app data dir) ..."
-"$ADB" -s "$SERIAL_A" shell am start -n com.easemob.im_flutter_test/.MainActivity >/dev/null
-"$ADB" -s "$SERIAL_B" shell am start -n com.easemob.im_flutter_test/.MainActivity >/dev/null
+"$ADB" -s "$SERIAL_A" shell am start -n com.easemob.im_flutter_test/.MainActivity --es device "$DEVICE_A" >/dev/null
+"$ADB" -s "$SERIAL_B" shell am start -n com.easemob.im_flutter_test/.MainActivity --es device "$DEVICE_B" >/dev/null
 sleep 6
 
 # ---- Push runtime config (startup injection; no rebuild needed) ----
@@ -184,8 +189,8 @@ fi
 
 # ---- Relaunch apps (read external config, auto-connect) ----
 echo "==> Relaunching apps (auto-connect) ..."
-"$ADB" -s "$SERIAL_A" shell am start -n com.easemob.im_flutter_test/.MainActivity
-"$ADB" -s "$SERIAL_B" shell am start -n com.easemob.im_flutter_test/.MainActivity
+"$ADB" -s "$SERIAL_A" shell am start -n com.easemob.im_flutter_test/.MainActivity --es device "$DEVICE_A"
+"$ADB" -s "$SERIAL_B" shell am start -n com.easemob.im_flutter_test/.MainActivity --es device "$DEVICE_B"
 sleep 8
 
 # ---- Run pytest ----

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'bridge/event_bridge_handler.dart';
 import 'bridge/im_websocket_bridge.dart';
 import 'sdk_config_loader.dart';
 
-/// 本 App 实例的设备标识（deviceA/deviceB），通过构建参数 `--dart-define=DEVICE=...` 指定。
-const String kDeviceName = String.fromEnvironment('DEVICE', defaultValue: 'deviceA');
+/// 原生层 MethodChannel，用于读取启动参数传入的 device 标识（deviceA/deviceB/...）。
+const MethodChannel _deviceChannel = MethodChannel('com.easemob.im_flutter_test/device');
 
 /// WebSocket 桥接配置页：配置 URL/topic、手动连接/断开、查看与清空请求响应列表。
 class WebSocketConfigPage extends StatefulWidget {
@@ -33,12 +34,23 @@ class _WebSocketConfigPageState extends State<WebSocketConfigPage> {
     _autoConnect();
   }
 
+  /// 从原生层读取启动参数传入的 device；缺失/失败回退 deviceA。
+  Future<String> _getDeviceName() async {
+    try {
+      final device = await _deviceChannel.invokeMethod<String>('getDevice');
+      return (device == null || device.trim().isEmpty) ? 'deviceA' : device.trim();
+    } catch (_) {
+      return 'deviceA';
+    }
+  }
+
   /// 从 config.yaml 读取 websocket 配置并自动建立桥接连接。
   /// topic 优先级：topics[device] > websocket.default_topic > 默认常量。
   /// 配置缺失/空时回退；失败不影响后续手动重连。
   Future<void> _autoConnect() async {
+    final device = await _getDeviceName();
     final cfg = await SdkConfigLoader.loadWebSocketConfig();
-    final deviceTopic = await SdkConfigLoader.loadTopicForDevice(kDeviceName);
+    final deviceTopic = await SdkConfigLoader.loadTopicForDevice(device);
     if (!mounted) return;
     final baseUrl = (cfg.baseUrl == null || cfg.baseUrl!.isEmpty)
         ? kDefaultBridgeWebSocketBaseUrl
@@ -51,7 +63,7 @@ class _WebSocketConfigPageState extends State<WebSocketConfigPage> {
     setState(() {
       _urlController.text = baseUrl;
       _topicController.text = topic;
-      _deviceController.text = kDeviceName;
+      _deviceController.text = device;
     });
     await _connect();
   }

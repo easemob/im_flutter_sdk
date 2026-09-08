@@ -2,8 +2,8 @@
 name: im-flutter-run
 description: |
   One-command local release E2E run for this repo's Flutter IM SDK test app.
-  Builds two im_flutter_test release APKs (deviceA/deviceB), boots two headless Android emulators,
-  installs the APKs, starts the local WebSocket bridge, runs pytest cases, and generates the Allure report.
+  Downloads/builds a single release APK, boots two headless Android emulators, installs the APK
+  with runtime device injection, starts the local WebSocket bridge, runs pytest cases, and generates the Allure report.
   Use when a contributor wants to run cases end-to-end without Android Studio or manual App setup.
 ---
 
@@ -26,17 +26,17 @@ Auto-installed if missing: JDK 17+, Android cmdline-tools, `emulator`, `platform
 # from the native-auto-test directory
 bash skills/im-flutter-run/scripts/run.sh
 
-# download release APKs from a specific repo
+# download the release APK from a specific repo
 bash skills/im-flutter-run/scripts/run.sh --repo easemob/im_flutter_sdk -q tests/client/test_client.py
 
-# build APKs locally instead of downloading (developer mode)
+# build the APK locally instead of downloading (developer mode)
 bash skills/im-flutter-run/scripts/run.sh --build -q tests/client/test_client.py
 
 # keep the emulators after the run (shut down by default)
 bash skills/im-flutter-run/scripts/run.sh --keep-emulator
 ```
 
-Flow: detect/install emulator env → obtain APKs (download latest release by default, or `--build` locally) → boot two emulators → install APKs → push `config.yaml` (startup injection) → `make ws-bridge-up` (relay + reverse) → launch apps (auto-connect) → `make test-local` (pytest) → `allure generate` → auto-open report.
+Flow: detect/install emulator env → obtain a single APK (download latest release by default, or `--build` locally) → boot two emulators → install the same APK with runtime device injection (`--es device deviceA/deviceB`) → push `config.yaml` (startup injection) → `make ws-bridge-up` (relay + reverse) → launch apps (auto-connect) → `make test-local` (pytest) → `allure generate` → auto-open report.
 
 ## Config effectiveness rules (important)
 
@@ -61,7 +61,7 @@ Flow: detect/install emulator env → obtain APKs (download latest release by de
 ## Notes
 
 - The emulators run headless with software rendering (swiftshader), sufficient for API automation.
-- Two devices (deviceA/deviceB) are required; device is selected at build time via `--dart-define=DEVICE=...` and topic is resolved from `topics.deviceA`/`topics.deviceB`.
+- Two devices (deviceA/deviceB) are required by default; the device is injected at launch time via intent extra `--es device <name>` (single APK serves any number of devices), and topic is resolved from `topics.<device>` in `config.yaml`.
 - The script does not modify `config.yaml`, REST config, or business accounts.
 
 ## References
