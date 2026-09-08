@@ -130,3 +130,29 @@
 ## 验收对照
 
 对应 requirements.md 的 EARS 1-15 条，逐项确认后在本节勾选。
+
+---
+
+## 后续工作（Backlog）：多设备（n 个模拟器）并行
+
+> 目标：从当前 2 模拟器（1 组双端）扩展到 4/6/8/n 个模拟器（多 lane 并行），并隔离每组账号。
+> 状态：**未开始**；App 层已预留兼容（单 APK + intent extra），run.sh 仅做了 device 变量化半预留。
+
+### 已完成的兼容基础
+- [x] App 单 APK + intent extra `--es device`（`MainActivity.kt` MethodChannel + `websocket_config_page.dart`），一个 APK 通吃任意设备，后续加设备 App/APK 零改动。
+- [x] `run.sh` 的 `DEVICE_A`/`DEVICE_B` 变量化（半预留，尚未循环化）。
+
+### 后续待做（按依赖顺序）
+- [ ] `conftest.py`：`_test_usernames()` 支持 `TEST_USER_PREFIX` 环境变量，账号隔离（当前同天所有 lane 共用 testMMDDuser1/2/3，并行会互踢/污染状态）。
+- [ ] `run.sh`：从 A/B 写死改为设备列表数组循环（`DEVICES=(deviceA deviceB ...)`，端口 5554+2*i，AVD/安装/启动/push 全部循环）。
+- [ ] `setup_emulator.sh`：支持创建 n 个 AVD（当前写死 im_flutter_test_a/b）。
+- [ ] relay 隔离：每组独立 `WS_PORT`（当前写死 4000）；topic 靠独立 relay 端口隔离或独立前缀。
+- [ ] 编排脚本 `run-parallel.sh`：fork 多个 run.sh（每组一个 lane，独立端口/账号前缀/报告目录）。
+- [ ] 报告按 lane 归档（当前 `out/allure-report` 会被覆盖）。
+
+### 硬件参考（实测单模拟器 3.7GB RSS / 空闲 CPU 4%）
+| 规模 | 模拟器 | 内存需求 |
+|---|---|---|
+| 2 组（4 模拟器） | 4 | ~18GB（24GB 机器上限） |
+| 3 组（6 模拟器） | 6 | ~27GB（需 32GB） |
+| 4 组（8 模拟器） | 8 | ~30GB+（需 48-64GB） |

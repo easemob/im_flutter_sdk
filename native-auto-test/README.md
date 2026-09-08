@@ -44,7 +44,7 @@ rest_api:                            # 用于自动创建测试用户（建议�
 bash skills/im-flutter-run/scripts/run.sh
 ```
 
-首次运行会自动安装：JDK 17+、Android cmdline-tools、emulator、platform-tools、系统镜像（android-34 default）、两个最小 AVD、Python venv + 依赖；然后下载 release 最新 APK、启动双模拟器、装 APK、注入配置、跑 pytest、生成 Allure 报告并自动打开。
+首次运行会自动安装：JDK 17+、Android cmdline-tools、emulator、platform-tools、系统镜像（android-34 default）、两个最小 AVD、Python venv + 依赖；然后下载 release 最新 APK（单个通用包，device 由启动参数注入，支持任意数量设备）、启动双模拟器、装 APK、注入配置、跑 pytest、生成 Allure 报告并自动打开。
 
 ### 4. 常用变体
 

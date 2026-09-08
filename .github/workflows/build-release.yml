@@ -48,18 +48,13 @@ jobs:
           cp native-auto-test/config.yaml.template native-auto-test/config.yaml
           ls -la native-auto-test/config.yaml im_flutter_test/assets/config.yaml
 
-      - name: Build deviceA release APK
+      - name: Build release APK
+        # 单 APK：device 标识由启动时 intent extra 传入（--es device deviceA/deviceB）
         run: |
           cd im_flutter_test
           flutter pub get
-          flutter build apk --release --dart-define=DEVICE=deviceA
-          cp build/app/outputs/flutter-apk/app-release.apk app-release-deviceA.apk
-
-      - name: Build deviceB release APK
-        run: |
-          cd im_flutter_test
-          flutter build apk --release --dart-define=DEVICE=deviceB
-          cp build/app/outputs/flutter-apk/app-release.apk app-release-deviceB.apk
+          flutter build apk --release
+          cp build/app/outputs/flutter-apk/app-release.apk app-release.apk
 
       - name: Package test framework
         run: |
@@ -78,8 +73,7 @@ jobs:
         with:
           tag_name: ${{ inputs.tag || github.ref_name }}
           files: |
-            im_flutter_test/app-release-deviceA.apk
-            im_flutter_test/app-release-deviceB.apk
+            im_flutter_test/app-release.apk
             native-auto-test.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
