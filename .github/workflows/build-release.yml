@@ -61,14 +61,15 @@ jobs:
 
       - name: Package test framework
         run: |
-          tar -czf native-auto-test.tar.gz native-auto-test \
+          tar -czf native-auto-test.tar.gz \
             --exclude='native-auto-test/.flutter-vnev' \
             --exclude='native-auto-test/.venv' \
             --exclude='native-auto-test/.local' \
             --exclude='native-auto-test/out' \
             --exclude='native-auto-test/.pytest_cache' \
             --exclude='native-auto-test/__pycache__' \
-            --exclude='native-auto-test/config.yaml'
+            --exclude='native-auto-test/config.yaml' \
+            native-auto-test
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
