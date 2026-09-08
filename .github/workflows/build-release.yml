@@ -39,6 +39,13 @@ jobs:
           echo "--- 切换后 dependencies ---"
           grep -nE "hyphenate|jniLibs" build.gradle
 
+      - name: Prepare config.yaml for asset bundling
+        # assets/config.yaml 是软链到 native-auto-test/config.yaml，但 config.yaml 被 gitignore。
+        # 用 template（无真实 token）生成临时 config.yaml 供 APK 打包；运行时真实配置靠启动传入。
+        run: |
+          cp native-auto-test/config.yaml.template native-auto-test/config.yaml
+          ls -la native-auto-test/config.yaml im_flutter_test/assets/config.yaml
+
       - name: Build deviceA release APK
         run: |
           cd im_flutter_test
