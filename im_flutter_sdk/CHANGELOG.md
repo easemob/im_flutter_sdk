@@ -1,3 +1,9 @@
+## 4.24.0
+- 新增服务端消息搜索 `searchMessagesFromServer` API；
+- `ChatMessage` 新增 `webhookEnv` 属性，支持消息回调路由环境标识；
+- `ChatOptions` 新增 `ntpServers` 配置项，支持自定义 NTP 服务器；
+- iOS/Android 依赖 SDK 升级到 4.24.1；
+
 ## 4.22.0
 - 安卓依赖 SDK 升级到 4.22.1；
 - iOS依赖 SDK 升级到 4.22.2；

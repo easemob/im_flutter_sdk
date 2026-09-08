@@ -432,6 +432,25 @@ class ChatOptions {
   /// ~end
   final bool enableAutoSyncContacts;
 
+  /// ~english
+  /// The custom NTP server list used by the SDK to calibrate time.
+  ///
+  /// Each element is in the format of "host" or "host:port". If the port is not specified, the default port 123 is used.
+  /// The server must support NTPv4 (RFC 5905).
+  ///
+  /// This setting takes effect only during SDK initialization and cannot be changed at runtime.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 自定义 NTP 服务器列表，用于 SDK 校准时间。
+  ///
+  /// 列表元素格式为 "host" 或 "host:port"，不指定端口时使用默认端口 123。
+  /// 服务器须支持 NTPv4（RFC 5905）。
+  ///
+  /// 该配置仅在 SDK 初始化时生效，运行时不可修改。
+  /// ~end
+  final List<String>? ntpServers;
+
   final Map<String, dynamic>? _extSettings;
 
   final ChatPushConfig _pushConfig = ChatPushConfig();
@@ -808,6 +827,7 @@ class ChatOptions {
     bool enableUserInfo = false,
     bool enableAutoSyncContacts = false,
     String? loginExtension,
+    List<String>? ntpServers,
     Map<String, dynamic>? extSettings,
   }) : this._(
           appId: appId,
@@ -844,6 +864,7 @@ class ChatOptions {
           enableUserInfo: enableUserInfo,
           enableAutoSyncContacts: enableAutoSyncContacts,
           loginExtension: loginExtension,
+          ntpServers: ntpServers,
           extSettings: extSettings,
         );
 
@@ -1079,6 +1100,7 @@ class ChatOptions {
     bool enableUserInfo = false,
     bool enableAutoSyncContacts = false,
     String? loginExtension,
+    List<String>? ntpServers,
     Map<String, dynamic>? extSettings,
   }) : this._(
           appKey: appKey,
@@ -1115,6 +1137,7 @@ class ChatOptions {
           enableUserInfo: enableUserInfo,
           enableAutoSyncContacts: enableAutoSyncContacts,
           loginExtension: loginExtension,
+          ntpServers: ntpServers,
           extSettings: extSettings,
         );
 
@@ -1352,6 +1375,7 @@ class ChatOptions {
     bool enableUserInfo = false,
     bool enableAutoSyncContacts = false,
     String? loginExtension,
+    List<String>? ntpServers,
   }) : this._(
           appKey: appKey,
           autoLogin: autoLogin,
@@ -1387,6 +1411,7 @@ class ChatOptions {
           enableUserInfo: enableUserInfo,
           enableAutoSyncContacts: enableAutoSyncContacts,
           loginExtension: loginExtension,
+          ntpServers: ntpServers,
         );
 
   ChatOptions._({
@@ -1424,6 +1449,7 @@ class ChatOptions {
     this.enableUserInfo = false,
     this.enableAutoSyncContacts = false,
     this.loginExtension,
+    this.ntpServers,
     Map<String, dynamic>? extSettings,
   }) : _extSettings = extSettings;
 
@@ -1479,6 +1505,9 @@ class ChatOptions {
     // 4.22.0
     data.putIfNotNull('enableUserInfo', enableUserInfo);
     data.putIfNotNull('enableAutoSyncContacts', enableAutoSyncContacts);
+
+    // 4.24.0
+    data.putIfNotNull('ntpServers', ntpServers);
 
     return data;
   }

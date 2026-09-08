@@ -172,6 +172,10 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             else if (MethodKey.loadMessagesWithIds.equals(call.method)) {
                 loadMessagesWithIds(params, call.method, result);
             }
+            // 4.24.0
+            else if (MethodKey.searchMessagesFromServer.equals(call.method)) {
+                searchMessagesFromServer(params, call.method, result);
+            }
             // 4.22.0
             else if (MethodKey.downloadBigImage.equals(call.method)) {
                 downloadBigImage(params, call.method, result);
@@ -1375,6 +1379,52 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                 updateObject(messages);
             }
         });
+    }
+
+    // 4.24.0
+    private void searchMessagesFromServer(JSONObject params, String channelName, Result result) throws JSONException {
+        JSONObject optionJson = params.getJSONObject("option");
+        EMMessageSearchOption option = new EMMessageSearchOption();
+        if (optionJson.has("keywordList") && !optionJson.isNull("keywordList")) {
+            List<String> keywordList = new ArrayList<>();
+            JSONArray ja = optionJson.getJSONArray("keywordList");
+            for (int i = 0; i < ja.length(); i++) {
+                keywordList.add(ja.getString(i));
+            }
+            option.setKeywordList(keywordList);
+        }
+        if (optionJson.has("keywordMatchType")) {
+            option.setKeywordMatchType(EMKeywordListMatchType.values()[optionJson.getInt("keywordMatchType")]);
+        }
+        if (optionJson.has("conversationId") && !optionJson.isNull("conversationId")) {
+            option.setConversationId(optionJson.getString("conversationId"));
+        }
+        if (optionJson.has("msgTypes") && !optionJson.isNull("msgTypes")) {
+            List<EMMessage.Type> msgTypes = new ArrayList<>();
+            JSONArray ja = optionJson.getJSONArray("msgTypes");
+            for (int i = 0; i < ja.length(); i++) {
+                msgTypes.add(EMMessage.Type.values()[ja.getInt(i)]);
+            }
+            option.setMsgTypes(msgTypes);
+        }
+        if (optionJson.has("startTime") && !optionJson.isNull("startTime")
+                && optionJson.has("endTime") && !optionJson.isNull("endTime")) {
+            option.setStartTime(optionJson.getLong("startTime"));
+            option.setEndTime(optionJson.getLong("endTime"));
+        }
+        if (optionJson.has("searchScope")) {
+            option.setSearchScope(EMConversation.EMMessageSearchScope.values()[optionJson.getInt("searchScope")]);
+        }
+        int pageSize = params.getInt("pageSize");
+        int pageNum = params.getInt("pageNum");
+
+        EMClient.getInstance().chatManager().asyncSearchMessagesFromServer(option, pageSize, pageNum,
+            new EMValueWrapperCallBack<EMPageResult<EMSearchServerMessageResult>>(result, channelName) {
+                @Override
+                public void onSuccess(EMPageResult<EMSearchServerMessageResult> object) {
+                    updateObject(PageResultHelper.toJson(object));
+                }
+            });
     }
 
     // 4.22.0
