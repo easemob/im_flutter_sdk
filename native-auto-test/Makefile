@@ -13,10 +13,12 @@ WS_STATE_DIR ?= $(CURDIR)/.local
 .PHONY: help ws-bridge-up ws-bridge-down test-local ws-bridge-local ws-bridge-reverse \
         ws-call ws-wait create-users delete-user \
         contact-establish contact-delete contact-block contact-unblock \
-        skills-validate test test-allure test-html test-chat-strict test-chat-discover clean
+        skills-validate test test-allure test-html test-chat-strict test-chat-discover \
+        setup-emulator clean
 
 help:
 	@echo "Available targets:"
+	@echo "  setup-emulator     Prepare two minimal Android emulators (deviceA/deviceB)"
 	@echo "  ws-bridge-up       Start relay, configure emulator reverse, write local env"
 	@echo "  ws-bridge-down     Remove reverse and stop the managed local relay"
 	@echo "  test-local         Run pytest with generated local WS env [ARGS]"
@@ -34,6 +36,10 @@ help:
 	@echo "  test               Run pytest (pass ARGS=... to forward extra args)"
 	@echo "  test-allure        Run pytest with --alluredir=out/allure-results"
 	@echo "  test-html          Run pytest with HTML report to out/report.html"
+
+# --- Emulator setup (two minimal AVDs for deviceA/deviceB) ---
+setup-emulator:
+	bash skills/im-flutter-run/scripts/setup_emulator.sh
 
 # --- Local WebSocket relay ---
 ws-bridge-up:

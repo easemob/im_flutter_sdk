@@ -317,6 +317,9 @@ This repository includes Codex skills under `skills/` following the create-skill
   - Scripts: `scripts/create_users.py`, `scripts/delete_user.py`
 - `skills/im-contact-flow` — High-level contact flows built on WS.
   - Scripts: `scripts/contact_flow.py`
+- `skills/im-flutter-run` — One-command release E2E run (build APK → emulator → install → bridge → pytest → report).
+  - Scripts: `scripts/run.sh`
+  - No Android Studio required; see the skill's `SKILL.md` for minimal dependencies and usage.
 
 Usage examples can be found in each skill's `SKILL.md`. Make sure `config.yaml` is configured before using them.
 

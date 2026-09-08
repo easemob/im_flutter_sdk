@@ -1,0 +1,75 @@
+name: Build Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v1.0.0); leave empty for manual run'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: stable
+
+      - name: Switch Android SDK to remote maven dependency
+        # CI 检出代码没有 gitignore 的本地 jar/so，切到远程 maven（同版本 4.23.0）。
+        run: |
+          cd im_flutter_sdk_android/android
+          sed -i "s|jniLibs.srcDirs = \['./libs/easemob-sdk/libs'\]|// jniLibs.srcDirs = ['./libs/easemob-sdk/libs']|" build.gradle
+          sed -i "s|implementation files('./libs/easemob-sdk/libs/hyphenatechat_.*\.jar')|// implementation files('./libs/easemob-sdk/libs/hyphenatechat_local.jar')|" build.gradle
+          sed -i "s|// implementation 'io.hyphenate:hyphenate-chat:.*'|implementation 'io.hyphenate:hyphenate-chat:4.23.0'|" build.gradle
+          echo "--- 切换后 dependencies ---"
+          grep -nE "hyphenate|jniLibs" build.gradle
+
+      - name: Build deviceA release APK
+        run: |
+          cd im_flutter_test
+          flutter pub get
+          flutter build apk --release --dart-define=DEVICE=deviceA
+          cp build/app/outputs/flutter-apk/app-release.apk app-release-deviceA.apk
+
+      - name: Build deviceB release APK
+        run: |
+          cd im_flutter_test
+          flutter build apk --release --dart-define=DEVICE=deviceB
+          cp build/app/outputs/flutter-apk/app-release.apk app-release-deviceB.apk
+
+      - name: Package test framework
+        run: |
+          tar -czf native-auto-test.tar.gz native-auto-test \
+            --exclude='native-auto-test/.flutter-vnev' \
+            --exclude='native-auto-test/.venv' \
+            --exclude='native-auto-test/.local' \
+            --exclude='native-auto-test/out' \
+            --exclude='native-auto-test/.pytest_cache' \
+            --exclude='native-auto-test/__pycache__' \
+            --exclude='native-auto-test/config.yaml'
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          files: |
+            im_flutter_test/app-release-deviceA.apk
+            im_flutter_test/app-release-deviceB.apk
+            native-auto-test.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
