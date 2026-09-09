@@ -44,6 +44,12 @@ done
 
 fail() { echo "error: $*" >&2; exit 1; }
 
+# 本地地址不走代理：用户可能设置了 HTTPS_PROXY/HTTP_PROXY 加速 GitHub 下载，
+# 但本地 relay/WebSocket（127.0.0.1）不能被代理拦截，否则握手失败。
+_NO_PROXY_LOCAL="127.0.0.1,localhost,::1"
+export NO_PROXY="${NO_PROXY:+$NO_PROXY,}$_NO_PROXY_LOCAL"
+export no_proxy="${no_proxy:+$no_proxy,}$_NO_PROXY_LOCAL"
+
 # ---- Python environment: auto-create venv + install deps (idempotent) ----
 ensure_python_env() {
   local venv="$native_auto_test/.venv"
