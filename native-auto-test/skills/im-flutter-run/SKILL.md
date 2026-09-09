@@ -41,6 +41,63 @@ bash skills/im-flutter-run/scripts/run.sh --keep-emulator
 
 Flow: detect/install emulator env → obtain a single APK (download latest release by default, or `--build` locally) → boot emulators (2 by default, or N*2 with `--lanes N`) → install the same APK with runtime device injection (`--es device deviceA/deviceB`) → push `config.yaml` (startup injection) → `make ws-bridge-up` (relay + reverse) → launch apps (auto-connect) → `make test-local` (pytest) → `allure generate` → auto-open report.
 
+## Release APK cache
+
+Default runs query GitHub's latest Release metadata every time. The cache compares
+repository, Release ID, APK asset ID, update time, size and optional SHA-256 digest;
+it also checks the local APK's size and SHA-256 before reuse. A cache hit skips the
+APK download, not the online metadata query.
+
+- Cache: `native-auto-test/.local/apk-cache/`, isolated by repository and asset identity.
+- Missing, changed or damaged APK: download the specific Release attachment and
+  validate it before atomically publishing the cache.
+- Query failure (including GitHub anonymous API rate limits), download failure or
+  validation failure: stop with an error. **Never silently run an old cached SDK.**
+- Multi-lane: the outer runner obtains one APK and shares it with all child lanes.
+- The cache retains old generations; it does not automatically delete them.
+- Every device still uninstalls/reinstalls the App and receives the current runtime
+  config. Caching the host APK does not preserve device login state or SDK databases.
+  Existing uninstall error handling is unchanged; server-side data is not cleared.
+
+```bash
+# Force a fresh download even when the cached attachment is unchanged
+bash skills/im-flutter-run/scripts/run.sh --refresh-apk -q tests/client
+
+# Explicit local APK: bypass remote lookup/cache, single or multiple lanes
+APK_PATH=/absolute/path/app-release.apk \
+  bash skills/im-flutter-run/scripts/run.sh --lanes 2 -q tests/client
+```
+
+`--refresh-apk`, `--build`, and nonempty `APK_PATH` are mutually exclusive.
+An explicitly supplied APK must be a readable, nonempty file; an invalid path is
+an error, not a request to fall back to downloading. `--build` builds once in
+multi-lane mode and never writes into the remote APK cache. Use `--build` to test
+local Flutter/Android changes; downloading a Release does not include unbuilt local changes.
+
+### Optional GitHub authentication
+
+The API query reads nonempty `GH_TOKEN` first, then `GITHUB_TOKEN`; otherwise it
+uses anonymous access. A token with public repository read access is sufficient
+for this public Release; no write permissions are required. In the same zsh
+terminal used for testing, set it without putting the value in shell history:
+
+```bash
+read -rs 'GH_TOKEN?Paste GitHub token (hidden), then Enter: '; echo; export GH_TOKEN
+```
+
+Then run your usual command. `GitHub API auth: token` confirms token mode (not
+that GitHub has accepted it). Do not print or share the token. `unset GH_TOKEN`
+removes it from this shell; a separately set `GITHUB_TOKEN` is still a fallback.
+
+The Authorization header is passed to the API curl process through stdin, never
+in its arguments or files. Both token environment variables are removed from
+curl subprocess environments. APK download requests do not carry the API token.
+Errors distinguish transport failures, HTTP 401 (invalid/expired authentication),
+rate limits (HTTP 403/429 with available remaining/reset/retry-after fields), and
+other HTTP errors. Authentication does not remove all GitHub rate limits; failure
+still stops rather than using stale cache. Never enable shell tracing around
+commands that assign a token.
+
 ## Multi-lane parallelism
 
 `--lanes N` runs N independent lanes, each with 2 emulators. Per-lane isolation:

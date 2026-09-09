@@ -1,5 +1,7 @@
 # release APK 测试自动化实施计划
 
+> 原始 Task 1–6 和多设备 Backlog 保留历史记录，其中部分描述已落后于当前代码，不代表本次待办。本次仅以文末「Release APK 缓存增量任务」跟踪状态；需求和设计以对应文档的缓存增量章节为准。
+
 > **执行要求：** 按本文件逐项实施，本文件是唯一任务状态来源，不创建额外 implementation plan。未经用户明确要求，不提交、不推送 Git。
 
 **目标：** 让 `im_flutter_test` 以 release 模式稳定构建运行并启动自动连接，提供 repo-local 一键 skill 串起「构建→模拟器→安装→桥接→pytest→报告」。
@@ -156,3 +158,81 @@
 | 2 组（4 模拟器） | 4 | ~18GB（24GB 机器上限） |
 | 3 组（6 模拟器） | 6 | ~27GB（需 32GB） |
 | 4 组（8 模拟器） | 8 | ~30GB+（需 48-64GB） |
+
+## Release APK 缓存增量任务
+
+### 当前执行边界
+
+用户已确认按照 spec 实现。本会话依 writing-plans / executing-plans / TDD 顺序执行以下唯一 checklist，不另建实现计划；不运行真实设备业务测试。保持设备卸载重装，不增加卸载后包存在性检查。
+
+### S1：设计与 spec 整理
+
+- [x] 检查项目规则、当前 run.sh、Release 工作流及已有 release-test-automation spec。
+- [x] 更新 requirements.md：补充 User Stories、EARS C1–C13、缓存/设备/服务端数据边界及非目标。
+- [x] 更新 design.md：补充架构、时序、缓存数据、失败策略、并发边界和测试策略。
+- [x] 将历史双 APK/编译期设备标识/配置需重建等描述标注为历史，明确本次增量章节优先；不扩展为无关历史文档迁移。
+- [x] 形成下方可执行实现与验证任务；本次不修改运行脚本或 SDK。
+- [x] spec 自检：范围一致、无待定占位内容，C1–C13 均有对应实现/验证任务；修正文件尾多余空行后 `git diff --check` 通过。
+- [x] 用户审阅并确认 spec，授权进入实现。
+
+### S6：认证查询增量（已授权）
+
+- [x] 更新 C14–C17 需求与安全传递、HTTP 诊断设计。
+- [x] 添加认证安全与诊断测试，首跑 9 failed / 1 passed，证实缺少认证传递、环境隔离及 HTTP 诊断。
+- [x] 修改 `release_apk_cache.py`：stdin 认证头、清理 curl 子进程环境、HTTP 响应解析及白名单诊断；不改变缓存回退策略。
+- [x] 更新 SKILL.md 的 token 使用说明和安全边界。
+- [x] 两个工具测试文件共 59 passed（47 helper + 12 runner）；bash -n、speckit check 和 git diff --check 通过。Agent 未使用真实 token，未跑设备或真实网络。
+- [x] 用户反馈本地实际运行已验证缓存命中；未据此宣称所有业务用例或全部真实网络失败路径通过。
+- [x] 用户授权提交本次缓存与认证修改；仅本地 commit，不推送。
+
+### S2：先补工具测试（待授权后执行）
+
+**Files**
+- Create: `native-auto-test/tests/tools/test_release_apk_cache.py`
+- Create: `native-auto-test/tests/tools/test_im_flutter_run_apk.py`
+
+- [x] 阅读现有 tests/tools 的 fixture 与子进程 stub 约定，确保测试无需真实 GitHub、Android 或 IM 服务。
+- [x] 为 C1–C3/C7/C8 编写首次下载、命中、附件变化、确定 URL、仓库隔离、文件与元数据损坏、digest 校验及并发发布测试。
+- [x] 为 C4–C6 编写刷新、查询失败/限流/非法元数据、下载中断/大小错误、发布失败与旧缓存保留测试。
+- [x] 为 C9–C12 编写 run.sh 单/多 lane 编排、本地来源、冲突参数、无效 APK_PATH、自复制及卸载安装顺序测试，断言 API/下载调用次数。
+- [x] 运行新增测试确认缺少 helper、缓存/冲突处理未实现等预期失败；helper 首跑为 26 个 fixture 缺实现错误，runner 首跑 12 失败（其中无参数 Bash 既有错误改用 -q 隔离）。刷新后错误选回旧 generation 的回归测试也观察到真实失败后修复。
+
+### S3：实现缓存 helper
+
+**File**: Create `native-auto-test/skills/im-flutter-run/scripts/release_apk_cache.py`
+
+- [x] 实现 CLI、repo/元数据严格校验、60 秒 latest 查询、目标附件唯一选择及诊断错误处理。（C1/C5/C11）
+- [x] 实现稳定身份 key、metadata schema、本地大小/SHA-256 校验、可用远端 digest 校验。（C2/C3/C7）
+- [x] 实现确定 tag 的附件 URL 下载、600 秒超时、`--refresh`、失败不回退。（C3–C6）
+- [x] 实现仓库锁、60 秒锁等待、同文件系统临时 generation、完整目录原子发布与失败清理。（C7/C8）
+- [x] stdout 只返回绝对包路径，日志/进度写 stderr；不输出敏感响应或重定向签名 URL。（C11）
+- [x] 运行 helper 测试至通过，覆盖同内容强制刷新和并发已有路径不被改写。
+
+### S4：接入 run.sh 与使用文档
+
+**Files**
+- Edit: `native-auto-test/skills/im-flutter-run/scripts/run.sh`
+- Edit: `native-auto-test/skills/im-flutter-run/SKILL.md`
+
+- [x] 解析并在 help 中说明 `--refresh-apk`；在环境准备前检查本地来源与 refresh 互斥，校验显式 APK_PATH。（C4/C10）
+- [x] 单 lane 远端模式调用 helper，使用 `.local/apk-cache/`，保留既有临时安装副本及卸载/安装/配置步骤。（C1/C12）
+- [x] 多 lane 外层统一解析 APK 来源，仅调用一次 helper，通过 APK_PATH 向子 lane 分发；不传 refresh/build 来源选项。（C9/C10）
+- [x] 本地构建与显式包绕过远端缓存；源目标相同时不自复制。（C10）
+- [x] 更新 SKILL.md：默认在线确认、缓存目录、刷新示例、网络失败停止、APK_PATH 单/多 lane 用法及参数冲突；解释 APK 缓存不保留设备用户数据。
+- [x] 运行 run.sh stub 测试至通过，确认下载失败不进入设备安装。
+
+### S5：验证与交付
+
+所有命令从仓库根目录执行；pytest 使用 `--noconftest` 隔离业务会话 fixture，工具测试自行定义所需 fixture，不调用 session 登录。
+
+- [x] 执行 `bash -n native-auto-test/skills/im-flutter-run/scripts/run.sh`。
+- [x] 执行 `native-auto-test/.venv/bin/python -m pytest --noconftest -q native-auto-test/tests/tools/test_release_apk_cache.py native-auto-test/tests/tools/test_im_flutter_run_apk.py`。（C13）
+- [x] 执行 `bash im_flutter_sdk/scripts/speckit.sh check`：Android/iOS 本地依赖检查全部 PASS，未修改构建文件。
+- [x] 审查 diff：仅缓存 helper、run.sh、工具测试、SKILL.md 与本 spec 变化；检查失败不回退、并发发布与敏感日志边界。
+- [x] 执行 `git diff --check`。
+- [x] 回填测试命令与证据；design.md 补充原子 current 指针，避免刷新后历史 generation 被重新选中。
+- [x] 交付变更列表、验证摘要及未执行项，不提交、不推送、不发布。
+
+**验证证据与边界**：实现后两个工具测试文件合计 49 项通过（37 helper + 12 runner），包括并发锁、失败保留、current 损坏与单/多 lane；`bash -n`、`speckit.sh check`、`git diff --check` 均通过。未执行真实 GitHub 下载、模拟器业务用例、Android assembleDebug、iOS pod install 或模拟器 build；不宣称二进制全构建通过。
+
+**发现但未扩大范围修复**：macOS 自带 Bash 3.2 下，既有 run.sh 在不传任何 pytest 参数时存在空数组 `unbound variable`；本次 runner 验证均传 `-q`（与用户原命令一致）。设备卸载错误忽略仍保持原样。缓存历史 generation 不自动清理。

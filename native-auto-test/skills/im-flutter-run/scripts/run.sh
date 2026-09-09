@@ -6,9 +6,12 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: run.sh [--build] [--repo OWNER/REPO] [--lane N] [--lanes N] [--keep-emulator] [--no-open] [pytest args...]
+Usage: run.sh [--build | --refresh-apk] [--repo OWNER/REPO] [--lane N] [--lanes N] [--keep-emulator] [--no-open] [pytest args...]
 
-  --build           Build APKs locally instead of downloading from the latest release
+  --build           Build APK locally instead of downloading from the latest release
+  --refresh-apk     Force download after querying latest Release (ignore valid cache)
+  APK_PATH          Environment: use an existing APK (single/multi-lane); conflicts with
+                    --build and --refresh-apk. Remote mode checks latest on every run.
   --repo OWNER/REPO GitHub repo to download release artifacts from (default: easemob/im_flutter_sdk)
   --lane N          Run a single lane (index N); used internally by --lanes, or for manual parallel runs
   --lanes N         Run N lanes in parallel (N*2 emulators), shard test files across lanes,
@@ -32,6 +35,7 @@ flutter_test="$repo_root/im_flutter_test"
 KEEP_EMULATOR=0
 OPEN_REPORT=1
 BUILD_LOCAL=0
+REFRESH_APK=0
 NO_REPORT=0
 SKIP_SETUP=0
 LANE=0
@@ -41,6 +45,7 @@ PYTEST_ARGS=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --build) BUILD_LOCAL=1; shift ;;
+    --refresh-apk) REFRESH_APK=1; shift ;;
     --repo) GH_REPO="${2:?--repo requires OWNER/REPO}"; shift 2 ;;
     --lane) LANE="${2:?--lane requires a number}"; shift 2 ;;
     --lanes) LANES="${2:?--lanes requires a number}"; shift 2 ;;
@@ -54,6 +59,32 @@ while [[ $# -gt 0 ]]; do
 done
 
 fail() { echo "error: $*" >&2; exit 1; }
+
+# Validate APK source before Python/setup/emulator side effects.
+if [[ "$REFRESH_APK" == "1" && ( "$BUILD_LOCAL" == "1" || -n "${APK_PATH:-}" ) ]]; then
+  fail "--refresh-apk conflicts with --build / APK_PATH"
+fi
+if [[ -n "${APK_PATH:-}" ]]; then
+  [[ "$BUILD_LOCAL" == "0" ]] || fail "APK_PATH conflicts with --build"
+  [[ -f "$APK_PATH" && -r "$APK_PATH" && -s "$APK_PATH" ]] || fail "APK_PATH must be a readable nonempty file"
+  APK_PATH="$(cd "$(dirname "$APK_PATH")" && pwd -P)/$(basename "$APK_PATH")"
+fi
+
+# stdout is the selected path only, so both orchestration modes can reuse it.
+obtain_apk() {
+  if [[ -n "${APK_PATH:-}" ]]; then
+    echo "==> 使用指定 APK: $APK_PATH" >&2
+    printf '%s\n' "$APK_PATH"
+  elif [[ "$BUILD_LOCAL" == "1" ]]; then
+    echo "==> 构建 release APK ..." >&2
+    (cd "$flutter_test" && flutter build apk --release) >&2 || return $?
+    printf '%s\n' "$flutter_test/build/app/outputs/flutter-apk/app-release.apk"
+  elif [[ "$REFRESH_APK" == "1" ]]; then
+    "$PY" "$script_dir/release_apk_cache.py" --repo "$GH_REPO" --cache-dir "$native_auto_test/.local/apk-cache" --refresh
+  else
+    "$PY" "$script_dir/release_apk_cache.py" --repo "$GH_REPO" --cache-dir "$native_auto_test/.local/apk-cache"
+  fi
+}
 
 # 本地地址不走代理：用户可能设置了 HTTPS_PROXY/HTTP_PROXY 加速 GitHub 下载，
 # 但本地 relay/WebSocket（127.0.0.1）不能被代理拦截，否则握手失败。
@@ -122,19 +153,9 @@ if [[ "$LANES" -gt 1 ]]; then
     bash "$script_dir/setup_emulator.sh" --lane "$i"
   done
 
-  # 下载一次共享 APK（两个 lane 共用，进度条干净不交错）
-  SHARED_APK="/tmp/im-flutter-run.apk"
-  BASE="https://github.com/$GH_REPO/releases/latest/download"
-  if [[ "$BUILD_LOCAL" == "1" ]]; then
-    echo "==> [1/7] 构建 release APK ..."
-    (cd "$flutter_test" && flutter build apk --release)
-    cp "$flutter_test/build/app/outputs/flutter-apk/app-release.apk" "$SHARED_APK"
-  else
-    echo "==> [1/7] 下载 APK ($GH_REPO) ..."
-    curl -fL --progress-bar --max-time 600 -o "$SHARED_APK" "$BASE/app-release.apk"
-    echo ""
-    echo "==> [1/7] APK 下载完成 ($(du -h "$SHARED_APK" | cut -f1))"
-  fi
+  # 外层仅查询/下载一次；子 lane 通过 APK_PATH 复用确定的文件。
+  echo "==> [1/7] 获取共享 APK ..."
+  SHARED_APK="$(obtain_apk)"
   [[ -s "$SHARED_APK" ]] || fail "APK missing/empty"
 
   # Fork each lane in parallel
@@ -248,19 +269,11 @@ echo "==> Environment ready: PY=$PY AVD_A=$AVD_A AVD_B=$AVD_B SDK=$SDK_DIR"
 # ---- Obtain APK: download from latest release (default) or build locally (--build) ----
 # 单 APK：device 标识由启动时 intent extra 传入（不区分 deviceA/deviceB 包）。
 # 多 lane 模式下，APK_PATH 由编排器预先下载，直接复用。
-if [[ -n "${APK_PATH:-}" && -s "$APK_PATH" ]]; then
-  echo "==> 使用共享 APK: $APK_PATH"
-  cp "$APK_PATH" /tmp/im-flutter-run-lane$LANE.apk
-elif [[ "$BUILD_LOCAL" == "1" ]]; then
-  echo "==> [1/6] 构建 release APK ..."
-  (cd "$flutter_test" && flutter build apk --release)
-  cp "$flutter_test/build/app/outputs/flutter-apk/app-release.apk" /tmp/im-flutter-run-lane$LANE.apk
-else
-  echo "==> [1/6] 下载 APK ($GH_REPO) ..."
-  BASE="https://github.com/$GH_REPO/releases/latest/download"
-  curl -fL --progress-bar --max-time 600 -o /tmp/im-flutter-run-lane$LANE.apk "$BASE/app-release.apk"
-  echo ""
-  echo "==> [1/6] APK 下载完成 ($(du -h /tmp/im-flutter-run-lane$LANE.apk | cut -f1))"
+echo "==> [1/6] 获取 APK ..."
+SELECTED_APK="$(obtain_apk)"
+[[ -f "$SELECTED_APK" && -s "$SELECTED_APK" ]] || fail "APK missing/empty"
+if [[ ! "$SELECTED_APK" -ef /tmp/im-flutter-run-lane$LANE.apk ]]; then
+  cp "$SELECTED_APK" /tmp/im-flutter-run-lane$LANE.apk
 fi
 [[ -s /tmp/im-flutter-run-lane$LANE.apk ]] || fail "APK missing/empty"
 
