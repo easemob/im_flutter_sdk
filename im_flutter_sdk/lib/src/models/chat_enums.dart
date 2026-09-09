@@ -1149,6 +1149,33 @@ enum MessageSearchScope {
 }
 
 /// ~english
+/// The match type for a keyword list when searching messages from the server.
+/// ~end
+///
+/// ~chinese
+/// 服务端消息搜索时多关键词的匹配方式。
+/// ~end
+enum ChatKeywordListMatchType {
+  /// ~english
+  /// Matches messages that contain any of the keywords.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 匹配包含任一关键词的消息。
+  /// ~end
+  OR,
+
+  /// ~english
+  /// Matches messages that contain all of the keywords.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 匹配包含全部关键词的消息。
+  /// ~end
+  AND,
+}
+
+/// ~english
 /// The conversation mark types.
 ///
 /// The mapping between each type of conversation mark and their actual meanings is maintained by the developer.

@@ -2652,6 +2652,64 @@ class ChatManager {
       rethrow;
     }
   }
+
+// 4.24.0
+
+  /// ~english
+  /// Searches for messages from the server.
+  ///
+  /// This feature is a value-added service. To use it, you need to activate the message search service on the Console.
+  ///
+  /// Param [option] The search option. See [ChatMessageSearchOption].
+  ///
+  /// Param [pageSize] The number of results per page, ranging from 1 to 100. The default value is 20.
+  ///
+  /// Param [pageNum] The page number, starting from 1.
+  ///
+  /// **Return** The search results sorted by relevance. See [ChatPageResult].
+  ///
+  /// **Throws** A description of the exception. See [ChatError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从服务器搜索消息。
+  ///
+  /// 该功能为增值服务，需在环信 Console 开通「消息搜索」服务后方可使用。
+  ///
+  /// Param [option] 搜索选项，详见 [ChatMessageSearchOption]。
+  ///
+  /// Param [pageSize] 每页返回的结果数量，取值范围为 [1,100]，默认为 20。
+  ///
+  /// Param [pageNum] 当前页码，从 1 开始。
+  ///
+  /// **Return** 搜索结果，按相关性排序，详见 [ChatPageResult]。
+  ///
+  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
+  /// ~end
+  Future<ChatPageResult<ChatSearchServerMessageResult>>
+      searchMessagesFromServer({
+    required ChatMessageSearchOption option,
+    int pageSize = 20,
+    int pageNum = 1,
+  }) async {
+    try {
+      Map req = {};
+      req["option"] = option.toJson();
+      req["pageSize"] = pageSize;
+      req["pageNum"] = pageNum;
+      Map result = await platform_interface.Client.instance.chatManager
+          .callNativeMethod(ChatMethodKeys.searchMessagesFromServer, req);
+      ChatError.hasErrorFromResult(result);
+      return ChatPageResult<ChatSearchServerMessageResult>.fromJson(
+        result[ChatMethodKeys.searchMessagesFromServer],
+        dataItemCallback: (map) {
+          return ChatSearchServerMessageResult.fromJson(map);
+        },
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
 
 class MessageCallBackManager {

@@ -1,0 +1,52 @@
+{
+  "steps": [
+    {
+      "api": "ChatManager.sendMessage",
+      "id": "webhookMsg",
+      "params": {
+        "to": "$config.userId01",
+        "chatType": 0,
+        "direction": 0,
+        "status": 0,
+        "webhookEnv": "api-test-env",
+        "body": {"type": 0, "content": "4.24 API auto test: webhookEnv message"}
+      },
+      "delayAfterMs": 1000
+    },
+    {
+      "api": "ChatManager.searchMessagesFromServer",
+      "params": {
+        "option": {
+          "keywordList": ["webhookEnv"],
+          "keywordMatchType": 0,
+          "searchScope": 0
+        },
+        "pageSize": 20,
+        "pageNum": 1
+      }
+    },
+    {
+      "api": "ChatManager.searchMessagesFromServer",
+      "params": {
+        "option": {
+          "keywordList": [],
+          "keywordMatchType": 0
+        },
+        "pageSize": 20,
+        "pageNum": 1
+      }
+    },
+    {
+      "api": "ChatManager.searchMessagesFromServer",
+      "params": {
+        "option": {
+          "keywordList": ["webhookEnv"],
+          "msgTypes": [0],
+          "conversationId": "$config.userId01"
+        },
+        "pageSize": 10,
+        "pageNum": 1
+      }
+    }
+  ]
+}

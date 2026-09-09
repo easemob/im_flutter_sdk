@@ -87,6 +87,42 @@ final chatApis = <ApiEntry>[
     },
   ),
   ApiEntry(
+    name: 'ChatManager.searchMessagesFromServer',
+    group: 'ChatManager',
+    description: '服务端消息搜索（4.24 新增，需 Console 开通「消息搜索」增值服务，未开通时调用报错）。'
+        'option.keywordList 为关键词列表（≤5 个，每个 1-120 字符、总共最大 120 字符）；keywordMatchType：0 OR/1 AND；'
+        'msgTypes 为消息类型 index 列表（0 文本/1 图片/2 视频/3 位置/5 文件/7 自定义/8 合并，不支持 cmd/voice）；'
+        'startTime/endTime 为毫秒时间戳，须成对出现；searchScope：0 内容/1 扩展属性/2 内容+扩展。'
+        'pageNum 从 1 开始，结果按相关性排序。返回 {"count": n, "list": [...]}，'
+        'list 元素含 msgId/body/attributes/from/to/convId/chatType/timestamp/highlightTexts。',
+    paramsTemplate: '''{
+  "option": {
+    "keywordList": ["keyword"],
+    "keywordMatchType": 0,
+    "searchScope": 0
+  },
+  "pageSize": 20,
+  "pageNum": 1
+}''',
+    invoke: (p) async {
+      final option = ChatMessageSearchOption.fromJson(
+        Map<String, dynamic>.from(p['option'] as Map),
+      );
+      final pageSize = p['pageSize'] as int? ?? 20;
+      final pageNum = p['pageNum'] as int? ?? 1;
+      final result =
+          await ChatClient.getInstance.chatManager.searchMessagesFromServer(
+        option: option,
+        pageSize: pageSize,
+        pageNum: pageNum,
+      );
+      return {
+        'count': result.pageCount,
+        'list': result.data.map((e) => e.toJson()).toList(),
+      };
+    },
+  ),
+  ApiEntry(
     name: 'ChatManager.voiceMessageToText',
     group: 'ChatManager',
     description: '语音消息转文字（4.22 新增），返回转换文本。message 为完整语音消息 JSON（body.type=4），'

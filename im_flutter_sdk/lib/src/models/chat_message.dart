@@ -223,6 +223,23 @@ class ChatMessage {
   bool deliverOnlineOnly = false;
 
   /// ~english
+  /// The environment identifier for the message callback (webhook) route.
+  ///
+  /// - Not set (null): The default callback route is used.
+  /// - Empty string: The message is handled as unmatched.
+  /// - A valid value: The message matches the callback route configured for the value on the server.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 消息回调（webhook）路由的环境标识。
+  ///
+  /// - 不设置（null）：使用默认回调路由；
+  /// - 空字符串：按未匹配处理；
+  /// - 有效值：匹配服务端为该值配置的回调路由。
+  /// ~end
+  String? webhookEnv;
+
+  /// ~english
   /// The recipient list of a targeted message.
   ///
   /// This property is used only for messages in groups and chat rooms.
@@ -946,6 +963,7 @@ class ChatMessage {
       data.putIfNotNull("chatroomMessagePriority", _priority!.index);
     }
     data.putIfNotNull('deliverOnlineOnly', deliverOnlineOnly);
+    data.putIfNotNull('webhookEnv', webhookEnv);
     if (receiverList != null) {
       data.putIfNotNull('receiverList', receiverList);
     }
@@ -973,6 +991,7 @@ class ChatMessage {
       ..isChatThreadMessage = map["isThread"] ?? false
       ..onlineState = map["onlineState"] ?? true
       ..deliverOnlineOnly = map['deliverOnlineOnly'] ?? false
+      ..webhookEnv = map["webhookEnv"]
       ..status =
           MessageStatus.values[map["status"] ?? MessageStatus.CREATE.index]
       ..receiverList = map["receiverList"]?.cast<String>()

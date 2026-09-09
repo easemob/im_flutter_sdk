@@ -33,5 +33,7 @@ export 'src/models/conversation_fetch_options.dart';
 export 'src/models/chat_contact.dart';
 export 'src/models/chat_message_stream_chunk.dart';
 export 'src/models/chat_message_sender_info.dart';
+export 'src/models/chat_message_search_option.dart';
+export 'src/models/chat_search_server_message_result.dart';
 export 'src/models/chat_voice_param.dart';
 export 'em_compat.dart';
