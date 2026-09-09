@@ -61,8 +61,8 @@ class ChatMessageSearchOption {
   factory ChatMessageSearchOption.fromJson(Map map) {
     return ChatMessageSearchOption(
       keywordList: (map['keywordList'] as List?)?.cast<String>() ?? [],
-      keywordMatchType: ChatKeywordListMatchType.values[
-          map['keywordMatchType'] ?? ChatKeywordListMatchType.OR.index],
+      keywordMatchType: ChatKeywordListMatchType
+          .values[map['keywordMatchType'] ?? ChatKeywordListMatchType.OR.index],
       conversationId: map['conversationId'],
       msgTypes: (map['msgTypes'] as List?)
           ?.map((e) => MessageType.values[e as int])
