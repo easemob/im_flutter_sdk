@@ -9,6 +9,15 @@ set -euo pipefail
 fail() { echo "error: $*" >&2; exit 1; }
 info() { echo "==> $*"; }
 
+# ---- lane 参数：每个 lane 独立 AVD（lane 0 用 im_flutter_test_a/b，lane N 用 *_laneN） ----
+LANE=0
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --lane) LANE="${2:?--lane requires a number}"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+
 # ---- OS / arch ----
 case "$(uname -s)" in
   Darwin) OS="mac" ;;
@@ -116,7 +125,7 @@ ensure_cmdline_tools() {
   local url="https://dl.google.com/android/repository/commandlinetools-${OS}-${CMD_TOOLS_VERSION}_latest.zip"
   local zip="/tmp/commandlinetools.zip"
   local tmp="/tmp/cmdline-tools-extract"
-  curl -fL --max-time 600 -o "$zip" "$url"
+  curl -sfL --max-time 600 -o "$zip" "$url"
   rm -rf "$tmp"; mkdir -p "$tmp"
   unzip -q "$zip" -d "$tmp"
   mkdir -p "$SDK_ROOT/cmdline-tools"
@@ -153,9 +162,19 @@ ensure_image() {
   info "system image installed"
 }
 
-# ---- 5. two minimal AVDs ----
-AVD_A="im_flutter_test_a"
-AVD_B="im_flutter_test_b"
+# ---- 5. minimal AVDs for this lane ----
+avd_suffix() {
+  # lane 0: im_flutter_test_a / im_flutter_test_b（向后兼容）
+  # lane N: im_flutter_test_a_laneN / im_flutter_test_b_laneN
+  local suffix="$1"
+  if [[ "$LANE" == "0" ]]; then
+    echo "im_flutter_test_$suffix"
+  else
+    echo "im_flutter_test_${suffix}_lane$LANE"
+  fi
+}
+AVD_A="$(avd_suffix a)"
+AVD_B="$(avd_suffix b)"
 
 MIN_CONFIG='hw.lcd.width=720
 hw.lcd.height=1280

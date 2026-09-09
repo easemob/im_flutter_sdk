@@ -19,6 +19,7 @@ def _first_chatroom_event(device, *, room_id: str, event_types: set[str], timeou
         expected_event_types=event_types,
         chatroom_id=room_id,
         timeout=timeout,
+        first_only=True,
     )
     return events[0]
 

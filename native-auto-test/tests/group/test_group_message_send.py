@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import time
 import uuid
 
@@ -15,6 +14,7 @@ from tests.group.group_helpers import (
     create_group,
     destroy_group,
     new_group_name,
+    wait_member_auto_joined,
 )
 
 
@@ -194,22 +194,16 @@ def _wait_send_terminal(device, *, temp_id: str, timeout: float = 30.0) -> tuple
     seen = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        error_evt = device.receive_message(
-            match_event_type=Cmd.onMessageError.value,
-            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
-        )
-        if error_evt:
-            seen.append(error_evt)
-        if str(((error_evt or {}).get("data") or {}).get("msgId")) == str(temp_id):
-            return "error", error_evt
-        success_evt = device.receive_message(
-            match_event_type=Cmd.onMessageSuccess.value,
-            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
-        )
-        if success_evt:
-            seen.append(success_evt)
-        if str(((success_evt or {}).get("data") or {}).get("msgId")) == str(temp_id):
-            return "success", success_evt
+        event = device.receive_message(timeout=max(0.0, deadline - time.monotonic()))
+        if not event:
+            continue
+        seen.append(event)
+        if event.get("type") != "event" or str((event.get("data") or {}).get("msgId")) != str(temp_id):
+            continue
+        if event.get("eventType") == Cmd.onMessageError.value:
+            return "error", event
+        if event.get("eventType") == Cmd.onMessageSuccess.value:
+            return "success", event
     pytest.fail(f"未收到群消息发送终态: tempId={temp_id}, events={seen}")
 
 
@@ -453,8 +447,8 @@ def message_group(device_a, device_b, assert_api, user_a, user_b):
         group_name=new_group_name("message_send"),
         invite_members=[user_b],
     )
-    time.sleep(float(os.getenv("GROUP_MESSAGE_MEMBER_SETTLE_SECONDS", "5")))
     try:
+        wait_member_auto_joined(device_b, assert_api, group_id=group_id, inviter=user_a)
         yield group_id
     finally:
         destroy_group(device_a, assert_api, group_id, device_b=device_b)
@@ -553,7 +547,7 @@ def test_group_message_read_ack_updates_count(device_a, device_b, assert_api, us
             group_name=new_group_name("group_ack"),
             invite_members=[user_b],
         )
-        time.sleep(float(os.getenv("GROUP_MESSAGE_MEMBER_SETTLE_SECONDS", "5")))
+        wait_member_auto_joined(device_b, assert_api, group_id=group_id, inviter=user_a)
         content = f"group-ack-{uuid.uuid4().hex[:8]}"
         send_resp = device_a.call(
             "ChatManager",
@@ -756,7 +750,8 @@ def test_group_message_send_rejects_non_member_states(
             group_name=group_name,
             invite_members=[] if member_state == "never-member" else [user_b],
         )
-        time.sleep(float(os.getenv("GROUP_MESSAGE_MEMBER_SETTLE_SECONDS", "5")))
+        if member_state != "never-member":
+            wait_member_auto_joined(device_b, assert_api, group_id=group_id, inviter=user_a)
         device_a.drain_events()
         device_b.drain_events()
 

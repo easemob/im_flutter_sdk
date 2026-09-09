@@ -107,10 +107,14 @@ def collect_group_events(
                 f"expected={sorted(expected_event_types)}, seen={seen_event_types}"
             )
 
-        if matched and _requirements_satisfied() and (time.monotonic() - last_matched_at) >= idle_grace_window:
-            return matched
+        receive_timeout = min(remaining, 1.0)
+        if matched and _requirements_satisfied():
+            idle_remaining = last_matched_at + idle_grace_window - time.monotonic()
+            if idle_remaining <= 0:
+                return matched
+            receive_timeout = min(receive_timeout, idle_remaining)
 
-        evt = device.receive_message(timeout=min(remaining, 1.0))
+        evt = device.receive_message(timeout=receive_timeout)
         items: list[dict] = []
         if isinstance(evt, dict):
             items = [evt]
@@ -144,6 +148,37 @@ def collect_group_events(
             matched.append(item)
             matched_types.add(evt_type)
             last_matched_at = now
+
+
+def wait_member_auto_joined(
+    device,
+    assert_api,
+    *,
+    group_id: str,
+    inviter: str,
+    timeout: float = 10.0,
+) -> None:
+    """For auto-accept groups, await member-side readiness instead of sleeping."""
+    event_type = "onAutoAcceptInvitationFromGroup"
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        event = device.receive_message(
+            match_event_type=event_type,
+            timeout=max(0.0, deadline - time.monotonic()),
+        )
+        if not event or (event.get("data") or {}).get("groupId") != group_id:
+            continue
+        assert_api.assert_response_matches(
+            event,
+            expected={
+                "type": "event",
+                "eventType": event_type,
+                "data": {"groupId": group_id, "inviter": inviter, "inviteMessage": ""},
+            },
+            ignore_keys={"timestamp", "sequence"},
+        )
+        return
+    raise AssertionError(f"未收到目标成员自动入群回调: groupId={group_id}, timeout={timeout}s")
 
 
 def assert_no_group_event(

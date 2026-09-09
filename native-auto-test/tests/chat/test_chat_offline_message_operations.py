@@ -254,7 +254,7 @@ def _wait_pin_change(
     *,
     real_id: str,
     operation: str,
-    timeout: float = 60.0,
+    timeout: float = 10.0,
 ) -> dict:
     deadline = time.monotonic() + timeout
     seen = []

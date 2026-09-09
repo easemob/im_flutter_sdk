@@ -9,7 +9,7 @@
 
 正常 cases
 1. `tests/client/test_client.py::test_login_then_receive_offline_sync_event`
-   重新登录后在同连接等待离线同步启动事件，验证登录成功后会触发基础同步回调。
+   重新登录后在同连接等待离线同步 Start 或 Finish，任一合法事件到达立即返回；两者共用 10 秒截止时间，不再先等 Start 10 秒再等 Finish 5 秒。删除 logout 后额外 1 秒 sleep，保留 drain。对原始事件冻结 type/eventType/data={}。本轮虚拟时钟回归通过，设备回归待执行（未占用正在执行 Chat 的模拟器）。
 
 异常 cases
 2. `tests/client/test_client.py::test_client_login_invalid_password`

@@ -46,7 +46,13 @@ def collect_chatroom_events(
     chatroom_id: str | None = None,
     timeout: float = 10.0,
     require_event: bool = True,
+    first_only: bool = False,
 ) -> list[dict]:
+    """
+    收集匹配的回调事件。
+    - first_only=True：收到第一个匹配事件立即返回（用于「只需首条回调」的场景，timeout 仅作失败上限）。
+    - first_only=False：收集满整个 timeout 窗口（用于「观察一段时间内所有事件/验证无事件」）。
+    """
     deadline = time.monotonic() + timeout
     events: list[dict] = []
     while time.monotonic() < deadline:
@@ -71,6 +77,8 @@ def collect_chatroom_events(
             ):
                 continue
         events.append(evt)
+        if first_only:
+            return events
     if require_event and expected_event_types and not events:
         raise AssertionError(f"未收到聊天室回调: expected={sorted(expected_event_types)}")
     return events

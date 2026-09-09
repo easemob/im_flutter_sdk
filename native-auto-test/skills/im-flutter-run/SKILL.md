@@ -26,6 +26,9 @@ Auto-installed if missing: JDK 17+, Android cmdline-tools, `emulator`, `platform
 # from the native-auto-test directory
 bash skills/im-flutter-run/scripts/run.sh
 
+# run N lanes in parallel (N*2 emulators), shard test files, merge into one report
+bash skills/im-flutter-run/scripts/run.sh --lanes 2 tests/chatroom
+
 # download the release APK from a specific repo
 bash skills/im-flutter-run/scripts/run.sh --repo easemob/im_flutter_sdk -q tests/client/test_client.py
 
@@ -36,7 +39,17 @@ bash skills/im-flutter-run/scripts/run.sh --build -q tests/client/test_client.py
 bash skills/im-flutter-run/scripts/run.sh --keep-emulator
 ```
 
-Flow: detect/install emulator env → obtain a single APK (download latest release by default, or `--build` locally) → boot two emulators → install the same APK with runtime device injection (`--es device deviceA/deviceB`) → push `config.yaml` (startup injection) → `make ws-bridge-up` (relay + reverse) → launch apps (auto-connect) → `make test-local` (pytest) → `allure generate` → auto-open report.
+Flow: detect/install emulator env → obtain a single APK (download latest release by default, or `--build` locally) → boot emulators (2 by default, or N*2 with `--lanes N`) → install the same APK with runtime device injection (`--es device deviceA/deviceB`) → push `config.yaml` (startup injection) → `make ws-bridge-up` (relay + reverse) → launch apps (auto-connect) → `make test-local` (pytest) → `allure generate` → auto-open report.
+
+## Multi-lane parallelism
+
+`--lanes N` runs N independent lanes, each with 2 emulators. Per-lane isolation:
+- account prefix `g0..gN-1` (via `TEST_USER_PREFIX`, avoids login conflicts)
+- relay port `40100+N` (topic reused, isolation by port)
+- AVD `im_flutter_test_a/b` (lane 0) or `im_flutter_test_*_laneN`
+- adb ports `5554+N*4`
+
+Test files under the given paths are sharded round-robin across lanes; all lanes write to a shared `allure-results` and a single merged report is generated. Memory: ~3.7GB per emulator, so 24GB machines should prefer `--lanes 1` (2 emulators) or `--lanes 2` (4 emulators, near the limit).
 
 ## Config effectiveness rules (important)
 

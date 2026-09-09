@@ -614,6 +614,14 @@
 - 开关结论：两台测试 App 初始化均为 `requireDeliveryAck=true`；自动翻译已经返回非空翻译结果；14 条中未出现 `505 Service is not enabled`，没有需要用户补开的服务开关。
 - GREEN 结果：最终同一 session 严格复跑 `14 passed, 0 failed, 0 skipped`，耗时 `61.76s`，JUnit 证据为 `/tmp/requested-chat-14-verified.xml`。
 
+### Chat 等待耗时优化（设备回归待执行）
+
+- `test_chat_reaction_fetch.py`：删除 reaction 的 10 秒／5 秒固定等待和 7 个调用方重复的双设备 drain；保留发送辅助函数内的清理以及发送／接收／送达断言。在线 reaction 目标事件等待上限为 15 秒。
+- `test_chat_offline_message_operations.py::_wait_pin_change`：按用户确认保留 10 秒上限；匹配消息 ID 与 pinOperation 后立即返回，未收到仍失败。其他离线事件超时不变。
+- `test_chat_s423_message_callback_and_combine.py`：发送成功、接收、送达等待由最多 8 次各 20 秒改为总计 20 秒。转发合并消息的视频缩略图下载删除末尾 30 秒 sleep，校验开始响应并等待同一消息的成功／失败终态；成功须 `thumbnailStatus=1`，错误或超时失败，不再把等待结束当作下载成功。
+- 下载范围仍仅为该 case 原先实际执行的视频缩略图，没有恢复其已注释的其他下载操作；旧报告通过不代表下载完成，新断言可能暴露既有下载错误。
+- 本地验证：`tests/tools/test_chat_wait_budgets.py` 的虚拟时钟／模拟设备回归 10 passed，覆盖总截止时间、默认预算、匹配即返回、下载失败快速退出及终态校验；`git diff --check` 通过。尚未执行设备 E2E 回归，不将耗时估算记为实测收益。
+
 ### WebSocket 登录状态与类型消息发送人同步（2026-07-16）
 
 - 根因日志：deviceA 原生登录结果为 `test0716user1`，但 generic bridge 未更新 Dart `EMClient.currentUserId`，`sendMessageWithType(custom)` 因而使用旧缓存 `from=test0715user2`，原生立即返回 `500 Message is invalid`。

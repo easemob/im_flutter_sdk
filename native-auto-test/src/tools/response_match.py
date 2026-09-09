@@ -58,6 +58,10 @@ class _Matcher:
     def __repr__(self) -> str:
         return f"{self._op_name}({self._threshold!r})"
 
+    def __str__(self) -> str:
+        # 序列化到报告时用直观描述（如 "> 0"），而非 "gt(0)"
+        return self.describe()
+
 
 def eq(value: Any) -> _Matcher:
     """断言字段值 == value。"""

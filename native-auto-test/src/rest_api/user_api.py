@@ -193,15 +193,41 @@ def create_users(users: list[dict[str, str]]) -> dict:
         finally:
             resp.close()
         parsed = json.loads(raw) if raw.strip() else {}
-        created = [
-            u.get("username")
-            for u in users
-            if isinstance(u, dict) and isinstance(u.get("username"), str) and u.get("username")
-        ]
+        # 从响应体 entities 提取实际创建的用户，避免静默失败被误判为全部成功。
+        entities = parsed.get("entities", []) if isinstance(parsed, dict) else []
+        actually_created = {
+            e.get("username")
+            for e in entities
+            if isinstance(e, dict) and e.get("username")
+        }
+        created_usernames: list[str] = []
+        existing_usernames: list[str] = []
+        for user in users:
+            username = user.get("username") if isinstance(user, dict) else None
+            if not isinstance(username, str) or not username:
+                continue
+            if username in actually_created:
+                created_usernames.append(username)
+                continue
+            # 响应里缺失：批量创建静默失败，fallback 单用户补建。
+            status, detail = _post_create_single_user(base, token, user)
+            if status == "created":
+                created_usernames.append(username)
+            elif status == "exists":
+                existing_usernames.append(username)
+            else:
+                print(
+                    "[create_users] 单用户补建失败\n"
+                    f"url={url}\n"
+                    f"user={username}\n"
+                    f"detail={detail}",
+                    file=sys.stderr,
+                    flush=True,
+                )
         return {
             "ok": True,
-            "created": created,
-            "existing": [],
+            "created": created_usernames,
+            "existing": existing_usernames,
             "raw": parsed if isinstance(parsed, dict) else {},
         }
     except urllib.error.HTTPError as e:

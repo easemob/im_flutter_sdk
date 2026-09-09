@@ -12,7 +12,7 @@ from src.test_flow.offline_test_flow import (
     login_preserving_offline_events,
     logout_for_offline,
 )
-from tests.group.group_helpers import create_group, new_group_name
+from tests.group.group_helpers import create_group, new_group_name, wait_member_auto_joined
 from tests.group.group_offline_helpers import (
     assert_call_result,
     restore_group_users,
@@ -275,7 +275,11 @@ def _create_message_group(
         group_name=group_name,
         invite_members=[user_b],
     )
-    time.sleep(float(os.getenv("GROUP_MESSAGE_MEMBER_SETTLE_SECONDS", "5")))
+    try:
+        wait_member_auto_joined(device_b, assert_api, group_id=group_id, inviter=user_a)
+    except Exception:
+        safe_destroy_group(device_a, group_id)
+        raise
     _drain_devices(device_a, device_b)
     return group_id, group_name
 

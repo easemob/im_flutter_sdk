@@ -1,9 +1,6 @@
 """群成员终态在 SDK logout/login 窗口内的离线一致性。"""
 from __future__ import annotations
 
-import os
-import time
-
 import pytest
 
 from src import Cmd
@@ -11,7 +8,7 @@ from src.test_flow.offline_test_flow import (
     login_preserving_offline_events,
     logout_for_offline,
 )
-from tests.group.group_helpers import assert_group_snapshot, create_group, new_group_name
+from tests.group.group_helpers import assert_group_snapshot, create_group, new_group_name, wait_member_auto_joined
 from tests.group.group_offline_helpers import (
     assert_call_result,
     assert_joined_group_projection,
@@ -45,7 +42,11 @@ def _create_member_group(
         invite_members=[user_b],
         style=style,
     )
-    time.sleep(float(os.getenv("GROUP_OFFLINE_MEMBER_SETTLE_SECONDS", "3")))
+    try:
+        wait_member_auto_joined(device_b, assert_api, group_id=group_id, inviter=user_a)
+    except Exception:
+        safe_destroy_group(device_a, group_id)
+        raise
     device_a.drain_events(timeout=0.5)
     device_b.drain_events(timeout=0.5)
     return group_id, group_name

@@ -5,6 +5,14 @@
 - 每条 case 以全局序号编号；统计按“当前记录条目数”计算。
 - 暂缓与 skip 项统一写 `CASES_DEFERRED.zh.md`。
 
+## 等待耗时优化（设备回归待执行）
+
+- `group_helpers.collect_group_events` 保留必选事件全部到齐与 0.8 秒静默收集语义，接收 timeout 限制为剩余静默时间，避免固定 1 秒步长造成额外等待；负向观察窗口不变。
+- `test_group_message_send.py`、`test_group_offline_member_state.py`、`test_group_offline_roles_and_configuration.py`、`test_group_offline_message_delivery.py` 的 6 处建群固定 3／5 秒等待改为 `wait_member_auto_joined`：沿用 `autoAcceptGroupInvitation=true` 基线，等待 B 的目标 `onAutoAcceptInvitationFromGroup`，严格校验 groupId、inviter、inviteMessage；最多 10 秒，缺失失败，准备失败清理已创建群。never-member 场景无需等待入群。
+- 移除上述等待专用的 `GROUP_MESSAGE_MEMBER_SETTLE_SECONDS`、`GROUP_OFFLINE_MEMBER_SETTLE_SECONDS`、`GROUP_OFFLINE_CONFIG_SETTLE_SECONDS` 读取；保留服务端 ACK 落库、历史一致性、群消息上传等待与原事件清理。
+- `_wait_send_terminal` 在同一截止时间内识别成功／错误，不再先等错误再等成功；消息 ID 与终态匹配保持严格。
+- 本轮无设备验证：`tests/tools/test_module_wait_budgets.py` 和既有 `test_chat_wait_budgets.py` 合计 32 passed；覆盖必选集合、负向窗口、精确截止时间、入群准备调用链与失败清理。直接修改的六个 E2E 文件共 45 项 collect-only 成功（含 Client / ChatRoom）。用户双 lane Chat 正在运行，未连接设备执行本轮 E2E；固定等待减少不等于已实测总耗时收益。
+
 ## 常规建群容量场景
 
 - 默认场景：`cd native-auto-test && .venv/bin/python -m pytest -q tests/group`；未传参数时，常规 `createGroup.options.maxCount` 为 `200`。
