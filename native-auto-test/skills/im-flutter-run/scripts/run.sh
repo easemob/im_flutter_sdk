@@ -67,7 +67,7 @@ export no_proxy="${no_proxy:+$no_proxy,}$_NO_PROXY_LOCAL"
 if [[ "$LANES" -gt 1 ]]; then
   echo "==> Multi-lane mode: $LANES lanes ($((LANES * 2)) emulators), account g0..g$((LANES - 1)), relay 40100..$((40100 + LANES - 1))"
 
-  # Shard test files across lanes (round-robin)
+  # Shard test cases across lanes (round-robin by case, not by file)
   OPTIONS=()
   PATHS=()
   if [[ ${#PYTEST_ARGS[@]} -gt 0 ]]; then
@@ -75,20 +75,16 @@ if [[ "$LANES" -gt 1 ]]; then
       if [[ "$arg" == -* ]]; then OPTIONS+=("$arg"); else PATHS+=("$arg"); fi
     done
   fi
-  FILES=()
+  ALL_CASES=()
   if [[ ${#PATHS[@]} -gt 0 ]]; then
-    for p in "${PATHS[@]}"; do
-      if [[ -d "$p" ]]; then
-        while IFS= read -r f; do FILES+=("$f"); done < <(find "$p" -name "test_*.py" | sort)
-      elif [[ -f "$p" ]]; then
-        FILES+=("$p")
-      fi
-    done
+    while IFS= read -r nodeid; do
+      [[ -n "$nodeid" ]] && ALL_CASES+=("$nodeid")
+    done < <("$PY" "$native_auto_test/scripts/collect_cases.py" "${PATHS[@]}" 2>/dev/null)
   fi
-  if [[ ${#FILES[@]} -gt 0 ]]; then
-    echo "==> Collected ${#FILES[@]} test files, sharding across $LANES lanes"
+  if [[ ${#ALL_CASES[@]} -gt 0 ]]; then
+    echo "==> Collected ${#ALL_CASES[@]} test cases, sharding across $LANES lanes"
   else
-    echo "==> Cannot shard by file (nodeid/-k?), fall back to full set per lane"
+    echo "==> Cannot collect cases (nodeid/-k?), fall back to full set per lane"
   fi
 
   # Clear shared results, merge into one report at the end
@@ -123,9 +119,9 @@ if [[ "$LANES" -gt 1 ]]; then
     if [[ ${#OPTIONS[@]} -gt 0 ]]; then
       lane_args+=("${OPTIONS[@]}")
     fi
-    if [[ ${#FILES[@]} -gt 0 ]]; then
-      for ((j = i; j < ${#FILES[@]}; j += LANES)); do
-        lane_args+=("${FILES[$j]}")
+    if [[ ${#ALL_CASES[@]} -gt 0 ]]; then
+      for ((j = i; j < ${#ALL_CASES[@]}; j += LANES)); do
+        lane_args+=("${ALL_CASES[$j]}")
       done
     else
       lane_args+=("${PYTEST_ARGS[@]}")

@@ -25,8 +25,12 @@ def _fail_if_error(resp: dict, api_name: str) -> None:
 
 def _wait_message_success(device, temp_id: str, *, timeout: float = 20.0) -> dict:
     last = None
-    for _ in range(8):
-        evt = device.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timeout)
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        evt = device.receive_message(
+            match_event_type=Cmd.onMessageSuccess.value,
+            timeout=max(0.0, deadline - time.monotonic()),
+        )
         last = evt
         if not evt:
             continue
@@ -38,8 +42,12 @@ def _wait_message_success(device, temp_id: str, *, timeout: float = 20.0) -> dic
 
 def _wait_received_message(device, msg_id: str, *, from_user: str, to_user: str, timeout: float = 20.0) -> dict:
     last = None
-    for _ in range(8):
-        evt = device.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timeout)
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        evt = device.receive_message(
+            match_event_type=Cmd.onMessagesReceived.value,
+            timeout=max(0.0, deadline - time.monotonic()),
+        )
         last = evt
         if not evt:
             continue
@@ -57,8 +65,12 @@ def _wait_received_message(device, msg_id: str, *, from_user: str, to_user: str,
 
 def _wait_delivered_message(device, msg_id: str, *, from_user: str, to_user: str, timeout: float = 20.0) -> dict:
     last = None
-    for _ in range(8):
-        evt = device.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=timeout)
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        evt = device.receive_message(
+            match_event_type=Cmd.onMessagesDelivered.value,
+            timeout=max(0.0, deadline - time.monotonic()),
+        )
         last = evt
         if not evt:
             continue
@@ -332,6 +344,50 @@ def _assert_download_api_with_progress(device, assert_api, *, cmd: str, message:
             "sendOriginalImage",
         },
     )
+
+
+def _assert_combine_thumbnail_download_completed(
+    device, assert_api, *, message: dict, timeout: float = 20.0,
+) -> None:
+    """The API starts a download; only its matching terminal event completes it."""
+    msg_id = message["msgId"]
+    cmd = Cmd.downloadMessageThumbnailInCombine.value
+    # Only unrelated message metadata is ignored; identity/type/download status stay strict.
+    ignored = {
+        "sequence", "timestamp", "serverTime", "localTime", "broadcast", "onlineState",
+        "translations", "targetLanguages", "receiverList", "from", "to", "convId",
+        "chatType", "direction", "status", "deliverOnlineOnly", "hasRead", "hasReadAck",
+        "hasDeliverAck", "needGroupAck", "isThread", "isContentReplaced", "localPath",
+        "remotePath", "secret", "thumbnailLocalPath", "thumbnailRemotePath", "thumbnailSecret",
+        "fileSize", "displayName", "fileStatus", "width", "height", "duration", "isGif",
+        "sendOriginalImage",
+    }
+    response = device.call("ChatManager", cmd, info={"message": message})
+    _skip_if_missing_plugin(response, cmd)
+    assert_api.assert_response_matches(
+        response,
+        expected={"manager": "ChatManager", "cmd": cmd, "device": "deviceB",
+                  "result": {"msgId": msg_id, "body": {"type": 2, "thumbnailStatus": 0}}},
+        ignore_keys=ignored,
+    )
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        event = device.receive_message(timeout=max(0.0, deadline - time.monotonic()))
+        data = (event or {}).get("data") or {}
+        if str(data.get("msgId")) != str(msg_id):
+            continue
+        if event.get("eventType") == Cmd.onMessageError.value:
+            pytest.fail(f"合并消息缩略图下载失败: msgId={msg_id}, error={data.get('error')}")
+        if event.get("eventType") == Cmd.onMessageSuccess.value:
+            assert_api.assert_response_matches(
+                event,
+                expected={"type": "event", "eventType": Cmd.onMessageSuccess.value,
+                          "data": {"msgId": msg_id, "msg": {"msgId": msg_id,
+                                   "body": {"type": 2, "thumbnailStatus": 1}}}},
+                ignore_keys=ignored,
+            )
+            return
+    pytest.fail(f"未收到合并消息缩略图下载完成事件: msgId={msg_id}, timeout={timeout}s")
 
 
 def _assert_combine_inner_download_api_with_progress(device, assert_api, *, cmd: str, message: dict) -> None:
@@ -1070,12 +1126,4 @@ def test_combine_forward_media_inner_attachment_download(device_a, device_b, ass
     assert image_inner.get("body", {}).get("type") == 1, f"内部图片消息类型不正确: {image_inner}"
     assert video_inner.get("body", {}).get("type") == 2, f"内部视频消息类型不正确: {video_inner}"
 
-    for cmd, message in (
-        # (Cmd.downloadMessageAttachmentInCombine.value, image_inner),
-        # (Cmd.downloadMessageThumbnailInCombine.value, image_inner),
-        # (Cmd.downloadMessageAttachmentInCombine.value, video_inner),
-        (Cmd.downloadMessageThumbnailInCombine.value, video_inner),
-    ):
-        resp = device_b.call("ChatManager", cmd, info={"message": message})
-        _skip_if_missing_plugin(resp, cmd)
-    time.sleep(30)
+    _assert_combine_thumbnail_download_completed(device_b, assert_api, message=video_inner)

@@ -5,6 +5,13 @@
 - 每条 case 以全局序号编号；统计按“当前记录条目数”计算。
 - 暂缓与 skip 项统一写 `CASES_DEFERRED.zh.md`。
 
+## 成员加入 ext 等待优化（设备回归待执行）
+
+- `test_chatroom_members.py::_assert_joiner_ext_delivered_to_observer` 的观察端启用已有 `first_only`，目标回调到达后不再等满 0.5 秒收集窗。
+- 外层由 12 次计数改为总计 12 秒截止时间，避免非目标成员回调提前返回后过快耗尽次数；仍严格匹配 participant/ext，加入方自身事件仍仅作诊断。
+- 不更改 `collect_chatroom_events` 的默认全窗口收集语义，不覆盖用户已修改的 helper / callbacks。
+- 无设备回归覆盖匹配即返回、非目标事件不耗尽预算以及默认完整收集窗口；设备 E2E 待执行，不据此更新该 case 的既有通过／失败状态。
+
 ## createChatRoom
 
 正常 cases

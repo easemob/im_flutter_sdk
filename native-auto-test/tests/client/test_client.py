@@ -5,6 +5,7 @@ Client 模块 API 用例：init、login、logout、getCurrentUser 等。
 from __future__ import annotations
 
 import json
+import time
 
 import pytest
 
@@ -48,6 +49,16 @@ def test_client_change_app_id(device_a, assert_api):
     assert result is not None or "result" in resp
 
 
+def _wait_offline_sync_event(device, *, timeout: float = 10.0) -> dict:
+    deadline = time.monotonic() + timeout
+    accepted = {Cmd.onOfflineMessageSyncStart.value, Cmd.onOfflineMessageSyncFinish.value}
+    while time.monotonic() < deadline:
+        event = device.receive_message(timeout=max(0.0, deadline - time.monotonic()))
+        if event and event.get("type") == "event" and event.get("eventType") in accepted:
+            return event
+    raise AssertionError(f"登录后未收到离线同步 Start 或 Finish 回调: timeout={timeout}s")
+
+
 def test_login_then_receive_offline_sync_event(device_a, assert_api, user_a):
     """
     验证登录后能收到 onOfflineMessageSyncStart 回调。
@@ -58,9 +69,6 @@ def test_login_then_receive_offline_sync_event(device_a, assert_api, user_a):
     """
     # 1) 先登出
     device_a.call("Client", Cmd.logout.value, info={"unbindToken": False})
-
-    import time
-    time.sleep(1)
 
     # 2) 清空残留事件
     try:
@@ -85,20 +93,15 @@ def test_login_then_receive_offline_sync_event(device_a, assert_api, user_a):
 
     # 5) 等待 onOfflineMessageSyncStart 或 onOfflineMessageSyncFinish
     #    注意：如果没有离线消息，部分 SDK 版本可能不触发 Start 而直接触发 Finish，
-    #    或者在 call 返回前已经同步完成（事件在 login 响应之前就发了），所以也接受 Finish。
-    event = device_a.receive_message(
-        match_event_type=Cmd.onOfflineMessageSyncStart.value,
-        timeout=10.0,
+    #    call 返回前的事件会保留在 DeviceClient 队列中；两种回调共用一个截止时间。
+    event = _wait_offline_sync_event(device_a)
+    expected_type = (
+        Cmd.onOfflineMessageSyncStart.value
+        if event.get("eventType") == Cmd.onOfflineMessageSyncStart.value
+        else Cmd.onOfflineMessageSyncFinish.value
     )
-    if event is None:
-        # 可能 Start 在 login 返回前已发出并被丢弃，尝试 Finish
-        event = device_a.receive_message(
-            match_event_type=Cmd.onOfflineMessageSyncFinish.value,
-            timeout=5.0,
-        )
-        assert event is not None, (
-            "登录后未收到 onOfflineMessageSyncStart 或 onOfflineMessageSyncFinish 回调"
-        )
-        assert event.get("eventType") == Cmd.onOfflineMessageSyncFinish.value
-    else:
-        assert event.get("eventType") == Cmd.onOfflineMessageSyncStart.value
+    assert_api.assert_response_matches(
+        event,
+        expected={"type": "event", "eventType": expected_type, "data": {}},
+        ignore_keys={"timestamp", "sequence"},
+    )
