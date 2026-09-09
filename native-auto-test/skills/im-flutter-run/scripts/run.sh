@@ -63,6 +63,32 @@ _NO_PROXY_LOCAL="127.0.0.1,localhost,::1,.easemob.com"
 export NO_PROXY="${NO_PROXY:+$NO_PROXY,}$_NO_PROXY_LOCAL"
 export no_proxy="${no_proxy:+$no_proxy,}$_NO_PROXY_LOCAL"
 
+# ---- Python environment: auto-create venv + install deps (idempotent) ----
+# 提前到多 lane 编排模式之前：收集 cases 需要用到 $PY。
+ensure_python_env() {
+  local venv="$native_auto_test/.venv"
+  if [[ ! -x "$venv/bin/python" ]]; then
+    command -v python3 >/dev/null 2>&1 || fail "python3 not found; install Python 3.10+"
+    if ! python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)'; then
+      fail "Python 3.10+ required (found: $(python3 --version 2>&1))"
+    fi
+    echo "==> Creating Python venv ($venv) ..."
+    python3 -m venv "$venv"
+  fi
+  PY="$venv/bin/python"
+  if ! "$PY" -m pip --version >/dev/null 2>&1; then
+    echo "==> Ensuring pip ..."
+    "$PY" -m ensurepip --upgrade >/dev/null 2>&1 || true
+  fi
+  if ! "$PY" -c "import websockets, yaml, pytest, allure" 2>/dev/null; then
+    echo "==> Installing Python dependencies ..."
+    "$PY" -m pip install -q -r "$native_auto_test/requirements.txt"
+  fi
+  echo "==> Python ready: $PY"
+}
+
+ensure_python_env
+
 # ============ 多 lane 编排模式（--lanes N > 1） ============
 if [[ "$LANES" -gt 1 ]]; then
   echo "==> Multi-lane mode: $LANES lanes ($((LANES * 2)) emulators), account g0..g$((LANES - 1)), relay 40100..$((40100 + LANES - 1))"
@@ -178,30 +204,6 @@ WS_PORT=$((40100 + LANE))
 export TEST_USER_PREFIX="g$LANE"
 WS_STATE_DIR="$native_auto_test/.local/lane$LANE"
 
-ensure_python_env() {
-  local venv="$native_auto_test/.venv"
-  if [[ ! -x "$venv/bin/python" ]]; then
-    command -v python3 >/dev/null 2>&1 || fail "python3 not found; install Python 3.10+"
-    # 代码使用 `str | None` 等 PEP 604 语法，要求 Python 3.10+
-    if ! python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)'; then
-      fail "Python 3.10+ required (found: $(python3 --version 2>&1))"
-    fi
-    echo "==> Creating Python venv ($venv) ..."
-    python3 -m venv "$venv"
-  fi
-  PY="$venv/bin/python"
-  # uv 创建的 venv 可能没有 pip；先用 ensurepip 补齐。
-  if ! "$PY" -m pip --version >/dev/null 2>&1; then
-    echo "==> Ensuring pip ..."
-    "$PY" -m ensurepip --upgrade >/dev/null 2>&1 || true
-  fi
-  if ! "$PY" -c "import websockets, yaml, pytest, allure" 2>/dev/null; then
-    echo "==> Installing Python dependencies ..."
-    "$PY" -m pip install -q -r "$native_auto_test/requirements.txt"
-  fi
-  echo "==> Python ready: $PY"
-}
-
 detect_sdk_dir() {
   local sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
   if [[ -n "$sdk" && -d "$sdk" ]]; then echo "$sdk"; return 0; fi
@@ -211,7 +213,6 @@ detect_sdk_dir() {
   return 1
 }
 
-ensure_python_env
 SDK_DIR="$(detect_sdk_dir)" || fail "Android SDK not found (set ANDROID_HOME or ANDROID_SDK_ROOT)"
 ADB="$SDK_DIR/platform-tools/adb"
 EMULATOR="$SDK_DIR/emulator/emulator"
