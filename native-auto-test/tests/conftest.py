@@ -399,10 +399,12 @@ def api_device_b():
 
 
 def _test_usernames() -> tuple[str, str, str]:
-    """生成测试用例用的两个用户名：test + 月日 + user1/user2。"""
+    """生成测试用例用的用户名：test + 月日 + [TEST_USER_PREFIX] + user1/user2。
+    多 lane 并行时，通过 TEST_USER_PREFIX 环境变量隔离账号，避免登录互踢/状态污染。"""
     from datetime import datetime
+    prefix = os.getenv("TEST_USER_PREFIX", "")
     mmdd = datetime.now().strftime("%m%d")
-    return f"test{mmdd}user1", f"test{mmdd}user2", f"test{mmdd}user3"
+    return f"test{mmdd}{prefix}user1", f"test{mmdd}{prefix}user2", f"test{mmdd}{prefix}user3"
 
 
 @pytest.fixture(scope="session")

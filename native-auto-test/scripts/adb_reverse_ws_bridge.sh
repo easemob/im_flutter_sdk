@@ -53,11 +53,19 @@ resolve_adb() {
 adb_bin="$(resolve_adb)"
 emulators=()
 
-while read -r serial state _; do
-  if [[ "$serial" == emulator-* && "$state" == "device" ]]; then
-    emulators+=("$serial")
-  fi
-done < <("$adb_bin" devices | tail -n +2)
+if [[ -n "${SERIALS:-}" ]]; then
+  # 显式指定模拟器列表（多 lane 并行时每个 lane 只 reverse 自己的模拟器）
+  for s in $SERIALS; do
+    emulators+=("$s")
+  done
+else
+  # 默认：扫描所有在线 emulator-*
+  while read -r serial state _; do
+    if [[ "$serial" == emulator-* && "$state" == "device" ]]; then
+      emulators+=("$serial")
+    fi
+  done < <("$adb_bin" devices | tail -n +2)
+fi
 
 if ((${#emulators[@]} == 0)); then
   if [[ "$action" == "remove" ]]; then

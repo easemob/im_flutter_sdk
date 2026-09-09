@@ -44,13 +44,19 @@ rest_api:                            # 用于自动创建测试用户（建议�
 bash skills/im-flutter-run/scripts/run.sh
 ```
 
-首次运行会自动安装：JDK 17+、Android cmdline-tools、emulator、platform-tools、系统镜像（android-34 default）、两个最小 AVD、Python venv + 依赖；然后下载 release 最新 APK（单个通用包，device 由启动参数注入，支持任意数量设备）、启动双模拟器、装 APK、注入配置、跑 pytest、生成 Allure 报告并自动打开。
+首次运行会自动安装：JDK 17+、Android cmdline-tools、emulator、platform-tools、系统镜像（android-34 default）、最小 AVD（默认 2 个，`--lanes N` 时 N×2 个）、Python venv + 依赖；然后下载 release 最新 APK（单个通用包，device 由启动参数注入，支持任意数量设备）、启动模拟器、装 APK、注入配置、跑 pytest、生成 Allure 报告并自动打开。
 
 ### 4. 常用变体
 
 ```bash
 # 跑指定用例
 bash skills/im-flutter-run/scripts/run.sh -q "tests/client/test_client.py::test_client_get_current_user"
+
+# 多设备并行（4 模拟器 = 2 lane）：自动按文件分片、并行跑、报告合并成一个
+bash skills/im-flutter-run/scripts/run.sh --lanes 2 tests/chatroom
+
+# 任意扩展（6 模拟器 = 3 lane，硬件内存需相应增加）
+bash skills/im-flutter-run/scripts/run.sh --lanes 3 tests/chatroom
 
 # 指定 release 来源（fork 或上游）
 bash skills/im-flutter-run/scripts/run.sh --repo 20011229kk/im_flutter_sdk
@@ -61,6 +67,11 @@ bash skills/im-flutter-run/scripts/run.sh --build
 # CI 里跑（不弹浏览器）
 bash skills/im-flutter-run/scripts/run.sh --no-open
 ```
+
+多 lane 并行说明：
+- `--lanes N` 启动 N×2 个模拟器，按文件轮询分片到各 lane，结果合并到一个 Allure 报告。
+- 每组独立：账号前缀（g0..gN-1，避免登录互踢）、relay 端口（40100+N）、AVD（`im_flutter_test_*_laneN`）。
+- 硬件参考：单模拟器约 3.7GB 内存；24GB 机器建议 `--lanes 1`，`--lanes 2`（4 模拟器）接近上限。
 
 > 详细说明见 skill：`skills/im-flutter-run/SKILL.md`；模拟器准备：`skills/im-flutter-run/scripts/setup_emulator.sh`。
 
