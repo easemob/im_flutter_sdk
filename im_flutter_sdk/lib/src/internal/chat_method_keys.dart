@@ -455,6 +455,9 @@ class ChatMethodKeys {
   static const String fetchSubscribedUsers = "fetchSubscribedUsers";
   static const String getLocalUserInfoByIds = "getLocalUserInfoByIds";
 
+  // 4.24.0
+  static const String searchMessagesFromServer = "searchMessagesFromServer";
+
   /// ChatUserInfoManager listener
   static const String onUserInfoChanged = "onUserInfoChanged";
 }

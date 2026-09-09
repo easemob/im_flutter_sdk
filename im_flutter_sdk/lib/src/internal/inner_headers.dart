@@ -21,6 +21,8 @@ export '../models/reaction_operation.dart';
 export '../models/chat_message.dart';
 export '../models/chat_message_stream_chunk.dart';
 export '../models/chat_message_sender_info.dart';
+export '../models/chat_message_search_option.dart';
+export '../models/chat_search_server_message_result.dart';
 export '../models/chat_voice_param.dart';
 export '../models/chat_options.dart';
 export '../models/chat_page_result.dart';

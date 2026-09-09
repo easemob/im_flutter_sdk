@@ -21,6 +21,8 @@
 #import "RecallInfoHelper.h"
 #import "EnumTools.h"
 #import "Helper.h"
+#import "PageResultHelper.h"
+#import "SearchServerMessageResultHelper.h"
 
 @interface ChatManagerWrapper () <EMChatManagerDelegate>
 @property (nonatomic, strong) FlutterMethodChannel *messageChannel;
@@ -242,6 +244,10 @@
     }
     else if ([ChatLoadMessagesWithIds isEqualToString:call.method]) {
         [self loadMessagesWithIds:call.arguments channelName:call.method result:result];
+    }
+    // 4.24.0
+    else if ([searchMessagesFromServer isEqualToString:call.method]) {
+        [self searchMessagesFromServer:call.arguments channelName:call.method result:result];
     }
     // 4.22.0
     else if ([ChatDownloadBigImage isEqualToString:call.method]) {
@@ -1471,7 +1477,8 @@
 }
 
 
-- (void)groupMessageDidRead:(EMChatMessage *)aMessage groupAcks:(NSArray *)aGroupAcks {
+// 4.24.0: migrate to the new callback without the message parameter (the old one is deprecated in 4.24.1)
+- (void)groupMessageDidRead:(NSArray<EMGroupMessageAck *> *)aGroupAcks {
     NSMutableArray *list = [NSMutableArray array];
     for (EMGroupMessageAck *ack in aGroupAcks) {
         NSDictionary *json = [ack toJson];
@@ -1636,6 +1643,51 @@
                       channelName:aChannelName
                             error:aError
                            object:msgList];
+    }];
+}
+
+#pragma mark 4.24.0
+
+- (void)searchMessagesFromServer:(NSDictionary *)param
+                     channelName:(NSString *)aChannelName
+                          result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSDictionary *optionJson = param[@"option"];
+    NSInteger pageSize = [param[@"pageSize"] integerValue];
+    NSInteger pageNum = [param[@"pageNum"] integerValue];
+
+    EMMessageSearchOption *option = [[EMMessageSearchOption alloc] init];
+    option.keywordList = optionJson[@"keywordList"];
+    option.keywordMatchType = (EMKeywordListMatchType)[optionJson[@"keywordMatchType"] integerValue];
+    option.conversationId = ([optionJson[@"conversationId"] isKindOfClass:[NSNull class]] || optionJson[@"conversationId"] == nil) ? nil : optionJson[@"conversationId"];
+
+    if (optionJson[@"msgTypes"] && ![optionJson[@"msgTypes"] isKindOfClass:[NSNull class]]) {
+        NSMutableArray *msgTypes = [NSMutableArray array];
+        for (NSNumber *type in optionJson[@"msgTypes"]) {
+            [msgTypes addObject:@([EnumTools messageBodyTypeFromInt:[type integerValue]])];
+        }
+        option.msgTypes = msgTypes;
+    }
+
+    NSNumber *startTime = optionJson[@"startTime"];
+    NSNumber *endTime = optionJson[@"endTime"];
+    if (startTime && ![startTime isKindOfClass:[NSNull class]] &&
+        endTime && ![endTime isKindOfClass:[NSNull class]]) {
+        option.startTime = [startTime integerValue];
+        option.endTime = [endTime integerValue];
+    }
+
+    option.searchScope = (EMMessageSearchScope)[optionJson[@"searchScope"] integerValue];
+
+    [EMClient.sharedClient.chatManager searchMessagesFromServerWithOption:option
+                                                                 pageSize:pageSize
+                                                                   pageNum:pageNum
+                                                                completion:^(EMPageResult<EMSearchServerMessageResult *> * _Nullable aResult, EMError * _Nullable aError)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:[aResult toJson]];
     }];
 }
 

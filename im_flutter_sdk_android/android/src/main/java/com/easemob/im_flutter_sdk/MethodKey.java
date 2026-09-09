@@ -392,4 +392,7 @@ public class MethodKey {
     static final String fetchSubscribedUsers = "fetchSubscribedUsers";
     static final String getLocalUserInfoByIds = "getLocalUserInfoByIds";
     static final String onUserInfoChanged = "onUserInfoChanged";
+
+    // 4.24.0
+    static final String searchMessagesFromServer = "searchMessagesFromServer";
 }

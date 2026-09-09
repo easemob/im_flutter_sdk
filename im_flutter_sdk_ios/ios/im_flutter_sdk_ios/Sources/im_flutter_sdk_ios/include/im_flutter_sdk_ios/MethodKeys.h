@@ -416,3 +416,6 @@ static NSString *const ChatUnsubscribeUsersInfo = @"unsubscribeUsersInfo";
 static NSString *const ChatFetchSubscribedUsers = @"fetchSubscribedUsers";
 static NSString *const ChatGetLocalUserInfoByIds = @"getLocalUserInfoByIds";
 static NSString *const ChatOnUserInfoChanged = @"onUserInfoChanged";
+
+// 4.24.0
+static NSString *const searchMessagesFromServer = @"searchMessagesFromServer";

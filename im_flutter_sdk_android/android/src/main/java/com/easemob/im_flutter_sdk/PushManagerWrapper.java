@@ -108,14 +108,14 @@ public class PushManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void getImPushConfigFromServer(JSONObject params, String channelName,  Result result) throws JSONException {
-        asyncRunnable(()->{
-            try {
-                EMPushConfigs configs = EMClient.getInstance().pushManager().getPushConfigsFromServer();
-                onSuccess(result, channelName, PushConfigsHelper.toJson(configs));
-            } catch (HyphenateException e) {
-                onError(result, e);
+        // 4.24.0: migrate to the async native API added in SDK 4.24.0
+        EMValueWrapperCallBack<EMPushConfigs> callBack = new EMValueWrapperCallBack<EMPushConfigs>(result, channelName) {
+            @Override
+            public void onSuccess(EMPushConfigs object) {
+                updateObject(PushConfigsHelper.toJson(object));
             }
-        });
+        };
+        EMClient.getInstance().pushManager().asyncGetPushConfigsFromServer(callBack);
     }
 
     private void updatePushNickname(JSONObject params, String channelName,  Result result) throws JSONException {

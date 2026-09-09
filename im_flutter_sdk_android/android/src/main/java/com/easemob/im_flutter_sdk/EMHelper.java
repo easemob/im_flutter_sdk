@@ -39,6 +39,7 @@ import com.hyphenate.chat.EMPresence;
 import com.hyphenate.chat.EMPushConfigs;
 import com.hyphenate.chat.EMPushManager;
 import com.hyphenate.chat.EMRecallMessageInfo;
+import com.hyphenate.chat.EMSearchServerMessageResult;
 import com.hyphenate.chat.EMSenderInfo;
 import com.hyphenate.chat.EMSilentModeParam;
 import com.hyphenate.chat.EMSilentModeResult;
@@ -159,6 +160,15 @@ class OptionsHelper {
         }
         if (json.has("enableAutoSyncContacts")) {
             options.setEnableAutoSyncContacts(json.getBoolean("enableAutoSyncContacts"));
+        }
+        // 4.24.0
+        if (json.has("ntpServers")) {
+            List<String> ntpServers = new ArrayList<>();
+            JSONArray ja = json.getJSONArray("ntpServers");
+            for (int i = 0; i < ja.length(); i++) {
+                ntpServers.add(ja.getString(i));
+            }
+            options.setNtpServers(ntpServers);
         }
         return options;
 
@@ -541,6 +551,11 @@ class MessageHelper {
             message.setReceiverList(receiverList);
         }
 
+        // 4.24.0
+        if (json.has("webhookEnv")) {
+            message.setWebhookEnv(json.getString("webhookEnv"));
+        }
+
         return message;
     }
 
@@ -604,6 +619,9 @@ class MessageHelper {
         data.put("onlineState", message.isOnlineState());
         data.put("broadcast", message.isBroadcast());
         data.put("isContentReplaced", message.isContentReplaced());
+
+        // 4.24.0
+        data.put("webhookEnv", message.getWebhookEnv());
 
         // 通过EMMessageWrapper获取
         // data.put("groupAckCount", message.groupAckCount());
@@ -1264,10 +1282,74 @@ class PageResultHelper {
                 if (obj instanceof EMChatRoom) {
                     jsonList.add(ChatRoomHelper.toJson((EMChatRoom) obj));
                 }
+
+                // 4.24.0
+                if (obj instanceof EMSearchServerMessageResult) {
+                    jsonList.add(SearchServerMessageResultHelper.toJson((EMSearchServerMessageResult) obj));
+                }
             }
         }
         data.put("list", jsonList);
         return data;
+    }
+}
+
+// 4.24.0
+class SearchServerMessageResultHelper {
+
+    static Map<String, Object> toJson(EMSearchServerMessageResult result) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("msgId", result.getMessageId());
+        EMMessageBody body = result.getBody();
+        if (body != null) {
+            Map<String, Object> bodyData = bodyToJson(body);
+            if (bodyData != null) {
+                data.put("body", bodyData);
+            }
+        }
+        if (result.getExt() != null) {
+            data.put("attributes", result.getExt());
+        }
+        data.put("from", result.getFrom());
+        data.put("to", result.getTo());
+        data.put("convId", result.getConversationId());
+        data.put("chatType", EnumTools.chatTypeToInt(result.getChatType()));
+        data.put("timestamp", result.getTimestamp());
+        if (result.getHighlightTexts() != null) {
+            data.put("highlightTexts", result.getHighlightTexts());
+        }
+        return data;
+    }
+
+    static Map<String, Object> bodyToJson(EMMessageBody body) {
+        if (body instanceof EMTextMessageBody) {
+            return MessageBodyHelper.textBodyToJson((EMTextMessageBody) body);
+        }
+        if (body instanceof EMImageMessageBody) {
+            return MessageBodyHelper.imageBodyToJson((EMImageMessageBody) body);
+        }
+        if (body instanceof EMLocationMessageBody) {
+            return MessageBodyHelper.localBodyToJson((EMLocationMessageBody) body);
+        }
+        if (body instanceof EMVideoMessageBody) {
+            return MessageBodyHelper.videoBodyToJson((EMVideoMessageBody) body);
+        }
+        if (body instanceof EMVoiceMessageBody) {
+            return MessageBodyHelper.voiceBodyToJson((EMVoiceMessageBody) body);
+        }
+        if (body instanceof EMNormalFileMessageBody) {
+            return MessageBodyHelper.fileBodyToJson((EMNormalFileMessageBody) body);
+        }
+        if (body instanceof EMCmdMessageBody) {
+            return MessageBodyHelper.cmdBodyToJson((EMCmdMessageBody) body);
+        }
+        if (body instanceof EMCustomMessageBody) {
+            return MessageBodyHelper.customBodyToJson((EMCustomMessageBody) body);
+        }
+        if (body instanceof EMCombineMessageBody) {
+            return MessageBodyHelper.combineBodyToJson((EMCombineMessageBody) body);
+        }
+        return null;
     }
 }
 

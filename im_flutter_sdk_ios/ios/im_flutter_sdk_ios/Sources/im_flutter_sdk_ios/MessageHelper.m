@@ -65,6 +65,9 @@
         msg.receiverList = aJson[@"receiverList"];
     }
     
+    // 4.24.0
+    msg.webhookEnv = aJson[@"webhookEnv"];
+    
     return msg;
 }
 
@@ -114,6 +117,11 @@
             streamChunkDict[@"customType"] = self.streamChunk.customType;
         }
         ret[@"streamChunk"] = streamChunkDict;
+    }
+
+    // 4.24.0: only write when non-nil to avoid inserting nil into NSMutableDictionary
+    if (self.webhookEnv) {
+        ret[@"webhookEnv"] = self.webhookEnv;
     }
 
     // flutter 使用 get 方法获取。

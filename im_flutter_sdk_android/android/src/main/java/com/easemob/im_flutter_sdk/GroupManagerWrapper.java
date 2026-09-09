@@ -771,15 +771,14 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
             ext = param.getString("ext");
         }
 
-        String finalExt = ext;
-        asyncRunnable(() -> {
-            try {
-                EMGroup group = EMClient.getInstance().groupManager().updateGroupExtension(groupId, finalExt);
-                onSuccess(result, channelName, GroupHelper.toJson(group));
-            } catch (HyphenateException e) {
-                onError(result, e);
+        // 4.24.0: migrate to the async native API added in SDK 4.24.0
+        EMValueWrapperCallBack<EMGroup> callBack = new EMValueWrapperCallBack<EMGroup>(result, channelName) {
+            @Override
+            public void onSuccess(EMGroup object) {
+                updateObject(GroupHelper.toJson(object));
             }
-        });
+        };
+        EMClient.getInstance().groupManager().asyncUpdateGroupExtension(groupId, ext, callBack);
     }
 
     private void joinPublicGroup(JSONObject param, String channelName, Result result) throws JSONException {

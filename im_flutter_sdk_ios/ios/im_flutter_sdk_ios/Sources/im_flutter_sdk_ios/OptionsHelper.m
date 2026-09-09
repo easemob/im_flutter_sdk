@@ -102,6 +102,10 @@
     // 4.22.0
     options.enableUserInfo = [aJson[@"enableUserInfo"] boolValue];
     options.enableAutoSyncContacts = [aJson[@"enableAutoSyncContacts"] boolValue];
+    // 4.24.0
+    if (aJson[@"ntpServers"] && ![aJson[@"ntpServers"] isKindOfClass:[NSNull class]]) {
+        options.ntpServers = aJson[@"ntpServers"];
+    }
     return options;
 }
 
