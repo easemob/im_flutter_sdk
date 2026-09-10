@@ -89,8 +89,14 @@ only `Android/data/com.easemob.im_flutter_test` and verifies absence before
 installing. Unknown storage, uninstall/cleanup/install failure or timeout stops
 the lane before pytest. No UID is hard-coded; no root, chown, chmod 777, global
 ADB restart or automatic AVD wipe is used. Other devices and server data are not
-cleared. If cleanup is denied, stop and investigate the test AVD rather than
-bypassing the check. This is not an App-identity writable probe.
+cleared. If shell cleanup reports permission denied, the helper makes one bounded
+recovery attempt through Android's package manager: install the same APK without
+launching it, require `pm clear` success, uninstall, verify package absence, then
+repeat directory removal and absence checks before the final installation. This
+handles stale UID-owned external data. Any recovery failure or repeated denial
+stops the lane; checks are never bypassed. Errors identify the operation and a
+safe error category without printing raw device output. This is not an
+App-identity writable probe.
 
 Each lane prints a unique `Private device logs:` directory. Logcat starts before
 installation and stops before emulator shutdown, including failed runs. Directories

@@ -1,6 +1,7 @@
 # release APK 测试自动化实施计划
 
 ## Clean installation tasks
+- [x] Reproduced stale-UID cleanup denial on `im_flutter_test_a`: package absent, external directory owned by an old UID, shell removal denied. Verified same-APK install → pm clear → uninstall removes the residual directory. Added bounded recovery and safe operation diagnostics; new regressions first failed (9 failed, 10 passed), then `test_clean_install.py`, `test_im_flutter_run_apk.py`, and `test_lane_summary.py` passed (76 passed). Updated helper recovered the still-affected `im_flutter_test_a_lane1` and verified clean installation; lane 0 normal installation also passed. Diagnostic emulators stopped; unrelated lane 2 devices untouched. `git diff --check` passed. Business E2E cases were not rerun.
 - [x] Implement clean_install.py with identity, uninstall, safe residual cleanup and timeout checks.
 - [x] Integrate clean installation and private logcat retention into run.sh; update SKILL.md.
 - [x] Offline regression: test_clean_install.py + test_im_flutter_run_apk.py + test_lane_summary.py: 67 passed (one existing websockets deprecation warning). Updated fake runner to include the new helper and model package state. bash -n and git diff --check passed. No device E2E; App-identity writability and real-device recurrence remain unverified.

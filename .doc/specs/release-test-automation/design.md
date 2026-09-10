@@ -7,6 +7,7 @@ run.sh calls clean_install.py with explicit adb, serial and expected AVD. The pa
 
 ### Workflow
 Verify identity → query package → uninstall if present → verify absent → resolve external storage → remove only package directory → verify absent → install. All adb calls have deadlines.
+If directory removal reports permission denied, attempt recovery once: install the same APK, require `pm clear` success, uninstall and verify package absence, then repeat directory removal/absence verification before the final installation. No recovery for unknown failures or repeated denial. Report a fixed operation label and sanitized error category rather than raw stderr.
 
 ### Constraints / tradeoffs
 No root, UID assumptions, chmod/chown or AVD wipe. Shell checks do not prove App-identity writability. Each lane retains logcat in a unique 0700 directory with 0600 files; collection stops before emulator cleanup. Raw logs are sensitive and are not uploaded or printed.
