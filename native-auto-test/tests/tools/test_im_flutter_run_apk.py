@@ -22,25 +22,36 @@ def runner(tmp_path):
     native = project / 'native-auto-test'
     scripts = native / 'skills/im-flutter-run/scripts'
     scripts.mkdir(parents=True)
-    for name in ('run.sh', 'release_apk_cache.py'):
+    for name in ('run.sh', 'release_apk_cache.py', 'adb_preflight.py'):
         if (SCRIPTS / name).exists():
             shutil.copy(SCRIPTS / name, scripts / name)
     executable(native / 'scripts/collect_cases.py', "print('tests/test_example.py::test_a\\ntests/test_example.py::test_b')\n")
-    executable(scripts / 'setup_emulator.sh', '#!/bin/sh\necho setup >> "$CALLS"\n')
+    executable(scripts / 'setup_emulator.sh', '#!/bin/sh\necho setup >> "$CALLS"\nprintf "setup %s\\n" "$ADB_MDNS" >> "$MDNS_ENVS"\n')
     executable(native / '.venv/bin/python', f'#!/bin/sh\nexec "{sys.executable}" "$@"\n')
     native.joinpath('config.yaml').write_text('websocket:\n  base_url: "ws://127.0.0.1:40100"\n')
     sdk = tmp_path / 'sdk'
     executable(sdk / 'platform-tools/adb', '''#!/bin/sh
 printf 'adb %s\n' "$*" >> "$CALLS"
+printf 'adb %s\n' "$ADB_MDNS" >> "$MDNS_ENVS"
 case "$*" in
+  start-server)
+    [ -f "$MDNS_STATE" ] || printf '%s' "$ADB_MDNS" > "$MDNS_STATE"
+    ;;
+  server-status)
+    if [ "$(cat "$MDNS_STATE")" = 0 ]; then
+      echo 'mdns_enabled: false'
+    else
+      echo 'mdns_enabled: true'
+    fi
+    ;;
   *getprop*) echo 1 ;;
 esac
 ''')
-    executable(sdk / 'emulator/emulator', '#!/bin/sh\nexit 0\n')
+    executable(sdk / 'emulator/emulator', '#!/bin/sh\nprintf "emulator %s\\n" "$ADB_MDNS" >> "$MDNS_ENVS"\nexit 0\n')
     tools = tmp_path / 'bin'
     for name in ('sleep', 'pkill', 'tail'):
         executable(tools / name, '#!/bin/sh\nexit 0\n')
-    executable(tools / 'make', '#!/bin/sh\nprintf "make %s\\n" "$*" >> "$CALLS"\n')
+    executable(tools / 'make', '#!/bin/sh\nprintf "make %s\\n" "$*" >> "$CALLS"\nprintf "make %s\\n" "$ADB_MDNS" >> "$MDNS_ENVS"\n')
     executable(tools / 'allure', '#!/bin/sh\nexit 0\n')
     executable(tools / 'flutter', '''#!/bin/sh
 echo build >> "$CALLS"
@@ -66,9 +77,10 @@ else:
     copied.write_text(copied.read_text().replace('/tmp/im-flutter-run', str(sandbox / 'im-flutter-run')))
     calls = tmp_path / 'calls'
     env = os.environ.copy()
-    for key in ('APK_PATH', 'GH_REPO', 'ANDROID_SDK_ROOT'):
+    for key in ('APK_PATH', 'GH_REPO', 'ANDROID_SDK_ROOT', 'ADB_MDNS'):
         env.pop(key, None)
-    env.update(PATH=f'{tools}:' + env['PATH'], ANDROID_HOME=str(sdk), CALLS=str(calls))
+    env.update(PATH=f'{tools}:' + env['PATH'], ANDROID_HOME=str(sdk), CALLS=str(calls),
+               MDNS_STATE=str(tmp_path / 'mdns-state'), MDNS_ENVS=str(tmp_path / 'mdns-envs'))
     def run(*args, **overrides):
         calls.write_text('')
         result = subprocess.run(['bash', str(copied), '--no-open', '-q', *args], env={**env, **overrides},
@@ -249,7 +261,10 @@ def test_boot_failure_does_not_clean_unstarted_bridge(runner):
     run, tmp = runner
     executable(tmp / 'sdk/platform-tools/adb', '''#!/bin/sh
 printf 'adb %s\\n' "$*" >> "$CALLS"
-case "$*" in *getprop*) echo 0 ;; esac
+case "$*" in
+  *getprop*) echo 0 ;;
+  server-status) echo 'mdns_enabled: false' ;;
+esac
 ''')
     executable(tmp / 'bin/pgrep', '#!/bin/sh\nexit 1\n')
     result, calls = run()
@@ -266,3 +281,102 @@ def test_same_source_and_lane_destination(runner):
     result, calls = run(APK_PATH=str(apk))
     assert result.returncode == 0, result.stderr
     assert not any(c.startswith('curl ') for c in calls)
+
+
+@pytest.mark.parametrize('lanes', [1, 2])
+@pytest.mark.parametrize('existing', [False, True])
+def test_mdns_is_disabled_and_checked_for_entire_runner_tree(runner, lanes, existing):
+    run, tmp = runner
+    if existing:
+        (tmp / 'mdns-state').write_text('0')
+    result, calls = run('--lanes', str(lanes), ADB_MDNS='1')
+    assert result.returncode == 0, result.stderr
+    assert (tmp / 'mdns-state').read_text() == '0'
+    # Removing the gate or its inheritance breaks observable startup ordering.
+    assert calls.index('adb server-status') < next(i for i, c in enumerate(calls) if c.startswith('curl '))
+    assert calls.count('adb server-status') == 2 * lanes + (lanes > 1)
+    assert 'adb kill-server' not in calls
+    environments = [line.split() for line in (tmp / 'mdns-envs').read_text().splitlines()]
+    assert {entry[0] for entry in environments} == {'setup', 'adb', 'emulator', 'make'}
+    assert all(entry[1:] == ['0'] for entry in environments)
+
+
+@pytest.mark.parametrize('lanes', [1, 2])
+@pytest.mark.parametrize('state', ['enabled', 'missing', 'duplicate', 'duplicate-malformed', 'malformed', 'query-error', 'start-error'])
+def test_mdns_unsafe_or_unknown_server_stops_before_device_work(runner, lanes, state):
+    run, tmp = runner
+    (tmp / 'mdns-state').write_text('1' if state == 'enabled' else '0')
+    adb = tmp / 'sdk/platform-tools/adb'
+    source = adb.read_text()
+    status_outputs = {
+        'missing': "echo 'version: old'",
+        'duplicate': "printf 'mdns_enabled: false\\nmdns_enabled: true\\n'",
+        'duplicate-malformed': "printf 'mdns_enabled: false\\nmdns_enabled: invalid value\\n'",
+        'malformed': "echo 'mdns_enabled: unknown'",
+        'query-error': "echo 'private-status-sentinel' >&2; exit 9",
+    }
+    if state in status_outputs:
+        source = source.replace("echo 'mdns_enabled: false'", status_outputs[state])
+    if state == 'start-error':
+        source = source.replace('start-server)', "start-server)\n    echo 'private-start-sentinel' >&2; exit 8")
+    adb.write_text(source)
+    result, calls = run('--lanes', str(lanes), ADB_MDNS='1')
+    assert result.returncode != 0
+    assert 'ADB' in result.stderr
+    assert not any(c.startswith('curl ') or ' install ' in c or c.startswith('make test-local ') for c in calls)
+    assert 'adb kill-server' not in calls
+    assert 'private-status-sentinel' not in result.stderr + result.stdout
+    assert 'private-start-sentinel' not in result.stderr + result.stdout
+    assert not any(line.startswith('emulator ') for line in (tmp / 'mdns-envs').read_text().splitlines())
+    if state == 'enabled':
+        assert 'kill-server' in result.stderr and 'ADB_MDNS=0' in result.stderr
+        assert str(adb) in result.stderr
+
+
+def test_mdns_rechecked_before_pytest_without_restarting_server(runner):
+    run, tmp = runner
+    make = tmp / 'bin/make'
+    make.write_text(make.read_text() + '\ncase "$*" in ws-bridge-up*) printf 1 > "$MDNS_STATE" ;; esac\n')
+    result, calls = run()
+    assert result.returncode != 0
+    assert any(' install ' in c for c in calls)
+    assert calls.count('adb start-server') == 1
+    assert calls.count('adb server-status') == 2
+    assert not any(c.startswith('make test-local ') for c in calls)
+    assert any('ws-bridge-down' in c for c in calls)
+    assert 'adb kill-server' not in calls
+
+
+def test_mdns_hung_adb_is_bounded(runner):
+    run, tmp = runner
+    executable(tmp / 'sdk/platform-tools/adb', f'#!{sys.executable}\nimport time\ntime.sleep(60)\n')
+    result, calls = run()
+    assert result.returncode != 0
+    assert '10' in result.stderr and 'timeout' in result.stderr.lower()
+    assert not any(c.startswith('curl ') or c.startswith('make ') for c in calls)
+
+
+@pytest.mark.parametrize('lanes', [1, 2])
+def test_mdns_first_install_prepares_sdk_before_probing(runner, lanes):
+    run, tmp = runner
+    staged = tmp / 'uninstalled-sdk'
+    (tmp / 'sdk').rename(staged)
+    setup = tmp / 'project/native-auto-test/skills/im-flutter-run/scripts/setup_emulator.sh'
+    setup.write_text(setup.read_text() + '\n[ -d "$ANDROID_HOME" ] || mv "$SDK_STAGING" "$ANDROID_HOME"\n')
+    result, calls = run('--lanes', str(lanes),
+                        ANDROID_HOME=str(tmp / 'new sdk with spaces'), SDK_STAGING=str(staged))
+    assert result.returncode == 0, result.stderr
+    assert calls.index('setup') < calls.index('adb start-server')
+    assert calls.count('adb server-status') == 2 * lanes + (lanes > 1)
+
+
+def test_mdns_children_recheck_after_parent_passed(runner):
+    run, tmp = runner
+    flutter = tmp / 'bin/flutter'
+    flutter.write_text(flutter.read_text() + '\nprintf 1 > "$MDNS_STATE"\n')
+    result, calls = run('--lanes', '2', '--build')
+    assert result.returncode != 0
+    assert calls.index('adb server-status') < calls.index('build')
+    assert calls.count('adb server-status') == 3
+    assert 'adb kill-server' not in calls
+    assert not any(' install ' in c or c.startswith('make test-local ') for c in calls)

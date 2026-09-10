@@ -1,6 +1,49 @@
 # release APK 测试自动化设计
 
-> 原始设计保留为历史阶段记录。当前 APK 获取流程及本次实现以文末「Release APK 缓存增量设计」为准；下方双 APK、编译期设备标识和配置修改需重建等旧方案不作为本次实现依据。
+## ADB mDNS 崩溃防护增量设计
+
+### Overview
+
+将已验证的 `ADB_MDNS=0` 固化到 skill。环境变量无法改变已运行的 server，因此采用“强制禁用 + 真实状态验证，无法确认则停止”，而非仅锁定版本或由各 lane 自动重启共享 ADB。
+
+### Architecture / Component and workflow design
+
+- `run.sh` 在 setup 和派发 lane 之前强制导出 `ADB_MDNS=0`。复用同一 SDK 解析函数，setup 后选择 adb，让新机器先安装工具再预检。
+- 新增 skill 内 `scripts/adb_preflight.py`，仅用 Python 标准库，以所选 adb 路径执行 `start-server` 和 `server-status`。`--check-only` 用于 pytest 前只查询状态；每次调用 10 秒超时，子进程强制禁用 mDNS。
+- 只接受成功响应中的唯一 `mdns_enabled: false`，不打印完整状态或 stderr。开启时打印正确 shell 引用的同路径重启命令；缺字段时提示使用支持状态检查的 platform-tools，不猜测旧版本行为。
+- 多 lane 外层 setup 后、获取 APK 前预检；子 lane 同样预检，无跳过标记。pytest 前在 `set +e` 之前复检，失败由既有 EXIT trap 清理该 lane。所有路径均不调用 `kill-server`。
+
+### Sequence diagrams
+
+```mermaid
+sequenceDiagram
+    participant R as run.sh
+    participant A as ADB server
+    participant L as lane
+    R->>R: export ADB_MDNS=0 / setup
+    R->>A: start-server + server-status
+    alt 未确认关闭
+        R->>R: 非零退出，尚未启动设备测试
+    else mdns_enabled 为 false
+        R->>L: 获取 APK 并派发，继承环境
+        L->>A: 预检后启动模拟器 / reverse
+        L->>A: pytest 前复检
+        L->>L: 通过后运行 pytest
+    end
+```
+
+### Constraints / tradeoffs
+
+- 只改 skill、工具测试与本 spec，不改 SDK、测试 App、业务用例或系统全局配置。
+- 已存在的不安全 server 主动阻断；人工重启前需确认没有其他 ADB 任务，防止打断共享连接。
+- 关闭无线调试自动发现，保留模拟器和 USB 通路。未知/旧版状态不放行。
+- 外部工具在测试期间替换/强杀 server、其他崩溃、网络断开及自动恢复不在本增量保证范围内。
+
+### Testing strategy
+
+扩展真实 runner + 临时目录/fake 工具测试，区分 server 已有状态与客户端环境。验证启动顺序、状态门禁、环境传播、超时、失败时无 APK 安装/pytest/kill-server，以及 pytest 前漂移。保留缓存、分片、参数与清理回归；执行 shell 语法、skill 校验、speckit 与 diff 检查。当前本机 ADB 已禁用 mDNS，可直接运行预检 helper 做只读验收，不执行业务 E2E。
+
+> 原始设计保留为历史阶段记录。当前 APK 获取流程以「Release APK 缓存增量设计」为准；ADB 防护以文首同名增量设计为准。下方双 APK、编译期设备标识和配置修改需重建等旧方案不作为当前增量实现依据。
 
 ## Overview
 

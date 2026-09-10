@@ -41,6 +41,41 @@ bash skills/im-flutter-run/scripts/run.sh --keep-emulator
 
 Flow: detect/install emulator env → obtain a single APK (download latest release by default, or `--build` locally) → boot emulators (2 by default, or N*2 with `--lanes N`) → install the same APK with runtime device injection (`--es device deviceA/deviceB`) → push `config.yaml` (startup injection) → `make ws-bridge-up` (relay + reverse) → launch apps (auto-connect) → `make test-local` (pytest) → `allure generate` → auto-open report.
 
+## ADB mDNS crash prevention
+
+Install/update the complete skill folder, including `scripts/adb_preflight.py`;
+copying only `run.sh` is insufficient. The runner enforces `ADB_MDNS=0` for its
+entire process tree on macOS/Linux, independent of shell configuration and even
+when the caller sets `ADB_MDNS=1`. It does not edit global tool settings.
+
+Before obtaining the APK or starting emulators, the runner starts/reuses ADB and
+requires `server-status` to explicitly report `mdns_enabled: false`. The multi-lane
+parent checks before launching lanes; each lane checks independently and again
+before pytest. Failed/timed-out commands and missing/ambiguous state stop the run;
+each probe has a 10-second timeout. Do not bypass this check or interpret unknown
+state as disabled. Use platform-tools that supports the status field (verified
+locally with 36.0.2); an older unsupported tool must be updated before testing.
+
+An already-running server retains its original environment. If mDNS is enabled,
+the runner stops and prints restart commands for the exact adb it selected.
+After confirming no other ADB work is running, execute those commands once and
+rerun the skill. For example, using the actual SDK path:
+
+```bash
+"$ANDROID_HOME/platform-tools/adb" kill-server
+ADB_MDNS=0 "$ANDROID_HOME/platform-tools/adb" start-server
+"$ANDROID_HOME/platform-tools/adb" server-status
+```
+
+Never restart the shared server from a child lane or during another test run:
+that disconnects device transports and loses reverse mappings. Do not change
+global shell settings on another machine merely to run this skill.
+
+This disables wireless-debugging mDNS discovery to prevent the observed
+OpenScreen `dns_data_graph.cc` assertion path. Emulator/USB connections still
+work. It does not provide recovery from external server kills/replacements,
+unrelated ADB crashes, or network failures during a run.
+
 ## Release APK cache
 
 Default runs query GitHub's latest Release metadata every time. The cache compares

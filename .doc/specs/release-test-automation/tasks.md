@@ -1,6 +1,41 @@
 # release APK 测试自动化实施计划
 
-> 原始 Task 1–6 和多设备 Backlog 保留历史记录，其中部分描述已落后于当前代码，不代表本次待办。本次仅以文末「Release APK 缓存增量任务」跟踪状态；需求和设计以对应文档的缓存增量章节为准。
+## ADB mDNS 防护增量任务（当前）
+
+目标：所有安装本 skill 的机器均由运行器强制禁用并验证 mDNS。方案、范围与验收以 requirements/design 中同名增量章节为准；本节为唯一状态来源。
+
+### M-T1：回归测试（TDD）
+
+Files: `native-auto-test/tests/tools/test_im_flutter_run_apk.py`
+
+- [x] 扩展 runner fixture 复制 `adb_preflight.py`，fake adb 区分已有状态与启动时 `ADB_MDNS`；为 setup/emulator/make 记录环境。
+- [x] 新增单/多 lane 门禁测试：无 server、安全 server、环境强制覆盖、已启用、未知/重复字段、start/status 失败、10 秒超时、pytest 前状态变更。
+- [x] 执行 `cd native-auto-test && .venv/bin/python -m pytest --noconftest -q tests/tools/test_im_flutter_run_apk.py -k mdns`，旧实现 18 failed：未执行预检/启动，unsafe 状态仍成功运行，挂起 adb 触发测试框架的 20 秒超时。
+
+### M-T2：实现与接入
+
+Files: `native-auto-test/skills/im-flutter-run/scripts/adb_preflight.py`、`scripts/run.sh`
+
+- [x] helper 使用 `subprocess.run([adb, command], env={**os.environ, "ADB_MDNS": "0"}, timeout=10, capture_output=True, text=True)`；仅接受唯一关闭字段，不回显原始输出，不执行 kill-server。
+- [x] runner 强制导出环境；复用 SDK 解析，setup 后调用 helper；多 lane 派发前和每 lane 均检查；pytest 前调用 `--check-only`。
+- [x] 重跑 M-T1 全部目标至通过：18 passed in 23.16s。追加首次 SDK 安装（含空格路径）、子 lane 重新验证父层检查后的状态漂移测试。
+
+### M-T3：文档与交付验证
+
+Files: `native-auto-test/skills/im-flutter-run/SKILL.md`、本 Kiro 三件套
+
+回归中发现上一批 reverse 清理新增 `get-state` 后，`native-auto-test/tests/tools/test_adb_reverse_ws_bridge.py` 的 fake adb 未实现该响应。本批仅补齐测试替身，不修改 reverse 生产脚本。
+
+- [x] 文档补充完整 scripts 安装、防护、已有共享 server 一次性处理和保证边界。
+- [x] 运行 runner、APK 缓存、lane 选择、reverse/lifecycle 工具回归：114 passed in 66.47s；`bash -n`、skill quick_validate、`bash im_flutter_sdk/scripts/speckit.sh check` 和 `git diff --check` 均通过。
+- [x] 当前本机 ADB 36.0.2 执行 helper 默认模式与 `--check-only` 均返回 0，输出 `ADB mDNS disabled (server-status verified)`；未执行业务 E2E。
+- [x] 逐项自审 M1–M8 覆盖，回填证据，交付未提交 diff；本批不 commit/push。
+
+验证命令（在 `native-auto-test`）：`.venv/bin/python -m pytest --noconftest -q tests/tools/test_im_flutter_run_apk.py tests/tools/test_release_apk_cache.py tests/tools/test_pytest_lane.py tests/tools/test_adb_reverse_ws_bridge.py tests/tools/test_ws_bridge_local.py --tb=short`。
+
+自审补充：重复字段中夹带非法多词值曾被最初解析器漏过，新增单/多 lane 复现均为红灯（2 failed）；改为收集每个同名字段的整行值后，最终回归全部通过。M1/M2 由环境传播及首次安装测试覆盖，M3/M4 由不安全/未知/失败/超时测试覆盖，M5/M6 由父子与 pytest 前状态变化测试覆盖，M7/M8 由隔离回归及 skill 文档覆盖。未运行真实业务用例、Android/iOS 构建；本次无 SDK/App 二进制变化。
+
+> 原始 Task 1–6 和多设备 Backlog 保留历史记录，其中部分描述已落后于当前代码。APK 缓存状态由文末缓存增量任务记录；当前 ADB mDNS 防护状态由文首同名增量任务记录，需求和设计以对应增量章节为准。
 
 > **执行要求：** 按本文件逐项实施，本文件是唯一任务状态来源，不创建额外 implementation plan。未经用户明确要求，不提交、不推送 Git。
 

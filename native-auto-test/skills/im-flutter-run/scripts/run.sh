@@ -33,6 +33,10 @@ native_auto_test="$(cd "$script_dir/../../.." && pwd -P)"
 repo_root="$(cd "$native_auto_test/.." && pwd -P)"
 flutter_test="$repo_root/im_flutter_test"
 
+# Enforce for setup, emulators, child lanes, make and pytest on every host.
+# Existing ADB servers retain their environment, so also verify their real state.
+export ADB_MDNS=0
+
 KEEP_EMULATOR=0
 OPEN_REPORT=1
 BUILD_LOCAL=0
@@ -60,6 +64,22 @@ while [[ $# -gt 0 ]]; do
 done
 
 fail() { echo "error: $*" >&2; exit 1; }
+
+detect_sdk_dir() {
+  local sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+  if [[ -n "$sdk" && -d "$sdk" ]]; then echo "$sdk"; return 0; fi
+  for sdk in "$HOME/Library/Android/sdk" "$HOME/Android/Sdk"; do
+    if [[ -d "$sdk" ]]; then echo "$sdk"; return 0; fi
+  done
+  return 1
+}
+
+prepare_adb() {
+  SDK_DIR="$(detect_sdk_dir)" || fail "Android SDK not found (set ANDROID_HOME or ANDROID_SDK_ROOT)"
+  ADB="$SDK_DIR/platform-tools/adb"
+  [[ -x "$ADB" ]] || fail "adb not found: $ADB"
+  "$PY" "$script_dir/adb_preflight.py" "$ADB"
+}
 
 # Validate APK source before Python/setup/emulator side effects.
 if [[ "$REFRESH_APK" == "1" && ( "$BUILD_LOCAL" == "1" || -n "${APK_PATH:-}" ) ]]; then
@@ -139,14 +159,17 @@ if [[ "$LANES" -gt 1 ]]; then
   echo "==> Collected ${#ALL_CASES[@]} test cases, sharding across $LANES lanes"
   # Keep pytest arguments intact; select each shard by exact nodeid via a plugin.
 
-  # Clear shared results, merge into one report at the end
-  rm -rf "$native_auto_test/out/allure-results"
-
   # Prepare each lane env serially (avoid concurrent image download)
   for i in $(seq 0 $((LANES - 1))); do
     echo "==> Preparing lane $i env ..."
     bash "$script_dir/setup_emulator.sh" --lane "$i"
   done
+
+  # Verify before any lane starts; no lane may restart the shared ADB server.
+  prepare_adb
+
+  # Clear shared results, merge into one report at the end
+  rm -rf "$native_auto_test/out/allure-results"
 
   # 外层仅查询/下载一次；子 lane 通过 APK_PATH 复用确定的文件。
   echo "==> [1/7] 获取共享 APK ..."
@@ -217,22 +240,6 @@ WS_PORT=$((40100 + LANE))
 export TEST_USER_PREFIX="g$LANE"
 WS_STATE_DIR="$native_auto_test/.local/lane$LANE"
 
-detect_sdk_dir() {
-  local sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
-  if [[ -n "$sdk" && -d "$sdk" ]]; then echo "$sdk"; return 0; fi
-  for sdk in "$HOME/Library/Android/sdk" "$HOME/Android/Sdk"; do
-    if [[ -d "$sdk" ]]; then echo "$sdk"; return 0; fi
-  done
-  return 1
-}
-
-SDK_DIR="$(detect_sdk_dir)" || fail "Android SDK not found (set ANDROID_HOME or ANDROID_SDK_ROOT)"
-ADB="$SDK_DIR/platform-tools/adb"
-EMULATOR="$SDK_DIR/emulator/emulator"
-
-[[ -x "$ADB" ]] || fail "adb not found: $ADB"
-[[ -x "$EMULATOR" ]] || fail "emulator not found: $EMULATOR"
-
 if [[ "$BUILD_LOCAL" == "1" ]]; then
   command -v flutter >/dev/null 2>&1 || fail "flutter not found; install Flutter SDK and add it to PATH (or drop --build to download release APKs)"
 else
@@ -255,6 +262,10 @@ if [[ "$SKIP_SETUP" == "0" ]]; then
 else
   echo "==> 跳过 setup（多 lane 编排器已统一准备）"
 fi
+
+prepare_adb
+EMULATOR="$SDK_DIR/emulator/emulator"
+[[ -x "$EMULATOR" ]] || fail "emulator not found: $EMULATOR"
 
 echo "==> Environment ready: PY=$PY AVD_A=$AVD_A AVD_B=$AVD_B SDK=$SDK_DIR"
 
@@ -373,6 +384,8 @@ echo "==> [6/6] 运行 pytest ..."
 if [[ "$NO_REPORT" == "0" ]]; then
   rm -rf "$native_auto_test/out/allure-results"
 fi
+# Catch a server replaced by another tool during setup before entering pytest.
+"$PY" "$script_dir/adb_preflight.py" "$ADB" --check-only
 set +e
 # Quote each argument for the recipe shell, then escape dollars for make's
 # expansion layer. Joining the raw array splits parametrized nodeids at spaces.
