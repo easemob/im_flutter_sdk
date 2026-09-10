@@ -45,6 +45,9 @@ ChatOptions emOptionsFromJson(Map<String, dynamic> j) {
     enableUserInfo: b('enableUserInfo') ?? false,
     enableAutoSyncContacts: b('enableAutoSyncContacts') ?? false,
     loginExtension: s('loginExtension'),
+    // 4.25.0
+    autoLoadConversations: b('autoLoadConversations') ?? true,
+    enableChatroomConversation: b('enableChatroomConversation') ?? false,
   );
 }
 

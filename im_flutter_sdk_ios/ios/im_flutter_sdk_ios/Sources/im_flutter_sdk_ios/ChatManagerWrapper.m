@@ -201,6 +201,8 @@
         [self getConversationsFromServerWithCursor:call.arguments channelName:call.method result:result];
     } else if ([GetPinnedConversationsFromServerWithCursor isEqualToString:call.method]) {
         [self getPinnedConversationsFromServerWithCursor:call.arguments channelName:call.method result:result];
+    } else if ([GetConversationsFromDBWithCursor isEqualToString:call.method]) {
+        [self getConversationsFromDBWithCursor:call.arguments channelName:call.method result:result];
     } else if ([PinConversation isEqualToString:call.method]) {
         [self pinConversation:call.arguments channelName:call.method result:result];
     } else if ([modifyMessage isEqualToString:call.method]) {
@@ -1212,6 +1214,21 @@
     NSString *cursor = param[@"cursor"];
     int pageSize = [param[@"pageSize"] intValue];
     [EMClient.sharedClient.chatManager getPinnedConversationsFromServerWithCursor:cursor pageSize:pageSize completion:^(EMCursorResult<EMConversation *> * _Nullable ret, EMError * _Nullable error) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:[ret toJson]];
+    }];
+}
+
+// 4.25.0
+- (void)getConversationsFromDBWithCursor:(NSDictionary *)param
+                             channelName:(NSString *)aChannelName
+                                  result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *cursor = param[@"cursor"];
+    NSInteger pageSize = [param[@"pageSize"] integerValue];
+    [EMClient.sharedClient.chatManager getConversationsFromDBWithCursor:cursor pageSize:pageSize completion:^(EMCursorResult<EMConversation *> * _Nullable ret, EMError * _Nullable error) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error

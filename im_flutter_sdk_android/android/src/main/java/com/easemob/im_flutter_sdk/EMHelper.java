@@ -170,6 +170,13 @@ class OptionsHelper {
             }
             options.setNtpServers(ntpServers);
         }
+        // 4.25.0
+        if (json.has("enableChatroomConversation")) {
+            options.setEnableChatroomConversation(json.getBoolean("enableChatroomConversation"));
+        }
+        if (json.has("autoLoadConversations")) {
+            options.setAutoLoadAllConversations(json.getBoolean("autoLoadConversations"));
+        }
         return options;
 
     }

@@ -103,6 +103,8 @@ public class MethodKey {
 
     static final String getConversationsFromServerWithCursor = "getConversationsFromServerWithCursor";
     static final String getPinnedConversationsFromServerWithCursor = "getPinnedConversationsFromServerWithCursor";
+    // 4.25.0
+    static final String getConversationsFromDBWithCursor = "getConversationsFromDBWithCursor";
     static final String pinConversation = "pinConversation";
     static final String modifyMessage = "modifyMessage";
     static final String downloadAndParseCombineMessage = "downloadAndParseCombineMessage";

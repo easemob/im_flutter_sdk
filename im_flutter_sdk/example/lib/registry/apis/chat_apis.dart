@@ -123,6 +123,30 @@ final chatApis = <ApiEntry>[
     },
   ),
   ApiEntry(
+    name: 'ChatManager.fetchConversationsFromDB',
+    group: 'ChatManager',
+    description: '分页从本地数据库获取会话列表（4.25 新增）。'
+        '前置条件：初始化时需将 ChatOptions.autoLoadConversations 设为 false。'
+        '排序：置顶状态倒序 > 最新一条消息的服务器时间倒序 > 会话 ID 倒序（不区分大小写）。'
+        'cursor 传空从第一页开始，结果中 cursor 为空串表示最后一页；pageSize 取值 [1,100]，'
+        'cursor 无效抛 ChatError（INVALID_PARAM）。返回 {"cursor": "...", "list": [...]}。',
+    paramsTemplate: '''{
+  "cursor": "",
+  "pageSize": 20
+}''',
+    invoke: (p) async {
+      String? cursor = p['cursor'] as String?;
+      if (cursor != null && cursor.isEmpty) cursor = null;
+      final pageSize = p['pageSize'] as int? ?? 20;
+      final result = await ChatClient.getInstance.chatManager
+          .fetchConversationsFromDB(cursor: cursor, pageSize: pageSize);
+      return {
+        'cursor': result.cursor,
+        'list': result.data.map((e) => e.toJson()).toList(),
+      };
+    },
+  ),
+  ApiEntry(
     name: 'ChatManager.voiceMessageToText',
     group: 'ChatManager',
     description: '语音消息转文字（4.22 新增），返回转换文本。message 为完整语音消息 JSON（body.type=4），'

@@ -1,3 +1,8 @@
+## 4.25.0
+- iOS依赖 SDK 升级到 4.25.0；
+- 新增本地会话分页加载 `fetchConversationsFromDB` 的原生实现；
+- `ChatOptions` 新增 `enableChatroomConversation`、`autoLoadConversations` 配置项的原生实现；
+
 ## 4.24.0
 - iOS依赖 SDK 升级到 4.24.1；
 - 新增服务端消息搜索的原生实现；

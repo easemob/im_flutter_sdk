@@ -121,6 +121,10 @@ class ChatMethodKeys {
       'getConversationsFromServerWithCursor';
   static const String getPinnedConversationsFromServerWithCursor =
       'getPinnedConversationsFromServerWithCursor';
+
+  // 4.25.0
+  static const String getConversationsFromDBWithCursor =
+      'getConversationsFromDBWithCursor';
   static const String pinConversation = 'pinConversation';
   static const String modifyMessage = 'modifyMessage';
   static const String downloadAndParseCombineMessage =

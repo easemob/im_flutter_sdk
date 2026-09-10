@@ -128,6 +128,8 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                 getConversationsFromServerWithCursor(params, call.method, result);
             } else if (MethodKey.getPinnedConversationsFromServerWithCursor.equals(call.method)) {
                 getPinnedConversationsFromServerWithCursor(params, call.method, result);
+            } else if (MethodKey.getConversationsFromDBWithCursor.equals(call.method)) {
+                getConversationsFromDBWithCursor(params, call.method, result);
             } else if (MethodKey.pinConversation.equals(call.method)) {
                 pinConversation(params, call.method, result);
             } else if (MethodKey.modifyMessage.equals(call.method)) {
@@ -1014,6 +1016,17 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
         String cursor = params.optString("cursor");
         int pageSize = params.optInt("pageSize");
         EMClient.getInstance().chatManager().asyncFetchPinnedConversationsFromServer(pageSize, cursor, new EMValueWrapperCallBack<EMCursorResult<EMConversation>>(result, channelName){
+            @Override
+            public void onSuccess(EMCursorResult<EMConversation> object) {
+                super.updateObject(CursorResultHelper.toJson(object));
+            }
+        });
+    }
+    // 4.25.0
+    private void getConversationsFromDBWithCursor(JSONObject params, String channelName, Result result) throws JSONException {
+        String cursor = params.optString("cursor");
+        int pageSize = params.optInt("pageSize");
+        EMClient.getInstance().chatManager().asyncGetConversationsFromDB(cursor, pageSize, new EMValueWrapperCallBack<EMCursorResult<EMConversation>>(result, channelName){
             @Override
             public void onSuccess(EMCursorResult<EMConversation> object) {
                 super.updateObject(CursorResultHelper.toJson(object));

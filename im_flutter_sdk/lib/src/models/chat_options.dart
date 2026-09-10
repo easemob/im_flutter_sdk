@@ -451,9 +451,39 @@ class ChatOptions {
   /// ~end
   final List<String>? ntpServers;
 
+  /// ~english
+  /// Whether to create a conversation for chat room messages.
+  ///
+  /// - `true`: A conversation is created when sending or receiving chat room messages.
+  /// - (Default) `false`: No conversation is created for chat room messages.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否为聊天室消息创建会话。
+  ///
+  /// - `true`：收发聊天室消息时创建对应的会话；
+  /// - （默认）`false`：不创建。
+  /// ~end
+  final bool enableChatroomConversation;
+
+  /// ~english
+  /// Whether to automatically load the conversation list from the local database during initialization.
+  ///
+  /// - (Default) `true`: Yes.
+  /// - `false`: No. Set this option to `false` before using [ChatManager.fetchConversationsFromDB] to load conversations with pagination.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 初始化时是否自动加载本地会话列表。
+  ///
+  /// - （默认）`true`：是；
+  /// - `false`：否。使用 [ChatManager.fetchConversationsFromDB] 分页加载会话前需将该选项设置为 `false`。
+  /// ~end
+  final bool autoLoadConversations;
+
   final Map<String, dynamic>? _extSettings;
 
-  final ChatPushConfig _pushConfig = ChatPushConfig();
+  final ChatPushConfig _pushConfig;
 
   @Deprecated('Use [ChatPushManager.bindDeviceToken] instead.')
 
@@ -693,6 +723,14 @@ class ChatOptions {
   ///
   /// Param [workPathCopiable] Whether the SDK work path is copiable, only valid for iOS, default is false.
   ///
+  /// Param [enableChatroomConversation] Whether to create a conversation for chat room messages.
+  /// - `true`: A conversation is created when sending or receiving chat room messages.
+  /// - (Default) `false`: No conversation is created for chat room messages.
+  ///
+  /// Param [autoLoadConversations] Whether to automatically load the conversation list from the local database during initialization. Set it to `false` before using [ChatManager.fetchConversationsFromDB] to load conversations with pagination.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
   /// ~end
   ///
   /// ~chinese
@@ -792,6 +830,14 @@ class ChatOptions {
   ///
   /// Param [workPathCopiable] 是否允许复制工作路径到其他地方，只有ios生效，默认为 false。
   ///
+  /// Param [enableChatroomConversation] 是否为聊天室消息创建会话。
+  /// - `true`：收发聊天室消息时创建对应的会话；
+  /// - （默认）`false`：不创建。
+  ///
+  /// Param [autoLoadConversations] 初始化时是否自动加载本地会话列表。使用 [ChatManager.fetchConversationsFromDB] 分页加载会话前需将该选项设置为 `false`。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
   /// ~end
   ChatOptions.withAppId(
     String appId, {
@@ -828,6 +874,8 @@ class ChatOptions {
     bool enableAutoSyncContacts = false,
     String? loginExtension,
     List<String>? ntpServers,
+    bool enableChatroomConversation = false,
+    bool autoLoadConversations = true,
     Map<String, dynamic>? extSettings,
   }) : this._(
           appId: appId,
@@ -865,6 +913,8 @@ class ChatOptions {
           enableAutoSyncContacts: enableAutoSyncContacts,
           loginExtension: loginExtension,
           ntpServers: ntpServers,
+          enableChatroomConversation: enableChatroomConversation,
+          autoLoadConversations: autoLoadConversations,
           extSettings: extSettings,
         );
 
@@ -966,6 +1016,14 @@ class ChatOptions {
   ///
   /// Param [workPathCopiable] Whether the SDK work path is copiable, only valid for iOS, default is false.
   ///
+  /// Param [enableChatroomConversation] Whether to create a conversation for chat room messages.
+  /// - `true`: A conversation is created when sending or receiving chat room messages.
+  /// - (Default) `false`: No conversation is created for chat room messages.
+  ///
+  /// Param [autoLoadConversations] Whether to automatically load the conversation list from the local database during initialization. Set it to `false` before using [ChatManager.fetchConversationsFromDB] to load conversations with pagination.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
   /// ~end
   ///
   /// ~chinese
@@ -1065,6 +1123,14 @@ class ChatOptions {
   ///
   /// Param [workPathCopiable] 是否允许复制工作路径到其他地方，只有ios生效，默认为 false。
   ///
+  /// Param [enableChatroomConversation] 是否为聊天室消息创建会话。
+  /// - `true`：收发聊天室消息时创建对应的会话；
+  /// - （默认）`false`：不创建。
+  ///
+  /// Param [autoLoadConversations] 初始化时是否自动加载本地会话列表。使用 [ChatManager.fetchConversationsFromDB] 分页加载会话前需将该选项设置为 `false`。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
   /// ~end
   ChatOptions.withAppKey(
     String appKey, {
@@ -1101,6 +1167,8 @@ class ChatOptions {
     bool enableAutoSyncContacts = false,
     String? loginExtension,
     List<String>? ntpServers,
+    bool enableChatroomConversation = false,
+    bool autoLoadConversations = true,
     Map<String, dynamic>? extSettings,
   }) : this._(
           appKey: appKey,
@@ -1138,6 +1206,8 @@ class ChatOptions {
           enableAutoSyncContacts: enableAutoSyncContacts,
           loginExtension: loginExtension,
           ntpServers: ntpServers,
+          enableChatroomConversation: enableChatroomConversation,
+          autoLoadConversations: autoLoadConversations,
           extSettings: extSettings,
         );
 
@@ -1241,6 +1311,14 @@ class ChatOptions {
   ///
   /// Param [workPathCopiable] Whether the SDK work path is copiable, only valid for iOS, default is false.
   ///
+  /// Param [enableChatroomConversation] Whether to create a conversation for chat room messages.
+  /// - `true`: A conversation is created when sending or receiving chat room messages.
+  /// - (Default) `false`: No conversation is created for chat room messages.
+  ///
+  /// Param [autoLoadConversations] Whether to automatically load the conversation list from the local database during initialization. Set it to `false` before using [ChatManager.fetchConversationsFromDB] to load conversations with pagination.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
   /// ~end
   ///
   /// ~chinese
@@ -1340,6 +1418,14 @@ class ChatOptions {
   ///
   /// Param [workPathCopiable] 是否允许复制工作路径到其他地方，只有ios生效，默认为 false。
   ///
+  /// Param [enableChatroomConversation] 是否为聊天室消息创建会话。
+  /// - `true`：收发聊天室消息时创建对应的会话；
+  /// - （默认）`false`：不创建。
+  ///
+  /// Param [autoLoadConversations] 初始化时是否自动加载本地会话列表。使用 [ChatManager.fetchConversationsFromDB] 分页加载会话前需将该选项设置为 `false`。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
   /// ~end
   ChatOptions({
     required String appKey,
@@ -1376,6 +1462,8 @@ class ChatOptions {
     bool enableAutoSyncContacts = false,
     String? loginExtension,
     List<String>? ntpServers,
+    bool enableChatroomConversation = false,
+    bool autoLoadConversations = true,
   }) : this._(
           appKey: appKey,
           autoLogin: autoLogin,
@@ -1412,6 +1500,8 @@ class ChatOptions {
           enableAutoSyncContacts: enableAutoSyncContacts,
           loginExtension: loginExtension,
           ntpServers: ntpServers,
+          enableChatroomConversation: enableChatroomConversation,
+          autoLoadConversations: autoLoadConversations,
         );
 
   ChatOptions._({
@@ -1450,8 +1540,12 @@ class ChatOptions {
     this.enableAutoSyncContacts = false,
     this.loginExtension,
     this.ntpServers,
+    this.enableChatroomConversation = false,
+    this.autoLoadConversations = true,
     Map<String, dynamic>? extSettings,
-  }) : _extSettings = extSettings;
+    ChatPushConfig? pushConfig,
+  })  : _extSettings = extSettings,
+        _pushConfig = pushConfig ?? ChatPushConfig();
 
   Map toJson() {
     Map data = {};
@@ -1508,6 +1602,10 @@ class ChatOptions {
 
     // 4.24.0
     data.putIfNotNull('ntpServers', ntpServers);
+
+    // 4.25.0
+    data.putIfNotNull('enableChatroomConversation', enableChatroomConversation);
+    data.putIfNotNull('autoLoadConversations', autoLoadConversations);
 
     return data;
   }
@@ -1583,10 +1681,15 @@ class ChatOptions {
           this.messagesReceiveCallbackIncludeSend,
       regardImportMessagesAsRead:
           regardImportMessagesAsRead ?? this.regardImportMessagesAsRead,
+      workPathCopiable: workPathCopiable,
       enableUserInfo: enableUserInfo,
       enableAutoSyncContacts: enableAutoSyncContacts,
-      loginExtension: loginExtension,
-      extSettings: extSettings,
+      loginExtension: loginExtension ?? this.loginExtension,
+      ntpServers: ntpServers,
+      enableChatroomConversation: enableChatroomConversation,
+      autoLoadConversations: autoLoadConversations,
+      extSettings: extSettings ?? _extSettings,
+      pushConfig: _pushConfig,
     );
   }
 }

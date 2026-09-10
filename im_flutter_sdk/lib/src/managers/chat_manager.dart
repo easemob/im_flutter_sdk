@@ -2022,6 +2022,70 @@ class ChatManager {
     }
   }
 
+  // 4.25.0
+
+  /// ~english
+  /// Gets the conversation list from the local database with pagination.
+  ///
+  /// The conversations are sorted by the following rules in descending order of priority:
+  /// 1. Pinned state: pinned conversations come first.
+  /// 2. The server timestamp of the latest message in the conversation, in reverse chronological order.
+  /// 3. The conversation ID, in reverse lexicographical order (case-insensitive).
+  ///
+  /// **Note**: Before calling this method, set [ChatOptions.autoLoadConversations] to `false` during SDK initialization. If automatic loading is enabled, the SDK loads all conversations into memory during initialization, making paginated loading meaningless.
+  ///
+  /// Param [cursor] The position from which to start getting data. If this parameter is set to null or an empty string, the SDK retrieves conversations from the first page. An empty cursor in the returned result indicates the last page.
+  ///
+  /// Param [pageSize] The number of conversations that you expect to get on each page. The value range is [1,100].
+  ///
+  /// **Return** The conversation list of the current user.
+  ///
+  /// **Throws** A description of the exception. An invalid cursor throws [ChatError] with the INVALID_PARAM error code. See [ChatError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 分页从本地数据库获取会话列表。
+  ///
+  /// 会话按以下规则的优先级降序排序：
+  /// 1. 置顶状态：置顶会话排在前面；
+  /// 2. 会话中最新一条消息的服务器时间，倒序；
+  /// 3. 会话 ID，倒序（不区分大小写）。
+  ///
+  /// **注意**：调用该方法前，需在 SDK 初始化时将 [ChatOptions.autoLoadConversations] 设置为 `false`。若开启自动加载，SDK 会在初始化时将会话全量加载到内存，分页加载也就失去了意义。
+  ///
+  /// Param [cursor] 查询的开始位置，传 null 或空字符串时从第一页开始查询。返回结果中 cursor 为空字符串表示已获取到最后一页。
+  ///
+  /// Param [pageSize] 每页期望返回的会话数量。取值范围为 [1,100]。
+  ///
+  /// **Return** 当前用户的会话列表。
+  ///
+  /// **Throws** 如果有异常会在这里抛出，传入无效 cursor 会抛出错误码为 INVALID_PARAM 的异常，包含错误码和错误描述，详见 [ChatError]。
+  /// ~end
+  Future<ChatCursorResult<ChatConversation>> fetchConversationsFromDB({
+    String? cursor,
+    int pageSize = 20,
+  }) async {
+    try {
+      Map map = {
+        "pageSize": pageSize,
+      };
+      map.putIfNotNull('cursor', cursor);
+      Map result =
+          await platform_interface.Client.instance.chatManager.callNativeMethod(
+        ChatMethodKeys.getConversationsFromDBWithCursor,
+        map,
+      );
+      ChatError.hasErrorFromResult(result);
+      return ChatCursorResult.fromJson(
+          result[ChatMethodKeys.getConversationsFromDBWithCursor],
+          dataItemCallback: (map) {
+        return ChatConversation.fromJson(map);
+      });
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// ~english
   /// Sets whether to pin a conversation.
   ///

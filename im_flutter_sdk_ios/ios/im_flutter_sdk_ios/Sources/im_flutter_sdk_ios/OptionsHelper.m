@@ -106,6 +106,9 @@
     if (aJson[@"ntpServers"] && ![aJson[@"ntpServers"] isKindOfClass:[NSNull class]]) {
         options.ntpServers = aJson[@"ntpServers"];
     }
+    // 4.25.0
+    options.enableChatroomConversation = [aJson[@"enableChatroomConversation"] boolValue];
+    options.autoLoadConversations = [aJson[@"autoLoadConversations"] boolValue];
     return options;
 }
 

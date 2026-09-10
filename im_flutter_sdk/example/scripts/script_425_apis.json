@@ -1,0 +1,33 @@
+{
+  "init": {
+    "autoLoadConversations": false
+  },
+  "steps": [
+    {
+      "api": "ChatManager.fetchConversationsFromDB",
+      "id": "page1",
+      "params": {
+        "cursor": "",
+        "pageSize": 5
+      },
+      "delayAfterMs": 500
+    },
+    {
+      "api": "ChatManager.fetchConversationsFromDB",
+      "id": "page2",
+      "params": {
+        "cursor": "$step.page1.cursor",
+        "pageSize": 5
+      },
+      "delayAfterMs": 500
+    },
+    {
+      "api": "ChatManager.fetchConversationsFromDB",
+      "id": "badCursor",
+      "params": {
+        "cursor": "invalid-cursor-xyz",
+        "pageSize": 5
+      }
+    }
+  ]
+}

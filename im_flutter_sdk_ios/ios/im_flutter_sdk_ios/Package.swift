@@ -16,7 +16,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/easemob/HyphenateChat_iOS.git",
-            exact: "4.24.1"
+            exact: "4.25.0"
         ),
         .package(
             name: "FlutterFramework",

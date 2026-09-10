@@ -73,6 +73,32 @@ class ChatConversation {
   }
 
   /// ~english
+  /// Converts the conversation to a JSON map, which is symmetric with [ChatConversation.fromJson] and can be used for debugging and testing.
+  ///
+  /// **Return** The JSON map of the conversation.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 将会话转换为 JSON Map，与 [ChatConversation.fromJson] 对称，可用于调试和测试。
+  ///
+  /// **Return** 会话的 JSON Map。
+  /// ~end
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data["convId"] = id;
+    data["type"] = type.index;
+    data["isThread"] = isChatThread;
+    data["isPinned"] = isPinned;
+    data["pinnedTime"] = pinnedTime;
+    data.putIfNotNull("ext", _ext);
+    if (marks?.isNotEmpty == true) {
+      data['marks'] = marks!.map((e) => e.index).toList();
+    }
+
+    return data;
+  }
+
+  /// ~english
   /// The conversation ID.
   ///
   /// For one-to-one chat,the conversation ID is the username of the other party.

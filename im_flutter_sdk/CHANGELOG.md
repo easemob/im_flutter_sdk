@@ -1,3 +1,8 @@
+## 4.25.0
+- 新增本地会话分页加载 `fetchConversationsFromDB` API；
+- `ChatOptions` 新增 `enableChatroomConversation`、`autoLoadConversations` 配置项；
+- iOS/Android 依赖 SDK 升级到 4.25.0；
+
 ## 4.24.0
 - 新增服务端消息搜索 `searchMessagesFromServer` API；
 - `ChatMessage` 新增 `webhookEnv` 属性，支持消息回调路由环境标识；

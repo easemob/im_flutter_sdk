@@ -115,6 +115,8 @@ static NSString *const ChatRemoveMessagesFromServerWithTs = @"removeMessagesFrom
 
 static NSString *const GetConversationsFromServerWithCursor = @"getConversationsFromServerWithCursor";
 static NSString *const GetPinnedConversationsFromServerWithCursor = @"getPinnedConversationsFromServerWithCursor";
+// 4.25.0
+static NSString *const GetConversationsFromDBWithCursor = @"getConversationsFromDBWithCursor";
 static NSString *const PinConversation = @"pinConversation";
 static NSString *const modifyMessage = @"modifyMessage";
 static NSString *const downloadAndParseCombineMessage = @"downloadAndParseCombineMessage";
