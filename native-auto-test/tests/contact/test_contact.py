@@ -462,7 +462,8 @@ def test_contact_remark_not_preserved_after_delete_and_readd(device_a, device_b,
     A 删除 B 后再次添加并同意，先前备注一般不应保留（以服务端为准；此处断言与旧备注不同或为空）。
     """
     old = "持久化备注-删除后应失效"
-    flow = ContactTestFlow(assert_api)
+    # getContact reads local state: wait for matching contact callbacks first.
+    flow = ContactTestFlow(assert_api, synchronize=True)
     flow.establish_friends(device_a, device_b, user_a, user_b, reason="remark_readd")
     resp_set = device_a.call(
         "ContactManager",
@@ -787,7 +788,7 @@ def test_contact_block_list_flow_then_unblock_restores_friend(
     A 取消拉黑后，A 好友列表再次含 B。
     """
     _cleanup_friend_and_block(device_a, device_b, user_a, user_b)
-    flow = ContactTestFlow(assert_api)
+    flow = ContactTestFlow(assert_api, synchronize=True)
     flow.establish_friends(device_a, device_b, user_a, user_b, reason="blocklist_flow")
     flow.add_to_block_list(device_a, user_b)
 

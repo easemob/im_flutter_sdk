@@ -107,14 +107,10 @@ def collect_group_events(
                 f"expected={sorted(expected_event_types)}, seen={seen_event_types}"
             )
 
-        receive_timeout = min(remaining, 1.0)
-        if matched and _requirements_satisfied():
-            idle_remaining = last_matched_at + idle_grace_window - time.monotonic()
-            if idle_remaining <= 0:
-                return matched
-            receive_timeout = min(receive_timeout, idle_remaining)
+        if matched and _requirements_satisfied() and (time.monotonic() - last_matched_at) >= idle_grace_window:
+            return matched
 
-        evt = device.receive_message(timeout=receive_timeout)
+        evt = device.receive_message(timeout=min(remaining, 1.0))
         items: list[dict] = []
         if isinstance(evt, dict):
             items = [evt]

@@ -276,6 +276,7 @@ def _create_message_group(
         invite_members=[user_b],
     )
     try:
+        time.sleep(float(os.getenv("GROUP_MESSAGE_MEMBER_SETTLE_SECONDS", "5")))
         wait_member_auto_joined(device_b, assert_api, group_id=group_id, inviter=user_a)
     except Exception:
         safe_destroy_group(device_a, group_id)

@@ -191,30 +191,11 @@ def _attach_compare_result_allure(
     match: bool,
     diffs: list[str],
 ) -> None:
-    """将比对结果（预期、实际、一致/差异列表）写入 Allure 报告。"""
-    try:
-        import allure
-        with allure.step("响应与预期比对"):
-            allure.attach(
-                json.dumps(expected_resolved, ensure_ascii=False, indent=2, default=str),
-                "预期响应",
-                allure.attachment_type.JSON,
-            )
-            allure.attach(
-                json.dumps(actual, ensure_ascii=False, indent=2, default=str),
-                "实际响应",
-                allure.attachment_type.JSON,
-            )
-            if match:
-                allure.attach("一致", "比对结果", allure.attachment_type.TEXT)
-            else:
-                allure.attach(
-                    "不一致\n\n" + "\n".join(diffs),
-                    "比对结果（差异）",
-                    allure.attachment_type.TEXT,
-                )
-    except ImportError:
-        pass
+    """Compatibility attachment hook; values are always redacted."""
+    from .allure_evidence import attach
+    attach('期望响应', expected_resolved)
+    attach('实际响应', actual)
+    attach('比对结果', {'match': match, 'difference_count': len(diffs)})
 
 
 def resolve_expected(expected: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
@@ -261,7 +242,31 @@ def assert_response_matches(
     """
     resolved = resolve_expected(expected, context or {})
     ok, diffs = compare_response(actual, resolved, ignore_keys=ignore_keys)
-    _attach_compare_result_allure(actual, resolved, ok, diffs)
-    if not ok:
-        msg = "响应与预期不一致:\n" + "\n".join(f"  - {d}" for d in diffs)
-        raise AssertionError(msg)
+    from .allure_evidence import comparison, identity, redact, step
+    ignored = DEFAULT_IGNORE_KEYS | frozenset(ignore_keys or [])
+
+    def field(value, path):
+        parts = re.findall(r'([^.[\]]+)|\[(\d+)\]', path)
+        if path == 'root':
+            return value
+        for key, index in parts:
+            if re.search(r'password|passwd|token|secret|authorization|cookie|credential', key, re.I):
+                return '[REDACTED]'
+            try:
+                value = value[int(index)] if index else value[key]
+            except (KeyError, IndexError, TypeError):
+                return '<字段不存在>'
+        return redact(value)
+
+    rows = []
+    for diff in diffs:
+        path, detail = diff.split(': ', 1)
+        # Do not copy raw diff values into report/exception: they can contain secrets.
+        kind = detail.split(' — ', 1)[0].split('，', 1)[0]
+        rows.append({'path': path, 'expected': field(resolved, path),
+                     'actual': field(actual, path), 'difference': kind})
+    with step(f'比对 {"失败" if not ok else "通过"} | {identity(actual)} | {len(rows)} 处差异'):
+        comparison(actual, resolved, rows, ignored)
+        if not ok:
+            from .allure_evidence import pretty
+            raise AssertionError('响应与预期不一致（字段级差异）:\n' + pretty(rows))

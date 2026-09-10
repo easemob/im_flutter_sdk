@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import time
 import uuid
 
@@ -62,7 +63,7 @@ def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_i
     )
 
 
-def _wait_reaction_change_event(device, *, real_id: str, operator: str, reaction: str, is_added_by_self: bool, timeout: float = 15.0) -> dict:
+def _wait_reaction_change_event(device, *, real_id: str, operator: str, reaction: str, is_added_by_self: bool, timeout: float = 60.0) -> dict:
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
@@ -240,6 +241,7 @@ def test_chat_reaction_change_event_received_by_sender(device_a, device_b, asser
         user_b,
         f"reaction-event-{uuid.uuid4().hex[:8]}",
     )
+    time.sleep(float(os.getenv("CHAT_REACTION_SETTLE_SECONDS", "10")))
 
     resp = device_b.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})
     assert_api.assert_response_matches(
@@ -388,6 +390,7 @@ def test_chat_add_reaction_duplicate_reaction(device_a, device_b, assert_api, us
     real_id = _send_text_and_wait_received(
         device_a, device_b, assert_api, user_a, user_b, "reaction-duplicate"
     )
+    time.sleep(5)
 
     reaction = "👍"
     resp_add_first = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})

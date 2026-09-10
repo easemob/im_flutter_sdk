@@ -15,19 +15,22 @@ class _Collector:
     def __init__(self) -> None:
         self.items: list[str] = []
 
-    def pytest_collection_modifyitems(self, items) -> None:
-        self.items = [item.nodeid for item in items]
+    def pytest_collection_finish(self, session) -> None:
+        self.items = [item.nodeid for item in session.items]
 
 
 def main() -> None:
     collector = _Collector()
     buf = io.StringIO()
     # 抑制 pytest 的 collect-only 树形输出，只保留 nodeid
-    with contextlib.redirect_stdout(buf):
-        pytest.main(
+    with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+        result = pytest.main(
             ["--collect-only", "-q", "-p", "no:cacheprovider"] + sys.argv[1:],
             plugins=[collector],
         )
+    if result != 0:
+        print(buf.getvalue(), file=sys.stderr)
+        raise SystemExit(int(result))
     for nodeid in collector.items:
         print(nodeid)
 

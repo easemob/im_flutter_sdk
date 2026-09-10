@@ -6,13 +6,17 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: run.sh [--build] [--repo OWNER/REPO] [--lane N] [--lanes N] [--keep-emulator] [--no-open] [pytest args...]
+Usage: run.sh [--build | --refresh-apk] [--repo OWNER/REPO] [--lane N] [--lanes N] [--keep-emulator] [--no-open] [pytest args...]
 
-  --build           Build APKs locally instead of downloading from the latest release
+  --build           Build APK locally instead of downloading from the latest release
+  --refresh-apk     Force download after querying latest Release (ignore valid cache)
+  APK_PATH          Environment: use an existing APK (single/multi-lane); conflicts with
+                    --build and --refresh-apk. Remote mode checks latest on every run.
   --repo OWNER/REPO GitHub repo to download release artifacts from (default: easemob/im_flutter_sdk)
   --lane N          Run a single lane (index N); used internally by --lanes, or for manual parallel runs
-  --lanes N         Run N lanes in parallel (N*2 emulators), shard test files across lanes,
-                    merge results into one report (default 1 = single lane, 2 emulators)
+  --lanes N         Run N lanes in parallel (N*2 emulators), shard selected cases across lanes,
+                    merge results into one report (default 1 = single lane, 2 emulators).
+                    Stream unmodified pytest output and save unique per-lane logs.
   --keep-emulator   Keep emulators running after the run (shut down by default)
   --no-open         Do not auto-open the report in a browser (use in CI)
   Remaining args are passed through to pytest (simple args, e.g. -q tests/chatroom)
@@ -29,9 +33,14 @@ native_auto_test="$(cd "$script_dir/../../.." && pwd -P)"
 repo_root="$(cd "$native_auto_test/.." && pwd -P)"
 flutter_test="$repo_root/im_flutter_test"
 
+# Enforce for setup, emulators, child lanes, make and pytest on every host.
+# Existing ADB servers retain their environment, so also verify their real state.
+export ADB_MDNS=0
+
 KEEP_EMULATOR=0
 OPEN_REPORT=1
 BUILD_LOCAL=0
+REFRESH_APK=0
 NO_REPORT=0
 SKIP_SETUP=0
 LANE=0
@@ -41,6 +50,7 @@ PYTEST_ARGS=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --build) BUILD_LOCAL=1; shift ;;
+    --refresh-apk) REFRESH_APK=1; shift ;;
     --repo) GH_REPO="${2:?--repo requires OWNER/REPO}"; shift 2 ;;
     --lane) LANE="${2:?--lane requires a number}"; shift 2 ;;
     --lanes) LANES="${2:?--lanes requires a number}"; shift 2 ;;
@@ -54,6 +64,48 @@ while [[ $# -gt 0 ]]; do
 done
 
 fail() { echo "error: $*" >&2; exit 1; }
+
+detect_sdk_dir() {
+  local sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+  if [[ -n "$sdk" && -d "$sdk" ]]; then echo "$sdk"; return 0; fi
+  for sdk in "$HOME/Library/Android/sdk" "$HOME/Android/Sdk"; do
+    if [[ -d "$sdk" ]]; then echo "$sdk"; return 0; fi
+  done
+  return 1
+}
+
+prepare_adb() {
+  SDK_DIR="$(detect_sdk_dir)" || fail "Android SDK not found (set ANDROID_HOME or ANDROID_SDK_ROOT)"
+  ADB="$SDK_DIR/platform-tools/adb"
+  [[ -x "$ADB" ]] || fail "adb not found: $ADB"
+  "$PY" "$script_dir/adb_preflight.py" "$ADB"
+}
+
+# Validate APK source before Python/setup/emulator side effects.
+if [[ "$REFRESH_APK" == "1" && ( "$BUILD_LOCAL" == "1" || -n "${APK_PATH:-}" ) ]]; then
+  fail "--refresh-apk conflicts with --build / APK_PATH"
+fi
+if [[ -n "${APK_PATH:-}" ]]; then
+  [[ "$BUILD_LOCAL" == "0" ]] || fail "APK_PATH conflicts with --build"
+  [[ -f "$APK_PATH" && -r "$APK_PATH" && -s "$APK_PATH" ]] || fail "APK_PATH must be a readable nonempty file"
+  APK_PATH="$(cd "$(dirname "$APK_PATH")" && pwd -P)/$(basename "$APK_PATH")"
+fi
+
+# stdout is the selected path only, so both orchestration modes can reuse it.
+obtain_apk() {
+  if [[ -n "${APK_PATH:-}" ]]; then
+    echo "==> 使用指定 APK: $APK_PATH" >&2
+    printf '%s\n' "$APK_PATH"
+  elif [[ "$BUILD_LOCAL" == "1" ]]; then
+    echo "==> 构建 release APK ..." >&2
+    (cd "$flutter_test" && flutter build apk --release) >&2 || return $?
+    printf '%s\n' "$flutter_test/build/app/outputs/flutter-apk/app-release.apk"
+  elif [[ "$REFRESH_APK" == "1" ]]; then
+    "$PY" "$script_dir/release_apk_cache.py" --repo "$GH_REPO" --cache-dir "$native_auto_test/.local/apk-cache" --refresh
+  else
+    "$PY" "$script_dir/release_apk_cache.py" --repo "$GH_REPO" --cache-dir "$native_auto_test/.local/apk-cache"
+  fi
+}
 
 # 本地地址不走代理：用户可能设置了 HTTPS_PROXY/HTTP_PROXY 加速 GitHub 下载，
 # 但本地 relay/WebSocket（127.0.0.1）不能被代理拦截，否则握手失败。
@@ -93,28 +145,19 @@ ensure_python_env
 if [[ "$LANES" -gt 1 ]]; then
   echo "==> Multi-lane mode: $LANES lanes ($((LANES * 2)) emulators), account g0..g$((LANES - 1)), relay 40100..$((40100 + LANES - 1))"
 
-  # Shard test cases across lanes (round-robin by case, not by file)
-  OPTIONS=()
-  PATHS=()
-  if [[ ${#PYTEST_ARGS[@]} -gt 0 ]]; then
-    for arg in "${PYTEST_ARGS[@]}"; do
-      if [[ "$arg" == -* ]]; then OPTIONS+=("$arg"); else PATHS+=("$arg"); fi
-    done
+  RUN_LOG_DIR="$(mktemp -d /tmp/im-flutter-run-session.XXXXXX)"
+  echo "Logs: $RUN_LOG_DIR"
+  # Let pytest interpret paths and selection options, including its default testpaths.
+  if ! (cd "$native_auto_test" && "$PY" "$native_auto_test/scripts/collect_cases.py" ${PYTEST_ARGS[@]+"${PYTEST_ARGS[@]}"}) > "$RUN_LOG_DIR/nodeids.txt" 2> "$RUN_LOG_DIR/collection.log"; then
+    fail "pytest collection failed; see $RUN_LOG_DIR/collection.log (no lanes started)"
   fi
   ALL_CASES=()
-  if [[ ${#PATHS[@]} -gt 0 ]]; then
-    while IFS= read -r nodeid; do
-      [[ -n "$nodeid" ]] && ALL_CASES+=("$nodeid")
-    done < <("$PY" "$native_auto_test/scripts/collect_cases.py" "${PATHS[@]}" 2>/dev/null)
-  fi
-  if [[ ${#ALL_CASES[@]} -gt 0 ]]; then
-    echo "==> Collected ${#ALL_CASES[@]} test cases, sharding across $LANES lanes"
-  else
-    echo "==> Cannot collect cases (nodeid/-k?), fall back to full set per lane"
-  fi
-
-  # Clear shared results, merge into one report at the end
-  rm -rf "$native_auto_test/out/allure-results"
+  while IFS= read -r nodeid; do
+    [[ -n "$nodeid" ]] && ALL_CASES+=("$nodeid")
+  done < "$RUN_LOG_DIR/nodeids.txt"
+  [[ ${#ALL_CASES[@]} -gt 0 ]] || fail "pytest collected no cases (no lanes started)"
+  echo "==> Collected ${#ALL_CASES[@]} test cases, sharding across $LANES lanes"
+  # Keep pytest arguments intact; select each shard by exact nodeid via a plugin.
 
   # Prepare each lane env serially (avoid concurrent image download)
   for i in $(seq 0 $((LANES - 1))); do
@@ -122,58 +165,59 @@ if [[ "$LANES" -gt 1 ]]; then
     bash "$script_dir/setup_emulator.sh" --lane "$i"
   done
 
-  # 下载一次共享 APK（两个 lane 共用，进度条干净不交错）
-  SHARED_APK="/tmp/im-flutter-run.apk"
-  BASE="https://github.com/$GH_REPO/releases/latest/download"
-  if [[ "$BUILD_LOCAL" == "1" ]]; then
-    echo "==> [1/7] 构建 release APK ..."
-    (cd "$flutter_test" && flutter build apk --release)
-    cp "$flutter_test/build/app/outputs/flutter-apk/app-release.apk" "$SHARED_APK"
-  else
-    echo "==> [1/7] 下载 APK ($GH_REPO) ..."
-    curl -fL --progress-bar --max-time 600 -o "$SHARED_APK" "$BASE/app-release.apk"
-    echo ""
-    echo "==> [1/7] APK 下载完成 ($(du -h "$SHARED_APK" | cut -f1))"
-  fi
+  # Verify before any lane starts; no lane may restart the shared ADB server.
+  prepare_adb
+
+  # Clear shared results, merge into one report at the end
+  rm -rf "$native_auto_test/out/allure-results"
+
+  # 外层仅查询/下载一次；子 lane 通过 APK_PATH 复用确定的文件。
+  echo "==> [1/7] 获取共享 APK ..."
+  SHARED_APK="$(obtain_apk)"
   [[ -s "$SHARED_APK" ]] || fail "APK missing/empty"
 
   # Fork each lane in parallel
   pids=()
-  tail_pids=()
   for i in $(seq 0 $((LANES - 1))); do
-    lane_args=()
-    if [[ ${#OPTIONS[@]} -gt 0 ]]; then
-      lane_args+=("${OPTIONS[@]}")
+    lane_args=(${PYTEST_ARGS[@]+"${PYTEST_ARGS[@]}"})
+    lane_count=0
+    : > "$RUN_LOG_DIR/lane$i.nodeids"
+    for ((j = i; j < ${#ALL_CASES[@]}; j += LANES)); do
+      printf '%s\n' "${ALL_CASES[$j]}" >> "$RUN_LOG_DIR/lane$i.nodeids"
+      lane_count=$((lane_count + 1))
+    done
+    lane_args+=(-p scripts.pytest_lane)
+    if (( lane_count == 0 )); then
+      echo "[lane $i] 0 cases — skipped"
+      pids+=(0)
+      continue
     fi
-    if [[ ${#ALL_CASES[@]} -gt 0 ]]; then
-      for ((j = i; j < ${#ALL_CASES[@]}; j += LANES)); do
-        lane_args+=("${ALL_CASES[$j]}")
-      done
-    else
-      lane_args+=("${PYTEST_ARGS[@]}")
-    fi
-    # 先创建空日志文件，确保 tail -f 能立即工作且不重放历史
-    : > "/tmp/im-flutter-run-lane$i.log"
-    echo "==> Starting lane $i ..."
-    APK_PATH="$SHARED_APK" bash "$script_dir/run.sh" --lane "$i" --no-open --no-report --skip-setup "${lane_args[@]}" \
-      >> "/tmp/im-flutter-run-lane$i.log" 2>&1 &
+    echo "[lane $i] $lane_count cases — running (log: $RUN_LOG_DIR/lane$i.log)"
+    IM_FLUTTER_LANE_RESULT="$RUN_LOG_DIR/lane$i.result.json" \
+      IM_FLUTTER_LANE_NODEIDS="$RUN_LOG_DIR/lane$i.nodeids" APK_PATH="$SHARED_APK" bash "$script_dir/run.sh" --lane "$i" --no-open --no-report --skip-setup "${lane_args[@]}" \
+      2>&1 | tee "$RUN_LOG_DIR/lane$i.log" &
     pids+=($!)
-    # tail -f -n 0：从文件末尾跟踪，只显示新增内容
-    tail -f -n 0 "/tmp/im-flutter-run-lane$i.log" &
-    tail_pids+=($!)
   done
 
   exit_code=0
   for i in $(seq 0 $((LANES - 1))); do
+    [[ "${pids[$i]}" != 0 ]] || continue
     if wait "${pids[$i]}"; then
-      echo "==> lane $i done"
+      printf '0\n' > "$RUN_LOG_DIR/lane$i.exit"
+      echo "[lane $i] PASS"
     else
-      echo "==> lane $i failed (log: /tmp/im-flutter-run-lane$i.log)"
+      lane_exit=$?
+      printf '%s\n' "$lane_exit" > "$RUN_LOG_DIR/lane$i.exit"
+      echo "[lane $i] FAIL (log: $RUN_LOG_DIR/lane$i.log)"
       exit_code=1
     fi
-    kill "${tail_pids[$i]}" 2>/dev/null || true
   done
 
+  # All workers have finished. Count structured pytest outcomes across every shard.
+  if ! "$PY" "$script_dir/summarize_lanes.py" "$RUN_LOG_DIR" "$LANES"; then
+    exit_code=1
+  fi
+  if [[ "$exit_code" == 0 ]]; then echo "Overall: PASS"; else echo "Overall: FAIL"; fi
   # Merge all lanes into one report
   echo "==> Generating merged report ..."
   if command -v allure >/dev/null 2>&1; then
@@ -204,22 +248,6 @@ WS_PORT=$((40100 + LANE))
 export TEST_USER_PREFIX="g$LANE"
 WS_STATE_DIR="$native_auto_test/.local/lane$LANE"
 
-detect_sdk_dir() {
-  local sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
-  if [[ -n "$sdk" && -d "$sdk" ]]; then echo "$sdk"; return 0; fi
-  for sdk in "$HOME/Library/Android/sdk" "$HOME/Android/Sdk"; do
-    if [[ -d "$sdk" ]]; then echo "$sdk"; return 0; fi
-  done
-  return 1
-}
-
-SDK_DIR="$(detect_sdk_dir)" || fail "Android SDK not found (set ANDROID_HOME or ANDROID_SDK_ROOT)"
-ADB="$SDK_DIR/platform-tools/adb"
-EMULATOR="$SDK_DIR/emulator/emulator"
-
-[[ -x "$ADB" ]] || fail "adb not found: $ADB"
-[[ -x "$EMULATOR" ]] || fail "emulator not found: $EMULATOR"
-
 if [[ "$BUILD_LOCAL" == "1" ]]; then
   command -v flutter >/dev/null 2>&1 || fail "flutter not found; install Flutter SDK and add it to PATH (or drop --build to download release APKs)"
 else
@@ -243,24 +271,20 @@ else
   echo "==> 跳过 setup（多 lane 编排器已统一准备）"
 fi
 
+prepare_adb
+EMULATOR="$SDK_DIR/emulator/emulator"
+[[ -x "$EMULATOR" ]] || fail "emulator not found: $EMULATOR"
+
 echo "==> Environment ready: PY=$PY AVD_A=$AVD_A AVD_B=$AVD_B SDK=$SDK_DIR"
 
 # ---- Obtain APK: download from latest release (default) or build locally (--build) ----
 # 单 APK：device 标识由启动时 intent extra 传入（不区分 deviceA/deviceB 包）。
 # 多 lane 模式下，APK_PATH 由编排器预先下载，直接复用。
-if [[ -n "${APK_PATH:-}" && -s "$APK_PATH" ]]; then
-  echo "==> 使用共享 APK: $APK_PATH"
-  cp "$APK_PATH" /tmp/im-flutter-run-lane$LANE.apk
-elif [[ "$BUILD_LOCAL" == "1" ]]; then
-  echo "==> [1/6] 构建 release APK ..."
-  (cd "$flutter_test" && flutter build apk --release)
-  cp "$flutter_test/build/app/outputs/flutter-apk/app-release.apk" /tmp/im-flutter-run-lane$LANE.apk
-else
-  echo "==> [1/6] 下载 APK ($GH_REPO) ..."
-  BASE="https://github.com/$GH_REPO/releases/latest/download"
-  curl -fL --progress-bar --max-time 600 -o /tmp/im-flutter-run-lane$LANE.apk "$BASE/app-release.apk"
-  echo ""
-  echo "==> [1/6] APK 下载完成 ($(du -h /tmp/im-flutter-run-lane$LANE.apk | cut -f1))"
+echo "==> [1/6] 获取 APK ..."
+SELECTED_APK="$(obtain_apk)"
+[[ -f "$SELECTED_APK" && -s "$SELECTED_APK" ]] || fail "APK missing/empty"
+if [[ ! "$SELECTED_APK" -ef /tmp/im-flutter-run-lane$LANE.apk ]]; then
+  cp "$SELECTED_APK" /tmp/im-flutter-run-lane$LANE.apk
 fi
 [[ -s /tmp/im-flutter-run-lane$LANE.apk ]] || fail "APK missing/empty"
 
@@ -276,9 +300,17 @@ echo "==> Booting emulator B ($AVD_B) -> $SERIAL_B ..."
   > /tmp/im-flutter-run-emulator-B-lane$LANE.log 2>&1 &
 EMU_B_PID=$!
 
+BRIDGE_STARTED=0
+LOGCAT_PIDS=()
 cleanup() {
   echo "==> Cleaning up ..."
-  (cd "$native_auto_test" && SERIALS="$SERIAL_A $SERIAL_B" make ws-bridge-down PY="$PY" ADB="$ADB" WS_PORT="$WS_PORT" WS_STATE_DIR="$WS_STATE_DIR" >/dev/null 2>&1 || true)
+  for log_pid in "${LOGCAT_PIDS[@]}"; do
+    kill "$log_pid" 2>/dev/null || true
+    wait "$log_pid" 2>/dev/null || true
+  done
+  if [[ "$BRIDGE_STARTED" == "1" ]]; then
+    (cd "$native_auto_test" && SERIALS="$SERIAL_A $SERIAL_B" make ws-bridge-down PY="$PY" ADB="$ADB" WS_PORT="$WS_PORT" WS_STATE_DIR="$WS_STATE_DIR" >/dev/null 2>&1 || true)
+  fi
   if [[ "$KEEP_EMULATOR" == "0" ]]; then
     "$ADB" -s "$SERIAL_A" emu kill >/dev/null 2>&1 || true
     "$ADB" -s "$SERIAL_B" emu kill >/dev/null 2>&1 || true
@@ -322,13 +354,19 @@ echo "==> Emulator B boot completed"
 
 # ---- Install APK (same APK for all devices) ----
 echo "==> [3/6] 安装 APK ..."
-"$ADB" -s "$SERIAL_A" uninstall com.easemob.im_flutter_test >/dev/null 2>&1 || true
-"$ADB" -s "$SERIAL_B" uninstall com.easemob.im_flutter_test >/dev/null 2>&1 || true
-"$ADB" -s "$SERIAL_A" install /tmp/im-flutter-run-lane$LANE.apk
-"$ADB" -s "$SERIAL_B" install /tmp/im-flutter-run-lane$LANE.apk
+DEVICE_LOG_DIR=$(mktemp -d "${TMPDIR:-/tmp}/im-flutter-device-lane${LANE}.XXXXXX")
+chmod 700 "$DEVICE_LOG_DIR"
+echo "==> Private device logs: $DEVICE_LOG_DIR (may contain sensitive data)"
+for serial in "$SERIAL_A" "$SERIAL_B"; do
+  (umask 077; exec "$ADB" -s "$serial" logcat -v threadtime > "$DEVICE_LOG_DIR/$serial.log" 2>&1) &
+  LOGCAT_PIDS+=("$!")
+done
+"$PY" "$script_dir/clean_install.py" --adb "$ADB" --serial "$SERIAL_A" --avd "$AVD_A" --apk /tmp/im-flutter-run-lane$LANE.apk
+"$PY" "$script_dir/clean_install.py" --adb "$ADB" --serial "$SERIAL_B" --avd "$AVD_B" --apk /tmp/im-flutter-run-lane$LANE.apk
 
 # ---- Bridge (relay + reverse for all emulator-*) ----
 echo "==> [4/6] 启动本地 WebSocket 桥接 (port $WS_PORT) ..."
+BRIDGE_STARTED=1
 (cd "$native_auto_test" && SERIALS="$SERIAL_A $SERIAL_B" make ws-bridge-up PY="$PY" ADB="$ADB" WS_PORT="$WS_PORT" WS_STATE_DIR="$WS_STATE_DIR")
 
 # ---- First launch to create the app's external files dir ----
@@ -364,8 +402,14 @@ echo "==> [6/6] 运行 pytest ..."
 if [[ "$NO_REPORT" == "0" ]]; then
   rm -rf "$native_auto_test/out/allure-results"
 fi
+# Catch a server replaced by another tool during setup before entering pytest.
+"$PY" "$script_dir/adb_preflight.py" "$ADB" --check-only
 set +e
-(cd "$native_auto_test" && make test-local PY="$PY" ADB="$ADB" WS_STATE_DIR="$WS_STATE_DIR" ARGS="-v --color=yes --alluredir=out/allure-results ${PYTEST_ARGS[*]}")
+# Quote each argument for the recipe shell, then escape dollars for make's
+# expansion layer. Joining the raw array splits parametrized nodeids at spaces.
+PYTEST_MAKE_ARGS="$("$PY" -c 'import shlex, sys; print(" ".join(shlex.quote(arg) for arg in sys.argv[1:]).replace("$", "$$"))' \
+  --alluredir=out/allure-results ${PYTEST_ARGS[@]+"${PYTEST_ARGS[@]}"})"
+(cd "$native_auto_test" && make test-local PY="$PY" ADB="$ADB" WS_STATE_DIR="$WS_STATE_DIR" ARGS="$PYTEST_MAKE_ARGS")
 PYTEST_EXIT=$?
 set -e
 if [[ "$PYTEST_EXIT" != "0" ]]; then

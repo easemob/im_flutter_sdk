@@ -32,6 +32,9 @@ printf '%s\\n' "$*" >> "$FAKE_ADB_LOG"
 if [ "$1" = "devices" ]; then
   echo 'List of devices attached'
   printf 'emulator-5554\\tdevice\\n'
+elif [ "$3" = "get-state" ]; then
+  if [ "$FAKE_ADB_MODE" = "offline" ]; then exit 1; fi
+  echo device
 elif [ "$3" = "reverse" ] && [ "$4" = "--list" ]; then
   printf 'host-1 tcp:%s tcp:%s\\n' "$FAKE_EXPECTED_PORT" "$FAKE_EXPECTED_PORT"
 elif [ "$3" = "reverse" ] && [ "$4" = "--remove" ] && [ "$FAKE_ADB_MODE" = "fail-remove" ]; then
@@ -104,6 +107,23 @@ def _wait_for_path(path: Path, timeout: float = 3.0) -> None:
         if time.monotonic() >= deadline:
             pytest.fail(f"path {path} did not appear within {timeout}s")
         time.sleep(0.02)
+
+
+@pytest.mark.parametrize("mode", ["online", "offline"])
+def test_reverse_remove_never_waits_for_explicit_devices(lifecycle_env, mode):
+    env, _, adb_log = lifecycle_env
+    env.update(SERIALS="emulator-5554 emulator-5556", FAKE_ADB_MODE=mode)
+    result = subprocess.run(
+        ["bash", str(PROJECT_ROOT / "scripts/adb_reverse_ws_bridge.sh"), "remove"],
+        env=env, text=True, capture_output=True, timeout=5,
+    )
+    assert result.returncode == 0, result.stderr
+    calls = adb_log.read_text()
+    assert "wait-for-device" not in calls
+    if mode == "offline":
+        assert "reverse" not in calls
+    else:
+        assert calls.count("reverse --remove") == 2
 
 
 def test_up_and_down_manage_relay_reverse_and_local_state(

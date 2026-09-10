@@ -88,7 +88,11 @@ def _assert_pin_delivery_for_actor(
     ("type_key", "payload"),
     [
         ("location", {"latitude": 30.2741, "longitude": 120.1551, "address": "pin-location", "buildingName": "pin-building"}),
-        ("custom", {"event": "pin-custom", "params": {"case": "typed-pin"}}),
+        pytest.param(
+            "custom",
+            {"event": "pin-custom", "params": {"case": "typed-pin"}},
+            marks=pytest.mark.skip(reason="按用户要求暂缓：自定义消息置顶回调行为待确认"),
+        ),
     ],
 )
 @pytest.mark.parametrize("pin_actor", ["sender", "receiver"])

@@ -10,6 +10,7 @@ import os
 import json
 
 import pytest
+from .allure_evidence import assertion_evidence, pretty
 
 from .response_match import (
     DEFAULT_IGNORE_KEYS,
@@ -31,7 +32,7 @@ def _pretty(o: Any) -> str:
 
 def is_success(resp: dict[str, Any]) -> bool:
     """是否为成功响应（有 result 且无 success: false）。"""
-    print("响应内容:", resp)
+    print("响应内容:", pretty(resp))
     return "result" in resp
 
 
@@ -54,6 +55,7 @@ def get_error(resp: dict[str, Any]) -> dict[str, Any]:
     return {"code": err.get("code"), "description": str(err.get("description", "Unknown"))}
 
 
+@assertion_evidence
 def assert_success(resp: dict[str, Any]) -> None:
     """断言为成功响应。"""
     if _discover_mode():
@@ -64,6 +66,7 @@ def assert_success(resp: dict[str, Any]) -> None:
         pytest.fail(f"Expected success, got error: {err}")
 
 
+@assertion_evidence
 def assert_error(resp: dict[str, Any], code: int | None = None, description: str | None = None) -> None:
     """断言为错误响应，并可校验 code/description。"""
     if _discover_mode():
@@ -71,11 +74,12 @@ def assert_error(resp: dict[str, Any], code: int | None = None, description: str
         return
     err = get_error(resp)
     if code is not None and err.get("code") != code:
-        pytest.fail(f"Expected error code {code}, got {err.get(code)}")
+        pytest.fail(f"Expected error code {code}, got {err.get('code')}")
     if description is not None and description not in str(err.get("description", "")):
         pytest.fail(f"Expected error description containing {description}, got {err}")
 
 
+@assertion_evidence
 def assert_result_equals(resp: dict[str, Any], expected: Any) -> None:
     """断言 result 与 expected 相等。"""
     if _discover_mode():
@@ -85,6 +89,7 @@ def assert_result_equals(resp: dict[str, Any], expected: Any) -> None:
     assert actual == expected, f"result: expected {expected!r}, got {actual!r}"
 
 
+@assertion_evidence
 def assert_result_matches(resp: dict[str, Any], **expected_fields: Any) -> None:
     """
     断言 result 为 dict 且包含指定字段与值。

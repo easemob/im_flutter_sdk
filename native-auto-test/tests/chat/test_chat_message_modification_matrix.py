@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import time
 import uuid
 
@@ -160,6 +161,7 @@ def _wait_changed(device, *, msg_id, timeout=30.0):
 def test_chat_modify_text_body_and_attributes(device_a, device_b, assert_api, user_a, user_b, mode):
     old_content = f"modify-text-old-{uuid.uuid4().hex[:6]}"
     message = _send_text(device_a, device_b, assert_api, user_a, user_b, old_content)
+    time.sleep(float(os.getenv("CHAT_MODIFY_SETTLE_SECONDS", "5")))
     new_content = f"modify-text-new-{uuid.uuid4().hex[:6]}"
     attributes = {"editMode": mode, "revision": "1"}
     info = {"msgId": message["msgId"]}
@@ -281,6 +283,7 @@ def _send_media(device_a, device_b, assert_api, user_a, user_b, type_key):
 @pytest.mark.parametrize("type_key", ["voice", "image", "video"])
 def test_chat_modify_media_attributes(device_a, device_b, assert_api, user_a, user_b, type_key):
     message = _send_media(device_a, device_b, assert_api, user_a, user_b, type_key)
+    time.sleep(float(os.getenv("CHAT_MODIFY_SETTLE_SECONDS", "5")))
     attributes = {"mediaEdit": type_key, "revision": "1"}
     response = device_a.call(
         "ChatManager", Cmd.modifyMessage.value,

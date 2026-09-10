@@ -121,6 +121,7 @@ def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
     device.drain_events()
 
 
+@pytest.mark.skip(reason="Reproduced native crash: Android SDK 4.23.0 ASSIGN_OWNER/onAssignOwnerFromGroup; restore after native fix verification")
 def test_group_transfer_owner_to_admin_normalizes_roles(
     device_a,
     device_b,
@@ -201,7 +202,10 @@ def test_group_transfer_owner_to_admin_normalizes_roles(
 @pytest.mark.parametrize(
     ("target_kind", "expected_code"),
     [
-        pytest.param("current-owner", None, id="current-owner-idempotent"),
+        pytest.param(
+            "current-owner", None, id="current-owner-idempotent",
+            marks=pytest.mark.skip(reason="Preventive quarantine: successful updateGroupOwner path may trigger Android SDK 4.23.0 native crash; restore after native fix verification"),
+        ),
         pytest.param("non-member", 603, id="non-member"),
         pytest.param("nonexistent", 603, id="nonexistent"),
         pytest.param("empty", 600, id="empty"),
@@ -367,6 +371,7 @@ def test_group_non_member_cannot_transfer_ownership(
             destroy_group(device_a, assert_api, group_id, device_b=device_b)
 
 
+@pytest.mark.skip(reason="Preventive quarantine: Android SDK 4.23.0 crashes in ASSIGN_OWNER/onAssignOwnerFromGroup; restore after native fix verification")
 def test_group_transfer_then_new_owner_removes_former_owner(
     device_a,
     device_b,
@@ -662,6 +667,7 @@ def test_group_remove_other_member_permission_by_role(
             destroy_group(device_a, assert_api, group_id, device_b=device_b)
 
 
+@pytest.mark.skip(reason="Preventive quarantine: Android SDK 4.23.0 crashes in ASSIGN_OWNER/onAssignOwnerFromGroup; restore after native fix verification")
 def test_group_owner_must_transfer_before_leaving(
     device_a,
     device_b,

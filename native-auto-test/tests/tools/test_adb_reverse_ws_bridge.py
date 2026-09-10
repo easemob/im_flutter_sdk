@@ -26,6 +26,12 @@ if [ "$1" = "devices" ]; then
     printf 'physical-123\\tdevice\\n'
     printf 'emulator-5556\\toffline\\n'
   fi
+elif [ "$3" = "get-state" ]; then
+  if [ "${FAKE_ADB_MODE:-online}" = "online" ] && [ "$2" = "emulator-5554" ]; then
+    echo device
+  else
+    echo offline
+  fi
 elif [ "$3" = "reverse" ] && [ "$4" = "--list" ]; then
   printf 'host-1 tcp:%s tcp:%s\\n' "$FAKE_EXPECTED_PORT" "$FAKE_EXPECTED_PORT"
 fi

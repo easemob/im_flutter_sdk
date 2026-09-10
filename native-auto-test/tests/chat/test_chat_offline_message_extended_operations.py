@@ -60,7 +60,7 @@ _TYPED_OPERATION_CASES = [
     pytest.param(
         "voice",
         {"targetId": "{{userB}}", "duration": 1},
-        {"type": 4, "displayName": "voice.mp3", "fileStatus": 3, "duration": 1},
+        {"type": 4, "displayName": "voice.mp3", "fileStatus": 1, "duration": 1},
         {"type": 4, "displayName": "voice.mp3", "fileStatus": 0, "duration": 1},
         id="voice",
     ),

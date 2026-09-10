@@ -53,21 +53,10 @@ def _allure_step(name: str):
 
 def _attach_request_response_allure(step_name: str, request_body: dict, response_body: dict) -> None:
     """将请求与响应以 JSON 附件形式写入 Allure 报告。"""
-    try:
-        import allure
-        with allure.step(step_name):
-            allure.attach(
-                json.dumps(request_body, ensure_ascii=False, indent=2),
-                "请求",
-                allure.attachment_type.JSON,
-            )
-            allure.attach(
-                json.dumps(response_body, ensure_ascii=False, indent=2, default=str),
-                "响应",
-                allure.attachment_type.JSON,
-            )
-    except ImportError:
-        pass
+    from src.tools.allure_evidence import attach, step
+    with step(step_name):
+        attach('01 请求', request_body)
+        attach('02 实际响应', response_body)
 
 
 # ----- 登录前清空回调 -----
@@ -582,21 +571,15 @@ class _DeviceChannelWrapper:
         self.topic = conn.topic
 
     def call(self, manager: str, cmd: str, info: dict | None = None, **kwargs):
-        req = {"manager": manager, "cmd": cmd, "info": info or {}, "device": self._device, **kwargs}
-        resp = self._conn.call(manager, cmd, info, **kwargs)
-        _attach_request_response_allure(
-            f"API 请求 {manager}.{cmd} (device={self._device})",
-            req,
-            resp,
-        )
-        return resp
+        from src.tools.allure_evidence import observe_call
+        return observe_call(self._device, manager, cmd, info,
+                            lambda: self._conn.call(manager, cmd, info, **kwargs), kwargs)
 
     def receive_message(self, *, match_cmd=None, match_event_type=None, timeout=10.0):
-        return self._conn.receive_message(
-            match_cmd=match_cmd,
-            match_event_type=match_event_type,
-            timeout=timeout,
-        )
+        from src.tools.allure_evidence import observe_event
+        filters = dict(match_cmd=match_cmd, match_event_type=match_event_type, timeout=timeout)
+        return observe_event(self._device, filters,
+                             lambda: self._conn.receive_message(**filters))
 
     def drain_events(self, timeout: float = 2.0) -> None:
         self._conn.drain_events(timeout=timeout)

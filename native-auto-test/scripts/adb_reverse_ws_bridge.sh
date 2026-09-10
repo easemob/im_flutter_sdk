@@ -77,7 +77,16 @@ if ((${#emulators[@]} == 0)); then
 fi
 
 for serial in "${emulators[@]}"; do
-  "$adb_bin" -s "$serial" wait-for-device
+  # Teardown must never wait for a future emulator on this serial: a stale
+  # runner could otherwise resume cleanup and shut down the next run's device.
+  if [[ "$action" == "remove" ]]; then
+    if [[ "$("$adb_bin" -s "$serial" get-state 2>/dev/null || true)" != "device" ]]; then
+      echo "[跳过] $serial 不在线，无需删除 tcp:$port reverse 映射"
+      continue
+    fi
+  else
+    "$adb_bin" -s "$serial" wait-for-device
+  fi
   if [[ "$action" == "add" ]]; then
     echo "[配置] $serial reverse tcp:$port tcp:$port"
     "$adb_bin" -s "$serial" reverse "tcp:$port" "tcp:$port"

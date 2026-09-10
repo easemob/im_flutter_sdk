@@ -148,15 +148,14 @@ def _assert_joiner_ext_delivered_to_observer(
     deadline_events = []
     joiner_self_events = []
     matching_event = None
-    deadline = time.monotonic() + 12.0
-    while time.monotonic() < deadline:
+    for _ in range(12):
         observer_events = collect_chatroom_events(
             observer_device,
             expected_event_types={"onMemberJoinedFromChatRoom"},
             chatroom_id=room_id,
-            timeout=min(0.5, max(0.0, deadline - time.monotonic())),
+            timeout=0.5,
             require_event=False,
-            first_only=True,
+            first_only=False,
         )
         deadline_events.extend(
             {"device": observer_device_name, "event": evt}
@@ -175,7 +174,7 @@ def _assert_joiner_ext_delivered_to_observer(
             joiner_device,
             expected_event_types={"onMemberJoinedFromChatRoom"},
             chatroom_id=room_id,
-            timeout=min(0.5, max(0.0, deadline - time.monotonic())),
+            timeout=0.5,
             require_event=False,
         )
         joiner_self_events.extend(
