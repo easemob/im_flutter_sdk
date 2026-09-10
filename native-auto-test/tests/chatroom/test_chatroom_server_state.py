@@ -14,7 +14,38 @@ def test_chatroom_fetch_public_chat_rooms_from_server_success(device_a, assert_a
     room_name = ""
     try:
         room_id, room_name = create_chatroom_or_skip(owner=user_a, name_prefix="public", desc_prefix="public")
-        resp = device_a.call("ChatRoomManager", Cmd.fetchPublicChatRoomsFromServer.value, info={"pageNum": 1, "pageSize": 1})
+        # Public listings are shared across lanes/users. No contract guarantees
+        # that our newly created room occupies the first slot.
+        for page_num in range(1, 101):
+            resp = device_a.call(
+                "ChatRoomManager", Cmd.fetchPublicChatRoomsFromServer.value,
+                info={"pageNum": page_num, "pageSize": 1},
+            )
+            result = resp.get("result")
+            assert isinstance(result, dict), f"Invalid public-room result: {result!r}"
+            rooms = result.get("list")
+            assert isinstance(rooms, list), "Public-room result.list must be a list"
+            assert len(rooms) <= 1, "Public-room page exceeds requested pageSize=1"
+            assert_api.assert_response_matches(
+                resp,
+                expected={
+                    "manager": "ChatRoomManager",
+                    "cmd": Cmd.fetchPublicChatRoomsFromServer.value,
+                    "device": "deviceA",
+                    "result": {"count": len(rooms)},
+                },
+                # Validate variable room identities separately below.
+                ignore_keys={"sequence", "list"},
+            )
+            for room in rooms:
+                assert isinstance(room, dict), "Public-room entry must be an object"
+                assert isinstance(room.get("roomId"), str) and room["roomId"], "Missing roomId"
+            if any(room["roomId"] == room_id for room in rooms):
+                break
+            if not rooms:
+                pytest.fail(f"Created public room {room_id} not found before end of listing (page {page_num})")
+        else:
+            pytest.fail(f"Created public room {room_id} not found within 100 pages")
         assert_api.assert_response_matches(
             resp,
             expected={

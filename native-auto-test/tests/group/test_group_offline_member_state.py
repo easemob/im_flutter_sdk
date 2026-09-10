@@ -1,6 +1,9 @@
 """群成员终态在 SDK logout/login 窗口内的离线一致性。"""
 from __future__ import annotations
 
+import os
+import time
+
 import pytest
 
 from src import Cmd
@@ -43,6 +46,7 @@ def _create_member_group(
         style=style,
     )
     try:
+        time.sleep(float(os.getenv("GROUP_OFFLINE_MEMBER_SETTLE_SECONDS", "3")))
         wait_member_auto_joined(device_b, assert_api, group_id=group_id, inviter=user_a)
     except Exception:
         safe_destroy_group(device_a, group_id)

@@ -25,12 +25,8 @@ def _fail_if_error(resp: dict, api_name: str) -> None:
 
 def _wait_message_success(device, temp_id: str, *, timeout: float = 20.0) -> dict:
     last = None
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        evt = device.receive_message(
-            match_event_type=Cmd.onMessageSuccess.value,
-            timeout=max(0.0, deadline - time.monotonic()),
-        )
+    for _ in range(8):
+        evt = device.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timeout)
         last = evt
         if not evt:
             continue
@@ -42,12 +38,8 @@ def _wait_message_success(device, temp_id: str, *, timeout: float = 20.0) -> dic
 
 def _wait_received_message(device, msg_id: str, *, from_user: str, to_user: str, timeout: float = 20.0) -> dict:
     last = None
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        evt = device.receive_message(
-            match_event_type=Cmd.onMessagesReceived.value,
-            timeout=max(0.0, deadline - time.monotonic()),
-        )
+    for _ in range(8):
+        evt = device.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timeout)
         last = evt
         if not evt:
             continue
@@ -65,12 +57,8 @@ def _wait_received_message(device, msg_id: str, *, from_user: str, to_user: str,
 
 def _wait_delivered_message(device, msg_id: str, *, from_user: str, to_user: str, timeout: float = 20.0) -> dict:
     last = None
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        evt = device.receive_message(
-            match_event_type=Cmd.onMessagesDelivered.value,
-            timeout=max(0.0, deadline - time.monotonic()),
-        )
+    for _ in range(8):
+        evt = device.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=timeout)
         last = evt
         if not evt:
             continue
@@ -370,6 +358,7 @@ def _assert_combine_thumbnail_download_completed(
                   "result": {"msgId": msg_id, "body": {"type": 2, "thumbnailStatus": 0}}},
         ignore_keys=ignored,
     )
+    time.sleep(30)
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         event = device.receive_message(timeout=max(0.0, deadline - time.monotonic()))

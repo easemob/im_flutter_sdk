@@ -24,7 +24,6 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
-addopts = "-v --tb=short"
 markers = [
     "client: Client manager API tests",
     "chat: ChatManager API tests",

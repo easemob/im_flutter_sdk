@@ -14,8 +14,9 @@ Usage: run.sh [--build | --refresh-apk] [--repo OWNER/REPO] [--lane N] [--lanes 
                     --build and --refresh-apk. Remote mode checks latest on every run.
   --repo OWNER/REPO GitHub repo to download release artifacts from (default: easemob/im_flutter_sdk)
   --lane N          Run a single lane (index N); used internally by --lanes, or for manual parallel runs
-  --lanes N         Run N lanes in parallel (N*2 emulators), shard test files across lanes,
-                    merge results into one report (default 1 = single lane, 2 emulators)
+  --lanes N         Run N lanes in parallel (N*2 emulators), shard selected cases across lanes,
+                    merge results into one report (default 1 = single lane, 2 emulators).
+                    Stream unmodified pytest output and save unique per-lane logs.
   --keep-emulator   Keep emulators running after the run (shut down by default)
   --no-open         Do not auto-open the report in a browser (use in CI)
   Remaining args are passed through to pytest (simple args, e.g. -q tests/chatroom)
@@ -124,25 +125,19 @@ ensure_python_env
 if [[ "$LANES" -gt 1 ]]; then
   echo "==> Multi-lane mode: $LANES lanes ($((LANES * 2)) emulators), account g0..g$((LANES - 1)), relay 40100..$((40100 + LANES - 1))"
 
-  # Shard test cases across lanes (round-robin by case, not by file)
-  OPTIONS=()
-  PATHS=()
-  if [[ ${#PYTEST_ARGS[@]} -gt 0 ]]; then
-    for arg in "${PYTEST_ARGS[@]}"; do
-      if [[ "$arg" == -* ]]; then OPTIONS+=("$arg"); else PATHS+=("$arg"); fi
-    done
+  RUN_LOG_DIR="$(mktemp -d /tmp/im-flutter-run-session.XXXXXX)"
+  echo "Logs: $RUN_LOG_DIR"
+  # Let pytest interpret paths and selection options, including its default testpaths.
+  if ! (cd "$native_auto_test" && "$PY" "$native_auto_test/scripts/collect_cases.py" ${PYTEST_ARGS[@]+"${PYTEST_ARGS[@]}"}) > "$RUN_LOG_DIR/nodeids.txt" 2> "$RUN_LOG_DIR/collection.log"; then
+    fail "pytest collection failed; see $RUN_LOG_DIR/collection.log (no lanes started)"
   fi
   ALL_CASES=()
-  if [[ ${#PATHS[@]} -gt 0 ]]; then
-    while IFS= read -r nodeid; do
-      [[ -n "$nodeid" ]] && ALL_CASES+=("$nodeid")
-    done < <("$PY" "$native_auto_test/scripts/collect_cases.py" "${PATHS[@]}" 2>/dev/null)
-  fi
-  if [[ ${#ALL_CASES[@]} -gt 0 ]]; then
-    echo "==> Collected ${#ALL_CASES[@]} test cases, sharding across $LANES lanes"
-  else
-    echo "==> Cannot collect cases (nodeid/-k?), fall back to full set per lane"
-  fi
+  while IFS= read -r nodeid; do
+    [[ -n "$nodeid" ]] && ALL_CASES+=("$nodeid")
+  done < "$RUN_LOG_DIR/nodeids.txt"
+  [[ ${#ALL_CASES[@]} -gt 0 ]] || fail "pytest collected no cases (no lanes started)"
+  echo "==> Collected ${#ALL_CASES[@]} test cases, sharding across $LANES lanes"
+  # Keep pytest arguments intact; select each shard by exact nodeid via a plugin.
 
   # Clear shared results, merge into one report at the end
   rm -rf "$native_auto_test/out/allure-results"
@@ -160,41 +155,38 @@ if [[ "$LANES" -gt 1 ]]; then
 
   # Fork each lane in parallel
   pids=()
-  tail_pids=()
   for i in $(seq 0 $((LANES - 1))); do
-    lane_args=()
-    if [[ ${#OPTIONS[@]} -gt 0 ]]; then
-      lane_args+=("${OPTIONS[@]}")
+    lane_args=(${PYTEST_ARGS[@]+"${PYTEST_ARGS[@]}"})
+    lane_count=0
+    : > "$RUN_LOG_DIR/lane$i.nodeids"
+    for ((j = i; j < ${#ALL_CASES[@]}; j += LANES)); do
+      printf '%s\n' "${ALL_CASES[$j]}" >> "$RUN_LOG_DIR/lane$i.nodeids"
+      lane_count=$((lane_count + 1))
+    done
+    lane_args+=(-p scripts.pytest_lane)
+    if (( lane_count == 0 )); then
+      echo "[lane $i] 0 cases — skipped"
+      pids+=(0)
+      continue
     fi
-    if [[ ${#ALL_CASES[@]} -gt 0 ]]; then
-      for ((j = i; j < ${#ALL_CASES[@]}; j += LANES)); do
-        lane_args+=("${ALL_CASES[$j]}")
-      done
-    else
-      lane_args+=("${PYTEST_ARGS[@]}")
-    fi
-    # 先创建空日志文件，确保 tail -f 能立即工作且不重放历史
-    : > "/tmp/im-flutter-run-lane$i.log"
-    echo "==> Starting lane $i ..."
-    APK_PATH="$SHARED_APK" bash "$script_dir/run.sh" --lane "$i" --no-open --no-report --skip-setup "${lane_args[@]}" \
-      >> "/tmp/im-flutter-run-lane$i.log" 2>&1 &
+    echo "[lane $i] $lane_count cases — running (log: $RUN_LOG_DIR/lane$i.log)"
+    IM_FLUTTER_LANE_NODEIDS="$RUN_LOG_DIR/lane$i.nodeids" APK_PATH="$SHARED_APK" bash "$script_dir/run.sh" --lane "$i" --no-open --no-report --skip-setup "${lane_args[@]}" \
+      2>&1 | tee "$RUN_LOG_DIR/lane$i.log" &
     pids+=($!)
-    # tail -f -n 0：从文件末尾跟踪，只显示新增内容
-    tail -f -n 0 "/tmp/im-flutter-run-lane$i.log" &
-    tail_pids+=($!)
   done
 
   exit_code=0
   for i in $(seq 0 $((LANES - 1))); do
+    [[ "${pids[$i]}" != 0 ]] || continue
     if wait "${pids[$i]}"; then
-      echo "==> lane $i done"
+      echo "[lane $i] PASS"
     else
-      echo "==> lane $i failed (log: /tmp/im-flutter-run-lane$i.log)"
+      echo "[lane $i] FAIL (log: $RUN_LOG_DIR/lane$i.log)"
       exit_code=1
     fi
-    kill "${tail_pids[$i]}" 2>/dev/null || true
   done
 
+  if [[ "$exit_code" == 0 ]]; then echo "Overall: PASS"; else echo "Overall: FAIL"; fi
   # Merge all lanes into one report
   echo "==> Generating merged report ..."
   if command -v allure >/dev/null 2>&1; then
@@ -289,9 +281,12 @@ echo "==> Booting emulator B ($AVD_B) -> $SERIAL_B ..."
   > /tmp/im-flutter-run-emulator-B-lane$LANE.log 2>&1 &
 EMU_B_PID=$!
 
+BRIDGE_STARTED=0
 cleanup() {
   echo "==> Cleaning up ..."
-  (cd "$native_auto_test" && SERIALS="$SERIAL_A $SERIAL_B" make ws-bridge-down PY="$PY" ADB="$ADB" WS_PORT="$WS_PORT" WS_STATE_DIR="$WS_STATE_DIR" >/dev/null 2>&1 || true)
+  if [[ "$BRIDGE_STARTED" == "1" ]]; then
+    (cd "$native_auto_test" && SERIALS="$SERIAL_A $SERIAL_B" make ws-bridge-down PY="$PY" ADB="$ADB" WS_PORT="$WS_PORT" WS_STATE_DIR="$WS_STATE_DIR" >/dev/null 2>&1 || true)
+  fi
   if [[ "$KEEP_EMULATOR" == "0" ]]; then
     "$ADB" -s "$SERIAL_A" emu kill >/dev/null 2>&1 || true
     "$ADB" -s "$SERIAL_B" emu kill >/dev/null 2>&1 || true
@@ -342,6 +337,7 @@ echo "==> [3/6] 安装 APK ..."
 
 # ---- Bridge (relay + reverse for all emulator-*) ----
 echo "==> [4/6] 启动本地 WebSocket 桥接 (port $WS_PORT) ..."
+BRIDGE_STARTED=1
 (cd "$native_auto_test" && SERIALS="$SERIAL_A $SERIAL_B" make ws-bridge-up PY="$PY" ADB="$ADB" WS_PORT="$WS_PORT" WS_STATE_DIR="$WS_STATE_DIR")
 
 # ---- First launch to create the app's external files dir ----
@@ -378,7 +374,11 @@ if [[ "$NO_REPORT" == "0" ]]; then
   rm -rf "$native_auto_test/out/allure-results"
 fi
 set +e
-(cd "$native_auto_test" && make test-local PY="$PY" ADB="$ADB" WS_STATE_DIR="$WS_STATE_DIR" ARGS="-v --color=yes --alluredir=out/allure-results ${PYTEST_ARGS[*]}")
+# Quote each argument for the recipe shell, then escape dollars for make's
+# expansion layer. Joining the raw array splits parametrized nodeids at spaces.
+PYTEST_MAKE_ARGS="$("$PY" -c 'import shlex, sys; print(" ".join(shlex.quote(arg) for arg in sys.argv[1:]).replace("$", "$$"))' \
+  --alluredir=out/allure-results ${PYTEST_ARGS[@]+"${PYTEST_ARGS[@]}"})"
+(cd "$native_auto_test" && make test-local PY="$PY" ADB="$ADB" WS_STATE_DIR="$WS_STATE_DIR" ARGS="$PYTEST_MAKE_ARGS")
 PYTEST_EXIT=$?
 set -e
 if [[ "$PYTEST_EXIT" != "0" ]]; then

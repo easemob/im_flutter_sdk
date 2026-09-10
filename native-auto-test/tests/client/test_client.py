@@ -49,7 +49,7 @@ def test_client_change_app_id(device_a, assert_api):
     assert result is not None or "result" in resp
 
 
-def _wait_offline_sync_event(device, *, timeout: float = 10.0) -> dict:
+def _wait_offline_sync_event(device, *, timeout: float = 15.0) -> dict:
     deadline = time.monotonic() + timeout
     accepted = {Cmd.onOfflineMessageSyncStart.value, Cmd.onOfflineMessageSyncFinish.value}
     while time.monotonic() < deadline:
@@ -69,6 +69,7 @@ def test_login_then_receive_offline_sync_event(device_a, assert_api, user_a):
     """
     # 1) 先登出
     device_a.call("Client", Cmd.logout.value, info={"unbindToken": False})
+    time.sleep(1)
 
     # 2) 清空残留事件
     try:

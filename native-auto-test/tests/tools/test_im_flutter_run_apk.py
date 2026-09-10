@@ -25,6 +25,7 @@ def runner(tmp_path):
     for name in ('run.sh', 'release_apk_cache.py'):
         if (SCRIPTS / name).exists():
             shutil.copy(SCRIPTS / name, scripts / name)
+    executable(native / 'scripts/collect_cases.py', "print('tests/test_example.py::test_a\\ntests/test_example.py::test_b')\n")
     executable(scripts / 'setup_emulator.sh', '#!/bin/sh\necho setup >> "$CALLS"\n')
     executable(native / '.venv/bin/python', f'#!/bin/sh\nexec "{sys.executable}" "$@"\n')
     native.joinpath('config.yaml').write_text('websocket:\n  base_url: "ws://127.0.0.1:40100"\n')
@@ -95,6 +96,54 @@ def test_default_hit_and_refresh(runner):
     assert len([c for c in calls if ' push ' in c]) == 2
 
 
+@pytest.mark.parametrize('lanes', [1, 2])
+def test_runner_preserves_pytest_output_options_without_injecting_defaults(runner, lanes):
+    run, _ = runner
+    result, calls = run('--lanes', str(lanes))
+    assert result.returncode == 0, result.stderr
+    recipes = [call for call in calls if call.startswith('make test-local ')]
+    assert len(recipes) == lanes
+    for recipe in recipes:
+        args = recipe.split('ARGS=', 1)[1].split()
+        assert args.count('-q') == 1
+        assert '-v' not in args
+        assert not any(arg.startswith('--color=') for arg in args)
+
+
+def test_pytest_configs_do_not_override_native_output_defaults():
+    import configparser
+    import tomllib
+    root = SCRIPTS.parents[2]
+    ini = configparser.ConfigParser()
+    ini.read(root / 'pytest.ini')
+    assert not ini['pytest'].get('addopts', '').strip()
+    config = tomllib.loads((root / 'pyproject.toml').read_text())
+    assert not config['tool']['pytest']['ini_options'].get('addopts', '').strip()
+
+
+def test_multilane_has_stable_output_and_unique_logs(runner):
+    run, tmp = runner
+    first, _ = run('--lanes', '2')
+    second, _ = run('--lanes', '2')
+    for result in (first, second):
+        assert result.returncode == 0, result.stderr
+        assert '[lane 0] 1 cases — running' in result.stdout
+        assert '[lane 1] 1 cases — running' in result.stdout
+        assert 'Overall: PASS' in result.stdout
+        assert 'Logs:' in result.stdout
+    assert first.stdout.split('Logs: ')[1].splitlines()[0] != second.stdout.split('Logs: ')[1].splitlines()[0]
+
+
+@pytest.mark.parametrize('body', ['raise SystemExit(2)', "print('')"])
+def test_collection_failure_never_starts_lanes(runner, body):
+    run, tmp = runner
+    executable(tmp / 'project/native-auto-test/scripts/collect_cases.py', body + '\n')
+    result, calls = run('--lanes', '2')
+    assert result.returncode != 0
+    assert not calls
+    assert 'fall back' not in result.stdout
+
+
 def test_multi_lane_downloads_once(runner):
     run, _ = runner
     result, calls = run('--lanes', '2', '--refresh-apk')
@@ -145,6 +194,69 @@ def test_query_failure_with_cache_stops_before_install(runner):
     result, calls = run(FAIL_QUERY='1')
     assert result.returncode != 0
     assert not any(' install ' in c for c in calls)
+
+
+@pytest.mark.parametrize('lanes', [1, 2])
+def test_pytest_nodeids_survive_make_and_shell(runner, lanes):
+    run, tmp = runner
+    native = tmp / 'project/native-auto-test'
+    nodeids = [
+        'tests/chatroom/test_room.py::test_empty[usernames is null or empty!]',
+        "tests/chatroom/test_room.py::test_empty[Server is unreachable-$HOME-$(touch INJECTED)-it's]",
+    ]
+    executable(native / 'scripts/collect_cases.py',
+               'print(' + repr('\n'.join(nodeids)) + ')\n')
+    # Exercise the real production recipe, with only device health checking stubbed.
+    shutil.copy(SCRIPTS.parents[2] / 'Makefile', native / 'Makefile')
+    executable(native / 'scripts/ws_bridge_local.sh', '#!/bin/sh\nexit 0\n')
+    for lane in range(lanes):
+        state = native / f'.local/lane{lane}'
+        state.mkdir(parents=True, exist_ok=True)
+        (state / 'ws-bridge.env').write_text('')
+    (native / '.local/ws-bridge.env').write_text('')
+    recorder = tmp / 'record-python'
+    executable(recorder, f'#!{sys.executable}\nimport json,sys\nfrom pathlib import Path\nPath("argv-" + __import__("os").environ.get("TEST_LANE", "single") + ".json").write_text(json.dumps(sys.argv[1:]))\n')
+    real_make = shutil.which('make')
+    executable(tmp / 'bin/make', f'''#!/bin/bash
+if [[ "$1" != test-local ]]; then exit 0; fi
+args=()
+for arg in "$@"; do
+  case "$arg" in
+    PY=*) args+=("PY={recorder}") ;;
+    WS_STATE_DIR=*) export TEST_LANE="${{arg##*/}}"; args+=("$arg") ;;
+    *) args+=("$arg") ;;
+  esac
+done
+exec "{real_make}" "${{args[@]}}"
+''')
+    result, _ = run('--lanes', str(lanes), *(nodeids if lanes == 1 else ['tests/chatroom']))
+    assert result.returncode == 0, result.stdout + result.stderr
+    actual = []
+    for path in native.glob('argv-*.json'):
+        args = json.loads(path.read_text())
+        if lanes == 1:
+            actual.extend(arg for arg in args if arg.startswith('tests/'))
+        else:
+            assert 'tests/chatroom' in args
+    if lanes > 1:
+        for path in (tmp / 'tmp').glob('im-flutter-run-session.*/lane*.nodeids'):
+            actual.extend(path.read_text().splitlines())
+    assert sorted(actual) == sorted(nodeids)
+    assert not (native / 'INJECTED').exists()
+
+
+def test_boot_failure_does_not_clean_unstarted_bridge(runner):
+    run, tmp = runner
+    executable(tmp / 'sdk/platform-tools/adb', '''#!/bin/sh
+printf 'adb %s\\n' "$*" >> "$CALLS"
+case "$*" in *getprop*) echo 0 ;; esac
+''')
+    executable(tmp / 'bin/pgrep', '#!/bin/sh\nexit 1\n')
+    result, calls = run()
+    assert result.returncode != 0
+    assert '模拟器进程已退出' in result.stderr
+    assert not any('ws-bridge-down' in call for call in calls)
+    assert not any(' install ' in call for call in calls)
 
 
 def test_same_source_and_lane_destination(runner):
