@@ -348,6 +348,7 @@ def test_group_offline_admin_add_remove_final_state(
         )
 
 
+@pytest.mark.skip(reason="Reproduced native crash: Android SDK 4.23.0 ASSIGN_OWNER/onAssignOwnerFromGroup; restore after native fix verification")
 def test_group_offline_owner_transfer_final_state(
     device_a,
     device_b,

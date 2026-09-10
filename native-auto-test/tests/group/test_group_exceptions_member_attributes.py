@@ -31,6 +31,7 @@ def test_group_set_member_attributes_nonexistent_group(device_a, assert_api):
     )
 
 
+@pytest.mark.skip(reason="按用户要求暂缓：不存在群的单成员属性查询用例")
 def test_group_fetch_member_attributes_nonexistent_group(device_a, assert_api):
     resp = device_a.call(
         "GroupManager",

@@ -32,6 +32,13 @@
   - 前置条件：SDK/服务端确认并稳定派发 `onUserKickOutOfChatThread`。
   - 恢复条件：按真实事件体补回 `event.type/from/thread` strict 断言并重新回归。
 
+## 不存在群的单成员属性查询暂缓
+
+- `tests/group/test_group_exceptions_member_attributes.py::test_group_fetch_member_attributes_nonexistent_group`
+  - 原因：按用户要求暂停执行该失败用例，保留原有业务断言。
+  - 处理：添加 `pytest.mark.skip`，全量、分 lane 和指定 nodeid 执行均跳过；不影响批量成员属性查询用例。
+  - 恢复条件：用户确认恢复执行后移除 skip，并重跑原严格断言。
+
 ## Jira 提交门禁
 
 - `CASES_FAILURES.zh.md` 中 7 个失败参数场景均已由 A/B ADB 复现。

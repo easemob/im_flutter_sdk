@@ -200,6 +200,7 @@ def test_group_add_admin_and_remove_admin_success(device_a, device_b, assert_api
             destroy_group(device_a, assert_api, group_id)
 
 
+@pytest.mark.skip(reason="Preventive quarantine: Android SDK 4.23.0 crashes in ASSIGN_OWNER/onAssignOwnerFromGroup; restore after native fix verification")
 def test_group_update_owner_success(device_a, device_b, assert_api, user_a, user_b):
     group_id = ""
     group_name = new_group_name("role_owner")

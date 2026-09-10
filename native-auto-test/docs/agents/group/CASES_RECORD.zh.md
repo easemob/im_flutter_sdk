@@ -374,6 +374,7 @@
 异常 cases
 88. `tests/group/test_group_exceptions_member_attributes.py::test_group_fetch_member_attributes_nonexistent_group`
     不存在群拉取单成员属性，冻结当前端“返回已有属性字典”的稳定语义。
+    当前按用户要求标记为 skip，保留原严格断言；恢复条件见 `CASES_DEFERRED.zh.md`。
 
 ## fetchMembersAttributesFromGroup
 
