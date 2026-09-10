@@ -76,6 +76,28 @@ OpenScreen `dns_data_graph.cc` assertion path. Emulator/USB connections still
 work. It does not provide recovery from external server kills/replacements,
 unrelated ADB crashes, or network failures during a run.
 
+## Verified clean installation (destructive to test-App local data)
+
+Every run removes this test App's local databases, attachments and configuration
+on the two explicitly selected lane emulators. Install the complete skill folder,
+including `scripts/clean_install.py`, on every contributor's machine.
+
+Before deleting data, the helper verifies the serial's AVD name against the
+expected `im_flutter_test_a/b[_laneN]`. It checks package presence, requires
+successful uninstall and absence, resolves device EXTERNAL_STORAGE, then removes
+only `Android/data/com.easemob.im_flutter_test` and verifies absence before
+installing. Unknown storage, uninstall/cleanup/install failure or timeout stops
+the lane before pytest. No UID is hard-coded; no root, chown, chmod 777, global
+ADB restart or automatic AVD wipe is used. Other devices and server data are not
+cleared. If cleanup is denied, stop and investigate the test AVD rather than
+bypassing the check. This is not an App-identity writable probe.
+
+Each lane prints a unique `Private device logs:` directory. Logcat starts before
+installation and stops before emulator shutdown, including failed runs. Directories
+are 0700 and log files 0600. Raw logs may contain credentials or attachment secrets:
+do not upload/share them without redaction. Logs are retained for manual cleanup.
+No SDK or test-App rebuild is needed for this runner change.
+
 ## Release APK cache
 
 Default runs query GitHub's latest Release metadata every time. The cache compares
@@ -92,7 +114,7 @@ APK download, not the online metadata query.
 - The cache retains old generations; it does not automatically delete them.
 - Every device still uninstalls/reinstalls the App and receives the current runtime
   config. Caching the host APK does not preserve device login state or SDK databases.
-  Existing uninstall error handling is unchanged; server-side data is not cleared.
+  Clean installation is verified as described below; server-side data is not cleared.
 
 ```bash
 # Force a fresh download even when the cached attachment is unchanged
@@ -142,6 +164,22 @@ commands that assign a token.
 - adb ports `5554+N*4`
 
 Test files under the given paths are sharded round-robin across lanes; all lanes write to a shared `allure-results` and a single merged report is generated. Memory: ~3.7GB per emulator, so 24GB machines should prefer `--lanes 1` (2 emulators) or `--lanes 2` (4 emulators, near the limit).
+
+After all lanes finish, the terminal prints a **Combined pytest summary** with
+the total selected tests, passed/failed/error/skipped/xfailed/xpassed/unreported
+counts, and every failed/error nodeid across all lanes. For example, 8 failures
+in one lane plus 7 in another produce `Total: 15` and `15 failed`; the last lane's
+individual pytest summary is not the overall result. Each selected nodeid is
+counted once; per-lane `deselected` counts are excluded.
+
+The `Logs:` directory contains `laneN.nodeids`, `laneN.log`, `laneN.result.json`
+and `laneN.exit`. Structured results come from `scripts/pytest_lane.py` and are
+combined by this skill's `scripts/summarize_lanes.py`; update both with `run.sh`.
+The results contain only nodeids/outcomes/exit status, not failure payloads.
+If a lane aborts before reporting, or its result is missing/invalid, the summary
+shows `INCOMPLETE`/`unreported` and the run fails rather than inventing outcomes.
+Empty shards are excluded from missing-result checks. Raw pytest output and the
+existing merged Allure report remain available.
 
 ## Config effectiveness rules (important)
 

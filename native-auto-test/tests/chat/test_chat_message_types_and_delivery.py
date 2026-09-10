@@ -6,6 +6,7 @@ import uuid
 import pytest
 
 from src import Cmd
+from src.tools.send_status_wait import wait_send_success
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
@@ -73,9 +74,10 @@ def _send_type_and_receive(
     result = resp.get("result") or {}
     temp_id = result.get("msgId")
     assert temp_id, f"sendMessageWithType({type_key}) 未返回临时 msgId: {resp}"
-    success_evt = _wait_event(
+    success_evt = wait_send_success(
         device_a,
-        Cmd.onMessageSuccess.value,
+        temp_id=temp_id,
+        timeout=30.0,
         predicate=lambda e: str((e.get("data") or {}).get("msgId")) == str(temp_id)
         and str(((e.get("data") or {}).get("msg") or {}).get("msgId")) != "",
     )

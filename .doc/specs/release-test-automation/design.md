@@ -1,5 +1,19 @@
 # release APK 测试自动化设计
 
+## Clean installation design
+
+### Overview / Architecture
+run.sh calls clean_install.py with explicit adb, serial and expected AVD. The package is fixed to the test App. Failures stop the lane before pytest.
+
+### Workflow
+Verify identity → query package → uninstall if present → verify absent → resolve external storage → remove only package directory → verify absent → install. All adb calls have deadlines.
+
+### Constraints / tradeoffs
+No root, UID assumptions, chmod/chown or AVD wipe. Shell checks do not prove App-identity writability. Each lane retains logcat in a unique 0700 directory with 0600 files; collection stops before emulator cleanup. Raw logs are sensitive and are not uploaded or printed.
+
+### Testing strategy
+Offline fake adb covers identity mismatch, absent package, uninstall failure, residual directory failure, unsafe path and install failure. Run bash syntax and existing tooling regressions; no device E2E.
+
 ## ADB mDNS 崩溃防护增量设计
 
 ### Overview

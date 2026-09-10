@@ -1,5 +1,10 @@
 # release APK 测试自动化实施计划
 
+## Clean installation tasks
+- [x] Implement clean_install.py with identity, uninstall, safe residual cleanup and timeout checks.
+- [x] Integrate clean installation and private logcat retention into run.sh; update SKILL.md.
+- [x] Offline regression: test_clean_install.py + test_im_flutter_run_apk.py + test_lane_summary.py: 67 passed (one existing websockets deprecation warning). Updated fake runner to include the new helper and model package state. bash -n and git diff --check passed. No device E2E; App-identity writability and real-device recurrence remain unverified.
+
 ## ADB mDNS 防护增量任务（当前）
 
 目标：所有安装本 skill 的机器均由运行器强制禁用并验证 mDNS。方案、范围与验收以 requirements/design 中同名增量章节为准；本节为唯一状态来源。

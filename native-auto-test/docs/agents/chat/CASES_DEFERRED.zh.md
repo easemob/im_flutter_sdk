@@ -94,3 +94,11 @@
   - 原因：当前 Android direct cmd `conversationDeleteServerMessageWithTime` 返回 `MissingPluginException`，属于桥接缺口，不作为 SDK 业务预期。
   - 前置条件：桥接/native method 补齐。
   - 恢复条件：按补齐后的真实返回重新 discovery，并改为 strict 断言。
+
+### 自定义消息交叉置顶与取消置顶
+
+- `tests/chat/test_chat_typed_message_pin_flows.py::test_chat_typed_message_pin_and_cross_user_unpin[sender-custom-payload1]`
+- `tests/chat/test_chat_typed_message_pin_flows.py::test_chat_typed_message_pin_and_cross_user_unpin[receiver-custom-payload1]`
+  - 原因：用户提供的失败日志中，操作者端收到 `onMessagePinChanged`，与用例的无回调断言不一致；按用户要求暂缓这两条用例，不改写业务预期。
+  - 处理：在 custom 参数行标记 `pytest.mark.skip`，全量、分 lane 和按 nodeid 执行均显示 SKIPPED；location 参数行不受影响。
+  - 恢复条件：用户确认恢复执行，并依据明确的置顶回调语义和真实事件重新验证后移除 skip。

@@ -6,6 +6,13 @@
 - 每条 case 以全局序号编号；统计按“当前记录条目数”计算。
 - 暂缓与 skip 项统一写 `CASES_DEFERRED.zh.md`。
 
+## 发送终态诊断补充
+
+- `test_chat_message_types_and_delivery.py` 与 `test_chat_offline_message_delivery.py` 的发送等待接入 `src/tools/send_status_wait.py`，按原始 local msgId 同时观察 success/error，匹配错误时立即失败并输出 code/status；不输出消息体、附件密钥或任意错误原文。
+- 保留成功事件断言及原等待预算，不重发、不将查询送达作为成功回调替代。`seen=[]` 不再用于推断“所有事件均未产生”。
+- 离线验证：`tests/tools/test_send_status_wait.py` 与 `tests/tools/test_chat_wait_budgets.py` 共 17 项通过；覆盖错误优先于缓冲的迟到成功、零预算不接收等边界；未重跑设备用例。
+- 原生/服务端调查见 `docs/agents/chat/SEND_ACK_TIMEOUT_INVESTIGATION.zh.md`；尚未确认 ACK 延迟根因或原生修复。
+
 ## getConversation
 
 正常 cases
@@ -484,6 +491,7 @@
    覆盖空文本、特殊字符、250 字符、请求 `from` 与登录用户不一致，以及位置消息送达回执。发送响应、发送成功、接收和送达事件均保留参与者、会话、方向、状态、已读/送达字段及完整 body；不匹配 `from` 实测异步返回 `500 Message is invalid`。
 146. `tests/chat/test_chat_typed_message_pin_flows.py::*` 与 `tests/chat/test_chat_message_pin_boundaries.py::*`
    覆盖位置/自定义消息由收发双方交叉置顶和取消置顶，以及类型消息撤回后置顶边界；按真实模拟器返回，原始发送方执行 pin/unpin 时仅接收方收到 `onMessagePinChanged`，接收方执行 pin/unpin 当前不产生该回调；通过 `fetchPinnedMessages` 校验最终服务端状态，并保留消息类型、方向、状态、已读/送达等字段。
+   当前执行状态：按用户要求，`test_chat_typed_message_pin_and_cross_user_unpin[sender-custom-payload1]` 与 `[receiver-custom-payload1]` 标记为 skip；位置消息两条仍正常执行。自定义消息的历史回调结论待重新确认，暂缓原因与恢复条件见 `CASES_DEFERRED.zh.md`。
 147. `tests/chat/test_chat_report_and_thumbnail_additional.py::test_chat_receiver_reports_text_message` 与 `test_chat_report_text_message_parameter_boundaries[*]`
    覆盖接收方举报文本消息，并使用有效消息 ID 验证空 `tag`、空 `reason`、异常非空 `tag`：实测分别返回 `205 Invalid parameter`、`true`、`true`，避免被无效消息 ID 的前置错误掩盖。
 148. `tests/chat/test_chat_report_and_thumbnail_additional.py::test_chat_download_thumbnail_for_text_message`

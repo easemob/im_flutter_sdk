@@ -193,7 +193,8 @@ if [[ "$LANES" -gt 1 ]]; then
       continue
     fi
     echo "[lane $i] $lane_count cases — running (log: $RUN_LOG_DIR/lane$i.log)"
-    IM_FLUTTER_LANE_NODEIDS="$RUN_LOG_DIR/lane$i.nodeids" APK_PATH="$SHARED_APK" bash "$script_dir/run.sh" --lane "$i" --no-open --no-report --skip-setup "${lane_args[@]}" \
+    IM_FLUTTER_LANE_RESULT="$RUN_LOG_DIR/lane$i.result.json" \
+      IM_FLUTTER_LANE_NODEIDS="$RUN_LOG_DIR/lane$i.nodeids" APK_PATH="$SHARED_APK" bash "$script_dir/run.sh" --lane "$i" --no-open --no-report --skip-setup "${lane_args[@]}" \
       2>&1 | tee "$RUN_LOG_DIR/lane$i.log" &
     pids+=($!)
   done
@@ -202,13 +203,20 @@ if [[ "$LANES" -gt 1 ]]; then
   for i in $(seq 0 $((LANES - 1))); do
     [[ "${pids[$i]}" != 0 ]] || continue
     if wait "${pids[$i]}"; then
+      printf '0\n' > "$RUN_LOG_DIR/lane$i.exit"
       echo "[lane $i] PASS"
     else
+      lane_exit=$?
+      printf '%s\n' "$lane_exit" > "$RUN_LOG_DIR/lane$i.exit"
       echo "[lane $i] FAIL (log: $RUN_LOG_DIR/lane$i.log)"
       exit_code=1
     fi
   done
 
+  # All workers have finished. Count structured pytest outcomes across every shard.
+  if ! "$PY" "$script_dir/summarize_lanes.py" "$RUN_LOG_DIR" "$LANES"; then
+    exit_code=1
+  fi
   if [[ "$exit_code" == 0 ]]; then echo "Overall: PASS"; else echo "Overall: FAIL"; fi
   # Merge all lanes into one report
   echo "==> Generating merged report ..."
@@ -293,8 +301,13 @@ echo "==> Booting emulator B ($AVD_B) -> $SERIAL_B ..."
 EMU_B_PID=$!
 
 BRIDGE_STARTED=0
+LOGCAT_PIDS=()
 cleanup() {
   echo "==> Cleaning up ..."
+  for log_pid in "${LOGCAT_PIDS[@]}"; do
+    kill "$log_pid" 2>/dev/null || true
+    wait "$log_pid" 2>/dev/null || true
+  done
   if [[ "$BRIDGE_STARTED" == "1" ]]; then
     (cd "$native_auto_test" && SERIALS="$SERIAL_A $SERIAL_B" make ws-bridge-down PY="$PY" ADB="$ADB" WS_PORT="$WS_PORT" WS_STATE_DIR="$WS_STATE_DIR" >/dev/null 2>&1 || true)
   fi
@@ -341,10 +354,15 @@ echo "==> Emulator B boot completed"
 
 # ---- Install APK (same APK for all devices) ----
 echo "==> [3/6] 安装 APK ..."
-"$ADB" -s "$SERIAL_A" uninstall com.easemob.im_flutter_test >/dev/null 2>&1 || true
-"$ADB" -s "$SERIAL_B" uninstall com.easemob.im_flutter_test >/dev/null 2>&1 || true
-"$ADB" -s "$SERIAL_A" install /tmp/im-flutter-run-lane$LANE.apk
-"$ADB" -s "$SERIAL_B" install /tmp/im-flutter-run-lane$LANE.apk
+DEVICE_LOG_DIR=$(mktemp -d "${TMPDIR:-/tmp}/im-flutter-device-lane${LANE}.XXXXXX")
+chmod 700 "$DEVICE_LOG_DIR"
+echo "==> Private device logs: $DEVICE_LOG_DIR (may contain sensitive data)"
+for serial in "$SERIAL_A" "$SERIAL_B"; do
+  (umask 077; exec "$ADB" -s "$serial" logcat -v threadtime > "$DEVICE_LOG_DIR/$serial.log" 2>&1) &
+  LOGCAT_PIDS+=("$!")
+done
+"$PY" "$script_dir/clean_install.py" --adb "$ADB" --serial "$SERIAL_A" --avd "$AVD_A" --apk /tmp/im-flutter-run-lane$LANE.apk
+"$PY" "$script_dir/clean_install.py" --adb "$ADB" --serial "$SERIAL_B" --avd "$AVD_B" --apk /tmp/im-flutter-run-lane$LANE.apk
 
 # ---- Bridge (relay + reverse for all emulator-*) ----
 echo "==> [4/6] 启动本地 WebSocket 桥接 (port $WS_PORT) ..."

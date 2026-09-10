@@ -22,7 +22,7 @@ def runner(tmp_path):
     native = project / 'native-auto-test'
     scripts = native / 'skills/im-flutter-run/scripts'
     scripts.mkdir(parents=True)
-    for name in ('run.sh', 'release_apk_cache.py', 'adb_preflight.py'):
+    for name in ('run.sh', 'release_apk_cache.py', 'adb_preflight.py', 'summarize_lanes.py', 'clean_install.py'):
         if (SCRIPTS / name).exists():
             shutil.copy(SCRIPTS / name, scripts / name)
     executable(native / 'scripts/collect_cases.py', "print('tests/test_example.py::test_a\\ntests/test_example.py::test_b')\n")
@@ -44,6 +44,18 @@ case "$*" in
       echo 'mdns_enabled: true'
     fi
     ;;
+  *'emu avd name')
+    case "$2" in
+      emulator-5554) echo im_flutter_test_a ;;
+      emulator-5556) echo im_flutter_test_b ;;
+      emulator-5558) echo im_flutter_test_a_lane1 ;;
+      emulator-5560) echo im_flutter_test_b_lane1 ;;
+    esac ;;
+  *'pm list packages'*)
+    [ ! -f "$MDNS_STATE.$2.installed" ] || echo package:com.easemob.im_flutter_test ;;
+  *' uninstall '*) rm -f "$MDNS_STATE.$2.installed"; echo Success ;;
+  *' install '*) touch "$MDNS_STATE.$2.installed"; echo Success ;;
+  *'printenv EXTERNAL_STORAGE') echo /sdcard ;;
   *getprop*) echo 1 ;;
 esac
 ''')
@@ -51,7 +63,20 @@ esac
     tools = tmp_path / 'bin'
     for name in ('sleep', 'pkill', 'tail'):
         executable(tools / name, '#!/bin/sh\nexit 0\n')
-    executable(tools / 'make', '#!/bin/sh\nprintf "make %s\\n" "$*" >> "$CALLS"\nprintf "make %s\\n" "$ADB_MDNS" >> "$MDNS_ENVS"\n')
+    reporter = tmp_path / 'fake-pytest-result.py'
+    reporter.write_text('''import json, os
+from pathlib import Path
+if os.environ.get('IM_FLUTTER_LANE_RESULT'):
+    nodes = Path(os.environ['IM_FLUTTER_LANE_NODEIDS']).read_text().splitlines()
+    outcome = os.environ.get('FAKE_PYTEST_OUTCOME', 'passed')
+    code = 1 if outcome in ('failed', 'error') else 0
+    Path(os.environ['IM_FLUTTER_LANE_RESULT']).write_text(json.dumps({
+        'schema_version': 1, 'exitstatus': code, 'results': dict.fromkeys(nodes, outcome),
+    }))
+    raise SystemExit(code)
+''')
+    executable(tools / 'make', '#!/bin/sh\nprintf "make %s\\n" "$*" >> "$CALLS"\nprintf "make %s\\n" "$ADB_MDNS" >> "$MDNS_ENVS"\n'
+               + f'if [ "$1" = test-local ]; then "{sys.executable}" "{reporter}"; fi\n')
     executable(tools / 'allure', '#!/bin/sh\nexit 0\n')
     executable(tools / 'flutter', '''#!/bin/sh
 echo build >> "$CALLS"
@@ -227,7 +252,8 @@ def test_pytest_nodeids_survive_make_and_shell(runner, lanes):
         (state / 'ws-bridge.env').write_text('')
     (native / '.local/ws-bridge.env').write_text('')
     recorder = tmp / 'record-python'
-    executable(recorder, f'#!{sys.executable}\nimport json,sys\nfrom pathlib import Path\nPath("argv-" + __import__("os").environ.get("TEST_LANE", "single") + ".json").write_text(json.dumps(sys.argv[1:]))\n')
+    executable(recorder, f'#!{sys.executable}\nimport json,sys,runpy\nfrom pathlib import Path\nPath("argv-" + __import__("os").environ.get("TEST_LANE", "single") + ".json").write_text(json.dumps(sys.argv[1:]))\n'
+               + f'runpy.run_path({str(tmp / "fake-pytest-result.py")!r})\n')
     real_make = shutil.which('make')
     executable(tmp / 'bin/make', f'''#!/bin/bash
 if [[ "$1" != test-local ]]; then exit 0; fi
@@ -380,3 +406,32 @@ def test_mdns_children_recheck_after_parent_passed(runner):
     assert calls.count('adb server-status') == 3
     assert 'adb kill-server' not in calls
     assert not any(' install ' in c or c.startswith('make test-local ') for c in calls)
+
+
+def test_runner_combines_all_fifteen_failed_nodeids_after_both_lanes(runner):
+    run, tmp = runner
+    nodeids = [f'tests/test_example.py::test_failure[{i}]' for i in range(15)]
+    executable(tmp / 'project/native-auto-test/scripts/collect_cases.py', 'print(' + repr('\n'.join(nodeids)) + ')\n')
+    result, _ = run('--lanes', '2', FAKE_PYTEST_OUTCOME='failed')
+    assert result.returncode != 0
+    assert 'Total: 15' in result.stdout and '15 failed' in result.stdout
+    assert sorted(line for line in result.stdout.splitlines() if line.startswith('FAILED ')) == sorted('FAILED ' + n for n in nodeids)
+    assert result.stdout.index('Total: 15') > result.stdout.index('[lane 1] FAIL')
+    assert result.stdout.index('Total: 15') < result.stdout.index('Overall: FAIL')
+
+
+def test_runner_reports_missing_pytest_results_as_incomplete(runner):
+    run, tmp = runner
+    (tmp / 'fake-pytest-result.py').write_text('raise SystemExit(3)\n')
+    result, _ = run('--lanes', '2')
+    assert result.returncode != 0
+    assert 'INCOMPLETE' in result.stdout and '2 unreported' in result.stdout
+
+
+def test_runner_empty_shards_are_not_missing_results(runner):
+    run, tmp = runner
+    executable(tmp / 'project/native-auto-test/scripts/collect_cases.py', 'print("tests/test_example.py::test_a")\n')
+    result, _ = run('--lanes', '2')
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert 'Total: 1' in result.stdout and '1 passed' in result.stdout
+    assert '0 unreported' in result.stdout

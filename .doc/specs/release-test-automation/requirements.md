@@ -83,6 +83,18 @@
 - 保持现有卸载行为，不在本次添加「卸载后确认包不存在」检查。现有卸载失败被忽略的风险仍存在，不宣称保证所有卸载成功。
 - 服务端历史数据以及 Android 公共共享目录清理不在本次范围内。
 
+## Clean installation increment
+
+User Story: As a contributor, I need clean test-app storage across machines so stale Android UIDs cannot silently break media cases.
+
+EARS acceptance criteria:
+- When installing, the runner shall verify the expected emulator AVD before deleting data.
+- When uninstall fails or the package remains, the runner shall stop before pytest.
+- When the package is absent, the runner shall remove only its external Android/data directory and verify absence before installation.
+- When device storage cannot be safely resolved or cleaned, the runner shall stop without root, permission changes or AVD wipe.
+- When preparing devices, the runner shall retain per-device logcat in a private unique directory and stop collection before emulator cleanup.
+- This supersedes the earlier APK-cache scope preserving ignored uninstall errors. No SDK changes or App-identity writable probe are included.
+
 ## ADB mDNS 崩溃防护增量
 
 ### User Story

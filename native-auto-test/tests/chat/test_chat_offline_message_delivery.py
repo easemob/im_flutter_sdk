@@ -267,18 +267,9 @@ def _wait_success_event(
     temp_id: str,
     timeout: float = 60.0,
 ) -> dict:
-    deadline = time.monotonic() + timeout
-    seen = []
-    while time.monotonic() < deadline:
-        event = device.receive_message(
-            match_event_type=Cmd.onMessageSuccess.value,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
-        )
-        if event:
-            seen.append(event)
-        if str(((event or {}).get("data") or {}).get("msgId")) == str(temp_id):
-            return event
-    raise AssertionError(f"未收到目标 onMessageSuccess: tempId={temp_id}, events={seen}")
+    from src.tools.send_status_wait import wait_send_success
+
+    return wait_send_success(device, temp_id=temp_id, timeout=timeout)
 
 
 def _wait_message_event(
