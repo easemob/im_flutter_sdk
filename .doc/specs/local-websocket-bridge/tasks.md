@@ -13,7 +13,7 @@
 - 默认服务地址固定为 `127.0.0.1:4000`，默认 path 固定为 `/iov/websocket/dual`。
 - 不增加 Node、Docker 或新的 Python 生产依赖。
 - 不修改 `im_flutter_sdk` 发布层或 Flutter 测试 App 默认地址。
-- 不自动修改 `config.yaml`、App 页面配置、REST 配置或业务账号。
+- 不自动修改环境/桥接文件、App 页面配置、REST 配置或业务账号。
 - 服务日志不得输出 WebSocket 帧正文或业务载荷。
 - `ws-bridge-reverse` 默认仅操作状态为 `device` 的 `emulator-*`，不得操作物理设备。
 

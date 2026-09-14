@@ -17,7 +17,7 @@ import pytest
 # 保证能 import src
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.tools.config import get_default_topic, get_topic, get_rest_auth_token
+from src.tools.config import get_default_topic, get_topic, has_rest_credentials
 from src.rest_api.user_api import create_users, delete_user
 from src.tools.ws_client import (
     request as ws_request,
@@ -116,7 +116,7 @@ def _session_login(
         return False
 
     with _allure_step("Session 登录"):
-        has_rest_token = bool(get_rest_auth_token())
+        has_rest_token = has_rest_credentials()
         # 仅在未配置 REST token 时，走 WS createAccount 预创建
         if not has_rest_token:
             try:
@@ -220,8 +220,8 @@ def _session_login(
                 f"deviceA: {resp_a}\n"
                 f"deviceB: {resp_b}\n"
                 "排查建议：\n"
-                "1) 确认被测端已创建当天用户名（tests/conftest.py 中 testMMDDuser1/2/3），或在 config.yaml 的 rest_api.auth_token 中配置 token 以自动创建。\n"
-                "2) 检查 config.yaml.websocket.base_url 与 topics 是否指向在线集成端。\n"
+                "1) 确认被测端已创建当天用户名（tests/conftest.py 中 testMMDDuser1/2/3），或在环境文件 app.server.client_id/client_secret 中配置凭据以自动创建。\n"
+                "2) 检查桥接文件 websocket.base_url 与 topics 是否指向在线集成端。\n"
                 "3) 若使用网关鉴权，确认 token/APPKEY 正确。\n"
                 f"{extra}"
             )
@@ -400,17 +400,17 @@ def _test_usernames() -> tuple[str, str, str]:
 def created_test_users():
     """
     Session 内创建两名用户供所有测试用例使用，teardown 时删除。
-    若未配置 REST auth_token（config.yaml -> rest_api.auth_token），则不创建/不删除，直接使用日期用户名。
+    若未配置 REST 凭据（环境文件 app.server.client_id/client_secret），则不创建/不删除，直接使用日期用户名。
     返回 (user_a, user_b)。
     """
     global _LAST_CREATE_USERS_ERROR
     _LAST_CREATE_USERS_ERROR = ""
     keep_users = os.getenv("KEEP_TEST_USERS", "0") in ("1", "true", "True")
-    token = get_rest_auth_token()
+    has_rest = has_rest_credentials()
     # 优先使用日期用户名，避免固定回退账号与被测端不一致
     user_a, user_b, user_c = _test_usernames()
-    if not token:
-        # 无 REST token：直接使用日期用户名，不创建
+    if not has_rest:
+        # 无 REST 凭据：直接使用日期用户名，不创建
         yield user_a, user_b, user_c
         return
     with _allure_step("创建测试用户"):

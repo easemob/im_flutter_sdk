@@ -36,10 +36,8 @@ class _WSFlags:
 
 def _get_debug_flags() -> "_WSFlags":
     try:
-        from .config import load_config
-        cfg = load_config() or {}
-        ws = (cfg.get("websocket") or {})
-        dbg = (ws.get("debug") or {})
+        from .config import get_ws_debug
+        dbg = get_ws_debug()
         dump = bool(int(os.getenv("WS_DEBUG", "0"))) or bool(dbg.get("dump_events", False))
         relax = bool(int(os.getenv("WS_RELAX", "0"))) or bool(dbg.get("relax_event_match", False))
         sniff_seconds = int(dbg.get("sniff_seconds", 15))

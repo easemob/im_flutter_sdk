@@ -10,27 +10,12 @@ import json
 import urllib.request
 import urllib.error
 import sys
-import ssl
 import shlex
 from typing import Any
 
-from ..tools.config import get_rest_base_url, get_rest_auth_token, get_rest_verify_ssl
+from ..tools.config import get_rest_base_url
+from .auth import authorization_header, rest_urlopen as _urlopen
 import urllib.parse
-
-
-def _authorization_header() -> str:
-    token = get_rest_auth_token()
-    if not token:
-        return ""
-    return token if str(token).lower().startswith("bearer ") else f"Bearer {token}"
-
-
-def _urlopen(req: urllib.request.Request, timeout: float = 30):
-    if get_rest_verify_ssl():
-        return urllib.request.urlopen(req, timeout=timeout)
-    # 仅测试环境使用：跳过证书校验
-    insecure_ctx = ssl._create_unverified_context()
-    return urllib.request.urlopen(req, timeout=timeout, context=insecure_ctx)
 
 
 def _mask_token(token: str) -> str:
@@ -130,9 +115,11 @@ def update_user_metadata(username: str, form_fields: dict[str, str]) -> dict:
     返回解析后的 JSON；失败抛出 RuntimeError。
     """
     base = get_rest_base_url().rstrip("/")
-    auth = _authorization_header()
-    if not base or not auth:
-        raise RuntimeError("rest_api.base_url 与 auth_token 需在 config.yaml 的 rest_api 中配置")
+    if not base:
+        raise RuntimeError(
+            "REST 不可用：app.server.base_url 与 app.appkey（org#app）需在环境文件中配置"
+        )
+    auth = authorization_header()
 
     user_enc = urllib.parse.quote(username, safe="")
     url = f"{base}/metadata/user/{user_enc}"
@@ -163,9 +150,14 @@ def create_users(users: list[dict[str, str]]) -> dict:
     失败时不抛异常，打印错误后返回 {"error": ...}。
     """
     base = get_rest_base_url().rstrip("/")
-    token = get_rest_auth_token()
-    if not base or not token:
-        err = "rest_api.base_url 与 auth_token 需在 config.yaml 的 rest_api 中配置"
+    if not base:
+        err = "REST 不可用：app.server.base_url 与 app.appkey（org#app）需在环境文件中配置"
+        print(f"[create_users] {err}", file=sys.stderr, flush=True)
+        return {"error": err, "url": base}
+    try:
+        auth = authorization_header()
+    except RuntimeError as exc:
+        err = str(exc)
         print(f"[create_users] {err}", file=sys.stderr, flush=True)
         return {"error": err, "url": base}
     url = f"{base}/users"
@@ -177,13 +169,13 @@ def create_users(users: list[dict[str, str]]) -> dict:
         headers={
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": f"{token}",
+            "Authorization": auth,
         },
     )
     debug_headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Authorization": _mask_token(token),
+        "Authorization": _mask_token(auth),
     }
     debug_curl = _as_curl(url, "POST", debug_headers, data)
     try:
@@ -210,7 +202,7 @@ def create_users(users: list[dict[str, str]]) -> dict:
                 created_usernames.append(username)
                 continue
             # 响应里缺失：批量创建静默失败，fallback 单用户补建。
-            status, detail = _post_create_single_user(base, token, user)
+            status, detail = _post_create_single_user(base, auth, user)
             if status == "created":
                 created_usernames.append(username)
             elif status == "exists":
@@ -237,7 +229,7 @@ def create_users(users: list[dict[str, str]]) -> dict:
             existing_usernames: list[str] = []
             for user in users:
                 username = user.get("username") if isinstance(user, dict) else None
-                status, detail = _post_create_single_user(base, token, user)
+                status, detail = _post_create_single_user(base, auth, user)
                 if status == "created":
                     if isinstance(username, str) and username:
                         created_usernames.append(username)
@@ -303,16 +295,18 @@ def create_users(users: list[dict[str, str]]) -> dict:
 def delete_user(username: str) -> None:
     """删除指定用户。"""
     base = get_rest_base_url().rstrip("/")
-    token = get_rest_auth_token()
-    if not base or not token:
-        raise RuntimeError("rest_api.base_url 与 auth_token 需在 config.yaml 的 rest_api 中配置")
+    if not base:
+        raise RuntimeError(
+            "REST 不可用：app.server.base_url 与 app.appkey（org#app）需在环境文件中配置"
+        )
+    auth = authorization_header()
     url = f"{base}/users/{urllib.request.quote(username, safe='')}"
     req = urllib.request.Request(
         url,
         method="DELETE",
         headers={
             "Accept": "application/json",
-            "Authorization": f"{token}",
+            "Authorization": auth,
         },
     )
     try:

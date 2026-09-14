@@ -1,11 +1,19 @@
 package com.easemob.im_flutter_test
 
+import android.os.Bundle
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity: FlutterActivity() {
     private val CHANNEL = "com.easemob.im_flutter_test/device"
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // 确保 App 自有的外部目录存在，run.sh 会把 config.yaml / bridge.yaml 注入其中。
+        // 必须由 App 进程创建：shell 创建的同一路径 App 无权限访问。
+        getExternalFilesDir(null)
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

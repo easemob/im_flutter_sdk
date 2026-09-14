@@ -39,7 +39,7 @@ bash skills/im-flutter-run/scripts/run.sh --build -q tests/client/test_client.py
 bash skills/im-flutter-run/scripts/run.sh --keep-emulator
 ```
 
-Flow: detect/install emulator env → obtain a single APK (download latest release by default, or `--build` locally) → boot emulators (2 by default, or N*2 with `--lanes N`) → install the same APK with runtime device injection (`--es device deviceA/deviceB`) → push `config.yaml` (startup injection) → `make ws-bridge-up` (relay + reverse) → launch apps (auto-connect) → `make test-local` (pytest) → `allure generate` → auto-open report.
+Flow: detect/install emulator env → obtain a single APK (download latest release by default, or `--build` locally) → boot emulators (2 by default, or N*2 with `--lanes N`) → install the same APK with runtime device injection (`--es device deviceA/deviceB`) → push env + bridge config (startup injection) → `make ws-bridge-up` (relay + reverse) → launch apps (auto-connect) → `make test-local` (pytest) → `allure generate` → auto-open report.
 
 ## ADB mDNS crash prevention
 
@@ -89,8 +89,14 @@ only `Android/data/com.easemob.im_flutter_test` and verifies absence before
 installing. Unknown storage, uninstall/cleanup/install failure or timeout stops
 the lane before pytest. No UID is hard-coded; no root, chown, chmod 777, global
 ADB restart or automatic AVD wipe is used. Other devices and server data are not
-cleared. If cleanup is denied, stop and investigate the test AVD rather than
-bypassing the check. This is not an App-identity writable probe.
+cleared. If shell cleanup reports permission denied, the helper makes one bounded
+recovery attempt through Android's package manager: install the same APK without
+launching it, require `pm clear` success, uninstall, verify package absence, then
+repeat directory removal and absence checks before the final installation. This
+handles stale UID-owned external data. Any recovery failure or repeated denial
+stops the lane; checks are never bypassed. Errors identify the operation and a
+safe error category without printing raw device output. This is not an
+App-identity writable probe.
 
 Each lane prints a unique `Private device logs:` directory. Logcat starts before
 installation and stops before emulator shutdown, including failed runs. Directories
@@ -183,16 +189,23 @@ existing merged Allure report remain available.
 
 ## Config effectiveness rules (important)
 
-`config.yaml` is injected at app startup (not bundled into the APK), so changing it does **not** require rebuilding the APK:
+Environment config (`app:` schema) and bridge config (`websocket`/`topics`) are separate files, both injected at app startup (not bundled into the APK), so changing them does **not** require rebuilding the APK:
 
-| Section | Consumer | How it reaches the app |
+| File / section | Consumer | How it reaches the app |
 |---|---|---|
-| `sdk_options` (app_key, servers) | App | `run.sh` pushes `config.yaml` to the emulator's external files dir |
-| `websocket` (base_url, topic) | App | same |
-| `topics` (multi-device) | App | same |
-| `rest_api` (user provisioning) | Python side | read at runtime from the local `config.yaml` |
+| Env file `app:` (appkey, server, sdk, datasync) | App | `run.sh` pushes it to the emulator's `files/config.yaml` |
+| Env file `app.server` / `app.appkey` (REST) | Python side | read at runtime via `IM_TEST_CONFIG` |
+| Bridge file `websocket` (base_url, default_topic) | App + Python | lane copy pushed to `files/bridge.yaml`; Python via `IM_BRIDGE_CONFIG` |
+| Bridge file `topics` (multi-device) | App + Python | same |
 
-`run.sh` pushes the local `config.yaml` to both emulators before launching. Edit it, then re-run — no rebuild needed.
+Selection priority:
+
+- Env file: `--config` > `IM_TEST_CONFIG` > `native-auto-test/config/config.yaml`
+- Bridge file: `--bridge-config` > `IM_BRIDGE_CONFIG` > `native-auto-test/config/bridge.yaml`
+
+`run.sh` pushes the env file unchanged and a per-lane bridge copy (only `websocket.base_url` port rewritten) to both emulators before launching, and exports both paths to pytest. Edit the files, then re-run — no rebuild needed.
+
+`enable_dns_config` is derived, not configured: any non-empty `app.sdk.msync.tcp_host` or `websocket_host` disables DNS discovery. The fixed test-App switches (`autoLogin`, `debugMode`, `requireAck`, `requireDeliveryAck`, `enableUserInfo`, `enableAutoSyncContacts`) live in `im_flutter_test/lib/env_config.dart`, not in config.
 
 ## Reused components
 
@@ -204,8 +217,8 @@ existing merged Allure report remain available.
 ## Notes
 
 - The emulators run headless with software rendering (swiftshader), sufficient for API automation.
-- Two devices (deviceA/deviceB) are required by default; the device is injected at launch time via intent extra `--es device <name>` (single APK serves any number of devices), and topic is resolved from `topics.<device>` in `config.yaml`.
-- The script does not modify `config.yaml`, REST config, or business accounts.
+- Two devices (deviceA/deviceB) are required by default; the device is injected at launch time via intent extra `--es device <name>` (single APK serves any number of devices), and topic is resolved from `topics.<device>` in `bridge.yaml`.
+- The script does not modify env/bridge config, REST config, or business accounts.
 
 ## References
 

@@ -22,13 +22,19 @@ def runner(tmp_path):
     native = project / 'native-auto-test'
     scripts = native / 'skills/im-flutter-run/scripts'
     scripts.mkdir(parents=True)
-    for name in ('run.sh', 'release_apk_cache.py', 'adb_preflight.py', 'summarize_lanes.py', 'clean_install.py'):
+    for name in ('run.sh', 'config_helpers.sh', 'release_apk_cache.py', 'adb_preflight.py', 'summarize_lanes.py', 'clean_install.py'):
         if (SCRIPTS / name).exists():
             shutil.copy(SCRIPTS / name, scripts / name)
     executable(native / 'scripts/collect_cases.py', "print('tests/test_example.py::test_a\\ntests/test_example.py::test_b')\n")
     executable(scripts / 'setup_emulator.sh', '#!/bin/sh\necho setup >> "$CALLS"\nprintf "setup %s\\n" "$ADB_MDNS" >> "$MDNS_ENVS"\n')
     executable(native / '.venv/bin/python', f'#!/bin/sh\nexec "{sys.executable}" "$@"\n')
-    native.joinpath('config.yaml').write_text('websocket:\n  base_url: "ws://127.0.0.1:40100"\n')
+    native.joinpath('config').mkdir()
+    native.joinpath('config/config.yaml').write_text(
+        'app:\n  appkey: "easemob#test"\n  server:\n    base_url: "http://127.0.0.1:8081"\n'
+    )
+    native.joinpath('config/bridge.yaml').write_text(
+        'websocket:\n  base_url: "ws://127.0.0.1:40100"\n'
+    )
     sdk = tmp_path / 'sdk'
     executable(sdk / 'platform-tools/adb', '''#!/bin/sh
 printf 'adb %s\n' "$*" >> "$CALLS"
@@ -102,7 +108,7 @@ else:
     copied.write_text(copied.read_text().replace('/tmp/im-flutter-run', str(sandbox / 'im-flutter-run')))
     calls = tmp_path / 'calls'
     env = os.environ.copy()
-    for key in ('APK_PATH', 'GH_REPO', 'ANDROID_SDK_ROOT', 'ADB_MDNS'):
+    for key in ('APK_PATH', 'GH_REPO', 'ANDROID_SDK_ROOT', 'ADB_MDNS', 'IM_TEST_CONFIG', 'IM_BRIDGE_CONFIG'):
         env.pop(key, None)
     env.update(PATH=f'{tools}:' + env['PATH'], ANDROID_HOME=str(sdk), CALLS=str(calls),
                MDNS_STATE=str(tmp_path / 'mdns-state'), MDNS_ENVS=str(tmp_path / 'mdns-envs'))
@@ -130,7 +136,7 @@ def test_default_hit_and_refresh(runner):
         uninstall = next(i for i, c in enumerate(calls) if c == f'adb -s {serial} uninstall com.easemob.im_flutter_test')
         install = next(i for i, c in enumerate(calls) if c.startswith(f'adb -s {serial} install '))
         assert uninstall < install
-    assert len([c for c in calls if ' push ' in c]) == 2
+    assert len([c for c in calls if ' push ' in c]) == 4
 
 
 @pytest.mark.parametrize('lanes', [1, 2])

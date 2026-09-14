@@ -4,7 +4,7 @@
 
 在 `native-auto-test` 内新增一个轻量 Python WebSocket relay，替代 E2E 控制链路对公共桥接服务器的强依赖。服务仅负责按 topic 转发透明 WebSocket 帧，不解析 SDK 请求、不保存历史、不承担 IM SDK 的 MSync、Gateway 或 `syncDataWebSocketServer` 职责。
 
-本方案复用 `native-auto-test` 已有的 Python 3.9+ 与 `websockets>=11.0` 依赖。保留前台服务和独立 reverse 命令用于诊断，同时提供 `ws-bridge-up/down` 全自动生命周期入口。自动入口只写 Git 忽略的 `.local/` 状态，不修改 App 页面配置、`config.yaml`、REST 配置或业务账号。
+本方案复用 `native-auto-test` 已有的 Python 3.9+ 与 `websockets>=11.0` 依赖。保留前台服务和独立 reverse 命令用于诊断，同时提供 `ws-bridge-up/down` 全自动生命周期入口。自动入口只写 Git 忽略的 `.local/` 状态，不修改 App 页面配置、环境/桥接文件、REST 配置或业务账号。
 
 ## Architecture
 
@@ -74,7 +74,7 @@ sequenceDiagram
     L->>A: add reverse on online emulator-*
     L->>E: atomically write WS_BASE_URL
     L-->>D: ready with PID/log/env paths
-    Note over D,E: make test-local loads E without editing config.yaml
+    Note over D,E: make test-local loads E without editing bridge.yaml
     D->>L: make ws-bridge-down
     L->>A: remove reverse
     L->>R: stop matching managed PID
@@ -135,7 +135,7 @@ CLI 与 lifecycle 对 host、port、path 使用一致的边界：host 非空且�
 
 ### Python configuration
 
-`get_ws_base_url()` 的优先级为：非空 `WS_BASE_URL` > `config.yaml.websocket.base_url`。环境变量只影响当前 pytest/Make 进程，不写回文件。topic 仍使用现有 `config.yaml` 的 `default_topic` 和 `topics.deviceA/deviceB`，避免增加第二套 topic 配置入口。
+`get_ws_base_url()` 的优先级为：非空 `WS_BASE_URL` > `bridge.yaml.websocket.base_url`。环境变量只影响当前 pytest/Make 进程，不写回文件。topic 仍使用桥接文件的 `default_topic` 和 `topics.deviceA/deviceB`，避免增加第二套 topic 配置入口。
 
 全自动入口将固定格式的 `WS_BASE_URL` 写入 `.local/ws-bridge.env`；`make test-local` 在子进程中 source 该文件后执行 pytest，因此不会尝试修改父 shell 环境。环境文件只包含该地址，不复制 YAML 中的任何其他字段。
 
@@ -160,7 +160,7 @@ CLI 与 lifecycle 对 host、port、path 使用一致的边界：host 非空且�
 - 后台 PID 只能在进程命令包含当前仓库 relay 脚本绝对路径，且 port/path 与当前状态匹配时停止；陈旧、其他仓库或身份不匹配的 PID 不得被 kill。
 - `.local/ws-bridge.log` 保留到下一次 up/down 后供诊断，但不得包含业务帧正文。
 - 不修改 `im_flutter_sdk` 发布层；Flutter 测试 App 已具备运行时 URL/topic/device 输入能力，因此本次不更改 Dart 默认地址。
-- 不自动修改或生成包含业务凭据的 `config.yaml`。
+- 不自动修改或生成包含业务凭据的环境/桥接文件。
 
 ## Testing Strategy
 

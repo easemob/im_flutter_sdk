@@ -17,26 +17,38 @@ cd native-auto-test
 git clone <repo> && cd native-auto-test
 ```
 
-### 2. 配置 config.yaml
+### 2. 配置环境文件
+
+环境信息与桥接运行态分成两个文件，schema 与 `im-test-hub` 一致：
 
 ```bash
-cp config.yaml.template config.yaml
-vim config.yaml
+cp config/env.yaml.template config/config.yaml   # 环境（app: schema）
+vim config/config.yaml
 ```
 
 必填项（按你的测试环境）：
 
 ```yaml
-sdk_options:
-  app_key: "你的org#你的app"        # 必填，如 "easemob#test001"
-  rest_server: "https://xxx"         # 按环境填
-
-rest_api:                            # 用于自动创建测试用户（建议填）
-  base_url: "http://xxx/org/app"
-  auth_token: "Bearer YWMt..."
+app:
+  appkey: "你的org#你的app"          # 必填，如 "easemob#test001"
+  server:
+    base_url: "http://xxx"           # 仅协议+主机，不含 /org/app
+    client_id: "..."                 # 可选；填了才能自动创建测试用户
+    client_secret: "..."
+  sdk:
+    rest_host: ""                    # 留空回退 server.base_url
+    msync:
+      protocol: websocket
+      tcp_host: ""                   # 与 websocket_host 都留空 => 走 DNS 自动发现
+      websocket_host: ""
 ```
 
-不用改的：`websocket.base_url`（默认 `ws://127.0.0.1:4000`）、`topics.deviceA/deviceB`（默认 adc/adc01）。
+说明：
+
+- 文件选择优先级：`--config` > `IM_TEST_CONFIG` > `config/config.yaml`；桥接文件：`--bridge-config` > `IM_BRIDGE_CONFIG` > `config/bridge.yaml`。
+- `enable_dns_config` 无独立字段，由 `sdk.msync` 是否给出 `tcp_host`/`websocket_host` 派生。
+- `autoLogin`/`debugMode`/`requireAck`/`requireDeliveryAck`/`enableUserInfo`/`enableAutoSyncContacts` 固定写死在测试 App 初始化代码，不放进配置。
+- 桥接文件 `config/bridge.yaml` 默认 `ws://127.0.0.1:4000`、`topics.deviceA/deviceB`（adc/adc01），通常不用改。
 
 ### 3. 一键跑
 
@@ -100,10 +112,14 @@ bash skills/im-flutter-run/scripts/run.sh --no-open
 
 ## 配置
 
-`cp config.yaml.template config.yaml`
+`cp config/env.yaml.template config/config.yaml`（环境，`app:` schema）
+- `app.server.base_url` / `app.server.client_id` / `app.server.client_secret`：REST 主机与凭据（client_credentials 动态换 token）。
+- `app.sdk.rest_host` / `app.sdk.msync.*`：SDK REST 与长连接地址；msync 主机留空即走 DNS。
+- `app.datasync.*`：DataSync 第二通道兜底地址。
+
+`config/bridge.yaml`（桥接运行态，非敏感）
 - `websocket.base_url`：WS 服务地址（与 Flutter 端一致）。
-- `websocket.default_topic`：默认 topic（与 Flutter 端 `IMWebSocketBridge.instance.start(topic: '...')` 一致）。
-- 多端测试时可在 `topics` 下为不同 device 配置不同 topic。
+- `websocket.default_topic` / `topics`：默认 topic 与多 device topic。
 
 ## 本地 WebSocket 桥接
 
@@ -147,7 +163,7 @@ ws://127.0.0.1:4000/iov/websocket/dual
 | `.local/ws-bridge.log` | relay 运行日志，不记录消息正文 |
 | `.local/ws-bridge.lock/` | lifecycle 操作期间的临时互斥锁，命令结束后自动删除 |
 
-脚本不会修改 `config.yaml`、App 页面配置、REST 配置或业务账号。如果 `adb` 不在
+脚本不会修改环境/桥接文件、App 页面配置、REST 配置或业务账号。如果 `adb` 不在
 PATH 中，可以显式提供其路径：
 
 ```bash
@@ -164,7 +180,7 @@ make ws-bridge-up WS_PORT=5000
 ### 2. 连接 Flutter 测试 App
 
 先断开旧连接，再在两台 App 的“WebSocket 桥接配置”页面填写。topic 必须与
-本机 `config.yaml` 的 `topics.deviceA/deviceB` 完全一致：
+本机 `config/bridge.yaml` 的 `topics.deviceA/deviceB` 完全一致：
 
 | 设备 | URL | Topic | Device |
 |---|---|---|---|
@@ -176,7 +192,7 @@ make ws-bridge-up WS_PORT=5000
 ### 3. 运行本地桥接用例
 
 使用 `make test-local` 自动加载 `.local/ws-bridge.env`，无需导出环境变量，也不会
-写回 `config.yaml`：
+写回环境/桥接文件：
 
 ```bash
 make test-local ARGS="-q 'tests/group/test_group_lifecycle.py::test_group_create_group'"
@@ -243,7 +259,7 @@ tail -f .local/ws-bridge.log
 ```
 
 如果 pytest 连接成功但 App 没反应，依次核对：本地 listener、每台模拟器的
-reverse、App URL、App topic/device 和 `config.yaml` 的 A/B topic；不要把 relay
+reverse、App URL、App topic/device 和 `config/bridge.yaml` 的 A/B topic；不要把 relay
 连接问题归因到 IM 服务链路。
 
 ### 6. 无设备工具测试
@@ -289,19 +305,21 @@ pytest tests/test_client.py -v
 
 ## 多端测试（多 topic）
 
-- 在 `config.yaml` 中配置 `topics.device_1`、`topics.device_2` 等。
+- 在 `config/bridge.yaml` 中配置 `topics.device_1`、`topics.device_2` 等。
 - 在 `conftest.py` 中为不同测试或参数化提供不同 `ws_device`（或重写 `ws_topic` fixture），即可在不同 topic 上跑同一套用例，实现多端测试。
 
 ## 项目结构
 
 ```
 flutter-auto-test/
-├── config.yaml           # WebSocket 与 topic 配置
+├── config/
+│   ├── env.yaml.template  # 环境配置模板（app: schema）
+│   └── bridge.yaml        # 桥接运行态配置（websocket/topics）
 ├── pyproject.toml
 ├── requirements.txt
 ├── pytest.ini
 ├── src/
-│   ├── config.py         # 读取 config.yaml
+│   ├── tools/config.py    # 读取环境/桥接文件并派生 REST 凭据
 │   ├── ws_client.py     # WebSocket 请求/响应、多 topic
 │   ├── assertions.py    # 成功/失败、result 断言
 │   └── response_match.py # 预期 JSON 比对、占位符、忽略时间戳
@@ -395,7 +413,7 @@ This repository includes Codex skills under `skills/` following the create-skill
   - Scripts: `scripts/run.sh`
   - No Android Studio required; see the skill's `SKILL.md` for minimal dependencies and usage.
 
-Usage examples can be found in each skill's `SKILL.md`. Make sure `config.yaml` is configured before using them.
+Usage examples can be found in each skill's `SKILL.md`. Make sure `config/config.yaml` and `config/bridge.yaml` are configured before using them.
 
 ## Make Tasks
 
@@ -416,7 +434,7 @@ Usage examples can be found in each skill's `SKILL.md`. Make sure `config.yaml` 
 
 Tips
 - JSON 参数请用单引号包裹（避免 shell 转义）。
-- 运行前确保 `config.yaml` 配置正确；REST 需 `rest_api.base_url` 与 `rest_api.auth_token`。
+- 运行前确保环境/桥接文件配置正确；REST 需 `app.server.base_url` 与 `app.server.client_id/client_secret`。
 - 校验技能目录：`make skills-validate`。
 
 pytest -q tests -s --alluredir=out/allure-results

@@ -92,6 +92,7 @@ EARS acceptance criteria:
 - When uninstall fails or the package remains, the runner shall stop before pytest.
 - When the package is absent, the runner shall remove only its external Android/data directory and verify absence before installation.
 - When device storage cannot be safely resolved or cleaned, the runner shall stop without root, permission changes or AVD wipe.
+- When removal of the validated package directory is denied, the runner shall attempt one package-manager recovery using the same APK (install, clear data, uninstall), verify package and directory absence, and stop if recovery fails. Errors shall identify the operation without exposing raw device output.
 - When preparing devices, the runner shall retain per-device logcat in a private unique directory and stop collection before emulator cleanup.
 - This supersedes the earlier APK-cache scope preserving ignored uninstall errors. No SDK changes or App-identity writable probe are included.
 
