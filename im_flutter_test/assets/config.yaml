@@ -1,1 +1,32 @@
-../../native-auto-test/config.yaml
+# Safe bootstrap asset. No appkey or management credentials are bundled.
+# 运行时由 run.sh 把环境文件 push 到 App 外部目录并重启 App；此处仅作为无凭据占位。
+# 真实环境配置见 native-auto-test/config/env.yaml.template。
+app:
+  cluster: ""
+  appkey: ""
+  wait: 0
+  server:
+    base_url: ""
+    client_id: ""
+    client_secret: ""
+    verify_ssl: true
+  sdk:
+    user_login_password: ""
+    rest_host: ""
+    msync:
+      protocol: websocket
+      tcp_host: ""
+      tcp_port: ""
+      websocket_host: ""
+      websocket_port: ""
+      enable_lz4: "0"
+      compress_algorimth: COMPRESS_ZLIB
+      sync_delay: 0
+  datasync:
+    websocket_host: ""
+    websocket_port: ""
+    websocket_path: "/ws"
+    use_ssl: "1"
+  log:
+    enable_file_log: "1"
+    log_dir: log

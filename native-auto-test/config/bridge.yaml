@@ -1,0 +1,25 @@
+# 本地 WebSocket 桥接运行态配置（非敏感，可提交）。
+#
+# 该文件只描述 pytest/Flutter 与本机 relay 之间的连接信息，不含环境凭据；
+# 环境信息请放在环境文件（env.yaml.template -> config/config.yaml）。
+#
+# 文件选择优先级：
+#   --bridge-config <path> > IM_BRIDGE_CONFIG > native-auto-test/config/bridge.yaml
+#
+# run.sh 会为每个 lane 生成一份副本，仅改写 websocket.base_url 的端口为该 lane 的 relay 端口，
+# 然后把副本推送到 App 外部目录的 bridge.yaml。
+
+websocket:
+  base_url: "ws://127.0.0.1:4000/iov/websocket/dual"
+  default_topic: "adc"
+  connect_timeout: 10
+  response_timeout: 30
+  debug:
+    dump_events: false
+    relax_event_match: false
+    sniff_seconds: 15
+
+# 多端测试时可为每个设备指定不同 topic（Flutter 端用相同 topic 连接即为同一设备）
+topics:
+  deviceA: adc
+  deviceB: adc01

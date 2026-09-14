@@ -14,8 +14,12 @@ __pycache__/
 
 out/
 
-# Local config with secrets
+# Local config with secrets (legacy root file, no longer read by code)
 config.yaml
+
+# Local environment configs. Templates and the non-sensitive bridge file stay in Git.
+config/*.yaml
+!config/bridge.yaml
 
 # Local WebSocket relay runtime state
 .local/

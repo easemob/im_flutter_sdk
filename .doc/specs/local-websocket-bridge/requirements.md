@@ -15,13 +15,13 @@
 5. 当连接路径不是 `/iov/websocket/dual` 或缺少非空 `topic` 查询参数时，服务应拒绝该连接并给出可定位的关闭原因。
 6. 当客户端断开或服务收到终止信号时，服务应清理连接与 topic 状态，不遗留后台任务；`Ctrl-C` 应正常停止进程。
 7. 当服务记录运行日志时，日志应仅包含监听地址、连接生命周期、topic 和连接数量，不得打印消息正文、账号、token 或其他业务载荷。
-8. 当开发者执行 `make ws-bridge-reverse` 时，系统应仅为处于 `device` 状态且序列号以 `emulator-` 开头的 Android 模拟器设置 `adb reverse tcp:<port> tcp:<port>`；该命令不得启动服务、修改 App URL、修改 `config.yaml` 或操作业务账号。
+8. 当开发者执行 `make ws-bridge-reverse` 时，系统应仅为处于 `device` 状态且序列号以 `emulator-` 开头的 Android 模拟器设置 `adb reverse tcp:<port> tcp:<port>`；该命令不得启动服务、修改 App URL、修改环境/桥接文件或操作业务账号。
 9. 当未发现可用 Android 模拟器或找不到 `adb` 时，端口映射命令应非零退出并给出明确修复提示，不得静默成功。
-10. 当运行 pytest 时，如果设置了 `WS_BASE_URL`，Python WebSocket 客户端应优先使用该值；未设置或值为空时，应继续使用 `config.yaml.websocket.base_url`，保持现有远程服务器行为。
+10. 当运行 pytest 时，如果设置了 `WS_BASE_URL`，Python WebSocket 客户端应优先使用该值；未设置或值为空时，应继续使用 `bridge.yaml.websocket.base_url`，保持现有远程服务器行为。
 11. 当其他开发者按 README 操作时，文档应明确说明服务启动、端口映射、设备 A/B 的 URL/topic/device 配置、Python 地址覆盖、连接验证和恢复远程服务器的方法。
 12. 当本功能完成时，自动化测试应覆盖同 topic 转发、跨 topic 隔离、无发送者回显、文本与二进制帧、非法路径、缺失 topic、断开清理以及 `WS_BASE_URL` 配置优先级，且测试不得依赖 Android 设备或外部服务器。
 13. 当开发者执行 `make ws-bridge-up` 时，系统应以后台进程启动本地 relay、扫描在线 Android 模拟器、配置 `adb reverse`，并生成 Git 忽略的 `.local/ws-bridge.env`；一个命令成功后应具备运行本地 pytest 的全部 Python/control 侧桥接前置。Flutter App 的 URL、topic、device 和连接动作仍由开发者在 App 中配置。
-14. 当 `make ws-bridge-up` 成功时，系统应将 relay PID 写入 `.local/ws-bridge.pid`、将非业务运行日志写入 `.local/ws-bridge.log`，并将唯一 Python 覆盖项 `WS_BASE_URL=ws://127.0.0.1:<port>/iov/websocket/dual` 写入环境文件；不得改写 `config.yaml`。
+14. 当 `make ws-bridge-up` 成功时，系统应将 relay PID 写入 `.local/ws-bridge.pid`、将非业务运行日志写入 `.local/ws-bridge.log`，并将唯一 Python 覆盖项 `WS_BASE_URL=ws://127.0.0.1:<port>/iov/websocket/dual` 写入环境文件；不得改写环境/桥接文件。
 15. 当 relay 已由当前项目启动且仍存活时，重复执行 `make ws-bridge-up` 应保持同一进程、补齐 reverse 和环境文件并成功退出，不得启动重复服务。
 16. 当自动启动、端口监听、reverse 配置或环境文件写入任一步失败时，系统应非零退出并回滚本次新建的 relay、reverse 和状态文件，不得留下部分成功状态，也不得终止非本项目管理的进程。
 17. 当开发者执行 `make test-local ARGS=<pytest args>` 时，系统应从 `.local/ws-bridge.env` 加载 `WS_BASE_URL` 后运行 pytest；环境文件缺失时应在运行 pytest 前明确失败。

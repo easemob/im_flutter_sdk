@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 
 from src import Cmd
-from src.tools.config import get_sdk_app_key
+from src.tools.config import get_appkey
 
 
 pytestmark = [pytest.mark.client]
@@ -44,8 +44,8 @@ def test_client_connection_state_queries(device_a, assert_api):
 
 def test_client_init_repeated_call_idempotent(device_a, assert_api):
     """init：SDK 已初始化后重复调用，验证原生幂等返回 result=null，不改变当前登录态。"""
-    app_key = get_sdk_app_key()
-    assert app_key, "config.yaml sdk_options.app_key 不能为空"
+    app_key = get_appkey()
+    assert app_key, "环境文件 app.appkey 不能为空"
     resp = device_a.call(
         "Client",
         Cmd.init.value,

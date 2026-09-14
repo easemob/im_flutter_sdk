@@ -6,13 +6,18 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: run.sh [--build | --refresh-apk] [--repo OWNER/REPO] [--lane N] [--lanes N] [--keep-emulator] [--no-open] [pytest args...]
+Usage: run.sh [--build | --refresh-apk] [--repo OWNER/REPO] [--config PATH] [--bridge-config PATH] [--lane N] [--lanes N] [--keep-emulator] [--no-open] [pytest args...]
 
   --build           Build APK locally instead of downloading from the latest release
   --refresh-apk     Force download after querying latest Release (ignore valid cache)
   APK_PATH          Environment: use an existing APK (single/multi-lane); conflicts with
                     --build and --refresh-apk. Remote mode checks latest on every run.
   --repo OWNER/REPO GitHub repo to download release artifacts from (default: easemob/im_flutter_sdk)
+  --config PATH     Environment config file (app: schema). Default: IM_TEST_CONFIG, then
+                    native-auto-test/config/config.yaml.
+  --bridge-config PATH
+                    Bridge config file (websocket/topics). Default: IM_BRIDGE_CONFIG, then
+                    native-auto-test/config/bridge.yaml.
   --lane N          Run a single lane (index N); used internally by --lanes, or for manual parallel runs
   --lanes N         Run N lanes in parallel (N*2 emulators), shard selected cases across lanes,
                     merge results into one report (default 1 = single lane, 2 emulators).
@@ -22,7 +27,7 @@ Usage: run.sh [--build | --refresh-apk] [--repo OWNER/REPO] [--lane N] [--lanes 
   Remaining args are passed through to pytest (simple args, e.g. -q tests/chatroom)
 
 Examples:
-  run.sh -q tests/client/test_client.py
+  run.sh --config config/config.yaml -q tests/client/test_client.py
   run.sh --lanes 2 tests/chatroom
   run.sh --build -q tests/client
 EOF
@@ -46,12 +51,16 @@ SKIP_SETUP=0
 LANE=0
 LANES=1
 GH_REPO="${GH_REPO:-easemob/im_flutter_sdk}"
+CONFIG_ARG=""
+BRIDGE_CONFIG_ARG=""
 PYTEST_ARGS=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --build) BUILD_LOCAL=1; shift ;;
     --refresh-apk) REFRESH_APK=1; shift ;;
     --repo) GH_REPO="${2:?--repo requires OWNER/REPO}"; shift 2 ;;
+    --config) CONFIG_ARG="${2:?--config requires a path}"; shift 2 ;;
+    --bridge-config) BRIDGE_CONFIG_ARG="${2:?--bridge-config requires a path}"; shift 2 ;;
     --lane) LANE="${2:?--lane requires a number}"; shift 2 ;;
     --lanes) LANES="${2:?--lanes requires a number}"; shift 2 ;;
     --keep-emulator) KEEP_EMULATOR=1; shift ;;
@@ -64,6 +73,13 @@ while [[ $# -gt 0 ]]; do
 done
 
 fail() { echo "error: $*" >&2; exit 1; }
+
+# ---- 配置选择：环境文件（app schema）与桥接文件分离 ----
+# shellcheck source=config_helpers.sh
+source "$script_dir/config_helpers.sh"
+resolve_config_files "$native_auto_test" "$CONFIG_ARG" "$BRIDGE_CONFIG_ARG" || fail "配置解析失败"
+echo "==> 环境配置: $ENV_CONFIG"
+echo "==> 桥接配置: $BRIDGE_CONFIG"
 
 detect_sdk_dir() {
   local sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
@@ -376,20 +392,19 @@ echo "==> [5/6] 启动 App + 注入配置 ..."
 sleep 6
 
 # ---- Push runtime config (startup injection; no rebuild needed) ----
-# 每个 lane 生成专属 config：websocket.base_url 改为本 lane 的 relay 端口。
-CONFIG="$native_auto_test/config.yaml"
+# 环境文件原样推送；桥接文件按 lane 改写 websocket.base_url 端口后推送。
 CONFIG_DEST="/sdcard/Android/data/com.easemob.im_flutter_test/files/config.yaml"
-LANE_CONFIG="/tmp/im-flutter-run-config-lane$LANE.yaml"
-if [[ -f "$CONFIG" ]]; then
-  echo "==> Pushing lane config.yaml to both emulators (base_url port $WS_PORT) ..."
-  sed -E "s#(base_url:[[:space:]]*\"ws://127\.0\.0\.1:)[0-9]+#\1$WS_PORT#" "$CONFIG" > "$LANE_CONFIG"
-  "$ADB" -s "$SERIAL_A" shell am force-stop com.easemob.im_flutter_test
-  "$ADB" -s "$SERIAL_B" shell am force-stop com.easemob.im_flutter_test
-  "$ADB" -s "$SERIAL_A" push "$LANE_CONFIG" "$CONFIG_DEST" >/dev/null
-  "$ADB" -s "$SERIAL_B" push "$LANE_CONFIG" "$CONFIG_DEST" >/dev/null
-else
-  echo "==> config.yaml not found ($CONFIG); App will fall back to bundled asset config"
-fi
+BRIDGE_DEST="/sdcard/Android/data/com.easemob.im_flutter_test/files/bridge.yaml"
+LANE_BRIDGE_CONFIG="/tmp/im-flutter-run-bridge-lane$LANE.yaml"
+echo "==> Pushing env config + lane bridge (relay port $WS_PORT) to both emulators ..."
+render_lane_bridge "$BRIDGE_CONFIG" "$LANE_BRIDGE_CONFIG" "$WS_PORT"
+for serial in "$SERIAL_A" "$SERIAL_B"; do
+  "$ADB" -s "$serial" shell am force-stop com.easemob.im_flutter_test
+done
+for serial in "$SERIAL_A" "$SERIAL_B"; do
+  "$ADB" -s "$serial" push "$ENV_CONFIG" "$CONFIG_DEST" >/dev/null
+  "$ADB" -s "$serial" push "$LANE_BRIDGE_CONFIG" "$BRIDGE_DEST" >/dev/null
+done
 
 # ---- Relaunch apps (read external config, auto-connect) ----
 echo "==> Relaunching apps (auto-connect) ..."

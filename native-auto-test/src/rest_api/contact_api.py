@@ -9,24 +9,10 @@ import json
 import urllib.error
 import urllib.parse
 import urllib.request
-import ssl
 from typing import Any
 
-from ..tools.config import get_rest_auth_token, get_rest_base_url, get_rest_verify_ssl
-
-
-def _authorization_header() -> str:
-    token = get_rest_auth_token()
-    if not token:
-        return ""
-    return token if token.lower().startswith("bearer ") else f"Bearer {token}"
-
-
-def _urlopen(req: urllib.request.Request, timeout: float = 30):
-    if get_rest_verify_ssl():
-        return urllib.request.urlopen(req, timeout=timeout)
-    insecure_ctx = ssl._create_unverified_context()
-    return urllib.request.urlopen(req, timeout=timeout, context=insecure_ctx)
+from ..tools.config import get_rest_base_url
+from .auth import authorization_header, rest_urlopen as _urlopen
 
 
 def get_user_contacts(
@@ -42,9 +28,11 @@ def get_user_contacts(
     :return: 解析后的 JSON（一般为 list 或 dict，依服务端为准）
     """
     base = get_rest_base_url().rstrip("/")
-    auth = _authorization_header()
-    if not base or not auth:
-        raise RuntimeError("rest_api.base_url 与 auth_token 需在 config.yaml 的 rest_api 中配置")
+    if not base:
+        raise RuntimeError(
+            "REST 不可用：app.server.base_url 与 app.appkey（org#app）需在环境文件中配置"
+        )
+    auth = authorization_header()
 
     user_enc = urllib.parse.quote(username, safe="")
     path = f"{base}/users/{user_enc}/contacts/users"

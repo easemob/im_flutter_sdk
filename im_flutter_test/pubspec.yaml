@@ -13,7 +13,7 @@ dependencies:
 
   cupertino_icons: ^1.0.8
 
-  # 读取 native-auto-test/config.yaml（通过 assets 软链）。
+  # 读取外部注入的环境配置（app: schema）与桥接配置（websocket/topics）。
   yaml: ^3.1.2
 
   # 依赖发布版 SDK（path 本地引入；发布版本直接走 im_flutter_sdk 目录）。
@@ -35,4 +35,5 @@ flutter:
 
   assets:
     - assets/config.yaml
+    - assets/bridge.yaml
     - assets/media/
