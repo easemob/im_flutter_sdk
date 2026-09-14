@@ -1,5 +1,7 @@
 """群邀请与入群申请的 SDK logout/login 离线回放。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import pytest
 
@@ -122,7 +124,8 @@ def test_group_offline_invitation_received_and_processed_after_login(
         set_auto_accept_group_invitation(
             device_b, assert_api, device_name="deviceB", enabled=False
         )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        timing_pause('step.interval', module='group')
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         group_id = _create_pending_invitation(
             device_a,
             assert_api,
@@ -130,6 +133,7 @@ def test_group_offline_invitation_received_and_processed_after_login(
             user_b=user_b,
             group_name=group_name,
         )
+        timing_pause('step.interval', module='group')
         _assert_server_members(
             device_a,
             assert_api,
@@ -144,6 +148,7 @@ def test_group_offline_invitation_received_and_processed_after_login(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='group',
         )
         invitation = wait_group_event(
             device_b,
@@ -163,6 +168,7 @@ def test_group_offline_invitation_received_and_processed_after_login(
         )
 
         if action == "accept":
+            timing_pause('step.interval', module='group')
             response = device_b.call(
                 "GroupManager",
                 Cmd.acceptInvitationFromGroup.value,
@@ -190,6 +196,7 @@ def test_group_offline_invitation_received_and_processed_after_login(
                 event_type="onInvitationAcceptedFromGroup",
                 data={"groupId": group_id, "invitee": user_b, "reason": ""},
             )
+            timing_pause('step.interval', module='group')
             _assert_server_members(
                 device_a,
                 assert_api,
@@ -219,6 +226,7 @@ def test_group_offline_invitation_received_and_processed_after_login(
                 member_count=2,
             )
         else:
+            timing_pause('step.interval', module='group')
             response = device_b.call(
                 "GroupManager",
                 Cmd.declineInvitationFromGroup.value,
@@ -240,8 +248,9 @@ def test_group_offline_invitation_received_and_processed_after_login(
                 device_a,
                 group_id=group_id,
                 event_types={"onInvitationDeclinedFromGroup"},
-                timeout=3.0,
+                timeout=timing_seconds('observe.no_event', module='group'),
             )
+            timing_pause('step.interval', module='group')
             _assert_server_members(
                 device_a,
                 assert_api,
@@ -286,6 +295,7 @@ def test_group_offline_owner_receives_invitation_result_after_relogin(
         set_auto_accept_group_invitation(
             device_b, assert_api, device_name="deviceB", enabled=False
         )
+        timing_pause('step.interval', module='group')
         group_id = _create_pending_invitation(
             device_a,
             assert_api,
@@ -309,7 +319,7 @@ def test_group_offline_owner_receives_invitation_result_after_relogin(
                 "reason": "",
             },
         )
-        logout_for_offline(device_a, assert_api, device_name="deviceA")
+        logout_for_offline(device_a, assert_api, device_name="deviceA", module='group')
 
         if action == "accept":
             response = device_b.call(
@@ -358,13 +368,14 @@ def test_group_offline_owner_receives_invitation_result_after_relogin(
             assert_api,
             device_name="deviceA",
             user_id=user_a,
+            module='group',
         )
         if expected_data is None:
             assert_no_group_event(
                 device_a,
                 group_id=group_id,
                 event_types={expected_event_type},
-                timeout=3.0,
+                timeout=timing_seconds('observe.no_event', module='group'),
             )
         else:
             result_event = wait_group_event(
@@ -378,6 +389,7 @@ def test_group_offline_owner_receives_invitation_result_after_relogin(
                 event_type=expected_event_type,
                 data=expected_data,
             )
+        timing_pause('step.interval', module='group')
         _assert_server_members(
             device_a,
             assert_api,
@@ -421,7 +433,8 @@ def test_group_offline_owner_receives_join_application_and_processes_after_login
             invite_members=[],
             style=2,
         )
-        logout_for_offline(device_a, assert_api, device_name="deviceA")
+        timing_pause('step.interval', module='group')
+        logout_for_offline(device_a, assert_api, device_name="deviceA", module='group')
         _request_join(
             device_b,
             assert_api,
@@ -433,6 +446,7 @@ def test_group_offline_owner_receives_join_application_and_processes_after_login
             assert_api,
             device_name="deviceA",
             user_id=user_a,
+            module='group',
         )
         request_event = wait_group_event(
             device_a,
@@ -477,6 +491,7 @@ def test_group_offline_owner_receives_join_application_and_processes_after_login
                 "applicant": user_b,
             }
             members = []
+        timing_pause('step.interval', module='group')
         response = device_a.call("GroupManager", cmd, info=info)
         assert_call_result(
             assert_api,
@@ -497,6 +512,7 @@ def test_group_offline_owner_receives_join_application_and_processes_after_login
             event_type=event_type,
             data=event_data,
         )
+        timing_pause('step.interval', module='group')
         _assert_server_members(
             device_a,
             assert_api,
@@ -545,6 +561,7 @@ def test_group_offline_applicant_receives_application_result_after_relogin(
             invite_members=[],
             style=2,
         )
+        timing_pause('step.interval', module='group')
         _request_join(
             device_b,
             assert_api,
@@ -567,7 +584,7 @@ def test_group_offline_applicant_receives_application_result_after_relogin(
                 "reason": request_reason,
             },
         )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
 
         if action == "accept":
             cmd = Cmd.acceptJoinApplication.value
@@ -610,6 +627,7 @@ def test_group_offline_applicant_receives_application_result_after_relogin(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='group',
         )
         result_event = wait_group_event(
             device_b,
@@ -622,6 +640,7 @@ def test_group_offline_applicant_receives_application_result_after_relogin(
             event_type=event_type,
             data=event_data,
         )
+        timing_pause('step.interval', module='group')
         _assert_server_members(
             device_a,
             assert_api,

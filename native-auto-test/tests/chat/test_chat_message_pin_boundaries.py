@@ -1,4 +1,7 @@
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import os
 import time
@@ -45,11 +48,12 @@ def _assert_text_event(assert_api, evt, *, event_type, msg_id, user_a, user_b, c
     )
 
 
-def _wait_text_event(device, event_type, *, msg_id, content, timeout=30):
+def _wait_text_event(device, event_type, *, msg_id, content, timeout=None):
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=event_type, timeout=min(2.0, max(0.1, deadline - time.monotonic())))
+        evt = device.receive_message(match_event_type=event_type, timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())))
         if evt:
             seen.append(evt)
         for msg in ((evt or {}).get("data") or {}).get("messages") or []:
@@ -103,11 +107,11 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
     success = None
     # 服务端已确认发送成功后，接收端回调仍可能因最终一致性/重连延迟晚到。
     # 只有收到目标消息后才允许进入撤回步骤，避免撤回早于接收导致误判。
-    deadline = time.monotonic() + 60
+    deadline = time.monotonic() + timing_seconds('timeout.send_completion', module='chat')
     while time.monotonic() < deadline:
         evt = device_a.receive_message(
             match_event_type=Cmd.onMessageSuccess.value,
-            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive_batch', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         data = (evt or {}).get("data") or {}
         msg = data.get("msg") or {}
@@ -122,7 +126,7 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
 
         error_evt = device_a.receive_message(
             match_event_type=Cmd.onMessageError.value,
-            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive_batch', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         error_data = (error_evt or {}).get("data") or {}
         if str(error_data.get("msgId")) != str(temp_id):
@@ -168,9 +172,9 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
         },
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState"},
     )
-    deadline = time.monotonic() + 30
+    deadline = time.monotonic() + timing_seconds('timeout.send_terminal', module='chat')
     while time.monotonic() < deadline:
-        evt = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=2)
+        evt = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timing_seconds('poll.receive', module='chat'))
         target = next(
             (
                 m for m in (((evt or {}).get("data") or {}).get("messages") or [])
@@ -210,13 +214,14 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
     raise AssertionError(f"接收端在 60 秒内未收到本次消息: msgId={real_id}, content={content}")
 
 
-def _wait_recall_event(device_b, msg_id, *, timeout=30):
+def _wait_recall_event(device_b, msg_id, *, timeout=None):
+    timeout = timing_seconds('timeout.message_change', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
         evt = device_b.receive_message(
             match_event_type=Cmd.onMessagesRecalledInfo.value,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if evt:
             seen.append(evt)
@@ -250,7 +255,7 @@ def test_chat_pin_message_empty_id(device_a, assert_api):
 def test_chat_pin_recalled_message(device_a, device_b, assert_api, user_a, user_b):
     content = f"pin-recalled-{uuid.uuid4().hex[:8]}"
     msg_id = _send_text(device_a, device_b, assert_api, user_a, user_b, content)
-    time.sleep(float(os.getenv("CHAT_RECALL_SETTLE_SECONDS", "5")))
+    time.sleep(timing_seconds('settle.normal', module='chat'))
     recall = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
     assert_api.assert_response_matches(recall, expected={"manager": "ChatManager", "cmd": Cmd.recallMessage.value, "device": "deviceA", "result": True}, ignore_keys={"sequence"})
     recall_event = _wait_recall_event(device_b, msg_id)
@@ -283,6 +288,7 @@ def test_chat_pin_recalled_message(device_a, device_b, assert_api, user_a, user_
         },
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "receiverList"},
     )
+    timing_pause('step.interval', module='chat')
     resp = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": msg_id})
     _assert_error(assert_api, resp, Cmd.pinMessage.value, "deviceA", 500, "Message is invalid")
 
@@ -301,7 +307,7 @@ def test_chat_pin_recalled_typed_message(
     _, _, _, msg_id = _send_typed(
         device_a, device_b, assert_api, user_a, user_b, type_key, payload,
     )
-    time.sleep(float(os.getenv("CHAT_RECALL_SETTLE_SECONDS", "5")))
+    time.sleep(timing_seconds('settle.normal', module='chat'))
     recall = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
     assert_api.assert_response_matches(
         recall,
@@ -309,7 +315,7 @@ def test_chat_pin_recalled_typed_message(
                   "device": "deviceA", "result": True},
         ignore_keys={"sequence"},
     )
-    time.sleep(1)
+    time.sleep(timing_seconds('step.interval', module='chat'))
     response = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": msg_id})
     _assert_error(assert_api, response, Cmd.pinMessage.value, "deviceA", 500, "Message is invalid")
 

@@ -5,6 +5,7 @@
 - fetchOwnInfo：获取当前登录用户自己的属性信息
 """
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -78,6 +79,7 @@ def test_user_info_update_own_set_and_modify(device_a, assert_api, user_a):
         ignore_keys={"sequence", "ext", "avatarUrl", "phone", "birth", "gender"},
     )
 
+    timing_pause('step.interval', module='user_info')
     resp_modify = device_a.call(
         "UserInfoManager",
         Cmd.updateOwnUserInfo.value,
@@ -132,6 +134,7 @@ def test_user_info_update_then_fetch_user_info_by_id(device_a, assert_api, user_
             "mail": "mail-then-bid@example.com",
         },
     )
+    timing_pause('step.interval', module='user_info')
     resp = device_a.call(
         "UserInfoManager",
         Cmd.fetchUserInfoById.value,
@@ -167,6 +170,7 @@ def test_user_info_update_then_fetch_own_info(device_a, assert_api, user_a):
             "mail": "mail-own-info@example.com",
         },
     )
+    timing_pause('step.interval', module='user_info')
     resp = device_a.call(
         "UserInfoManager",
         Cmd.fetchOwnInfo.value,
@@ -200,6 +204,7 @@ def test_user_info_update_then_fetch_user_info_by_id_with_type(device_a, assert_
             "mail": "mail-then-wit@example.com",
         },
     )
+    timing_pause('step.interval', module='user_info')
     resp = device_a.call(
         "UserInfoManager",
         Cmd.fetchUserInfoByIdWithType.value,
@@ -238,6 +243,7 @@ def test_user_info_update_then_all_fetch_paths_in_one_flow(device_a, assert_api,
             "mail": "mail-flow-all@example.com",
         },
     )
+    timing_pause('step.interval', module='user_info')
     expected_full = {
         "userId": user_a,
         "nickName": "nick-flow-all",

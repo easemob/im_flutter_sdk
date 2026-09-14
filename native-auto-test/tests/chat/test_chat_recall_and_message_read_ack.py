@@ -1,4 +1,5 @@
 from __future__ import annotations
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -10,11 +11,12 @@ from src import Cmd
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
 
-def _event(device, event_type, predicate=None, timeout=30.0):
+def _event(device, event_type, predicate=None, timeout=None):
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=event_type, timeout=2.0)
+        evt = device.receive_message(match_event_type=event_type, timeout=timing_seconds('poll.receive', module='chat'))
         if evt:
             seen.append(evt)
             if predicate is None or predicate(evt):

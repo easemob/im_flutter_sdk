@@ -1,4 +1,7 @@
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -11,12 +14,13 @@ from tests.chat._utils import build_text
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
 
-def _wait_send_success(device_a, *, temp_id, description, predicate, timeout=30):
+def _wait_send_success(device_a, *, temp_id, description, predicate, timeout=None):
+    timeout = timing_seconds('timeout.send_terminal', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         success = device_a.receive_message(
             match_event_type=Cmd.onMessageSuccess.value,
-            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive_batch', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         success_data = (success or {}).get("data") or {}
         success_msg = success_data.get("msg") or {}
@@ -25,7 +29,7 @@ def _wait_send_success(device_a, *, temp_id, description, predicate, timeout=30)
 
         error_event = device_a.receive_message(
             match_event_type=Cmd.onMessageError.value,
-            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive_batch', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         error_data = (error_event or {}).get("data") or {}
         if str(error_data.get("msgId")) != str(temp_id):
@@ -42,11 +46,12 @@ def _wait_send_success(device_a, *, temp_id, description, predicate, timeout=30)
     )
 
 
-def _wait_message_list_event(device, event_type, *, msg_id, timeout=30):
+def _wait_message_list_event(device, event_type, *, msg_id, timeout=None):
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        event = device.receive_message(match_event_type=event_type, timeout=2)
+        event = device.receive_message(match_event_type=event_type, timeout=timing_seconds('poll.receive', module='chat'))
         if event:
             seen.append(event)
         for message in (((event or {}).get("data") or {}).get("messages") or []):
@@ -202,17 +207,20 @@ def _assert_translation_result(assert_api, resp, msg, languages):
 
 def test_chat_translate_message_empty_languages(device_a, device_b, assert_api, user_a, user_b):
     msg = _text_message(device_a, device_b, assert_api, user_a, user_b, f"translate-empty-{uuid.uuid4().hex[:6]}")
+    timing_pause('step.interval', module='chat')
     resp = _translate(device_a, assert_api, msg, [])
     _assert_translation_result(assert_api, resp, msg, [])
 
 
 def test_chat_translate_message_unsupported_language(device_a, device_b, assert_api, user_a, user_b):
     msg = _text_message(device_a, device_b, assert_api, user_a, user_b, f"translate-unsupported-{uuid.uuid4().hex[:6]}")
+    timing_pause('step.interval', module='chat')
     resp = _translate(device_a, assert_api, msg, ["xx-INVALID"])
     _assert_translation_result(assert_api, resp, msg, ["xx-INVALID"])
 
 
 def test_chat_translate_custom_message(device_a, device_b, assert_api, user_a, user_b):
     msg = _custom_message(device_a, device_b, assert_api, user_a, user_b)
+    timing_pause('step.interval', module='chat')
     resp = _translate(device_a, assert_api, msg, ["zh-Hans"])
     assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.translateMessage.value, "device": "deviceA", "result": {"code": 1, "description": "General error"}}, ignore_keys={"sequence"})

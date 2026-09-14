@@ -1,5 +1,6 @@
 """Group block/unblock API 正常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -40,6 +41,7 @@ def test_group_block_then_unblock_success(device_a, assert_api, user_a):
             invite_members=[],
         )
 
+        timing_pause('step.interval', module='group')
         resp_block = device_a.call("GroupManager", Cmd.blockGroup.value, info={"groupId": group_id})
         assert_api.assert_response_matches(
             resp_block,
@@ -51,8 +53,10 @@ def test_group_block_then_unblock_success(device_a, assert_api, user_a):
             },
             ignore_keys={"sequence"},
         )
+        timing_pause('step.interval', module='group')
         _assert_group_blocked_flag(device_a, assert_api, group_id, True)
 
+        timing_pause('step.interval', module='group')
         resp_unblock = device_a.call("GroupManager", Cmd.unblockGroup.value, info={"groupId": group_id})
         assert_api.assert_response_matches(
             resp_unblock,
@@ -64,6 +68,7 @@ def test_group_block_then_unblock_success(device_a, assert_api, user_a):
             },
             ignore_keys={"sequence"},
         )
+        timing_pause('step.interval', module='group')
         _assert_group_blocked_flag(device_a, assert_api, group_id, False)
     finally:
         if group_id:

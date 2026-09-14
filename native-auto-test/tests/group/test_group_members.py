@@ -1,5 +1,7 @@
 """Group members 正常链路。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import pytest
 
@@ -32,6 +34,7 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
             invite_members=[],
         )
 
+        timing_pause('step.interval', module='group')
         resp_add = device_a.call(
             "GroupManager",
             Cmd.addMembers.value,
@@ -48,6 +51,7 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='group')
         expected_add_events = {
             GroupChangeEvent.ON_INVITATION_RECEIVED.value,
             GroupChangeEvent.ON_AUTO_ACCEPT_INVITATION.value,
@@ -64,7 +68,7 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
             group_id=group_id,
             allow_missing_group_id=True,
             required_all_event_types=required_add_events,
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -85,7 +89,7 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
             },
             group_id=group_id,
             required_all_event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -99,6 +103,7 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
             expected_member=user_b,
         )
 
+        timing_pause('step.interval', module='group')
         resp_get_after_add = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
@@ -132,6 +137,7 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='group')
         expected_remove_events = {
             GroupChangeEvent.ON_USER_REMOVED.value,
             "onLeaveFromGroup",
@@ -144,7 +150,7 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
             group_id=group_id,
             allow_missing_group_id=True,
             required_all_event_types=required_remove_events,
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -164,7 +170,7 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
             },
             group_id=group_id,
             required_all_event_types={"onMembersExitedFromGroup", "onMemberExitedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -178,6 +184,7 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
             expected_member=user_b,
         )
 
+        timing_pause('step.interval', module='group')
         resp_get_after_remove = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
@@ -221,6 +228,7 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
             style=3,
         )
 
+        timing_pause('step.interval', module='group')
         resp_join = device_b.call("GroupManager", Cmd.joinPublicGroup.value, info={"groupId": group_id})
         assert_api.assert_response_matches(
             resp_join,
@@ -233,13 +241,14 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='group')
         joined_event_types = {"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"}
         owner_join_events = collect_group_events(
             device_a,
             expected_event_types=joined_event_types,
             group_id=group_id,
             required_all_event_types=joined_event_types,
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         owner_join_by_type = {event["eventType"]: event for event in owner_join_events}
         assert_api.assert_response_matches(
@@ -262,6 +271,7 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
         )
         assert_no_group_event(device_b, group_id=group_id, event_types=joined_event_types)
 
+        timing_pause('step.interval', module='group')
         resp_after_join = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
@@ -291,13 +301,14 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='group')
         exited_event_types = {"onMembersExitedFromGroup", "onMemberExitedFromGroup"}
         owner_exit_events = collect_group_events(
             device_a,
             expected_event_types=exited_event_types,
             group_id=group_id,
             required_all_event_types=exited_event_types,
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         owner_exit_by_type = {event["eventType"]: event for event in owner_exit_events}
         assert_api.assert_response_matches(
@@ -320,6 +331,7 @@ def test_group_join_and_leave_public_group(device_a, device_b, assert_api, user_
         )
         assert_no_group_event(device_b, group_id=group_id, event_types=exited_event_types)
 
+        timing_pause('step.interval', module='group')
         resp_after_leave = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
@@ -362,6 +374,7 @@ def test_group_join_public_group_rejects_private_member_invite_group(
             invite_members=[],
             style=1,
         )
+        timing_pause('step.interval', module='group')
         resp_join = device_b.call("GroupManager", Cmd.joinPublicGroup.value, info={"groupId": group_id})
         assert_api.assert_error(resp_join, code=603, description="group member permission is required")
     finally:
@@ -387,6 +400,7 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
             invite_members=[],
         )
 
+        timing_pause('step.interval', module='group')
         resp_add = device_a.call(
             "GroupManager",
             Cmd.addMembers.value,
@@ -403,13 +417,14 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='group')
         expected_joined_events = {"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"}
         joined_events = collect_group_events(
             device_a,
             expected_event_types=expected_joined_events,
             group_id=group_id,
             required_all_event_types={"onMemberJoinedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -441,6 +456,7 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
                 f"expected={members}, actual={sorted(x for x in joined_single_members if isinstance(x, str))}"
             )
 
+        timing_pause('step.interval', module='group')
         resp_remove = device_a.call(
             "GroupManager",
             Cmd.removeMembers.value,
@@ -463,7 +479,7 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
             expected_event_types=expected_exited_events,
             group_id=group_id,
             required_all_event_types={"onMembersExitedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,

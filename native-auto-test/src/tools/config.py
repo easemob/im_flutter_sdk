@@ -111,6 +111,14 @@ def _sdk() -> dict[str, Any]:
     return sdk if isinstance(sdk, dict) else {}
 
 
+def get_case_timing_config() -> dict[str, Any]:
+    """Python cases-only timing section; never expose the rest of the environment."""
+    timing = _app().get("case_timing", {})
+    if not isinstance(timing, dict):
+        raise ValueError("app.case_timing must be a mapping")
+    return timing
+
+
 def get_appkey() -> str:
     return str(_app().get("appkey") or "").strip()
 

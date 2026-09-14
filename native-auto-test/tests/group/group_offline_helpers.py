@@ -1,5 +1,7 @@
 """Group 离线专项共用的最小编排辅助。"""
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 from collections.abc import Callable
@@ -62,8 +64,8 @@ def restore_group_users(
     restore_group_invitation_option: bool = False,
 ) -> None:
     """finally 中恢复默认账号；不覆盖原始测试失败。"""
-    restore_user_login(device_a, user_id=user_a)
-    restore_user_login(device_b, user_id=user_b)
+    restore_user_login(device_a, user_id=user_a, module='group')
+    restore_user_login(device_b, user_id=user_b, module='group')
     if restore_group_invitation_option:
         try:
             set_auto_accept_group_invitation(
@@ -75,8 +77,8 @@ def restore_group_users(
         except Exception:
             pass
     try:
-        device_a.drain_events(timeout=0.5)
-        device_b.drain_events(timeout=0.5)
+        device_a.drain_events(timeout=timing_seconds('drain.offline', module='group'))
+        device_b.drain_events(timeout=timing_seconds('drain.offline', module='group'))
     except Exception:
         pass
 
@@ -113,15 +115,16 @@ def wait_group_event(
     event_type: str,
     group_id: str,
     predicate: Callable[[dict], bool] | None = None,
-    timeout: float = 30.0,
+    timeout: float = None,
 ) -> dict:
     """等待指定群事件；只过滤，不重组原始事件。"""
+    timeout = timing_seconds('timeout.group_event', module='group') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen: list[dict] = []
     while time.monotonic() < deadline:
         event = device.receive_message(
             match_event_type=event_type,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='group'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if event:
             seen.append(event)

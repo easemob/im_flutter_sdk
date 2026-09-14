@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -44,11 +46,12 @@ def test_chat_fetch_conversation_marks_boundaries(device_a, assert_api, info):
     assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.fetchConversationsByOptions.value, "device": "deviceA", "result": expected}, ignore_keys={"sequence"})
 
 
-def _wait_text_event(device, event_type, *, content, timeout=30.0):
+def _wait_text_event(device, event_type, *, content, timeout=None):
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        event = device.receive_message(match_event_type=event_type, timeout=2)
+        event = device.receive_message(match_event_type=event_type, timeout=timing_seconds('poll.receive', module='chat'))
         if event:
             seen.append(event)
         if event_type == Cmd.onMessageSuccess.value:
@@ -114,13 +117,13 @@ def _ensure_server_conversation(device_a, device_b, assert_api, user_a, user_b):
         assert_api, Cmd.onMessagesDelivered.value, delivered, msg_id=real_id, user_a=user_a, user_b=user_b,
         content=content, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True,
     )
-    deadline = time.monotonic() + 60
+    deadline = time.monotonic() + timing_seconds('timeout.server_state', module='chat')
     while time.monotonic() < deadline:
         response = device_a.call("ChatManager", Cmd.getConversationsFromServer.value, info={})
         if any(isinstance(item, dict) and item.get("convId") == user_b
                for item in (response.get("result") or [])):
             return
-        time.sleep(2)
+        time.sleep(timing_seconds('poll.server_state', module='chat'))
     pytest.fail("未创建可标记的单聊会话")
 
 
@@ -136,6 +139,7 @@ def _target_mark_projection(response, conv_id):
 def test_chat_conversation_mark_idempotent_and_remove_unmarked(device_a, device_b, assert_api, user_a, user_b):
     _ensure_server_conversation(device_a, device_b, assert_api, user_a, user_b)
     for _ in range(2):
+        timing_pause('step.interval', module='chat')
         response = device_a.call(
             "ChatManager", Cmd.addRemoteAndLocalConversationsMark.value,
             info={"convIds": [user_b], "mark": 0},
@@ -148,7 +152,7 @@ def test_chat_conversation_mark_idempotent_and_remove_unmarked(device_a, device_
         )
     fetch = None
     projection = []
-    deadline = time.monotonic() + 30
+    deadline = time.monotonic() + timing_seconds('timeout.state_projection', module='chat')
     while time.monotonic() < deadline:
         fetch = device_a.call(
             "ChatManager", Cmd.fetchConversationsByOptions.value,
@@ -157,7 +161,7 @@ def test_chat_conversation_mark_idempotent_and_remove_unmarked(device_a, device_
         projection = _target_mark_projection(fetch, user_b)
         if projection:
             break
-        time.sleep(1)
+        time.sleep(timing_seconds('poll.interval', module='chat'))
     assert fetch is not None
     assert_api.assert_response_matches(
         {"manager": fetch.get("manager"), "cmd": fetch.get("cmd"), "device": fetch.get("device"),
@@ -168,6 +172,7 @@ def test_chat_conversation_mark_idempotent_and_remove_unmarked(device_a, device_
         ignore_keys={"sequence"},
     )
     for _ in range(2):
+        timing_pause('step.interval', module='chat')
         response = device_a.call(
             "ChatManager", Cmd.deleteRemoteAndLocalConversationsMark.value,
             info={"convIds": [user_b], "mark": 0},
@@ -178,6 +183,7 @@ def test_chat_conversation_mark_idempotent_and_remove_unmarked(device_a, device_
                       "device": "deviceA", "result": None},
             ignore_keys={"sequence"},
         )
+    timing_pause('step.interval', module='chat')
     fetch_after = device_a.call(
         "ChatManager", Cmd.fetchConversationsByOptions.value,
         info={"mark": 0, "pageSize": 10, "cursor": "", "pinned": False},

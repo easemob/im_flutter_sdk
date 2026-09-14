@@ -1,5 +1,7 @@
 """Group style、邀请权限与入群 API 映射矩阵。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import pytest
 
@@ -89,6 +91,7 @@ def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
         },
         ignore_keys={"sequence"},
     )
+    timing_pause('settle.offline', module='group')
     login = device.call(
         "Client",
         Cmd.login.value,
@@ -115,6 +118,7 @@ def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
         },
         ignore_keys={"sequence"},
     )
+    timing_pause('settle.offline', module='group')
     device.drain_events()
 
 
@@ -138,6 +142,7 @@ def test_group_join_public_group_rejects_every_non_open_style(
             invite_members=[],
             style=style,
         )
+        timing_pause('step.interval', module='group')
         response = device_b.call(
             "GroupManager",
             Cmd.joinPublicGroup.value,
@@ -199,6 +204,7 @@ def test_group_request_to_join_rejects_every_non_approval_style(
             invite_members=[],
             style=style,
         )
+        timing_pause('step.interval', module='group')
         response = device_b.call(
             "GroupManager",
             Cmd.requestToJoinPublicGroup.value,
@@ -212,7 +218,7 @@ def test_group_request_to_join_rejects_every_non_approval_style(
                 expected_event_types=joined_types,
                 group_id=group_id,
                 required_all_event_types=joined_types,
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
             by_type = {event["eventType"]: event for event in owner_events}
             assert_api.assert_response_matches(
@@ -224,6 +230,7 @@ def test_group_request_to_join_rejects_every_non_approval_style(
                 },
                 ignore_keys={"timestamp", "sequence"},
             )
+            timing_pause('step.interval', module='group')
             _fetch_group(
                 device_a,
                 assert_api,
@@ -281,6 +288,7 @@ def test_group_direct_invite_ignores_auto_accept_disabled_when_confirmation_not_
             },
             ignore_keys={"sequence"},
         )
+        timing_pause('step.interval', module='group')
         group_id, _ = create_group(
             device_a,
             assert_api,
@@ -290,6 +298,7 @@ def test_group_direct_invite_ignores_auto_accept_disabled_when_confirmation_not_
             style=0,
             invite_need_confirm=False,
         )
+        timing_pause('step.interval', module='group')
         response = device_a.call(
             "GroupManager",
             Cmd.addMembers.value,
@@ -310,7 +319,7 @@ def test_group_direct_invite_ignores_auto_accept_disabled_when_confirmation_not_
             expected_event_types={"onAutoAcceptInvitationFromGroup"},
             group_id=group_id,
             required_all_event_types={"onAutoAcceptInvitationFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_api.assert_response_matches(
             invite_events[0],
@@ -321,6 +330,7 @@ def test_group_direct_invite_ignores_auto_accept_disabled_when_confirmation_not_
             },
             ignore_keys={"timestamp", "sequence"},
         )
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -377,7 +387,7 @@ def test_group_create_group_invites_member_for_each_remaining_style(
             expected_event_types={"onAutoAcceptInvitationFromGroup"},
             group_id=group_id,
             required_all_event_types={"onAutoAcceptInvitationFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_api.assert_response_matches(
             invite_events[0],
@@ -394,8 +404,9 @@ def test_group_create_group_invites_member_for_each_remaining_style(
             expected_event_types=owner_joined_types,
             group_id=group_id,
             required_all_event_types=owner_joined_types,
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -434,6 +445,7 @@ def test_group_owner_can_invite_for_each_remaining_style(
             invite_members=[],
             style=style,
         )
+        timing_pause('step.interval', module='group')
         info = {"groupId": group_id, "members": [user_b]}
         if invite_cmd == Cmd.inviterUser.value:
             info["reason"] = f"style-{style}"
@@ -446,7 +458,7 @@ def test_group_owner_can_invite_for_each_remaining_style(
             expected_event_types={"onAutoAcceptInvitationFromGroup"},
             group_id=group_id,
             required_all_event_types={"onAutoAcceptInvitationFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_api.assert_response_matches(
             invite_events[0],
@@ -457,6 +469,7 @@ def test_group_owner_can_invite_for_each_remaining_style(
             },
             ignore_keys={"timestamp", "sequence"},
         )
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -517,6 +530,7 @@ def test_group_member_invitation_permission_depends_on_style(
         device_a.drain_events()
         device_b.drain_events()
         if make_admin:
+            timing_pause('step.interval', module='group')
             add_admin = device_a.call(
                 "GroupManager",
                 Cmd.addAdmin.value,
@@ -531,6 +545,7 @@ def test_group_member_invitation_permission_depends_on_style(
             info["reason"] = "member-invite"
         else:
             info["welcome"] = "member-invite"
+        timing_pause('step.interval', module='group')
         response = device_b.call("GroupManager", invite_cmd, info=info)
         joined_events = {"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"}
         if should_succeed:
@@ -540,7 +555,7 @@ def test_group_member_invitation_permission_depends_on_style(
                 expected_event_types=joined_events,
                 group_id=group_id,
                 required_all_event_types=joined_events,
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
             by_type = {event["eventType"]: event for event in owner_events}
             assert_api.assert_response_matches(
@@ -552,6 +567,7 @@ def test_group_member_invitation_permission_depends_on_style(
                 },
                 ignore_keys={"timestamp", "sequence"},
             )
+            timing_pause('step.interval', module='group')
             _fetch_group(
                 device_a,
                 assert_api,
@@ -570,7 +586,7 @@ def test_group_member_invitation_permission_depends_on_style(
                     expected_event_types=joined_events,
                     group_id=group_id,
                     required_all_event_types=joined_events,
-                    timeout=10.0,
+                    timeout=timing_seconds('observe.collect', module='group'),
                 )
                 by_type = {event["eventType"]: event for event in owner_events}
                 assert_api.assert_response_matches(
@@ -582,6 +598,7 @@ def test_group_member_invitation_permission_depends_on_style(
                     },
                     ignore_keys={"timestamp", "sequence"},
                 )
+                timing_pause('step.interval', module='group')
                 _fetch_group(
                     device_a,
                     assert_api,
@@ -601,6 +618,7 @@ def test_group_member_invitation_permission_depends_on_style(
             assert_api.assert_error(response, code=603, description="invite is not allowed")
             assert_no_group_event(device_a, group_id=group_id, event_types=joined_events)
             assert_no_group_event(device_b, group_id=group_id, event_types=joined_events)
+            timing_pause('step.interval', module='group')
             _fetch_group(
                 device_a,
                 assert_api,
@@ -637,6 +655,7 @@ def test_group_non_member_cannot_invite_user(
             invite_members=[],
             style=1,
         )
+        timing_pause('step.interval', module='group')
         info = {"groupId": group_id, "members": [user_c]}
         if invite_cmd == Cmd.inviterUser.value:
             info["reason"] = "nonmember"
@@ -679,6 +698,7 @@ def test_group_public_open_join_rejects_duplicate_membership(
             invite_members=[],
             style=3,
         )
+        timing_pause('step.interval', module='group')
         first = device_b.call(
             "GroupManager",
             Cmd.joinPublicGroup.value,
@@ -690,6 +710,7 @@ def test_group_public_open_join_rejects_duplicate_membership(
             cmd=Cmd.joinPublicGroup.value,
             device="deviceB",
         )
+        timing_pause('step.interval', module='group')
         joined = True
         joined_types = {"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"}
         collect_group_events(
@@ -697,8 +718,9 @@ def test_group_public_open_join_rejects_duplicate_membership(
             expected_event_types=joined_types,
             group_id=group_id,
             required_all_event_types=joined_types,
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
+        timing_pause('step.interval', module='group')
         second = device_b.call(
             "GroupManager",
             Cmd.joinPublicGroup.value,
@@ -706,6 +728,7 @@ def test_group_public_open_join_rejects_duplicate_membership(
         )
         assert_api.assert_error(second, code=601, description="already joined")
         assert_no_group_event(device_a, group_id=group_id, event_types=joined_types)
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -797,6 +820,7 @@ def test_group_public_open_join_rejects_blocked_user(
         )
         device_a.drain_events()
         device_b.drain_events()
+        timing_pause('step.interval', module='group')
         block = device_a.call(
             "GroupManager",
             Cmd.blockMembers.value,
@@ -817,9 +841,10 @@ def test_group_public_open_join_rejects_blocked_user(
             expected_event_types={"onUserRemovedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onUserRemovedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         device_a.drain_events()
+        timing_pause('step.interval', module='group')
         response = device_b.call(
             "GroupManager",
             Cmd.joinPublicGroup.value,
@@ -831,6 +856,7 @@ def test_group_public_open_join_rejects_blocked_user(
             group_id=group_id,
             event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
         )
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,

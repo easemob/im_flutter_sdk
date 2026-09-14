@@ -11,6 +11,9 @@
 - 收紧阶段：对齐 envelope + 关键字段，收紧 ignore_keys；避免 `assert_error(..., code=500)` 一刀切。
 """
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -41,7 +44,8 @@ def ensure_friends(device_a, device_b, assert_api, user_a, user_b):
         context={"userB": user_b},
         ignore_keys={"sequence"},
     )
-    device_b.receive_message(match_event_type="onContactInvited", timeout=5.0)
+    device_b.receive_message(match_event_type="onContactInvited", timeout=timing_seconds('timeout.friend_invitation', module='chat'))
+    timing_pause('step.interval', module='chat')
     resp_accept = device_b.call("ContactManager", Cmd.acceptInvitation.value, info={"userId": user_a})
     assert_api.assert_response_matches(
         resp_accept,
@@ -93,13 +97,14 @@ def _find_first(obj: Any, key: str) -> Any | None:
     return None
 
 
-def _wait_message_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 20.0) -> dict:
+def _wait_message_event(device, event_type: str, *, real_id: str, content: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.message', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
         evt = device.receive_message(
             match_event_type=event_type,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if evt:
             seen.append(evt)
@@ -168,7 +173,7 @@ def test_chat_send_to_self_should_not_succeed(device_a, assert_api, user_a):
         pass
     content = f"self-msg-{uuid.uuid4().hex[:6]}"
     resp_send = device_a.call("ChatManager", Cmd.sendMessage.value, info=_build_text(user_a, user_a, content))
-    evt = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    evt = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
     # 严格断言 onMessageSuccess 事件内容（data 不忽略）：
     temp_id = (evt.get("data") or {}).get("msgId")
     real_id = ((evt.get("data") or {}).get("msg") or {}).get("msgId")
@@ -349,7 +354,7 @@ def test_chat_add_reaction_empty_reaction_response(device_a, device_b, assert_ap
     """添加空 reaction：先发送一条消息，再对该消息添加空 reaction，应视为无效（无事件）。"""
     content = "for-reaction-empty"
     resp_send = device_a.call("ChatManager", Cmd.sendMessage.value, info=_build_text(user_a, user_b, content))
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
     temp_id = (evt_success.get("data") or {}).get("msgId")
     real_id = (((evt_success or {}).get("data") or {}).get("msg") or {}).get("msgId")
     assert_api.assert_response_matches(
@@ -409,6 +414,7 @@ def test_chat_add_reaction_empty_reaction_response(device_a, device_b, assert_ap
     _assert_text_message_event(assert_api, evt_received, event_type=Cmd.onMessagesReceived.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True)
     evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, content=content)
     _assert_text_message_event(assert_api, evt_delivered, event_type=Cmd.onMessagesDelivered.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True)
+    timing_pause('step.interval', module='chat')
     resp = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": "", "msgId": real_id})
     print("ADD_REACTION_EMPTY RESP:", resp)
     # 空 reaction：按当前实现返回固定错误

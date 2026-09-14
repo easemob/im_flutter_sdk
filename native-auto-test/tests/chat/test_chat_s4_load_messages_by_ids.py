@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import uuid
 
@@ -50,7 +52,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
         ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState", "targetLanguages", "translations"},
     )
 
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
     assert evt_success, "发送端未收到 onMessageSuccess 回调"
     assert_api.assert_response_matches(
         evt_success,
@@ -101,7 +103,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
     ):
         real_id = str(evt_success_msg.get("msgId"))
 
-    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timing_seconds('timeout.message', module='chat'))
     assert evt_received, "接收端未收到 onMessagesReceived 回调"
     assert_api.assert_response_matches(
         evt_received,
@@ -145,7 +147,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
 
     delivery_event = device_a.receive_message(
         match_event_type=Cmd.onMessagesDelivered.value,
-        timeout=20.0,
+        timeout=timing_seconds('timeout.message', module='chat'),
     )
     assert_api.assert_response_matches(
         delivery_event,
@@ -225,9 +227,11 @@ def test_chat_load_messages_with_ids_single_and_multi_success(device_a, device_b
     content_1 = f"s4-load-by-ids-{uuid.uuid4().hex[:8]}-1"
     content_2 = f"s4-load-by-ids-{uuid.uuid4().hex[:8]}-2"
     msg_id_1 = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content_1)
+    timing_pause('step.interval', module='chat')
     msg_id_2 = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content_2)
 
     # 单 ID
+    timing_pause('step.interval', module='chat')
     resp_single = device_a.call(
         "ChatManager",
         Cmd.loadMessagesWithIds.value,

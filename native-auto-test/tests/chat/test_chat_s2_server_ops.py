@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -23,11 +25,12 @@ def _assert_chat_response(assert_api, resp: dict, cmd: str, device: str = "devic
     )
 
 
-def _wait_text_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 60.0) -> dict:
+def _wait_text_event(device, event_type: str, *, real_id: str, content: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.server_state', module='chat') if timeout is None else timeout
     seen = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=event_type, timeout=2.0)
+        evt = device.receive_message(match_event_type=event_type, timeout=timing_seconds('poll.receive', module='chat'))
         if evt:
             seen.append(evt)
         for msg in ((evt or {}).get("data") or {}).get("messages") or []:
@@ -91,9 +94,9 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
 
     evt_success = None
     seen_success = []
-    deadline = time.monotonic() + 60.0
+    deadline = time.monotonic() + timing_seconds('timeout.server_state', module='chat')
     while time.monotonic() < deadline and evt_success is None:
-        evt = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=2.0)
+        evt = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('poll.receive', module='chat'))
         if evt:
             seen_success.append(evt)
         msg = ((evt or {}).get("data") or {}).get("msg") or {}
@@ -133,9 +136,9 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
     )
 
     seen_received = []
-    deadline = time.monotonic() + 60.0
+    deadline = time.monotonic() + timing_seconds('timeout.server_state', module='chat')
     while time.monotonic() < deadline:
-        evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=2.0)
+        evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timing_seconds('poll.receive', module='chat'))
         if evt_received:
             seen_received.append(evt_received)
         messages = ((evt_received or {}).get("data") or {}).get("messages") or []
@@ -185,7 +188,7 @@ def _project_server_conversations(result, user_b: str) -> list[dict]:
 def _wait_server_conversation_projection(device, cmd: str, info: dict, user_b: str, *, cursor_result: bool = False) -> tuple[dict, list[dict]]:
     last_resp = None
     last_projection: list[dict] = []
-    deadline = time.monotonic() + 30.0
+    deadline = time.monotonic() + timing_seconds('timeout.state_projection', module='chat')
     while time.monotonic() < deadline:
         resp = device.call("ChatManager", cmd, info=info)
         result = resp.get("result") or {}
@@ -193,7 +196,7 @@ def _wait_server_conversation_projection(device, cmd: str, info: dict, user_b: s
         if projection:
             return resp, projection
         last_resp, last_projection = resp, projection
-        time.sleep(2.0)
+        time.sleep(timing_seconds('poll.server_state', module='chat'))
     return last_resp or {}, last_projection
 
 
@@ -443,6 +446,7 @@ def test_chat_get_pinned_conversations_from_server_with_cursor_invalid_page_size
 
 def test_chat_delete_remote_conversation_success(device_a, device_b, assert_api, user_a, user_b):
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-del-remote-{uuid.uuid4().hex[:6]}")
+    timing_pause('step.interval', module='chat')
     resp = device_a.call(
         "ChatManager",
         Cmd.deleteRemoteConversation.value,
@@ -471,6 +475,7 @@ def test_chat_delete_remote_conversation_invalid_type(device_a, assert_api):
 
 def test_chat_remove_messages_from_server_with_msg_ids_success(device_a, device_b, assert_api, user_a, user_b):
     real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-rm-server-ids-{uuid.uuid4().hex[:6]}")
+    timing_pause('step.interval', module='chat')
     resp = device_a.call(
         "ChatManager",
         Cmd.removeMessagesFromServerWithMsgIds.value,
@@ -548,6 +553,7 @@ def test_chat_remove_messages_from_server_with_ts_missing_conv_id(device_a):
 
 def test_chat_report_message_success(device_a, device_b, assert_api, user_a, user_b):
     real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-report-{uuid.uuid4().hex[:6]}")
+    timing_pause('step.interval', module='chat')
     resp = device_a.call(
         "ChatManager",
         Cmd.reportMessage.value,

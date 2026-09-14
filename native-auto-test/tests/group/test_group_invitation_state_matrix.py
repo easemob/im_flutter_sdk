@@ -1,5 +1,7 @@
 """Group 入群邀请 pending、inviter 与重复处理状态矩阵。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import pytest
 
@@ -67,7 +69,7 @@ def _create_pending_invitation(
         expected_event_types={"onInvitationReceivedFromGroup"},
         group_id=group_id,
         required_all_event_types={"onInvitationReceivedFromGroup"},
-        timeout=10.0,
+        timeout=timing_seconds('observe.collect', module='group'),
     )
     assert_api.assert_response_matches(
         invitation_events[0],
@@ -122,6 +124,7 @@ def test_group_invitation_valid_group_without_pending_is_rejected(
     group_name = new_group_name(f"invitation_no_pending_{action}")
     try:
         _set_auto_accept(device_b, assert_api, False)
+        timing_pause('step.interval', module='group')
         group_id, _ = create_group(
             device_a,
             assert_api,
@@ -131,6 +134,7 @@ def test_group_invitation_valid_group_without_pending_is_rejected(
             style=0,
             invite_need_confirm=True,
         )
+        timing_pause('step.interval', module='group')
         info = {"groupId": group_id, "inviter": user_a}
         if action == Cmd.declineInvitationFromGroup.value:
             info["reason"] = "no-pending"
@@ -169,6 +173,7 @@ def test_group_invitation_wrong_inviter_does_not_consume_pending(
     accepted = False
     try:
         _set_auto_accept(device_b, assert_api, False)
+        timing_pause('step.interval', module='group')
         group_id = _create_pending_invitation(
             device_a,
             device_b,
@@ -177,6 +182,7 @@ def test_group_invitation_wrong_inviter_does_not_consume_pending(
             user_b=user_b,
             group_name=group_name,
         )
+        timing_pause('step.interval', module='group')
         command = (
             Cmd.acceptInvitationFromGroup.value
             if action == "accept"
@@ -186,6 +192,7 @@ def test_group_invitation_wrong_inviter_does_not_consume_pending(
         if action == "decline":
             info["reason"] = "wrong-inviter"
         wrong = device_b.call("GroupManager", command, info=info)
+        timing_pause('step.interval', module='group')
         wrong_result = wrong.get("result")
         wrong_inviter_rejected = (
             isinstance(wrong_result, dict)
@@ -236,7 +243,7 @@ def test_group_invitation_wrong_inviter_does_not_consume_pending(
                 "onMembersJoinedFromGroup",
                 "onMemberJoinedFromGroup",
             },
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         by_type = {event["eventType"]: event for event in accepted_events}
         assert_api.assert_response_matches(
@@ -248,6 +255,7 @@ def test_group_invitation_wrong_inviter_does_not_consume_pending(
             },
             ignore_keys={"timestamp", "sequence"},
         )
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -265,7 +273,7 @@ def test_group_invitation_wrong_inviter_does_not_consume_pending(
 @pytest.mark.parametrize(
     ("first_action", "second_action"),
     [
-        pytest.param("accept", "accept", id="accept-twice"),
+        pytest.param("accept", "accept", id="accept-twice", marks=pytest.mark.skip(reason="按用户要求暂缓：本轮标记 ❌ 的失败用例，待确认后恢复")),
         pytest.param("decline", "decline", id="decline-twice"),
         pytest.param("accept", "decline", id="accept-then-decline"),
         pytest.param("decline", "accept", id="decline-then-accept"),
@@ -286,6 +294,7 @@ def test_group_invitation_cannot_be_processed_twice(
     accepted = False
     try:
         _set_auto_accept(device_b, assert_api, False)
+        timing_pause('step.interval', module='group')
         group_id = _create_pending_invitation(
             device_a,
             device_b,
@@ -294,6 +303,7 @@ def test_group_invitation_cannot_be_processed_twice(
             user_b=user_b,
             group_name=group_name,
         )
+        timing_pause('step.interval', module='group')
         first_cmd = (
             Cmd.acceptInvitationFromGroup.value
             if first_action == "accept"
@@ -303,6 +313,7 @@ def test_group_invitation_cannot_be_processed_twice(
         if first_action == "decline":
             first_info["reason"] = "first-decline"
         first = device_b.call("GroupManager", first_cmd, info=first_info)
+        timing_pause('step.interval', module='group')
         if first_action == "accept":
             result = first.get("result")
             assert isinstance(result, dict), first
@@ -321,7 +332,7 @@ def test_group_invitation_cannot_be_processed_twice(
                     "onMembersJoinedFromGroup",
                     "onMemberJoinedFromGroup",
                 },
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
         else:
             _assert_call(
@@ -346,6 +357,7 @@ def test_group_invitation_cannot_be_processed_twice(
         second_info = {"groupId": group_id, "inviter": user_a}
         if second_action == "decline":
             second_info["reason"] = "second-decline"
+        timing_pause('step.interval', module='group')
         second = device_b.call("GroupManager", second_cmd, info=second_info)
         if accepted:
             assert_api.assert_error(second, code=601, description="already joined")

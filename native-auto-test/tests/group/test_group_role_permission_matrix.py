@@ -1,5 +1,7 @@
 """两设备三账号覆盖群主、管理员、普通成员的群组权限矩阵。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import pytest
 
@@ -63,6 +65,7 @@ def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
         device=device_name,
         result=True,
     )
+    timing_pause('settle.offline', module='group')
     login = device.call(
         "Client",
         Cmd.login.value,
@@ -85,6 +88,7 @@ def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
         device=device_name,
         result=None,
     )
+    timing_pause('settle.offline', module='group')
     device.drain_events()
 
 
@@ -203,6 +207,7 @@ def _create_role_group(
         invite_need_confirm=False,
     )
     if role == _ROLE_ADMIN:
+        timing_pause('step.interval', module='group')
         _add_admin(
             device_a,
             assert_api,
@@ -273,11 +278,13 @@ def test_group_mute_members_role_permission_matrix(
             user_b=user_b,
             user_c=user_c,
         )
+        timing_pause('step.interval', module='group')
         response = actor.call(
             "GroupManager",
             Cmd.muteMembers.value,
             info={"groupId": group_id, "members": [target_user], "duration": 60_000},
         )
+        timing_pause('step.interval', module='group')
         if role == _ROLE_MEMBER:
             assert_api.assert_error(response, code=603, description=_ADMIN_PERMISSION_ERROR)
         else:
@@ -300,7 +307,7 @@ def test_group_mute_members_role_permission_matrix(
                 expected_event_types={event_type},
                 group_id=group_id,
                 required_all_event_types={event_type},
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
             _assert_event(
                 assert_api,
@@ -312,6 +319,7 @@ def test_group_mute_members_role_permission_matrix(
             mute_expire = (events[0].get("data") or {}).get("muteExpire")
             assert isinstance(mute_expire, int) and mute_expire > 0, f"禁言回调 muteExpire 非有效时间: {events[0]}"
 
+            timing_pause('step.interval', module='group')
             response = actor.call(
                 "GroupManager",
                 Cmd.unMuteMembers.value,
@@ -336,7 +344,7 @@ def test_group_mute_members_role_permission_matrix(
                 expected_event_types={event_type},
                 group_id=group_id,
                 required_all_event_types={event_type},
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
             _assert_event(
                 assert_api,
@@ -346,6 +354,7 @@ def test_group_mute_members_role_permission_matrix(
             )
         _restore_owner_if_needed(device_a, assert_api, switched=switched, user_a=user_a)
         switched = False
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -398,7 +407,9 @@ def test_group_mute_all_role_permission_matrix(
             user_b=user_b,
             user_c=user_c,
         )
+        timing_pause('step.interval', module='group')
         response = actor.call("GroupManager", Cmd.muteAllMembers.value, info={"groupId": group_id})
+        timing_pause('step.interval', module='group')
         if role == _ROLE_MEMBER:
             assert_api.assert_error(response, code=603, description=_ADMIN_PERMISSION_ERROR)
         else:
@@ -421,7 +432,7 @@ def test_group_mute_all_role_permission_matrix(
                 expected_event_types={event_type},
                 group_id=group_id,
                 required_all_event_types={event_type},
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
             _assert_event(
                 assert_api,
@@ -429,6 +440,7 @@ def test_group_mute_all_role_permission_matrix(
                 event_type=event_type,
                 data={"groupId": group_id, "isAllMuted": True},
             )
+            timing_pause('step.interval', module='group')
             response = actor.call("GroupManager", Cmd.unMuteAllMembers.value, info={"groupId": group_id})
             assert_group_snapshot(
                 assert_api,
@@ -448,7 +460,7 @@ def test_group_mute_all_role_permission_matrix(
                 expected_event_types={event_type},
                 group_id=group_id,
                 required_all_event_types={event_type},
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
             _assert_event(
                 assert_api,
@@ -458,6 +470,7 @@ def test_group_mute_all_role_permission_matrix(
             )
         _restore_owner_if_needed(device_a, assert_api, switched=switched, user_a=user_a)
         switched = False
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -510,11 +523,13 @@ def test_group_allow_list_role_permission_matrix(
             user_b=user_b,
             user_c=user_c,
         )
+        timing_pause('step.interval', module='group')
         response = actor.call(
             "GroupManager",
             Cmd.addWhiteList.value,
             info={"groupId": group_id, "members": [target_user]},
         )
+        timing_pause('step.interval', module='group')
         if role == _ROLE_MEMBER:
             assert_api.assert_error(response, code=603, description=_ADMIN_PERMISSION_ERROR)
         else:
@@ -532,7 +547,7 @@ def test_group_allow_list_role_permission_matrix(
                 expected_event_types={event_type},
                 group_id=group_id,
                 required_all_event_types={event_type},
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
             _assert_event(
                 assert_api,
@@ -541,6 +556,7 @@ def test_group_allow_list_role_permission_matrix(
                 data={"groupId": group_id, "members": [target_user]},
             )
             target_device_name = "deviceB" if role == _ROLE_OWNER else "deviceA"
+            timing_pause('step.interval', module='group')
             response = target_device.call(
                 "GroupManager",
                 Cmd.isMemberInWhiteListFromServer.value,
@@ -574,7 +590,7 @@ def test_group_allow_list_role_permission_matrix(
                 expected_event_types={event_type},
                 group_id=group_id,
                 required_all_event_types={event_type},
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
             _assert_event(
                 assert_api,
@@ -584,6 +600,7 @@ def test_group_allow_list_role_permission_matrix(
             )
         _restore_owner_if_needed(device_a, assert_api, switched=switched, user_a=user_a)
         switched = False
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -625,11 +642,13 @@ def test_group_blocklist_admin_member_role_matrix(
             user_c=user_c,
             prefix="blocklist",
         )
+        timing_pause('step.interval', module='group')
         response = device_b.call(
             "GroupManager",
             Cmd.blockMembers.value,
             info={"groupId": group_id, "members": [user_c]},
         )
+        timing_pause('step.interval', module='group')
         if role == _ROLE_MEMBER:
             assert_api.assert_error(response, code=603, description=_ADMIN_PERMISSION_ERROR)
             _fetch_group(
@@ -659,7 +678,7 @@ def test_group_blocklist_admin_member_role_matrix(
                 expected_event_types=event_types,
                 group_id=group_id,
                 required_all_event_types=event_types,
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
             events_by_type = {event["eventType"]: event for event in events}
             _assert_event(
@@ -682,6 +701,7 @@ def test_group_blocklist_admin_member_role_matrix(
                 group_id=group_id,
                 expected_users=[user_c],
             )
+            timing_pause('step.interval', module='group')
             response = device_b.call(
                 "GroupManager",
                 Cmd.unblockMembers.value,
@@ -703,6 +723,7 @@ def test_group_blocklist_admin_member_role_matrix(
                 group_id=group_id,
                 expected_users=[],
             )
+            timing_pause('step.interval', module='group')
             _fetch_group(
                 device_a,
                 assert_api,
@@ -751,8 +772,10 @@ def test_group_metadata_admin_member_role_matrix(
         ]
         if role == _ROLE_MEMBER:
             for cmd, info in calls:
+                timing_pause('step.interval', module='group')
                 response = device_b.call("GroupManager", cmd, info=info)
                 assert_api.assert_error(response, code=603, description=_GROUP_FIELDS_PERMISSION_ERROR)
+            timing_pause('step.interval', module='group')
             _fetch_group(
                 device_a,
                 assert_api,
@@ -766,6 +789,7 @@ def test_group_metadata_admin_member_role_matrix(
             )
         else:
             for cmd, info in calls:
+                timing_pause('step.interval', module='group')
                 response = device_b.call("GroupManager", cmd, info=info)
                 if cmd in {Cmd.updateGroupSubject.value, Cmd.updateDescription.value}:
                     _assert_call(
@@ -797,7 +821,7 @@ def test_group_metadata_admin_member_role_matrix(
                     group_id=group_id,
                     allow_missing_group_id=True,
                     required_all_event_types={"onSpecificationDidUpdate"},
-                    timeout=10.0,
+                    timeout=timing_seconds('observe.collect', module='group'),
                 )
                 expected_desc = "auto-test group" if cmd == Cmd.updateGroupSubject.value else ""
                 _assert_event(
@@ -821,6 +845,7 @@ def test_group_metadata_admin_member_role_matrix(
                     },
                     ignore_keys={"memberList", "adminList"},
                 )
+            timing_pause('step.interval', module='group')
             _fetch_group(
                 device_a,
                 assert_api,
@@ -863,6 +888,7 @@ def test_group_destroy_owner_only_role_denied(
             user_c=user_c,
             prefix="destroy",
         )
+        timing_pause('step.interval', module='group')
         response = device_b.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": group_id})
         assert_api.assert_error(response, code=603, description=_OWNER_PERMISSION_ERROR)
         _fetch_group(
@@ -907,6 +933,7 @@ def test_group_message_block_role_matrix(
         )
         actor = device_a if role == _ROLE_OWNER else device_b
         actor_name = "deviceA" if role == _ROLE_OWNER else "deviceB"
+        timing_pause('step.interval', module='group')
         response = actor.call("GroupManager", Cmd.blockGroup.value, info={"groupId": group_id})
         _assert_call(
             assert_api,
@@ -916,6 +943,7 @@ def test_group_message_block_role_matrix(
             device=actor_name,
             result=None,
         )
+        timing_pause('step.interval', module='group')
         _fetch_group(
             actor,
             assert_api,
@@ -937,6 +965,7 @@ def test_group_message_block_role_matrix(
             device=actor_name,
             result=None,
         )
+        timing_pause('step.interval', module='group')
         _fetch_group(
             actor,
             assert_api,

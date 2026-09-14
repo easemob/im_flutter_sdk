@@ -1,5 +1,8 @@
 """好友单聊离线投递：消息类型、online-only、积压与送达回执。"""
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -115,8 +118,8 @@ def _cleanup_relation(device_a, device_b, user_a: str, user_b: str) -> None:
             )
         except Exception:
             pass
-    device_a.drain_events(timeout=0.5)
-    device_b.drain_events(timeout=0.5)
+    device_a.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+    device_b.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
 
 
 def _establish_friendship(
@@ -134,6 +137,7 @@ def _establish_friendship(
         device_name="deviceB",
         enabled=False,
     )
+    timing_pause('step.interval', module='chat')
     reason = f"offline-chat-friend-{uuid.uuid4().hex[:8]}"
     add = device_a.call(
         "ContactManager",
@@ -150,7 +154,7 @@ def _establish_friendship(
     )
     invited = device_b.receive_message(
         match_event_type=ContactChangeEvent.INVITED.value,
-        timeout=20.0,
+        timeout=timing_seconds('timeout.message', module='chat'),
     )
     assert_api.assert_response_matches(
         invited,
@@ -161,6 +165,7 @@ def _establish_friendship(
         },
         ignore_keys={"timestamp", "sequence"},
     )
+    timing_pause('step.interval', module='chat')
     accept = device_b.call(
         "ContactManager",
         Cmd.acceptInvitation.value,
@@ -176,7 +181,7 @@ def _establish_friendship(
     )
     accepted = device_a.receive_message(
         match_event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
-        timeout=20.0,
+        timeout=timing_seconds('timeout.message', module='chat'),
     )
     assert_api.assert_response_matches(
         accepted,
@@ -189,7 +194,7 @@ def _establish_friendship(
     )
     added = device_a.receive_message(
         match_event_type=ContactChangeEvent.CONTACT_ADD.value,
-        timeout=20.0,
+        timeout=timing_seconds('timeout.message', module='chat'),
     )
     assert_api.assert_response_matches(
         added,
@@ -200,8 +205,8 @@ def _establish_friendship(
         },
         ignore_keys={"timestamp", "sequence"},
     )
-    device_a.drain_events(timeout=0.5)
-    device_b.drain_events(timeout=0.5)
+    device_a.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+    device_b.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
 
 
 def _restore_case(
@@ -211,8 +216,8 @@ def _restore_case(
     user_a: str,
     user_b: str,
 ) -> None:
-    restore_user_login(device_a, user_id=user_a)
-    restore_user_login(device_b, user_id=user_b)
+    restore_user_login(device_a, user_id=user_a, module='chat')
+    restore_user_login(device_b, user_id=user_b, module='chat')
     _cleanup_relation(device_a, device_b, user_a, user_b)
 
 
@@ -232,6 +237,7 @@ def _prepare_offline_friend(
         user_b=user_b,
     )
     conversation = {"convId": user_a, "type": 0}
+    timing_pause('step.interval', module='chat')
     clear = device_b.call(
         "ConversationManager",
         Cmd.clearAllMessages.value,
@@ -245,6 +251,7 @@ def _prepare_offline_friend(
         device_name="deviceB",
         result=True,
     )
+    timing_pause('step.interval', module='chat')
     mark = device_b.call(
         "ConversationManager",
         Cmd.markAllMessagesAsRead.value,
@@ -258,15 +265,16 @@ def _prepare_offline_friend(
         device_name="deviceB",
         result=True,
     )
-    logout_for_offline(device_b, assert_api, device_name="deviceB")
+    logout_for_offline(device_b, assert_api, device_name="deviceB", module='chat')
 
 
 def _wait_success_event(
     device,
     *,
     temp_id: str,
-    timeout: float = 60.0,
+    timeout: float = None,
 ) -> dict:
+    timeout = timing_seconds('timeout.send_completion', module='chat') if timeout is None else timeout
     from src.tools.send_status_wait import wait_send_success
 
     return wait_send_success(device, temp_id=temp_id, timeout=timeout)
@@ -277,14 +285,15 @@ def _wait_message_event(
     event_type: str,
     *,
     real_id: str,
-    timeout: float = 60.0,
+    timeout: float = None,
 ) -> dict:
+    timeout = timing_seconds('timeout.replay', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
         event = device.receive_message(
             match_event_type=event_type,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if event:
             seen.append(event)
@@ -469,6 +478,7 @@ def test_chat_offline_text_message_received_after_login(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='chat',
         )
         received = _wait_message_event(
             device_b,
@@ -528,6 +538,7 @@ def test_chat_offline_media_message_received_after_login(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='chat',
         )
         received = _wait_message_event(
             device_b,
@@ -590,6 +601,7 @@ def test_chat_offline_location_message_received_after_login(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='chat',
         )
         received = _wait_message_event(
             device_b,
@@ -643,6 +655,7 @@ def test_chat_offline_custom_message_received_after_login(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='chat',
         )
         received = _wait_message_event(
             device_b,
@@ -680,6 +693,7 @@ def test_chat_offline_combine_message_received_after_login(
         source_ids = []
         for index in range(2):
             content = f"offline-combine-source-{index}-{uuid.uuid4().hex[:6]}"
+            timing_pause('step.interval', module='chat')
             _, source_id, _ = _assert_send_response_and_success(
                 device_a,
                 assert_api,
@@ -709,9 +723,9 @@ def test_chat_offline_combine_message_received_after_login(
                 body={"type": 0, "content": content, "translations": {}},
             )
             source_ids.append(source_id)
-        device_a.drain_events(timeout=0.5)
-        device_b.drain_events(timeout=0.5)
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        device_a.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        device_b.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='chat')
         _, real_id, _ = _assert_send_response_and_success(
             device_a,
             assert_api,
@@ -746,6 +760,7 @@ def test_chat_offline_combine_message_received_after_login(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='chat',
         )
         received = _wait_message_event(
             device_b,
@@ -805,6 +820,7 @@ def test_chat_offline_cmd_message_received_after_login(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='chat',
         )
         received = _wait_message_event(
             device_b,
@@ -857,18 +873,20 @@ def test_chat_offline_deliver_online_only_not_received_after_login(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='chat',
         )
-        deadline = time.monotonic() + 5.0
+        deadline = time.monotonic() + timing_seconds('observe.no_delivery', module='chat')
         seen_target = []
         while time.monotonic() < deadline:
             event = device_b.receive_message(
                 match_event_type=Cmd.onCmdMessagesReceived.value,
-                timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+                timeout=min(timing_seconds('poll.receive_batch', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
             )
             for message in (((event or {}).get("data") or {}).get("messages") or []):
                 if str((message or {}).get("msgId")) == real_id:
                     seen_target.append(event)
         assert seen_target == [], f"online-only CMD 不应离线投递: {seen_target}"
+        timing_pause('step.interval', module='chat')
         local = device_b.call(
             "ChatManager",
             Cmd.getMessage.value,
@@ -899,29 +917,25 @@ def test_chat_offline_multiple_text_messages_and_unread_count(
         _prepare_offline_friend(
             device_a, device_b, assert_api, user_a=user_a, user_b=user_b
         )
-        sent_messages = [
-            (
-                _send_offline_text(
-                    device_a,
-                    assert_api,
-                    user_a=user_a,
-                    user_b=user_b,
-                    content=content,
-                ),
-                content,
+        sent_messages = []
+        for content in contents:
+            if sent_messages:
+                timing_pause('step.interval', module='chat')
+            message_id = _send_offline_text(
+                device_a, assert_api, user_a=user_a, user_b=user_b, content=content,
             )
-            for content in contents
-        ]
+            sent_messages.append((message_id, content))
         id_to_content = dict(sent_messages)
         login_preserving_offline_events(
             device_b,
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='chat',
         )
         received = device_b.receive_message(
             match_event_type=Cmd.onMessagesReceived.value,
-            timeout=60.0,
+            timeout=timing_seconds('timeout.replay', module='chat'),
         )
         assert received is not None, "B 登录后未收到三条离线文本的聚合事件"
         expected_messages = [
@@ -957,6 +971,7 @@ def test_chat_offline_multiple_text_messages_and_unread_count(
             },
             ignore_keys=_MESSAGE_DYNAMIC_KEYS,
         )
+        timing_pause('step.interval', module='chat')
         unread = device_b.call(
             "ConversationManager",
             Cmd.getUnreadMsgCount.value,
@@ -1033,7 +1048,7 @@ def test_chat_offline_delivery_ack_after_recipient_login(
         )
         early = device_a.receive_message(
             match_event_type=Cmd.onMessagesDelivered.value,
-            timeout=3.0,
+            timeout=timing_seconds('timeout.delivery_confirmation', module='chat'),
         )
         assert early is None, f"B 离线时不应提前收到送达回执: {early}"
         login_preserving_offline_events(
@@ -1041,6 +1056,7 @@ def test_chat_offline_delivery_ack_after_recipient_login(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='chat',
         )
         received = _wait_message_event(
             device_b,

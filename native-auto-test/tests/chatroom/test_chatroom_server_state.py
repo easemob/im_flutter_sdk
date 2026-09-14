@@ -1,4 +1,5 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -16,6 +17,7 @@ def test_chatroom_fetch_public_chat_rooms_from_server_success(device_a, assert_a
         room_id, room_name = create_chatroom_or_skip(owner=user_a, name_prefix="public", desc_prefix="public")
         # Public listings are shared across lanes/users. No contract guarantees
         # that our newly created room occupies the first slot.
+        timing_pause('step.interval', module='chatroom')
         for page_num in range(1, 101):
             resp = device_a.call(
                 "ChatRoomManager", Cmd.fetchPublicChatRoomsFromServer.value,

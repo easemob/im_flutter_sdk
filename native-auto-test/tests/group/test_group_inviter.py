@@ -1,5 +1,7 @@
 """Group inviterUser 正常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import pytest
 
@@ -29,6 +31,7 @@ def test_group_inviter_user_success(device_a, device_b, assert_api, user_a, user
             invite_members=[],
         )
 
+        timing_pause('step.interval', module='group')
         resp_invite = device_a.call(
             "GroupManager",
             Cmd.inviterUser.value,
@@ -56,7 +59,7 @@ def test_group_inviter_user_success(device_a, device_b, assert_api, user_a, user
             group_id=group_id,
             allow_missing_group_id=True,
             required_all_event_types={"onAutoAcceptInvitationFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -75,6 +78,7 @@ def test_group_inviter_user_success(device_a, device_b, assert_api, user_a, user
             expected_member=user_b,
         )
 
+        timing_pause('step.interval', module='group')
         resp_group = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,

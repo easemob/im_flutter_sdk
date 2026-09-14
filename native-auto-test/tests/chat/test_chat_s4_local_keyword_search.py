@@ -1,4 +1,5 @@
 from __future__ import annotations
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -51,7 +52,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
         ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState", "targetLanguages", "translations"},
     )
 
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
     assert evt_success, "发送端未收到 onMessageSuccess 回调"
     assert_api.assert_response_matches(
         evt_success,
@@ -102,7 +103,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
     ):
         real_id = str(evt_success_msg.get("msgId"))
 
-    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timing_seconds('timeout.message', module='chat'))
     assert evt_received, "接收端未收到 onMessagesReceived 回调"
     assert_api.assert_response_matches(
         evt_received,
@@ -148,7 +149,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
 
 
 def _assert_delivery_event(device_a, assert_api, *, msg_id: str, user_a: str, user_b: str, content: str) -> None:
-    delivery_event = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=20.0)
+    delivery_event = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=timing_seconds('timeout.message', module='chat'))
     assert_api.assert_response_matches(
         delivery_event,
         expected={
@@ -193,14 +194,14 @@ def test_chat_load_conversation_messages_with_keyword_success(device_a, device_b
         "scope": 2,
     }
     resp = None
-    deadline = time.monotonic() + 30.0
+    deadline = time.monotonic() + timing_seconds('timeout.state_projection', module='chat')
     while time.monotonic() < deadline:
         resp = device_a.call("ChatManager", Cmd.loadConversationMessagesWithKeyword.value, info=info)
         result = resp.get("result") if isinstance(resp, dict) else {}
         ids = result.get(user_b) if isinstance(result, dict) else None
         if isinstance(ids, list) and real_id in ids:
             break
-        time.sleep(1.0)
+        time.sleep(timing_seconds('poll.interval', module='chat'))
     assert resp is not None
     assert_api.assert_response_matches(
         resp,

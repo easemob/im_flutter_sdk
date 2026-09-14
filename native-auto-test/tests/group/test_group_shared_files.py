@@ -1,5 +1,7 @@
 """Group 共享文件（群主/管理员正常链路 + 异常）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import pytest
 
@@ -36,7 +38,7 @@ def _consume_direct_invite_events(
         expected_event_types={"onAutoAcceptInvitationFromGroup"},
         group_id=group_id,
         required_all_event_types={"onAutoAcceptInvitationFromGroup"},
-        timeout=10.0,
+        timeout=timing_seconds('observe.collect', module='group'),
     )
     assert_api.assert_response_matches(
         member_events[0],
@@ -54,7 +56,7 @@ def _consume_direct_invite_events(
         expected_event_types=owner_event_types,
         group_id=group_id,
         required_all_event_types=owner_event_types,
-        timeout=10.0,
+        timeout=timing_seconds('observe.collect', module='group'),
     )
     assert_group_events(
         assert_api,
@@ -160,7 +162,7 @@ def _upload_remove_and_assert_peer_events(
         expected_event_types={"onSharedFileAddedFromGroup"},
         group_id=group_id,
         required_all_event_types={"onSharedFileAddedFromGroup"},
-        timeout=20.0,
+        timeout=timing_seconds('observe.file_transfer', module='group'),
     )
     shared_file = _assert_shared_file_added_event(
         assert_api,
@@ -183,6 +185,7 @@ def _upload_remove_and_assert_peer_events(
     )
 
     file_id = shared_file["fileId"]
+    timing_pause('step.interval', module='group')
     resp_remove = operator_device.call(
         "GroupManager",
         Cmd.removeGroupSharedFile.value,
@@ -204,7 +207,7 @@ def _upload_remove_and_assert_peer_events(
         expected_event_types={"onSharedFileDeletedFromGroup"},
         group_id=group_id,
         required_all_event_types={"onSharedFileDeletedFromGroup"},
-        timeout=10.0,
+        timeout=timing_seconds('observe.collect', module='group'),
     )
     assert_api.assert_response_matches(
         deleted_events[0],
@@ -221,6 +224,7 @@ def _upload_remove_and_assert_peer_events(
         event_types={"onSharedFileDeletedFromGroup"},
     )
 
+    timing_pause('step.interval', module='group')
     resp_empty = operator_device.call(
         "GroupManager",
         Cmd.getGroupFileListFromServer.value,
@@ -271,6 +275,7 @@ def test_group_owner_upload_remove_shared_file_notifies_member(
             owner=user_b,
             member=user_a,
         )
+        timing_pause('step.interval', module='group')
         _upload_remove_and_assert_peer_events(
             device_b,
             device_a,
@@ -313,6 +318,7 @@ def test_group_admin_upload_remove_shared_file_notifies_owner(
             group_name=new_group_name("admin_shared_file"),
             invite_members=[user_b],
         )
+        timing_pause('step.interval', module='group')
         _consume_direct_invite_events(
             device_a,
             device_b,
@@ -322,6 +328,7 @@ def test_group_admin_upload_remove_shared_file_notifies_owner(
             member=user_b,
         )
 
+        timing_pause('step.interval', module='group')
         resp_admin = device_a.call(
             "GroupManager",
             Cmd.addAdmin.value,
@@ -341,7 +348,7 @@ def test_group_admin_upload_remove_shared_file_notifies_owner(
             expected_event_types={"onAdminAddedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onAdminAddedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -357,6 +364,7 @@ def test_group_admin_upload_remove_shared_file_notifies_owner(
             event_types={"onAdminAddedFromGroup"},
         )
 
+        timing_pause('step.interval', module='group')
         _upload_remove_and_assert_peer_events(
             device_b,
             device_a,
@@ -386,6 +394,7 @@ def test_group_upload_shared_file_explicit_host_path_is_invalid(device_a, assert
             invite_members=[],
         )
 
+        timing_pause('step.interval', module='group')
         resp_upload = device_a.call(
             "GroupManager",
             Cmd.uploadGroupSharedFile.value,
@@ -463,6 +472,7 @@ def test_group_upload_shared_file_invalid_path(device_a, assert_api, user_a):
             group_name=new_group_name("shared_file_invalid"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.uploadGroupSharedFile.value,

@@ -1,5 +1,6 @@
 """Group 共享文件列表正常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -21,6 +22,7 @@ def test_group_get_group_file_list_from_server_success(device_a, assert_api, use
             invite_members=[],
         )
 
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.getGroupFileListFromServer.value,

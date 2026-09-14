@@ -1,4 +1,5 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 from uuid import uuid4
 
@@ -30,6 +31,7 @@ def test_chatroom_create_room_via_sdk_without_permission(device_a, assert_api):
 
 def test_chatroom_create_and_fetch_from_server(device_a, assert_api, user_a):
     room_id, room_name = create_chatroom_or_skip(owner=user_a, name_prefix="create", desc_prefix="create")
+    timing_pause('step.interval', module='chatroom')
     try:
         resp = device_a.call("ChatRoomManager", Cmd.fetchChatRoomInfoFromServer.value, info={"roomId": room_id})
         assert_api.assert_response_matches(
@@ -65,10 +67,12 @@ def test_chatroom_create_and_fetch_from_server(device_a, assert_api, user_a):
 
 def test_chatroom_fetch_room_info_with_members_from_server(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="fetch_members", desc_prefix="fetch_members")
+    timing_pause('step.interval', module='chatroom')
     try:
         join_resp = device_b.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
         assert_join_chatroom_response(assert_api, join_resp, device="deviceB", room_id=room_id)
 
+        timing_pause('step.interval', module='chatroom')
         resp = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomInfoFromServer.value,
@@ -115,6 +119,7 @@ def test_chatroom_fetch_room_info_with_members_from_server(device_a, device_b, a
 
 def test_chatroom_destroy_room_success(device_a, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="destroy", desc_prefix="destroy")
+    timing_pause('step.interval', module='chatroom')
     resp = device_a.call("ChatRoomManager", Cmd.destroyChatRoom.value, info={"roomId": room_id})
     assert_api.assert_response_matches(
         resp,
@@ -130,6 +135,7 @@ def test_chatroom_destroy_room_success(device_a, assert_api, user_a):
 
 def test_chatroom_fetch_room_info_from_server_after_destroy(device_a, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="destroy_fetch", desc_prefix="destroy_fetch")
+    timing_pause('step.interval', module='chatroom')
     resp_destroy = device_a.call("ChatRoomManager", Cmd.destroyChatRoom.value, info={"roomId": room_id})
     assert_api.assert_response_matches(
         resp_destroy,
@@ -142,5 +148,6 @@ def test_chatroom_fetch_room_info_from_server_after_destroy(device_a, assert_api
         ignore_keys={"sequence"},
     )
 
+    timing_pause('step.interval', module='chatroom')
     resp_fetch = device_a.call("ChatRoomManager", Cmd.fetchChatRoomInfoFromServer.value, info={"roomId": room_id})
     assert_api.assert_error(resp_fetch, code=700, description="do not find this group")

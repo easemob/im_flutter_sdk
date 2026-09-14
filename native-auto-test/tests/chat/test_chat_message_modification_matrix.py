@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import os
 import time
@@ -19,10 +21,11 @@ def _assert_delivery_ack_boolean(message, *, source):
     assert isinstance(message["hasDeliverAck"], bool), f"{source}.hasDeliverAck 不是 bool: {message}"
 
 
-def _wait_success(device, *, content, timeout=30.0):
+def _wait_success(device, *, content, timeout=None):
+    timeout = timing_seconds('timeout.send_terminal', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        event = device.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=2)
+        event = device.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('poll.receive', module='chat'))
         message = ((event or {}).get("data") or {}).get("msg") or {}
         if message.get("msgId") and (message.get("body") or {}).get("content") == content:
             return event, message
@@ -93,10 +96,10 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
         has_read=True,
         has_deliver_ack=False,
     )
-    deadline = time.monotonic() + 30
+    deadline = time.monotonic() + timing_seconds('timeout.send_terminal', module='chat')
     received_message = None
     while time.monotonic() < deadline:
-        event = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=2)
+        event = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timing_seconds('poll.receive', module='chat'))
         for item in (((event or {}).get("data") or {}).get("messages") or []):
             if isinstance(item, dict) and str(item.get("msgId")) == str(message["msgId"]):
                 received_message = item
@@ -117,10 +120,10 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
         has_read=False,
         has_deliver_ack=True,
     )
-    deadline = time.monotonic() + 30
+    deadline = time.monotonic() + timing_seconds('timeout.send_terminal', module='chat')
     delivered_message = None
     while time.monotonic() < deadline:
-        event = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=2)
+        event = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=timing_seconds('poll.receive', module='chat'))
         for item in (((event or {}).get("data") or {}).get("messages") or []):
             if isinstance(item, dict) and str(item.get("msgId")) == str(message["msgId"]):
                 delivered_message = item
@@ -144,11 +147,12 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
     return message
 
 
-def _wait_changed(device, *, msg_id, timeout=30.0):
+def _wait_changed(device, *, msg_id, timeout=None):
+    timeout = timing_seconds('timeout.message_change', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        event = device.receive_message(match_event_type=Cmd.onMessageContentChanged.value, timeout=2)
+        event = device.receive_message(match_event_type=Cmd.onMessageContentChanged.value, timeout=timing_seconds('poll.receive', module='chat'))
         if event:
             seen.append(event)
         message = ((event or {}).get("data") or {}).get("message") or {}
@@ -161,7 +165,7 @@ def _wait_changed(device, *, msg_id, timeout=30.0):
 def test_chat_modify_text_body_and_attributes(device_a, device_b, assert_api, user_a, user_b, mode):
     old_content = f"modify-text-old-{uuid.uuid4().hex[:6]}"
     message = _send_text(device_a, device_b, assert_api, user_a, user_b, old_content)
-    time.sleep(float(os.getenv("CHAT_MODIFY_SETTLE_SECONDS", "5")))
+    time.sleep(timing_seconds('settle.normal', module='chat'))
     new_content = f"modify-text-new-{uuid.uuid4().hex[:6]}"
     attributes = {"editMode": mode, "revision": "1"}
     info = {"msgId": message["msgId"]}
@@ -170,6 +174,7 @@ def test_chat_modify_text_body_and_attributes(device_a, device_b, assert_api, us
     if mode != "body":
         info["attributes"] = attributes
     response = device_a.call("ChatManager", Cmd.modifyMessage.value, info=info)
+    timing_pause('step.interval', module='chat')
     expected_content = old_content if mode == "attributes" else new_content
     expected_result = {
         "msgId": message["msgId"], "from": user_a, "to": user_b, "convId": user_b,
@@ -222,6 +227,7 @@ def test_chat_modify_message_empty_id(device_a, assert_api):
 
 def test_chat_non_sender_cannot_modify_message(device_a, device_b, assert_api, user_a, user_b):
     message = _send_text(device_a, device_b, assert_api, user_a, user_b, f"modify-other-{uuid.uuid4().hex[:6]}")
+    timing_pause('step.interval', module='chat')
     response = device_b.call(
         "ChatManager", Cmd.modifyMessage.value,
         info={"msgId": message["msgId"], "msgBody": {"type": 0, "content": "not-owner"}},
@@ -244,15 +250,16 @@ def test_chat_modify_cmd_message_is_rejected(device_a, device_b, assert_api, use
         "deliverOnlineOnly": False}, "chatType": 0},
     )
     assert ((response.get("result") or {}).get("msgId")), response
-    deadline = time.monotonic() + 30
+    deadline = time.monotonic() + timing_seconds('timeout.send_terminal', module='chat')
     message = None
     while time.monotonic() < deadline:
-        event = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=2)
+        event = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('poll.receive', module='chat'))
         candidate = ((event or {}).get("data") or {}).get("msg") or {}
         if candidate.get("msgId") and (candidate.get("body") or {}).get("action") == action:
             message = candidate
             break
     assert message, "未收到 CMD 发送成功事件"
+    timing_pause('step.interval', module='chat')
     modify = device_a.call(
         "ChatManager", Cmd.modifyMessage.value,
         info={"msgId": message["msgId"], "attributes": {"cmdEdit": True}},
@@ -273,6 +280,7 @@ def _send_media(device_a, device_b, assert_api, user_a, user_b, type_key):
             type_key="voice", payload={"targetId": user_b, "duration": 1},
         )
         return ((success.get("data") or {}).get("msg") or {})
+    timing_pause('step.interval', module='chat')
     _, sent, _ = _send_with_type(
         device_a, device_b, assert_api, user_a, user_b,
         type_key=type_key, payload={"targetId": user_b},
@@ -283,7 +291,7 @@ def _send_media(device_a, device_b, assert_api, user_a, user_b, type_key):
 @pytest.mark.parametrize("type_key", ["voice", "image", "video"])
 def test_chat_modify_media_attributes(device_a, device_b, assert_api, user_a, user_b, type_key):
     message = _send_media(device_a, device_b, assert_api, user_a, user_b, type_key)
-    time.sleep(float(os.getenv("CHAT_MODIFY_SETTLE_SECONDS", "5")))
+    time.sleep(timing_seconds('settle.normal', module='chat'))
     attributes = {"mediaEdit": type_key, "revision": "1"}
     response = device_a.call(
         "ChatManager", Cmd.modifyMessage.value,
@@ -329,6 +337,7 @@ def test_chat_modify_media_attributes(device_a, device_b, assert_api, user_a, us
 @pytest.mark.parametrize("type_key", ["voice", "image", "video"])
 def test_chat_modify_media_body_is_rejected(device_a, device_b, assert_api, user_a, user_b, type_key):
     message = _send_media(device_a, device_b, assert_api, user_a, user_b, type_key)
+    timing_pause('step.interval', module='chat')
     response = device_a.call(
         "ChatManager", Cmd.modifyMessage.value,
         info={"msgId": message["msgId"], "msgBody": message["body"]},

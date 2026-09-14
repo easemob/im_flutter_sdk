@@ -9,6 +9,8 @@
 - 事件字符串 onFriendStartSync / onFriendSyncFinished 直接按服务端回调匹配，不依赖本仓库的枚举。
 """
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds, pause as timing_pause
 
 import time
 
@@ -26,8 +28,10 @@ FRIEND_START_SYNC = "onFriendStartSync"
 FRIEND_SYNC_FINISHED = "onFriendSyncFinished"
 
 
-def _wait_friend_sync_events(device, *, start_timeout: float = 10.0, finish_timeout: float = 20.0):
+def _wait_friend_sync_events(device, *, start_timeout: float = None, finish_timeout: float = None):
     """等待一轮好友信息同步的开始与结束事件；返回 (start_evt, finish_evt)。"""
+    start_timeout = timing_seconds('timeout.friend_sync_start', module='contact') if start_timeout is None else start_timeout
+    finish_timeout = timing_seconds('timeout.friend_sync_finish', module='contact') if finish_timeout is None else finish_timeout
     start_evt = device.receive_message(match_event_type=FRIEND_START_SYNC, timeout=start_timeout)
     assert start_evt is not None, "未收到 onFriendStartSync 回调"
     finish_evt = device.receive_message(match_event_type=FRIEND_SYNC_FINISHED, timeout=finish_timeout)
@@ -47,10 +51,13 @@ def test_friend_info_auto_sync_after_login(device_a, device_b, assert_api, user_
     # 重新登录以触发一次同步；先清理残留事件，避免噪音
     try:
         assert_api.assert_success(device_a.call("Client", Cmd.logout.value, info={"unbindToken": False}))
+        timing_pause('settle.offline', module='contact')
         assert_api.assert_success(device_b.call("Client", Cmd.logout.value, info={"unbindToken": False}))
-        device_a.drain_events(timeout=1.0)
-        device_b.drain_events(timeout=1.0)
+        timing_pause('settle.offline', module='contact')
+        device_a.drain_events(timeout=timing_seconds('drain.sync', module='contact'))
+        device_b.drain_events(timeout=timing_seconds('drain.sync', module='contact'))
 
+        timing_pause('settle.offline', module='contact')
         assert_api.assert_success(
             device_a.call(
                 "Client",
@@ -58,7 +65,9 @@ def test_friend_info_auto_sync_after_login(device_a, device_b, assert_api, user_
                 info={"userId": user_a, "pwdOrToken": "1", "isPassword": True},
             )
         )
+        timing_pause('settle.offline', module='contact')
         _wait_friend_sync_events(device_a)
+        timing_pause('settle.offline', module='contact')
         assert_api.assert_success(
             device_b.call(
                 "Client",
@@ -66,6 +75,7 @@ def test_friend_info_auto_sync_after_login(device_a, device_b, assert_api, user_
                 info={"userId": user_b, "pwdOrToken": "1", "isPassword": True},
             )
         )
+        timing_pause('settle.offline', module='contact')
         _wait_friend_sync_events(device_b)
     finally:
         device_a.call("Client", Cmd.login.value, info={"userId": user_a, "pwdOrToken": "1", "isPassword": True})
@@ -85,17 +95,19 @@ def test_friend_info_sync_on_peer_metadata_change(device_a, device_b, assert_api
     flow.establish_friends(device_a, device_b, user_a, user_b, reason="friend_info_sync_change")
 
     # 清理可能的历史回调，聚焦本次变更
-    device_a.drain_events(timeout=1.0)
+    device_a.drain_events(timeout=timing_seconds('drain.sync', module='contact'))
 
     # 通过 REST 修改设备 B 的用户元数据（示例：nickname）。
     # 若未配置 REST token/base_url，此调用会抛错并由测试框架报告配置问题。
     new_nick = f"nick-{int(time.time())}"
+    timing_pause('step.interval', module='contact')
     update_user_metadata(user_b, {"nickname": new_nick})
 
     # A 收到好友信息同步的开始与结束回调
     # _wait_friend_sync_events(device_a, start_timeout=20.0, finish_timeout=30.0)
 
     # 同步完成后，A 拉取 B 的用户信息；根据实际返回断言关键字段（userId、nickName）
+    timing_pause('step.interval', module='contact')
     content_after_readd = device_a.call(
         "ContactManager",
         Cmd.getContact.value,

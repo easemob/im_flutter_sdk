@@ -1,5 +1,6 @@
 """Group lifecycle 异常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import os
 import pytest
@@ -57,6 +58,7 @@ def test_group_create_group_empty_name(device_a, assert_api, user_a):
         },
         ignore_keys={"sequence"},
     )
+    timing_pause('step.interval', module='group')
     gid = ((resp.get("result") or {}).get("groupId")) if isinstance(resp.get("result"), dict) else None
     assert isinstance(gid, str) and gid, f"createGroup 空群名返回应包含可销毁的 groupId: {resp}"
     # 清理由该异常场景产生的群，避免污染环境
@@ -113,6 +115,7 @@ def test_group_create_group_optional_fields_empty(device_a, assert_api, user_a, 
             base_info[key] = value
 
     resp = device_a.call("GroupManager", Cmd.createGroup.value, info=base_info)
+    timing_pause('step.interval', module='group')
     result = resp.get("result") if isinstance(resp.get("result"), dict) else {}
     expected_desc = base_info["desc"]
     expected_ext = base_info["options"]["ext"]
@@ -223,6 +226,7 @@ def test_group_create_group_name_and_avatar_abnormal_inputs(
         base_info[key] = value
 
     resp = device_a.call("GroupManager", Cmd.createGroup.value, info=base_info)
+    timing_pause('step.interval', module='group')
     if expect_error is not None:
         assert_api.assert_error(resp, code=expect_error["code"], description=expect_error["description"])
         return
@@ -316,6 +320,7 @@ def test_group_create_group_desc_reason_options_abnormal_inputs(
             base_info[key] = value
 
     resp = device_a.call("GroupManager", Cmd.createGroup.value, info=base_info)
+    timing_pause('step.interval', module='group')
     result = resp.get("result") if isinstance(resp.get("result"), dict) else {}
     is_error = isinstance(result, dict) and "code" in result and "description" in result
 
@@ -404,6 +409,7 @@ def test_group_create_group_invite_members_abnormal_inputs(
     }
 
     resp = device_a.call("GroupManager", Cmd.createGroup.value, info=info)
+    timing_pause('step.interval', module='group')
     result = resp.get("result") if isinstance(resp.get("result"), dict) else {}
     is_error = isinstance(result, dict) and "code" in result and "description" in result
 
@@ -488,6 +494,7 @@ def test_group_create_group_text_fields_additional_inputs(
     base_info[field] = value
 
     resp = device_a.call("GroupManager", Cmd.createGroup.value, info=base_info)
+    timing_pause('step.interval', module='group')
     if expect_error is not None:
         assert_api.assert_error(resp, code=expect_error["code"], description=expect_error["description"])
         return

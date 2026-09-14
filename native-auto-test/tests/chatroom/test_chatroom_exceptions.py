@@ -27,6 +27,7 @@ def test_chatroom_destroy_room_nonexistent(device_a, assert_api):
     assert_api.assert_error(resp, code=700, description="do not find this group")
 
 
+@pytest.mark.skip(reason="按用户要求暂缓：本轮标记 ❌ 的失败用例，待确认后恢复")
 def test_chatroom_join_room_nonexistent_current_behavior(device_b, assert_api):
     room_id = _nonexistent_room_id()
     resp = device_b.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})

@@ -1,5 +1,7 @@
 """Group 成员属性 API 正常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import pytest
 
@@ -28,6 +30,7 @@ def test_group_set_and_fetch_member_attributes_success(device_a, device_b, asser
             invite_members=[user_b],
         )
 
+        timing_pause('step.interval', module='group')
         resp_set = device_b.call(
             "GroupManager",
             Cmd.setMemberAttributesFromGroup.value,
@@ -53,7 +56,7 @@ def test_group_set_and_fetch_member_attributes_success(device_a, device_b, asser
             },
             group_id=group_id,
             required_all_event_types={"onAttributesChangedOfGroupMember"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -68,6 +71,7 @@ def test_group_set_and_fetch_member_attributes_success(device_a, device_b, asser
             expected_member=user_b,
         )
 
+        timing_pause('step.interval', module='group')
         resp_fetch_single = device_b.call(
             "GroupManager",
             Cmd.fetchMemberAttributesFromGroup.value,

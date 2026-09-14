@@ -1,4 +1,7 @@
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -20,11 +23,12 @@ def _assert_chat_response(assert_api, resp: dict, cmd: str, device: str, result_
     )
 
 
-def _wait_text_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 30.0) -> dict:
+def _wait_text_event(device, event_type: str, *, real_id: str, content: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=event_type, timeout=min(2.0, max(0.1, deadline - time.monotonic())))
+        evt = device.receive_message(match_event_type=event_type, timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())))
         if evt:
             seen.append(evt)
         for msg in ((evt or {}).get("data") or {}).get("messages") or []:
@@ -84,8 +88,8 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
         },
     )
 
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
-    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
+    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timing_seconds('timeout.message', module='chat'))
     assert_api.assert_response_matches(
         evt_success,
         expected={
@@ -180,6 +184,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
 
 def test_chat_get_conversation_success(device_a, device_b, assert_api, user_a, user_b):
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s1-get-conv-{uuid.uuid4().hex[:6]}")
+    timing_pause('step.interval', module='chat')
     resp = device_a.call(
         "ChatManager",
         Cmd.getConversation.value,
@@ -238,8 +243,10 @@ def test_chat_get_unread_count_positive_then_zero(device_a, device_b, assert_api
         ignore_keys={"sequence"},
     )
 
+    timing_pause('step.interval', module='chat')
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s1-unread-{uuid.uuid4().hex[:6]}")
 
+    timing_pause('step.interval', module='chat')
     resp_unread = device_b.call("ChatManager", Cmd.getUnreadMessageCount.value, info={})
     assert_api.assert_response_matches(
         resp_unread,
@@ -264,6 +271,7 @@ def test_chat_get_unread_count_positive_then_zero(device_a, device_b, assert_api
         ignore_keys={"sequence"},
     )
 
+    timing_pause('step.interval', module='chat')
     resp_unread_after = device_b.call("ChatManager", Cmd.getUnreadMessageCount.value, info={})
     _assert_chat_response(assert_api, resp_unread_after, Cmd.getUnreadMessageCount.value, "deviceB", 0)
 
@@ -281,6 +289,7 @@ def test_chat_mark_all_as_read_idempotent(device_b, assert_api):
         ignore_keys={"sequence"},
     )
 
+    timing_pause('step.interval', module='chat')
     resp_2 = device_b.call("ChatManager", Cmd.markAllChatMsgAsRead.value, info={})
     assert_api.assert_response_matches(
         resp_2,
@@ -293,6 +302,7 @@ def test_chat_mark_all_as_read_idempotent(device_b, assert_api):
         ignore_keys={"sequence"},
     )
 
+    timing_pause('step.interval', module='chat')
     resp_unread = device_b.call("ChatManager", Cmd.getUnreadMessageCount.value, info={})
     _assert_chat_response(assert_api, resp_unread, Cmd.getUnreadMessageCount.value, "deviceB", 0)
 
@@ -303,8 +313,9 @@ def test_chat_load_all_conversations_contains_then_not_contains(device_a, device
         Cmd.deleteConversation.value,
         info={"convId": user_b, "deleteMessages": True},
     )
+    timing_pause('step.interval', module='chat')
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s1-load-all-{uuid.uuid4().hex[:6]}")
-    time.sleep(2)
+    time.sleep(timing_seconds('settle.local_projection', module='chat'))
 
     resp_load = device_a.call("ChatManager", Cmd.loadAllConversations.value, info={})
     result = resp_load.get("result")
@@ -348,6 +359,7 @@ def test_chat_load_all_conversations_contains_then_not_contains(device_a, device
         ignore_keys={"sequence"},
     )
 
+    timing_pause('step.interval', module='chat')
     resp_load_after = device_a.call("ChatManager", Cmd.loadAllConversations.value, info={})
     result_after = resp_load_after.get("result")
     projected_after = [
@@ -375,6 +387,7 @@ def test_chat_load_all_conversations_contains_then_not_contains(device_a, device
 def test_chat_delete_conversation_existing_then_not_found(device_a, device_b, assert_api, user_a, user_b):
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s1-del-conv-{uuid.uuid4().hex[:6]}")
 
+    timing_pause('step.interval', module='chat')
     resp_delete = device_a.call(
         "ChatManager",
         Cmd.deleteConversation.value,
@@ -382,6 +395,7 @@ def test_chat_delete_conversation_existing_then_not_found(device_a, device_b, as
     )
     _assert_chat_response(assert_api, resp_delete, Cmd.deleteConversation.value, "deviceA", True)
 
+    timing_pause('step.interval', module='chat')
     resp_get = device_a.call(
         "ChatManager",
         Cmd.getConversation.value,
@@ -410,6 +424,7 @@ def test_chat_delete_conversation_nonexistent_returns_bool(device_a, assert_api)
 
 def test_chat_delete_messages_before_timestamp_future_removes_msg(device_a, device_b, assert_api, user_a, user_b):
     real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s1-del-before-future-{uuid.uuid4().hex[:6]}")
+    timing_pause('step.interval', module='chat')
     resp_del = device_a.call(
         "ChatManager",
         Cmd.deleteMessagesBeforeTimestamp.value,
@@ -417,12 +432,14 @@ def test_chat_delete_messages_before_timestamp_future_removes_msg(device_a, devi
     )
     _assert_chat_response(assert_api, resp_del, Cmd.deleteMessagesBeforeTimestamp.value, "deviceA", None)
 
+    timing_pause('step.interval', module='chat')
     resp_get = device_a.call("ChatManager", Cmd.getMessage.value, info={"msgId": real_id})
     _assert_chat_response(assert_api, resp_get, Cmd.getMessage.value, "deviceA", None)
 
 
 def test_chat_delete_messages_before_timestamp_zero_keeps_recent_msg(device_a, device_b, assert_api, user_a, user_b):
     real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s1-del-before-zero-{uuid.uuid4().hex[:6]}")
+    timing_pause('step.interval', module='chat')
     resp_del = device_a.call(
         "ChatManager",
         Cmd.deleteMessagesBeforeTimestamp.value,
@@ -430,6 +447,7 @@ def test_chat_delete_messages_before_timestamp_zero_keeps_recent_msg(device_a, d
     )
     _assert_chat_response(assert_api, resp_del, Cmd.deleteMessagesBeforeTimestamp.value, "deviceA", None)
 
+    timing_pause('step.interval', module='chat')
     resp_get = device_a.call("ChatManager", Cmd.getMessage.value, info={"msgId": real_id})
     result_get = resp_get.get("result") or {}
     assert_api.assert_response_matches(

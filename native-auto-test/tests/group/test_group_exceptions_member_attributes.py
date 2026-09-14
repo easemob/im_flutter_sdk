@@ -1,5 +1,6 @@
 """Group 成员属性 API 异常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -86,6 +87,7 @@ def test_group_set_member_attributes_empty_attributes(device_a, assert_api, user
             group_name=new_group_name("ex_member_attr"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.setMemberAttributesFromGroup.value,

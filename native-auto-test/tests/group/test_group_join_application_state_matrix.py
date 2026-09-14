@@ -1,5 +1,7 @@
 """Group 入群申请 pending 状态与处理角色矩阵。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import pytest
 
@@ -37,6 +39,7 @@ def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
         device=device_name,
         result=True,
     )
+    timing_pause('settle.offline', module='group')
     login = device.call(
         "Client",
         Cmd.login.value,
@@ -59,6 +62,7 @@ def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
         device=device_name,
         result=None,
     )
+    timing_pause('settle.offline', module='group')
     device.drain_events()
 
 
@@ -132,7 +136,7 @@ def _request_join(
         expected_event_types={"onRequestToJoinReceivedFromGroup"},
         group_id=group_id,
         required_all_event_types={"onRequestToJoinReceivedFromGroup"},
-        timeout=10.0,
+        timeout=timing_seconds('observe.collect', module='group'),
     )
     _assert_event(
         assert_api,
@@ -171,6 +175,7 @@ def test_group_join_application_valid_group_without_pending_is_rejected(
             invite_members=[],
             style=2,
         )
+        timing_pause('step.interval', module='group')
         info = {"groupId": group_id, "userId": user_b}
         if action == Cmd.declineJoinApplication.value:
             info["reason"] = "no-pending"
@@ -210,6 +215,7 @@ def test_group_join_application_empty_reason_uses_server_default(
             invite_members=[],
             style=2,
         )
+        timing_pause('step.interval', module='group')
         response = device_b.call(
             "GroupManager",
             Cmd.requestToJoinPublicGroup.value,
@@ -228,7 +234,7 @@ def test_group_join_application_empty_reason_uses_server_default(
             expected_event_types={"onRequestToJoinReceivedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onRequestToJoinReceivedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         _assert_event(
             assert_api,
@@ -241,6 +247,7 @@ def test_group_join_application_empty_reason_uses_server_default(
                 "reason": "apply to join",
             },
         )
+        timing_pause('step.interval', module='group')
         decline = device_a.call(
             "GroupManager",
             Cmd.declineJoinApplication.value,
@@ -259,8 +266,9 @@ def test_group_join_application_empty_reason_uses_server_default(
             expected_event_types={"onRequestToJoinDeclinedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onRequestToJoinDeclinedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -295,6 +303,7 @@ def test_group_duplicate_join_application_keeps_single_pending_request(
             invite_members=[],
             style=2,
         )
+        timing_pause('step.interval', module='group')
         _request_join(
             device_b,
             device_a,
@@ -305,6 +314,7 @@ def test_group_duplicate_join_application_keeps_single_pending_request(
             applicant=user_b,
             reason="first-reason",
         )
+        timing_pause('step.interval', module='group')
         _request_join(
             device_b,
             device_a,
@@ -315,6 +325,7 @@ def test_group_duplicate_join_application_keeps_single_pending_request(
             applicant=user_b,
             reason="second-reason",
         )
+        timing_pause('step.interval', module='group')
         decline = device_a.call(
             "GroupManager",
             Cmd.declineJoinApplication.value,
@@ -333,7 +344,7 @@ def test_group_duplicate_join_application_keeps_single_pending_request(
             expected_event_types={"onRequestToJoinDeclinedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onRequestToJoinDeclinedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         _assert_event(
             assert_api,
@@ -347,6 +358,7 @@ def test_group_duplicate_join_application_keeps_single_pending_request(
                 "applicant": user_b,
             },
         )
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -365,7 +377,7 @@ def test_group_duplicate_join_application_keeps_single_pending_request(
 @pytest.mark.parametrize(
     ("first_action", "second_action"),
     [
-        pytest.param("accept", "accept", id="accept-twice"),
+        pytest.param("accept", "accept", id="accept-twice", marks=pytest.mark.skip(reason="按用户要求暂缓：本轮标记 ❌ 的失败用例，待确认后恢复")),
         pytest.param("decline", "decline", id="decline-twice"),
         pytest.param("accept", "decline", id="accept-then-decline"),
         pytest.param("decline", "accept", id="decline-then-accept"),
@@ -393,6 +405,7 @@ def test_group_join_application_cannot_be_processed_twice(
             invite_members=[],
             style=2,
         )
+        timing_pause('step.interval', module='group')
         _request_join(
             device_b,
             device_a,
@@ -403,6 +416,7 @@ def test_group_join_application_cannot_be_processed_twice(
             applicant=user_b,
             reason="state-machine",
         )
+        timing_pause('step.interval', module='group')
         first_cmd = (
             Cmd.acceptJoinApplication.value
             if first_action == "accept"
@@ -420,6 +434,7 @@ def test_group_join_application_cannot_be_processed_twice(
             device="deviceA",
             result=None,
         )
+        timing_pause('step.interval', module='group')
         first_event_type = (
             "onRequestToJoinAcceptedFromGroup"
             if first_action == "accept"
@@ -430,7 +445,7 @@ def test_group_join_application_cannot_be_processed_twice(
             expected_event_types={first_event_type},
             group_id=group_id,
             required_all_event_types={first_event_type},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         if first_action == "accept":
             accepted = True
@@ -463,6 +478,7 @@ def test_group_join_application_cannot_be_processed_twice(
         second_info = {"groupId": group_id, "userId": user_b}
         if second_action == "decline":
             second_info["reason"] = "second-decline"
+        timing_pause('step.interval', module='group')
         second = device_a.call("GroupManager", second_cmd, info=second_info)
         assert_api.assert_error(second, code=110, description="is not in the apply list")
         _fetch_group(
@@ -523,6 +539,7 @@ def test_group_join_application_processing_permission_by_role(
         device_a.drain_events()
         device_b.drain_events()
         if make_admin:
+            timing_pause('step.interval', module='group')
             add_admin = device_a.call(
                 "GroupManager",
                 Cmd.addAdmin.value,
@@ -546,13 +563,14 @@ def test_group_join_application_processing_permission_by_role(
             device="deviceA",
             result=None,
         )
+        timing_pause('step.interval', module='group')
         if make_admin:
             request_events = collect_group_events(
                 device_b,
                 expected_event_types={"onRequestToJoinReceivedFromGroup"},
                 group_id=group_id,
                 required_all_event_types={"onRequestToJoinReceivedFromGroup"},
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
             _assert_event(
                 assert_api,
@@ -580,6 +598,7 @@ def test_group_join_application_processing_permission_by_role(
         info = {"groupId": group_id, "userId": user_c}
         if action == "decline":
             info["reason"] = "role-decline"
+        timing_pause('step.interval', module='group')
         response = device_b.call("GroupManager", command, info=info)
         if make_admin:
             _assert_call(
@@ -600,7 +619,7 @@ def test_group_join_application_processing_permission_by_role(
                 expected_event_types={event_type},
                 group_id=group_id,
                 required_all_event_types={event_type},
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
             if action == "accept":
                 accepted = True
@@ -666,6 +685,7 @@ def test_group_non_member_cannot_process_join_application(
             invite_members=[],
             style=2,
         )
+        timing_pause('step.interval', module='group')
         _request_join(
             device_b,
             device_a,
@@ -676,6 +696,7 @@ def test_group_non_member_cannot_process_join_application(
             applicant=user_b,
             reason="nonmember-operator",
         )
+        timing_pause('step.interval', module='group')
         _switch_user(device_a, assert_api, device_name="deviceA", user_id=user_c)
         device_a_is_c = True
         command = (

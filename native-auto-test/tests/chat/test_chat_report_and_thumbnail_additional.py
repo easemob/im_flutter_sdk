@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -11,11 +13,12 @@ from tests.chat._utils import build_text
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
 
-def _wait_message_list_event(device, event_type, *, msg_id, timeout=30):
+def _wait_message_list_event(device, event_type, *, msg_id, timeout=None):
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        event = device.receive_message(match_event_type=event_type, timeout=2)
+        event = device.receive_message(match_event_type=event_type, timeout=timing_seconds('poll.receive', module='chat'))
         if event:
             seen.append(event)
         for message in (((event or {}).get("data") or {}).get("messages") or []):
@@ -59,9 +62,9 @@ def _send_text_message(device_a, device_b, assert_api, user_a, user_b, content):
         ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState",
                      "deliverOnlineOnly", "targetLanguages", "translations"},
     )
-    deadline = time.monotonic() + 30
+    deadline = time.monotonic() + timing_seconds('timeout.send_terminal', module='chat')
     while time.monotonic() < deadline:
-        event = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=2)
+        event = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('poll.receive', module='chat'))
         message = ((event or {}).get("data") or {}).get("msg") or {}
         if message.get("msgId") and (message.get("body") or {}).get("content") == content:
             _assert_text_event(
@@ -77,6 +80,7 @@ def _send_text_message(device_a, device_b, assert_api, user_a, user_b, content):
 def test_chat_download_thumbnail_for_text_message(device_a, device_b, assert_api, user_a, user_b):
     content = f"thumbnail-text-{uuid.uuid4().hex[:8]}"
     message = _send_text_message(device_a, device_b, assert_api, user_a, user_b, content)
+    timing_pause('step.interval', module='chat')
     response = device_a.call("ChatManager", Cmd.downloadThumbnail.value, info={"message": message})
     assert_api.assert_response_matches(
         response,
@@ -89,7 +93,7 @@ def test_chat_download_thumbnail_for_text_message(device_a, device_b, assert_api
         }},
         ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState", "deliverOnlineOnly"},
     )
-    event = device_a.receive_message(match_event_type=Cmd.onMessageError.value, timeout=20)
+    event = device_a.receive_message(match_event_type=Cmd.onMessageError.value, timeout=timing_seconds('timeout.message', module='chat'))
     assert_api.assert_response_matches(
         event,
         expected={"type": "event", "eventType": Cmd.onMessageError.value, "data": {

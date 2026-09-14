@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import uuid
 
@@ -49,7 +51,7 @@ def test_chat_ack_message_read_success_with_event(device_a, device_b, assert_api
 
     content = f"ack-read-{uuid.uuid4().hex[:8]}"
     _ = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, content))
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
     sent = ((evt_success or {}).get("data") or {}).get("msg") or {}
     sent_real_id = sent.get("msgId")
     assert sent_real_id, f"missing real msgId from onMessageSuccess: {evt_success!r}"
@@ -89,7 +91,7 @@ def test_chat_ack_message_read_success_with_event(device_a, device_b, assert_api
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime"},
     )
 
-    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timing_seconds('timeout.message', module='chat'))
     received = _target_message(evt_received, sent_real_id, content=content)
     recv_msg_id = (received or {}).get("msgId")
     assert recv_msg_id, f"missing received msgId from onMessagesReceived: {evt_received!r}"
@@ -124,7 +126,7 @@ def test_chat_ack_message_read_success_with_event(device_a, device_b, assert_api
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime"},
     )
 
-    evt_delivered = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=20.0)
+    evt_delivered = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=timing_seconds('timeout.message', module='chat'))
     delivered = _target_message(evt_delivered, recv_msg_id, content=content)
     assert delivered, f"missing delivered msg from onMessagesDelivered: {evt_delivered!r}"
     assert_api.assert_response_matches(
@@ -158,6 +160,7 @@ def test_chat_ack_message_read_success_with_event(device_a, device_b, assert_api
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime"},
     )
 
+    timing_pause('step.interval', module='chat')
     resp_ack = device_b.call(
         "ChatManager",
         Cmd.ackMessageRead.value,
@@ -175,7 +178,7 @@ def test_chat_ack_message_read_success_with_event(device_a, device_b, assert_api
     )
 
     assert_api.assert_response_matches(
-        device_a.receive_message(match_event_type=Cmd.onMessagesRead.value, timeout=10.0),
+        device_a.receive_message(match_event_type=Cmd.onMessagesRead.value, timeout=timing_seconds('timeout.event', module='chat')),
         expected={
             "type": "event",
             "eventType": Cmd.onMessagesRead.value,

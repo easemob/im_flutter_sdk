@@ -1,5 +1,7 @@
 """单聊离线扩展后操作：首次接收前变更、类型化已读与撤回。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -216,6 +218,7 @@ def _send_online_combine(
             received_body={"type": 0, "content": content, "translations": {}},
         )
         source_ids.append(source_id)
+        timing_pause('step.interval', module='chat')
 
     title = f"offline-operation-combine-{marker}"
     summary = "offline operation combine summary"
@@ -228,6 +231,7 @@ def _send_online_combine(
         "fileStatus": 3,
     }
     sender_body = {**response_body, "fileStatus": 1}
+    timing_pause('step.interval', module='chat')
     _, real_id, _ = _assert_send_response_and_success(
         device_a,
         assert_api,
@@ -420,6 +424,7 @@ def test_chat_offline_typed_message_read_after_sender_relogin(
     ignore_keys = _MEDIA_DYNAMIC_KEYS if type_key in {"file", "image", "video", "voice"} else _MESSAGE_DYNAMIC_KEYS
     try:
         _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
+        timing_pause('step.interval', module='chat')
         real_id, _ = _send_online_typed(
             device_a,
             device_b,
@@ -431,8 +436,8 @@ def test_chat_offline_typed_message_read_after_sender_relogin(
             sent_body=sent_body,
             received_body=received_body,
         )
-        device_a.drain_events(timeout=0.5)
-        logout_for_offline(device_a, assert_api, device_name="deviceA")
+        device_a.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        logout_for_offline(device_a, assert_api, device_name="deviceA", module='chat')
         ack = device_b.call(
             "ChatManager",
             Cmd.ackMessageRead.value,
@@ -448,7 +453,7 @@ def test_chat_offline_typed_message_read_after_sender_relogin(
         )
         login_preserving_offline_events(
             device_a, assert_api, device_name="deviceA", user_id=user_a
-        )
+        , module='chat')
         read = _wait_message_event(
             device_a, Cmd.onMessagesRead.value, real_id=real_id
         )
@@ -488,6 +493,7 @@ def test_chat_offline_typed_message_recall_after_recipient_relogin(
     recall_body = sent_body if type_key == "voice" else received_body
     try:
         _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
+        timing_pause('step.interval', module='chat')
         real_id, _ = _send_online_typed(
             device_a,
             device_b,
@@ -499,8 +505,8 @@ def test_chat_offline_typed_message_recall_after_recipient_relogin(
             sent_body=sent_body,
             received_body=received_body,
         )
-        device_b.drain_events(timeout=0.5)
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        device_b.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='chat')
         recall = device_a.call(
             "ChatManager", Cmd.recallMessage.value, info={"msgId": real_id}
         )
@@ -514,7 +520,7 @@ def test_chat_offline_typed_message_recall_after_recipient_relogin(
         )
         login_preserving_offline_events(
             device_b, assert_api, device_name="deviceB", user_id=user_b
-        )
+        , module='chat')
         recalled_info = _wait_recall_info(device_b, real_id=real_id)
         _assert_recall_info(
             assert_api,
@@ -538,6 +544,7 @@ def test_chat_offline_typed_message_recall_after_recipient_relogin(
             body=recall_body,
             ignore_keys=ignore_keys,
         )
+        timing_pause('step.interval', module='chat')
         local = device_b.call(
             "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
         )
@@ -563,6 +570,7 @@ def test_chat_offline_combine_message_read_after_sender_relogin(
     """A 离线期间 B 已读 combine；A 重登收到同一 msgId 的已读回执。"""
     try:
         _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
+        timing_pause('step.interval', module='chat')
         real_id, sender_body, _ = _send_online_combine(
             device_a,
             device_b,
@@ -570,8 +578,8 @@ def test_chat_offline_combine_message_read_after_sender_relogin(
             user_a=user_a,
             user_b=user_b,
         )
-        device_a.drain_events(timeout=0.5)
-        logout_for_offline(device_a, assert_api, device_name="deviceA")
+        device_a.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        logout_for_offline(device_a, assert_api, device_name="deviceA", module='chat')
         ack = device_b.call(
             "ChatManager",
             Cmd.ackMessageRead.value,
@@ -587,7 +595,7 @@ def test_chat_offline_combine_message_read_after_sender_relogin(
         )
         login_preserving_offline_events(
             device_a, assert_api, device_name="deviceA", user_id=user_a
-        )
+        , module='chat')
         read = _wait_message_event(
             device_a, Cmd.onMessagesRead.value, real_id=real_id
         )
@@ -614,6 +622,7 @@ def test_chat_offline_combine_message_recall_after_recipient_relogin(
     """B 已收 combine 后离线；A 撤回后 B 重登收到原 combine 信息。"""
     try:
         _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
+        timing_pause('step.interval', module='chat')
         real_id, _, received_body = _send_online_combine(
             device_a,
             device_b,
@@ -621,8 +630,8 @@ def test_chat_offline_combine_message_recall_after_recipient_relogin(
             user_a=user_a,
             user_b=user_b,
         )
-        device_b.drain_events(timeout=0.5)
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        device_b.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='chat')
         recall = device_a.call(
             "ChatManager", Cmd.recallMessage.value, info={"msgId": real_id}
         )
@@ -636,7 +645,7 @@ def test_chat_offline_combine_message_recall_after_recipient_relogin(
         )
         login_preserving_offline_events(
             device_b, assert_api, device_name="deviceB", user_id=user_b
-        )
+        , module='chat')
         recalled_info = _wait_recall_info(device_b, real_id=real_id)
         _assert_recall_info(
             assert_api,
@@ -660,6 +669,7 @@ def test_chat_offline_combine_message_recall_after_recipient_relogin(
             body=received_body,
             ignore_keys=_COMBINE_DYNAMIC_KEYS,
         )
+        timing_pause('step.interval', module='chat')
         local = device_b.call(
             "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
         )
@@ -690,6 +700,7 @@ def test_chat_offline_custom_body_modified_after_recipient_relogin(
     new_params = {"revision": "1", "source": "offline"}
     try:
         _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
+        timing_pause('step.interval', module='chat')
         real_id, _ = _send_online_typed(
             device_a,
             device_b,
@@ -701,9 +712,9 @@ def test_chat_offline_custom_body_modified_after_recipient_relogin(
             sent_body={"type": 7, "event": old_event, "params": old_params},
             received_body={"type": 7, "event": old_event, "params": old_params},
         )
-        time.sleep(5)
-        device_b.drain_events(timeout=0.5)
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        time.sleep(timing_seconds('settle.normal', module='chat'))
+        device_b.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='chat')
         modify = device_a.call(
             "ChatManager",
             Cmd.modifyMessage.value,
@@ -746,7 +757,7 @@ def test_chat_offline_custom_body_modified_after_recipient_relogin(
         )
         login_preserving_offline_events(
             device_b, assert_api, device_name="deviceB", user_id=user_b
-        )
+        , module='chat')
         changed = _wait_content_changed(device_b, real_id=real_id)
         final_body = {"type": 7, "event": new_event, "params": new_params}
         assert_api.assert_response_matches(
@@ -778,6 +789,7 @@ def test_chat_offline_custom_body_modified_after_recipient_relogin(
             ignore_keys=_MESSAGE_DYNAMIC_KEYS
             | {"deliverOnlineOnly", "receiverList"},
         )
+        timing_pause('step.interval', module='chat')
         local = device_b.call(
             "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
         )
@@ -840,6 +852,7 @@ def test_chat_offline_media_attributes_modified_after_recipient_relogin(
         changed_body["fileStatus"] = 1
     try:
         _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
+        timing_pause('step.interval', module='chat')
         real_id, _ = _send_online_typed(
             device_a,
             device_b,
@@ -851,9 +864,9 @@ def test_chat_offline_media_attributes_modified_after_recipient_relogin(
             sent_body=sent_body,
             received_body=received_body,
         )
-        time.sleep(5)
-        device_b.drain_events(timeout=0.5)
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        time.sleep(timing_seconds('settle.normal', module='chat'))
+        device_b.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='chat')
         modify = device_a.call(
             "ChatManager",
             Cmd.modifyMessage.value,
@@ -892,7 +905,7 @@ def test_chat_offline_media_attributes_modified_after_recipient_relogin(
         )
         login_preserving_offline_events(
             device_b, assert_api, device_name="deviceB", user_id=user_b
-        )
+        , module='chat')
         changed = _wait_content_changed(device_b, real_id=real_id)
         assert_api.assert_response_matches(
             changed,
@@ -924,6 +937,7 @@ def test_chat_offline_media_attributes_modified_after_recipient_relogin(
             ignore_keys=_MEDIA_DYNAMIC_KEYS
             | {"deliverOnlineOnly", "receiverList"},
         )
+        timing_pause('step.interval', module='chat')
         local = device_b.call(
             "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
         )
@@ -984,6 +998,7 @@ def test_chat_offline_text_recalled_before_first_recipient_login(
             response_body={"type": 0, "content": content},
             success_body=body,
         )
+        timing_pause('step.interval', module='chat')
         recall = device_a.call(
             "ChatManager", Cmd.recallMessage.value, info={"msgId": real_id}
         )
@@ -997,10 +1012,10 @@ def test_chat_offline_text_recalled_before_first_recipient_login(
         )
         login_preserving_offline_events(
             device_b, assert_api, device_name="deviceB", user_id=user_b
-        )
+        , module='chat')
         recalled_info = _wait_recall_info(device_b, real_id=real_id)
         recalled = device_b.receive_message(
-            match_event_type=Cmd.onMessagesRecalled.value, timeout=20.0
+            match_event_type=Cmd.onMessagesRecalled.value, timeout=timing_seconds('timeout.message', module='chat')
         )
         _assert_pre_receive_recall_events(
             assert_api,
@@ -1009,6 +1024,7 @@ def test_chat_offline_text_recalled_before_first_recipient_login(
             real_id=real_id,
             user_a=user_a,
         )
+        timing_pause('step.interval', module='chat')
         local = device_b.call(
             "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
         )
@@ -1047,6 +1063,7 @@ def test_chat_offline_text_modified_before_first_recipient_login(
             response_body={"type": 0, "content": old_content},
             success_body={"type": 0, "content": old_content, "translations": {}},
         )
+        timing_pause('step.interval', module='chat')
         modify = device_a.call(
             "ChatManager",
             Cmd.modifyMessage.value,
@@ -1085,7 +1102,7 @@ def test_chat_offline_text_modified_before_first_recipient_login(
         )
         login_preserving_offline_events(
             device_b, assert_api, device_name="deviceB", user_id=user_b
-        )
+        , module='chat')
         received = _wait_message_event(
             device_b, Cmd.onMessagesReceived.value, real_id=real_id
         )
@@ -1112,6 +1129,7 @@ def test_chat_offline_text_modified_before_first_recipient_login(
             body=final_body,
             ignore_keys=_MESSAGE_DYNAMIC_KEYS,
         )
+        timing_pause('step.interval', module='chat')
         local = device_b.call(
             "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
         )

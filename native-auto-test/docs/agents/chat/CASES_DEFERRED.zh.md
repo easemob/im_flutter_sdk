@@ -100,5 +100,13 @@
 - `tests/chat/test_chat_typed_message_pin_flows.py::test_chat_typed_message_pin_and_cross_user_unpin[sender-custom-payload1]`
 - `tests/chat/test_chat_typed_message_pin_flows.py::test_chat_typed_message_pin_and_cross_user_unpin[receiver-custom-payload1]`
   - 原因：用户提供的失败日志中，操作者端收到 `onMessagePinChanged`，与用例的无回调断言不一致；按用户要求暂缓这两条用例，不改写业务预期。
-  - 处理：在 custom 参数行标记 `pytest.mark.skip`，全量、分 lane 和按 nodeid 执行均显示 SKIPPED；location 参数行不受影响。
+  - 处理：原先在 custom 参数行标记 `pytest.mark.skip`；按用户后续要求，现已在函数级标记 skip，包含 location 在内的全部参数化用例均跳过。
   - 恢复条件：用户确认恢复执行，并依据明确的置顶回调语义和真实事件重新验证后移除 skip。
+
+
+## 用户指定跳过的失败用例
+
+- `test_chat_offline_recipient_receives_message_pin_after_relogin`：按用户要求标记 skip，待确认后恢复。
+- `test_chat_offline_recipient_receives_message_unpin_after_relogin`：按用户要求标记 skip，待确认后恢复。
+- `test_chat_add_reaction_too_long_reaction`：按用户要求标记 skip，待确认后恢复。
+- `test_chat_typed_message_pin_and_cross_user_unpin`：按用户要求整个函数标记 skip，覆盖 sender/receiver × location/custom 共 4 条参数化用例，待确认后恢复。

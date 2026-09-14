@@ -121,6 +121,17 @@
   - `deleteMessagesAsExitChatRoom: true`
   - `isChatRoomOwnerLeaveAllowed: true`
 
+— Cases 执行时间配置
+- 所有真实业务模块的 sleep、timeout、观察窗口、轮询、事件清理及重试退避统一通过 `src/tools/case_timing.py` 读取环境文件 `app.case_timing`；不得新增硬编码等待或散落时间环境变量。
+- 语义词汇与默认集中在 `src/tools/case_timing_defaults.py`；参考 `docs/case-timing-inventory.md`。禁止新增文件/函数级长键、前缀推断、旧环境变量兼容层；按等待用途复用语义键，不按数值机械合并。
+- 普通依赖步骤使用 `pause('step.interval', module='group')`（默认 1 秒），时间读取使用 `seconds('timeout.event', module='contact')`；module 必传，公共离线 helper 由调用方传递业务模块。session/shared 分别用于会话 fixture/通用 sender helper。
+- 所有段统一覆盖：模块语义值 > 全局语义值 > 模块 default > 全局 default > 内置默认。旧长键 YAML 报错，旧时间环境变量不读取。
+- 离线关键边界共用 `settle.offline`（默认 3 秒）。只在业务依赖处暂停，不在底层每个 call 后统一 sleep。
+- 有匹配事件就绪条件时保留事件等待；一组回调验证完成到下一个依赖业务操作仍需普通 step 间隔。无事件断言观察完整窗口；重登后的稳定等待不得 drain 离线回调。
+- 审计需展开本地/导入 helper、条件分支和有限业务循环，不能仅统计直接 login 或按文件名判断覆盖。逐例索引为 `docs/case-dependency-audit.md`；该索引不是任务状态来源。
+- 参数在调用时读取；函数默认实参用 None 再解析，避免导入时冻结配置。时间戳/禁言/订阅期限等业务输入不混入执行等待。算法读取下限常量不作为配置；poll.receive*、poll 的 sleep、drain 清理窗口、正向事件 timeout 不得混淆。
+- 调整不改变业务断言或原有重试次数。设备重跑与缺陷归因由使用者另行执行。
+
 — 常用命令
 - 单例发现：`CASES_DISCOVER=1 WS_DEBUG=1 pytest -q tests/<domain>/test_<topic>.py::test_<name> -s`
 - 变更回归（默认）：`pytest -q tests/<domain>/test_<topic>.py::test_<name> -s` 或 `pytest -q tests/<domain>/test_<topic>.py -s`

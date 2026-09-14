@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from src import Cmd
+from src.tools.case_timing import pause, seconds
 
 
 def _assert_client_response(assert_api, response: dict, *, cmd: str,
@@ -21,9 +22,9 @@ def _assert_client_response(assert_api, response: dict, *, cmd: str,
     )
 
 
-def logout_for_offline(device, assert_api, *, device_name: str) -> None:
+def logout_for_offline(device, assert_api, *, device_name: str, module: str) -> None:
     """清理陈旧事件后退出登录，同时保留当前 WebSocket 连接。"""
-    device.drain_events(timeout=0.5)
+    device.drain_events(timeout=seconds('drain.offline', module=module))
     response = device.call(
         "Client",
         Cmd.logout.value,
@@ -36,7 +37,8 @@ def logout_for_offline(device, assert_api, *, device_name: str) -> None:
         device_name=device_name,
         result=True,
     )
-    device.drain_events(timeout=0.5)
+    device.drain_events(timeout=seconds('drain.offline', module=module))
+    pause('settle.offline', module=module)
 
 
 def login_preserving_offline_events(
@@ -45,9 +47,11 @@ def login_preserving_offline_events(
     *,
     device_name: str,
     user_id: str,
+    module: str,
     password: str = "1",
 ) -> None:
     """登录并启动回调；登录后的离线事件必须留在队列中供 case 断言。"""
+    pause('settle.offline', module=module)
     response = device.call(
         "Client",
         Cmd.login.value,
@@ -72,9 +76,10 @@ def login_preserving_offline_events(
         device_name=device_name,
         result=None,
     )
+    pause('settle.offline', module=module)
 
 
-def restore_user_login(device, *, user_id: str, password: str = "1") -> None:
+def restore_user_login(device, *, user_id: str, module: str, password: str = "1") -> None:
     """供 finally 使用：尽力恢复指定用户登录，不覆盖 case 的原始异常。"""
     try:
         current_response = device.call("Client", Cmd.getCurrentUser.value, info={})
@@ -99,7 +104,7 @@ def restore_user_login(device, *, user_id: str, password: str = "1") -> None:
                 },
             )
         device.call("Client", Cmd.startCallback.value, info={})
-        device.drain_events(timeout=0.5)
+        device.drain_events(timeout=seconds('drain.offline', module=module))
     except Exception:
         pass
 

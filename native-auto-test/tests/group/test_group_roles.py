@@ -1,5 +1,8 @@
 """Group 角色权限正常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 
@@ -23,13 +26,14 @@ def _assert_no_group_event(
     *,
     group_id: str,
     event_types: set[str],
-    timeout: float = 3.0,
+    timeout: float = None,
 ) -> None:
+    timeout = timing_seconds('observe.no_event', module='group') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen: list[dict] = []
     while time.monotonic() < deadline:
-        remaining = max(0.1, deadline - time.monotonic())
-        evt = device.receive_message(timeout=min(1.0, remaining))
+        remaining = max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())
+        evt = device.receive_message(timeout=min(timing_seconds('poll.receive_batch', module='group'), remaining))
         if not isinstance(evt, dict):
             continue
         if evt.get("type") != "event":
@@ -56,6 +60,7 @@ def test_group_add_admin_and_remove_admin_success(device_a, device_b, assert_api
             invite_members=[user_b],
         )
 
+        timing_pause('step.interval', module='group')
         resp_add_admin = device_a.call(
             "GroupManager",
             Cmd.addAdmin.value,
@@ -70,6 +75,7 @@ def test_group_add_admin_and_remove_admin_success(device_a, device_b, assert_api
             },
             ignore_keys={"sequence", "result"},
         )
+        timing_pause('step.interval', module='group')
         add_admin_result = resp_add_admin.get("result")
         assert isinstance(add_admin_result, dict), f"addAdmin result 非 dict: {resp_add_admin}"
         assert add_admin_result.get("groupId") == group_id, f"addAdmin groupId 不匹配: {resp_add_admin}"
@@ -87,7 +93,7 @@ def test_group_add_admin_and_remove_admin_success(device_a, device_b, assert_api
             },
             group_id=group_id,
             required_all_event_types={"onAdminAddedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -109,6 +115,7 @@ def test_group_add_admin_and_remove_admin_success(device_a, device_b, assert_api
             },
         )
 
+        timing_pause('step.interval', module='group')
         resp_get_admin_added = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
@@ -146,6 +153,7 @@ def test_group_add_admin_and_remove_admin_success(device_a, device_b, assert_api
             },
             ignore_keys={"sequence", "result"},
         )
+        timing_pause('step.interval', module='group')
         remove_admin_result = resp_remove_admin.get("result")
         assert isinstance(remove_admin_result, dict), f"removeAdmin result 非 dict: {resp_remove_admin}"
         assert remove_admin_result.get("groupId") == group_id, f"removeAdmin groupId 不匹配: {resp_remove_admin}"
@@ -163,7 +171,7 @@ def test_group_add_admin_and_remove_admin_success(device_a, device_b, assert_api
             },
             group_id=group_id,
             required_all_event_types={"onAdminRemovedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -185,6 +193,7 @@ def test_group_add_admin_and_remove_admin_success(device_a, device_b, assert_api
             },
         )
 
+        timing_pause('step.interval', module='group')
         resp_get_admin_removed = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
@@ -213,6 +222,7 @@ def test_group_update_owner_success(device_a, device_b, assert_api, user_a, user
             invite_members=[user_b],
         )
 
+        timing_pause('step.interval', module='group')
         resp_update_owner = device_a.call(
             "GroupManager",
             Cmd.updateGroupOwner.value,
@@ -227,6 +237,7 @@ def test_group_update_owner_success(device_a, device_b, assert_api, user_a, user
             },
             ignore_keys={"sequence", "result"},
         )
+        timing_pause('step.interval', module='group')
         owner_result = resp_update_owner.get("result")
         assert isinstance(owner_result, dict), f"updateGroupOwner result 非 dict: {resp_update_owner}"
         assert owner_result.get("groupId") == group_id, f"updateGroupOwner groupId 不匹配: {resp_update_owner}"
@@ -242,7 +253,7 @@ def test_group_update_owner_success(device_a, device_b, assert_api, user_a, user
             },
             group_id=group_id,
             required_all_event_types={"onOwnerChangedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -262,7 +273,7 @@ def test_group_update_owner_success(device_a, device_b, assert_api, user_a, user
             },
             group_id=group_id,
             required_all_event_types={"onOwnerChangedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -275,6 +286,7 @@ def test_group_update_owner_success(device_a, device_b, assert_api, user_a, user
             required_all_event_types={"onOwnerChangedFromGroup"},
         )
 
+        timing_pause('step.interval', module='group')
         resp_get_after_owner_change = device_b.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
@@ -312,7 +324,7 @@ def test_group_update_owner_success(device_a, device_b, assert_api, user_a, user
             },
             group_id=group_id,
             required_all_event_types={"onOwnerChangedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -332,7 +344,7 @@ def test_group_update_owner_success(device_a, device_b, assert_api, user_a, user
             },
             group_id=group_id,
             required_all_event_types={"onOwnerChangedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,

@@ -1,5 +1,7 @@
 """好友申请离线链路：接收方/申请方重新登录后的事件与关系状态。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import uuid
 
@@ -36,8 +38,8 @@ def _cleanup_relation(device_a, device_b, user_a: str, user_b: str) -> None:
             )
         except Exception:
             pass
-    device_a.drain_events(timeout=0.5)
-    device_b.drain_events(timeout=0.5)
+    device_a.drain_events(timeout=timing_seconds('drain.offline', module='contact'))
+    device_b.drain_events(timeout=timing_seconds('drain.offline', module='contact'))
 
 
 def _restore_case_state(
@@ -47,8 +49,8 @@ def _restore_case_state(
     user_a: str,
     user_b: str,
 ) -> None:
-    restore_user_login(device_a, user_id=user_a)
-    restore_user_login(device_b, user_id=user_b)
+    restore_user_login(device_a, user_id=user_a, module='contact')
+    restore_user_login(device_b, user_id=user_b, module='contact')
     try:
         device_b.call(
             "Client",
@@ -160,17 +162,18 @@ def _prepare_offline_invitation(
         device_name="deviceB",
         enabled=False,
     )
-    logout_for_offline(device_b, assert_api, device_name="deviceB")
+    logout_for_offline(device_b, assert_api, device_name="deviceB", module='contact')
     _add_contact_offline(device_a, assert_api, user_b=user_b, reason=reason)
     login_preserving_offline_events(
         device_b,
         assert_api,
         device_name="deviceB",
         user_id=user_b,
+        module='contact',
     )
     invited = device_b.receive_message(
         match_event_type=ContactChangeEvent.INVITED.value,
-        timeout=20.0,
+        timeout=timing_seconds('timeout.contact_change', module='contact'),
     )
     assert invited is not None, "B 重新登录后未收到离线好友申请"
     _assert_contact_event(
@@ -198,6 +201,7 @@ def _establish_friendship(
         device_name="deviceB",
         enabled=False,
     )
+    timing_pause('step.interval', module='contact')
     reason = f"offline-delete-friend-{uuid.uuid4().hex[:8]}"
     add = device_a.call(
         "ContactManager",
@@ -213,7 +217,7 @@ def _establish_friendship(
     )
     invited = device_b.receive_message(
         match_event_type=ContactChangeEvent.INVITED.value,
-        timeout=20.0,
+        timeout=timing_seconds('timeout.contact_change', module='contact'),
     )
     _assert_contact_event(
         assert_api,
@@ -222,6 +226,7 @@ def _establish_friendship(
         user_id=user_a,
         reason=reason,
     )
+    timing_pause('step.interval', module='contact')
     accepted = device_b.call(
         "ContactManager",
         Cmd.acceptInvitation.value,
@@ -236,7 +241,7 @@ def _establish_friendship(
     )
     added_on_b = device_b.receive_message(
         match_event_type=ContactChangeEvent.CONTACT_ADD.value,
-        timeout=20.0,
+        timeout=timing_seconds('timeout.contact_change', module='contact'),
     )
     _assert_contact_event(
         assert_api,
@@ -246,7 +251,7 @@ def _establish_friendship(
     )
     accepted_on_a = device_a.receive_message(
         match_event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
-        timeout=20.0,
+        timeout=timing_seconds('timeout.contact_change', module='contact'),
     )
     _assert_contact_event(
         assert_api,
@@ -256,7 +261,7 @@ def _establish_friendship(
     )
     added_on_a = device_a.receive_message(
         match_event_type=ContactChangeEvent.CONTACT_ADD.value,
-        timeout=20.0,
+        timeout=timing_seconds('timeout.contact_change', module='contact'),
     )
     _assert_contact_event(
         assert_api,
@@ -264,10 +269,11 @@ def _establish_friendship(
         event_type=ContactChangeEvent.CONTACT_ADD.value,
         user_id=user_b,
     )
+    timing_pause('step.interval', module='contact')
     _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[user_b])
     _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[user_a])
-    device_a.drain_events(timeout=0.5)
-    device_b.drain_events(timeout=0.5)
+    device_a.drain_events(timeout=timing_seconds('drain.offline', module='contact'))
+    device_b.drain_events(timeout=timing_seconds('drain.offline', module='contact'))
 
 
 def test_contact_offline_invitation_received_after_login(
@@ -288,6 +294,7 @@ def test_contact_offline_invitation_received_after_login(
             user_b=user_b,
             reason=reason,
         )
+        timing_pause('step.interval', module='contact')
         _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
         _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
     finally:
@@ -312,6 +319,7 @@ def test_contact_offline_invitation_accept_after_login(
             user_b=user_b,
             reason=reason,
         )
+        timing_pause('step.interval', module='contact')
         response = device_b.call(
             "ContactManager",
             Cmd.acceptInvitation.value,
@@ -326,7 +334,7 @@ def test_contact_offline_invitation_accept_after_login(
         )
         added_on_b = device_b.receive_message(
             match_event_type=ContactChangeEvent.CONTACT_ADD.value,
-            timeout=20.0,
+            timeout=timing_seconds('timeout.contact_change', module='contact'),
         )
         _assert_contact_event(
             assert_api,
@@ -336,7 +344,7 @@ def test_contact_offline_invitation_accept_after_login(
         )
         accepted = device_a.receive_message(
             match_event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
-            timeout=20.0,
+            timeout=timing_seconds('timeout.contact_change', module='contact'),
         )
         _assert_contact_event(
             assert_api,
@@ -346,7 +354,7 @@ def test_contact_offline_invitation_accept_after_login(
         )
         added = device_a.receive_message(
             match_event_type=ContactChangeEvent.CONTACT_ADD.value,
-            timeout=20.0,
+            timeout=timing_seconds('timeout.contact_change', module='contact'),
         )
         _assert_contact_event(
             assert_api,
@@ -354,6 +362,7 @@ def test_contact_offline_invitation_accept_after_login(
             event_type=ContactChangeEvent.CONTACT_ADD.value,
             user_id=user_b,
         )
+        timing_pause('step.interval', module='contact')
         _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[user_b])
         _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[user_a])
     finally:
@@ -378,6 +387,7 @@ def test_contact_offline_invitation_decline_after_login(
             user_b=user_b,
             reason=reason,
         )
+        timing_pause('step.interval', module='contact')
         response = device_b.call(
             "ContactManager",
             Cmd.declineInvitation.value,
@@ -392,7 +402,7 @@ def test_contact_offline_invitation_decline_after_login(
         )
         declined = device_a.receive_message(
             match_event_type=ContactChangeEvent.INVITATION_DECLINED.value,
-            timeout=20.0,
+            timeout=timing_seconds('timeout.contact_change', module='contact'),
         )
         _assert_contact_event(
             assert_api,
@@ -400,6 +410,7 @@ def test_contact_offline_invitation_decline_after_login(
             event_type=ContactChangeEvent.INVITATION_DECLINED.value,
             user_id=user_b,
         )
+        timing_pause('step.interval', module='contact')
         _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
         _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
     finally:
@@ -424,7 +435,7 @@ def test_contact_offline_requester_receives_accept_after_relogin(
             user_b=user_b,
             reason=reason,
         )
-        logout_for_offline(device_a, assert_api, device_name="deviceA")
+        logout_for_offline(device_a, assert_api, device_name="deviceA", module='contact')
         response = device_b.call(
             "ContactManager",
             Cmd.acceptInvitation.value,
@@ -439,7 +450,7 @@ def test_contact_offline_requester_receives_accept_after_relogin(
         )
         added_on_b = device_b.receive_message(
             match_event_type=ContactChangeEvent.CONTACT_ADD.value,
-            timeout=20.0,
+            timeout=timing_seconds('timeout.contact_change', module='contact'),
         )
         _assert_contact_event(
             assert_api,
@@ -452,10 +463,11 @@ def test_contact_offline_requester_receives_accept_after_relogin(
             assert_api,
             device_name="deviceA",
             user_id=user_a,
+            module='contact',
         )
         accepted = device_a.receive_message(
             match_event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
-            timeout=20.0,
+            timeout=timing_seconds('timeout.contact_change', module='contact'),
         )
         _assert_contact_event(
             assert_api,
@@ -465,7 +477,7 @@ def test_contact_offline_requester_receives_accept_after_relogin(
         )
         added = device_a.receive_message(
             match_event_type=ContactChangeEvent.CONTACT_ADD.value,
-            timeout=20.0,
+            timeout=timing_seconds('timeout.contact_change', module='contact'),
         )
         _assert_contact_event(
             assert_api,
@@ -473,6 +485,7 @@ def test_contact_offline_requester_receives_accept_after_relogin(
             event_type=ContactChangeEvent.CONTACT_ADD.value,
             user_id=user_b,
         )
+        timing_pause('step.interval', module='contact')
         _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[user_b])
         _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[user_a])
     finally:
@@ -497,7 +510,7 @@ def test_contact_offline_requester_receives_decline_after_relogin(
             user_b=user_b,
             reason=reason,
         )
-        logout_for_offline(device_a, assert_api, device_name="deviceA")
+        logout_for_offline(device_a, assert_api, device_name="deviceA", module='contact')
         response = device_b.call(
             "ContactManager",
             Cmd.declineInvitation.value,
@@ -515,10 +528,11 @@ def test_contact_offline_requester_receives_decline_after_relogin(
             assert_api,
             device_name="deviceA",
             user_id=user_a,
+            module='contact',
         )
         declined = device_a.receive_message(
             match_event_type=ContactChangeEvent.INVITATION_DECLINED.value,
-            timeout=20.0,
+            timeout=timing_seconds('timeout.contact_change', module='contact'),
         )
         _assert_contact_event(
             assert_api,
@@ -526,6 +540,7 @@ def test_contact_offline_requester_receives_decline_after_relogin(
             event_type=ContactChangeEvent.INVITATION_DECLINED.value,
             user_id=user_b,
         )
+        timing_pause('step.interval', module='contact')
         _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
         _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
     finally:
@@ -548,7 +563,7 @@ def test_contact_offline_recipient_receives_delete_after_relogin(
             user_a=user_a,
             user_b=user_b,
         )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='contact')
         deleted = device_a.call(
             "ContactManager",
             Cmd.deleteContact.value,
@@ -563,7 +578,7 @@ def test_contact_offline_recipient_receives_delete_after_relogin(
         )
         deleted_on_a = device_a.receive_message(
             match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
-            timeout=20.0,
+            timeout=timing_seconds('timeout.contact_change', module='contact'),
         )
         _assert_contact_event(
             assert_api,
@@ -576,10 +591,11 @@ def test_contact_offline_recipient_receives_delete_after_relogin(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='contact',
         )
         deleted_on_b = device_b.receive_message(
             match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
-            timeout=20.0,
+            timeout=timing_seconds('timeout.contact_change', module='contact'),
         )
         _assert_contact_event(
             assert_api,
@@ -587,6 +603,7 @@ def test_contact_offline_recipient_receives_delete_after_relogin(
             event_type=ContactChangeEvent.CONTACT_DELETE.value,
             user_id=user_a,
         )
+        timing_pause('step.interval', module='contact')
         _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
         _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
     finally:
@@ -609,7 +626,7 @@ def test_contact_offline_requester_receives_peer_delete_after_relogin(
             user_a=user_a,
             user_b=user_b,
         )
-        logout_for_offline(device_a, assert_api, device_name="deviceA")
+        logout_for_offline(device_a, assert_api, device_name="deviceA", module='contact')
         deleted = device_b.call(
             "ContactManager",
             Cmd.deleteContact.value,
@@ -624,7 +641,7 @@ def test_contact_offline_requester_receives_peer_delete_after_relogin(
         )
         deleted_on_b = device_b.receive_message(
             match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
-            timeout=20.0,
+            timeout=timing_seconds('timeout.contact_change', module='contact'),
         )
         _assert_contact_event(
             assert_api,
@@ -637,10 +654,11 @@ def test_contact_offline_requester_receives_peer_delete_after_relogin(
             assert_api,
             device_name="deviceA",
             user_id=user_a,
+            module='contact',
         )
         deleted_on_a = device_a.receive_message(
             match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
-            timeout=20.0,
+            timeout=timing_seconds('timeout.contact_change', module='contact'),
         )
         _assert_contact_event(
             assert_api,
@@ -648,6 +666,7 @@ def test_contact_offline_requester_receives_peer_delete_after_relogin(
             event_type=ContactChangeEvent.CONTACT_DELETE.value,
             user_id=user_b,
         )
+        timing_pause('step.interval', module='contact')
         _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
         _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
     finally:

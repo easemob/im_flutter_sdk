@@ -1,5 +1,8 @@
 """群聊消息在 SDK logout/login 窗口内的离线投递与最终状态。"""
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import os
 import time
@@ -36,8 +39,8 @@ _TEXT_DYNAMIC_KEYS = {
 
 
 def _drain_devices(device_a, device_b) -> None:
-    device_a.drain_events(timeout=0.5)
-    device_b.drain_events(timeout=0.5)
+    device_a.drain_events(timeout=timing_seconds('drain.offline', module='group'))
+    device_b.drain_events(timeout=timing_seconds('drain.offline', module='group'))
 
 
 def _message(
@@ -70,13 +73,14 @@ def _message(
     }
 
 
-def _wait_success(device, *, temp_id: str, timeout: float = 60.0) -> dict:
+def _wait_success(device, *, temp_id: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.send_completion', module='group') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen: list[dict] = []
     while time.monotonic() < deadline:
         event = device.receive_message(
             match_event_type=Cmd.onMessageSuccess.value,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='group'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if event:
             seen.append(event)
@@ -92,14 +96,15 @@ def _wait_message_event(
     event_type: str,
     *,
     real_id: str,
-    timeout: float = 60.0,
+    timeout: float = None,
 ) -> dict:
+    timeout = timing_seconds('timeout.replay', module='group') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen: list[dict] = []
     while time.monotonic() < deadline:
         event = device.receive_message(
             match_event_type=event_type,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='group'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if event:
             seen.append(event)
@@ -115,13 +120,14 @@ def _wait_message_event(
     )
 
 
-def _wait_recall_info(device, *, real_id: str, timeout: float = 60.0) -> dict:
+def _wait_recall_info(device, *, real_id: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.replay', module='group') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen: list[dict] = []
     while time.monotonic() < deadline:
         event = device.receive_message(
             match_event_type=Cmd.onMessagesRecalledInfo.value,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='group'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if event:
             seen.append(event)
@@ -137,13 +143,14 @@ def _wait_recall_info(device, *, real_id: str, timeout: float = 60.0) -> dict:
     )
 
 
-def _wait_content_changed(device, *, real_id: str, timeout: float = 60.0) -> dict:
+def _wait_content_changed(device, *, real_id: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.replay', module='group') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen: list[dict] = []
     while time.monotonic() < deadline:
         event = device.receive_message(
             match_event_type=Cmd.onMessageContentChanged.value,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='group'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if event:
             seen.append(event)
@@ -276,7 +283,7 @@ def _create_message_group(
         invite_members=[user_b],
     )
     try:
-        time.sleep(float(os.getenv("GROUP_MESSAGE_MEMBER_SETTLE_SECONDS", "5")))
+        time.sleep(timing_seconds('settle.normal', module='group'))
         wait_member_auto_joined(device_b, assert_api, group_id=group_id, inviter=user_a)
     except Exception:
         safe_destroy_group(device_a, group_id)
@@ -323,7 +330,7 @@ def test_group_offline_text_message_received_after_login(
             user_b=user_b,
             name_prefix="offline_group_text",
         )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         real_id = _send_text(
             device_a,
             assert_api,
@@ -336,6 +343,7 @@ def test_group_offline_text_message_received_after_login(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='group',
         )
         received = _wait_message_event(
             device_b,
@@ -382,35 +390,31 @@ def test_group_offline_multiple_text_messages_and_conversation_state(
             user_b=user_b,
             name_prefix="offline_group_batch",
         )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
-        sent = [
-            (
-                _send_text(
-                    device_a,
-                    assert_api,
-                    user_a=user_a,
-                    group_id=group_id,
-                    content=content,
-                ),
-                content,
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
+        sent = []
+        for content in contents:
+            if sent:
+                timing_pause('step.interval', module='group')
+            message_id = _send_text(
+                device_a, assert_api, user_a=user_a, group_id=group_id, content=content,
             )
-            for content in contents
-        ]
+            sent.append((message_id, content))
         expected_by_id = dict(sent)
         login_preserving_offline_events(
             device_b,
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='group',
         )
 
-        deadline = time.monotonic() + 60.0
+        deadline = time.monotonic() + timing_seconds('timeout.replay', module='group')
         seen_ids: set[str] = set()
         raw_events: list[dict] = []
         while seen_ids != set(expected_by_id) and time.monotonic() < deadline:
             event = device_b.receive_message(
                 match_event_type=Cmd.onMessagesReceived.value,
-                timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+                timeout=min(timing_seconds('poll.receive', module='group'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
             )
             if not event:
                 continue
@@ -441,6 +445,7 @@ def test_group_offline_multiple_text_messages_and_conversation_state(
             f"actual={seen_ids}, events={raw_events}"
         )
 
+        timing_pause('step.interval', module='group')
         unread = device_b.call(
             "ConversationManager",
             Cmd.getUnreadMsgCount.value,
@@ -510,7 +515,7 @@ def test_group_offline_cmd_deliver_online_only_not_received_after_login(
             user_b=user_b,
             name_prefix="offline_group_online_only",
         )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         response = device_a.call(
             "ChatManager",
             Cmd.sendMessageWithType.value,
@@ -578,13 +583,14 @@ def test_group_offline_cmd_deliver_online_only_not_received_after_login(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='group',
         )
-        deadline = time.monotonic() + 5.0
+        deadline = time.monotonic() + timing_seconds('observe.no_delivery', module='group')
         seen_target: list[dict] = []
         while time.monotonic() < deadline:
             event = device_b.receive_message(
                 match_event_type=Cmd.onCmdMessagesReceived.value,
-                timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+                timeout=min(timing_seconds('poll.receive_batch', module='group'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
             )
             messages = (((event or {}).get("data") or {}).get("messages")) or []
             if any(
@@ -596,6 +602,7 @@ def test_group_offline_cmd_deliver_online_only_not_received_after_login(
         assert seen_target == [], (
             f"deliverOnlineOnly 群 CMD 不应离线投递: {seen_target}"
         )
+        timing_pause('step.interval', module='group')
         local = device_b.call(
             "ChatManager",
             Cmd.getMessage.value,
@@ -639,6 +646,7 @@ def test_group_offline_sender_reads_ack_count_after_relogin(
             user_b=user_b,
             name_prefix="offline_group_ack",
         )
+        timing_pause('step.interval', module='group')
         response = device_a.call(
             "ChatManager",
             Cmd.sendMessage.value,
@@ -718,7 +726,7 @@ def test_group_offline_sender_reads_ack_count_after_relogin(
             messages=[(real_id, content)],
             need_group_ack=True,
         )
-        logout_for_offline(device_a, assert_api, device_name="deviceA")
+        logout_for_offline(device_a, assert_api, device_name="deviceA", module='group')
         ack = device_b.call(
             "ChatManager",
             Cmd.ackGroupMessageRead.value,
@@ -732,12 +740,13 @@ def test_group_offline_sender_reads_ack_count_after_relogin(
             device_name="deviceB",
             result=True,
         )
-        time.sleep(float(os.getenv("GROUP_OFFLINE_ACK_SERVER_SETTLE_SECONDS", "2")))
+        time.sleep(timing_seconds('settle.ack_projection', module='group'))
         login_preserving_offline_events(
             device_a,
             assert_api,
             device_name="deviceA",
             user_id=user_a,
+            module='group',
         )
         # Android SDK 重登后不会仅靠离线同步刷新本地 EMMessage.groupAckCount；
         # 先用服务端群回执同步 API 刷新该消息，再只断言用户要求保留的 count。
@@ -762,7 +771,7 @@ def test_group_offline_sender_reads_ack_count_after_relogin(
             if count.get("result") == 1:
                 break
             if attempt < poll_attempts - 1:
-                time.sleep(1.0)
+                time.sleep(timing_seconds('poll.interval', module='group'))
         assert_call_result(
             assert_api,
             count,
@@ -801,7 +810,7 @@ def test_group_offline_message_recalled_before_first_recipient_login(
             user_b=user_b,
             name_prefix="offline_group_pre_recall",
         )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         real_id = _send_text(
             device_a,
             assert_api,
@@ -809,6 +818,7 @@ def test_group_offline_message_recalled_before_first_recipient_login(
             group_id=group_id,
             content=content,
         )
+        timing_pause('step.interval', module='group')
         recall = device_a.call(
             "ChatManager",
             Cmd.recallMessage.value,
@@ -827,6 +837,7 @@ def test_group_offline_message_recalled_before_first_recipient_login(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='group',
         )
         recalled_info = _wait_recall_info(device_b, real_id=real_id)
         assert_api.assert_response_matches(
@@ -849,7 +860,7 @@ def test_group_offline_message_recalled_before_first_recipient_login(
         )
         recalled = device_b.receive_message(
             match_event_type=Cmd.onMessagesRecalled.value,
-            timeout=20.0,
+            timeout=timing_seconds('timeout.message', module='group'),
         )
         assert_api.assert_response_matches(
             recalled,
@@ -860,6 +871,7 @@ def test_group_offline_message_recalled_before_first_recipient_login(
             },
             ignore_keys={"timestamp", "sequence"},
         )
+        timing_pause('step.interval', module='group')
         local = device_b.call(
             "ChatManager",
             Cmd.getMessage.value,
@@ -903,6 +915,7 @@ def test_group_offline_recipient_receives_recall_after_relogin(
             user_b=user_b,
             name_prefix="offline_group_post_recall",
         )
+        timing_pause('step.interval', module='group')
         real_id = _send_text(
             device_a,
             assert_api,
@@ -922,8 +935,8 @@ def test_group_offline_recipient_receives_recall_after_relogin(
             group_id=group_id,
             messages=[(real_id, content)],
         )
-        device_b.drain_events(timeout=0.5)
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        device_b.drain_events(timeout=timing_seconds('drain.offline', module='group'))
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         recall = device_a.call(
             "ChatManager",
             Cmd.recallMessage.value,
@@ -942,6 +955,7 @@ def test_group_offline_recipient_receives_recall_after_relogin(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='group',
         )
         recalled_info = _wait_recall_info(device_b, real_id=real_id)
         received_message = _message(
@@ -986,6 +1000,7 @@ def test_group_offline_recipient_receives_recall_after_relogin(
             },
             ignore_keys=_TEXT_DYNAMIC_KEYS,
         )
+        timing_pause('step.interval', module='group')
         local = device_b.call(
             "ChatManager",
             Cmd.getMessage.value,
@@ -1031,6 +1046,7 @@ def test_group_offline_recipient_receives_content_change_after_relogin(
             user_b=user_b,
             name_prefix="offline_group_modify",
         )
+        timing_pause('step.interval', module='group')
         real_id = _send_text(
             device_a,
             assert_api,
@@ -1050,9 +1066,9 @@ def test_group_offline_recipient_receives_content_change_after_relogin(
             group_id=group_id,
             messages=[(real_id, old_content)],
         )
-        time.sleep(5.0)
-        device_b.drain_events(timeout=0.5)
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        time.sleep(timing_seconds('settle.normal', module='group'))
+        device_b.drain_events(timeout=timing_seconds('drain.offline', module='group'))
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         modify = device_a.call(
             "ChatManager",
             Cmd.modifyMessage.value,
@@ -1061,6 +1077,7 @@ def test_group_offline_recipient_receives_content_change_after_relogin(
                 "msgBody": {"type": 0, "content": new_content},
             },
         )
+        timing_pause('step.interval', module='group')
         sender_message = _message(
             msg_id=real_id,
             from_user=user_a,
@@ -1093,6 +1110,7 @@ def test_group_offline_recipient_receives_content_change_after_relogin(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='group',
         )
         changed = _wait_content_changed(device_b, real_id=real_id)
         final_message = _message(
@@ -1117,6 +1135,7 @@ def test_group_offline_recipient_receives_content_change_after_relogin(
             },
             ignore_keys=_TEXT_DYNAMIC_KEYS,
         )
+        timing_pause('step.interval', module='group')
         local = device_b.call(
             "ChatManager",
             Cmd.getMessage.value,

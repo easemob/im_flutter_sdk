@@ -45,3 +45,9 @@
 - 当前环境按用户要求只能使用 ADB 日志；相关 REST 请求未打印可用于 Jira 的 request traceId。
   `easemob-jira-bug-submit` 强制要求真实请求 traceId，禁止用登录或无关 SYNC traceId替代，
   因此当前不能执行在线 Jira preview/submit。
+
+
+## 用户指定跳过的失败用例
+
+- `test_group_invitation_cannot_be_processed_twice[accept-twice]`：按用户要求标记 skip，待确认后恢复。
+- `test_group_join_application_cannot_be_processed_twice[accept-twice]`：按用户要求标记 skip，待确认后恢复。

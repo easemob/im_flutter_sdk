@@ -84,7 +84,10 @@ def test_accept_callbacks_share_one_deadline(monkeypatch):
             clock[0] += 3.0
         return result
     a.receive_message = receive
+    pauses = []
+    monkeypatch.setattr(module, 'timing_pause', lambda key, **kw: pauses.append((key, kw['module'])))
     flow().establish_friends(a, b, 'a', 'b')
+    assert pauses == [('step.interval', 'contact')]
     assert budgets == [10.0, 7.0]
 
 

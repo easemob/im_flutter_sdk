@@ -1,5 +1,7 @@
 """Group list API 用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 
@@ -123,6 +125,7 @@ def test_group_get_joined_groups_local_contains_created_group(device_a, assert_a
             group_name=group_name,
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp = device_a.call("GroupManager", Cmd.getJoinedGroups.value, info={})
         groups = assert_group_list_response(
             assert_api,
@@ -155,6 +158,7 @@ def test_group_get_joined_groups_from_server_contains_created_group(device_a, as
             group_name=group_name,
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp = device_a.call("GroupManager", Cmd.getJoinedGroupsFromServer.value, info={})
         groups = assert_group_list_response(
             assert_api,
@@ -206,6 +210,7 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
             group_name=group_name,
             invite_members=[user_b],
         )
+        timing_pause('step.interval', module='group')
         member_group = _joined_group_expected(
             group_id=group_id,
             group_name=group_name,
@@ -219,7 +224,7 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
             expected_event_types={"onAutoAcceptInvitationFromGroup"},
             group_id=group_id,
             required_all_event_types={"onAutoAcceptInvitationFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         _assert_exact_event(
             assert_api,
@@ -233,7 +238,7 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
             expected_event_types=joined_event_types,
             group_id=group_id,
             required_all_event_types=joined_event_types,
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -243,7 +248,7 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
             required_all_event_types=joined_event_types,
             expected_member=user_b,
         )
-        time.sleep(1.0)
+        time.sleep(timing_seconds('step.interval', module='group'))
         _assert_both_joined_lists(
             device_b,
             assert_api,
@@ -271,7 +276,7 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
             expected_event_types={"onUserRemovedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onUserRemovedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         _assert_exact_event(
             assert_api,
@@ -285,7 +290,7 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
             expected_event_types=exited_event_types,
             group_id=group_id,
             required_all_event_types=exited_event_types,
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -295,7 +300,7 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
             required_all_event_types=exited_event_types,
             expected_member=user_b,
         )
-        time.sleep(1.0)
+        time.sleep(timing_seconds('step.interval', module='group'))
         _assert_both_joined_lists(
             device_b,
             assert_api,
@@ -324,7 +329,7 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
             expected_event_types={"onAutoAcceptInvitationFromGroup"},
             group_id=group_id,
             required_all_event_types={"onAutoAcceptInvitationFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         _assert_exact_event(
             assert_api,
@@ -337,7 +342,7 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
             expected_event_types=joined_event_types,
             group_id=group_id,
             required_all_event_types=joined_event_types,
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -347,7 +352,7 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
             required_all_event_types=joined_event_types,
             expected_member=user_b,
         )
-        time.sleep(1.0)
+        time.sleep(timing_seconds('step.interval', module='group'))
         _assert_both_joined_lists(
             device_b,
             assert_api,
@@ -375,7 +380,7 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
             expected_event_types=exited_event_types,
             group_id=group_id,
             required_all_event_types=exited_event_types,
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -390,7 +395,7 @@ def test_group_joined_lists_follow_invite_remove_readd_and_member_leave(
             group_id=group_id,
             event_types=exited_event_types,
         )
-        time.sleep(1.0)
+        time.sleep(timing_seconds('step.interval', module='group'))
         _assert_both_joined_lists(
             device_b,
             assert_api,

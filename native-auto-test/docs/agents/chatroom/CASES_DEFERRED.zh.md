@@ -45,3 +45,8 @@
   - 实测现象：B 已加入聊天室且 `updateChatRoomAnnouncement` 返回 `result=true` 后，A/B 两端均未收到公告变更回调；当前用例已标记 xfail，避免误判整套回调回归。
   - 前置条件：确认 SDK/服务端是否应派发聊天室公告变更事件，或确认仅同步接口与 `fetchChatRoomAnnouncement` 可验证公告更新。
   - 恢复条件：事件可稳定派发后，将 `test_chatroom_announcement_changed_callback` 去掉 xfail 并按真实事件体收紧断言。
+
+
+## 用户指定跳过的失败用例
+
+- `test_chatroom_join_room_nonexistent_current_behavior`：按用户要求标记 skip，待确认后恢复。

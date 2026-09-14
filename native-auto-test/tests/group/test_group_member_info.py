@@ -1,5 +1,6 @@
 """Group member info regression cases."""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import time
 
@@ -64,6 +65,7 @@ def test_group_fetch_members_info_contains_updated_own_profile(device_a, assert_
             ignore_keys={"sequence", "ext", "phone", "birth", "gender", "mail", "sign"},
         )
 
+        timing_pause('step.interval', module='group')
         resp_fetch_user = device_a.call(
             "UserInfoManager",
             Cmd.fetchUserInfoById.value,
@@ -82,6 +84,7 @@ def test_group_fetch_members_info_contains_updated_own_profile(device_a, assert_
             invite_members=[],
         )
 
+        timing_pause('step.interval', module='group')
         resp_member_info = device_a.call(
             "GroupManager",
             Cmd.fetchGroupMembersInfo.value,

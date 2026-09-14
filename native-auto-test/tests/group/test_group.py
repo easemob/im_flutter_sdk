@@ -8,6 +8,7 @@
   - test_group_exceptions_*.py
 """
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -48,6 +49,7 @@ def test_group_member_count_local_then_server_sync(device_a, device_b, assert_ap
             invite_members=[user_b],
         )
 
+        timing_pause('step.interval', module='group')
         resp_add = device_a.call(
             "GroupManager",
             Cmd.addMembers.value,
@@ -64,6 +66,7 @@ def test_group_member_count_local_then_server_sync(device_a, device_b, assert_ap
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='group')
         resp_local_before = device_a.call("GroupManager", Cmd.getGroupWithId.value, info={"groupId": group_id})
         assert_group_snapshot(
             assert_api,
@@ -94,6 +97,7 @@ def test_group_member_count_local_then_server_sync(device_a, device_b, assert_ap
         assert_group_members_exact(resp_server, [user_b, user_c], err_prefix="服务端拉取后")
         server_count = member_count(resp_server)
 
+        timing_pause('step.interval', module='group')
         resp_local_after = device_a.call("GroupManager", Cmd.getGroupWithId.value, info={"groupId": group_id})
         assert_group_snapshot(
             assert_api,

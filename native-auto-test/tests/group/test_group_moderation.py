@@ -1,5 +1,7 @@
 """Group moderation API（按当前稳定语义合并）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import pytest
 
@@ -45,6 +47,7 @@ def test_group_block_unblock_members_success(device_a, device_b, assert_api, use
             group_name=group_name,
             invite_members=[user_b],
         )
+        timing_pause('step.interval', module='group')
         resp_block = device_a.call("GroupManager", Cmd.blockMembers.value, info={"groupId": group_id, "members": [user_b]})
         assert_api.assert_response_matches(
             resp_block,
@@ -60,7 +63,7 @@ def test_group_block_unblock_members_success(device_a, device_b, assert_api, use
             group_id=group_id,
             allow_missing_group_id=True,
             required_all_event_types={"onUserRemovedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -73,6 +76,7 @@ def test_group_block_unblock_members_success(device_a, device_b, assert_api, use
             allow_missing_group_id=True,
             required_all_event_types={"onUserRemovedFromGroup"},
         )
+        timing_pause('step.interval', module='group')
         assert_group_snapshot(
             assert_api,
             _group_state(device_a, assert_api, group_id),
@@ -90,6 +94,7 @@ def test_group_block_unblock_members_success(device_a, device_b, assert_api, use
             expected={"manager": "GroupManager", "cmd": Cmd.unblockMembers.value, "device": "deviceA", "result": True},
             ignore_keys={"sequence"},
         )
+        timing_pause('step.interval', module='group')
         assert_group_snapshot(
             assert_api,
             _group_state(device_a, assert_api, group_id),
@@ -115,6 +120,7 @@ def test_group_block_members_non_member(device_a, assert_api, user_a, user_b):
     group_id = ""
     try:
         group_id, _ = create_group(device_a, assert_api, owner=user_a, group_name=new_group_name("mod_block_nm"), invite_members=[])
+        timing_pause('step.interval', module='group')
         resp = device_a.call("GroupManager", Cmd.blockMembers.value, info={"groupId": group_id, "members": [user_b]})
         assert_api.assert_error(resp, code=603, description="are not members of this group")
     finally:
@@ -127,6 +133,7 @@ def test_group_mute_unmute_members_success(device_a, device_b, assert_api, user_
     group_name = new_group_name("mod_mute")
     try:
         group_id, _ = create_group(device_a, assert_api, owner=user_a, group_name=group_name, invite_members=[user_b])
+        timing_pause('step.interval', module='group')
         resp_mute = device_a.call("GroupManager", Cmd.muteMembers.value, info={"groupId": group_id, "members": [user_b], "duration": 60})
         assert_group_snapshot(
             assert_api,
@@ -146,7 +153,7 @@ def test_group_mute_unmute_members_success(device_a, device_b, assert_api, user_
             },
             group_id=group_id,
             required_all_event_types={"onMuteListAddedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -159,6 +166,7 @@ def test_group_mute_unmute_members_success(device_a, device_b, assert_api, user_
             required_all_event_types={"onMuteListAddedFromGroup"},
             expected_member=user_b,
         )
+        timing_pause('step.interval', module='group')
         resp_unmute = device_a.call("GroupManager", Cmd.unMuteMembers.value, info={"groupId": group_id, "members": [user_b]})
         assert_group_snapshot(
             assert_api,
@@ -178,7 +186,7 @@ def test_group_mute_unmute_members_success(device_a, device_b, assert_api, user_
             },
             group_id=group_id,
             required_all_event_types={"onMuteListRemovedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -201,6 +209,7 @@ def test_group_mute_all_unmute_all_success(device_a, device_b, assert_api, user_
     group_name = new_group_name("mod_mute_all")
     try:
         group_id, _ = create_group(device_a, assert_api, owner=user_a, group_name=group_name, invite_members=[user_b])
+        timing_pause('step.interval', module='group')
         resp_mute_all = device_a.call("GroupManager", Cmd.muteAllMembers.value, info={"groupId": group_id})
         assert_group_snapshot(
             assert_api,
@@ -223,7 +232,7 @@ def test_group_mute_all_unmute_all_success(device_a, device_b, assert_api, user_
             group_id=group_id,
             allow_missing_group_id=True,
             required_all_event_types=set(),
-            timeout=5.0,
+            timeout=timing_seconds('observe.moderation', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -236,6 +245,7 @@ def test_group_mute_all_unmute_all_success(device_a, device_b, assert_api, user_
             allow_missing_group_id=True,
             required_all_event_types=set(),
         )
+        timing_pause('step.interval', module='group')
         resp_unmute_all = device_a.call("GroupManager", Cmd.unMuteAllMembers.value, info={"groupId": group_id})
         assert_group_snapshot(
             assert_api,
@@ -256,7 +266,7 @@ def test_group_mute_all_unmute_all_success(device_a, device_b, assert_api, user_
             group_id=group_id,
             allow_missing_group_id=True,
             required_all_event_types=set(),
-            timeout=5.0,
+            timeout=timing_seconds('observe.moderation', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -279,6 +289,7 @@ def test_group_add_remove_white_list_success(device_a, device_b, assert_api, use
     group_name = new_group_name("mod_white")
     try:
         group_id, _ = create_group(device_a, assert_api, owner=user_a, group_name=group_name, invite_members=[user_b])
+        timing_pause('step.interval', module='group')
         resp_add = device_a.call("GroupManager", Cmd.addWhiteList.value, info={"groupId": group_id, "members": [user_b]})
         assert_api.assert_response_matches(
             resp_add,
@@ -293,7 +304,7 @@ def test_group_add_remove_white_list_success(device_a, device_b, assert_api, use
             },
             group_id=group_id,
             required_all_event_types={"onAllowListAddedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -306,6 +317,7 @@ def test_group_add_remove_white_list_success(device_a, device_b, assert_api, use
             required_all_event_types={"onAllowListAddedFromGroup"},
             expected_member=user_b,
         )
+        timing_pause('step.interval', module='group')
         resp_remove = device_a.call("GroupManager", Cmd.removeWhiteList.value, info={"groupId": group_id, "members": [user_b]})
         assert_api.assert_response_matches(
             resp_remove,
@@ -320,7 +332,7 @@ def test_group_add_remove_white_list_success(device_a, device_b, assert_api, use
             },
             group_id=group_id,
             required_all_event_types={"onAllowListRemovedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -343,6 +355,7 @@ def test_group_update_group_ext_success(device_a, assert_api, user_a):
     group_name = new_group_name("mod_ext")
     try:
         group_id, _ = create_group(device_a, assert_api, owner=user_a, group_name=group_name, invite_members=[])
+        timing_pause('step.interval', module='group')
         resp = device_a.call("GroupManager", Cmd.updateGroupExt.value, info={"groupId": group_id, "ext": "{\"k\":\"v\"}"})
         assert_group_snapshot(
             assert_api,

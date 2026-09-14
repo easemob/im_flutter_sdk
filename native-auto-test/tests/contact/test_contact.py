@@ -3,6 +3,8 @@
 场景：deviceA 添加 deviceB 为好友，B 同意后校验 A、B 的好友列表（用户由 conftest 创建，teardown 删除）。
 """
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import json
 
@@ -29,7 +31,7 @@ def _cleanup_friend_and_block(device_a, device_b, user_a: str, user_b: str) -> N
     for device, target in ((device_a, user_b), (device_b, user_a)):
         try:
             device.call("ContactManager", Cmd.deleteContact.value, info={"userId": target, "keepConversation": True})
-            device.drain_events(timeout=0.5)
+            device.drain_events(timeout=timing_seconds('drain.offline', module='contact'))
         except Exception:
             pass
     try:
@@ -112,6 +114,7 @@ def test_friend_add_accept_and_list(device_a, device_b, assert_api, user_a, user
         info={"userId": user_b, "reason": "hello"},
     )
     assert_api.assert_success(resp_add)
+    timing_pause('step.interval', module='contact')
     print("登录响应:", json.dumps(resp_add))
     assert_api.assert_response_matches(
         resp_add,
@@ -122,7 +125,7 @@ def test_friend_add_accept_and_list(device_a, device_b, assert_api, user_a, user
     # 1.1 设备 B 获取好友邀请回调
     resp_invite = device_b.receive_message(
         match_event_type=ContactChangeEvent.INVITED.value,
-        timeout=10.0,
+        timeout=timing_seconds('timeout.event', module='contact'),
     )
     assert resp_invite is not None, "设备 B 未收到好友邀请回调"
     assert_api.assert_response_matches(
@@ -136,6 +139,7 @@ def test_friend_add_accept_and_list(device_a, device_b, assert_api, user_a, user
         ignore_keys={"timestamp", "sequence"},
     )
     # 2. 设备 B 同意 A 的好友申请
+    timing_pause('step.interval', module='contact')
     resp_accept = device_b.call(
         "ContactManager",
         Cmd.acceptInvitation.value,
@@ -145,7 +149,7 @@ def test_friend_add_accept_and_list(device_a, device_b, assert_api, user_a, user
     # 2.1 设备 A 会收到 onFriendRequestAccepted 回调
     resp_accepted = device_a.receive_message(
         match_event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
-        timeout=10.0,
+        timeout=timing_seconds('timeout.event', module='contact'),
     )
     assert_api.assert_response_matches(
         resp_accepted,
@@ -160,7 +164,7 @@ def test_friend_add_accept_and_list(device_a, device_b, assert_api, user_a, user
     # 2.2 设备 A 收到 CONTACT_ADD 回调
     resp_contact_add_a = device_a.receive_message(
         match_event_type=ContactChangeEvent.CONTACT_ADD.value,
-        timeout=10.0,
+        timeout=timing_seconds('timeout.event', module='contact'),
     )
     assert_api.assert_response_matches(
         resp_contact_add_a,
@@ -173,6 +177,7 @@ def test_friend_add_accept_and_list(device_a, device_b, assert_api, user_a, user
         ignore_keys={"timestamp"},
     )
     # 3. 设备 A 获取好友列表
+    timing_pause('step.interval', module='contact')
     resp_list_a = device_a.call(
         "ContactManager",
         Cmd.getAllContactsFromServer.value,
@@ -207,7 +212,7 @@ def test_friend_add_accept_and_list(device_a, device_b, assert_api, user_a, user
     # 5.1 设备 A 收到 CONTACT_DELETE 回调
     resp_contact_delete_a = device_a.receive_message(
         match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
-        timeout=10.0,
+        timeout=timing_seconds('timeout.event', module='contact'),
     )
     assert_api.assert_response_matches(
         resp_contact_delete_a,
@@ -248,7 +253,7 @@ def test_friend_add_decline_and_verify_not_friends(device_a, device_b, assert_ap
     # 2. B 收到好友邀请
     resp_invite = device_b.receive_message(
         match_event_type=ContactChangeEvent.INVITED.value,
-        timeout=10.0,
+        timeout=timing_seconds('timeout.event', module='contact'),
     )
     assert resp_invite is not None, "设备 B 未收到好友邀请回调"
     assert_api.assert_response_matches(
@@ -262,6 +267,7 @@ def test_friend_add_decline_and_verify_not_friends(device_a, device_b, assert_ap
         ignore_keys={"timestamp", "sequence"},
     )
     # 3. B 拒绝 A 的好友申请
+    timing_pause('step.interval', module='contact')
     resp_decline = device_b.call(
         "ContactManager",
         Cmd.declineInvitation.value,
@@ -271,7 +277,7 @@ def test_friend_add_decline_and_verify_not_friends(device_a, device_b, assert_ap
     # 4. A 收到好友请求被拒绝回调
     resp_declined = device_a.receive_message(
         match_event_type=ContactChangeEvent.INVITATION_DECLINED.value,
-        timeout=10.0,
+        timeout=timing_seconds('timeout.event', module='contact'),
     )
     assert resp_declined is not None, "设备 A 未收到 onFriendRequestDeclined 回调"
     assert_api.assert_response_matches(
@@ -285,6 +291,7 @@ def test_friend_add_decline_and_verify_not_friends(device_a, device_b, assert_ap
         ignore_keys={"timestamp", "sequence"},
     )
     # 5. 双方好友列表均不应包含对方（未成为好友）
+    timing_pause('step.interval', module='contact')
     resp_list_a = device_a.call(
         "ContactManager",
         Cmd.getAllContactsFromServer.value,
@@ -366,6 +373,7 @@ def test_contact_remark_set_then_list_includes_remark(device_a, device_b, assert
     flow = ContactTestFlow(assert_api)
     flow.establish_friends(device_a, device_b, user_a, user_b, reason="remark_normal")
     remark_text = "同事-B备注"
+    timing_pause('step.interval', module='contact')
     response = device_a.call(
         "ContactManager",
         Cmd.setContactRemark.value,
@@ -382,6 +390,7 @@ def test_contact_remark_set_then_list_includes_remark(device_a, device_b, assert
         context={"device": "deviceA"},
         ignore_keys={"sequence"},
     )
+    timing_pause('step.interval', module='contact')
     content_resp = device_a.call(
         "ContactManager",
         Cmd.getContact.value,
@@ -406,6 +415,7 @@ def test_contact_remark_empty_string(device_a, device_b, assert_api, user_a, use
     flow = ContactTestFlow(assert_api)
     flow.establish_friends(device_a, device_b, user_a, user_b, reason="remark_empty")
     remark_text = ""
+    timing_pause('step.interval', module='contact')
     response = device_a.call(
         "ContactManager",
         Cmd.setContactRemark.value,
@@ -422,6 +432,7 @@ def test_contact_remark_empty_string(device_a, device_b, assert_api, user_a, use
         context={"device": "deviceA"},
         ignore_keys={"sequence"},
     )
+    timing_pause('step.interval', module='contact')
     content_resp = device_a.call(
         "ContactManager",
         Cmd.getContact.value,
@@ -445,6 +456,7 @@ def test_contact_remark_special_chars_length_101(device_a, device_b, assert_api,
     """备注为 101 长度且含特殊字符。"""
     flow = ContactTestFlow(assert_api)
     flow.establish_friends(device_a, device_b, user_a, user_b, reason="remark_101")
+    timing_pause('step.interval', module='contact')
     assert_api.assert_error(
         device_a.call(
             "ContactManager",
@@ -465,6 +477,7 @@ def test_contact_remark_not_preserved_after_delete_and_readd(device_a, device_b,
     # getContact reads local state: wait for matching contact callbacks first.
     flow = ContactTestFlow(assert_api, synchronize=True)
     flow.establish_friends(device_a, device_b, user_a, user_b, reason="remark_readd")
+    timing_pause('step.interval', module='contact')
     resp_set = device_a.call(
         "ContactManager",
         Cmd.setContactRemark.value,
@@ -481,6 +494,7 @@ def test_contact_remark_not_preserved_after_delete_and_readd(device_a, device_b,
         context={"device": "deviceA"},
         ignore_keys={"sequence"},
     )
+    timing_pause('step.interval', module='contact')
     content_after_set = device_a.call(
         "ContactManager",
         Cmd.getContact.value,
@@ -499,7 +513,9 @@ def test_contact_remark_not_preserved_after_delete_and_readd(device_a, device_b,
     )
     flow.delete_friend(device_a, user_b)
 
+    timing_pause('step.interval', module='contact')
     flow.establish_friends(device_a, device_b, user_a, user_b, reason="remark_readd_2")
+    timing_pause('step.interval', module='contact')
     content_after_readd = device_a.call(
         "ContactManager",
         Cmd.getContact.value,
@@ -566,6 +582,7 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
     flow.establish_friends(device_a, device_b, user_a, user_b, reason="fetch_contacts_api")
     remark_for_fetch = "fetch-remark-校验"
 
+    timing_pause('step.interval', module='contact')
     resp_set_remark = device_a.call(
         "ContactManager",
         Cmd.setContactRemark.value,
@@ -582,6 +599,7 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
         ignore_keys={"sequence"},
     )
 
+    timing_pause('step.interval', module='contact')
     resp_sync = device_a.call(
         "ContactManager",
         Cmd.getAllContactsFromServer.value,
@@ -790,8 +808,10 @@ def test_contact_block_list_flow_then_unblock_restores_friend(
     _cleanup_friend_and_block(device_a, device_b, user_a, user_b)
     flow = ContactTestFlow(assert_api, synchronize=True)
     flow.establish_friends(device_a, device_b, user_a, user_b, reason="blocklist_flow")
+    timing_pause('step.interval', module='contact')
     flow.add_to_block_list(device_a, user_b)
 
+    timing_pause('step.interval', module='contact')
     resp_block = flow.get_block_list(device_a)
     assert_api.assert_success(resp_block)
     assert_api.assert_response_matches(
@@ -824,6 +844,7 @@ def test_contact_block_list_flow_then_unblock_restores_friend(
 
     assert_api.assert_success(flow.remove_from_block_list(device_a, user_b))
 
+    timing_pause('step.interval', module='contact')
     resp_friends_a_after = flow.get_all_contacts_from_server(device_a)
     assert_api.assert_success(resp_friends_a_after)
     assert_api.assert_response_matches(
@@ -847,6 +868,7 @@ def test_contact_remove_from_block_list_when_not_blocked(
     _cleanup_friend_and_block(device_a, device_b, user_a, user_b)
     flow = ContactTestFlow(assert_api)
     flow.establish_friends(device_a, device_b, user_a, user_b, reason="unblock_not_in_list")
+    timing_pause('step.interval', module='contact')
     resp_bl = flow.get_block_list(device_a)
     assert_api.assert_success(resp_bl)
     assert_api.assert_response_matches(
@@ -861,6 +883,7 @@ def test_contact_remove_from_block_list_when_not_blocked(
     )
     assert user_b not in assert_api.get_result(resp_bl)
     assert_api.assert_success(flow.remove_from_block_list(device_a, user_b))
+    timing_pause('step.interval', module='contact')
     flow.delete_friend(device_a, user_b)
 
 

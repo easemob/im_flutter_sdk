@@ -1,5 +1,7 @@
 """Group lifecycle 正常链路。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import pytest
 
@@ -44,7 +46,7 @@ def test_group_create_group(device_a, device_b, assert_api, user_a, user_b):
             group_id=group_id,
             allow_missing_group_id=True,
             required_all_event_types=required_events,
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -65,7 +67,7 @@ def test_group_create_group(device_a, device_b, assert_api, user_a, user_b):
             },
             group_id=group_id,
             required_all_event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -94,6 +96,7 @@ def test_group_get_group(device_a, device_b, assert_api, user_a, user_b):
             group_name=group_name,
             invite_members=[user_b],
         )
+        timing_pause('step.interval', module='group')
         resp_get = device_a.call("GroupManager", Cmd.getGroupWithId.value, info={"groupId": group_id})
         assert_group_snapshot(
             assert_api,
@@ -120,6 +123,7 @@ def test_group_get_group_from_server(device_a, device_b, assert_api, user_a, use
             group_name=group_name,
             invite_members=[user_b],
         )
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
@@ -150,11 +154,13 @@ def test_group_get_group_from_server_after_destroy(device_a, device_b, assert_ap
             group_name=group_name,
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         destroyed_group_id = group_id
         # B 不在该群中，销毁时不应强制等待 B 端 onGroupDestroyed 回调。
         group_id = ""
         destroy_group(device_a, assert_api, destroyed_group_id)
 
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,

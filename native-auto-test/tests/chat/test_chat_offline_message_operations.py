@@ -1,5 +1,8 @@
 """好友单聊后操作的离线事件：已读、撤回和消息修改。"""
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -120,13 +123,14 @@ def _send_online_text(
     return real_id
 
 
-def _wait_recall_info(device, *, real_id: str, timeout: float = 60.0) -> dict:
+def _wait_recall_info(device, *, real_id: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.replay', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
         event = device.receive_message(
             match_event_type=Cmd.onMessagesRecalledInfo.value,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if event:
             seen.append(event)
@@ -140,13 +144,14 @@ def _wait_recall_info(device, *, real_id: str, timeout: float = 60.0) -> dict:
     raise AssertionError(f"未收到离线撤回事件: msgId={real_id}, events={seen}")
 
 
-def _wait_content_changed(device, *, real_id: str, timeout: float = 60.0) -> dict:
+def _wait_content_changed(device, *, real_id: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.replay', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
         event = device.receive_message(
             match_event_type=Cmd.onMessageContentChanged.value,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if event:
             seen.append(event)
@@ -161,14 +166,15 @@ def _wait_conversation_read(
     *,
     from_user: str,
     to_user: str,
-    timeout: float = 60.0,
+    timeout: float = None,
 ) -> dict:
+    timeout = timing_seconds('timeout.replay', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
         event = device.receive_message(
             match_event_type="onConversationRead",
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if event:
             seen.append(event)
@@ -186,14 +192,15 @@ def _wait_reaction_change(
     *,
     real_id: str,
     operate: int,
-    timeout: float = 60.0,
+    timeout: float = None,
 ) -> dict:
+    timeout = timing_seconds('timeout.replay', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
         event = device.receive_message(
             match_event_type=_REACTION_EVENT_TYPE,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if event:
             seen.append(event)
@@ -254,14 +261,15 @@ def _wait_pin_change(
     *,
     real_id: str,
     operation: str,
-    timeout: float = 60.0,
+    timeout: float = None,
 ) -> dict:
+    timeout = timing_seconds('timeout.replay', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
         event = device.receive_message(
             match_event_type=Cmd.onMessagePinChanged.value,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if event:
             seen.append(event)
@@ -308,8 +316,9 @@ def _wait_pinned_messages(
     conv_id: str,
     real_id: str,
     present: bool,
-    timeout: float = 30.0,
+    timeout: float = None,
 ) -> dict:
+    timeout = timing_seconds('timeout.message_change', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
@@ -328,7 +337,7 @@ def _wait_pinned_messages(
             )
             if contains_target is present:
                 return response
-        time.sleep(1.0)
+        time.sleep(timing_seconds('poll.interval', module='chat'))
     raise AssertionError(
         "置顶消息最终状态未同步: "
         f"convId={conv_id}, msgId={real_id}, present={present}, responses={seen}"
@@ -350,11 +359,11 @@ def _clear_pinned_messages(device, peer_device, *, conv_id: str) -> None:
                     Cmd.unpinMessage.value,
                     info={"msgId": str(msg_id)},
                 )
-        time.sleep(2.0)
+        time.sleep(timing_seconds('settle.local_projection', module='chat'))
     except Exception:
         pass
-    device.drain_events(timeout=0.5)
-    peer_device.drain_events(timeout=0.5)
+    device.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+    peer_device.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
 
 
 def _assert_reaction_state(
@@ -432,6 +441,7 @@ def test_chat_offline_sender_receives_message_read_after_relogin(
         _establish_friendship(
             device_a, device_b, assert_api, user_a=user_a, user_b=user_b
         )
+        timing_pause('step.interval', module='chat')
         real_id = _send_online_text(
             device_a,
             device_b,
@@ -440,8 +450,8 @@ def test_chat_offline_sender_receives_message_read_after_relogin(
             user_b=user_b,
             content=content,
         )
-        device_a.drain_events(timeout=0.5)
-        logout_for_offline(device_a, assert_api, device_name="deviceA")
+        device_a.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        logout_for_offline(device_a, assert_api, device_name="deviceA", module='chat')
         ack = device_b.call(
             "ChatManager",
             Cmd.ackMessageRead.value,
@@ -460,6 +470,7 @@ def test_chat_offline_sender_receives_message_read_after_relogin(
             assert_api,
             device_name="deviceA",
             user_id=user_a,
+            module='chat',
         )
         read = _wait_message_event(
             device_a,
@@ -516,6 +527,7 @@ def test_chat_offline_recipient_receives_recall_after_relogin(
         _establish_friendship(
             device_a, device_b, assert_api, user_a=user_a, user_b=user_b
         )
+        timing_pause('step.interval', module='chat')
         real_id = _send_online_text(
             device_a,
             device_b,
@@ -524,8 +536,8 @@ def test_chat_offline_recipient_receives_recall_after_relogin(
             user_b=user_b,
             content=content,
         )
-        device_b.drain_events(timeout=0.5)
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        device_b.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='chat')
         recall = device_a.call(
             "ChatManager",
             Cmd.recallMessage.value,
@@ -544,6 +556,7 @@ def test_chat_offline_recipient_receives_recall_after_relogin(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='chat',
         )
         recalled = _wait_recall_info(device_b, real_id=real_id)
         assert_api.assert_response_matches(
@@ -599,6 +612,7 @@ def test_chat_offline_recipient_receives_recall_after_relogin(
             user_b=user_b,
             body={"type": 0, "content": content, "translations": {}},
         )
+        timing_pause('step.interval', module='chat')
         local = device_b.call(
             "ChatManager",
             Cmd.getMessage.value,
@@ -630,6 +644,7 @@ def test_chat_offline_recipient_receives_content_change_after_relogin(
         _establish_friendship(
             device_a, device_b, assert_api, user_a=user_a, user_b=user_b
         )
+        timing_pause('step.interval', module='chat')
         real_id = _send_online_text(
             device_a,
             device_b,
@@ -638,8 +653,8 @@ def test_chat_offline_recipient_receives_content_change_after_relogin(
             user_b=user_b,
             content=old_content,
         )
-        device_b.drain_events(timeout=0.5)
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        device_b.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='chat')
         modify = device_a.call(
             "ChatManager",
             Cmd.modifyMessage.value,
@@ -684,6 +699,7 @@ def test_chat_offline_recipient_receives_content_change_after_relogin(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='chat',
         )
         changed = _wait_content_changed(device_b, real_id=real_id)
         assert_api.assert_response_matches(
@@ -714,6 +730,7 @@ def test_chat_offline_recipient_receives_content_change_after_relogin(
             },
             ignore_keys=_MESSAGE_DYNAMIC_KEYS | {"deliverOnlineOnly", "translations"},
         )
+        timing_pause('step.interval', module='chat')
         local = device_b.call(
             "ChatManager",
             Cmd.getMessage.value,
@@ -768,6 +785,7 @@ def test_chat_offline_sender_receives_conversation_read_after_relogin(
         _establish_friendship(
             device_a, device_b, assert_api, user_a=user_a, user_b=user_b
         )
+        timing_pause('step.interval', module='chat')
         _send_online_text(
             device_a,
             device_b,
@@ -776,8 +794,8 @@ def test_chat_offline_sender_receives_conversation_read_after_relogin(
             user_b=user_b,
             content=content,
         )
-        device_a.drain_events(timeout=0.5)
-        logout_for_offline(device_a, assert_api, device_name="deviceA")
+        device_a.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        logout_for_offline(device_a, assert_api, device_name="deviceA", module='chat')
         acknowledged = device_b.call(
             "ChatManager",
             Cmd.ackConversationRead.value,
@@ -796,6 +814,7 @@ def test_chat_offline_sender_receives_conversation_read_after_relogin(
             assert_api,
             device_name="deviceA",
             user_id=user_a,
+            module='chat',
         )
         read = _wait_conversation_read(
             device_a,
@@ -829,6 +848,7 @@ def test_chat_offline_sender_receives_reaction_add_after_relogin(
         _establish_friendship(
             device_a, device_b, assert_api, user_a=user_a, user_b=user_b
         )
+        timing_pause('step.interval', module='chat')
         real_id = _send_online_text(
             device_a,
             device_b,
@@ -837,8 +857,8 @@ def test_chat_offline_sender_receives_reaction_add_after_relogin(
             user_b=user_b,
             content=content,
         )
-        device_a.drain_events(timeout=0.5)
-        logout_for_offline(device_a, assert_api, device_name="deviceA")
+        device_a.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        logout_for_offline(device_a, assert_api, device_name="deviceA", module='chat')
         added = device_b.call(
             "ChatManager",
             Cmd.addReaction.value,
@@ -857,6 +877,7 @@ def test_chat_offline_sender_receives_reaction_add_after_relogin(
             assert_api,
             device_name="deviceA",
             user_id=user_a,
+            module='chat',
         )
         changed = _wait_reaction_change(device_a, real_id=real_id, operate=1)
         expected_reactions = [
@@ -877,6 +898,7 @@ def test_chat_offline_sender_receives_reaction_add_after_relogin(
             operate=1,
             reactions=expected_reactions,
         )
+        timing_pause('step.interval', module='chat')
         fetched = device_a.call(
             "ChatManager",
             Cmd.fetchReactionList.value,
@@ -907,6 +929,7 @@ def test_chat_offline_sender_receives_reaction_remove_after_relogin(
         _establish_friendship(
             device_a, device_b, assert_api, user_a=user_a, user_b=user_b
         )
+        timing_pause('step.interval', module='chat')
         real_id = _send_online_text(
             device_a,
             device_b,
@@ -915,6 +938,7 @@ def test_chat_offline_sender_receives_reaction_remove_after_relogin(
             user_b=user_b,
             content=content,
         )
+        timing_pause('step.interval', module='chat')
         added = device_b.call(
             "ChatManager",
             Cmd.addReaction.value,
@@ -947,9 +971,9 @@ def test_chat_offline_sender_receives_reaction_remove_after_relogin(
             operate=1,
             reactions=expected_added,
         )
-        device_a.drain_events(timeout=0.5)
-        device_b.drain_events(timeout=0.5)
-        logout_for_offline(device_a, assert_api, device_name="deviceA")
+        device_a.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        device_b.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        logout_for_offline(device_a, assert_api, device_name="deviceA", module='chat')
         removed = device_b.call(
             "ChatManager",
             Cmd.removeReaction.value,
@@ -968,6 +992,7 @@ def test_chat_offline_sender_receives_reaction_remove_after_relogin(
             assert_api,
             device_name="deviceA",
             user_id=user_a,
+            module='chat',
         )
         changed = _wait_reaction_change(device_a, real_id=real_id, operate=0)
         _assert_reaction_change(
@@ -987,6 +1012,7 @@ def test_chat_offline_sender_receives_reaction_remove_after_relogin(
                 }
             ],
         )
+        timing_pause('step.interval', module='chat')
         fetched = device_a.call(
             "ChatManager",
             Cmd.fetchReactionList.value,
@@ -1003,6 +1029,7 @@ def test_chat_offline_sender_receives_reaction_remove_after_relogin(
         _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
 
 
+@pytest.mark.skip(reason="按用户要求暂缓：本轮标记 ❌ 的失败用例，待确认后恢复")
 def test_chat_offline_recipient_receives_message_pin_after_relogin(
     device_a,
     device_b,
@@ -1017,7 +1044,9 @@ def test_chat_offline_recipient_receives_message_pin_after_relogin(
         _establish_friendship(
             device_a, device_b, assert_api, user_a=user_a, user_b=user_b
         )
+        timing_pause('step.interval', module='chat')
         _clear_pinned_messages(device_a, device_b, conv_id=user_b)
+        timing_pause('step.interval', module='chat')
         real_id = _send_online_text(
             device_a,
             device_b,
@@ -1026,8 +1055,8 @@ def test_chat_offline_recipient_receives_message_pin_after_relogin(
             user_b=user_b,
             content=content,
         )
-        device_b.drain_events(timeout=0.5)
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        device_b.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='chat')
         pinned = device_a.call(
             "ChatManager",
             Cmd.pinMessage.value,
@@ -1046,6 +1075,7 @@ def test_chat_offline_recipient_receives_message_pin_after_relogin(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='chat',
         )
         changed = _wait_pin_change(
             device_b,
@@ -1060,6 +1090,7 @@ def test_chat_offline_recipient_receives_message_pin_after_relogin(
             operation="MessagePinOperation.Pin",
             operator_id=user_a,
         )
+        timing_pause('step.interval', module='chat')
         fetched = _wait_pinned_messages(
             device_b,
             conv_id=user_a,
@@ -1087,6 +1118,7 @@ def test_chat_offline_recipient_receives_message_pin_after_relogin(
         _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
 
 
+@pytest.mark.skip(reason="按用户要求暂缓：本轮标记 ❌ 的失败用例，待确认后恢复")
 def test_chat_offline_recipient_receives_message_unpin_after_relogin(
     device_a,
     device_b,
@@ -1100,7 +1132,9 @@ def test_chat_offline_recipient_receives_message_unpin_after_relogin(
         _establish_friendship(
             device_a, device_b, assert_api, user_a=user_a, user_b=user_b
         )
+        timing_pause('step.interval', module='chat')
         _clear_pinned_messages(device_a, device_b, conv_id=user_b)
+        timing_pause('step.interval', module='chat')
         real_id = _send_online_text(
             device_a,
             device_b,
@@ -1109,6 +1143,7 @@ def test_chat_offline_recipient_receives_message_unpin_after_relogin(
             user_b=user_b,
             content=content,
         )
+        timing_pause('step.interval', module='chat')
         pinned = device_a.call(
             "ChatManager",
             Cmd.pinMessage.value,
@@ -1135,6 +1170,7 @@ def test_chat_offline_recipient_receives_message_unpin_after_relogin(
             operation="MessagePinOperation.Pin",
             operator_id=user_a,
         )
+        timing_pause('step.interval', module='chat')
         initial_state = _wait_pinned_messages(
             device_b,
             conv_id=user_a,
@@ -1149,8 +1185,8 @@ def test_chat_offline_recipient_receives_message_unpin_after_relogin(
             user_b=user_b,
             content=content,
         )
-        device_b.drain_events(timeout=0.5)
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        device_b.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='chat')
         unpinned = device_a.call(
             "ChatManager",
             Cmd.unpinMessage.value,
@@ -1169,6 +1205,7 @@ def test_chat_offline_recipient_receives_message_unpin_after_relogin(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='chat',
         )
         changed = _wait_pin_change(
             device_b,
@@ -1183,6 +1220,7 @@ def test_chat_offline_recipient_receives_message_unpin_after_relogin(
             operation="MessagePinOperation.Unpin",
             operator_id=user_a,
         )
+        timing_pause('step.interval', module='chat')
         fetched = _wait_pinned_messages(
             device_b,
             conv_id=user_a,

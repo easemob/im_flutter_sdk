@@ -7,6 +7,8 @@
 当前实现：联系人模块 `ContactTestFlow`（device 由调用方传入，不绑死在实例上）。
 """
 from __future__ import annotations
+from src.tools.case_timing_defaults import POSITIVE_TIMEOUT_EPSILON
+from src.tools.case_timing import seconds as timing_seconds, pause as timing_pause
 
 from typing import Any
 import time
@@ -27,10 +29,10 @@ class ContactTestFlow:
     def _discard_buffered(device, *kinds):
         # Filtered reads leave other event types untouched. Bound draining too.
         # Events arriving later have no operation ID and cannot be fully correlated.
-        deadline = time.monotonic() + 0.5
+        deadline = time.monotonic() + timing_seconds('drain.buffered', module='contact')
         for kind in kinds:
             while time.monotonic() < deadline:
-                if device.receive_message(match_event_type=kind, timeout=0.001) is None:
+                if device.receive_message(match_event_type=kind, timeout=timing_seconds('poll.buffered_receive', module='contact')) is None:
                     break
             else:
                 raise AssertionError('Contact event backlog did not drain within 0.5s')
@@ -40,7 +42,7 @@ class ContactTestFlow:
         ignored = 0
         while time.monotonic() < deadline:
             event = device.receive_message(
-                match_event_type=kind, timeout=max(0.000001, deadline - time.monotonic()))
+                match_event_type=kind, timeout=max(POSITIVE_TIMEOUT_EPSILON, deadline - time.monotonic()))
             if event is None:
                 break
             data = event.get('data') or {}
@@ -75,12 +77,13 @@ class ContactTestFlow:
         )
         if self._synchronize:
             self._wait_contact(peer, ContactChangeEvent.INVITED.value, user_a,
-                               time.monotonic() + 10.0, reason=reason)
+                               time.monotonic() + timing_seconds('timeout.event', module='contact'), reason=reason)
         else:
             assert peer.receive_message(
                 match_event_type=ContactChangeEvent.INVITED.value,
-                timeout=10.0,
+                timeout=timing_seconds('timeout.event', module='contact'),
             )
+        timing_pause('step.interval', module='contact')
         self._api.assert_success(
             peer.call(
                 "ContactManager",
@@ -91,7 +94,7 @@ class ContactTestFlow:
 
         if self._synchronize:
             # One shared budget, not 10s for each callback; no sleep or resend.
-            deadline = time.monotonic() + 10.0
+            deadline = time.monotonic() + timing_seconds('timeout.event', module='contact')
             self._wait_contact(initiator, 'onFriendRequestAccepted', user_b, deadline)
             self._wait_contact(initiator, 'onContactAdded', user_b, deadline)
             self._wait_contact(peer, 'onContactAdded', user_a, deadline)
@@ -109,11 +112,11 @@ class ContactTestFlow:
         )
         if self._synchronize:
             self._wait_contact(initiator, ContactChangeEvent.CONTACT_DELETE.value,
-                               friend_user_id, time.monotonic() + 10.0)
+                               friend_user_id, time.monotonic() + timing_seconds('timeout.event', module='contact'))
         else:
             assert initiator.receive_message(
                 match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
-                timeout=10.0,
+                timeout=timing_seconds('timeout.event', module='contact'),
             )
 
     def get_all_contacts_from_server(self, device: Any) -> dict[str, Any]:

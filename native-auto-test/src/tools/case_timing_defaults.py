@@ -1,0 +1,75 @@
+"""Semantic budgets (seconds), independent of case/file names.
+
+See docs/case-timing-inventory.md for purposes and override examples.
+Receive floors are algorithmic constants, not environment configuration.
+"""
+
+MODULES = frozenset({
+    'chat', 'group', 'chatroom', 'contact', 'client', 'presence', 'push',
+    'user_info', 'session', 'shared',
+})
+
+POSITIVE_TIMEOUT_EPSILON = 1e-6
+RECEIVE_TIMEOUT_FLOOR = 0.1
+
+DEFAULTS = {
+    'step.interval': 1.0,
+    'settle.offline': 3.0,
+    'settle.normal': 5.0,
+    'settle.slow': 15.0,
+    'settle.parent_message': 5.0,
+    'settle.local_projection': 2.0,
+    'settle.history_projection': 2.0,
+    'settle.ack_projection': 2.0,
+    'settle.cursor_order': 1.1,
+    'settle.sort_spacing': 1.0,
+    'settle.sort_projection': 1.5,
+    'settle.thumbnail_completion': 30.0,
+    'timeout.event': 10.0,
+    'timeout.message': 20.0,
+    'timeout.message_delivery': 30.0,
+    'timeout.message_change': 30.0,
+    'timeout.online_delivery': 60.0,
+    'timeout.send_terminal': 30.0,
+    'timeout.send_completion': 60.0,
+    'timeout.replay': 60.0,
+    'timeout.read_ack': 60.0,
+    'timeout.reaction': 60.0,
+    'timeout.delivery_confirmation': 3.0,
+    'timeout.download': 60.0,
+    'timeout.contact_change': 20.0,
+    'timeout.friend_invitation': 5.0,
+    'timeout.friend_probe': 6.0,
+    'timeout.friend_recovery': 10.0,
+    'timeout.friend_ready': 30.0,
+    'timeout.friend_sync_start': 10.0,
+    'timeout.friend_sync_finish': 20.0,
+    'timeout.offline_sync': 15.0,
+    'timeout.group_event': 30.0,
+    'timeout.thread_event': 20.0,
+    'timeout.member_state': 8.0,
+    'timeout.pending_operations': 15.0,
+    'timeout.state_projection': 30.0,
+    'timeout.server_state': 60.0,
+    'observe.no_event': 3.0,
+    'observe.no_membership_event': 2.0,
+    'observe.no_delivery': 5.0,
+    'observe.collect': 10.0,
+    'observe.moderation': 5.0,
+    'observe.file_transfer': 20.0,
+    'observe.incremental': 0.5,
+    'observe.optional_progress': 5.0,
+    'poll.interval': 1.0,
+    'poll.server_state': 2.0,
+    'poll.member_state': 0.5,
+    'poll.receive': 2.0,
+    'poll.receive_batch': 1.0,
+    'poll.receive_progress': 5.0,
+    'poll.receive_probe': 0.5,
+    'poll.buffered_receive': 0.001,
+    'drain.offline': 0.5,
+    'drain.generic': 2.0,
+    'drain.sync': 1.0,
+    'drain.buffered': 0.5,
+    'retry.backoff': 1.0,
+}

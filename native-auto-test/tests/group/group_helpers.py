@@ -1,4 +1,5 @@
 from __future__ import annotations
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 
@@ -77,9 +78,10 @@ def collect_group_events(
     group_id: str | None = None,
     allow_missing_group_id: bool = False,
     required_all_event_types: set[str] | None = None,
-    timeout: float = 10.0,
+    timeout: float = None,
     idle_grace_window: float = 0.8,
 ) -> list[dict]:
+    timeout = timing_seconds('observe.collect', module='group') if timeout is None else timeout
     required_all = set(required_all_event_types or set())
     for required_type in required_all:
         assert required_type in expected_event_types, (
@@ -110,7 +112,7 @@ def collect_group_events(
         if matched and _requirements_satisfied() and (time.monotonic() - last_matched_at) >= idle_grace_window:
             return matched
 
-        evt = device.receive_message(timeout=min(remaining, 1.0))
+        evt = device.receive_message(timeout=min(remaining, timing_seconds('poll.receive_batch', module='group')))
         items: list[dict] = []
         if isinstance(evt, dict):
             items = [evt]
@@ -152,9 +154,10 @@ def wait_member_auto_joined(
     *,
     group_id: str,
     inviter: str,
-    timeout: float = 10.0,
+    timeout: float = None,
 ) -> None:
     """For auto-accept groups, await member-side readiness instead of sleeping."""
+    timeout = timing_seconds('timeout.event', module='group') if timeout is None else timeout
     event_type = "onAutoAcceptInvitationFromGroup"
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -182,11 +185,12 @@ def assert_no_group_event(
     *,
     group_id: str,
     event_types: set[str],
-    timeout: float = 2.0,
+    timeout: float = None,
 ) -> None:
+    timeout = timing_seconds('observe.no_membership_event', module='group') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        event = device.receive_message(timeout=min(0.5, deadline - time.monotonic()))
+        event = device.receive_message(timeout=min(timing_seconds('poll.receive_probe', module='group'), deadline - time.monotonic()))
         if not isinstance(event, dict) or event.get("type") != "event":
             continue
         if event.get("eventType") not in event_types:
@@ -873,7 +877,7 @@ def destroy_group(
             expected_event_types=expected,
             group_id=group_id,
             required_all_event_types=expected,
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,

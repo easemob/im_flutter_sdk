@@ -1,4 +1,7 @@
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -11,13 +14,14 @@ from src.tools.send_status_wait import wait_send_success
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
 
-def _wait_event(device, event_type: str, *, predicate=None, timeout: float = 30.0):
+def _wait_event(device, event_type: str, *, predicate=None, timeout: float = None):
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     seen = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         evt = device.receive_message(
             match_event_type=event_type,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if not evt:
             continue
@@ -27,13 +31,14 @@ def _wait_event(device, event_type: str, *, predicate=None, timeout: float = 30.
     pytest.fail(f"未收到 {event_type} 目标事件，seen={seen}")
 
 
-def _wait_delivery_event(device, *, real_id: str, timeout: float = 30.0):
+def _wait_delivery_event(device, *, real_id: str, timeout: float = None):
     """兼容当前桥接可能使用的 delivery 回调命名，只接受目标真实 msgId。"""
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     seen = []
     deadline = time.monotonic() + timeout
     allowed = {Cmd.onMessagesDelivered.value, Cmd.onMessageDeliveryAck.value}
     while time.monotonic() < deadline:
-        evt = device.receive_message(timeout=min(2.0, max(0.1, deadline - time.monotonic())))
+        evt = device.receive_message(timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())))
         if not evt:
             continue
         seen.append(evt)
@@ -77,7 +82,7 @@ def _send_type_and_receive(
     success_evt = wait_send_success(
         device_a,
         temp_id=temp_id,
-        timeout=30.0,
+        timeout=timing_seconds('timeout.send_terminal', module='chat'),
         predicate=lambda e: str((e.get("data") or {}).get("msgId")) == str(temp_id)
         and str(((e.get("data") or {}).get("msg") or {}).get("msgId")) != "",
     )
@@ -277,12 +282,14 @@ def test_chat_missing_message_delivery_ack(device_a, device_b, assert_api, user_
         expected={"manager": "Client", "cmd": Cmd.updateDeliveryAckSetting.value, "device": "deviceA", "result": None},
         ignore_keys={"sequence"},
     )
+    timing_pause('step.interval', module='chat')
     setting_b = device_b.call("Client", Cmd.updateDeliveryAckSetting.value, info={"requireDeliveryAck": True})
     assert_api.assert_response_matches(
         setting_b,
         expected={"manager": "Client", "cmd": Cmd.updateDeliveryAckSetting.value, "device": "deviceB", "result": None},
         ignore_keys={"sequence"},
     )
+    timing_pause('step.interval', module='chat')
     payload = {"targetId": user_b, **payload}
     _, _, _, _, real_id = _send_type_and_receive(
         device_a,

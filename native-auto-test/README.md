@@ -2,6 +2,35 @@
 
 通过 WebSocket 与 Flutter demo 端通信，对环信 Flutter SDK 的 API 做自动化测试。Flutter 端需连接**同一 WebSocket 服务**且使用**相同 topic**。
 
+## Cases 时间配置
+
+在当前环境文件（默认 `config/config.yaml`，可通过 `IM_TEST_CONFIG` 指定）的 `app.case_timing` 中配置，单位统一为秒。例如：
+
+```yaml
+app:
+  case_timing:
+    step: 1.0             # 普通业务步骤；含回调验证到下次操作
+    settle:
+      offline: 3.0        # 退出后、重登前、重登后
+      normal: 5.0         # 常规历史消息、群成员/配置稳定
+      slow: 15.0          # 好友、reaction
+    timeout:
+      group:
+        group_event: 30.0 # 可选：只调 Group 的群事件预算
+```
+
+按语义组织 `step / settle / timeout / observe / poll / drain / retry`；代码使用 `seconds('timeout.event', module='contact')`、`pause('step.interval', module='group')`。所有段统一优先级：**模块语义值 > 全局语义值 > 模块 default > 全局 default > 内置默认**。模块标量是模块 default 的简写；`step: 1` 等价于 `step: {interval: 1}`。未填字段无需补齐，59 个语义键及用途见 [时间配置词汇表](docs/case-timing-inventory.md)，模板见 `config/env.yaml.template`。
+
+- 普通依赖步骤默认 1 秒，离线三个边界默认各 3 秒；已有较长专用等待保留。普通多步链路在回调验证完成到下一个依赖操作前同样等待 1 秒，同次操作的多个回调之间不额外暂停。全量 543 个测试函数的命令/helper/等待索引见 [依赖边界盘点](docs/case-dependency-audit.md)；其中 61 个函数经调用图到达公共离线登录前等待。
+- `settle` 常用配置只需 offline/normal/slow 三项；父消息 `parent_message=5`、排序间距、30 秒缩略图完成稳定等待使用独立语义键，不随 normal/slow 改变。
+- **迁移注意**：原文件/函数长键、`step.group` 等调用形式以及 `offline_before_login` 等别名已移除。旧 YAML 键报错；原 `*_SETTLE_SECONDS` 时间环境变量不再读取，统一改用 YAML。真实环境文件不会由迁移脚本自动改写。
+- 登录后等待只暂停操作，不清空离线回调；事件匹配及业务断言不变。
+- `step/settle/drain/retry` 可为 0；`timeout/observe/poll` 必须为有限正数，不接受布尔值、负数或非有限数。
+- 优先修改具体语义值；宽泛 default 会影响该范围内未显式配置的预算。`poll.receive*` 是单次读取上限，`poll.interval/server_state/member_state` 是轮询 sleep；算法读取下限不开放配置。
+- 业务时间戳、禁言期限、订阅 expiry 等不是执行等待，不随这些参数改变。
+- `app.wait` 继续不消费；传输连接/响应超时仍配置在 `bridge.yaml`。改文件后重新启动 pytest。
+- `pytest tests` 默认排除 tools；维护等待逻辑时可显式执行 `pytest tests/tools`。
+
 ## 快速开始（Quick Start）
 
 无需 Flutter、无需 Android Studio、无需手动装 Android SDK。一条命令跑通双端 E2E。

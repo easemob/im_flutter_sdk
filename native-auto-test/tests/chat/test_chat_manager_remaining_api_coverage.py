@@ -1,4 +1,7 @@
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import os
 import uuid
@@ -49,7 +52,7 @@ def _send_text_and_receive(device_a, device_b, assert_api, user_a: str, user_b: 
         },
         ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly"},
     )
-    success_evt = _wait_message_success_for_content(device_a, content=content, to=user_b, timeout=60.0)
+    success_evt = _wait_message_success_for_content(device_a, content=content, to=user_b, timeout=timing_seconds('timeout.send_completion', module='chat'))
     real_id = (((success_evt.get("data") or {}).get("msg") or {}).get("msgId")) or temp_id
     assert_api.assert_response_matches(
         success_evt,
@@ -81,7 +84,7 @@ def _send_text_and_receive(device_a, device_b, assert_api, user_a: str, user_b: 
     )
     seen_events = []
     for _ in range(5):
-        received_evt = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+        received_evt = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timing_seconds('timeout.message', module='chat'))
         if received_evt:
             seen_events.append(received_evt)
         messages = ((received_evt or {}).get("data") or {}).get("messages") or []
@@ -139,11 +142,12 @@ def _send_text_and_receive(device_a, device_b, assert_api, user_a: str, user_b: 
     raise AssertionError(f"B 端未收到目标消息: msgId={real_id}, events={seen_events}")
 
 
-def _wait_message_success_for_content(device, *, content: str, to: str, timeout: float = 60.0) -> dict:
+def _wait_message_success_for_content(device, *, content: str, to: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.send_completion', module='chat') if timeout is None else timeout
     seen_events = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=2.0)
+        evt = device.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('poll.receive', module='chat'))
         if evt:
             seen_events.append(evt)
         msg = ((evt or {}).get("data") or {}).get("msg") or {}
@@ -153,11 +157,12 @@ def _wait_message_success_for_content(device, *, content: str, to: str, timeout:
     raise AssertionError(f"未收到目标 onMessageSuccess: to={to}, content={content}, events={seen_events}")
 
 
-def _wait_message_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 60.0) -> dict:
+def _wait_message_event(device, event_type: str, *, real_id: str, content: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.online_delivery', module='chat') if timeout is None else timeout
     seen_events = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=event_type, timeout=2.0)
+        evt = device.receive_message(match_event_type=event_type, timeout=timing_seconds('poll.receive', module='chat'))
         if evt:
             seen_events.append(evt)
         for msg in ((evt or {}).get("data") or {}).get("messages") or []:
@@ -206,11 +211,12 @@ def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_i
     )
 
 
-def _wait_pin_changed(device, *, msg_id: str, operation: str, timeout: float = 20.0) -> dict:
+def _wait_pin_changed(device, *, msg_id: str, operation: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.message', module='chat') if timeout is None else timeout
     seen_events = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=Cmd.onMessagePinChanged.value, timeout=2.0)
+        evt = device.receive_message(match_event_type=Cmd.onMessagePinChanged.value, timeout=timing_seconds('poll.receive', module='chat'))
         if evt:
             seen_events.append(evt)
         data = (evt or {}).get("data") or {}
@@ -219,13 +225,14 @@ def _wait_pin_changed(device, *, msg_id: str, operation: str, timeout: float = 2
     raise AssertionError(f"未收到目标 onMessagePinChanged: msgId={msg_id}, operation={operation}, events={seen_events}")
 
 
-def _assert_no_pin_changed(device, *, msg_id: str, operation: str, timeout: float = 3.0) -> None:
+def _assert_no_pin_changed(device, *, msg_id: str, operation: str, timeout: float = None) -> None:
+    timeout = timing_seconds('observe.no_event', module='chat') if timeout is None else timeout
     seen_events = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         evt = device.receive_message(
             match_event_type=Cmd.onMessagePinChanged.value,
-            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive_batch', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if evt:
             seen_events.append(evt)
@@ -253,7 +260,8 @@ def _assert_pin_changed(assert_api, evt: dict, *, msg_id: str, conversation_id: 
     )
 
 
-def _wait_conversation_on_server(device, *, conv_id: str, timeout: float = 60.0) -> dict:
+def _wait_conversation_on_server(device, *, conv_id: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.server_state', module='chat') if timeout is None else timeout
     seen_responses = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -264,7 +272,7 @@ def _wait_conversation_on_server(device, *, conv_id: str, timeout: float = 60.0)
             match = next((item for item in result if isinstance(item, dict) and item.get("convId") == conv_id), None)
             if match is not None:
                 return match
-        time.sleep(2.0)
+        time.sleep(timing_seconds('poll.server_state', module='chat'))
     raise AssertionError(f"服务端会话列表未出现目标会话: convId={conv_id}, responses={seen_responses}")
 
 
@@ -273,6 +281,7 @@ def test_chat_manager_pin_unpin_and_fetch_pinned_messages(device_a, device_b, as
     content = f"chat-pin-msg-{uuid.uuid4().hex[:8]}"
     msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
 
+    timing_pause('step.interval', module='chat')
     resp_pin = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": msg_id})
     assert_api.assert_response_matches(
         resp_pin,
@@ -288,6 +297,7 @@ def test_chat_manager_pin_unpin_and_fetch_pinned_messages(device_a, device_b, as
     _assert_pin_changed(assert_api, pin_evt_b, msg_id=msg_id, conversation_id=user_a, operation="MessagePinOperation.Pin", operator_id=user_a)
     _assert_no_pin_changed(device_a, msg_id=msg_id, operation="MessagePinOperation.Pin")
 
+    timing_pause('step.interval', module='chat')
     resp_fetch = device_a.call("ChatManager", Cmd.fetchPinnedMessages.value, info={"convId": user_b})
     target_pinned = [
         message for message in (resp_fetch.get("result") or [])
@@ -336,6 +346,7 @@ def test_chat_manager_pin_unpin_and_fetch_pinned_messages(device_a, device_b, as
     _assert_pin_changed(assert_api, unpin_evt_b, msg_id=msg_id, conversation_id=user_a, operation="MessagePinOperation.Unpin", operator_id=user_a)
     _assert_no_pin_changed(device_a, msg_id=msg_id, operation="MessagePinOperation.Unpin")
 
+    timing_pause('step.interval', module='chat')
     resp_fetch_empty = device_a.call("ChatManager", Cmd.fetchPinnedMessages.value, info={"convId": user_b})
     target_after_unpin = [
         message for message in (resp_fetch_empty.get("result") or [])
@@ -357,7 +368,7 @@ def test_chat_manager_recall_message_receiver_recalled_info_event(device_a, devi
     """recallMessage：发送方撤回已送达单聊消息，接收方收到 onMessagesRecalledInfo 事件并携带撤回消息 ID。"""
     content = f"chat-recall-event-{uuid.uuid4().hex[:8]}"
     msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
-    time.sleep(float(os.getenv("CHAT_RECALL_SETTLE_SECONDS", "5")))
+    time.sleep(timing_seconds('settle.normal', module='chat'))
 
     resp = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
     assert_api.assert_response_matches(
@@ -371,7 +382,7 @@ def test_chat_manager_recall_message_receiver_recalled_info_event(device_a, devi
         ignore_keys={"sequence"},
     )
 
-    evt = device_b.receive_message(match_event_type=Cmd.onMessagesRecalledInfo.value, timeout=20.0)
+    evt = device_b.receive_message(match_event_type=Cmd.onMessagesRecalledInfo.value, timeout=timing_seconds('timeout.message', module='chat'))
     assert_api.assert_response_matches(
         evt,
         expected={
@@ -448,7 +459,7 @@ def test_chat_manager_send_to_non_friend_current_success_event(device_a, assert_
         ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly"},
     )
 
-    evt = _wait_message_success_for_content(device_a, content=content, to=user_c, timeout=20.0)
+    evt = _wait_message_success_for_content(device_a, content=content, to=user_c, timeout=timing_seconds('timeout.message', module='chat'))
     real_id = (((evt.get("data") or {}).get("msg") or {}).get("msgId")) or temp_id
     assert_api.assert_response_matches(
         evt,
@@ -483,6 +494,7 @@ def test_chat_manager_send_to_non_friend_current_success_event(device_a, assert_
 def test_chat_manager_conversation_marks_and_fetch_options(device_a, device_b, assert_api, user_a, user_b):
     """addRemoteAndLocalConversationsMark/deleteRemoteAndLocalConversationsMark/fetchConversationsByOptions：添加会话标记后按 options 查询，再移除标记。"""
     _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, f"chat-mark-{uuid.uuid4().hex[:8]}")
+    timing_pause('step.interval', module='chat')
     _wait_conversation_on_server(device_a, conv_id=user_b)
 
     resp_add = device_a.call(
@@ -501,15 +513,16 @@ def test_chat_manager_conversation_marks_and_fetch_options(device_a, device_b, a
         ignore_keys={"sequence"},
     )
 
+    timing_pause('step.interval', module='chat')
     fetch_info = {"mark": 0, "pageSize": 10, "cursor": "", "pinned": False}
     resp_fetch_marked = None
-    deadline = time.monotonic() + 30.0
+    deadline = time.monotonic() + timing_seconds('timeout.state_projection', module='chat')
     while time.monotonic() < deadline:
         resp_fetch_marked = device_a.call("ChatManager", Cmd.fetchConversationsByOptions.value, info=fetch_info)
         marked_list = ((resp_fetch_marked.get("result") or {}).get("list") or [])
         if any(isinstance(item, dict) and item.get("convId") == user_b and 0 in (item.get("marks") or []) for item in marked_list):
             break
-        time.sleep(2.0)
+        time.sleep(timing_seconds('poll.server_state', module='chat'))
     assert resp_fetch_marked is not None
     assert_api.assert_response_matches(
         resp_fetch_marked,
@@ -585,6 +598,7 @@ def test_chat_manager_message_count_and_search_options_boundaries(device_a, asse
 def test_chat_manager_delete_all_message_and_conversation_local(device_a, device_b, assert_api, user_a, user_b):
     """deleteAllMessageAndConversation：本地清空所有会话与消息，冻结 clearServerData=False 当前返回。"""
     _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, f"chat-clear-all-{uuid.uuid4().hex[:8]}")
+    timing_pause('step.interval', module='chat')
     resp_delete = device_a.call(
         "ChatManager",
         Cmd.deleteAllMessageAndConversation.value,
@@ -637,6 +651,7 @@ def test_chat_manager_message_object_boundary_methods(device_a, assert_api, user
 
     updated_body = {"type": 0, "content": f"chat-object-updated-{uuid.uuid4().hex[:8]}"}
     updated = {**message, "status": 2, "body": updated_body}
+    timing_pause('step.interval', module='chat')
     resp_update = device_a.call("ChatManager", Cmd.updateChatMessage.value, info={"message": updated})
     assert_api.assert_response_matches(
         resp_update,
@@ -673,6 +688,7 @@ def test_chat_manager_message_object_boundary_methods(device_a, assert_api, user
         },
     )
 
+    timing_pause('step.interval', module='chat')
     resp_resend = device_a.call("ChatManager", Cmd.resendMessage.value, info=message)
     assert_api.assert_response_matches(
         resp_resend,

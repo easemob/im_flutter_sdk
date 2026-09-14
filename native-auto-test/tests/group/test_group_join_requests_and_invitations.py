@@ -1,5 +1,7 @@
 """Group 入群申请与邀请处理（正常 + 异常）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import pytest
 
@@ -67,6 +69,7 @@ def test_group_invitation_explicit_accept_when_auto_accept_disabled(
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='group')
         group_name = new_group_name("invite_explicit_accept")
         group_id, _ = create_group(
             device_a,
@@ -86,7 +89,7 @@ def test_group_invitation_explicit_accept_when_auto_accept_disabled(
             },
             group_id=group_id,
             required_all_event_types={"onInvitationReceivedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         _assert_exact_group_event(
             assert_api,
@@ -100,6 +103,7 @@ def test_group_invitation_explicit_accept_when_auto_accept_disabled(
             },
         )
 
+        timing_pause('step.interval', module='group')
         resp_accept = device_b.call(
             "GroupManager",
             Cmd.acceptInvitationFromGroup.value,
@@ -116,6 +120,7 @@ def test_group_invitation_explicit_accept_when_auto_accept_disabled(
             permission_type=0,
             device="deviceB",
         )
+        timing_pause('step.interval', module='group')
         accepted = True
 
         accepted_event_types = {
@@ -128,7 +133,7 @@ def test_group_invitation_explicit_accept_when_auto_accept_disabled(
             expected_event_types=accepted_event_types,
             group_id=group_id,
             required_all_event_types=accepted_event_types,
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         accepted_by_type = {event["eventType"]: event for event in accepted_events}
         _assert_exact_group_event(
@@ -155,6 +160,7 @@ def test_group_invitation_explicit_accept_when_auto_accept_disabled(
             event_types=accepted_event_types,
         )
 
+        timing_pause('step.interval', module='group')
         resp_server = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
@@ -231,6 +237,7 @@ def test_group_invitation_explicit_decline_when_auto_accept_disabled(
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='group')
         group_id, _ = create_group(
             device_a,
             assert_api,
@@ -245,7 +252,7 @@ def test_group_invitation_explicit_decline_when_auto_accept_disabled(
             expected_event_types={"onInvitationReceivedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onInvitationReceivedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         _assert_exact_group_event(
             assert_api,
@@ -259,6 +266,7 @@ def test_group_invitation_explicit_decline_when_auto_accept_disabled(
             },
         )
 
+        timing_pause('step.interval', module='group')
         resp_decline = device_b.call(
             "GroupManager",
             Cmd.declineInvitationFromGroup.value,
@@ -275,6 +283,7 @@ def test_group_invitation_explicit_decline_when_auto_accept_disabled(
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='group')
         declined_events: list[dict] = []
         declined_event_error: AssertionError | None = None
         try:
@@ -283,7 +292,7 @@ def test_group_invitation_explicit_decline_when_auto_accept_disabled(
                 expected_event_types={"onInvitationDeclinedFromGroup"},
                 group_id=group_id,
                 required_all_event_types={"onInvitationDeclinedFromGroup"},
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
         except AssertionError as error:
             declined_event_error = error
@@ -297,6 +306,7 @@ def test_group_invitation_explicit_decline_when_auto_accept_disabled(
         assert_no_group_event(device_a, group_id=group_id, event_types=joined_event_types)
         assert_no_group_event(device_b, group_id=group_id, event_types=joined_event_types)
 
+        timing_pause('step.interval', module='group')
         resp_server = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
@@ -381,6 +391,7 @@ def test_group_invitation_auto_accept_when_confirmation_required(
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='group')
         group_id, _ = create_group(
             device_a,
             assert_api,
@@ -391,6 +402,7 @@ def test_group_invitation_auto_accept_when_confirmation_required(
             invite_need_confirm=True,
             expected_member_count=1,
         )
+        timing_pause('step.interval', module='group')
         joined = True
 
         auto_events = collect_group_events(
@@ -398,7 +410,7 @@ def test_group_invitation_auto_accept_when_confirmation_required(
             expected_event_types={"onAutoAcceptInvitationFromGroup"},
             group_id=group_id,
             required_all_event_types={"onAutoAcceptInvitationFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         _assert_exact_group_event(
             assert_api,
@@ -417,7 +429,7 @@ def test_group_invitation_auto_accept_when_confirmation_required(
             expected_event_types=owner_event_types,
             group_id=group_id,
             required_all_event_types=owner_event_types,
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         owner_by_type = {event["eventType"]: event for event in owner_events}
         _assert_exact_group_event(
@@ -440,6 +452,7 @@ def test_group_invitation_auto_accept_when_confirmation_required(
         )
         assert_no_group_event(device_b, group_id=group_id, event_types=owner_event_types)
 
+        timing_pause('step.interval', module='group')
         resp_server = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
@@ -476,6 +489,7 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
             style=2,
         )
 
+        timing_pause('step.interval', module='group')
         resp_request = device_b.call(
             "GroupManager",
             Cmd.requestToJoinPublicGroup.value,
@@ -501,7 +515,7 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
             },
             group_id=group_id,
             required_all_event_types={"onRequestToJoinReceivedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -516,6 +530,7 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
             expected_member=user_b,
         )
 
+        timing_pause('step.interval', module='group')
         resp_accept = device_a.call(
             "GroupManager",
             Cmd.acceptJoinApplication.value,
@@ -544,7 +559,7 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
             group_id=group_id,
             allow_missing_group_id=True,
             required_all_event_types={"onRequestToJoinAcceptedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -568,7 +583,7 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
             expected_event_types=owner_joined_event_types,
             group_id=group_id,
             required_all_event_types=owner_joined_event_types,
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         owner_joined_by_type = {event["eventType"]: event for event in owner_joined_events}
         _assert_exact_group_event(
@@ -585,6 +600,7 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
         )
         assert_no_group_event(device_b, group_id=group_id, event_types=owner_joined_event_types)
 
+        timing_pause('step.interval', module='group')
         server = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
@@ -618,6 +634,7 @@ def test_group_request_to_join_and_decline_success(device_a, device_b, assert_ap
             style=2,
         )
 
+        timing_pause('step.interval', module='group')
         resp_request = device_b.call(
             "GroupManager",
             Cmd.requestToJoinPublicGroup.value,
@@ -643,7 +660,7 @@ def test_group_request_to_join_and_decline_success(device_a, device_b, assert_ap
             },
             group_id=group_id,
             required_all_event_types={"onRequestToJoinReceivedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -658,6 +675,7 @@ def test_group_request_to_join_and_decline_success(device_a, device_b, assert_ap
             expected_member=user_b,
         )
 
+        timing_pause('step.interval', module='group')
         resp_decline = device_a.call(
             "GroupManager",
             Cmd.declineJoinApplication.value,
@@ -684,7 +702,7 @@ def test_group_request_to_join_and_decline_success(device_a, device_b, assert_ap
             group_id=group_id,
             allow_missing_group_id=True,
             required_all_event_types={"onRequestToJoinDeclinedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -703,6 +721,7 @@ def test_group_request_to_join_and_decline_success(device_a, device_b, assert_ap
         joined_event_types = {"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"}
         assert_no_group_event(device_a, group_id=group_id, event_types=joined_event_types)
         assert_no_group_event(device_b, group_id=group_id, event_types=joined_event_types)
+        timing_pause('step.interval', module='group')
         server = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
@@ -761,6 +780,7 @@ def test_group_accept_join_application_nonexistent_user(device_a, assert_api, us
             invite_members=[],
             style=2,
         )
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.acceptJoinApplication.value,

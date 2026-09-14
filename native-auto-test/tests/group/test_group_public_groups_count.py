@@ -1,5 +1,7 @@
 """Group public list/count API 用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 
@@ -104,10 +106,11 @@ def test_group_public_groups_cursor_paginates_two_created_groups(
             invite_members=[],
             style=3,
         )
+        timing_pause('step.interval', module='group')
         group_ids.append(first_id)
         group_names.append(first_name)
 
-        time.sleep(1.1)
+        time.sleep(timing_seconds('settle.cursor_order', module='group'))
         second_name = new_group_name("public_cursor_second")
         second_id, _ = create_group(
             device_a,
@@ -117,6 +120,7 @@ def test_group_public_groups_cursor_paginates_two_created_groups(
             invite_members=[],
             style=3,
         )
+        timing_pause('step.interval', module='group')
         group_ids.append(second_id)
         group_names.append(second_name)
 

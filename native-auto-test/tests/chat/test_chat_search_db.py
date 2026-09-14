@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import uuid
 
@@ -19,8 +21,9 @@ def test_chat_search_chat_msg_from_db_success(device_a, device_b, assert_api, us
 
     keyword = f"kw-{uuid.uuid4().hex[:6]}"
     _ = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, keyword))
-    _ = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    _ = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
 
+    timing_pause('step.interval', module='chat')
     resp = device_a.call("ChatManager", Cmd.searchChatMsgFromDB.value, info={"keywords": keyword})
     # 先以宽松断言通过（发现模式下观察具体结构），非空即可。
     assert_api.assert_response_matches(

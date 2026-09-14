@@ -1,5 +1,7 @@
 """Group announcement API 正常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import pytest
 
@@ -23,7 +25,7 @@ def _consume_direct_invite_events(device_a, device_b, assert_api, *, group_id: s
         expected_event_types={"onAutoAcceptInvitationFromGroup", "onMemberJoinedFromGroup"},
         group_id=group_id,
         required_all_event_types={"onAutoAcceptInvitationFromGroup"},
-        timeout=10.0,
+        timeout=timing_seconds('observe.collect', module='group'),
     )
     assert_group_events(
         assert_api,
@@ -39,7 +41,7 @@ def _consume_direct_invite_events(device_a, device_b, assert_api, *, group_id: s
         expected_event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
         group_id=group_id,
         required_all_event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
-        timeout=10.0,
+        timeout=timing_seconds('observe.collect', module='group'),
     )
     assert_group_events(
         assert_api,
@@ -69,6 +71,7 @@ def test_group_owner_update_announcement_notifies_member(device_a, device_b, ass
             group_name=group_name,
             invite_members=[user_b],
         )
+        timing_pause('step.interval', module='group')
         _consume_direct_invite_events(
             device_a,
             device_b,
@@ -78,6 +81,7 @@ def test_group_owner_update_announcement_notifies_member(device_a, device_b, ass
             user_b=user_b,
         )
 
+        timing_pause('step.interval', module='group')
         resp_update = device_a.call(
             "GroupManager",
             Cmd.updateGroupAnnouncement.value,
@@ -99,7 +103,7 @@ def test_group_owner_update_announcement_notifies_member(device_a, device_b, ass
             expected_event_types={"onAnnouncementChangedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onAnnouncementChangedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_api.assert_response_matches(
             announcement_events[0],
@@ -116,6 +120,7 @@ def test_group_owner_update_announcement_notifies_member(device_a, device_b, ass
             event_types={"onAnnouncementChangedFromGroup"},
         )
 
+        timing_pause('step.interval', module='group')
         resp_get = device_a.call(
             "GroupManager",
             Cmd.getGroupAnnouncementFromServer.value,
@@ -154,6 +159,7 @@ def test_group_admin_update_announcement_notifies_owner(device_a, device_b, asse
             group_name=group_name,
             invite_members=[user_b],
         )
+        timing_pause('step.interval', module='group')
         _consume_direct_invite_events(
             device_a,
             device_b,
@@ -163,6 +169,7 @@ def test_group_admin_update_announcement_notifies_owner(device_a, device_b, asse
             user_b=user_b,
         )
 
+        timing_pause('step.interval', module='group')
         resp_admin = device_a.call(
             "GroupManager",
             Cmd.addAdmin.value,
@@ -182,7 +189,7 @@ def test_group_admin_update_announcement_notifies_owner(device_a, device_b, asse
             expected_event_types={"onAdminAddedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onAdminAddedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -194,6 +201,7 @@ def test_group_admin_update_announcement_notifies_owner(device_a, device_b, asse
         )
         assert_no_group_event(device_a, group_id=group_id, event_types={"onAdminAddedFromGroup"})
 
+        timing_pause('step.interval', module='group')
         resp_update = device_b.call(
             "GroupManager",
             Cmd.updateGroupAnnouncement.value,
@@ -215,7 +223,7 @@ def test_group_admin_update_announcement_notifies_owner(device_a, device_b, asse
             expected_event_types={"onAnnouncementChangedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onAnnouncementChangedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_api.assert_response_matches(
             announcement_events[0],
@@ -232,6 +240,7 @@ def test_group_admin_update_announcement_notifies_owner(device_a, device_b, asse
             event_types={"onAnnouncementChangedFromGroup"},
         )
 
+        timing_pause('step.interval', module='group')
         resp_get = device_a.call(
             "GroupManager",
             Cmd.getGroupAnnouncementFromServer.value,

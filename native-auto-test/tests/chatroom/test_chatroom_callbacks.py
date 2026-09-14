@@ -1,5 +1,7 @@
 """ChatRoom 回调事件用例。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import uuid
 
@@ -13,7 +15,8 @@ from tests.chatroom.test_chatroom_management_basics import _assert_success_envel
 pytestmark = [pytest.mark.client, pytest.mark.chatroom, pytest.mark.agorachat4_23_0]
 
 
-def _first_chatroom_event(device, *, room_id: str, event_types: set[str], timeout: float = 10.0) -> dict:
+def _first_chatroom_event(device, *, room_id: str, event_types: set[str], timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.event', module='chatroom') if timeout is None else timeout
     events = collect_chatroom_events(
         device,
         expected_event_types=event_types,
@@ -49,15 +52,18 @@ def _join_chatroom_as_b_and_wait_ready(device_b, assert_api, room_id: str) -> No
 
 def test_chatroom_admin_added_and_removed_callbacks(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="cb_admin", desc_prefix="cb_admin")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
 
+        timing_pause('step.interval', module='chatroom')
         add_resp = device_a.call(
             "ChatRoomManager",
             Cmd.addChatRoomAdmin.value,
             info={"roomId": room_id, "admin": user_b},
         )
         _assert_success_envelope(assert_api, add_resp, cmd=Cmd.addChatRoomAdmin.value, device="deviceA")
+        timing_pause('step.interval', module='chatroom')
         add_evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
@@ -67,6 +73,7 @@ def test_chatroom_admin_added_and_removed_callbacks(device_a, device_b, assert_a
         assert add_data.get("roomId") == room_id, f"管理员添加回调 roomId 不匹配: {add_evt}"
         assert add_data.get("admin") == user_b, f"管理员添加回调 admin 不匹配: {add_evt}"
 
+        timing_pause('step.interval', module='chatroom')
         remove_resp = device_a.call(
             "ChatRoomManager",
             Cmd.removeChatRoomAdmin.value,
@@ -87,9 +94,11 @@ def test_chatroom_admin_added_and_removed_callbacks(device_a, device_b, assert_a
 
 def test_chatroom_owner_changed_callback(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="cb_owner", desc_prefix="cb_owner")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
 
+        timing_pause('step.interval', module='chatroom')
         change_resp = device_a.call(
             "ChatRoomManager",
             Cmd.changeChatRoomOwner.value,
@@ -111,12 +120,15 @@ def test_chatroom_owner_changed_callback(device_a, device_b, assert_api, user_a,
 
 def test_chatroom_all_member_mute_state_callbacks(device_a, device_b, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="cb_mute_all", desc_prefix="cb_mute_all")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
         event_types = {ChatRoomEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED.value, "onAllChatRoomMemberMuteStateChanged"}
 
+        timing_pause('step.interval', module='chatroom')
         mute_resp = device_a.call("ChatRoomManager", Cmd.muteAllChatRoomMembers.value, info={"roomId": room_id})
         _assert_success_envelope(assert_api, mute_resp, cmd=Cmd.muteAllChatRoomMembers.value, device="deviceA")
+        timing_pause('step.interval', module='chatroom')
         mute_evt = _first_chatroom_event(device_b, room_id=room_id, event_types=event_types)
         mute_data = _event_data(mute_evt)
         assert mute_data.get("roomId") == room_id, f"全员禁言回调 roomId 不匹配: {mute_evt}"
@@ -124,6 +136,7 @@ def test_chatroom_all_member_mute_state_callbacks(device_a, device_b, assert_api
             f"全员禁言回调状态应为 true: {mute_evt}"
         )
 
+        timing_pause('step.interval', module='chatroom')
         unmute_resp = device_a.call("ChatRoomManager", Cmd.unMuteAllChatRoomMembers.value, info={"roomId": room_id})
         _assert_success_envelope(assert_api, unmute_resp, cmd=Cmd.unMuteAllChatRoomMembers.value, device="deviceA")
         unmute_evt = _first_chatroom_event(device_b, room_id=room_id, event_types=event_types)
@@ -138,11 +151,13 @@ def test_chatroom_all_member_mute_state_callbacks(device_a, device_b, assert_api
 
 def test_chatroom_attributes_updated_and_removed_callbacks(device_a, device_b, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="cb_attrs", desc_prefix="cb_attrs")
+    timing_pause('step.interval', module='chatroom')
     attr_key = f"cb_attr_{uuid.uuid4().hex[:8]}"
     attr_value = f"value-{uuid.uuid4().hex[:8]}"
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
 
+        timing_pause('step.interval', module='chatroom')
         set_resp = device_a.call(
             "ChatRoomManager",
             Cmd.setChatRoomAttributes.value,
@@ -154,6 +169,7 @@ def test_chatroom_attributes_updated_and_removed_callbacks(device_a, device_b, a
             },
         )
         _assert_success_envelope(assert_api, set_resp, cmd=Cmd.setChatRoomAttributes.value, device="deviceA")
+        timing_pause('step.interval', module='chatroom')
         updated_evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
@@ -166,6 +182,7 @@ def test_chatroom_attributes_updated_and_removed_callbacks(device_a, device_b, a
             f"属性更新回调 from/fromId 不匹配: {updated_evt}"
         )
 
+        timing_pause('step.interval', module='chatroom')
         remove_resp = device_a.call(
             "ChatRoomManager",
             Cmd.removeChatRoomAttributes.value,
@@ -191,10 +208,12 @@ def test_chatroom_attributes_updated_and_removed_callbacks(device_a, device_b, a
 
 def test_chatroom_announcement_changed_callback(device_a, device_b, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="cb_announcement", desc_prefix="cb_announcement")
+    timing_pause('step.interval', module='chatroom')
     announcement = f"notice-{uuid.uuid4().hex[:8]}"
     try:
         _join_chatroom_as_b_and_wait_ready(device_b, assert_api, room_id)
 
+        timing_pause('step.interval', module='chatroom')
         update_resp = device_a.call(
             "ChatRoomManager",
             Cmd.updateChatRoomAnnouncement.value,
@@ -216,10 +235,12 @@ def test_chatroom_announcement_changed_callback(device_a, device_b, assert_api, 
 def test_chatroom_specification_changed_callback(device_a, device_b, assert_api, user_a):
     """changeChatRoomSubject 触发聊天室规格变更回调，校验 room 对象中的 roomId/name。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="cb_spec", desc_prefix="cb_spec")
+    timing_pause('step.interval', module='chatroom')
     subject = f"spec-{uuid.uuid4().hex[:8]}"
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
 
+        timing_pause('step.interval', module='chatroom')
         change_resp = device_a.call(
             "ChatRoomManager",
             Cmd.changeChatRoomSubject.value,
@@ -242,15 +263,18 @@ def test_chatroom_specification_changed_callback(device_a, device_b, assert_api,
 
 def test_chatroom_allow_list_added_and_removed_callbacks(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="cb_allow", desc_prefix="cb_allow")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
 
+        timing_pause('step.interval', module='chatroom')
         add_resp = device_a.call(
             "ChatRoomManager",
             Cmd.addMembersToChatRoomWhiteList.value,
             info={"roomId": room_id, "members": [user_b]},
         )
         _assert_success_envelope(assert_api, add_resp, cmd=Cmd.addMembersToChatRoomWhiteList.value, device="deviceA")
+        timing_pause('step.interval', module='chatroom')
         add_evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
@@ -260,6 +284,7 @@ def test_chatroom_allow_list_added_and_removed_callbacks(device_a, device_b, ass
         assert add_data.get("roomId") == room_id, f"白名单添加回调 roomId 不匹配: {add_evt}"
         assert user_b in _members_from_allow_list_event(add_data), f"白名单添加回调成员列表缺少 B: {add_evt}"
 
+        timing_pause('step.interval', module='chatroom')
         remove_resp = device_a.call(
             "ChatRoomManager",
             Cmd.removeMembersFromChatRoomWhiteList.value,
@@ -285,15 +310,18 @@ def test_chatroom_allow_list_added_and_removed_callbacks(device_a, device_b, ass
 
 def test_chatroom_mute_list_added_and_removed_callbacks(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="cb_mute", desc_prefix="cb_mute")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
 
+        timing_pause('step.interval', module='chatroom')
         mute_resp = device_a.call(
             "ChatRoomManager",
             Cmd.muteChatRoomMembers.value,
             info={"roomId": room_id, "muteMembers": [user_b], "duration": 60000},
         )
         _assert_success_envelope(assert_api, mute_resp, cmd=Cmd.muteChatRoomMembers.value, device="deviceA")
+        timing_pause('step.interval', module='chatroom')
         mute_evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
@@ -306,6 +334,7 @@ def test_chatroom_mute_list_added_and_removed_callbacks(device_a, device_b, asse
             f"禁言添加回调 mutes 缺少 B: {mute_evt}"
         )
 
+        timing_pause('step.interval', module='chatroom')
         unmute_resp = device_a.call(
             "ChatRoomManager",
             Cmd.unMuteChatRoomMembers.value,
@@ -329,9 +358,11 @@ def test_chatroom_mute_list_added_and_removed_callbacks(device_a, device_b, asse
 def test_chatroom_member_exited_callback(device_a, device_b, assert_api, user_a, user_b):
     """leaveChatRoom 触发成员主动退出回调，校验 roomId/participant。"""
     room_id, room_name = create_chatroom_or_skip(owner=user_a, name_prefix="cb_exit", desc_prefix="cb_exit")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
 
+        timing_pause('step.interval', module='chatroom')
         leave_resp = device_b.call("ChatRoomManager", Cmd.leaveChatRoom.value, info={"roomId": room_id})
         assert_api.assert_response_matches(
             leave_resp,
@@ -358,15 +389,18 @@ def test_chatroom_member_exited_callback(device_a, device_b, assert_api, user_a,
 
 def test_chatroom_removed_and_destroyed_callbacks(device_a, device_b, assert_api, user_a, user_b):
     room_id, room_name = create_chatroom_or_skip(owner=user_a, name_prefix="cb_remove", desc_prefix="cb_remove")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
 
+        timing_pause('step.interval', module='chatroom')
         remove_resp = device_a.call(
             "ChatRoomManager",
             Cmd.removeChatRoomMembers.value,
             info={"roomId": room_id, "members": [user_b]},
         )
         _assert_success_envelope(assert_api, remove_resp, cmd=Cmd.removeChatRoomMembers.value, device="deviceA")
+        timing_pause('step.interval', module='chatroom')
         removed_evt = _first_chatroom_event(
             device_b,
             room_id=room_id,
@@ -377,7 +411,9 @@ def test_chatroom_removed_and_destroyed_callbacks(device_a, device_b, assert_api
         assert removed_data.get("participant") == user_b, f"成员被移除回调 participant 不匹配: {removed_evt}"
         assert removed_data.get("reason"), f"成员被移除回调 reason 不能为空: {removed_evt}"
 
+        timing_pause('step.interval', module='chatroom')
         _join_chatroom_as_b(device_b, assert_api, room_id)
+        timing_pause('step.interval', module='chatroom')
         destroy_resp = device_a.call("ChatRoomManager", Cmd.destroyChatRoom.value, info={"roomId": room_id})
         _assert_success_envelope(assert_api, destroy_resp, cmd=Cmd.destroyChatRoom.value, device="deviceA")
         destroyed_evt = _first_chatroom_event(

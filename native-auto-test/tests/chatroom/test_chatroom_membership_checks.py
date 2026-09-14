@@ -1,5 +1,6 @@
 """ChatRoom 成员白名单/禁言检查接口。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -12,6 +13,7 @@ pytestmark = [pytest.mark.client, pytest.mark.chatroom, pytest.mark.agorachat1_4
 
 def test_chatroom_is_member_in_white_list_and_mute_list_success(device_a, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="member_check", desc_prefix="member_check")
+    timing_pause('step.interval', module='chatroom')
     try:
         resp_white = device_a.call(
             "ChatRoomManager",
@@ -59,10 +61,12 @@ def test_chatroom_is_member_in_white_list_and_mute_list_nonexistent_room(device_
 
 def test_chatroom_member_white_list_check_reflects_server_state(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="white_check", desc_prefix="white_check")
+    timing_pause('step.interval', module='chatroom')
     try:
         join_resp = device_b.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
         assert_join_chatroom_response(assert_api, join_resp, device="deviceB", room_id=room_id)
 
+        timing_pause('step.interval', module='chatroom')
         before_resp = device_b.call(
             "ChatRoomManager",
             Cmd.isMemberInChatRoomWhiteListFromServer.value,
@@ -85,6 +89,7 @@ def test_chatroom_member_white_list_check_reflects_server_state(device_a, device
             ignore_keys={"sequence", "result"},
         )
 
+        timing_pause('step.interval', module='chatroom')
         after_add_resp = device_b.call(
             "ChatRoomManager",
             Cmd.isMemberInChatRoomWhiteListFromServer.value,
@@ -107,6 +112,7 @@ def test_chatroom_member_white_list_check_reflects_server_state(device_a, device
             ignore_keys={"sequence", "result"},
         )
 
+        timing_pause('step.interval', module='chatroom')
         after_remove_resp = device_b.call(
             "ChatRoomManager",
             Cmd.isMemberInChatRoomWhiteListFromServer.value,
@@ -119,10 +125,12 @@ def test_chatroom_member_white_list_check_reflects_server_state(device_a, device
 
 def test_chatroom_member_mute_list_check_reflects_server_state(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="mute_check", desc_prefix="mute_check")
+    timing_pause('step.interval', module='chatroom')
     try:
         join_resp = device_b.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
         assert_join_chatroom_response(assert_api, join_resp, device="deviceB", room_id=room_id)
 
+        timing_pause('step.interval', module='chatroom')
         before_resp = device_b.call(
             "ChatRoomManager",
             Cmd.isMemberInChatRoomMuteList.value,
@@ -145,6 +153,7 @@ def test_chatroom_member_mute_list_check_reflects_server_state(device_a, device_
             ignore_keys={"sequence", "result"},
         )
 
+        timing_pause('step.interval', module='chatroom')
         after_mute_resp = device_b.call(
             "ChatRoomManager",
             Cmd.isMemberInChatRoomMuteList.value,
@@ -167,6 +176,7 @@ def test_chatroom_member_mute_list_check_reflects_server_state(device_a, device_
             ignore_keys={"sequence", "result"},
         )
 
+        timing_pause('step.interval', module='chatroom')
         after_unmute_resp = device_b.call(
             "ChatRoomManager",
             Cmd.isMemberInChatRoomMuteList.value,

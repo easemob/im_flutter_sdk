@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -11,13 +13,14 @@ from src import Cmd
 pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.agorachat1_4_0]
 
 
-def _wait_send_terminal(device, *, temp_id: str, timeout: float = 30.0) -> tuple[str, dict]:
+def _wait_send_terminal(device, *, temp_id: str, timeout: float = None) -> tuple[str, dict]:
+    timeout = timing_seconds('timeout.send_terminal', module='chat') if timeout is None else timeout
     seen = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         error_evt = device.receive_message(
             match_event_type=Cmd.onMessageError.value,
-            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive_batch', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if error_evt:
             seen.append(error_evt)
@@ -25,7 +28,7 @@ def _wait_send_terminal(device, *, temp_id: str, timeout: float = 30.0) -> tuple
             return "error", error_evt
         success_evt = device.receive_message(
             match_event_type=Cmd.onMessageSuccess.value,
-            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive_batch', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if success_evt:
             seen.append(success_evt)
@@ -39,12 +42,13 @@ def _assert_peer_did_not_receive_body(
     *,
     from_user: str,
     body_predicate,
-    timeout: float = 5.0,
+    timeout: float = None,
 ) -> None:
+    timeout = timing_seconds('observe.no_delivery', module='chat') if timeout is None else timeout
     seen = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        evt = device.receive_message(timeout=min(1.0, max(0.1, deadline - time.monotonic())))
+        evt = device.receive_message(timeout=min(timing_seconds('poll.receive_batch', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())))
         if evt:
             seen.append(evt)
         messages = (((evt or {}).get("data") or {}).get("messages")) or []

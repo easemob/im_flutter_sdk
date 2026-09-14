@@ -1,4 +1,7 @@
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import uuid
 import time
@@ -23,7 +26,8 @@ def _fail_if_error(resp: dict, api_name: str) -> None:
         pytest.fail(f"{api_name} 返回错误: {resp}")
 
 
-def _wait_message_success(device, temp_id: str, *, timeout: float = 20.0) -> dict:
+def _wait_message_success(device, temp_id: str, *, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.message', module='chat') if timeout is None else timeout
     last = None
     for _ in range(8):
         evt = device.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timeout)
@@ -36,7 +40,8 @@ def _wait_message_success(device, temp_id: str, *, timeout: float = 20.0) -> dic
     pytest.fail(f"未收到匹配 tempId 的 onMessageSuccess: tempId={temp_id}, last={last}")
 
 
-def _wait_received_message(device, msg_id: str, *, from_user: str, to_user: str, timeout: float = 20.0) -> dict:
+def _wait_received_message(device, msg_id: str, *, from_user: str, to_user: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.message', module='chat') if timeout is None else timeout
     last = None
     for _ in range(8):
         evt = device.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timeout)
@@ -55,7 +60,8 @@ def _wait_received_message(device, msg_id: str, *, from_user: str, to_user: str,
     pytest.fail(f"onMessagesReceived 未包含目标消息: msgId={msg_id}, last={last}")
 
 
-def _wait_delivered_message(device, msg_id: str, *, from_user: str, to_user: str, timeout: float = 20.0) -> dict:
+def _wait_delivered_message(device, msg_id: str, *, from_user: str, to_user: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.message', module='chat') if timeout is None else timeout
     last = None
     for _ in range(8):
         evt = device.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=timeout)
@@ -74,13 +80,14 @@ def _wait_delivered_message(device, msg_id: str, *, from_user: str, to_user: str
     pytest.fail(f"onMessagesDelivered 未包含目标消息: msgId={msg_id}, last={last}")
 
 
-def _wait_message_progress(device, msg_id: str, *, timeout: float = 20.0) -> dict:
+def _wait_message_progress(device, msg_id: str, *, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.message', module='chat') if timeout is None else timeout
     last = None
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         evt = device.receive_message(
             match_event_type=Cmd.onMessageProgress.value,
-            timeout=min(5.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive_progress', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         last = evt
         if not evt:
@@ -94,12 +101,13 @@ def _wait_message_progress(device, msg_id: str, *, timeout: float = 20.0) -> dic
     pytest.fail(f"未收到目标消息下载进度事件: msgId={msg_id}, last={last}")
 
 
-def _maybe_message_progress(device, msg_id: str, *, timeout: float = 5.0) -> dict | None:
+def _maybe_message_progress(device, msg_id: str, *, timeout: float = None) -> dict | None:
+    timeout = timing_seconds('observe.optional_progress', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         evt = device.receive_message(
             match_event_type=Cmd.onMessageProgress.value,
-            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive_batch', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if not evt:
             continue
@@ -113,13 +121,14 @@ def _maybe_message_progress(device, msg_id: str, *, timeout: float = 5.0) -> dic
     return None
 
 
-def _wait_message_error(device, msg_id: str, *, timeout: float = 20.0) -> dict:
+def _wait_message_error(device, msg_id: str, *, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.message', module='chat') if timeout is None else timeout
     last = None
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         evt = device.receive_message(
             match_event_type=Cmd.onMessageError.value,
-            timeout=min(5.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive_progress', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         last = evt
         if not evt:
@@ -335,9 +344,10 @@ def _assert_download_api_with_progress(device, assert_api, *, cmd: str, message:
 
 
 def _assert_combine_thumbnail_download_completed(
-    device, assert_api, *, message: dict, timeout: float = 20.0,
+    device, assert_api, *, message: dict, timeout: float = None,
 ) -> None:
     """The API starts a download; only its matching terminal event completes it."""
+    timeout = timing_seconds('timeout.message', module='chat') if timeout is None else timeout
     msg_id = message["msgId"]
     cmd = Cmd.downloadMessageThumbnailInCombine.value
     # Only unrelated message metadata is ignored; identity/type/download status stay strict.
@@ -358,7 +368,7 @@ def _assert_combine_thumbnail_download_completed(
                   "result": {"msgId": msg_id, "body": {"type": 2, "thumbnailStatus": 0}}},
         ignore_keys=ignored,
     )
-    time.sleep(30)
+    time.sleep(timing_seconds('settle.thumbnail_completion', module='chat'))
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         event = device.receive_message(timeout=max(0.0, deadline - time.monotonic()))
@@ -689,6 +699,7 @@ def test_attachment_messages_send_receive_and_public_download_methods(device_a, 
         message=file_received,
     )
 
+    timing_pause('step.interval', module='chat')
     _, image_sent, image_received = _send_with_type(
         device_a,
         device_b,
@@ -712,6 +723,7 @@ def test_attachment_messages_send_receive_and_public_download_methods(device_a, 
         message=image_received,
     )
 
+    timing_pause('step.interval', module='chat')
     _, video_sent, video_received = _send_with_type(
         device_a,
         device_b,
@@ -928,6 +940,7 @@ def test_combine_forward_send_receive_and_inner_attachment_download(device_a, de
         type_key="image",
         payload={"targetId": user_b},
     )
+    timing_pause('step.interval', module='chat')
     _, video_sent, _ = _send_with_type(
         device_a,
         device_b,
@@ -947,6 +960,7 @@ def test_combine_forward_send_receive_and_inner_attachment_download(device_a, de
         "compatibleText": "combine-compatible",
         "msgIds": [image_msg_id, video_msg_id],
     }
+    timing_pause('step.interval', module='chat')
     _, combine_sent, combine_received = _send_with_type(
         device_a,
         device_b,
@@ -1005,6 +1019,7 @@ def test_combine_forward_send_receive_and_inner_attachment_download(device_a, de
         },
     )
 
+    timing_pause('step.interval', module='chat')
     parse_resp = device_b.call(
         "ChatManager",
         Cmd.downloadAndParseCombineMessage.value,
@@ -1056,6 +1071,7 @@ def test_combine_forward_media_inner_attachment_download(device_a, device_b, ass
         type_key="image",
         payload={"targetId": user_b, "thumbnailLocalPath": ""},
     )
+    timing_pause('step.interval', module='chat')
     _, video_sent, _ = _send_with_type(
         device_a,
         device_b,
@@ -1075,6 +1091,7 @@ def test_combine_forward_media_inner_attachment_download(device_a, device_b, ass
         "compatibleText": "combine-compatible",
         "msgIds": [image_msg_id, video_msg_id],
     }
+    timing_pause('step.interval', module='chat')
     _, combine_sent, combine_received = _send_with_type(
         device_a,
         device_b,
@@ -1088,6 +1105,7 @@ def test_combine_forward_media_inner_attachment_download(device_a, device_b, ass
         f"发送端与接收端 combine body.type 不一致: sent={combine_sent}, received={combine_received}"
     )
 
+    timing_pause('step.interval', module='chat')
     parse_resp = device_b.call(
         "ChatManager",
         Cmd.downloadAndParseCombineMessage.value,

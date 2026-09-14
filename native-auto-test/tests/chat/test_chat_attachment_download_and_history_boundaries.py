@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import os
 import time
@@ -47,11 +49,12 @@ def _assert_sender_download(assert_api, response, *, message, user_a, user_b):
     )
 
 
-def _wait_text_event(device, event_type, *, content, timeout=30.0):
+def _wait_text_event(device, event_type, *, content, timeout=None):
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        event = device.receive_message(match_event_type=event_type, timeout=2)
+        event = device.receive_message(match_event_type=event_type, timeout=timing_seconds('poll.receive', module='chat'))
         if event:
             seen.append(event)
         if event_type == Cmd.onMessageSuccess.value:
@@ -121,9 +124,11 @@ def _send_text_and_assert(device_a, device_b, assert_api, user_a, user_b, conten
 
 def test_chat_sender_downloads_image_and_video_attachment(device_a, device_b, assert_api, user_a, user_b):
     _, image_sent, _ = _send_with_type(device_a, device_b, assert_api, user_a, user_b, type_key="image", payload={"targetId": user_b})
+    timing_pause('step.interval', module='chat')
     response = device_a.call("ChatManager", Cmd.downloadAttachment.value, info={"message": image_sent})
     _assert_sender_download(assert_api, response, message=image_sent, user_a=user_a, user_b=user_b)
     _, video_sent, _ = _send_with_type(device_a, device_b, assert_api, user_a, user_b, type_key="video", payload={"targetId": user_b})
+    timing_pause('step.interval', module='chat')
     response = device_a.call("ChatManager", Cmd.downloadAttachment.value, info={"message": video_sent})
     _assert_sender_download(assert_api, response, message=video_sent, user_a=user_a, user_b=user_b)
 
@@ -131,6 +136,7 @@ def test_chat_sender_downloads_image_and_video_attachment(device_a, device_b, as
 def test_chat_download_attachment_for_text_message(device_a, device_b, assert_api, user_a, user_b):
     content = f"download-text-{uuid.uuid4().hex[:8]}"
     msg = _send_text_and_assert(device_a, device_b, assert_api, user_a, user_b, content)
+    timing_pause('step.interval', module='chat')
     resp_download = device_a.call("ChatManager", Cmd.downloadAttachment.value, info={"message": msg})
     _assert_delivery_ack_boolean(resp_download.get("result") or {}, source="downloadAttachment(text).result")
     assert_api.assert_response_matches(
@@ -165,8 +171,9 @@ def test_chat_fetch_history_page_size_one_cursor(device_a, device_b, assert_api,
     messages = []
     for content in (f"history-page-a-{uuid.uuid4().hex[:6]}", f"history-page-b-{uuid.uuid4().hex[:6]}"):
         messages.append(_send_text_and_assert(device_a, device_b, assert_api, user_a, user_b, content))
+        timing_pause('step.interval', module='chat')
     assert len(messages) == 2
-    time.sleep(float(os.getenv("CHAT_HISTORY_SETTLE_SECONDS", "5")))
+    time.sleep(timing_seconds('settle.normal', module='chat'))
     first = device_a.call("ChatManager", Cmd.fetchHistoryMessagesByOptions.value, info={"convId": user_b, "type": 0, "pageSize": 1, "cursor": ""})
     result = first.get("result") or {}
     assert result.get("list"), first

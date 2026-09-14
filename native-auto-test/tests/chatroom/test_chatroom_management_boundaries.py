@@ -1,5 +1,6 @@
 """ChatRoom 管理类接口边界/异常用例。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -84,6 +85,7 @@ def _assert_room_result(
 def test_chatroom_change_subject_empty_success(device_a, assert_api, user_a):
     """changeChatRoomSubject：聊天室名称允许置为空，实测返回完整聊天室对象且 name 为空字符串。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="meta_boundary", desc_prefix="meta_boundary")
+    timing_pause('step.interval', module='chatroom')
     try:
         resp = device_a.call(
             "ChatRoomManager",
@@ -105,6 +107,7 @@ def test_chatroom_change_subject_empty_success(device_a, assert_api, user_a):
 def test_chatroom_change_subject_too_long(device_a, assert_api, user_a):
     """changeChatRoomSubject：名称超过 1024 字符，实测返回 703/title cannot exceed to 1024。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="meta_boundary", desc_prefix="meta_boundary")
+    timing_pause('step.interval', module='chatroom')
     try:
         resp = device_a.call(
             "ChatRoomManager",
@@ -129,6 +132,7 @@ def test_chatroom_change_description_empty_success(device_a, assert_api, user_a)
         name_prefix="meta_boundary",
         desc_prefix="meta_boundary",
     )
+    timing_pause('step.interval', module='chatroom')
     try:
         resp = device_a.call(
             "ChatRoomManager",
@@ -151,6 +155,7 @@ def test_chatroom_change_description_empty_success(device_a, assert_api, user_a)
 def test_chatroom_change_description_too_long(device_a, assert_api, user_a):
     """changeChatRoomDescription：描述超过 4096 字符，实测返回 703/desc cannot exceed to 4096。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="meta_boundary", desc_prefix="meta_boundary")
+    timing_pause('step.interval', module='chatroom')
     try:
         resp = device_a.call(
             "ChatRoomManager",
@@ -171,6 +176,7 @@ def test_chatroom_change_description_too_long(device_a, assert_api, user_a):
 def test_chatroom_update_announcement_empty(device_a, assert_api, user_a):
     """updateChatRoomAnnouncement：公告允许置为空，实测返回 True。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="announcement_empty", desc_prefix="announcement_empty")
+    timing_pause('step.interval', module='chatroom')
     try:
         resp = device_a.call(
             "ChatRoomManager",
@@ -221,6 +227,7 @@ def test_chatroom_member_management_empty_members(
 ):
     """成员管理接口：成员列表为空时，逐方法锁定真实错误码与错误描述。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="empty_members", desc_prefix="empty_members")
+    timing_pause('step.interval', module='chatroom')
     try:
         info = {"roomId": room_id, member_key: []}
         if cmd == Cmd.muteChatRoomMembers.value:
@@ -285,6 +292,7 @@ def test_chatroom_member_management_empty_members(
 def test_chatroom_member_management_nonexistent_user(device_a, assert_api, user_a, cmd, info, expected):
     """成员管理接口：传入不存在用户时，逐方法锁定真实错误或幂等成功响应。"""
     room_id, room_name = create_chatroom_or_skip(owner=user_a, name_prefix="bad_member", desc_prefix="bad_member")
+    timing_pause('step.interval', module='chatroom')
     try:
         payload = {"roomId": room_id, **info}
         resp = device_a.call("ChatRoomManager", cmd, info=payload)
@@ -346,6 +354,7 @@ def test_chatroom_member_management_nonexistent_user(device_a, assert_api, user_
 def test_chatroom_member_management_non_member(device_a, assert_api, user_a, user_b, cmd, info, expected):
     """成员管理接口：真实用户未加入聊天室时，逐方法锁定当前成功/失败语义。"""
     room_id, room_name = create_chatroom_or_skip(owner=user_a, name_prefix="non_member", desc_prefix="non_member")
+    timing_pause('step.interval', module='chatroom')
     try:
         payload = {"roomId": room_id}
         for key, value in info.items():
@@ -404,8 +413,10 @@ def test_chatroom_member_management_non_member(device_a, assert_api, user_a, use
 def test_chatroom_fetch_members_invalid_paging(device_a, device_b, assert_api, user_a, user_b, page_num, page_size):
     """fetchChatRoomMembers：非法 pageNum/pageSize 当前仍返回 cursor 结构与成员列表。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="members_page_bad", desc_prefix="members_page_bad")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
+        timing_pause('step.interval', module='chatroom')
         resp = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomMembers.value,
@@ -452,6 +463,7 @@ def test_chatroom_fetch_members_invalid_paging(device_a, device_b, assert_api, u
 def test_chatroom_server_member_list_invalid_paging(device_a, assert_api, user_a, cmd, page_num, page_size):
     """fetchChatRoomMuteList/fetchChatRoomBlockList：非法分页参数当前容错返回空列表。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="list_page_bad", desc_prefix="list_page_bad")
+    timing_pause('step.interval', module='chatroom')
     try:
         resp = device_a.call(
             "ChatRoomManager",
@@ -475,6 +487,7 @@ def test_chatroom_server_member_list_invalid_paging(device_a, assert_api, user_a
 def test_chatroom_add_attributes_empty_map(device_a, assert_api, user_a):
     """setChatRoomAttributes：attributes 为空 map 时，实测返回 110 且 description 为空字符串。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="attr_empty", desc_prefix="attr_empty")
+    timing_pause('step.interval', module='chatroom')
     try:
         resp = device_a.call(
             "ChatRoomManager",
@@ -495,6 +508,7 @@ def test_chatroom_add_attributes_empty_map(device_a, assert_api, user_a):
 def test_chatroom_remove_attributes_empty_keys(device_a, assert_api, user_a):
     """removeChatRoomAttributes：keys 为空列表时，实测返回 110 且 description 为空字符串。"""
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="attr_keys_empty", desc_prefix="attr_keys_empty")
+    timing_pause('step.interval', module='chatroom')
     try:
         resp = device_a.call(
             "ChatRoomManager",

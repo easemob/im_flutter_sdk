@@ -1,5 +1,7 @@
 """Group 群主转让、权限迁移与成员移除矩阵。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import pytest
 
@@ -92,6 +94,7 @@ def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
         },
         ignore_keys={"sequence"},
     )
+    timing_pause('settle.offline', module='group')
     login = device.call(
         "Client",
         Cmd.login.value,
@@ -118,6 +121,7 @@ def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
         },
         ignore_keys={"sequence"},
     )
+    timing_pause('settle.offline', module='group')
     device.drain_events()
 
 
@@ -143,6 +147,7 @@ def test_group_transfer_owner_to_admin_normalizes_roles(
         )
         device_a.drain_events()
         device_b.drain_events()
+        timing_pause('step.interval', module='group')
         add_admin = device_a.call(
             "GroupManager",
             Cmd.addAdmin.value,
@@ -152,6 +157,7 @@ def test_group_transfer_owner_to_admin_normalizes_roles(
         device_a.drain_events()
         device_b.drain_events()
 
+        timing_pause('step.interval', module='group')
         response = device_a.call(
             "GroupManager",
             Cmd.updateGroupOwner.value,
@@ -168,19 +174,20 @@ def test_group_transfer_owner_to_admin_normalizes_roles(
             expected_event_types={"onOwnerChangedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onOwnerChangedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         events_b = collect_group_events(
             device_b,
             expected_event_types={"onOwnerChangedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onOwnerChangedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         _assert_owner_changed(assert_api, events_a[0], group_id=group_id,
                               new_owner=user_b, old_owner=user_a)
         _assert_owner_changed(assert_api, events_b[0], group_id=group_id,
                               new_owner=user_b, old_owner=user_a)
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_b,
             assert_api,
@@ -240,6 +247,7 @@ def test_group_transfer_owner_target_boundaries(
         )
         device_a.drain_events()
         device_b.drain_events()
+        timing_pause('step.interval', module='group')
         response = device_a.call(
             "GroupManager",
             Cmd.updateGroupOwner.value,
@@ -251,6 +259,7 @@ def test_group_transfer_owner_target_boundaries(
             assert result.get("owner") == user_a, response
         else:
             assert_api.assert_error(response, code=expected_code)
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -295,6 +304,7 @@ def test_group_non_owner_cannot_transfer_ownership(
         device_a.drain_events()
         device_b.drain_events()
         if make_admin:
+            timing_pause('step.interval', module='group')
             add_admin = device_a.call(
                 "GroupManager",
                 Cmd.addAdmin.value,
@@ -302,6 +312,7 @@ def test_group_non_owner_cannot_transfer_ownership(
             )
             assert isinstance(add_admin.get("result"), dict), add_admin
             device_b.drain_events()
+        timing_pause('step.interval', module='group')
         response = device_b.call(
             "GroupManager",
             Cmd.updateGroupOwner.value,
@@ -393,6 +404,7 @@ def test_group_transfer_then_new_owner_removes_former_owner(
         )
         device_a.drain_events()
         device_b.drain_events()
+        timing_pause('step.interval', module='group')
         transfer = device_a.call(
             "GroupManager",
             Cmd.updateGroupOwner.value,
@@ -400,22 +412,24 @@ def test_group_transfer_then_new_owner_removes_former_owner(
         )
         assert isinstance(transfer.get("result"), dict), transfer
         assert transfer["result"].get("owner") == user_b, transfer
+        timing_pause('step.interval', module='group')
         owner_is_b = True
         collect_group_events(
             device_a,
             expected_event_types={"onOwnerChangedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onOwnerChangedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         collect_group_events(
             device_b,
             expected_event_types={"onOwnerChangedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onOwnerChangedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
 
+        timing_pause('step.interval', module='group')
         former_owner_attempt = device_a.call(
             "GroupManager",
             Cmd.removeMembers.value,
@@ -423,6 +437,7 @@ def test_group_transfer_then_new_owner_removes_former_owner(
         )
         assert_api.assert_error(former_owner_attempt, code=603, description="permission")
 
+        timing_pause('step.interval', module='group')
         remove = device_b.call(
             "GroupManager",
             Cmd.removeMembers.value,
@@ -434,7 +449,7 @@ def test_group_transfer_then_new_owner_removes_former_owner(
             expected_event_types={"onUserRemovedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onUserRemovedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_api.assert_response_matches(
             removed_events[0],
@@ -445,6 +460,7 @@ def test_group_transfer_then_new_owner_removes_former_owner(
             },
             ignore_keys={"timestamp", "sequence"},
         )
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_b,
             assert_api,
@@ -482,12 +498,14 @@ def test_group_remove_current_owner_is_ignored(
         )
         device_a.drain_events()
         device_b.drain_events()
+        timing_pause('step.interval', module='group')
         response = device_a.call(
             "GroupManager",
             Cmd.removeMembers.value,
             info={"groupId": group_id, "members": [user_a]},
         )
         _assert_true(assert_api, response, cmd=Cmd.removeMembers.value, device="deviceA")
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -528,6 +546,7 @@ def test_group_owner_removes_admin_success(
         )
         device_a.drain_events()
         device_b.drain_events()
+        timing_pause('step.interval', module='group')
         add_admin = device_a.call(
             "GroupManager",
             Cmd.addAdmin.value,
@@ -536,6 +555,7 @@ def test_group_owner_removes_admin_success(
         assert isinstance(add_admin.get("result"), dict), add_admin
         device_a.drain_events()
         device_b.drain_events()
+        timing_pause('step.interval', module='group')
         response = device_a.call(
             "GroupManager",
             Cmd.removeMembers.value,
@@ -547,7 +567,7 @@ def test_group_owner_removes_admin_success(
             expected_event_types={"onUserRemovedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onUserRemovedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_api.assert_response_matches(
             removed_events[0],
@@ -558,6 +578,7 @@ def test_group_owner_removes_admin_success(
             },
             ignore_keys={"timestamp", "sequence"},
         )
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -598,6 +619,7 @@ def test_group_remove_other_member_permission_by_role(
         device_a.drain_events()
         device_b.drain_events()
         if make_admin:
+            timing_pause('step.interval', module='group')
             add_admin = device_a.call(
                 "GroupManager",
                 Cmd.addAdmin.value,
@@ -605,6 +627,7 @@ def test_group_remove_other_member_permission_by_role(
             )
             assert isinstance(add_admin.get("result"), dict), add_admin
             device_b.drain_events()
+        timing_pause('step.interval', module='group')
         response = device_b.call(
             "GroupManager",
             Cmd.removeMembers.value,
@@ -618,14 +641,14 @@ def test_group_remove_other_member_permission_by_role(
                 expected_event_types=joined_event_types,
                 group_id=group_id,
                 required_all_event_types=joined_event_types,
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
             admin_events = collect_group_events(
                 device_b,
                 expected_event_types=joined_event_types,
                 group_id=group_id,
                 required_all_event_types=joined_event_types,
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
             for events in (owner_events, admin_events):
                 by_type = {event["eventType"]: event for event in events}
@@ -638,6 +661,7 @@ def test_group_remove_other_member_permission_by_role(
                     },
                     ignore_keys={"timestamp", "sequence"},
                 )
+            timing_pause('step.interval', module='group')
             _fetch_group(
                 device_a,
                 assert_api,
@@ -689,33 +713,37 @@ def test_group_owner_must_transfer_before_leaving(
         )
         device_a.drain_events()
         device_b.drain_events()
+        timing_pause('step.interval', module='group')
         owner_leave = device_a.call(
             "GroupManager",
             Cmd.leaveGroup.value,
             info={"groupId": group_id},
         )
         assert_api.assert_error(owner_leave, code=603)
+        timing_pause('step.interval', module='group')
         transfer = device_a.call(
             "GroupManager",
             Cmd.updateGroupOwner.value,
             info={"groupId": group_id, "owner": user_b},
         )
         assert isinstance(transfer.get("result"), dict), transfer
+        timing_pause('step.interval', module='group')
         owner_is_b = True
         collect_group_events(
             device_a,
             expected_event_types={"onOwnerChangedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onOwnerChangedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         collect_group_events(
             device_b,
             expected_event_types={"onOwnerChangedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onOwnerChangedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
+        timing_pause('step.interval', module='group')
         former_owner_leave = device_a.call(
             "GroupManager",
             Cmd.leaveGroup.value,
@@ -727,7 +755,7 @@ def test_group_owner_must_transfer_before_leaving(
             expected_event_types={"onMembersExitedFromGroup", "onMemberExitedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onMembersExitedFromGroup", "onMemberExitedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         by_type = {event["eventType"]: event for event in exited_events}
         assert_api.assert_response_matches(
@@ -739,6 +767,7 @@ def test_group_owner_must_transfer_before_leaving(
             },
             ignore_keys={"timestamp", "sequence"},
         )
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_b,
             assert_api,
@@ -777,6 +806,7 @@ def test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_membe
         )
         device_a.drain_events()
         device_b.drain_events()
+        timing_pause('step.interval', module='group')
         response = device_a.call(
             "GroupManager",
             Cmd.removeMembers.value,
@@ -788,7 +818,7 @@ def test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_membe
             expected_event_types={"onUserRemovedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onUserRemovedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_api.assert_response_matches(
             removed_events[0],
@@ -799,6 +829,7 @@ def test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_membe
             },
             ignore_keys={"timestamp", "sequence"},
         )
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,

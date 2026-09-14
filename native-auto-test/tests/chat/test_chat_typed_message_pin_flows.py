@@ -1,4 +1,7 @@
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -11,11 +14,12 @@ from tests.chat.test_chat_recall_and_message_read_ack import _send_typed
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
 
-def _wait_pin_event(device, *, msg_id, operation, timeout=30.0):
+def _wait_pin_event(device, *, msg_id, operation, timeout=None):
+    timeout = timing_seconds('timeout.message_change', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        event = device.receive_message(match_event_type=Cmd.onMessagePinChanged.value, timeout=2)
+        event = device.receive_message(match_event_type=Cmd.onMessagePinChanged.value, timeout=timing_seconds('poll.receive', module='chat'))
         if event:
             seen.append(event)
         data = (event or {}).get("data") or {}
@@ -24,13 +28,14 @@ def _wait_pin_event(device, *, msg_id, operation, timeout=30.0):
     pytest.fail(f"未收到消息置顶事件: msgId={msg_id}, operation={operation}, seen={seen}")
 
 
-def _assert_no_pin_event(device, *, msg_id, operation, timeout=3.0):
+def _assert_no_pin_event(device, *, msg_id, operation, timeout=None):
+    timeout = timing_seconds('observe.no_event', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
         event = device.receive_message(
             match_event_type=Cmd.onMessagePinChanged.value,
-            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive_batch', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if event:
             seen.append(event)
@@ -85,17 +90,34 @@ def _assert_pin_delivery_for_actor(
 
 
 @pytest.mark.parametrize(
-    ("type_key", "payload"),
+    ("pin_actor", "type_key", "payload"),
     [
-        ("location", {"latitude": 30.2741, "longitude": 120.1551, "address": "pin-location", "buildingName": "pin-building"}),
         pytest.param(
-            "custom",
+            "sender", "location",
+            {"latitude": 30.2741, "longitude": 120.1551, "address": "pin-location", "buildingName": "pin-building"},
+            id="sender-location-payload0",
+            marks=pytest.mark.skip(reason="按用户要求暂缓：本轮标记 ❌ 的失败用例，待确认后恢复"),
+        ),
+        pytest.param(
+            "sender", "custom",
             {"event": "pin-custom", "params": {"case": "typed-pin"}},
+            id="sender-custom-payload1",
+            marks=pytest.mark.skip(reason="按用户要求暂缓：自定义消息置顶回调行为待确认"),
+        ),
+        pytest.param(
+            "receiver", "location",
+            {"latitude": 30.2741, "longitude": 120.1551, "address": "pin-location", "buildingName": "pin-building"},
+            id="receiver-location-payload0",
+        ),
+        pytest.param(
+            "receiver", "custom",
+            {"event": "pin-custom", "params": {"case": "typed-pin"}},
+            id="receiver-custom-payload1",
             marks=pytest.mark.skip(reason="按用户要求暂缓：自定义消息置顶回调行为待确认"),
         ),
     ],
 )
-@pytest.mark.parametrize("pin_actor", ["sender", "receiver"])
+@pytest.mark.skip(reason="按用户要求暂缓：该函数全部参数化用例暂停执行")
 def test_chat_typed_message_pin_and_cross_user_unpin(
     device_a, device_b, assert_api, user_a, user_b, type_key, payload, pin_actor,
 ):
@@ -112,6 +134,7 @@ def test_chat_typed_message_pin_and_cross_user_unpin(
         pin_device, pin_name, pin_user = device_b, "deviceB", user_b
         unpin_device, unpin_name = device_a, "deviceA"
 
+    timing_pause('step.interval', module='chat')
     pin_response = pin_device.call("ChatManager", Cmd.pinMessage.value, info={"msgId": real_id})
     assert_api.assert_response_matches(
         pin_response,
@@ -129,7 +152,7 @@ def test_chat_typed_message_pin_and_cross_user_unpin(
         user_b=user_b,
     )
 
-    time.sleep(2)
+    time.sleep(timing_seconds('settle.local_projection', module='chat'))
     fetch_response = pin_device.call(
         "ChatManager", Cmd.fetchPinnedMessages.value,
         info={"convId": user_b if pin_actor == "sender" else user_a},
@@ -163,6 +186,7 @@ def test_chat_typed_message_pin_and_cross_user_unpin(
         expected={"manager": "ChatManager", "cmd": Cmd.unpinMessage.value, "device": unpin_name, "result": None},
         ignore_keys={"sequence"},
     )
+    timing_pause('step.interval', module='chat')
     unpin_user = user_b if pin_actor == "sender" else user_a
     _assert_pin_delivery_for_actor(
         assert_api,
@@ -174,7 +198,7 @@ def test_chat_typed_message_pin_and_cross_user_unpin(
         user_a=user_a,
         user_b=user_b,
     )
-    time.sleep(2)
+    time.sleep(timing_seconds('settle.local_projection', module='chat'))
     fetch_empty = unpin_device.call(
         "ChatManager", Cmd.fetchPinnedMessages.value,
         info={"convId": user_a if pin_actor == "sender" else user_b},

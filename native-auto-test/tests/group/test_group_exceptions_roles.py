@@ -1,5 +1,6 @@
 """Group 角色权限异常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -51,6 +52,7 @@ def test_group_add_admin_non_member(device_a, assert_api, user_a):
             group_name=new_group_name("ex_add_admin"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.addAdmin.value,

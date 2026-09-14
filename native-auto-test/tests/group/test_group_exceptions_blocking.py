@@ -1,5 +1,6 @@
 """Group block/unblock API 异常/边界用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -33,6 +34,7 @@ def test_group_block_idempotent(device_a, assert_api, user_a):
             group_name=new_group_name("block_idem"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp1 = device_a.call("GroupManager", Cmd.blockGroup.value, info={"groupId": group_id})
         assert_api.assert_response_matches(
             resp1,
@@ -44,6 +46,7 @@ def test_group_block_idempotent(device_a, assert_api, user_a):
             },
             ignore_keys={"sequence"},
         )
+        timing_pause('step.interval', module='group')
         resp2 = device_a.call("GroupManager", Cmd.blockGroup.value, info={"groupId": group_id})
         assert_api.assert_response_matches(
             resp2,
@@ -75,6 +78,7 @@ def test_group_unblock_idempotent(device_a, assert_api, user_a):
             group_name=new_group_name("unblock_idem"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp1 = device_a.call("GroupManager", Cmd.unblockGroup.value, info={"groupId": group_id})
         assert_api.assert_response_matches(
             resp1,
@@ -86,6 +90,7 @@ def test_group_unblock_idempotent(device_a, assert_api, user_a):
             },
             ignore_keys={"sequence"},
         )
+        timing_pause('step.interval', module='group')
         resp2 = device_a.call("GroupManager", Cmd.unblockGroup.value, info={"groupId": group_id})
         assert_api.assert_response_matches(
             resp2,
