@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import pytest
 from src.tools.case_timing import pause as timing_pause
 from src.tools.case_timing import seconds as timing_seconds
 
@@ -22,6 +24,7 @@ def _target_message(event, msg_id=None, *, content=None):
     return None
 
 
+@pytest.mark.no_friend_setup
 def test_chat_ack_message_read_invalid_msg_id(device_b, assert_api, user_a):
     """ackMessageRead 使用无效 msgId；按不存在语义冻结。"""
     resp = device_b.call(

@@ -37,11 +37,13 @@ def _send_typed(device_a, device_b, assert_api, user_a, user_b, type_key, payloa
     return resp, success, received, real_id
 
 
+@pytest.mark.no_friend_setup
 def test_chat_missing_recall_empty_message_id(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": ""})
     assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.recallMessage.value, "device": "deviceA", "result": {"code": 500, "description": "The message was not found"}}, ignore_keys={"sequence"})
 
 
+@pytest.mark.no_friend_setup
 @pytest.mark.parametrize("info", [{"msgId": "", "to": "test0714user1"}, {"msgId": "__invalid_msg_id__", "to": ""}, {"msgId": "__invalid_msg_id__", "to": "__invalid_user__"}])
 def test_chat_missing_ack_message_read_boundaries(device_b, assert_api, info):
     resp = device_b.call("ChatManager", Cmd.ackMessageRead.value, info=info)

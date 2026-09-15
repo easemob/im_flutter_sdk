@@ -1,5 +1,7 @@
 # Chat 模块 Cases 暂缓清单（按 API）
 
+> 当前变更：显式 skip / xfail 业务用例已按用户要求删除，准确函数/参数清单见同目录 `CASES_RECORD.zh.md` 的“已删除的 skip / xfail 用例”节。下方涉及这些场景的旧 skip/xfail 和“移除标记恢复”描述仅为历史原因；恢复需重新实现与验收，不能直接去掉标记。其他运行时条件跳过和未实现能力不在本次删除范围。
+
 — 说明
 - 本文件仅记录暂缓实现、skip、环境阻塞项。
 - 每条按 API 归类，并写明暂缓原因、前置条件、恢复条件。
@@ -97,8 +99,8 @@
 
 ### 自定义消息交叉置顶与取消置顶
 
-- `tests/chat/test_chat_typed_message_pin_flows.py::test_chat_typed_message_pin_and_cross_user_unpin[sender-custom-payload1]`
-- `tests/chat/test_chat_typed_message_pin_flows.py::test_chat_typed_message_pin_and_cross_user_unpin[receiver-custom-payload1]`
+- `tests/chat/test_chat_typed_message_pin_flows.py::test_chat_typed_message_pin_and_cross_user_unpin[sender-custom-payload1]` 【对应已删除函数的历史记录】
+- `tests/chat/test_chat_typed_message_pin_flows.py::test_chat_typed_message_pin_and_cross_user_unpin[receiver-custom-payload1]` 【对应已删除函数的历史记录】
   - 原因：用户提供的失败日志中，操作者端收到 `onMessagePinChanged`，与用例的无回调断言不一致；按用户要求暂缓这两条用例，不改写业务预期。
   - 处理：原先在 custom 参数行标记 `pytest.mark.skip`；按用户后续要求，现已在函数级标记 skip，包含 location 在内的全部参数化用例均跳过。
   - 恢复条件：用户确认恢复执行，并依据明确的置顶回调语义和真实事件重新验证后移除 skip。
@@ -106,7 +108,7 @@
 
 ## 用户指定跳过的失败用例
 
-- `test_chat_offline_recipient_receives_message_pin_after_relogin`：按用户要求标记 skip，待确认后恢复。
-- `test_chat_offline_recipient_receives_message_unpin_after_relogin`：按用户要求标记 skip，待确认后恢复。
-- `test_chat_add_reaction_too_long_reaction`：按用户要求标记 skip，待确认后恢复。
-- `test_chat_typed_message_pin_and_cross_user_unpin`：按用户要求整个函数标记 skip，覆盖 sender/receiver × location/custom 共 4 条参数化用例，待确认后恢复。
+- `test_chat_offline_recipient_receives_message_pin_after_relogin`：按用户要求标记 skip，待确认后恢复。 【对应已删除函数的历史记录】
+- `test_chat_offline_recipient_receives_message_unpin_after_relogin`：按用户要求标记 skip，待确认后恢复。 【对应已删除函数的历史记录】
+- `test_chat_add_reaction_too_long_reaction`：按用户要求标记 skip，待确认后恢复。 【对应已删除函数的历史记录】
+- `test_chat_typed_message_pin_and_cross_user_unpin`：按用户要求整个函数标记 skip，覆盖 sender/receiver × location/custom 共 4 条参数化用例，待确认后恢复。 【对应已删除函数的历史记录】

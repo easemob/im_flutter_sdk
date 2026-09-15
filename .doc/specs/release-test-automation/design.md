@@ -312,3 +312,61 @@ sequenceDiagram
 - 用并发子进程测试锁下命中/下载，验证正常并发只下载一次，失败不发布半包；锁超时需有确定性测试。
 - run.sh stub 测试覆盖单 lane、多 lane 外层一次查询/下载与子 lane 复用、`--refresh-apk` 传播、本地来源绕过 API、参数冲突及无效 APK_PATH。确认设备卸载仍先于安装，配置推送仍执行。
 - 自动化验证命令与完成状态仅记录在 tasks.md。真实 GitHub/模拟器冒烟如后续获得授权再执行，不用真实业务用例替代缓存工具测试。
+
+## IM 业务优先级 Allure 展示增量（2026-09-14，按用户修正）
+
+### Overview
+
+保留原模块树、test 名称和说明，仅增加 `[P0]` 等级前缀。此前中文重命名、重分组和统计表运行时依赖方案由本设计替代；用户已明确授权修正。
+
+### Architecture
+
+- `src/tools/case_priorities.py` 固化完整 nodeid 到等级的映射，仅包含确定的业务等级，无统计文件依赖。
+- `src/tools/allure_metadata.py` 在 setup 默认值写入后追加标题前缀及 priority/severity；原模块/类分组、说明和执行身份保持。
+- `src/tools/allure_steps.py` 使用 contextvars 隔离阶段与编号，提供真实业务步骤上下文及已知 API/事件的中文动作说明。
+- `allure_evidence.py`、`response_match.py` 和公共 API fixtures 接入编号步骤，原协议、断言、脱敏和附件逻辑保留。
+
+### Sequence diagrams
+
+```mermaid
+sequenceDiagram
+    participant P as pytest
+    participant A as Allure
+    participant E as 公共证据层
+    P->>A: 保留原名称/说明/模块，追加等级前缀
+    P->>E: call 开始，编号归零
+    E->>A: 步骤 N：用户操作，附请求/响应
+    E->>A: 步骤 N+1：等待回调，附条件/结果
+    E->>A: 步骤 N+2：校验预期，附实际/差异
+    P->>A: 原状态及 teardown
+```
+
+### Component / data / workflow design
+
+- 完整参数化 nodeid 精确匹配；从实际测试文件推导仓库相对路径，不依赖 cwd/rootdir。非业务和未定级节点保留原名称/分组。
+- `[P0] test_xxx[参数]`，不截断原名、不重复拼参数；P0/P1/P2 对应 blocker/critical/normal。
+- Test body 按实际公共入口执行顺序编号，setup/teardown 使用前置/清理。上下文在 hook finally 恢复，下一用例从1开始。显式 `business_step` 可包裹业务组合操作，内部证据嵌套且不重复编号。
+- 使用实际 deviceA/B/C/D 标识说明操作者，不推断群主/管理员角色；目标用户、群 ID 等保留于脱敏附件。已知方法和事件显示中文动作，未知项保留真实 manager/cmd/eventType。
+- 原始说明仍为原 docstring；统计描述不渲染为步骤。只记录实际调用和断言，空事件只表明等待无结果，是否失败仍由用例判断。
+
+### Constraints / tradeoffs
+
+- 不增加生产依赖，不改业务参数、断言、skip/xfail、等待、lane、SDK/App 或远端数据。
+- 已有手写 assert、sleep 或绕开公共入口的动作不会自动生成细分步骤；需要明确场景描述时可使用业务步骤上下文，不根据名称猜测场景。
+- 统计文档可删除，等级维护在代码中。历史报告不自动改写。
+- 参考 im-test-hub 的真实步骤/附件结构，不迁移其 SDK 实现或 skip/xfail 转失败策略。
+
+### Testing strategy
+
+真实隔离 pytest/Allure JSON 对照原名称、原分组、description、状态、historyId、参数；覆盖静态/动态 skip、xfail、fixture 异常、参数化、非业务/未知节点、不同 rootdir、无统计文件和双进程合并。模拟公共调用验证编号、前置/清理、嵌套、异常、空等待、预期/实际/差异及脱敏。回归 evidence/lane、collect-only、speckit check、diff check，生成合成报告检查 Test body；不跑真实业务。
+
+## 用例精简设计（2026-09-15）
+
+### Overview / Architecture
+按已审查清单删除20个节点；仅移除目标函数及其装饰器，容量测试整文件删除；容量配置实现保持。无需新组件或协议。
+
+### Workflow / Constraints
+先保存当前收集集合，再按精确文件+函数删除，同步代码等级表及模块台账/依赖审计。重复项保留另一份等价场景；APNs缺口探测直接删除，文档保留平台覆盖限制。历史验证数字标注为历史，本次新数量独立记录；其他工作区改动不回滚。
+
+### Testing strategy
+删除前后集合差恰好20、无新增节点、每个保留节点仍有合法等级；默认业务及tools分别collect-only，运行现有报告/evidence/lane回归和diff检查，不新增重复实现式测试。

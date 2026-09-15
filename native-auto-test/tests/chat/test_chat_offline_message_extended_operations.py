@@ -9,6 +9,7 @@ import uuid
 import pytest
 
 from src import Cmd, gt
+from src.tools.response_match import _Matcher
 from src.test_flow.offline_test_flow import (
     login_preserving_offline_events,
     logout_for_offline,
@@ -20,7 +21,6 @@ from tests.chat.test_chat_offline_message_delivery import (
     _assert_call,
     _assert_received_message,
     _assert_send_response_and_success,
-    _establish_friendship,
     _prepare_offline_friend,
     _restore_case,
     _wait_message_event,
@@ -35,6 +35,19 @@ from tests.chat.test_chat_offline_message_operations import (
 
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
+
+
+class _VoiceDownloadStatus(_Matcher):
+    """本组三条验证离线操作，附件下载状态不代表发送或业务操作结果。"""
+
+    def __init__(self):
+        super().__init__(
+            "in", lambda actual, allowed: type(actual) is int and actual in allowed,
+            (0, 1, 2, 3),
+        )
+
+    def describe(self) -> str:
+        return "合法下载状态整数：0=下载中，1=成功，2=失败，3=等待下载（非发送结果）"
 
 
 _TYPED_OPERATION_CASES = [
@@ -62,8 +75,8 @@ _TYPED_OPERATION_CASES = [
     pytest.param(
         "voice",
         {"targetId": "{{userB}}", "duration": 1},
-        {"type": 4, "displayName": "voice.mp3", "fileStatus": 1, "duration": 1},
-        {"type": 4, "displayName": "voice.mp3", "fileStatus": 0, "duration": 1},
+        {"type": 4, "displayName": "voice.mp3", "fileStatus": _VoiceDownloadStatus(), "duration": 1},
+        {"type": 4, "displayName": "voice.mp3", "fileStatus": _VoiceDownloadStatus(), "duration": 1},
         id="voice",
     ),
     pytest.param(
@@ -423,7 +436,7 @@ def test_chat_offline_typed_message_read_after_sender_relogin(
     )
     ignore_keys = _MEDIA_DYNAMIC_KEYS if type_key in {"file", "image", "video", "voice"} else _MESSAGE_DYNAMIC_KEYS
     try:
-        _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
+        # ensure_friends 已确认双方好友关系，避免重复申请产生旧回调。
         timing_pause('step.interval', module='chat')
         real_id, _ = _send_online_typed(
             device_a,
@@ -467,7 +480,9 @@ def test_chat_offline_typed_message_read_after_sender_relogin(
             ignore_keys=ignore_keys,
         )
     finally:
-        _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
+        _restore_case(
+            device_a, device_b, user_a=user_a, user_b=user_b
+        )
 
 
 @pytest.mark.parametrize(
@@ -492,7 +507,7 @@ def test_chat_offline_typed_message_recall_after_recipient_relogin(
     ignore_keys = _MEDIA_DYNAMIC_KEYS if type_key in {"file", "image", "video", "voice"} else _MESSAGE_DYNAMIC_KEYS
     recall_body = sent_body if type_key == "voice" else received_body
     try:
-        _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
+        # ensure_friends 已确认双方好友关系，避免重复申请产生旧回调。
         timing_pause('step.interval', module='chat')
         real_id, _ = _send_online_typed(
             device_a,
@@ -557,7 +572,9 @@ def test_chat_offline_typed_message_recall_after_recipient_relogin(
             result=None,
         )
     finally:
-        _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
+        _restore_case(
+            device_a, device_b, user_a=user_a, user_b=user_b
+        )
 
 
 def test_chat_offline_combine_message_read_after_sender_relogin(
@@ -569,7 +586,6 @@ def test_chat_offline_combine_message_read_after_sender_relogin(
 ):
     """A 离线期间 B 已读 combine；A 重登收到同一 msgId 的已读回执。"""
     try:
-        _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
         timing_pause('step.interval', module='chat')
         real_id, sender_body, _ = _send_online_combine(
             device_a,
@@ -621,7 +637,6 @@ def test_chat_offline_combine_message_recall_after_recipient_relogin(
 ):
     """B 已收 combine 后离线；A 撤回后 B 重登收到原 combine 信息。"""
     try:
-        _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
         timing_pause('step.interval', module='chat')
         real_id, _, received_body = _send_online_combine(
             device_a,
@@ -699,7 +714,6 @@ def test_chat_offline_custom_body_modified_after_recipient_relogin(
     old_params = {"revision": "0", "source": "offline"}
     new_params = {"revision": "1", "source": "offline"}
     try:
-        _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
         timing_pause('step.interval', module='chat')
         real_id, _ = _send_online_typed(
             device_a,
@@ -848,10 +862,8 @@ def test_chat_offline_media_attributes_modified_after_recipient_relogin(
     )
     attributes = {"offlineMediaEdit": type_key, "revision": "1"}
     changed_body = dict(received_body)
-    if type_key == "voice":
-        changed_body["fileStatus"] = 1
     try:
-        _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
+        # ensure_friends 已确认双方好友关系，避免重复申请产生旧回调。
         timing_pause('step.interval', module='chat')
         real_id, _ = _send_online_typed(
             device_a,
@@ -973,7 +985,9 @@ def test_chat_offline_media_attributes_modified_after_recipient_relogin(
             ignore_keys=_MEDIA_DYNAMIC_KEYS,
         )
     finally:
-        _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
+        _restore_case(
+            device_a, device_b, user_a=user_a, user_b=user_b
+        )
 
 
 def test_chat_offline_text_recalled_before_first_recipient_login(

@@ -311,6 +311,7 @@ def test_chat_ack_conversation_read_success_with_event(device_a, device_b, asser
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_ack_conversation_read_invalid_conv_id(device_b, assert_api):
     resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": "__invalid_conversation_id__"})
     _assert_error_with_envelope(
@@ -323,6 +324,7 @@ def test_chat_ack_conversation_read_invalid_conv_id(device_b, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_ack_conversation_read_empty_conv_id(device_b, assert_api):
     resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": ""})
     _assert_error_with_envelope(
@@ -335,6 +337,7 @@ def test_chat_ack_conversation_read_empty_conv_id(device_b, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_pin_conversation_success_toggle(device_a, device_b, assert_api, user_a, user_b):
     resp_prepare = device_a.call("ChatManager", Cmd.getConversation.value, info={"convId": user_b, "type": 0, "createIfNeed": True})
     prepare_conv = resp_prepare.get("result") or {}
@@ -455,6 +458,7 @@ def test_chat_pin_conversation_success_toggle(device_a, device_b, assert_api, us
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_pin_conversation_invalid_conv_id(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.pinConversation.value, info={"convId": "__invalid__", "isPinned": True})
     _assert_error_with_envelope(
@@ -467,6 +471,7 @@ def test_chat_pin_conversation_invalid_conv_id(device_a, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_pin_conversation_empty_conv_id(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.pinConversation.value, info={"convId": "", "isPinned": True})
     _assert_error_with_envelope(
@@ -524,6 +529,7 @@ def test_chat_fetch_history_messages_success(device_a, device_b, assert_api, use
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_history_messages_invalid_conv_id(device_a, assert_api):
     resp = device_a.call(
         "ChatManager",
@@ -533,6 +539,7 @@ def test_chat_fetch_history_messages_invalid_conv_id(device_a, assert_api):
     _assert_invalid_conv_returns_cursor(assert_api, resp, Cmd.fetchHistoryMessages.value, "deviceA")
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_history_messages_empty_conv_id(device_a, assert_api):
     resp = device_a.call(
         "ChatManager",
@@ -594,6 +601,7 @@ def test_chat_fetch_history_messages_by_options_success(device_a, device_b, asse
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_history_messages_by_options_invalid_conv_id(device_a, assert_api):
     resp = device_a.call(
         "ChatManager",
@@ -603,6 +611,7 @@ def test_chat_fetch_history_messages_by_options_invalid_conv_id(device_a, assert
     _assert_invalid_conv_returns_cursor(assert_api, resp, Cmd.fetchHistoryMessagesByOptions.value, "deviceA")
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_history_messages_by_options_empty_conv_id(device_a, assert_api):
     resp = device_a.call(
         "ChatManager",

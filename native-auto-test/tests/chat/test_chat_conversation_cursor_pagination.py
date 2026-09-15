@@ -21,36 +21,8 @@ def _assert_call(assert_api, response, *, manager, cmd, device, result):
     )
 
 
-def _switch_user(device, assert_api, *, device_name, user_id):
-    logout = device.call("Client", Cmd.logout.value, info={"unbindToken": False})
-    _assert_call(assert_api, logout, manager="Client", cmd=Cmd.logout.value, device=device_name, result=True)
-    timing_pause('settle.offline', module='chat')
-    login = device.call(
-        "Client", Cmd.login.value,
-        info={"userId": user_id, "pwdOrToken": "1", "isPassword": True},
-    )
-    _assert_call(assert_api, login, manager="Client", cmd=Cmd.login.value, device=device_name, result=user_id)
-    callback = device.call("Client", Cmd.startCallback.value, info={})
-    _assert_call(assert_api, callback, manager="Client", cmd=Cmd.startCallback.value, device=device_name, result=None)
-    timing_pause('settle.offline', module='chat')
-    device.drain_events()
 
 
-def _ensure_friend(device_a, device_b, assert_api, *, user_a, peer):
-    contacts = device_a.call("ContactManager", Cmd.getAllContactsFromServer.value, info={})
-    if peer in (contacts.get("result") or []):
-        return
-    add = device_a.call(
-        "ContactManager", Cmd.addContact.value,
-        info={"userId": peer, "reason": "conversation-pagination"},
-    )
-    _assert_call(assert_api, add, manager="ContactManager", cmd=Cmd.addContact.value,
-                 device="deviceA", result=peer)
-    device_b.receive_message(match_event_type="onContactInvited", timeout=timing_seconds('timeout.event', module='chat'))
-    timing_pause('step.interval', module='chat')
-    accept = device_b.call("ContactManager", Cmd.acceptInvitation.value, info={"userId": user_a})
-    _assert_call(assert_api, accept, manager="ContactManager", cmd=Cmd.acceptInvitation.value,
-                 device="deviceB", result=user_a)
 
 
 def _wait_text_event(device, event_type, *, content, timeout=None):
@@ -145,12 +117,10 @@ def _page_projection(response):
 
 
 def test_chat_conversation_pinned_and_marked_cursor_pagination(
-    device_a, device_b, assert_api, user_a, user_b, user_c,
-):
+    device_a, device_b, assert_api, user_a, user_b, user_c, friends_ac):
     _send_and_wait_server_conversation(device_a, device_b, assert_api, user_a=user_a, peer=user_b)
-    _switch_user(device_b, assert_api, device_name="deviceB", user_id=user_c)
+    friends_ac()
     try:
-        _ensure_friend(device_a, device_b, assert_api, user_a=user_a, peer=user_c)
         timing_pause('step.interval', module='chat')
         _send_and_wait_server_conversation(device_a, device_b, assert_api, user_a=user_a, peer=user_c)
 
@@ -235,4 +205,3 @@ def test_chat_conversation_pinned_and_marked_cursor_pagination(
                       info={"convIds": [user_b], "mark": 0})
         device_a.call("ChatManager", Cmd.deleteRemoteAndLocalConversationsMark.value,
                       info={"convIds": [user_c], "mark": 1})
-        _switch_user(device_b, assert_api, device_name="deviceB", user_id=user_b)

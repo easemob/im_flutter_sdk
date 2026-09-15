@@ -232,62 +232,6 @@ def test_user_info_update_then_fetch_user_info_by_id_with_type(device_a, assert_
     )
 
 
-def test_user_info_update_then_all_fetch_paths_in_one_flow(device_a, assert_api, user_a):
-    """一次更新后：先 fetchUserInfoById（全量），再 fetchUserInfoByIdWithType（nick+sign），字段一致。"""
-    device_a.call(
-        "UserInfoManager",
-        Cmd.updateOwnUserInfo.value,
-        info={
-            "nickName": "nick-flow-all",
-            "sign": "sign-flow-all",
-            "mail": "mail-flow-all@example.com",
-        },
-    )
-    timing_pause('step.interval', module='user_info')
-    expected_full = {
-        "userId": user_a,
-        "nickName": "nick-flow-all",
-        "sign": "sign-flow-all",
-        "mail": "mail-flow-all@example.com",
-    }
-    expected_partial = {
-        "userId": user_a,
-        "nickName": "nick-flow-all",
-        "sign": "sign-flow-all",
-    }
-    r_bid = device_a.call(
-        "UserInfoManager",
-        Cmd.fetchUserInfoById.value,
-        info={"userIds": [user_a]},
-    )
-    assert_api.assert_response_matches(
-        r_bid,
-        expected={
-            "manager": "UserInfoManager",
-            "cmd": Cmd.fetchUserInfoById.value,
-            "device": "deviceA",
-            "result": {user_a: expected_full},
-        },
-        ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS,
-    )
-    r_wit = device_a.call(
-        "UserInfoManager",
-        Cmd.fetchUserInfoByIdWithType.value,
-        info={"userIds": [user_a], "userInfoTypes": [0, 5]},
-    )
-    assert_api.assert_response_matches(
-        r_wit,
-        expected={
-            "manager": "UserInfoManager",
-            "cmd": Cmd.fetchUserInfoByIdWithType.value,
-            "device": "deviceA",
-            "result": {user_a: expected_partial},
-        },
-        ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS
-        | frozenset({"mail"}),
-    )
-
-
 def test_user_info_update_own_nickname_length_over_64(device_a, assert_api):
     """updateOwnUserInfo：昵称超过 2k长度，预期失败。"""
     resp = device_a.call(

@@ -242,11 +242,13 @@ def _assert_error(assert_api, resp, cmd, device, code, description):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_pin_message_invalid_id(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": "__invalid_pin_msg__"})
     _assert_error(assert_api, resp, Cmd.pinMessage.value, "deviceA", 500, "Message is invalid")
 
 
+@pytest.mark.no_friend_setup
 def test_chat_pin_message_empty_id(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": ""})
     _assert_error(assert_api, resp, Cmd.pinMessage.value, "deviceA", 110, "messageId is empty")
@@ -320,16 +322,19 @@ def test_chat_pin_recalled_typed_message(
     _assert_error(assert_api, response, Cmd.pinMessage.value, "deviceA", 500, "Message is invalid")
 
 
+@pytest.mark.no_friend_setup
 def test_chat_unpin_message_invalid_id(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.unpinMessage.value, info={"msgId": "__invalid_unpin_msg__"})
     _assert_error(assert_api, resp, Cmd.unpinMessage.value, "deviceA", 500, "Message is invalid")
 
 
+@pytest.mark.no_friend_setup
 def test_chat_unpin_message_empty_id(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.unpinMessage.value, info={"msgId": ""})
     _assert_error(assert_api, resp, Cmd.unpinMessage.value, "deviceA", 110, "messageId is empty")
 
 
+@pytest.mark.no_friend_setup
 @pytest.mark.parametrize("conv_id", ["", "__invalid_pin_conversation__"])
 def test_chat_fetch_pinned_messages_invalid_conversation(device_a, assert_api, conv_id):
     resp = device_a.call("ChatManager", Cmd.fetchPinnedMessages.value, info={"convId": conv_id})

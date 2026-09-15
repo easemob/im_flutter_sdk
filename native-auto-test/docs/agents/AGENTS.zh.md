@@ -147,3 +147,14 @@
 - [ ] 仅回归本次修改影响的用例；未做不必要全量回归。
 - [ ] 回归后完成“代码审查门禁”，且 4) 断言审查项全部通过。
 - [ ] 更新对应模块记录文件（`CASES_RECORD.zh.md` / `CASES_DEFERRED.zh.md`）。
+
+
+— 好友关系前置（2026-09-15）
+- 普通 Chat 消息用例默认复用 ensure_friends；与好友无关、自发消息或自行控制关系的用例标注 `@pytest.mark.no_friend_setup`，不按函数名在运行时猜测场景。
+- Contact 等模块仅在需要时请求 `friends_ab`；它保留干净的已建立好友关系，并恢复用例修改的双向备注。完整好友对象查询使用 `friends_ab_records`，按完整基线比较，分页必须遍历到末页。
+- 需要非好友：请求 `nonfriends_ab` 或 `nonfriends_ac`，前置确认双端不存在关系，结束后恢复先前关系、黑名单和备注；向 C 发送的 Chat 用例同时禁用默认 A/B 好友前置。
+- 测试关系变化：请求 `relation_ab`，case 保留业务 add/accept/delete/block/unblock；fixture 在正常、断言失败及前置部分失败后执行关系恢复。无需在每个 case 手写相同 finally。
+- A/C 分页使用延迟执行的 `friends_ac()`，先完成 A/B 会话准备再切换 C，结束后恢复 A/C 原关系及 B 登录。无待处理 B/C 申请使用 `no_pending_bc`，清理双方待处理请求后确认非好友，断言保留第三方好友基线。
+- 好友信息同步修改昵称时请求 `restore_peer_nickname`，恢复并回读原昵称值；原先无昵称按 SDK 空昵称语义恢复。
+- 账号继续使用 lane 隔离的 session A/B/C；独立账号仅用于明确需要首次/无历史状态的专项，本次未新增按 case 创建账号机制。
+- 关系恢复失败必须作为 teardown 失败暴露，不得静默记为清理成功。已有好友离线专项保持自身独立前置及 finally，不套用始终已是好友的 fixture。

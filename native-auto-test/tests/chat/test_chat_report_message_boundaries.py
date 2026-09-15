@@ -100,16 +100,19 @@ def test_chat_report_text_message_success(device_a, device_b, assert_api, user_a
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_report_message_empty_message_id(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": "", "tag": "spam", "reason": "empty-id"})
     assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": {"code": 500, "description": "message id is invalid"}}, ignore_keys={"sequence"})
 
 
+@pytest.mark.no_friend_setup
 def test_chat_report_message_empty_tag(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": "__invalid_report_msg__", "tag": "", "reason": "empty-tag"})
     assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": {"code": 500, "description": "message id is invalid"}}, ignore_keys={"sequence"})
 
 
+@pytest.mark.no_friend_setup
 def test_chat_report_message_empty_reason(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": "__invalid_report_msg__", "tag": "spam", "reason": ""})
     assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": {"code": 500, "description": "message id is invalid"}}, ignore_keys={"sequence"})

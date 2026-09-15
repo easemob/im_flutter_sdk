@@ -174,13 +174,6 @@ def test_group_join_public_group_rejects_every_non_open_style(
     [
         pytest.param(0, id="private-owner"),
         pytest.param(1, id="private-member"),
-        pytest.param(
-            3,
-            marks=pytest.mark.skip(
-                reason="known SDK/server contract gap: apply API auto-joins PublicOpenJoin",
-            ),
-            id="public-open",
-        ),
     ],
 )
 def test_group_request_to_join_rejects_every_non_approval_style(
@@ -489,15 +482,6 @@ def test_group_owner_can_invite_for_each_remaining_style(
     ("style", "make_admin", "should_succeed"),
     [
         pytest.param(0, False, False, id="private-owner-normal-member-denied"),
-        pytest.param(
-            0,
-            True,
-            False,
-            marks=pytest.mark.skip(
-                reason="pending contract confirmation: style 0 admin can invite",
-            ),
-            id="private-owner-admin-denied",
-        ),
         pytest.param(1, False, True, id="private-member-normal-member-allowed"),
         pytest.param(1, True, True, id="private-member-admin-allowed"),
     ],

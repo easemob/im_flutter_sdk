@@ -464,6 +464,7 @@ def test_conversation_load_message_and_message_lists(device_a, device_b, assert_
         )
 
 
+@pytest.mark.no_friend_setup
 def test_conversation_type_keyword_and_options_search_current_behavior(device_a, device_b, assert_api, user_a, user_b):
     """loadMessagesWithMsgType/loadMessagesWithKeyword/conversationSearchMsgsByOptions：使用空数量/唯一关键词边界冻结空列表返回。"""
     keyword = f"conv-search-{uuid.uuid4().hex[:8]}"
@@ -637,6 +638,7 @@ def test_conversation_ext_and_count_queries(device_a, device_b, assert_api, user
     )
 
 
+@pytest.mark.no_friend_setup
 def test_conversation_invalid_message_id_boundaries(device_a, assert_api, user_b):
     """loadMessage/markMessageAsRead/deleteMessageByIds：非法消息 ID 边界，冻结当前端真实返回语义。"""
     conv_a = _conversation(user_b)
@@ -691,6 +693,7 @@ def test_conversation_invalid_message_id_boundaries(device_a, assert_api, user_b
     )
 
 
+@pytest.mark.no_friend_setup
 def test_conversation_local_insert_append_update_and_delete(device_a, assert_api, user_a, user_b):
     """insertMessage/appendMessage/updateConversationMessage/removeMessage/clearAllMessages/deleteMessagesWithTs：本地消息写入、更新和删除链路。"""
     conv_a = _conversation(user_b)

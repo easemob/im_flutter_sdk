@@ -35,23 +35,3 @@ def test_group_get_public_groups_from_server_invalid_paging(device_a, assert_api
         ignore_keys={"sequence", "result"},
     )
     _assert_public_groups_result(resp.get("result"), resp=resp)
-
-
-def test_group_fetch_joined_group_count_with_extra_info(device_a, assert_api):
-    resp = device_a.call(
-        "GroupManager",
-        Cmd.fetchJoinedGroupCount.value,
-        info={"unexpected": "value", "pageSize": 0},
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.fetchJoinedGroupCount.value,
-            "device": "deviceA",
-        },
-        ignore_keys={"sequence", "result"},
-    )
-    result = resp.get("result")
-    assert isinstance(result, int), f"fetchJoinedGroupCount result 应为 int: {resp}"
-    assert result >= 0, f"fetchJoinedGroupCount result 应>=0: {resp}"

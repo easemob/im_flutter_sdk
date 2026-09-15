@@ -321,3 +321,9 @@ git status --short
 - 真实日志结论：首次接收前撤回只回放无 `msg` 的 recall info 和空 recalled messages；首次接收前修改直接回放最终正文；voice 初收/修改/撤回分别为 `fileStatus=0/1/3`；image 缩略图成功，video 缩略图真实返回 403；历史拉取会重载旧漫游消息，因此混合积压未读数在历史拉取前断言为 4。
 - 台账：Chat RECORD 已新增 174-186；本批没有新增 skip/xfail 或能力缺口，既有 CMD delivery、显式翻译正常结果等 deferred 保持不变。
 - 交付边界：仅修改 Kiro spec、两个 Python 扩展 case 文件和 Chat 台账；未修改发布 SDK、Android/iOS Wrapper 或 `im_flutter_test`。
+
+## 好友列表基线（2026-09-15）
+
+- [x] 修改两个前置函数和 7 条用例的完整列表断言。
+- [x] tests/tools/test_contact_offline_baseline.py：12 passed；离线好友模块 collect-only：7 tests collected；git diff --check 通过。
+- [ ] 真实设备回归（尚未执行）。

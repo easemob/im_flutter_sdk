@@ -13,25 +13,27 @@ from tests.chat._utils import build_text
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
 
+@pytest.mark.no_friend_setup
 @pytest.mark.parametrize("info", [{"convIds": ["__invalid_conv__"], "mark": 0}, {"convIds": [""], "mark": 0}])
 def test_chat_add_conversation_mark_boundaries(device_a, assert_api, info):
     resp = device_a.call("ChatManager", Cmd.addRemoteAndLocalConversationsMark.value, info=info)
     assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.addRemoteAndLocalConversationsMark.value, "device": "deviceA", "result": {"code": 107, "description": "Invalid conversation"}}, ignore_keys={"sequence"})
 
 
+@pytest.mark.no_friend_setup
 @pytest.mark.parametrize("info", [{"convIds": ["__invalid_conv__"], "mark": 0}, {"convIds": [""], "mark": 0}])
 def test_chat_delete_conversation_mark_boundaries(device_a, assert_api, info):
     resp = device_a.call("ChatManager", Cmd.deleteRemoteAndLocalConversationsMark.value, info=info)
     assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.deleteRemoteAndLocalConversationsMark.value, "device": "deviceA", "result": {"code": 107, "description": "Invalid conversation"}}, ignore_keys={"sequence"})
 
 
+@pytest.mark.no_friend_setup
 @pytest.mark.parametrize(
     "info",
     [
         {"mark": 0, "pageSize": 0, "cursor": "", "pinned": False},
         {"mark": 0, "pageSize": -1, "cursor": "", "pinned": False},
         {"mark": 0, "pageSize": 1000, "cursor": "", "pinned": False},
-        pytest.param({"mark": 999, "pageSize": 10, "cursor": "", "pinned": False}, marks=pytest.mark.skip(reason="Android bridge throws ArrayIndexOutOfBoundsException for mark=999; no stable envelope")),
         {"mark": 0, "pageSize": 10, "cursor": "__invalid_cursor__", "pinned": False},
     ],
 )

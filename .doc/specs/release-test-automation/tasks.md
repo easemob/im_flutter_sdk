@@ -277,3 +277,75 @@ Files: `native-auto-test/skills/im-flutter-run/SKILL.md`、本 Kiro 三件套
 **验证证据与边界**：实现后两个工具测试文件合计 49 项通过（37 helper + 12 runner），包括并发锁、失败保留、current 损坏与单/多 lane；`bash -n`、`speckit.sh check`、`git diff --check` 均通过。未执行真实 GitHub 下载、模拟器业务用例、Android assembleDebug、iOS pod install 或模拟器 build；不宣称二进制全构建通过。
 
 **发现但未扩大范围修复**：macOS 自带 Bash 3.2 下，既有 run.sh 在不传任何 pytest 参数时存在空数组 `unbound variable`；本次 runner 验证均传 `-q`（与用户原命令一致）。设备卸载错误忽略仍保持原样。缓存历史 generation 不自动清理。
+
+## IM 业务优先级 Allure 展示增量（2026-09-14，按用户修正）
+
+用户明确修正：保留模块/名称，标题仅加等级；统计文档可删除；参考 Test body 实际业务步骤。此前方案由本段替代。
+
+- [x] 读取样例、参考项目步骤和当前公共入口，修正本 spec。
+- [x] 修改隔离测试，确认原标题/分组、无统计依赖和步骤结构预期失败。
+- [x] 固化业务等级代码表，简化 metadata hook，移除中文重命名/重分组/统计解析。
+- [x] 实现实际调用的编号步骤、事件等待和预期校验，接入公共 API fixtures。
+- [x] 运行报告/证据/lane、双进程、不同 rootdir、collect-only、speckit、diff 检查。
+- [x] 更新 README，生成合成报告检查模块/标题/Test body，回填证据；不提交、不跑设备业务测试。
+
+
+### 验证证据（修正版）
+
+- 首轮新要求测试：4 failed / 1 passed，明确发现旧名称/说明重写、代码等级表缺失；步骤测试因缺少步骤模块失败。修正后报告、证据与 lane 工具验证共26项通过。
+- 命令：`native-auto-test/.venv/bin/python -m pytest -q native-auto-test/tests/tools/test_allure_metadata.py native-auto-test/tests/tools/test_allure_evidence.py native-auto-test/tests/tools/test_lane_summary.py native-auto-test/tests/tools/test_pytest_lane.py`（等价从 native-auto-test 执行）。仅已有 websockets.legacy 弃用警告。
+- 固化794个完整业务节点：P0=324、P1=283、P2=187。一次性迁移逐键/值核对一致；运行代码不读取统计文档，独立 Python 文件副本且无 docs 目录的生成验证通过。
+- 真实插件对照验证原分组、description、status、参数、fullName/historyId；双进程保持4个独立结果；真实静态 skip 从其他 cwd/rootdir 正确显示原名及P1。
+- 公共步骤模拟验证操作/等待/校验的1起始编号、fixture前置/清理、嵌套、失败步骤、空等待保留原判定及凭据脱敏；4条公共API路径的调用次数、参数对象、返回对象及等待参数保持。
+- `pytest --collect-only -q tests --alluredir=/tmp/im-allure-corrected-collection`：801 tests collected；speckit check 全部PASS，git diff --check通过。
+- 生成14项合成结果并实际查看页面：保留 tests.chat/group/tools 和文件模块，标题为原名称加等级，Test body 显示4个真实模拟执行步骤及附件。报告标明非 IM 业务回归。
+- 未运行设备/真实业务、未构建App、未提交；本次仅修改报告公共层及对应验证/文档，其他并行的业务用例改动保留。
+
+## 用例精简（2026-09-15）
+
+- [x] 明确删除20个节点的清单，检查规则、文档和等级引用。
+- [x] 保存基线，删除目标函数/文件，同步等级表。
+- [x] 更新相关模块台账、依赖审计、README与数量口径。
+- [x] 核对收集集合差、tools收集与报告相关回归，回填结果；不提交、不跑设备。
+
+### 已删除范围（历史记录，不再是可执行节点）
+
+- `tests/chat/test_chat.py::test_chat_translate_recall_smoke_exists`。
+- `tests/chat/test_chat.py::test_chat_history_attach_lang_smoke_exists`。
+- `tests/chat/test_chat.py::test_chat_pin_conversation_nonexistent_conversation`。
+- `tests/chat/test_chat.py::test_chat_ack_conversation_read_invalid_id_response`。
+- `tests/chat/test_chat.py::test_chat_modify_message_invalid_id_response`。
+- `tests/chat/test_chat.py::test_chat_recall_message_invalid_id_response`。
+- `tests/chat/test_chat.py::test_chat_add_reaction_invalid_id_response`。
+- `tests/chat/test_chat.py::test_chat_fetch_history_invalid_conversation`。
+- `tests/chat/test_chat.py::test_chat_get_message_invalid_id_returns_none_or_error`。
+- `tests/chat/test_chat_crud.py::test_chat_remove_reaction_invalid_id_response`。
+- `tests/chatroom/test_chatroom_lifecycle.py::test_chatroom_destroy_room_success`。
+- `tests/user_info/test_user_info.py::test_user_info_update_then_all_fetch_paths_in_one_flow`。
+- `tests/group/test_group_capacity.py::test_group_capacity_defaults_to_200_and_accepts_3100_override`。
+- `tests/group/test_group_capacity.py::test_group_capacity_rejects_non_positive_values`：含 `[0]`、`[-1]` 两个节点。
+- `tests/group/test_group_capacity.py::test_group_options_use_active_capacity_unless_boundary_value_is_explicit`。
+- `tests/group/test_group_capacity.py::test_group_snapshot_default_uses_active_capacity`。
+- `tests/group/test_group_exceptions_joined_groups.py::test_group_get_joined_groups_with_extra_info_fields`。
+- `tests/group/test_group_exceptions_public_groups_count.py::test_group_fetch_joined_group_count_with_extra_info`。
+- `tests/push/test_push_remaining_api_coverage.py::test_push_apns_token_update_android_missing_plugin`。
+
+### 验证结果
+
+- 删除前801条，删除后781条；集合差与授权清单的20条完全一致，无意外新增/删除。源码函数543→524。
+- 当前模块：Chat251、Group293、ChatRoom143、Contact37、Client28、Presence10、Push8、UserInfo11。tools单独收集312条，未迁移被删除用例。
+- 等级表删掉13个已评级条目（其余7个原本为占位/容量契约，无等级），与剩余781个业务节点完全一致：P0=322、P1=278、P2=181。
+- 启用Allure的业务collect-only成功；Group容量3100模式收集293条成功；容量0在执行前以退出码4拒绝。容量实现未删。
+- 报告元数据、执行证据、lane汇总与lane分配相关工具回归26 passed；仅已有websockets.legacy弃用提示。
+- 模块台账、APNs缺口说明、依赖索引、README和相关spec同步；历史执行证据不改写为当前结果。未跑设备业务，未提交代码。
+
+- 最终静态核对：涉及删除的7个保留文件中，所有剩余函数和helper的AST与原实现一致；已删除节点在现行台账/依赖索引无残留；`git diff --check`通过。
+
+### 后续精简与本次提交前验证（2026-09-15）
+
+- [x] 按用户最新要求删除离线自动翻译、好友服务端/分页/本地复合查询、好友分页 pageSize=0，以及入群申请 accept-then-decline 参数，共 4 个节点。群组同一函数的 decline-twice、decline-then-accept 保留。
+- [x] 与本次开始时的 744 个节点对比，仅减少上述 4 条，没有意外新增或删除；当前共 740 条、496 个测试函数。
+- [x] 合并之前已授权的用例精简，清除 37 个残留等级索引；代码等级表与 740 个当前节点完全一致：P0=304、P1=266、P2=170。README、模块台账、依赖审计和离线边界文档同步。
+- [x] 全量 tests/tools：364 passed，85.59 秒；仅已有 websockets.legacy 弃用提示。业务 collect-only 成功，未运行设备端业务回归。
+- [x] speckit check：Android/iOS 依赖规范检查通过；git diff --check 通过。
+- 用户本次明确授权将所有当前修改一起 commit，包含此前好友前置隔离、语音/离线好友断言、Allure 等级与步骤输出、用例精简及相关文档；不推送远端。

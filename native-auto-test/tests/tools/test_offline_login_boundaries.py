@@ -45,17 +45,3 @@ def test_nested_offline_helpers_reach_the_paced_login():
     assert ast.unparse(login.body[1]) == "pause('settle.offline', module=module)"
     assert not any(isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
                    and n.func.attr == 'drain_events' for n in ast.walk(login))
-
-
-def test_direct_friend_sync_login_has_pause_before_and_after():
-    path = ROOT / 'contact/test_friend_info_sync.py'
-    fn = next(n for n in ast.parse(path.read_text()).body
-              if isinstance(n, ast.FunctionDef) and n.name == 'test_friend_info_auto_sync_after_login')
-    body = next(n.body for n in fn.body if isinstance(n, ast.Try))
-    count = 0
-    for i, stmt in enumerate(body):
-        if 'Cmd.login.value' in ast.unparse(stmt):
-            assert ast.unparse(body[i - 1]) == "timing_pause('settle.offline', module='contact')"
-            assert ast.unparse(body[i + 1]) == "timing_pause('settle.offline', module='contact')"
-            count += 1
-    assert count == 2

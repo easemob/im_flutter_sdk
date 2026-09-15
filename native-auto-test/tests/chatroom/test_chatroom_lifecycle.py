@@ -117,22 +117,6 @@ def test_chatroom_fetch_room_info_with_members_from_server(device_a, device_b, a
         safe_delete_chatroom(room_id)
 
 
-def test_chatroom_destroy_room_success(device_a, assert_api, user_a):
-    room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="destroy", desc_prefix="destroy")
-    timing_pause('step.interval', module='chatroom')
-    resp = device_a.call("ChatRoomManager", Cmd.destroyChatRoom.value, info={"roomId": room_id})
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatRoomManager",
-            "cmd": Cmd.destroyChatRoom.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
-
-
 def test_chatroom_fetch_room_info_from_server_after_destroy(device_a, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="destroy_fetch", desc_prefix="destroy_fetch")
     timing_pause('step.interval', module='chatroom')

@@ -266,6 +266,7 @@ def test_chat_reaction_change_event_received_by_sender(device_a, device_b, asser
     _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_b, reaction=reaction, is_added_by_self=True)
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_reaction_list_invalid_msg_id(device_a, assert_api):
     """fetchReactionList 传入不存在的 msgId 列表；先断言信封。"""
     # Flutter 端签名要求 chatType 必填；请求体键名为 msgIds。
@@ -283,6 +284,7 @@ def test_chat_fetch_reaction_list_invalid_msg_id(device_a, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_reaction_list_empty_msg_ids(device_a, assert_api):
     """fetchReactionList 传入空 msgIds；应返回参数错误。"""
     info = {"msgIds": [], "chatType": 0}
@@ -299,6 +301,7 @@ def test_chat_fetch_reaction_list_empty_msg_ids(device_a, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_reaction_list_invalid_chat_type(device_a, assert_api):
     """fetchReactionList 传入非法 chatType；当前实现返回空 reaction 列表映射。"""
     info = {"msgIds": ["__invalid_msg_id__"], "chatType": -1}
@@ -315,6 +318,7 @@ def test_chat_fetch_reaction_list_invalid_chat_type(device_a, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_reaction_detail_invalid(device_a, assert_api):
     """fetchReactionDetail 使用无效 msgId/reaction；先校验信封。"""
     # 原生 wrapper 将 pageSize 按必填读取（Android: getInt），缺失会直接抛参错。
@@ -451,6 +455,7 @@ def test_chat_remove_reaction_not_exists_reaction(device_a, device_b, assert_api
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_remove_reaction_invalid_msg_id(device_a, assert_api):
     """removeReaction 使用无效 msgId；按不存在语义冻结。"""
     resp = device_a.call("ChatManager", Cmd.removeReaction.value, info={"reaction": "👍", "msgId": "__invalid_msg_id__"})
@@ -466,44 +471,6 @@ def test_chat_remove_reaction_invalid_msg_id(device_a, assert_api):
     )
 
 
-@pytest.mark.skip(reason="按用户要求暂缓：本轮标记 ❌ 的失败用例，待确认后恢复")
-def test_chat_add_reaction_too_long_reaction(device_a, device_b, assert_api, user_a, user_b):
-    """addReaction 超长 reaction；按被测端实际语义冻结。"""
-    real_id = _send_text_and_wait_received(
-        device_a, device_b, assert_api, user_a, user_b, "reaction-too-long"
-    )
-
-    reaction_128 = "a" * 128
-    timing_pause('step.interval', module='chat')
-    resp_128 = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction_128, "msgId": real_id})
-    assert_api.assert_response_matches(
-        resp_128,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.addReaction.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
-    _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction_128, is_added_by_self=True)
-    _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction_128, is_added_by_self=False)
-
-    timing_pause('step.interval', module='chat')
-    reaction_256 = "b" * 256
-    resp_256 = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction_256, "msgId": real_id})
-    assert_api.assert_response_matches(
-        resp_256,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.addReaction.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
-    _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction_256, is_added_by_self=True)
-    _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction_256, is_added_by_self=False)
 
 
 def test_chat_add_reaction_special_char_reaction(device_a, device_b, assert_api, user_a, user_b):

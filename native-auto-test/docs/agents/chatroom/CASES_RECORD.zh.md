@@ -1,8 +1,16 @@
 # ChatRoom 模块 Cases 总记录（按 API）
 
+## 已删除的 skip / xfail 用例（当前状态）
+
+按用户要求删除 1 个整函数及 0 个单独参数项，不是移除标记恢复执行。下列场景不再计入当前覆盖；后文旧批次实测统计仅为历史记录，不代表这些用例仍存在。运行时条件 skip 以及工具层报告回归保留。
+
+- 已删除 整函数（包含其全部参数）：`tests/chatroom/test_chatroom_exceptions.py::test_chatroom_join_room_nonexistent_current_behavior`。
+
+> 2026-09-15 精简后：pytest 收集 **143 条**（展开参数），源码 **69 个测试函数**。历史条目编号不重排，不能用最大编号计算用例数。销毁成功的重复用例已删除；test_chatroom_fetch_room_info_from_server_after_destroy 同时验证销毁返回成功和销毁后查询不存在。
+
 — 说明
 - 本文件记录 ChatRoom 模块已覆盖用例（按 API 组织）。
-- 每条 case 以全局序号编号；统计按“当前记录条目数”计算。
+- 条目序号保留历史编号，删除后不重排；当前用例数量以 pytest 收集为准。
 - 暂缓与 skip 项统一写 `CASES_DEFERRED.zh.md`。
 
 ## 成员加入 ext 等待优化（设备回归待执行）
@@ -29,7 +37,7 @@
    B 加入公开聊天室，当前同步响应返回聊天室对象（`roomId/memberCount/isAllMemberMuted/isInWhitelist`），随后通过服务端成员列表确认 B 已加入。
 4. `tests/chatroom/test_chatroom_members.py::test_chatroom_join_with_ext_member_joined_callback`
    当前已标记 xfail：`user_c` 创建聊天室，B 先进入聊天室保持在线，A 随后携带 ext 加入；实测两端均未收到 `onMemberJoinedFromChatRoom`，暂不作为通过覆盖。
-5. `tests/chatroom/test_chatroom_exceptions.py::test_chatroom_join_room_nonexistent_current_behavior`
+5. `tests/chatroom/test_chatroom_exceptions.py::test_chatroom_join_room_nonexistent_current_behavior` 【历史记录：该测试函数已删除，不计入当前覆盖】
    当前实测：传入随机不存在 roomId 返回 `705/Chat room does not exist`，按现网行为冻结。
 6. `tests/chatroom/test_chatroom_member_basics.py::test_chatroom_join_then_get_local_room_and_all_rooms`
    B 加入聊天室后，校验本地单聊天室缓存返回目标聊天室核心字段；`getAllChatRooms` 当前仅冻结返回 list 语义。
@@ -407,8 +415,6 @@
 ## destroyChatRoom
 
 正常 cases
-134. `tests/chatroom/test_chatroom_lifecycle.py::test_chatroom_destroy_room_success`
-    删除 REST 创建的聊天室，校验销毁成功响应。
 135. `tests/chatroom/test_chatroom_lifecycle.py::test_chatroom_fetch_room_info_from_server_after_destroy`
     删除 REST 创建的聊天室后再次查询，校验销毁后服务端返回不存在错误。
 
@@ -420,6 +426,6 @@
 
 ## 当前统计
 
-- 总计：137 条（其中参数化 case 按参数分别独立统计；跨 API 链路用例会在相关 API 下重复登记；`暂无` 占位不计入总数）
+- 当前 pytest 收集：143 条；保留台账编号可能有缺号或跨 API 重复登记，不作为收集计数依据
 - 本轮新增边界/异常：`test_chatroom_management_boundaries.py` 已先用 `CASES_DISCOVER=1 WS_DEBUG=1` 采集真实模拟器返回，再切 strict 通过（`42 passed`）。
 - 既有补充验证：`test_chatroom_lifecycle.py`、`test_chatroom_management_exceptions.py` 已在本轮新增后纳入组合回归；`test_chatroom_callbacks.py` 仍按既有记录保留，未在本轮改动。

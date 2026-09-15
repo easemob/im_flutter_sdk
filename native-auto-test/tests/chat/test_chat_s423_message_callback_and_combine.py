@@ -1071,6 +1071,9 @@ def test_combine_forward_media_inner_attachment_download(device_a, device_b, ass
         type_key="image",
         payload={"targetId": user_b, "thumbnailLocalPath": ""},
     )
+    # Reuse this sender's existing image as a thumbnail fixture, not a video frame.
+    thumbnail_path = (image_sent.get("body") or {}).get("localPath")
+    assert isinstance(thumbnail_path, str) and thumbnail_path.strip(), "图片本地路径缺失，无法构造视频缩略图前置"
     timing_pause('step.interval', module='chat')
     _, video_sent, _ = _send_with_type(
         device_a,
@@ -1079,8 +1082,10 @@ def test_combine_forward_media_inner_attachment_download(device_a, device_b, ass
         user_a,
         user_b,
         type_key="video",
-        payload={"targetId": user_b},
+        payload={"targetId": user_b, "thumbnailLocalPath": thumbnail_path},
     )
+    sent_thumbnail_url = (video_sent.get("body") or {}).get("thumbnailRemotePath")
+    assert isinstance(sent_thumbnail_url, str) and sent_thumbnail_url.strip(), "视频发送成功但缩略图远端地址缺失"
 
     image_msg_id = image_sent["msgId"]
     video_msg_id = video_sent["msgId"]
@@ -1132,5 +1137,8 @@ def test_combine_forward_media_inner_attachment_download(device_a, device_b, ass
     assert video_inner is not None, f"合并消息解析结果缺少内部视频消息: expected={video_msg_id}, actual={inner_messages}"
     assert image_inner.get("body", {}).get("type") == 1, f"内部图片消息类型不正确: {image_inner}"
     assert video_inner.get("body", {}).get("type") == 2, f"内部视频消息类型不正确: {video_inner}"
+
+    parsed_thumbnail_url = (video_inner.get("body") or {}).get("thumbnailRemotePath")
+    assert isinstance(parsed_thumbnail_url, str) and parsed_thumbnail_url.strip(), "合并解析后视频缩略图远端地址缺失"
 
     _assert_combine_thumbnail_download_completed(device_b, assert_api, message=video_inner)

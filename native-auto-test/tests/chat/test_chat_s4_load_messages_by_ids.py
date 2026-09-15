@@ -272,6 +272,7 @@ def test_chat_load_messages_with_ids_single_and_multi_success(device_a, device_b
     _assert_loaded_messages_contains_ids(resp_multi, [msg_id_1, msg_id_2], user_a, user_b)
 
 
+@pytest.mark.no_friend_setup
 def test_chat_load_messages_with_ids_empty_ids(device_a, assert_api, user_b):
     resp = device_a.call(
         "ChatManager",

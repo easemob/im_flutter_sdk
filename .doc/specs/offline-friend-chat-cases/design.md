@@ -147,3 +147,7 @@ sequenceDiagram
 6. 更新 Contact/Chat 模块 record 或 deferred 台账。
 7. 执行 `im_flutter_sdk/scripts/speckit.sh check`；本批不修改 Flutter/SDK，除非 discovery 暴露既有桥接缺口，否则不触发发布 SDK 构建。
 8. 第三批以每个扩展 node 的 discovery/strict 为准；只有确认所有矩阵能力可稳定派发时才写入 RECORD，服务端或桥接缺口仍保留 DEFERRED。
+
+## 好友列表基线（2026-09-15）
+
+在邀请和建立好友两种前置函数中，清理 A/B 后读取并返回双方列表基线。7 条用例显式传递各自基线；完整响应继续交给统一断言器，result 使用无序列表精确匹配，保留重复项校验。基线读取验证响应信封、列表类型及 A/B 已解除关系，不清理第三方好友。通过无设备测试验证保留 C、对端残留、第三方丢失/增加及顺序变化；实际设备结果单列。

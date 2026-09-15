@@ -18,8 +18,6 @@ ROOT = Path(__file__).parents[1]
      'test_contact_offline_invitation_decline_after_login', 'declineInvitation'),
     ('chatroom/test_chatroom_callbacks.py',
      'test_chatroom_owner_changed_callback', 'changeChatRoomOwner'),
-    ('group/test_group_owner_removal_matrix.py',
-     'test_group_transfer_owner_to_admin_normalizes_roles', 'updateGroupOwner'),
 ])
 def test_dependency_operation_has_explicit_pause(file, function, command):
     tree = ast.parse((ROOT / file).read_text())
@@ -40,15 +38,16 @@ def test_dependency_operation_has_explicit_pause(file, function, command):
 
 def test_all_business_cases_have_audit_entries():
     inventory = (ROOT.parent / 'docs/case-dependency-audit.md').read_text()
-    count = 0
+    nodeids = set()
     for path in ROOT.rglob('test_*.py'):
         if 'tools' in path.relative_to(ROOT).parts:
             continue
         for node in ast.parse(path.read_text()).body:
             if isinstance(node, ast.FunctionDef) and node.name.startswith('test_'):
-                assert f'{path.relative_to(ROOT.parent)}::{node.name}' in inventory
-                count += 1
-    assert count == 543
+                nodeids.add(f'{path.relative_to(ROOT.parent)}::{node.name}')
+    indexed = {line.removeprefix('### `').removesuffix('`')
+               for line in inventory.splitlines() if line.startswith('### `tests/')}
+    assert nodeids == indexed
 
 
 def test_no_ordinary_pacing_inside_deadline_poll_loops():

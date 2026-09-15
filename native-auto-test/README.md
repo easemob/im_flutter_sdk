@@ -319,6 +319,12 @@ pytest --html=out/report.html --self-contained-html
 pytest tests/test_client.py -v
 ```
 
+## 当前用例数量
+
+2026-09-15 按已确认清单完成精简后，八个业务模块收集 **740 条**（含参数化）：单聊 231、群组 276、聊天室 142、好友 34、客户端 28、在线状态 10、推送 8、用户资料 11。对应 496 个测试函数。`tests/tools` 为独立工具测试，不计入业务数量。
+
+等级表与这 740 个节点精确一致：P0=304、P1=266、P2=170。等级维护在 `src/tools/case_priorities.py`，不读取统计 MD/CSV。统计为用例收集结果，不代表真实设备通过结果。删除范围与验证见仓库 `.doc/specs/release-test-automation/tasks.md` 的“用例精简”章节。
+
 ## 报告
 
 - **HTML 报告**：`pytest --html=out/report.html --self-contained-html`，用浏览器打开 `out/report.html`。
@@ -331,6 +337,31 @@ pytest tests/test_client.py -v
   - **请求**：每次 `api.call` 的请求体（manager、cmd、info、topic、device 等）以 JSON 附件挂在对应 step 下。
   - **响应**：该次调用的完整响应 JSON 附件。
   - **比对结果**：调用 `assert_response_matches` 时，会附加「预期响应」「实际响应」「比对结果」；不一致时为「比对结果（差异）」并列出缺少/多出/值不同的字段。
+
+Allure 保留原有模块/文件/类分组、源码说明及用例名称，只在已定级业务用例名称前增加等级，例如 `[P0] test_group_add_remove_members`、`[P1] test_xxx[voice]`。等级维护在 [case_priorities.py](src/tools/case_priorities.py)，按完整参数化 nodeid 匹配；P0/P1/P2 对应 blocker/critical/normal。统计文档不参与运行，可独立删除；工具、契约、占位及尚未定级的节点保留原名称，不额外分组或推断等级。
+
+**Test body 执行步骤**参考业务操作的写法，由实际公共调用产生：
+
+```text
+步骤 1：用户 A 创建群组
+  附件：请求 / 实际响应 / 耗时
+步骤 2：用户 B 等待群邀请回调
+  附件：等待条件 / 实际事件 / 耗时
+步骤 3：校验用户 B 的群邀请回调是否符合预期
+  附件：预期 / 实际 / 字段差异 / 比对规则
+```
+
+编号在每个用例开始时归零；fixture 中的操作标为「前置」或「清理」。A/B 表示用例的逻辑设备角色，具体账号和业务目标查看脱敏请求附件。未知方法/事件显示真实协议名称；空等待只记录未收到事件，是否失败由原用例判断。`api`、`api_device_a/b`、`device_a/b` 及公共断言入口自动记录，已有手写 `assert`、`sleep` 等不会被自动改写成步骤。需要将多次调用组织成一个明确的业务步骤时，可在用例中使用：
+
+```python
+from src.tools.allure_steps import business_step
+
+with business_step("用户 B 接受邀请并校验入群结果"):
+    # 放置原有真实调用及断言；内部请求和校验证据嵌套展示。
+    ...
+```
+
+原 `run.sh` 或 `pytest --alluredir=...` 命令即可生效。等级只影响报告展示，不改变执行顺序、断言、skip/xfail、lane 分配，也不提供 `pytest -m P0` / `--allure-severities` 的执行筛选能力；历史报告不会自动重写。新增或重命名参数化用例时，同步维护代码等级表。
 
 ## 多端测试（多 topic）
 

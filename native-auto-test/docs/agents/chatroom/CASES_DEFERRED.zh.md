@@ -1,5 +1,7 @@
 # ChatRoom 模块 Cases 暂缓清单（按 API）
 
+> 当前变更：显式 skip / xfail 业务用例已按用户要求删除，准确函数/参数清单见同目录 `CASES_RECORD.zh.md` 的“已删除的 skip / xfail 用例”节。下方涉及这些场景的旧 skip/xfail 和“移除标记恢复”描述仅为历史原因；恢复需重新实现与验收，不能直接去掉标记。其他运行时条件跳过和未实现能力不在本次删除范围。
+
 — 说明
 - 本文件仅记录“暂缓实现 / 暂不收紧 / 环境阻塞”的 ChatRoom 项目。
 
@@ -18,7 +20,7 @@
 ## joinChatRoom
 
 - 暂缓项 1：join 不存在 roomId 的产品语义确认
-  - 实测现象：`test_chatroom_join_room_nonexistent_current_behavior` 中，随机不存在 roomId 调用 `joinChatRoom` 返回成功 `result=1`，未返回错误。
+  - 实测现象：`test_chatroom_join_room_nonexistent_current_behavior` 中，随机不存在 roomId 调用 `joinChatRoom` 返回成功 `result=1`，未返回错误。 【对应已删除函数的历史记录】
   - 风险：该行为与“无效聊天室应报错”直觉不一致，可能是服务端容错或房间自动创建/映射策略。
   - 恢复条件：待产品/服务端确认后，决定保留成功语义或改为错误语义并收紧断言。
 
@@ -49,4 +51,4 @@
 
 ## 用户指定跳过的失败用例
 
-- `test_chatroom_join_room_nonexistent_current_behavior`：按用户要求标记 skip，待确认后恢复。
+- `test_chatroom_join_room_nonexistent_current_behavior`：按用户要求标记 skip，待确认后恢复。 【对应已删除函数的历史记录】

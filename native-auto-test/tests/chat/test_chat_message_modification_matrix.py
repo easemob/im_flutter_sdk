@@ -212,6 +212,7 @@ def test_chat_modify_text_body_and_attributes(device_a, device_b, assert_api, us
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_modify_message_empty_id(device_a, assert_api):
     response = device_a.call(
         "ChatManager", Cmd.modifyMessage.value,

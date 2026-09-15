@@ -21,7 +21,6 @@ from tests.chat.test_chat_offline_message_delivery import (
     _assert_call,
     _assert_received_message,
     _assert_send_response_and_success,
-    _establish_friendship,
     _prepare_offline_friend,
     _restore_case,
     _wait_message_event,
@@ -496,7 +495,6 @@ def test_chat_offline_combine_delivery_ack_after_recipient_login(
     summary = "offline combine delivery summary"
     compatible_text = "offline combine delivery compatible"
     try:
-        _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
         source_ids = []
         for index in range(2):
             content = f"offline-delivery-source-{index}-{marker}"
@@ -602,51 +600,6 @@ def test_chat_offline_combine_delivery_ack_after_recipient_login(
         _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
 
 
-def test_chat_offline_text_automatic_translation_after_recipient_login(
-    device_a,
-    device_b,
-    assert_api,
-    user_a,
-    user_b,
-):
-    """带 targetLanguages 的文本在 B 离线期间发送，重登后保留真实翻译结果。"""
-    suffix = uuid.uuid4().hex[:8]
-    content = f"offline-translation-{suffix}"
-    body = {
-        "type": 0,
-        "content": content,
-        "targetLanguages": ["zh-Hans"],
-        "translations": {"zh-Hans": f"离线翻译-{suffix}"},
-    }
-    try:
-        _prepare_offline_friend(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
-        _, real_id, _ = _assert_send_response_and_success(
-            device_a,
-            assert_api,
-            type_key="txt",
-            payload={"targetId": user_b, "content": content, "targetLanguages": ["zh-Hans"]},
-            user_a=user_a,
-            user_b=user_b,
-            response_body={"type": 0, "content": content, "targetLanguages": ["zh-Hans"]},
-            success_body=body,
-            ignore_keys=_MESSAGE_DYNAMIC_KEYS - {"targetLanguages"},
-        )
-        login_preserving_offline_events(device_b, assert_api, device_name="deviceB", user_id=user_b, module='chat')
-        received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id)
-        _assert_received_message(
-            assert_api,
-            received,
-            event_type=Cmd.onMessagesReceived.value,
-            real_id=real_id,
-            user_a=user_a,
-            user_b=user_b,
-            body=body,
-            ignore_keys=_MESSAGE_DYNAMIC_KEYS,
-        )
-    finally:
-        _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
-
-
 def test_chat_offline_mixed_backlog_local_state_after_recipient_login(
     device_a,
     device_b,
@@ -683,7 +636,6 @@ def test_chat_offline_mixed_backlog_local_state_after_recipient_login(
     }
     combine_received_body = {**combine_sender_body, "fileStatus": 3}
     try:
-        _establish_friendship(device_a, device_b, assert_api, user_a=user_a, user_b=user_b)
         source_ids: list[str] = []
         for index in range(2):
             source_content = f"offline-mixed-source-{index}-{marker}"

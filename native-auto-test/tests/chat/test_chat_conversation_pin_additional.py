@@ -194,6 +194,7 @@ def test_chat_pin_conversation_non_boolean_coerces_to_unpin(
     )
 
 
+@pytest.mark.no_friend_setup
 @pytest.mark.parametrize(
     ("page_size", "expected"),
     [

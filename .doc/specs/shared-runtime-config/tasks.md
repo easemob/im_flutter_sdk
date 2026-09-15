@@ -178,3 +178,6 @@ Architecture: seconds(key, *, module) / pause(key='step.interval', *, module), 5
 10. **事故与恢复**：创建 `im_flutter_test/assets/config.yaml` 占位文件时 `rm` 与 `write` 并行，写入穿透当时的软链，把 `native-auto-test/config.yaml`（本地旧配置）覆盖；已按首次读取内容恢复原文件。该文件中的静态 token 已在本会话输出中暴露，建议轮换。
 11. **配置来源可观测**：`EnvConfigResult.source` 记录 `external:<path>` / `asset:assets/config.yaml`，`main()` 启动时打印；设备实测确认二次启动读的是 `external:/sdcard/.../files/config.yaml`。
 12. **不写静态 token**：REST token 一律由 `app.server.client_id/client_secret` 走 client_credentials 获取并缓存；不提供 `access_token` 字段或 `IM_REST_TOKEN` 覆盖，避免把会过期的 token 落在配置里。
+
+### 2026-09-15 索引数量说明
+上述543函数是原审计时点数量。用例精简后依赖索引更新为524个函数（参数化展开为781个节点）；本次删除状态见 `../release-test-automation/tasks.md`“用例精简”章节，既有等待配置和操作链规则保持。

@@ -31,7 +31,6 @@ Direct login review: Client offline sync already has a pre-login pause; Contact 
 | `tests/chat/test_chat_offline_message_extended_delivery.py` | `test_chat_offline_typed_delivery_ack_after_recipient_login` | 321 |
 | `tests/chat/test_chat_offline_message_extended_delivery.py` | `test_chat_offline_received_media_downloads_after_recipient_login` | 381 |
 | `tests/chat/test_chat_offline_message_extended_delivery.py` | `test_chat_offline_combine_delivery_ack_after_recipient_login` | 556 |
-| `tests/chat/test_chat_offline_message_extended_delivery.py` | `test_chat_offline_text_automatic_translation_after_recipient_login` | 630 |
 | `tests/chat/test_chat_offline_message_extended_delivery.py` | `test_chat_offline_mixed_backlog_local_state_after_recipient_login` | 824 |
 | `tests/chat/test_chat_offline_message_operations.py` | `test_chat_offline_sender_receives_message_read_after_relogin` | 466 |
 | `tests/chat/test_chat_offline_message_operations.py` | `test_chat_offline_recipient_receives_recall_after_relogin` | 550 |

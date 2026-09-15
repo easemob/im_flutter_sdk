@@ -420,7 +420,8 @@ def test_chat_manager_recall_message_receiver_recalled_info_event(device_a, devi
     )
 
 
-def test_chat_manager_send_to_non_friend_current_success_event(device_a, assert_api, user_a, user_c):
+@pytest.mark.no_friend_setup
+def test_chat_manager_send_to_non_friend_current_success_event(device_a, assert_api, user_a, user_c, nonfriends_ac):
     """sendMessage：向 user_c 发送单聊消息，按当前真实返回冻结为成功回调。"""
     try:
         device_a.drain_events()
@@ -564,6 +565,7 @@ def test_chat_manager_conversation_marks_and_fetch_options(device_a, device_b, a
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_manager_message_count_and_search_options_boundaries(device_a, assert_api, user_a):
     """getMessageCount/searchMsgsByOptions：校验全量消息计数返回数值，以及 count=0 搜索边界返回空列表。"""
     resp_count = device_a.call("ChatManager", Cmd.getMessageCount.value, info={})

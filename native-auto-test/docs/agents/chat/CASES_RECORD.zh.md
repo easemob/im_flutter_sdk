@@ -1,9 +1,34 @@
 # Chat 模块 Cases 总记录（按 API）
 
+## 已删除的 skip / xfail 用例（当前状态）
+
+按用户要求删除 15 个整函数及 1 个单独参数项，不是移除标记恢复执行。下列场景不再计入当前覆盖；后文旧批次实测统计仅为历史记录，不代表这些用例仍存在。运行时条件 skip 以及工具层报告回归保留。
+
+- 已删除 整函数（包含其全部参数）：`tests/chat/test_chat_search_db.py::test_chat_search_chat_msg_from_db_success`。
+- 已删除 整函数（包含其全部参数）：`tests/chat/test_chat_reaction_fetch.py::test_chat_add_reaction_too_long_reaction`。
+- 已删除 仅该参数项：`tests/chat/test_chat_conversation_marks_boundaries.py::test_chat_fetch_conversation_marks_boundaries[mark=999]`。
+- 已删除 整函数（包含其全部参数）：`tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_msg_ids_missing_msg_ids`。
+- 已删除 整函数（包含其全部参数）：`tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_msg_ids_missing_conv_id`。
+- 已删除 整函数（包含其全部参数）：`tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_ts_missing_timestamp`。
+- 已删除 整函数（包含其全部参数）：`tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_ts_missing_conv_id`。
+- 已删除 整函数（包含其全部参数）：`tests/chat/test_chat_s2_server_ops.py::test_chat_report_message_missing_tag`。
+- 已删除 整函数（包含其全部参数）：`tests/chat/test_chat_s2_server_ops.py::test_chat_report_message_missing_reason`。
+- 已删除 整函数（包含其全部参数）：`tests/chat/test_chat.py::test_chat_translate_message_nonexistent_message`。
+- 已删除 整函数（包含其全部参数）：`tests/chat/test_chat_crud.py::test_chat_search_chat_msg_from_db_success`。
+- 已删除 整函数（包含其全部参数）：`tests/chat/test_chat_crud.py::test_chat_download_attachment_invalid_id_response`。
+- 已删除 整函数（包含其全部参数）：`tests/chat/test_chat_crud.py::test_chat_download_thumbnail_invalid_id_response`。
+- 已删除 整函数（包含其全部参数）：`tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_message_pin_after_relogin`。
+- 已删除 整函数（包含其全部参数）：`tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_message_unpin_after_relogin`。
+- 已删除 整函数（包含其全部参数）：`tests/chat/test_chat_typed_message_pin_flows.py::test_chat_typed_message_pin_and_cross_user_unpin`。
+
+其中 `mark=999` 为无显式 id 参数的业务值说明，并非 pytest 自动生成的参数 id。
+
+> 2026-09-15 精简后：pytest 收集 **251 条**（展开参数），源码 **195 个测试函数**。历史条目编号不重排，不能用最大编号计算用例数。删除2条占位及8条重复异常验证；无效消息/会话场景继续由 test_chat_crud.py、test_chat_reaction_fetch.py 中保留的等价用例覆盖。
+
 — 说明
 - 本文件记录 Chat 模块已覆盖用例（按 API 组织）。
 - ChatThread API 属于群组场景，相关 5 个 cases 已迁移到 `tests/group/`；本台账仅保留单聊 ChatManager 与单聊消息公共 API，不重复记录 Thread 用例。
-- 每条 case 以全局序号编号；统计按“当前记录条目数”计算。
+- 条目序号保留历史编号，删除后不重排；当前用例数量以 pytest 收集为准。
 - 暂缓与 skip 项统一写 `CASES_DEFERRED.zh.md`。
 
 ## 发送终态诊断补充
@@ -86,9 +111,7 @@
 异常 cases
 22. `tests/chat/test_chat_crud.py::test_chat_get_message_invalid_id_returns_none`
    以无效消息 ID 查询消息，验证返回空结果语义稳定。
-23. `tests/chat/test_chat.py::test_chat_get_message_invalid_id_returns_none_or_error`
-   兼容端差异校验无效消息 ID 可返回空或错误的稳定语义。
-24. `tests/chat/test_chat.py::test_chat_translate_message_nonexistent_message`（当前可为 skip/环境语义，暂缓细节见 deferred）
+24. `tests/chat/test_chat.py::test_chat_translate_message_nonexistent_message`（当前可为 skip/环境语义，暂缓细节见 deferred） 【历史记录：该测试函数已删除，不计入当前覆盖】
    不存在消息执行翻译，当前环境可能 skip，语义冻结在 deferred 中维护。
 25. `tests/chat/test_chat_crud.py::test_chat_translate_message_recalled_message`
    对已撤回消息执行翻译，验证异常对象状态下接口返回语义。
@@ -102,13 +125,8 @@
 异常 cases
 27. `tests/chat/test_chat_crud.py::test_chat_recall_message_invalid_id_response`
    撤回不存在消息，冻结错误码与错误文案关键字段。
-28. `tests/chat/test_chat.py::test_chat_recall_message_invalid_id_response`
-   以另一测试入口复核撤回非法 ID 的响应一致性。
 29. `tests/chat/test_chat_crud.py::test_chat_modify_message_invalid_id_response`
    修改不存在消息，验证接口返回错误而非误判成功。
-30. `tests/chat/test_chat.py::test_chat_modify_message_invalid_id_response`
-   跨文件复核修改非法 ID 的错误语义一致。
-
 ## ackMessageRead / ackConversationRead
 
 正常 cases
@@ -124,8 +142,6 @@
    对非法消息 ID 回执已读，当前 Android 实测返回 `result=True`，按现状语义冻结。
 35. `tests/chat/test_chat_crud.py::test_chat_ack_conversation_read_invalid_id_response`
    使用无效会话 ID 做会话已读回执，按 SDK 参数 `convId` 调用并冻结业务错误 `500/Message is invalid`。
-36. `tests/chat/test_chat.py::test_chat_ack_conversation_read_invalid_id_response`
-   在历史兼容入口复核无效会话 ID 的业务错误一致性。
 37. `tests/chat/test_chat_s3_non_message_ops.py::test_chat_ack_conversation_read_invalid_conv_id`
    明确非法会话 ID 参数时，按 SDK 参数 `convId` 调用并冻结业务错误 `500/Message is invalid`。
 38. `tests/chat/test_chat_s3_non_message_ops.py::test_chat_ack_conversation_read_empty_conv_id`
@@ -144,14 +160,10 @@
 异常 cases
 42. `tests/chat/test_chat_crud.py::test_chat_add_reaction_invalid_id_response`
    对非法消息 ID 添加 reaction，冻结错误码与错误描述。
-43. `tests/chat/test_chat.py::test_chat_add_reaction_invalid_id_response`
-   在兼容入口复核非法 ID 添加 reaction 的错误语义。
 44. `tests/chat/test_chat_crud.py::test_chat_add_reaction_empty_reaction_response`
    reaction 为空字符串时调用，验证参数非法语义。
 45. `tests/chat/test_chat.py::test_chat_add_reaction_empty_reaction_response`
    跨文件复核空 reaction 入参的错误一致性。
-46. `tests/chat/test_chat_crud.py::test_chat_remove_reaction_invalid_id_response`
-   对非法消息 ID 删除 reaction，验证错误语义稳定。
 47. `tests/chat/test_chat_reaction_fetch.py::test_chat_fetch_reaction_list_invalid_msg_id`
    以非法消息 ID 批量拉取 reaction 列表，验证错误返回。
 48. `tests/chat/test_chat_reaction_fetch.py::test_chat_fetch_reaction_list_empty_msg_ids`
@@ -168,7 +180,7 @@
    pageSize 过大时查询明细，验证上限边界语义。
 54. `tests/chat/test_chat_reaction_fetch.py::test_chat_remove_reaction_invalid_msg_id`
    另一入口覆盖非法消息 ID 删除 reaction 的异常链路。
-55. `tests/chat/test_chat_reaction_fetch.py::test_chat_add_reaction_too_long_reaction`
+55. `tests/chat/test_chat_reaction_fetch.py::test_chat_add_reaction_too_long_reaction` 【历史记录：该测试函数已删除，不计入当前覆盖】
    reaction 超长输入，验证长度边界错误语义。
 
 ## pinConversation
@@ -179,8 +191,6 @@
 异常 cases
 57. `tests/chat/test_chat_crud.py::test_chat_pin_conversation_nonexistent_conversation`
    对不存在会话置顶，验证错误返回语义。
-58. `tests/chat/test_chat.py::test_chat_pin_conversation_nonexistent_conversation`
-   兼容入口复核不存在会话置顶的错误一致性。
 59. `tests/chat/test_chat_s3_non_message_ops.py::test_chat_pin_conversation_invalid_conv_id`
    会话 ID 非法格式时置顶，验证参数异常语义。
 60. `tests/chat/test_chat_s3_non_message_ops.py::test_chat_pin_conversation_empty_conv_id`
@@ -197,8 +207,6 @@
 异常 cases
 63. `tests/chat/test_chat_crud.py::test_chat_fetch_history_invalid_conversation`
    对无效会话拉取历史消息，按 SDK 参数 `convId/type/startMsgId/direction` 调用并冻结当前返回空 `cursor/list` 语义。
-64. `tests/chat/test_chat.py::test_chat_fetch_history_invalid_conversation`
-   在兼容入口复核无效会话历史查询返回空 `cursor/list` 的一致性。
 65. `tests/chat/test_chat_crud.py::test_chat_fetch_history_by_options_invalid_conversation`
    使用 options 接口查询无效会话，验证异常返回。
 66. `tests/chat/test_chat_s3_non_message_ops.py::test_chat_fetch_history_messages_invalid_conv_id`
@@ -275,9 +283,9 @@
 异常 cases
 87. `tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_msg_ids_empty_msg_ids`
    消息 ID 列表为空时删除，验证空集合参数语义。
-88. `tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_msg_ids_missing_msg_ids`（skip）
+88. `tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_msg_ids_missing_msg_ids`（skip） 【历史记录：该测试函数已删除，不计入当前覆盖】
    缺少 msgIds 参数场景当前为 skip，记录为待环境或端能力补齐。
-89. `tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_msg_ids_missing_conv_id`（skip）
+89. `tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_msg_ids_missing_conv_id`（skip） 【历史记录：该测试函数已删除，不计入当前覆盖】
    缺少 convId 参数场景当前为 skip，保留异常设计位。
 
 ## removeMessagesFromServerWithTs
@@ -289,9 +297,9 @@
 异常 cases
 91. `tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_ts_timestamp_zero`
    时间戳为 0 时删除消息，验证边界时间入参语义。
-92. `tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_ts_missing_timestamp`（skip）
+92. `tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_ts_missing_timestamp`（skip） 【历史记录：该测试函数已删除，不计入当前覆盖】
    缺失 timestamp 参数当前为 skip，保留为待补充异常链路。
-93. `tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_ts_missing_conv_id`（skip）
+93. `tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_ts_missing_conv_id`（skip） 【历史记录：该测试函数已删除，不计入当前覆盖】
    缺失 convId 参数当前为 skip，保留为待补充异常链路。
 
 ## reportMessage
@@ -303,17 +311,17 @@
 异常 cases
 95. `tests/chat/test_chat_s2_server_ops.py::test_chat_report_message_invalid_msg_id`
    举报非法消息 ID，冻结错误码与错误文案语义。
-96. `tests/chat/test_chat_s2_server_ops.py::test_chat_report_message_missing_tag`（skip）
+96. `tests/chat/test_chat_s2_server_ops.py::test_chat_report_message_missing_tag`（skip） 【历史记录：该测试函数已删除，不计入当前覆盖】
    缺失 tag 参数当前为 skip，保留为待补充参数异常场景。
-97. `tests/chat/test_chat_s2_server_ops.py::test_chat_report_message_missing_reason`（skip）
+97. `tests/chat/test_chat_s2_server_ops.py::test_chat_report_message_missing_reason`（skip） 【历史记录：该测试函数已删除，不计入当前覆盖】
    缺失 reason 参数当前为 skip，保留为待补充参数异常场景。
 
 ## searchChatMsgFromDB
 
 正常 cases
-98. `tests/chat/test_chat_search_db.py::test_chat_search_chat_msg_from_db_success`
+98. `tests/chat/test_chat_search_db.py::test_chat_search_chat_msg_from_db_success` 【历史记录：该测试函数已删除，不计入当前覆盖】
    使用数据库检索接口查询消息，验证搜索主链路成功。
-99. `tests/chat/test_chat_crud.py::test_chat_search_chat_msg_from_db_success`
+99. `tests/chat/test_chat_crud.py::test_chat_search_chat_msg_from_db_success` 【历史记录：该测试函数已删除，不计入当前覆盖】
    在 CRUD 套件中复核数据库检索成功语义一致。
 
 异常 cases
@@ -361,9 +369,9 @@
    覆盖图片/视频合并转发消息发送、接收、解析，并验证合并消息内部附件下载和缩略图下载；内部下载进度事件当前实测不是稳定必发，若派发则校验范围，最终成功事件仍 strict 断言；视频内部缩略图按当前实测 `onMessageError 403/Failed to download the file` 断言。
 
 异常 cases
-110. `tests/chat/test_chat_crud.py::test_chat_download_attachment_invalid_id_response`
+110. `tests/chat/test_chat_crud.py::test_chat_download_attachment_invalid_id_response` 【历史记录：该测试函数已删除，不计入当前覆盖】
    无效消息 ID 下载附件，冻结错误语义。
-111. `tests/chat/test_chat_crud.py::test_chat_download_thumbnail_invalid_id_response`
+111. `tests/chat/test_chat_crud.py::test_chat_download_thumbnail_invalid_id_response` 【历史记录：该测试函数已删除，不计入当前覆盖】
    无效消息 ID 下载缩略图，冻结错误语义。
 
 ## EMConversation 本地会话方法
@@ -414,7 +422,7 @@
 群消息回执的正常与边界 case 已迁移到 `tests/group/test_group_message_send.py`，Chat 模块不再重复统计。
 
 ## 统计
-- 当前记录 case 条目总数：`173`
+- 当前记录 case 条目总数：`165`
 
 ## 单聊发送类型覆盖审计（2026-07-23）
 
@@ -491,7 +499,7 @@
    覆盖空文本、特殊字符、250 字符、请求 `from` 与登录用户不一致，以及位置消息送达回执。发送响应、发送成功、接收和送达事件均保留参与者、会话、方向、状态、已读/送达字段及完整 body；不匹配 `from` 实测异步返回 `500 Message is invalid`。
 146. `tests/chat/test_chat_typed_message_pin_flows.py::*` 与 `tests/chat/test_chat_message_pin_boundaries.py::*`
    覆盖位置/自定义消息由收发双方交叉置顶和取消置顶，以及类型消息撤回后置顶边界；按真实模拟器返回，原始发送方执行 pin/unpin 时仅接收方收到 `onMessagePinChanged`，接收方执行 pin/unpin 当前不产生该回调；通过 `fetchPinnedMessages` 校验最终服务端状态，并保留消息类型、方向、状态、已读/送达等字段。
-   当前执行状态：按用户要求，`test_chat_typed_message_pin_and_cross_user_unpin[sender-custom-payload1]` 与 `[receiver-custom-payload1]` 标记为 skip；位置消息两条仍正常执行。自定义消息的历史回调结论待重新确认，暂缓原因与恢复条件见 `CASES_DEFERRED.zh.md`。
+   当前执行状态：按用户要求，`test_chat_typed_message_pin_and_cross_user_unpin[sender-custom-payload1]` 与 `[receiver-custom-payload1]` 标记为 skip；位置消息两条仍正常执行。自定义消息的历史回调结论待重新确认，暂缓原因与恢复条件见 `CASES_DEFERRED.zh.md`。 【历史记录：该测试函数已删除，不计入当前覆盖】
 147. `tests/chat/test_chat_report_and_thumbnail_additional.py::test_chat_receiver_reports_text_message` 与 `test_chat_report_text_message_parameter_boundaries[*]`
    覆盖接收方举报文本消息，并使用有效消息 ID 验证空 `tag`、空 `reason`、异常非空 `tag`：实测分别返回 `205 Invalid parameter`、`true`、`true`，避免被无效消息 ID 的前置错误掩盖。
 148. `tests/chat/test_chat_report_and_thumbnail_additional.py::test_chat_download_thumbnail_for_text_message`
@@ -546,9 +554,9 @@
    A 离线期间 B 添加 Reaction；A 重登收到 `operate=1` 的原始变化事件，严格断言操作者、Reaction、count、自身标记和用户列表，并通过 `fetchReactionList` 确认最终状态。
 171. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_sender_receives_reaction_remove_after_relogin`
    消息已有 Reaction 后 A 离线，B 移除；A 重登事件真实返回 `operate=0/count=0/isAddedBySelf=false/userList=[]`，最终查询返回空 Reaction 列表。
-172. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_message_pin_after_relogin`
+172. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_message_pin_after_relogin` 【历史记录：该测试函数已删除，不计入当前覆盖】
    B 离线期间 A 置顶消息；B 重登收到 `MessagePinOperation.Pin`，严格断言消息、会话和操作者，并通过 `fetchPinnedMessages` 精确确认目标消息。
-173. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_message_unpin_after_relogin`
+173. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_message_unpin_after_relogin` 【历史记录：该测试函数已删除，不计入当前覆盖】
    消息已置顶后 B 离线，A 取消置顶；B 重登收到 `MessagePinOperation.Unpin`，最终置顶列表严格为空。
 
 ## 单聊离线能力扩展专项（5554/5556 实测）
@@ -557,8 +565,6 @@
    参数化覆盖 file/image/video/voice/location/custom。B 离线期间 A 发送消息，B 重登收到同一真实 msgId 后，A 才收到 `onMessagesDelivered`；严格断言各类型 body 和 `hasDeliverAck=true`，媒体只忽略真实动态路径、URL、secret、大小与时间。
 175. `tests/chat/test_chat_offline_message_extended_delivery.py::test_chat_offline_combine_delivery_ack_after_recipient_login`
    使用两条真实源消息构造 combine，固定构造响应/发送成功/B 离线接收/A 送达的 `fileStatus=3/1/3/1`，并断言标题、摘要和兼容文本。
-176. `tests/chat/test_chat_offline_message_extended_delivery.py::test_chat_offline_text_automatic_translation_after_recipient_login`
-   带 `targetLanguages=[zh-Hans]` 的唯一英文文本在 B 离线期间发送；真实服务端返回 `translations.zh-Hans=离线翻译-<suffix>`，B 重登后目标语言和翻译正文一致。
 177. `tests/chat/test_chat_offline_message_extended_delivery.py::test_chat_offline_received_media_downloads_after_recipient_login[*]`
    使用 B 离线回放事件中的原始 file/image/video/voice 消息对象执行下载。附件响应/成功事件固定 `fileStatus=0/1`；image 缩略图下载成功，video 缩略图当前真实返回 `onMessageError 403/Failed to download the file`，按错误语义严格覆盖而非伪造成功。
 178. `tests/chat/test_chat_offline_message_extended_delivery.py::test_chat_offline_mixed_backlog_local_state_after_recipient_login`
@@ -628,6 +634,7 @@
 - `test_chat_offline_message_operations.py::_wait_pin_change`：按用户确认保留 10 秒上限；匹配消息 ID 与 pinOperation 后立即返回，未收到仍失败。其他离线事件超时不变。
 - `test_chat_s423_message_callback_and_combine.py`：发送成功、接收、送达等待由最多 8 次各 20 秒改为总计 20 秒。转发合并消息的视频缩略图下载删除末尾 30 秒 sleep，校验开始响应并等待同一消息的成功／失败终态；成功须 `thumbnailStatus=1`，错误或超时失败，不再把等待结束当作下载成功。
 - 下载范围仍仅为该 case 原先实际执行的视频缩略图，没有恢复其已注释的其他下载操作；旧报告通过不代表下载完成，新断言可能暴露既有下载错误。
+- `test_combine_forward_media_inner_attachment_download` 前置修正：视频显式传入同次发送成功图片的 `body.localPath` 作为 `thumbnailLocalPath`，不硬编码设备路径；发送成功和合并解析后分别检查视频缩略图远端地址非空，最终仍须同 msgId 的下载成功回调。图片仅作缩略图素材，不验证视频首帧生成。本次设备结果及任务状态以 `.doc/specs/chat-case-batch1/tasks.md` 的“合并视频缩略图有效前置”节为准，不能据无设备测试认定 403 已解决。
 - 本地验证：`tests/tools/test_chat_wait_budgets.py` 的虚拟时钟／模拟设备回归 10 passed，覆盖总截止时间、默认预算、匹配即返回、下载失败快速退出及终态校验；`git diff --check` 通过。尚未执行设备 E2E 回归，不将耗时估算记为实测收益。
 
 ### WebSocket 登录状态与类型消息发送人同步（2026-07-16）
@@ -639,3 +646,22 @@
 - RED/GREEN：Flutter bridge 测试修复前得到 `Expected new-user, Actual old-user`；修复后登录缓存、类型消息 `from`、logout 清理和 token 错误 envelope 均通过。
 - 真实验证：新 APK覆盖安装 5554/5556 后，custom 同步消息 `from=test0716user1`，收到 `onMessageSuccess`（服务端 msgId `1574540571509260289`），随后 `translateMessage` 返回 `1 General error`，目标 case 通过；同轮 translation 文件 `3 passed`。
 - 环境说明：随后两次复跑消息 `from` 仍正确，但隔舱 TCP 发送连续两次等不到服务端 ACK，最终返回独立的 `300 Server is unreachable`。该环境错误不属于登录缓存修复，也未固化为翻译预期。
+
+## 语音离线操作附件状态修正（2026-09-15）
+
+`test_chat_offline_message_extended_operations.py` 中语音已读、撤回、属性修改三条用例不再将附件下载状态 SUCCESS 当成发送或离线业务成功条件。fileStatus 必须存在且是合法整数枚举 0/1/2/3；消息状态、类型、时长、消息 ID 关联及业务结果仍严格校验。该三条不证明附件下载成功，下载能力由专项覆盖。发送成功事件的 PENDING 差异已在无设备回归中复现并修正（13 passed）；真实设备回归尚未执行。
+
+### 类型化离线操作复用好友前置（2026-09-15）
+
+离线类型化已读、撤回、媒体属性修改三个参数化函数（共 16 个节点，含上述 3 个 voice 节点）直接复用 ensure_friends，不再重复删除和添加好友。finally 继续恢复双方登录、回调与事件队列，但保留好友关系；其他用例默认清理行为不变。18 项无设备回归通过，真实设备尚未重跑。
+
+### Chat 消息用例统一好友前置（2026-09-15）
+
+所有普通 Chat 消息用例的 A/B 好友关系由 chat/conftest.py::ensure_friends 维护：已建立时查询双方列表后复用，未建立时以唯一 reason 匹配当前用户邀请、接受并等待双端可见。四个离线文件不再重复删除和建立 A/B；_restore_case 仅恢复登录/回调与事件队列，已移除临时 preserve_friendship 开关。_prepare_offline_friend 仍执行清空会话、标记已读、B 离线。test_chat.py 不再覆盖同名 fixture。A/C 分页关系及好友关系专项仍独立准备。
+
+账号生命周期保持原实现：每个 lane 的 pytest session 共用 A/B/C，不是每条 case 创建账号。36 项无设备检查通过，30 个测试函数的 AST 比对确认除好友准备/清理变更外业务逻辑保持不变；Chat 收集成功。批量真实设备回归尚未执行。
+
+
+### 按场景选择好友前置（2026-09-15）
+
+70 个查询/本地操作/参数边界节点、2 个自发消息节点通过 no_friend_setup 免建好友；1 个非好友发送节点同样免建 A/B，改由 nonfriends_ac 保证 A/C 非好友并恢复。会话分页的 A/C 准备改由延迟执行的 friends_ac 负责，finally 之后仍由 fixture 恢复关系和 B 登录。其他消息用例继续使用共享好友前置；用例名称及参数保持不变。与 Contact 修改合并验证：63 项无设备测试通过，744 个业务节点收集结果保持一致；真实设备回归尚未执行。

@@ -18,6 +18,8 @@ import pytest
 # 保证能 import src
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+pytest_plugins = ("src.tools.allure_metadata", "src.tools.relationship_fixtures")
+
 from src.tools.config import get_default_topic, get_topic, has_rest_credentials
 from src.rest_api.user_api import create_users, delete_user
 from src.tools.ws_client import (
@@ -345,17 +347,24 @@ def api(ws_topic: str, ws_device: str | None):
     topic = get_topic(ws_device) if ws_device else ws_topic
 
     def _call(manager: str, cmd: str, info: dict | None = None, **kwargs):
-        req = {"manager": manager, "cmd": cmd, "info": info or {}, "topic": topic, "device": ws_device, **kwargs}
-        resp = ws_request(manager=manager, cmd=cmd, info=info, topic=topic, device=ws_device, **kwargs)
-        _attach_request_response_allure(f"API 请求 {manager}.{cmd}", req, resp)
-        return resp
+        from src.tools.allure_evidence import observe_call
+        return observe_call(ws_device, manager, cmd, info,
+                            lambda: ws_request(manager=manager, cmd=cmd, info=info,
+                                               topic=topic, device=ws_device, **kwargs),
+                            {"topic": topic, **kwargs})
 
     def _call_and_wait_event(manager: str, cmd: str, info: dict | None = None, *, event_type: str, event_timeout: float = None, **kwargs):
         event_timeout = timing_seconds('timeout.event', module='session') if event_timeout is None else event_timeout
-        return ws_request_and_wait_event(
-            manager=manager, cmd=cmd, info=info, topic=topic, device=ws_device,
-            event_type=event_type, event_timeout=event_timeout, **kwargs,
-        )
+        from src.tools.allure_evidence import attach, observe_call
+        from src.tools.allure_steps import business_step, action_title, event_title
+        filters = {"match_event_type": event_type, "timeout": event_timeout}
+        with business_step(action_title(ws_device, manager, cmd) + '，并' + event_title(ws_device, filters)):
+            attach('等待条件', filters)
+            return observe_call(ws_device, manager, cmd, info,
+                                lambda: ws_request_and_wait_event(
+                                    manager=manager, cmd=cmd, info=info, topic=topic, device=ws_device,
+                                    event_type=event_type, event_timeout=event_timeout, **kwargs),
+                                {"topic": topic, **kwargs})
 
     class _API:
         call = staticmethod(_call)
@@ -368,10 +377,11 @@ def _make_api(device: str):
     topic = get_topic(device)
 
     def _call(manager: str, cmd: str, info: dict | None = None, **kwargs):
-        req = {"manager": manager, "cmd": cmd, "info": info or {}, "topic": topic, "device": device, **kwargs}
-        resp = ws_request(manager=manager, cmd=cmd, info=info, topic=topic, device=device, **kwargs)
-        _attach_request_response_allure(f"API 请求 {manager}.{cmd} (device={device})", req, resp)
-        return resp
+        from src.tools.allure_evidence import observe_call
+        return observe_call(device, manager, cmd, info,
+                            lambda: ws_request(manager=manager, cmd=cmd, info=info,
+                                               topic=topic, device=device, **kwargs),
+                            {"topic": topic, **kwargs})
 
     class _API:
         call = staticmethod(_call)

@@ -48,10 +48,13 @@ The capacity-3100 scenario is run as a separate CI job/report directory rather t
 - A process-global selected capacity is safe because pytest executes one scenario per process/job. Parallel scenarios must use separate pytest processes.
 - Existing user changes in `test_group_exceptions_lifecycle.py` must remain intact.
 
-## Testing Strategy
+## Testing Strategy（原实施阶段，当前删除范围见下方2026-09-15更新）
 
 1. Unit-test the capacity state default, valid override and non-positive rejection without contacting test devices.
 2. Run the unit test red before implementation, then green after adding the utility.
 3. Run Group test collection checks and targeted Group helper/lifecycle imports with the default capacity.
 4. Run a small real Group creation subset with `--group-create-max-count=3100` in discovery mode, then strict mode after freezing the returned `maxUserCount=3100` evidence.
 5. Record only commands and non-sensitive results in the Group case ledger.
+
+### 2026-09-15 验证范围更新
+用户要求删除原容量单元测试文件的5个节点。运行时容量选择和参数校验设计保持；原测试执行结果仅为历史证据，不再列为当前可执行验证命令。删除验收使用默认及3100模式collect-only和非正容量参数拒绝检查，不创建真实群。

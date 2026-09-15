@@ -209,6 +209,7 @@ def test_chat_send_and_received(device_a, device_b, assert_api, user_a, user_b):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_send_to_self_event(device_a, assert_api, user_a):
     try:
         device_a.drain_events()
@@ -279,6 +280,7 @@ def test_chat_send_to_self_event(device_a, assert_api, user_a):
 # ======================== Read ========================
 
 
+@pytest.mark.no_friend_setup
 def test_chat_get_message_invalid_id_returns_none(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.getMessage.value, info={"msgId": "__invalid_msg_id__"})
     assert_api.assert_response_matches(
@@ -288,6 +290,7 @@ def test_chat_get_message_invalid_id_returns_none(device_a, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_support_languages_success(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.fetchSupportLanguages.value, info={})
     languages = resp.get("result")
@@ -318,6 +321,7 @@ def test_chat_fetch_support_languages_success(device_a, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_history_invalid_conversation(device_b, assert_api):
     resp = device_b.call(
         "ChatManager",
@@ -339,6 +343,7 @@ def test_chat_fetch_history_invalid_conversation(device_b, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_history_by_options_invalid_conversation(device_a, assert_api):
     resp = device_a.call(
         "ChatManager",
@@ -360,18 +365,6 @@ def test_chat_fetch_history_by_options_invalid_conversation(device_a, assert_api
     )
 
 
-@pytest.mark.skip(reason="MissingPlugin: searchChatMsgFromDB 未在当前集成端实现")
-def test_chat_search_chat_msg_from_db_success(device_a, device_b, assert_api, user_a, user_b):
-    keyword = f"kw-{uuid.uuid4().hex[:6]}"
-    _ = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, keyword))
-    _ = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
-    timing_pause('step.interval', module='chat')
-    resp = device_a.call("ChatManager", Cmd.searchChatMsgFromDB.value, info={"keywords": keyword})
-    assert_api.assert_response_matches(
-        resp,
-        expected={"manager": "ChatManager", "cmd": Cmd.searchChatMsgFromDB.value, "device": "deviceA"},
-        ignore_keys={"sequence"},
-    )
 
 
 # ======================== Update ========================
@@ -428,11 +421,13 @@ def test_chat_translate_message_basic(device_a, device_b, assert_api, user_a, us
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_pin_conversation_nonexistent_conversation(device_a, assert_api):
     resp_pin = device_a.call("ChatManager", Cmd.pinConversation.value, info={"conversationId": "__nonexistent_chat_user__", "isPinned": True})
     assert_api.assert_error(resp_pin, code=107, description="Invalid conversation")
 
 
+@pytest.mark.no_friend_setup
 def test_chat_modify_message_invalid_id_response(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.modifyMessage.value, info={"msgId": "__invalid_msg_id__", "body": {"type": 0, "content": "edit"}})
     assert_api.assert_response_matches(
@@ -598,6 +593,7 @@ def test_chat_ack_message_read_success(device_a, device_b, assert_api, user_a, u
 # ======================== Delete ========================
 
 
+@pytest.mark.no_friend_setup
 def test_chat_recall_message_invalid_id_response(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": "__invalid_msg_id__"})
     assert_api.assert_response_matches(
@@ -607,18 +603,10 @@ def test_chat_recall_message_invalid_id_response(device_a, assert_api):
     )
 
 
-def test_chat_remove_reaction_invalid_id_response(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.removeReaction.value, info={"reaction": "👍", "msgId": "__invalid_msg_id__"})
-    assert_api.assert_response_matches(
-        resp,
-        expected={"manager": "ChatManager", "cmd": Cmd.removeReaction.value, "device": "deviceA", "result": None},
-        ignore_keys={"sequence"},
-    )
-
-
 # ======================== Errors / Edge ========================
 
 
+@pytest.mark.no_friend_setup
 def test_chat_ack_conversation_read_invalid_id_response(device_b, assert_api):
     resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": "__invalid_conversation_id__"})
     assert_api.assert_response_matches(
@@ -633,6 +621,7 @@ def test_chat_ack_conversation_read_invalid_id_response(device_b, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_add_reaction_invalid_id_response(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": "👍", "msgId": "__invalid_msg_id__"})
     assert_api.assert_response_matches(
@@ -661,15 +650,3 @@ def test_chat_add_reaction_empty_reaction_response(device_a, device_b, assert_ap
 
 
 # ======================== Attachments (invalid) ========================
-
-
-@pytest.mark.skip(reason="message 对象入参 API 暂缓；避免 MissingPlugin 非被测端语义")
-def test_chat_download_attachment_invalid_id_response(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.downloadAttachment.value, info={"msgId": "__invalid_msg_id__"})
-    assert_api.assert_error(resp, code=500, description="Message is invalid")
-
-
-@pytest.mark.skip(reason="message 对象入参 API 暂缓；避免 MissingPlugin 非被测端语义")
-def test_chat_download_thumbnail_invalid_id_response(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.downloadThumbnail.value, info={"msgId": "__invalid_msg_id__"})
-    assert_api.assert_error(resp, code=500, description="Message is invalid")

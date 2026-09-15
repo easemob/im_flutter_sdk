@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import pytest
 from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
 from src.tools.case_timing import pause as timing_pause
 from src.tools.case_timing import seconds as timing_seconds
@@ -212,6 +214,7 @@ def test_chat_get_conversation_success(device_a, device_b, assert_api, user_a, u
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_get_conversation_not_exist_without_create(device_a, assert_api):
     resp = device_a.call(
         "ChatManager",
@@ -221,6 +224,7 @@ def test_chat_get_conversation_not_exist_without_create(device_a, assert_api):
     _assert_chat_response(assert_api, resp, Cmd.getConversation.value, "deviceA", None)
 
 
+@pytest.mark.no_friend_setup
 def test_chat_get_conversation_empty_conv_id(device_a, assert_api):
     resp = device_a.call(
         "ChatManager",
@@ -276,6 +280,7 @@ def test_chat_get_unread_count_positive_then_zero(device_a, device_b, assert_api
     _assert_chat_response(assert_api, resp_unread_after, Cmd.getUnreadMessageCount.value, "deviceB", 0)
 
 
+@pytest.mark.no_friend_setup
 def test_chat_mark_all_as_read_idempotent(device_b, assert_api):
     resp_1 = device_b.call("ChatManager", Cmd.markAllChatMsgAsRead.value, info={})
     assert_api.assert_response_matches(
@@ -404,6 +409,7 @@ def test_chat_delete_conversation_existing_then_not_found(device_a, device_b, as
     _assert_chat_response(assert_api, resp_get, Cmd.getConversation.value, "deviceA", None)
 
 
+@pytest.mark.no_friend_setup
 def test_chat_delete_conversation_nonexistent_returns_bool(device_a, assert_api):
     resp = device_a.call(
         "ChatManager",

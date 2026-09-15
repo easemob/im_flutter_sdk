@@ -7,6 +7,7 @@ import uuid
 
 import pytest
 
+from src.tools.response_match import _Matcher
 from src import Cmd
 from src.sdk_api.event_keys import ContactChangeEvent
 from src.test_flow.offline_test_flow import (
@@ -125,12 +126,35 @@ def _assert_contact_event(
     )
 
 
+def _contact_list_matches(expected: list[str]) -> _Matcher:
+    # 好友列表没有顺序约定；排序比较仍会检出重复、额外或缺失的好友。
+    return _Matcher(
+        "eq",
+        lambda actual, wanted: isinstance(actual, list)
+        and all(isinstance(item, str) for item in actual)
+        and sorted(actual) == sorted(wanted),
+        list(expected),
+    )
+
+
+def _contact_baseline(device, *, device_name: str, peer: str) -> list[str]:
+    response = device.call("ContactManager", Cmd.getAllContactsFromServer.value, info={})
+    assert response.get("manager") == "ContactManager"
+    assert response.get("cmd") == Cmd.getAllContactsFromServer.value
+    assert response.get("device") == device_name
+    contacts = response.get("result")
+    assert isinstance(contacts, list) and all(isinstance(item, str) for item in contacts), "好友基线必须是用户 ID 列表"
+    assert peer not in contacts, "前置清理后 A/B 仍是好友"
+    return list(contacts)
+
+
 def _assert_contacts(
     device,
     assert_api,
     *,
     device_name: str,
     expected: list[str],
+    baseline: list[str],
 ) -> None:
     response = device.call(
         "ContactManager",
@@ -142,7 +166,7 @@ def _assert_contacts(
         response,
         cmd=Cmd.getAllContactsFromServer.value,
         device_name=device_name,
-        result=expected,
+        result=_contact_list_matches(baseline + expected),
     )
 
 
@@ -154,8 +178,10 @@ def _prepare_offline_invitation(
     user_a: str,
     user_b: str,
     reason: str,
-) -> dict:
+) -> tuple[list[str], list[str]]:
     _cleanup_relation(device_a, device_b, user_a, user_b)
+    baseline_a = _contact_baseline(device_a, device_name="deviceA", peer=user_b)
+    baseline_b = _contact_baseline(device_b, device_name="deviceB", peer=user_a)
     set_accept_invitation_always(
         device_b,
         assert_api,
@@ -183,7 +209,7 @@ def _prepare_offline_invitation(
         user_id=user_a,
         reason=reason,
     )
-    return invited
+    return baseline_a, baseline_b
 
 
 def _establish_friendship(
@@ -193,8 +219,10 @@ def _establish_friendship(
     *,
     user_a: str,
     user_b: str,
-) -> None:
+) -> tuple[list[str], list[str]]:
     _cleanup_relation(device_a, device_b, user_a, user_b)
+    baseline_a = _contact_baseline(device_a, device_name="deviceA", peer=user_b)
+    baseline_b = _contact_baseline(device_b, device_name="deviceB", peer=user_a)
     set_accept_invitation_always(
         device_b,
         assert_api,
@@ -270,10 +298,11 @@ def _establish_friendship(
         user_id=user_b,
     )
     timing_pause('step.interval', module='contact')
-    _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[user_b])
-    _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[user_a])
+    _assert_contacts(device_a, assert_api, device_name="deviceA", baseline=baseline_a, expected=[user_b])
+    _assert_contacts(device_b, assert_api, device_name="deviceB", baseline=baseline_b, expected=[user_a])
     device_a.drain_events(timeout=timing_seconds('drain.offline', module='contact'))
     device_b.drain_events(timeout=timing_seconds('drain.offline', module='contact'))
+    return baseline_a, baseline_b
 
 
 def test_contact_offline_invitation_received_after_login(
@@ -286,7 +315,7 @@ def test_contact_offline_invitation_received_after_login(
     """B 先离线，A 发起申请；B 登录收到邀请，但双方仍不是好友。"""
     reason = f"offline-invite-{uuid.uuid4().hex[:8]}"
     try:
-        _prepare_offline_invitation(
+        baseline_a, baseline_b = _prepare_offline_invitation(
             device_a,
             device_b,
             assert_api,
@@ -295,8 +324,8 @@ def test_contact_offline_invitation_received_after_login(
             reason=reason,
         )
         timing_pause('step.interval', module='contact')
-        _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
-        _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
+        _assert_contacts(device_a, assert_api, device_name="deviceA", baseline=baseline_a, expected=[])
+        _assert_contacts(device_b, assert_api, device_name="deviceB", baseline=baseline_b, expected=[])
     finally:
         _restore_case_state(device_a, device_b, user_a=user_a, user_b=user_b)
 
@@ -311,7 +340,7 @@ def test_contact_offline_invitation_accept_after_login(
     """B 登录收到离线申请后同意，A 收到接受与联系人新增事件。"""
     reason = f"offline-accept-{uuid.uuid4().hex[:8]}"
     try:
-        _prepare_offline_invitation(
+        baseline_a, baseline_b = _prepare_offline_invitation(
             device_a,
             device_b,
             assert_api,
@@ -363,8 +392,8 @@ def test_contact_offline_invitation_accept_after_login(
             user_id=user_b,
         )
         timing_pause('step.interval', module='contact')
-        _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[user_b])
-        _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[user_a])
+        _assert_contacts(device_a, assert_api, device_name="deviceA", baseline=baseline_a, expected=[user_b])
+        _assert_contacts(device_b, assert_api, device_name="deviceB", baseline=baseline_b, expected=[user_a])
     finally:
         _restore_case_state(device_a, device_b, user_a=user_a, user_b=user_b)
 
@@ -379,7 +408,7 @@ def test_contact_offline_invitation_decline_after_login(
     """B 登录收到离线申请后拒绝，A 收到拒绝事件且双方保持非好友。"""
     reason = f"offline-decline-{uuid.uuid4().hex[:8]}"
     try:
-        _prepare_offline_invitation(
+        baseline_a, baseline_b = _prepare_offline_invitation(
             device_a,
             device_b,
             assert_api,
@@ -411,8 +440,8 @@ def test_contact_offline_invitation_decline_after_login(
             user_id=user_b,
         )
         timing_pause('step.interval', module='contact')
-        _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
-        _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
+        _assert_contacts(device_a, assert_api, device_name="deviceA", baseline=baseline_a, expected=[])
+        _assert_contacts(device_b, assert_api, device_name="deviceB", baseline=baseline_b, expected=[])
     finally:
         _restore_case_state(device_a, device_b, user_a=user_a, user_b=user_b)
 
@@ -427,7 +456,7 @@ def test_contact_offline_requester_receives_accept_after_relogin(
     """B 收到申请后让 A 离线；B 同意，A 重登收到离线接受结果。"""
     reason = f"offline-requester-accept-{uuid.uuid4().hex[:8]}"
     try:
-        _prepare_offline_invitation(
+        baseline_a, baseline_b = _prepare_offline_invitation(
             device_a,
             device_b,
             assert_api,
@@ -486,8 +515,8 @@ def test_contact_offline_requester_receives_accept_after_relogin(
             user_id=user_b,
         )
         timing_pause('step.interval', module='contact')
-        _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[user_b])
-        _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[user_a])
+        _assert_contacts(device_a, assert_api, device_name="deviceA", baseline=baseline_a, expected=[user_b])
+        _assert_contacts(device_b, assert_api, device_name="deviceB", baseline=baseline_b, expected=[user_a])
     finally:
         _restore_case_state(device_a, device_b, user_a=user_a, user_b=user_b)
 
@@ -502,7 +531,7 @@ def test_contact_offline_requester_receives_decline_after_relogin(
     """B 收到申请后让 A 离线；B 拒绝，A 重登收到离线拒绝结果。"""
     reason = f"offline-requester-decline-{uuid.uuid4().hex[:8]}"
     try:
-        _prepare_offline_invitation(
+        baseline_a, baseline_b = _prepare_offline_invitation(
             device_a,
             device_b,
             assert_api,
@@ -541,8 +570,8 @@ def test_contact_offline_requester_receives_decline_after_relogin(
             user_id=user_b,
         )
         timing_pause('step.interval', module='contact')
-        _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
-        _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
+        _assert_contacts(device_a, assert_api, device_name="deviceA", baseline=baseline_a, expected=[])
+        _assert_contacts(device_b, assert_api, device_name="deviceB", baseline=baseline_b, expected=[])
     finally:
         _restore_case_state(device_a, device_b, user_a=user_a, user_b=user_b)
 
@@ -556,7 +585,7 @@ def test_contact_offline_recipient_receives_delete_after_relogin(
 ):
     """B 离线期间 A 删除好友；B 重登收到删除事件且双方关系清空。"""
     try:
-        _establish_friendship(
+        baseline_a, baseline_b = _establish_friendship(
             device_a,
             device_b,
             assert_api,
@@ -604,8 +633,8 @@ def test_contact_offline_recipient_receives_delete_after_relogin(
             user_id=user_a,
         )
         timing_pause('step.interval', module='contact')
-        _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
-        _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
+        _assert_contacts(device_a, assert_api, device_name="deviceA", baseline=baseline_a, expected=[])
+        _assert_contacts(device_b, assert_api, device_name="deviceB", baseline=baseline_b, expected=[])
     finally:
         _restore_case_state(device_a, device_b, user_a=user_a, user_b=user_b)
 
@@ -619,7 +648,7 @@ def test_contact_offline_requester_receives_peer_delete_after_relogin(
 ):
     """A 离线期间 B 删除好友；A 重登收到删除事件且双方关系清空。"""
     try:
-        _establish_friendship(
+        baseline_a, baseline_b = _establish_friendship(
             device_a,
             device_b,
             assert_api,
@@ -667,7 +696,7 @@ def test_contact_offline_requester_receives_peer_delete_after_relogin(
             user_id=user_b,
         )
         timing_pause('step.interval', module='contact')
-        _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
-        _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
+        _assert_contacts(device_a, assert_api, device_name="deviceA", baseline=baseline_a, expected=[])
+        _assert_contacts(device_b, assert_api, device_name="deviceB", baseline=baseline_b, expected=[])
     finally:
         _restore_case_state(device_a, device_b, user_a=user_a, user_b=user_b)

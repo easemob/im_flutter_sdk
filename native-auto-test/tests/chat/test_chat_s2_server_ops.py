@@ -256,6 +256,7 @@ def test_chat_get_conversations_from_server_with_cursor_success(device_a, device
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_get_conversations_from_server_with_cursor_invalid_page_size_zero(device_a, assert_api):
     info = {"cursor": "", "pageSize": 0}
     resp = device_a.call(
@@ -278,6 +279,7 @@ def test_chat_get_conversations_from_server_with_cursor_invalid_page_size_zero(d
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_get_conversations_from_server_with_cursor_invalid_page_size_negative(device_a, assert_api):
     info = {"cursor": "", "pageSize": -1}
     resp = device_a.call(
@@ -378,6 +380,7 @@ def test_chat_fetch_conversations_from_server_with_page_invalid_page_size_zero(d
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_get_pinned_conversations_from_server_with_cursor_success(device_a, assert_api):
     info = {"cursor": "", "pageSize": 20}
     resp = device_a.call(
@@ -400,6 +403,7 @@ def test_chat_get_pinned_conversations_from_server_with_cursor_success(device_a,
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_get_pinned_conversations_from_server_with_cursor_invalid_page_size_zero(device_a, assert_api):
     info = {"cursor": "", "pageSize": 0}
     resp = device_a.call(
@@ -422,6 +426,7 @@ def test_chat_get_pinned_conversations_from_server_with_cursor_invalid_page_size
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_get_pinned_conversations_from_server_with_cursor_invalid_page_size_negative(device_a, assert_api):
     info = {"cursor": "", "pageSize": -1}
     resp = device_a.call(
@@ -455,6 +460,7 @@ def test_chat_delete_remote_conversation_success(device_a, device_b, assert_api,
     _assert_chat_response(assert_api, resp, Cmd.deleteRemoteConversation.value, "deviceA", None)
 
 
+@pytest.mark.no_friend_setup
 def test_chat_delete_remote_conversation_empty_conv_id(device_a):
     resp = device_a.call(
         "ChatManager",
@@ -464,6 +470,7 @@ def test_chat_delete_remote_conversation_empty_conv_id(device_a):
     assert_error(resp, code=303, description="field channel cannot be null or empty")
 
 
+@pytest.mark.no_friend_setup
 def test_chat_delete_remote_conversation_invalid_type(device_a, assert_api):
     resp = device_a.call(
         "ChatManager",
@@ -484,16 +491,9 @@ def test_chat_remove_messages_from_server_with_msg_ids_success(device_a, device_
     _assert_chat_response(assert_api, resp, Cmd.removeMessagesFromServerWithMsgIds.value, "deviceA", None)
 
 
-@pytest.mark.skip(reason="必填缺失类 case 暂缓；当前端易返回 MissingPlugin 非被测端语义")
-def test_chat_remove_messages_from_server_with_msg_ids_missing_msg_ids(device_a, user_b):
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.removeMessagesFromServerWithMsgIds.value,
-        info={"convId": user_b, "type": 0},
-    )
-    assert_error(resp, code=-1, description="MissingPluginException")
 
 
+@pytest.mark.no_friend_setup
 def test_chat_remove_messages_from_server_with_msg_ids_empty_msg_ids(device_a, user_b):
     resp = device_a.call(
         "ChatManager",
@@ -503,16 +503,9 @@ def test_chat_remove_messages_from_server_with_msg_ids_empty_msg_ids(device_a, u
     assert_error(resp, code=110, description="Invalid parameter")
 
 
-@pytest.mark.skip(reason="必填缺失类 case 暂缓；当前端易返回 MissingPlugin 非被测端语义")
-def test_chat_remove_messages_from_server_with_msg_ids_missing_conv_id(device_a):
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.removeMessagesFromServerWithMsgIds.value,
-        info={"type": 0, "msgIds": ["__invalid_msg_id__"]},
-    )
-    assert_error(resp, code=-1, description="MissingPluginException")
 
 
+@pytest.mark.no_friend_setup
 def test_chat_remove_messages_from_server_with_ts_success(device_a, assert_api, user_b):
     resp = device_a.call(
         "ChatManager",
@@ -522,16 +515,9 @@ def test_chat_remove_messages_from_server_with_ts_success(device_a, assert_api, 
     _assert_chat_response(assert_api, resp, Cmd.removeMessagesFromServerWithTs.value, "deviceA", None)
 
 
-@pytest.mark.skip(reason="必填缺失类 case 暂缓；按规则不纳入 strict 批次")
-def test_chat_remove_messages_from_server_with_ts_missing_timestamp(device_a, user_b):
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.removeMessagesFromServerWithTs.value,
-        info={"convId": user_b, "type": 0},
-    )
-    assert_error(resp, code=110, description="Invalid parameter")
 
 
+@pytest.mark.no_friend_setup
 def test_chat_remove_messages_from_server_with_ts_timestamp_zero(device_a, user_b):
     resp = device_a.call(
         "ChatManager",
@@ -541,14 +527,6 @@ def test_chat_remove_messages_from_server_with_ts_timestamp_zero(device_a, user_
     assert_error(resp, code=110, description="Invalid parameter")
 
 
-@pytest.mark.skip(reason="必填缺失类 case 暂缓；当前端易返回 MissingPlugin 非被测端语义")
-def test_chat_remove_messages_from_server_with_ts_missing_conv_id(device_a):
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.removeMessagesFromServerWithTs.value,
-        info={"type": 0, "timestamp": now_ms()},
-    )
-    assert_error(resp, code=-1, description="MissingPluginException")
 
 
 def test_chat_report_message_success(device_a, device_b, assert_api, user_a, user_b):
@@ -562,6 +540,7 @@ def test_chat_report_message_success(device_a, device_b, assert_api, user_a, use
     _assert_chat_response(assert_api, resp, Cmd.reportMessage.value, "deviceA", True)
 
 
+@pytest.mark.no_friend_setup
 def test_chat_report_message_invalid_msg_id(device_a):
     resp = device_a.call(
         "ChatManager",
@@ -569,23 +548,3 @@ def test_chat_report_message_invalid_msg_id(device_a):
         info={"msgId": "__invalid_msg_id__", "tag": "spam", "reason": "invalid-message"},
     )
     assert_error(resp, code=500, description="message id is invalid")
-
-
-@pytest.mark.skip(reason="必填缺失类 case 暂缓；当前端易返回 MissingPlugin 非被测端语义")
-def test_chat_report_message_missing_tag(device_a):
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.reportMessage.value,
-        info={"msgId": "__invalid_msg_id__", "reason": "missing-tag"},
-    )
-    assert_error(resp, code=-1, description="MissingPluginException")
-
-
-@pytest.mark.skip(reason="必填缺失类 case 暂缓；当前端易返回 MissingPlugin 非被测端语义")
-def test_chat_report_message_missing_reason(device_a):
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.reportMessage.value,
-        info={"msgId": "__invalid_msg_id__", "tag": "spam"},
-    )
-    assert_error(resp, code=-1, description="MissingPluginException")

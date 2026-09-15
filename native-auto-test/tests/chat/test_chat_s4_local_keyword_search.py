@@ -218,6 +218,7 @@ def test_chat_load_conversation_messages_with_keyword_success(device_a, device_b
     _assert_delivery_event(device_a, assert_api, msg_id=real_id, user_a=user_a, user_b=user_b, content=content)
 
 
+@pytest.mark.no_friend_setup
 def test_chat_load_conversation_messages_with_keyword_no_hit(device_a, assert_api, user_a):
     keyword = f"kw_no_hit_{uuid.uuid4().hex[:10]}"
     resp = device_a.call(

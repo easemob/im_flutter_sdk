@@ -377,9 +377,7 @@ def test_group_duplicate_join_application_keeps_single_pending_request(
 @pytest.mark.parametrize(
     ("first_action", "second_action"),
     [
-        pytest.param("accept", "accept", id="accept-twice", marks=pytest.mark.skip(reason="按用户要求暂缓：本轮标记 ❌ 的失败用例，待确认后恢复")),
         pytest.param("decline", "decline", id="decline-twice"),
-        pytest.param("accept", "decline", id="accept-then-decline"),
         pytest.param("decline", "accept", id="decline-then-accept"),
     ],
 )
@@ -501,14 +499,6 @@ def test_group_join_application_cannot_be_processed_twice(
     [
         pytest.param(False, "accept", id="member-accept"),
         pytest.param(False, "decline", id="member-decline"),
-        pytest.param(
-            True,
-            "accept",
-            marks=pytest.mark.skip(
-                reason="known Android SDK bug: admin accepter is reported as group owner",
-            ),
-            id="admin-accept",
-        ),
         pytest.param(True, "decline", id="admin-decline"),
     ],
 )

@@ -19,7 +19,6 @@ from tests.chat.test_chat_offline_message_delivery import (
     _assert_call,
     _assert_received_message,
     _assert_send_response_and_success,
-    _establish_friendship,
     _restore_case,
     _wait_message_event,
 )
@@ -438,9 +437,6 @@ def test_chat_offline_sender_receives_message_read_after_relogin(
     """A 离线期间 B 回执单条已读；A 重登收到目标 onMessagesRead。"""
     content = f"offline-read-{uuid.uuid4().hex[:8]}"
     try:
-        _establish_friendship(
-            device_a, device_b, assert_api, user_a=user_a, user_b=user_b
-        )
         timing_pause('step.interval', module='chat')
         real_id = _send_online_text(
             device_a,
@@ -524,9 +520,6 @@ def test_chat_offline_recipient_receives_recall_after_relogin(
     """B 已收消息后离线，A 撤回；B 重登收到目标撤回信息。"""
     content = f"offline-recall-{uuid.uuid4().hex[:8]}"
     try:
-        _establish_friendship(
-            device_a, device_b, assert_api, user_a=user_a, user_b=user_b
-        )
         timing_pause('step.interval', module='chat')
         real_id = _send_online_text(
             device_a,
@@ -641,9 +634,6 @@ def test_chat_offline_recipient_receives_content_change_after_relogin(
     old_content = f"offline-modify-old-{uuid.uuid4().hex[:6]}"
     new_content = f"offline-modify-new-{uuid.uuid4().hex[:6]}"
     try:
-        _establish_friendship(
-            device_a, device_b, assert_api, user_a=user_a, user_b=user_b
-        )
         timing_pause('step.interval', module='chat')
         real_id = _send_online_text(
             device_a,
@@ -782,9 +772,6 @@ def test_chat_offline_sender_receives_conversation_read_after_relogin(
     """A 离线期间 B 回执会话已读；A 重登只接受 onConversationRead。"""
     content = f"offline-conversation-read-{uuid.uuid4().hex[:8]}"
     try:
-        _establish_friendship(
-            device_a, device_b, assert_api, user_a=user_a, user_b=user_b
-        )
         timing_pause('step.interval', module='chat')
         _send_online_text(
             device_a,
@@ -845,9 +832,6 @@ def test_chat_offline_sender_receives_reaction_add_after_relogin(
     reaction = f"offline_add_{uuid.uuid4().hex[:6]}"
     content = f"offline-reaction-add-{uuid.uuid4().hex[:8]}"
     try:
-        _establish_friendship(
-            device_a, device_b, assert_api, user_a=user_a, user_b=user_b
-        )
         timing_pause('step.interval', module='chat')
         real_id = _send_online_text(
             device_a,
@@ -926,9 +910,6 @@ def test_chat_offline_sender_receives_reaction_remove_after_relogin(
     reaction = f"offline_remove_{uuid.uuid4().hex[:6]}"
     content = f"offline-reaction-remove-{uuid.uuid4().hex[:8]}"
     try:
-        _establish_friendship(
-            device_a, device_b, assert_api, user_a=user_a, user_b=user_b
-        )
         timing_pause('step.interval', module='chat')
         real_id = _send_online_text(
             device_a,
@@ -1024,216 +1005,6 @@ def test_chat_offline_sender_receives_reaction_remove_after_relogin(
             device_name="deviceA",
             real_id=real_id,
             reactions=[],
-        )
-    finally:
-        _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
-
-
-@pytest.mark.skip(reason="按用户要求暂缓：本轮标记 ❌ 的失败用例，待确认后恢复")
-def test_chat_offline_recipient_receives_message_pin_after_relogin(
-    device_a,
-    device_b,
-    assert_api,
-    user_a,
-    user_b,
-):
-    """B 离线期间 A 置顶消息；B 重登收到置顶事件和最终置顶消息。"""
-    content = f"offline-pin-{uuid.uuid4().hex[:8]}"
-    real_id = None
-    try:
-        _establish_friendship(
-            device_a, device_b, assert_api, user_a=user_a, user_b=user_b
-        )
-        timing_pause('step.interval', module='chat')
-        _clear_pinned_messages(device_a, device_b, conv_id=user_b)
-        timing_pause('step.interval', module='chat')
-        real_id = _send_online_text(
-            device_a,
-            device_b,
-            assert_api,
-            user_a=user_a,
-            user_b=user_b,
-            content=content,
-        )
-        device_b.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
-        logout_for_offline(device_b, assert_api, device_name="deviceB", module='chat')
-        pinned = device_a.call(
-            "ChatManager",
-            Cmd.pinMessage.value,
-            info={"msgId": real_id},
-        )
-        _assert_call(
-            assert_api,
-            pinned,
-            manager="ChatManager",
-            cmd=Cmd.pinMessage.value,
-            device_name="deviceA",
-            result=None,
-        )
-        login_preserving_offline_events(
-            device_b,
-            assert_api,
-            device_name="deviceB",
-            user_id=user_b,
-            module='chat',
-        )
-        changed = _wait_pin_change(
-            device_b,
-            real_id=real_id,
-            operation="MessagePinOperation.Pin",
-        )
-        _assert_pin_change(
-            assert_api,
-            changed,
-            real_id=real_id,
-            conversation_id=user_a,
-            operation="MessagePinOperation.Pin",
-            operator_id=user_a,
-        )
-        timing_pause('step.interval', module='chat')
-        fetched = _wait_pinned_messages(
-            device_b,
-            conv_id=user_a,
-            real_id=real_id,
-            present=True,
-        )
-        _assert_pinned_text_state(
-            assert_api,
-            fetched,
-            real_id=real_id,
-            user_a=user_a,
-            user_b=user_b,
-            content=content,
-        )
-    finally:
-        if real_id:
-            try:
-                device_a.call(
-                    "ChatManager",
-                    Cmd.unpinMessage.value,
-                    info={"msgId": real_id},
-                )
-            except Exception:
-                pass
-        _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
-
-
-@pytest.mark.skip(reason="按用户要求暂缓：本轮标记 ❌ 的失败用例，待确认后恢复")
-def test_chat_offline_recipient_receives_message_unpin_after_relogin(
-    device_a,
-    device_b,
-    assert_api,
-    user_a,
-    user_b,
-):
-    """消息已置顶，B 离线期间 A 取消置顶；B 重登收到取消事件。"""
-    content = f"offline-unpin-{uuid.uuid4().hex[:8]}"
-    try:
-        _establish_friendship(
-            device_a, device_b, assert_api, user_a=user_a, user_b=user_b
-        )
-        timing_pause('step.interval', module='chat')
-        _clear_pinned_messages(device_a, device_b, conv_id=user_b)
-        timing_pause('step.interval', module='chat')
-        real_id = _send_online_text(
-            device_a,
-            device_b,
-            assert_api,
-            user_a=user_a,
-            user_b=user_b,
-            content=content,
-        )
-        timing_pause('step.interval', module='chat')
-        pinned = device_a.call(
-            "ChatManager",
-            Cmd.pinMessage.value,
-            info={"msgId": real_id},
-        )
-        _assert_call(
-            assert_api,
-            pinned,
-            manager="ChatManager",
-            cmd=Cmd.pinMessage.value,
-            device_name="deviceA",
-            result=None,
-        )
-        pin_event = _wait_pin_change(
-            device_b,
-            real_id=real_id,
-            operation="MessagePinOperation.Pin",
-        )
-        _assert_pin_change(
-            assert_api,
-            pin_event,
-            real_id=real_id,
-            conversation_id=user_a,
-            operation="MessagePinOperation.Pin",
-            operator_id=user_a,
-        )
-        timing_pause('step.interval', module='chat')
-        initial_state = _wait_pinned_messages(
-            device_b,
-            conv_id=user_a,
-            real_id=real_id,
-            present=True,
-        )
-        _assert_pinned_text_state(
-            assert_api,
-            initial_state,
-            real_id=real_id,
-            user_a=user_a,
-            user_b=user_b,
-            content=content,
-        )
-        device_b.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
-        logout_for_offline(device_b, assert_api, device_name="deviceB", module='chat')
-        unpinned = device_a.call(
-            "ChatManager",
-            Cmd.unpinMessage.value,
-            info={"msgId": real_id},
-        )
-        _assert_call(
-            assert_api,
-            unpinned,
-            manager="ChatManager",
-            cmd=Cmd.unpinMessage.value,
-            device_name="deviceA",
-            result=None,
-        )
-        login_preserving_offline_events(
-            device_b,
-            assert_api,
-            device_name="deviceB",
-            user_id=user_b,
-            module='chat',
-        )
-        changed = _wait_pin_change(
-            device_b,
-            real_id=real_id,
-            operation="MessagePinOperation.Unpin",
-        )
-        _assert_pin_change(
-            assert_api,
-            changed,
-            real_id=real_id,
-            conversation_id=user_a,
-            operation="MessagePinOperation.Unpin",
-            operator_id=user_a,
-        )
-        timing_pause('step.interval', module='chat')
-        fetched = _wait_pinned_messages(
-            device_b,
-            conv_id=user_a,
-            real_id=real_id,
-            present=False,
-        )
-        _assert_call(
-            assert_api,
-            fetched,
-            manager="ChatManager",
-            cmd=Cmd.fetchPinnedMessages.value,
-            device_name="deviceB",
-            result=[],
         )
     finally:
         _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)

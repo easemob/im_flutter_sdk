@@ -10,12 +10,10 @@ import uuid
 import pytest
 
 from src import Cmd, ne
-from src.sdk_api.event_keys import ContactChangeEvent
 from src.test_flow.offline_test_flow import (
     login_preserving_offline_events,
     logout_for_offline,
     restore_user_login,
-    set_accept_invitation_always,
 )
 
 
@@ -100,114 +98,6 @@ def _assert_call(assert_api, response: dict, *, manager: str, cmd: str,
     )
 
 
-def _cleanup_relation(device_a, device_b, user_a: str, user_b: str) -> None:
-    for device, target in ((device_a, user_b), (device_b, user_a)):
-        try:
-            device.call(
-                "ContactManager",
-                Cmd.deleteContact.value,
-                info={"userId": target, "keepConversation": True},
-            )
-        except Exception:
-            pass
-        try:
-            device.call(
-                "ContactManager",
-                Cmd.removeUserFromBlockList.value,
-                info={"userId": target},
-            )
-        except Exception:
-            pass
-    device_a.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
-    device_b.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
-
-
-def _establish_friendship(
-    device_a,
-    device_b,
-    assert_api,
-    *,
-    user_a: str,
-    user_b: str,
-) -> None:
-    _cleanup_relation(device_a, device_b, user_a, user_b)
-    set_accept_invitation_always(
-        device_b,
-        assert_api,
-        device_name="deviceB",
-        enabled=False,
-    )
-    timing_pause('step.interval', module='chat')
-    reason = f"offline-chat-friend-{uuid.uuid4().hex[:8]}"
-    add = device_a.call(
-        "ContactManager",
-        Cmd.addContact.value,
-        info={"userId": user_b, "reason": reason},
-    )
-    _assert_call(
-        assert_api,
-        add,
-        manager="ContactManager",
-        cmd=Cmd.addContact.value,
-        device_name="deviceA",
-        result=user_b,
-    )
-    invited = device_b.receive_message(
-        match_event_type=ContactChangeEvent.INVITED.value,
-        timeout=timing_seconds('timeout.message', module='chat'),
-    )
-    assert_api.assert_response_matches(
-        invited,
-        expected={
-            "type": "event",
-            "eventType": ContactChangeEvent.INVITED.value,
-            "data": {"userId": user_a, "reason": reason},
-        },
-        ignore_keys={"timestamp", "sequence"},
-    )
-    timing_pause('step.interval', module='chat')
-    accept = device_b.call(
-        "ContactManager",
-        Cmd.acceptInvitation.value,
-        info={"userId": user_a},
-    )
-    _assert_call(
-        assert_api,
-        accept,
-        manager="ContactManager",
-        cmd=Cmd.acceptInvitation.value,
-        device_name="deviceB",
-        result=user_a,
-    )
-    accepted = device_a.receive_message(
-        match_event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
-        timeout=timing_seconds('timeout.message', module='chat'),
-    )
-    assert_api.assert_response_matches(
-        accepted,
-        expected={
-            "type": "event",
-            "eventType": ContactChangeEvent.INVITATION_ACCEPTED.value,
-            "data": {"userId": user_b},
-        },
-        ignore_keys={"timestamp", "sequence"},
-    )
-    added = device_a.receive_message(
-        match_event_type=ContactChangeEvent.CONTACT_ADD.value,
-        timeout=timing_seconds('timeout.message', module='chat'),
-    )
-    assert_api.assert_response_matches(
-        added,
-        expected={
-            "type": "event",
-            "eventType": ContactChangeEvent.CONTACT_ADD.value,
-            "data": {"userId": user_b},
-        },
-        ignore_keys={"timestamp", "sequence"},
-    )
-    device_a.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
-    device_b.drain_events(timeout=timing_seconds('drain.offline', module='chat'))
-
 
 def _restore_case(
     device_a,
@@ -216,9 +106,9 @@ def _restore_case(
     user_a: str,
     user_b: str,
 ) -> None:
+    """恢复登录和回调、清空事件；好友关系由 ensure_friends 维护。"""
     restore_user_login(device_a, user_id=user_a, module='chat')
     restore_user_login(device_b, user_id=user_b, module='chat')
-    _cleanup_relation(device_a, device_b, user_a, user_b)
 
 
 def _prepare_offline_friend(
@@ -229,13 +119,7 @@ def _prepare_offline_friend(
     user_a: str,
     user_b: str,
 ) -> None:
-    _establish_friendship(
-        device_a,
-        device_b,
-        assert_api,
-        user_a=user_a,
-        user_b=user_b,
-    )
+    """复用好友前置，仅准备接收方会话及离线状态。"""
     conversation = {"convId": user_a, "type": 0}
     timing_pause('step.interval', module='chat')
     clear = device_b.call(
@@ -687,9 +571,6 @@ def test_chat_offline_combine_message_received_after_login(
     summary = "two offline source messages"
     compatible_text = "offline combine compatible"
     try:
-        _establish_friendship(
-            device_a, device_b, assert_api, user_a=user_a, user_b=user_b
-        )
         source_ids = []
         for index in range(2):
             content = f"offline-combine-source-{index}-{uuid.uuid4().hex[:6]}"

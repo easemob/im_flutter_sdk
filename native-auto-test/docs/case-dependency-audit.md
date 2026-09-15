@@ -1,8 +1,8 @@
 # 全业务 case 依赖边界盘点
 
-范围：八模块所有 test_* 函数及可解析的本地/导入 helper；参数化分支按源码分支审阅，不代表设备执行结果。状态唯一来源为 `.doc/specs/shared-runtime-config/tasks.md` 第 12 节。
+范围：八模块所有 test_* 函数及可解析的本地/导入 helper；参数化分支按源码分支审阅，不代表设备执行结果。依赖审计历史状态见 `.doc/specs/shared-runtime-config/tasks.md` 第 12 节；2026-09-15 删除精简状态见 `.doc/specs/release-test-automation/tasks.md` 的“用例精简”章节。
 
-总计 543 个测试函数（不展开参数化组合）：chat=205, chatroom=70, client=11, contact=37, group=191, presence=10, push=7, user_info=12；其中 61 个测试函数通过调用图到达公共离线重登。
+当前总计 496 个测试函数（不展开参数化组合）：chat=179, chatroom=68, client=11, contact=34, group=177, presence=10, push=6, user_info=11。已删除显式 skip/xfail 项；下方操作链为保留用例的历史静态审计，不表示运行覆盖，离线可达数量需重新审计。
 
 本索引的操作链/边界沿用第 12 节审计；第 13 节仅迁移时间词汇和显式 module，默认预算与操作链不变。下列等待列表是语义标签（包含共享 helper），不是可直接复制的完整调用表达式；配置以 `case-timing-inventory.md` 为准。
 
@@ -17,18 +17,12 @@
 ## 登录入口结论
 
 - Chat/Contact/Group 离线回放通过公共 offline flow；Contact 三条邀请用例经 `_prepare_offline_invitation`，Group 角色/配置/文件经 `_relogin_b`，不能只数测试函数内的直接调用。
-- Client 离线同步和 Contact 好友同步直接登录已显式暂停；五个 `_switch_user` 是角色/账号切换，退出到登录已有 3 秒，不能额外 drain 离线回放。
+- Client 离线同步直接登录已显式暂停；原 Contact 好友同步 xfail 用例已删除；五个 `_switch_user` 是角色/账号切换，退出到登录已有 3 秒，不能额外 drain 离线回放。
 - Presence/Push/UserInfo/ChatRoom 无接收方退出重登回放链；检查普通状态传播和加入后角色管理依赖。fixture 初始登录、错误密码/token 边界及 finally 恢复不作为离线回放。
 
 ## 每例索引
 
 以下列出调用图内的业务命令与等待键；包含被调用 helper 的备用分支和清理路径，仅用于源码定位，不表示每次运行都会执行所有项。无命令项为纯配置/模型或占位测试。
-
-### `tests/chat/test_chat.py::test_chat_ack_conversation_read_invalid_id_response`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`ackConversationRead`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
 
 ### `tests/chat/test_chat.py::test_chat_add_reaction_empty_reaction_response`
 
@@ -36,64 +30,10 @@
 - 业务命令：`addReaction`, `sendMessage`。
 - 等待：`'step.interval'`。
 
-### `tests/chat/test_chat.py::test_chat_add_reaction_invalid_id_response`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`addReaction`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chat/test_chat.py::test_chat_fetch_history_invalid_conversation`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`fetchHistoryMessages`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chat/test_chat.py::test_chat_get_message_invalid_id_returns_none_or_error`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`getMessage`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chat/test_chat.py::test_chat_history_attach_lang_smoke_exists`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：无 device.call；纯配置/模型/占位路径。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chat/test_chat.py::test_chat_modify_message_invalid_id_response`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`modifyMessage`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chat/test_chat.py::test_chat_pin_conversation_nonexistent_conversation`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`pinConversation`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chat/test_chat.py::test_chat_recall_message_invalid_id_response`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`recallMessage`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
 ### `tests/chat/test_chat.py::test_chat_send_to_self_should_not_succeed`
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
 - 业务命令：`sendMessage`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chat/test_chat.py::test_chat_translate_message_nonexistent_message`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`translateMessage`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chat/test_chat.py::test_chat_translate_recall_smoke_exists`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：无 device.call；纯配置/模型/占位路径。
 - 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
 
 ### `tests/chat/test_chat_ack_read_strict.py::test_chat_ack_message_read_invalid_msg_id`
@@ -198,18 +138,6 @@
 - 业务命令：`addReaction`。
 - 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
 
-### `tests/chat/test_chat_crud.py::test_chat_download_attachment_invalid_id_response`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`downloadAttachment`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chat/test_chat_crud.py::test_chat_download_thumbnail_invalid_id_response`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`downloadThumbnail`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
 ### `tests/chat/test_chat_crud.py::test_chat_fetch_history_by_options_invalid_conversation`
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
@@ -251,18 +179,6 @@
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
 - 业务命令：`recallMessage`。
 - 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chat/test_chat_crud.py::test_chat_remove_reaction_invalid_id_response`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`removeReaction`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chat/test_chat_crud.py::test_chat_search_chat_msg_from_db_success`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`searchChatMsgFromDB`, `sendMessage`。
-- 等待：`'step.interval'`。
 
 ### `tests/chat/test_chat_crud.py::test_chat_send_and_received`
 
@@ -552,11 +468,6 @@
 - 业务命令：`acceptInvitation`, `addContact`, `clearAllMessages`, `cmd`, `deleteContact`, `getCurrentUser`, `login`, `logout`, `markAllMessagesAsRead`, `removeUserFromBlockList`, `sendMessageWithType`, `startCallback`, `updateAcceptInvitationAlways`。
 - 等待：`'settle.offline'`, `'step.interval'`。
 
-### `tests/chat/test_chat_offline_message_extended_delivery.py::test_chat_offline_text_automatic_translation_after_recipient_login`
-
-- 登录前离线等待：公共 helper 3 秒（包含嵌套入口）。
-- 业务命令：`acceptInvitation`, `addContact`, `clearAllMessages`, `deleteContact`, `getCurrentUser`, `login`, `logout`, `markAllMessagesAsRead`, `removeUserFromBlockList`, `sendMessageWithType`, `startCallback`, `updateAcceptInvitationAlways`。
-- 等待：`'settle.offline'`, `'step.interval'`。
 
 ### `tests/chat/test_chat_offline_message_extended_delivery.py::test_chat_offline_typed_delivery_ack_after_recipient_login`
 
@@ -618,18 +529,6 @@
 - 业务命令：`acceptInvitation`, `addContact`, `deleteContact`, `getCurrentUser`, `getMessage`, `login`, `logout`, `modifyMessage`, `removeUserFromBlockList`, `sendMessageWithType`, `startCallback`, `updateAcceptInvitationAlways`。
 - 等待：`'settle.offline'`, `'step.interval'`。
 
-### `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_message_pin_after_relogin`
-
-- 登录前离线等待：公共 helper 3 秒（包含嵌套入口）。
-- 业务命令：`acceptInvitation`, `addContact`, `deleteContact`, `fetchPinnedMessages`, `getCurrentUser`, `login`, `logout`, `pinMessage`, `removeUserFromBlockList`, `sendMessageWithType`, `startCallback`, `unpinMessage`, `updateAcceptInvitationAlways`。
-- 等待：`'settle.offline'`, `'step.interval'`, `timing_seconds('poll.interval')`, `timing_seconds('settle.local_projection')`。
-
-### `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_message_unpin_after_relogin`
-
-- 登录前离线等待：公共 helper 3 秒（包含嵌套入口）。
-- 业务命令：`acceptInvitation`, `addContact`, `deleteContact`, `fetchPinnedMessages`, `getCurrentUser`, `login`, `logout`, `pinMessage`, `removeUserFromBlockList`, `sendMessageWithType`, `startCallback`, `unpinMessage`, `updateAcceptInvitationAlways`。
-- 等待：`'settle.offline'`, `'step.interval'`, `timing_seconds('poll.interval')`, `timing_seconds('settle.local_projection')`。
-
 ### `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_recall_after_relogin`
 
 - 登录前离线等待：公共 helper 3 秒（包含嵌套入口）。
@@ -667,12 +566,6 @@
 - 等待：`'step.interval'`, `timing_seconds('settle.normal')`。
 
 ### `tests/chat/test_chat_reaction_fetch.py::test_chat_add_reaction_special_char_reaction`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`addReaction`, `sendMessage`。
-- 等待：`'step.interval'`。
-
-### `tests/chat/test_chat_reaction_fetch.py::test_chat_add_reaction_too_long_reaction`
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
 - 业务命令：`addReaction`, `sendMessage`。
@@ -936,35 +829,11 @@
 - 业务命令：`removeMessagesFromServerWithMsgIds`。
 - 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
 
-### `tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_msg_ids_missing_conv_id`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`removeMessagesFromServerWithMsgIds`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_msg_ids_missing_msg_ids`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`removeMessagesFromServerWithMsgIds`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
 ### `tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_msg_ids_success`
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
 - 业务命令：`removeMessagesFromServerWithMsgIds`, `sendMessage`。
 - 等待：`'step.interval'`。
-
-### `tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_ts_missing_conv_id`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`removeMessagesFromServerWithTs`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_ts_missing_timestamp`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`removeMessagesFromServerWithTs`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
 
 ### `tests/chat/test_chat_s2_server_ops.py::test_chat_remove_messages_from_server_with_ts_success`
 
@@ -979,18 +848,6 @@
 - 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
 
 ### `tests/chat/test_chat_s2_server_ops.py::test_chat_report_message_invalid_msg_id`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`reportMessage`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chat/test_chat_s2_server_ops.py::test_chat_report_message_missing_reason`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`reportMessage`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chat/test_chat_s2_server_ops.py::test_chat_report_message_missing_tag`
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
 - 业务命令：`reportMessage`。
@@ -1128,12 +985,6 @@
 - 业务命令：`modifyMessage`, `sendMessageWithType`。
 - 等待：`timing_seconds('settle.normal')`。
 
-### `tests/chat/test_chat_search_db.py::test_chat_search_chat_msg_from_db_success`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`searchChatMsgFromDB`, `sendMessage`。
-- 等待：`'step.interval'`。
-
 ### `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_cmd_received_by_cmd_callback`
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
@@ -1193,12 +1044,6 @@
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
 - 业务命令：`sendMessage`。
 - 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chat/test_chat_typed_message_pin_flows.py::test_chat_typed_message_pin_and_cross_user_unpin`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`fetchPinnedMessages`, `pinMessage`, `sendMessageWithType`, `unpinMessage`。
-- 等待：`'step.interval'`, `timing_seconds('settle.local_projection')`。
 
 ### `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_delete_local_and_server_messages_by_time`
 
@@ -1362,12 +1207,6 @@
 - 业务命令：`joinChatRoom`。
 - 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
 
-### `tests/chatroom/test_chatroom_exceptions.py::test_chatroom_join_room_nonexistent_current_behavior`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`joinChatRoom`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
 ### `tests/chatroom/test_chatroom_exceptions.py::test_chatroom_leave_room_empty_id`
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
@@ -1391,12 +1230,6 @@
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
 - 业务命令：`createChatRoom`。
 - 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/chatroom/test_chatroom_lifecycle.py::test_chatroom_destroy_room_success`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`destroyChatRoom`。
-- 等待：`'step.interval'`。
 
 ### `tests/chatroom/test_chatroom_lifecycle.py::test_chatroom_fetch_room_info_from_server_after_destroy`
 
@@ -1800,11 +1633,6 @@
 - 业务命令：`fetchAllContactIds`。
 - 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
 
-### `tests/contact/test_contact.py::test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`acceptInvitation`, `addContact`, `deleteContact`, `fetchAllContacts`, `fetchContacts`, `getAllContacts`, `getAllContactsFromServer`, `getContact`, `setContactRemark`。
-- 等待：`'step.interval'`。
 
 ### `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_exceeds_50`
 
@@ -1818,11 +1646,6 @@
 - 业务命令：`fetchContacts`。
 - 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
 
-### `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_zero`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`fetchContacts`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
 
 ### `tests/contact/test_contact.py::test_contact_get_all_contact_ids`
 
@@ -1950,12 +1773,6 @@
 - 业务命令：`getSelfIdsOnOtherPlatform`。
 - 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
 
-### `tests/contact/test_friend_info_sync.py::test_friend_info_auto_sync_after_login`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`login`, `logout`。
-- 等待：`'settle.offline'`。
-
 ### `tests/contact/test_friend_info_sync.py::test_friend_info_sync_on_peer_metadata_change`
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
@@ -1985,30 +1802,6 @@
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
 - 业务命令：`blockGroup`, `createGroup`, `destroyGroup`, `getGroupWithId`, `unblockGroup`。
 - 等待：`'step.interval'`。
-
-### `tests/group/test_group_capacity.py::test_group_capacity_defaults_to_200_and_accepts_3100_override`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：无 device.call；纯配置/模型/占位路径。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/group/test_group_capacity.py::test_group_capacity_rejects_non_positive_values`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：无 device.call；纯配置/模型/占位路径。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/group/test_group_capacity.py::test_group_options_use_active_capacity_unless_boundary_value_is_explicit`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：无 device.call；纯配置/模型/占位路径。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/group/test_group_capacity.py::test_group_snapshot_default_uses_active_capacity`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：无 device.call；纯配置/模型/占位路径。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
 
 ### `tests/group/test_group_chat_thread_remaining_api_coverage.py::test_chat_thread_destroy_event_received_by_group_member`
 
@@ -2112,12 +1905,6 @@
 - 业务命令：`getJoinedGroupsFromServer`。
 - 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
 
-### `tests/group/test_group_exceptions_joined_groups.py::test_group_get_joined_groups_with_extra_info_fields`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`getJoinedGroups`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
 ### `tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs`
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
@@ -2182,12 +1969,6 @@
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
 - 业务命令：`getGroupWithId`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/group/test_group_exceptions_member_attributes.py::test_group_fetch_member_attributes_nonexistent_group`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`fetchMemberAttributesFromGroup`。
 - 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
 
 ### `tests/group/test_group_exceptions_member_attributes.py::test_group_fetch_members_attributes_nonexistent_group`
@@ -2304,12 +2085,6 @@
 - 业务命令：`createGroup`, `destroyGroup`, `updateGroupSubject`。
 - 等待：`'step.interval'`。
 
-### `tests/group/test_group_exceptions_public_groups_count.py::test_group_fetch_joined_group_count_with_extra_info`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`fetchJoinedGroupCount`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
 ### `tests/group/test_group_exceptions_public_groups_count.py::test_group_get_public_groups_from_server_invalid_paging`
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
@@ -2362,12 +2137,6 @@
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
 - 业务命令：`action`, `createGroup`, `destroyGroup`, `getGroupSpecificationFromServer`, `updateAutoAcceptGroupInvitationSetting`。
-- 等待：`'step.interval'`。
-
-### `tests/group/test_group_invitation_state_matrix.py::test_group_invitation_wrong_inviter_does_not_consume_pending`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`acceptInvitationFromGroup`, `command`, `createGroup`, `destroyGroup`, `getGroupSpecificationFromServer`, `updateAutoAcceptGroupInvitationSetting`。
 - 等待：`'step.interval'`。
 
 ### `tests/group/test_group_inviter.py::test_group_inviter_user_success`
@@ -2452,12 +2221,6 @@
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
 - 业务命令：`acceptInvitationFromGroup`, `createGroup`, `destroyGroup`, `getGroupSpecificationFromServer`, `updateAutoAcceptGroupInvitationSetting`。
-- 等待：`'step.interval'`。
-
-### `tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_explicit_decline_when_auto_accept_disabled`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`createGroup`, `declineInvitationFromGroup`, `destroyGroup`, `getGroupSpecificationFromServer`, `updateAutoAcceptGroupInvitationSetting`。
 - 等待：`'step.interval'`。
 
 ### `tests/group/test_group_join_requests_and_invitations.py::test_group_request_to_join_and_accept_success`
@@ -2808,12 +2571,6 @@
 - 业务命令：`cmd`, `createGroup`, `destroyGroup`, `getCurrentUser`, `getGroupSpecificationFromServer`, `login`, `logout`, `startCallback`, `updateAutoAcceptGroupInvitationSetting`。
 - 等待：`'settle.offline'`, `'step.interval'`, `timing_seconds('settle.normal')`。
 
-### `tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_owner_transfer_final_state`
-
-- 登录前离线等待：公共 helper 3 秒（包含嵌套入口）。
-- 业务命令：`createGroup`, `destroyGroup`, `getCurrentUser`, `getGroupSpecificationFromServer`, `getGroupWithId`, `login`, `logout`, `startCallback`, `updateAutoAcceptGroupInvitationSetting`, `updateGroupOwner`。
-- 等待：`'settle.offline'`, `'step.interval'`, `timing_seconds('settle.normal')`。
-
 ### `tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_shared_file_upload_delete_final_state`
 
 - 登录前离线等待：公共 helper 3 秒（包含嵌套入口）。
@@ -2838,12 +2595,6 @@
 - 业务命令：`addAdmin`, `createGroup`, `destroyGroup`, `getGroupSpecificationFromServer`, `updateGroupOwner`。
 - 等待：`'step.interval'`。
 
-### `tests/group/test_group_owner_removal_matrix.py::test_group_owner_must_transfer_before_leaving`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`createGroup`, `destroyGroup`, `getGroupSpecificationFromServer`, `leaveGroup`, `updateGroupOwner`。
-- 等待：`'step.interval'`。
-
 ### `tests/group/test_group_owner_removal_matrix.py::test_group_owner_removes_admin_success`
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
@@ -2866,18 +2617,6 @@
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
 - 业务命令：`createGroup`, `destroyGroup`, `getGroupSpecificationFromServer`, `updateGroupOwner`。
-- 等待：`'step.interval'`。
-
-### `tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_to_admin_normalizes_roles`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`addAdmin`, `createGroup`, `destroyGroup`, `getGroupSpecificationFromServer`, `updateGroupOwner`。
-- 等待：`'step.interval'`。
-
-### `tests/group/test_group_owner_removal_matrix.py::test_group_transfer_then_new_owner_removes_former_owner`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`createGroup`, `destroyGroup`, `getGroupSpecificationFromServer`, `removeMembers`, `updateGroupOwner`。
 - 等待：`'step.interval'`。
 
 ### `tests/group/test_group_public_groups_count.py::test_group_fetch_joined_group_count_success`
@@ -2980,12 +2719,6 @@
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
 - 业务命令：`addAdmin`, `createGroup`, `destroyGroup`, `getGroupSpecificationFromServer`, `removeAdmin`。
-- 等待：`'step.interval'`。
-
-### `tests/group/test_group_roles.py::test_group_update_owner_success`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`createGroup`, `destroyGroup`, `getGroupSpecificationFromServer`, `updateGroupOwner`。
 - 等待：`'step.interval'`。
 
 ### `tests/group/test_group_server_state_lists.py::test_group_get_group_block_list_from_server_success`
@@ -3168,12 +2901,6 @@
 - 业务命令：`presenceUnsubscribe`。
 - 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
 
-### `tests/push/test_push_remaining_api_coverage.py::test_push_apns_token_update_android_missing_plugin`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`updateAPNsPushToken`。
-- 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
 ### `tests/push/test_push_remaining_api_coverage.py::test_push_conversation_silent_mode_flow`
 
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
@@ -3257,12 +2984,6 @@
 - 登录前离线等待：无公共离线重登；直接登录例外见上节。
 - 业务命令：`updateOwnUserInfoWithType`。
 - 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
-
-### `tests/user_info/test_user_info.py::test_user_info_update_then_all_fetch_paths_in_one_flow`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`fetchUserInfoById`, `fetchUserInfoByIdWithType`, `updateOwnUserInfo`。
-- 等待：`'step.interval'`。
 
 ### `tests/user_info/test_user_info.py::test_user_info_update_then_fetch_own_info`
 

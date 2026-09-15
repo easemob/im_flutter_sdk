@@ -27,37 +27,9 @@ from src.tools.assertions import get_result
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
 
-# ---------- 前置：确保好友（模块内 autouse） ----------
+# 好友准备统一使用 chat/conftest.py 的 ensure_friends。
 
 
-@pytest.fixture(autouse=True)
-def ensure_friends(device_a, device_b, assert_api, user_a, user_b):
-    resp_add = device_a.call("ContactManager", Cmd.addContact.value, info={"userId": user_b, "reason": "chat-setup"})
-    assert_api.assert_response_matches(
-        resp_add,
-        expected={
-            "manager": "ContactManager",
-            "cmd": Cmd.addContact.value,
-            "device": "deviceA",
-            "result": "{{userB}}",
-        },
-        context={"userB": user_b},
-        ignore_keys={"sequence"},
-    )
-    device_b.receive_message(match_event_type="onContactInvited", timeout=timing_seconds('timeout.friend_invitation', module='chat'))
-    timing_pause('step.interval', module='chat')
-    resp_accept = device_b.call("ContactManager", Cmd.acceptInvitation.value, info={"userId": user_a})
-    assert_api.assert_response_matches(
-        resp_accept,
-        expected={
-            "manager": "ContactManager",
-            "cmd": Cmd.acceptInvitation.value,
-            "device": "deviceB",
-            "result": "{{userA}}",
-        },
-        context={"userA": user_a},
-        ignore_keys={"sequence"},
-    )
 # ---------- 工具 ----------
 
 
@@ -154,16 +126,12 @@ def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_i
     )
 
 
-
-
 # 不再提供 _contains_conv：严格用 assert_response_matches 断言返回体
-
-
-
 
 
 # ========== 异常 / 边界（Chat） ==========
 
+@pytest.mark.no_friend_setup
 def test_chat_send_to_self_should_not_succeed(device_a, assert_api, user_a):
     # 自发消息（A→A）：按当前实现会返回 onMessageSuccess，这里按实际返回严格断言事件内容。
     # 先清空积压事件，避免前序用例的事件干扰。
@@ -253,101 +221,6 @@ def test_chat_send_to_self_should_not_succeed(device_a, assert_api, user_a):
     )
 
 
-def test_chat_pin_conversation_nonexistent_conversation(device_a, assert_api):
-    # 直接 pin 不存在的会话：按实际返回约定应为错误（Invalid conversation）。
-    bogus = "__nonexistent_chat_user__"
-    resp_pin = device_a.call(
-        "ChatManager",
-        Cmd.pinConversation.value,
-        info={"conversationId": bogus, "isPinned": True},
-    )
-    # 严格错误断言：首次发现记录显示 code=107, description 包含 "Invalid conversation"
-    assert_api.assert_error(resp_pin, code=107, description="Invalid conversation")
-
-
-@pytest.mark.skip(reason="temporary skip: backend bug under investigation")
-def test_chat_translate_message_nonexistent_message(device_a, assert_api, user_a, user_b):
-    # translateMessage 传入不存在的消息对象：不应出现有效 translations。
-    fake_msg = {
-        "msgId": "__invalid_msg_id__",
-        "from": user_a,
-        "to": user_b,
-        "chatType": 0,
-        "direction": 0,
-        "body": {"type": 0, "content": "ghost"},
-    }
-    info = {"message": fake_msg, "targetLanguages": ["zh-Hans"]}
-    resp_tr = device_a.call("ChatManager", Cmd.translateMessage.value, info=info)
-    # 仅校验响应信封结构；不忽略 result/error（该用例暂跳过，恢复时再收紧预期）
-    assert_api.assert_response_matches(
-        resp_tr,
-        expected={"manager": "ChatManager", "cmd": Cmd.translateMessage.value, "device": "deviceA"},
-        ignore_keys={"sequence"},
-    )
-
-
-def test_chat_ack_conversation_read_invalid_id_response(device_b, assert_api):
-    """B 对一个不存在的会话调用 ackConversationRead，A 不应在 5s 内收到 onConversationHasRead。"""
-    bogus = "__invalid_conversation_id__"
-    resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": bogus})
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.ackConversationRead.value,
-            "device": "deviceB",
-            "result": {"code": 500, "description": "Message is invalid"},
-        },
-        ignore_keys={"sequence"},
-    )
-
-
-def test_chat_modify_message_invalid_id_response(device_a, assert_api):
-    """修改不存在的消息，不应产生 onMessageContentChanged 事件。"""
-    resp = device_a.call("ChatManager", Cmd.modifyMessage.value, info={"msgId": "__invalid_msg_id__", "body": {"type": 0, "content": "edit"}})
-    print("MODIFY_INVALID RESP:", resp)
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.modifyMessage.value,
-            "device": "deviceA",
-            "result": {"code": 500, "description": "Message is invalid"},
-        },
-        ignore_keys={"sequence"},
-    )
-
-
-def test_chat_recall_message_invalid_id_response(device_a, assert_api):
-    """撤回不存在的消息，不应产生 onMessagesRecalled 事件。"""
-    resp = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": "__invalid_msg_id__"})
-    print("RECALL_INVALID RESP:", resp)
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.recallMessage.value,
-            "device": "deviceA",
-            "result": {"code": 500, "description": "The message was not found"},
-        },
-        ignore_keys={"sequence"},
-    )
-
-
-def test_chat_add_reaction_invalid_id_response(device_a, assert_api):
-    """为不存在的消息添加 reaction，不应产生 messageReactionDidChange。"""
-    resp = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": "👍", "msgId": "__invalid_msg_id__"})
-    print("ADD_REACTION_INVALID RESP:", resp)
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.addReaction.value,
-            "device": "deviceA",
-            "result": {"code": 303, "description": "msgbody is not_found"},
-        },
-        ignore_keys={"sequence"},
-    )
 
 
 def test_chat_add_reaction_empty_reaction_response(device_a, device_b, assert_api, user_a, user_b):
@@ -428,54 +301,3 @@ def test_chat_add_reaction_empty_reaction_response(device_a, device_b, assert_ap
         },
         ignore_keys={"sequence"},
     )
-
-
-def test_chat_fetch_history_invalid_conversation(device_b, assert_api):
-    """fetchHistoryMessages 使用不存在的会话 id：严格断言响应形状；若成功体，结果应为空。"""
-    resp = device_b.call(
-        "ChatManager",
-        Cmd.fetchHistoryMessages.value,
-        info={"convId": "__invalid__", "type": 0, "pageSize": 20, "startMsgId": "", "direction": 0},
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.fetchHistoryMessages.value,
-            "device": "deviceB",
-            "result": {
-                "cursor": "",
-                "list": [],
-            },
-        },
-        ignore_keys={"sequence"},
-    )
-
-
-def test_chat_get_message_invalid_id_returns_none_or_error(device_a, assert_api):
-    """getMessage 使用无效 msgId：WS_RELAX=1 观察到唯一返回为 result=None，锁定为单一预期。"""
-    resp = device_a.call("ChatManager", Cmd.getMessage.value, info={"msgId": "__invalid_msg_id__"})
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.getMessage.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
-
-
-def test_chat_translate_recall_smoke_exists():
-    assert True
-
-
-# ========== 新增：通用能力（正常 + 异常） ==========
-
-
-def test_chat_history_attach_lang_smoke_exists():
-    assert True
-
-
-    ...
