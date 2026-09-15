@@ -43,10 +43,7 @@
   - 前置条件：确认 SDK/服务端是否应派发聊天室成员加入事件，尤其是携带 ext 时是否需要广播给其他在线成员。
   - 恢复条件：事件可稳定派发后，将 `test_chatroom_join_with_ext_member_joined_callback` 去掉 xfail 并按真实事件体收紧断言。
 
-- 暂缓项：公告变更回调 `onAnnouncementChangedFromChatRoom` / `onRoomAnnouncementChanged`
-  - 实测现象：B 已加入聊天室且 `updateChatRoomAnnouncement` 返回 `result=true` 后，A/B 两端均未收到公告变更回调；当前用例已标记 xfail，避免误判整套回调回归。
-  - 前置条件：确认 SDK/服务端是否应派发聊天室公告变更事件，或确认仅同步接口与 `fetchChatRoomAnnouncement` 可验证公告更新。
-  - 恢复条件：事件可稳定派发后，将 `test_chatroom_announcement_changed_callback` 去掉 xfail 并按真实事件体收紧断言。
+- 公告变更回调 case 已于 2026-09-15 按用户要求删除，不再计入执行覆盖。公告更新与拉取场景仍保留。
 
 
 ## 用户指定跳过的失败用例

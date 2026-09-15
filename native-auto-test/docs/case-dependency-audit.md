@@ -2,7 +2,7 @@
 
 范围：八模块所有 test_* 函数及可解析的本地/导入 helper；参数化分支按源码分支审阅，不代表设备执行结果。依赖审计历史状态见 `.doc/specs/shared-runtime-config/tasks.md` 第 12 节；2026-09-15 删除精简状态见 `.doc/specs/release-test-automation/tasks.md` 的“用例精简”章节。
 
-当前总计 496 个测试函数（不展开参数化组合）：chat=179, chatroom=68, client=11, contact=34, group=177, presence=10, push=6, user_info=11。已删除显式 skip/xfail 项；下方操作链为保留用例的历史静态审计，不表示运行覆盖，离线可达数量需重新审计。
+当前总计 494 个测试函数（不展开参数化组合）：chat=178, chatroom=67, client=11, contact=34, group=177, presence=10, push=6, user_info=11。已删除显式 skip/xfail 项；下方操作链为保留用例的历史静态审计，不表示运行覆盖，离线可达数量需重新审计。
 
 本索引的操作链/边界沿用第 12 节审计；第 13 节仅迁移时间词汇和显式 module，默认预算与操作链不变。下列等待列表是语义标签（包含共享 helper），不是可直接复制的完整调用表达式；配置以 `case-timing-inventory.md` 为准。
 
@@ -643,11 +643,6 @@
 - 业务命令：`recallMessage`。
 - 等待：无独立暂停；单步/纯查询/纯错误路径，事件等待保留。
 
-### `tests/chat/test_chat_report_and_thumbnail_additional.py::test_chat_download_thumbnail_for_text_message`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`downloadThumbnail`, `sendMessage`。
-- 等待：`'step.interval'`。
 
 ### `tests/chat/test_chat_report_message_boundaries.py::test_chat_report_message_empty_message_id`
 
@@ -1117,11 +1112,6 @@
 - 业务命令：`addMembersToChatRoomWhiteList`, `joinChatRoom`, `removeMembersFromChatRoomWhiteList`。
 - 等待：`'step.interval'`。
 
-### `tests/chatroom/test_chatroom_callbacks.py::test_chatroom_announcement_changed_callback`
-
-- 登录前离线等待：无公共离线重登；直接登录例外见上节。
-- 业务命令：`joinChatRoom`, `updateChatRoomAnnouncement`。
-- 等待：`'step.interval'`。
 
 ### `tests/chatroom/test_chatroom_callbacks.py::test_chatroom_attributes_updated_and_removed_callbacks`
 

@@ -502,8 +502,6 @@
    当前执行状态：按用户要求，`test_chat_typed_message_pin_and_cross_user_unpin[sender-custom-payload1]` 与 `[receiver-custom-payload1]` 标记为 skip；位置消息两条仍正常执行。自定义消息的历史回调结论待重新确认，暂缓原因与恢复条件见 `CASES_DEFERRED.zh.md`。 【历史记录：该测试函数已删除，不计入当前覆盖】
 147. `tests/chat/test_chat_report_and_thumbnail_additional.py::test_chat_receiver_reports_text_message` 与 `test_chat_report_text_message_parameter_boundaries[*]`
    覆盖接收方举报文本消息，并使用有效消息 ID 验证空 `tag`、空 `reason`、异常非空 `tag`：实测分别返回 `205 Invalid parameter`、`true`、`true`，避免被无效消息 ID 的前置错误掩盖。
-148. `tests/chat/test_chat_report_and_thumbnail_additional.py::test_chat_download_thumbnail_for_text_message`
-   文本消息调用缩略图下载时，同步结果返回完整原消息，随后发送端收到 `onMessageError 403/Failed to download the file`；两段均按真实消息 ID 和完整稳定业务字段断言。
 149. `tests/chat/test_chat_conversation_pin_additional.py::*`
    覆盖会话重复置顶/取消置顶、自己会话、非布尔 `isPinned`、pageSize 0/-1/1000。Android generic bridge 实测非布尔值按 `false` 处理，三种 pageSize 均返回空页。
 150. `tests/chat/test_chat_conversation_cursor_pagination.py::*`

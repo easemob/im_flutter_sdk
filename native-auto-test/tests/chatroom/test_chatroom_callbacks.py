@@ -41,15 +41,6 @@ def _members_from_allow_list_event(data: dict) -> list:
     return members
 
 
-def _join_chatroom_as_b_and_wait_ready(device_b, assert_api, room_id: str) -> None:
-    _join_chatroom_as_b(device_b, assert_api, room_id)
-    _first_chatroom_event(
-        device_b,
-        room_id=room_id,
-        event_types={ChatRoomEvent.ON_MEMBER_JOINED.value, "onMemberJoinedFromChatRoom"},
-    )
-
-
 def test_chatroom_admin_added_and_removed_callbacks(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="cb_admin", desc_prefix="cb_admin")
     timing_pause('step.interval', module='chatroom')
@@ -202,32 +193,6 @@ def test_chatroom_attributes_updated_and_removed_callbacks(device_a, device_b, a
         assert removed_data.get("from") == user_a or removed_data.get("fromId") == user_a, (
             f"属性删除回调 from/fromId 不匹配: {removed_evt}"
         )
-    finally:
-        safe_delete_chatroom(room_id)
-
-
-def test_chatroom_announcement_changed_callback(device_a, device_b, assert_api, user_a):
-    room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="cb_announcement", desc_prefix="cb_announcement")
-    timing_pause('step.interval', module='chatroom')
-    announcement = f"notice-{uuid.uuid4().hex[:8]}"
-    try:
-        _join_chatroom_as_b_and_wait_ready(device_b, assert_api, room_id)
-
-        timing_pause('step.interval', module='chatroom')
-        update_resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.updateChatRoomAnnouncement.value,
-            info={"roomId": room_id, "announcement": announcement},
-        )
-        _assert_success_envelope(assert_api, update_resp, cmd=Cmd.updateChatRoomAnnouncement.value, device="deviceA")
-        evt = _first_chatroom_event(
-            device_b,
-            room_id=room_id,
-            event_types={ChatRoomEvent.ON_ANNOUNCEMENT_CHANGED.value, "onAnnouncementChangedFromChatRoom"},
-        )
-        data = _event_data(evt)
-        assert data.get("roomId") == room_id, f"公告变更回调 roomId 不匹配: {evt}"
-        assert data.get("announcement") == announcement, f"公告变更回调 announcement 不匹配: {evt}"
     finally:
         safe_delete_chatroom(room_id)
 
