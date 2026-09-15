@@ -107,12 +107,24 @@ bash skills/im-flutter-run/scripts/run.sh --build
 
 # CI 里跑（不弹浏览器）
 bash skills/im-flutter-run/scripts/run.sh --no-open
+
+# 失败用例自动重试：先跑全部，再只重跑失败集合，最多重复 2 次，最后统一出一份报告
+bash skills/im-flutter-run/scripts/run.sh --config config/ngi.yaml --lanes 2 --retries 2 -v tests
 ```
 
 多 lane 并行说明：
 - `--lanes N` 启动 N×2 个模拟器，按文件轮询分片到各 lane，结果合并到一个 Allure 报告。
 - 每组独立：账号前缀（g0..gN-1，避免登录互踢）、relay 端口（40100+N）、AVD（`im_flutter_test_*_laneN`）。
 - 硬件参考：单模拟器约 3.7GB 内存；24GB 机器建议 `--lanes 1`，`--lanes 2`（4 模拟器）接近上限。
+
+失败用例自动重试（`--retries N`，默认 0 关闭，opt-in，复用已就绪环境）：
+- 按当前选择先跑一次，结束后收集 failed/error 用例，只重跑失败集合，最多再重复 N 次。
+- 重试**在已就绪的环境上就地进行**：复用已启动的模拟器、已安装的 APK 与已运行的桥接，用新的 pytest 进程仅重跑失败用例，**不重启模拟器、不重装 APK、不重启桥接**；每次重试的额外开销只有 pytest 启动与会话 fixture（如登录）。
+- 多 lane 时把 `--retries` 透传给每个 lane，各 lane 在各自环境内重试自己的失败分片；合并报告仍以每个用例最后一次执行为准。
+- 全程只获取一次 APK、只出一份 Allure 报告（早期尝试作为 Allure retries 展示，主状态与统计取最新一次）。
+- **首次失败、重试后通过**的用例会在报告中标记为 flaky（Allure 炸弹图标）并打上 `reran-passed` 标签，方便定位不稳定的业务场景；其主状态仍为通过，早期失败可在该用例的 retries 中查看。始终失败的用例仍为 failed，一次通过的用例不受影响。
+- 仅 failed/error 参与重跑；unreported/INCOMPLETE（如 mDNS 门禁、收集失败等基础设施中断）不自动重跑，会在汇总中暴露并以非零码退出。
+- 不带 `--retries` 时流程与报告完全不变；可与 `--lanes`、`--config`/`--bridge-config`、`--repo`、`--build`/`--refresh-apk`/`APK_PATH`、`--keep-emulator` 组合。
 
 > 详细说明见 skill：`skills/im-flutter-run/SKILL.md`；模拟器准备：`skills/im-flutter-run/scripts/setup_emulator.sh`。
 

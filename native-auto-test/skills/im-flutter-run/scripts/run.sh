@@ -24,12 +24,17 @@ Usage: run.sh [--build | --refresh-apk] [--repo OWNER/REPO] [--config PATH] [--b
                     Stream unmodified pytest output and save unique per-lane logs.
   --keep-emulator   Keep emulators running after the run (shut down by default)
   --no-open         Do not auto-open the report in a browser (use in CI)
+  --retries N       Retry failed cases: run the selection once, then rerun only the
+                    failed/error cases up to N more times (default 0 = no retry).
+                    A single Allure report is generated at the end; each case reflects
+                    its last execution (earlier attempts appear as Allure retries).
   Remaining args are passed through to pytest (simple args, e.g. -q tests/chatroom)
 
 Examples:
   run.sh --config config/config.yaml -q tests/client/test_client.py
   run.sh --lanes 2 tests/chatroom
   run.sh --build -q tests/client
+  run.sh --config config/ngi.yaml --lanes 2 --retries 2 -v tests
 EOF
 }
 
@@ -50,6 +55,7 @@ NO_REPORT=0
 SKIP_SETUP=0
 LANE=0
 LANES=1
+RETRIES=0
 GH_REPO="${GH_REPO:-easemob/im_flutter_sdk}"
 CONFIG_ARG=""
 BRIDGE_CONFIG_ARG=""
@@ -63,6 +69,7 @@ while [[ $# -gt 0 ]]; do
     --bridge-config) BRIDGE_CONFIG_ARG="${2:?--bridge-config requires a path}"; shift 2 ;;
     --lane) LANE="${2:?--lane requires a number}"; shift 2 ;;
     --lanes) LANES="${2:?--lanes requires a number}"; shift 2 ;;
+    --retries) RETRIES="${2:?--retries requires a number}"; shift 2 ;;
     --keep-emulator) KEEP_EMULATOR=1; shift ;;
     --no-open) OPEN_REPORT=0; shift ;;
     --no-report) NO_REPORT=1; shift ;;
@@ -73,6 +80,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 fail() { echo "error: $*" >&2; exit 1; }
+
+[[ "$RETRIES" =~ ^[0-9]+$ ]] || fail "--retries requires a non-negative integer"
 
 # ---- 配置选择：环境文件（app schema）与桥接文件分离 ----
 # shellcheck source=config_helpers.sh
@@ -157,6 +166,39 @@ ensure_python_env() {
 
 ensure_python_env
 
+# Generate (and optionally open) one merged Allure report from accumulated results.
+emit_report() {
+  echo "==> Generating report ..."
+  if command -v allure >/dev/null 2>&1; then
+    rm -rf "$native_auto_test/out/allure-report"
+    (cd "$native_auto_test" && allure generate out/allure-results -o out/allure-report --clean)
+    echo "Report: $native_auto_test/out/allure-report/"
+    if [[ "$OPEN_REPORT" == "1" ]]; then
+      echo "==> Opening report in browser (Ctrl-C to stop the server and finish) ..."
+      (cd "$native_auto_test" && allure open out/allure-report)
+    else
+      echo "Open it manually (HTTP, not file://): (cd $native_auto_test && allure open out/allure-report)"
+    fi
+  else
+    echo "allure CLI not found; raw results at: $native_auto_test/out/allure-results/"
+    echo "Install allure (e.g. npm i -g allure-commandline), then run:"
+    echo "  allure generate out/allure-results -o out/allure-report --clean"
+  fi
+}
+
+# Build the ARGS string for `make test-local`: quote each argument for the recipe
+# shell, then escape dollars for make's expansion layer. Joining the raw array would
+# split parametrized nodeids at spaces. Always prefixes --alluredir.
+build_make_args() {
+  "$PY" -c 'import shlex, sys; print(" ".join(shlex.quote(arg) for arg in sys.argv[1:]).replace("$", "$$"))' \
+    --alluredir=out/allure-results "$@"
+}
+
+# 失败用例自动重试（--retries N > 0）在「单 lane 执行器」的 pytest 步骤内就地进行：
+# 复用已启动的模拟器、已安装的 APK 与已就绪的桥接，仅用新的 pytest 进程重跑失败用例，
+# 不重启模拟器、不重装 APK、不重启桥接。多 lane 时由编排器把 --retries 透传给每个 lane，
+# 各 lane 在各自环境内重试自己的失败分片。报告以每个用例最后一次执行为准（Allure retries 语义）。
+
 # ============ 多 lane 编排模式（--lanes N > 1） ============
 if [[ "$LANES" -gt 1 ]]; then
   echo "==> Multi-lane mode: $LANES lanes ($((LANES * 2)) emulators), account g0..g$((LANES - 1)), relay 40100..$((40100 + LANES - 1))"
@@ -184,8 +226,11 @@ if [[ "$LANES" -gt 1 ]]; then
   # Verify before any lane starts; no lane may restart the shared ADB server.
   prepare_adb
 
-  # Clear shared results, merge into one report at the end
-  rm -rf "$native_auto_test/out/allure-results"
+  # Clear shared results, merge into one report at the end.
+  # With --no-report (e.g. a retry attempt) keep prior results so they accumulate.
+  if [[ "$NO_REPORT" == "0" ]]; then
+    rm -rf "$native_auto_test/out/allure-results"
+  fi
 
   # 外层仅查询/下载一次；子 lane 通过 APK_PATH 复用确定的文件。
   echo "==> [1/7] 获取共享 APK ..."
@@ -209,8 +254,10 @@ if [[ "$LANES" -gt 1 ]]; then
       continue
     fi
     echo "[lane $i] $lane_count cases — running (log: $RUN_LOG_DIR/lane$i.log)"
+    # Pass --retries down: each lane retries its own failed cases in place, reusing its
+    # own emulators/bridge/APK (no reboot/reinstall between attempts).
     IM_FLUTTER_LANE_RESULT="$RUN_LOG_DIR/lane$i.result.json" \
-      IM_FLUTTER_LANE_NODEIDS="$RUN_LOG_DIR/lane$i.nodeids" APK_PATH="$SHARED_APK" bash "$script_dir/run.sh" --lane "$i" --no-open --no-report --skip-setup "${lane_args[@]}" \
+      IM_FLUTTER_LANE_NODEIDS="$RUN_LOG_DIR/lane$i.nodeids" APK_PATH="$SHARED_APK" bash "$script_dir/run.sh" --lane "$i" --no-open --no-report --skip-setup --retries "$RETRIES" "${lane_args[@]}" \
       2>&1 | tee "$RUN_LOG_DIR/lane$i.log" &
     pids+=($!)
   done
@@ -234,20 +281,17 @@ if [[ "$LANES" -gt 1 ]]; then
     exit_code=1
   fi
   if [[ "$exit_code" == 0 ]]; then echo "Overall: PASS"; else echo "Overall: FAIL"; fi
-  # Merge all lanes into one report
-  echo "==> Generating merged report ..."
-  if command -v allure >/dev/null 2>&1; then
-    rm -rf "$native_auto_test/out/allure-report"
-    (cd "$native_auto_test" && allure generate out/allure-results -o out/allure-report --clean)
-    echo "==> Merged report: $native_auto_test/out/allure-report/"
-    if [[ "$OPEN_REPORT" == "1" ]]; then
-      echo "==> Opening report in browser (Ctrl-C to stop the server and finish) ..."
-      (cd "$native_auto_test" && allure open out/allure-report)
-    else
-      echo "==> Open manually: (cd $native_auto_test && allure open out/allure-report)"
-    fi
+
+  # Flag cases that only passed after retry as flaky (reran-passed) before reporting.
+  if [[ "$RETRIES" -gt 0 ]]; then
+    "$PY" "$script_dir/mark_flaky.py" "$native_auto_test/out/allure-results" || true
+  fi
+
+  # Merge all lanes into one report (skipped with --no-report).
+  if [[ "$NO_REPORT" == "0" ]]; then
+    emit_report
   else
-    echo "allure CLI not found; raw results at $native_auto_test/out/allure-results/"
+    echo "==> --no-report: results in $native_auto_test/out/allure-results/"
   fi
 
   echo "==> All lanes finished (exit code $exit_code)"
@@ -419,14 +463,65 @@ if [[ "$NO_REPORT" == "0" ]]; then
 fi
 # Catch a server replaced by another tool during setup before entering pytest.
 "$PY" "$script_dir/adb_preflight.py" "$ADB" --check-only
-set +e
-# Quote each argument for the recipe shell, then escape dollars for make's
-# expansion layer. Joining the raw array splits parametrized nodeids at spaces.
-PYTEST_MAKE_ARGS="$("$PY" -c 'import shlex, sys; print(" ".join(shlex.quote(arg) for arg in sys.argv[1:]).replace("$", "$$"))' \
-  --alluredir=out/allure-results ${PYTEST_ARGS[@]+"${PYTEST_ARGS[@]}"})"
-(cd "$native_auto_test" && make test-local PY="$PY" ADB="$ADB" WS_STATE_DIR="$WS_STATE_DIR" ARGS="$PYTEST_MAKE_ARGS")
-PYTEST_EXIT=$?
-set -e
+
+if [[ "$RETRIES" -le 0 ]]; then
+  # ---- Default: single pytest run (behavior unchanged) ----
+  set +e
+  PYTEST_MAKE_ARGS="$(build_make_args ${PYTEST_ARGS[@]+"${PYTEST_ARGS[@]}"})"
+  (cd "$native_auto_test" && make test-local PY="$PY" ADB="$ADB" WS_STATE_DIR="$WS_STATE_DIR" ARGS="$PYTEST_MAKE_ARGS")
+  PYTEST_EXIT=$?
+  set -e
+else
+  # ---- Retry mode: rerun only failed/error cases on THIS already-prepared environment ----
+  # No emulator reboot / APK reinstall / bridge restart between attempts — only new pytest
+  # processes. Each attempt appends to allure-results, so Allure shows the last run per case.
+  RETRY_DIR="$(mktemp -d "${TMPDIR:-/tmp}/im-flutter-retry-lane$LANE.XXXXXX")"
+  CUMULATIVE="$RETRY_DIR/cumulative.json"
+  FAIL_FILE="$RETRY_DIR/failing.txt"
+  : > "$CUMULATIVE"
+  : > "$FAIL_FILE"
+  # Multi-lane child: orchestrator already put `-p scripts.pytest_lane` into PYTEST_ARGS and
+  # set the shard filter + result path. Top-level single lane must add the plugin itself.
+  LANE_RESULT_TARGET="${IM_FLUTTER_LANE_RESULT:-}"
+  INITIAL_FILTER="${IM_FLUTTER_LANE_NODEIDS:-}"
+  RETRY_PLUGIN_ARGS=()
+  [[ -z "$LANE_RESULT_TARGET" ]] && RETRY_PLUGIN_ARGS=(-p scripts.pytest_lane)
+
+  set +e
+  # Attempt 0: run the full selection (shard for a lane child, all selected otherwise).
+  if [[ -n "$INITIAL_FILTER" ]]; then export IM_FLUTTER_LANE_NODEIDS="$INITIAL_FILTER"; else unset IM_FLUTTER_LANE_NODEIDS; fi
+  export IM_FLUTTER_LANE_RESULT="$RETRY_DIR/attempt0.json"
+  echo "==> [尝试 1] 运行选定用例 ..."
+  PYTEST_MAKE_ARGS="$(build_make_args ${RETRY_PLUGIN_ARGS[@]+"${RETRY_PLUGIN_ARGS[@]}"} ${PYTEST_ARGS[@]+"${PYTEST_ARGS[@]}"})"
+  (cd "$native_auto_test" && make test-local PY="$PY" ADB="$ADB" WS_STATE_DIR="$WS_STATE_DIR" ARGS="$PYTEST_MAKE_ARGS")
+  PYTEST_EXIT=$?
+  "$PY" "$script_dir/retry_merge.py" --cumulative "$CUMULATIVE" --attempt "$RETRY_DIR/attempt0.json" --failures-out "$FAIL_FILE"
+  failing="$(wc -l < "$FAIL_FILE" | tr -d ' ')"
+  fail_summary="首次: $failing 失败"
+
+  attempt=0
+  while [[ "$attempt" -lt "$RETRIES" && "$failing" -gt 0 ]]; do
+    attempt=$((attempt + 1))
+    echo "==> [重试 $attempt/$RETRIES] 复用已就绪环境，仅重跑 $failing 个失败用例（不重启模拟器/不重装 APK/不重启桥接） ..."
+    export IM_FLUTTER_LANE_NODEIDS="$FAIL_FILE"
+    export IM_FLUTTER_LANE_RESULT="$RETRY_DIR/attempt$attempt.json"
+    PYTEST_MAKE_ARGS="$(build_make_args ${RETRY_PLUGIN_ARGS[@]+"${RETRY_PLUGIN_ARGS[@]}"} ${PYTEST_ARGS[@]+"${PYTEST_ARGS[@]}"})"
+    (cd "$native_auto_test" && make test-local PY="$PY" ADB="$ADB" WS_STATE_DIR="$WS_STATE_DIR" ARGS="$PYTEST_MAKE_ARGS")
+    PYTEST_EXIT=$?
+    "$PY" "$script_dir/retry_merge.py" --cumulative "$CUMULATIVE" --attempt "$RETRY_DIR/attempt$attempt.json" --failures-out "$FAIL_FILE"
+    failing="$(wc -l < "$FAIL_FILE" | tr -d ' ')"
+    fail_summary="${fail_summary}; 第 $attempt 次重试后: $failing 失败"
+  done
+  set -e
+
+  # Publish final per-nodeid outcomes for the multi-lane summary (last execution wins).
+  [[ -n "$LANE_RESULT_TARGET" ]] && cp "$CUMULATIVE" "$LANE_RESULT_TARGET"
+
+  # Final status reflects whether any case still fails after the last attempt.
+  if [[ "$failing" -gt 0 ]]; then PYTEST_EXIT=1; else PYTEST_EXIT=0; fi
+  echo "==> [lane $LANE] 重试汇总（报告以最后一次执行为准）: $fail_summary"
+fi
+
 if [[ "$PYTEST_EXIT" != "0" ]]; then
   echo "==> pytest exited with code $PYTEST_EXIT (report will still be generated)"
 fi
@@ -435,6 +530,10 @@ fi
 if [[ "$NO_REPORT" == "1" ]]; then
   echo "==> --no-report: results written to out/allure-results/ (merge by run-parallel)"
 else
+  # Flag cases that only passed after retry as flaky (reran-passed) before reporting.
+  if [[ "$RETRIES" -gt 0 ]]; then
+    "$PY" "$script_dir/mark_flaky.py" "$native_auto_test/out/allure-results" || true
+  fi
   echo "==> Generating report ..."
   if command -v allure >/dev/null 2>&1; then
     rm -rf "$native_auto_test/out/allure-report"

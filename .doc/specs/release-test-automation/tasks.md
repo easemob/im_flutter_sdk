@@ -349,3 +349,59 @@ Files: `native-auto-test/skills/im-flutter-run/SKILL.md`、本 Kiro 三件套
 - [x] 全量 tests/tools：364 passed，85.59 秒；仅已有 websockets.legacy 弃用提示。业务 collect-only 成功，未运行设备端业务回归。
 - [x] speckit check：Android/iOS 依赖规范检查通过；git diff --check 通过。
 - 用户本次明确授权将所有当前修改一起 commit，包含此前好友前置隔离、语音/离线好友断言、Allure 等级与步骤输出、用例精简及相关文档；不推送远端。
+
+## 失败用例自动重试增量任务（2026-09-15）
+
+需求与设计以 requirements.md / design.md 中同名「失败用例自动重试增量」章节为准；本节为该增量唯一状态来源，不另建实现计划。未经用户明确要求不提交、不推送。
+
+### RT-1：失败清单收集器
+
+Files: Create `native-auto-test/skills/im-flutter-run/scripts/emit_failures.py`
+
+- [x] 读取一个或多个 lane 结果 JSON（schema_version 1），去重输出 failed/error nodeid 到 `--out`；缺失/非法输入跳过不报错。（T2/T3/T8）
+
+### RT-2：run.sh 重试编排与失败捕获
+
+Files: Edit `native-auto-test/skills/im-flutter-run/scripts/run.sh`
+
+- [x] 新增 `--retries N` 解析与 usage 说明；校验非负整数，`0`/未传等价关闭。（T1/T11）
+- [x] 新增 `run_with_retries`：循环前一次性获取 APK 并复用；清空一次 `out/allure-results`；循环内部运行（`--retries 0 --no-report --no-open`、`IM_FLUTTER_RETRY_CHILD=1`、`IM_FLUTTER_FAILURES_OUT`）；读取失败清单驱动收敛。（T2–T4/T6/T7）
+- [x] 抽出 `emit_report`；全部重试结束后统一出报告一次并按 `OPEN_REPORT` 决定是否打开。（T5）
+- [x] 多 lane：`rm -rf out/allure-results` 与报告生成受 `NO_REPORT` 守卫；`IM_FLUTTER_FAILURES_OUT` 存在时汇总各 lane 结果调用 `emit_failures.py`。（T5/T7）
+- [x] 单 lane：`IM_FLUTTER_FAILURES_OUT` 存在时加载 `-p scripts.pytest_lane` + `IM_FLUTTER_LANE_RESULT` 捕获逐 nodeid 结果并调用 `emit_failures.py`；不设置 nodeid 筛选。（T2/T3）
+- [x] 编排层打印分次失败汇总与最终失败列表；基础设施失败停止重试仍出报告并非零退出。（T8/T9）
+- [x] Bash 3.2 兼容：不使用 mapfile，沿用空数组惯用法。
+
+### RT-3：文档
+
+Files: Edit `native-auto-test/skills/im-flutter-run/SKILL.md`
+
+- [x] 增补 `--retries` 用法、"报告以最后一次执行为准" 语义、opt-in 且不改默认流程的说明。（T5/T11）
+
+### RT-4：离线回归与验证
+
+Files: Edit `native-auto-test/tests/tools/test_im_flutter_run_apk.py`
+
+- [x] 新增单/多 lane 重试收敛、上限仍失败、默认行为不变、APK 一次性测试。（T10）
+- [x] 运行新增与既有 runner 测试；执行 `bash -n run.sh`。
+
+### RT-5：改为就地复用环境重试（按用户反馈，2026-09-15）
+
+用户反馈：初版重试每轮都 re-invoke run.sh，会重启模拟器/重装 APK/重启桥接，浪费时间。改为在第一次已准备好的环境上就地重试（仅重跑 pytest），需求见 requirements 的 T12/T13，设计见 design 同名章节的修订说明。
+
+- [x] 移除最外层 `run_with_retries` 编排与 `emit_failures.py`；新增 `build_make_args`，保留 `emit_report`。
+- [x] 把重试下沉到单 lane 执行器的 pytest 步骤：`RETRIES>0` 时在 boot/install/bridge 之后就地循环重跑失败集合（新 pytest 进程，不重启/不重装/不重启桥接）；`RETRIES=0` 保持原单次调用不变。
+- [x] 新增 `scripts/retry_merge.py`：合并每次 attempt 结果（后写覆盖，得每用例最后一次执行）并导出仍失败 nodeid；累计结果写回 `laneN.result.json` 供 `summarize_lanes` 读取。
+- [x] 多 lane 编排器把 `--retries N` 透传给各 lane；各 lane 就地重试自己的分片；结束后统一 `emit_report` 一次。
+- [x] 修复 Bash 3.2 下 `$fail_summary` 后紧跟中文全角分号被并入变量名导致的 `unbound variable`（改用 `${fail_summary}` 定界）。
+- [x] 重写离线回归：多 lane 收敛/达上限、单 lane 收敛、默认无重试；断言每模拟器仅一次 install（证明环境复用）、报告仅一份、APK 仅获取一次。
+- [x] 验证：`bash -n` 通过；`native-auto-test/.venv/bin/python -m pytest --noconftest -q tests/tools/test_im_flutter_run_apk.py` 全绿（51 passed，约 66s，仅既有 websockets.legacy 弃用告警）。文档 SKILL.md / README 同步为「就地复用环境」。未跑真实设备业务用例、未提交。
+
+### RT-6：报告标记「重跑通过」用例为 flaky（按用户反馈，2026-09-15）
+
+用户反馈：希望在最终 Allure 报告中体现哪些用例是重跑后才通过的，便于定位不稳定业务。需求见 requirements T14，设计见 design 同名章节。
+
+- [x] 新增 `scripts/mark_flaky.py`：按 historyId 分组，对「较早失败/broken、最后一次通过」的用例标记最后一次结果 `statusDetails.flaky=true` + `reran-passed` 标签 + 说明；单次通过与始终失败不改。
+- [x] run.sh 出报告前调用（`RETRIES>0`）：多 lane 在 `emit_report` 前统一调用，单 lane 在自身报告前调用；lane 子进程（`--no-report`）不调用，由编排器集中处理。
+- [x] 新增 `mark_flaky.py` 单元测试（构造 allure-results 断言仅重跑通过用例被标记）；加入假工具树 copy 列表。
+- [x] 验证：`bash -n` 通过；`pytest --noconftest -q tests/tools/test_im_flutter_run_apk.py` 全绿（52 passed，约 65s）。SKILL.md / README 同步说明 flaky 标记与 `reran-passed` 标签。未跑真实设备业务用例、未提交。
