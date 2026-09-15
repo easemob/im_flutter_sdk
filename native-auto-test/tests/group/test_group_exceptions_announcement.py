@@ -1,5 +1,6 @@
 """Group announcement API 异常/边界用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -41,6 +42,7 @@ def test_group_update_announcement_empty(device_a, assert_api, user_a):
             group_name=new_group_name("announce_empty"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp_update = device_a.call(
             "GroupManager",
             Cmd.updateGroupAnnouncement.value,
@@ -57,6 +59,7 @@ def test_group_update_announcement_empty(device_a, assert_api, user_a):
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='group')
         resp_get = device_a.call(
             "GroupManager",
             Cmd.getGroupAnnouncementFromServer.value,

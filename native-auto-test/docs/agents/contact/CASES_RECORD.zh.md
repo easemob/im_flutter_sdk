@@ -1,5 +1,11 @@
 # Contact 模块 Cases 总记录（按 API）
 
+## 已删除的 skip / xfail 用例（当前状态）
+
+按用户要求删除 1 个整函数及 0 个单独参数项，不是移除标记恢复执行。下列场景不再计入当前覆盖；后文旧批次实测统计仅为历史记录，不代表这些用例仍存在。运行时条件 skip 以及工具层报告回归保留。
+
+- 已删除 整函数（包含其全部参数）：`tests/contact/test_friend_info_sync.py::test_friend_info_auto_sync_after_login`。
+
 — 说明
 - 本文件记录 Contact 模块已覆盖用例（按 API 组织）。
 - 每条 case 以全局序号编号；统计按“当前记录条目数”计算。
@@ -101,13 +107,7 @@
 
 ## fetchAllContacts / fetchContacts / fetchAllContactIds / getAllContacts / getAllContactIds
 
-正常 cases
-27. `tests/contact/test_contact.py::test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists`
-    建立好友并设置备注后，先同步服务端好友列表，再分别校验服务端全量好友、分页好友、本地单个好友、本地全量好友的一致性。
-
 异常 cases
-28. `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_zero`
-    分页拉取时 pageSize=0，验证参数边界语义。
 29. `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_exceeds_50`
     分页拉取时 pageSize 超过上限，验证上限约束语义。
 30. `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_negative`
@@ -188,4 +188,17 @@
 - 无。本专项验证正常业务在观察方离线期间的服务端积压与重登回放，不把超时或偶发无事件固化为异常契约。
 
 ## 统计
-- 当前记录 case 条目总数：`50`
+- 历史记录编号保留；当前可收集 Contact case 共 `34` 条。
+
+## 离线好友列表基线修正（2026-09-15）
+
+`test_contact_offline_friendship.py` 的 7 条用例在清理 A/B 关系后读取双方好友基线。最终完整列表必须等于各自基线加上预期对端；拒绝、未接受和删除场景应等于原基线，不要求账号完全没有好友。列表顺序不参与比较，但额外、丢失或重复好友均失败。事件和业务响应断言保持不变；清理后对端仍存在会在前置阶段失败。12 项无设备回归通过，真实设备回归尚未执行。
+
+
+## 按场景隔离好友关系（2026-09-15）
+
+- 5 条好友备注/本地 DB/好友信息同步用例改用 friends_ab，取消重复申请和函数末尾删除好友；fixture 恢复备注，信息同步额外恢复并回读原昵称。
+- 删除非好友和非好友备注用例使用存在的 session 用户 B，由 nonfriends_ab 保证双端无关系；不再用不存在用户代替非好友备注场景。
+- 无待处理申请接受用例使用 no_pending_bc，清除 B/C 双向待处理请求并验证非好友，最终核对完整基线，允许 C 保留 A 等其他好友。
+- 6 条关系变化/黑名单用例使用 relation_ab 负责初态及异常恢复，业务中的申请、接受、拒绝、删除、拉黑、解除拉黑仍执行。已有 7 条好友离线用例保持独立前置和 finally。
+- 完整好友/黑名单列表预期改为既有基线加本次目标，检测第三方遗漏、重复及额外条目。关系改造阶段与 Chat 变更合计 63 项无设备测试通过，当时 744 个业务节点未变化；随后按要求删除 4 条业务 case，当前全业务共 740 条。暂未设备回归。

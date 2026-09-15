@@ -1,5 +1,6 @@
 """Group metadata 异常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -19,6 +20,7 @@ def test_group_update_subject_empty(device_a, assert_api, user_a):
     group_id = ""
     try:
         group_id, _ = create_group(device_a, assert_api, owner=user_a, group_name=new_group_name("ex_subject"), invite_members=[])
+        timing_pause('step.interval', module='group')
         resp = device_a.call("GroupManager", Cmd.updateGroupSubject.value, info={"groupId": group_id, "subject": ""})
         assert_api.assert_response_matches(
             resp,
@@ -39,6 +41,7 @@ def test_group_update_subject_too_long(device_a, assert_api, user_a):
     group_id = ""
     try:
         group_id, _ = create_group(device_a, assert_api, owner=user_a, group_name=new_group_name("ex_subject_len"), invite_members=[])
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.updateGroupSubject.value,
@@ -63,6 +66,7 @@ def test_group_update_description_empty(device_a, assert_api, user_a):
     group_id = ""
     try:
         group_id, _ = create_group(device_a, assert_api, owner=user_a, group_name=new_group_name("ex_desc"), invite_members=[])
+        timing_pause('step.interval', module='group')
         resp = device_a.call("GroupManager", Cmd.updateDescription.value, info={"groupId": group_id, "description": ""})
         assert_api.assert_response_matches(
             resp,
@@ -83,6 +87,7 @@ def test_group_update_description_too_long(device_a, assert_api, user_a):
     group_id = ""
     try:
         group_id, _ = create_group(device_a, assert_api, owner=user_a, group_name=new_group_name("ex_desc_len"), invite_members=[])
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.updateDescription.value,

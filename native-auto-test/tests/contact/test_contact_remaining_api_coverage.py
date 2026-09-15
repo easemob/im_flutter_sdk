@@ -6,6 +6,7 @@ getSelfIdsOnOtherPlatform。每个 case 都先通过真实 SDK 调用准备状�
 目标 cmd 的响应信封和业务字段做断言。
 """
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -17,12 +18,10 @@ pytestmark = [pytest.mark.client, pytest.mark.contact]
 
 
 def test_contact_get_all_contacts_from_db_after_server_sync(
-    device_a, device_b, assert_api, user_a, user_b
-):
+    device_a, device_b, assert_api, user_a, user_b, friends_ab):
     """getAllContactsFromDB/getAllContactIds：同步服务端好友后，从本地 DB 获取好友 ID 列表；Dart getAllContactIds 复用同一 native cmd。"""
-    flow = ContactTestFlow(assert_api)
-    flow.establish_friends(device_a, device_b, user_a, user_b, reason="local_contacts_db")
 
+    timing_pause('step.interval', module='contact')
     sync_resp = device_a.call(
         "ContactManager",
         Cmd.getAllContactsFromServer.value,
@@ -34,11 +33,12 @@ def test_contact_get_all_contacts_from_db_after_server_sync(
             "manager": "ContactManager",
             "cmd": Cmd.getAllContactsFromServer.value,
             "device": "deviceA",
-            "result": [user_b],
+            "result": friends_ab.ids(0, friends=True),
         },
         ignore_keys={"sequence"},
     )
 
+    timing_pause('step.interval', module='contact')
     local_resp = device_a.call(
         "ContactManager",
         Cmd.getAllContactsFromDB.value,
@@ -50,22 +50,22 @@ def test_contact_get_all_contacts_from_db_after_server_sync(
             "manager": "ContactManager",
             "cmd": Cmd.getAllContactsFromDB.value,
             "device": "deviceA",
-            "result": [user_b],
+            "result": friends_ab.ids(0, friends=True),
         },
         ignore_keys={"sequence"},
     )
 
-    flow.delete_friend(device_a, user_b)
 
 
 def test_contact_get_block_list_from_db_after_server_sync(
-    device_a, device_b, assert_api, user_a, user_b
-):
+    device_a, device_b, assert_api, user_a, user_b, relation_ab):
     """getBlockListFromDB：拉黑并同步服务端黑名单后，从本地 DB 获取黑名单 ID 列表。"""
-    flow = ContactTestFlow(assert_api)
+    flow = ContactTestFlow(assert_api, synchronize=True)
     flow.establish_friends(device_a, device_b, user_a, user_b, reason="local_block_db")
+    timing_pause('step.interval', module='contact')
     flow.add_to_block_list(device_a, user_b)
 
+    timing_pause('step.interval', module='contact')
     server_resp = device_a.call(
         "ContactManager",
         Cmd.getBlockListFromServer.value,
@@ -77,11 +77,12 @@ def test_contact_get_block_list_from_db_after_server_sync(
             "manager": "ContactManager",
             "cmd": Cmd.getBlockListFromServer.value,
             "device": "deviceA",
-            "result": [user_b],
+            "result": relation_ab.block_ids(0, blocked=True),
         },
         ignore_keys={"sequence"},
     )
 
+    timing_pause('step.interval', module='contact')
     local_resp = device_a.call(
         "ContactManager",
         Cmd.getBlockListFromDB.value,
@@ -93,12 +94,13 @@ def test_contact_get_block_list_from_db_after_server_sync(
             "manager": "ContactManager",
             "cmd": Cmd.getBlockListFromDB.value,
             "device": "deviceA",
-            "result": [user_b],
+            "result": relation_ab.block_ids(0, blocked=True),
         },
         ignore_keys={"sequence"},
     )
 
     assert_api.assert_success(flow.remove_from_block_list(device_a, user_b))
+    timing_pause('step.interval', module='contact')
     flow.delete_friend(device_a, user_b)
 
 

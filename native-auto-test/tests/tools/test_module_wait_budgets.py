@@ -164,7 +164,7 @@ def test_offline_group_setup_restores_sleep_and_keeps_readiness(clock, monkeypat
     monkeypatch.setattr(module, "new_group_name", lambda prefix: "name")
     result = getattr(module, helper)(a, b, assertions, user_a="a", user_b="b", name_prefix="test")
     assert result == ("g", "name")
-    settle = 5.0 if module is delivery else 3.0
+    settle = 5.0  # All member/config readiness stabilization shares settle.normal.
     assert clock.now == pytest.approx(drain_budget + settle)
 
 

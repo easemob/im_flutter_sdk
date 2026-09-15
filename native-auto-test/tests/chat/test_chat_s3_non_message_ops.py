@@ -1,4 +1,7 @@
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -55,7 +58,7 @@ def _send_text_and_get_real_id_no_drain(device_a, device_b, assert_api, user_a: 
 
     real_id = str(send_msg_id)
 
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=10.0)
+    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.event', module='chat'))
     assert_api.assert_response_matches(
         evt_success,
         expected={
@@ -93,7 +96,7 @@ def _send_text_and_get_real_id_no_drain(device_a, device_b, assert_api, user_a: 
     ):
         real_id = str(evt_msg.get("msgId"))
 
-    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=10.0)
+    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timing_seconds('timeout.event', module='chat'))
     assert_api.assert_response_matches(
         evt_received,
         expected={
@@ -168,11 +171,12 @@ def _send_text_and_get_real_id_no_drain(device_a, device_b, assert_api, user_a: 
     return real_id
 
 
-def _wait_text_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 30.0) -> dict:
+def _wait_text_event(device, event_type: str, *, real_id: str, content: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=event_type, timeout=min(2.0, max(0.1, deadline - time.monotonic())))
+        evt = device.receive_message(match_event_type=event_type, timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())))
         if evt:
             seen.append(evt)
         for msg in ((evt or {}).get("data") or {}).get("messages") or []:
@@ -188,7 +192,8 @@ def _wait_text_event(device, event_type: str, *, real_id: str, content: str, tim
     raise AssertionError(f"未收到目标消息事件: event={event_type}, msgId={real_id}, content={content}, events={seen}")
 
 
-def _receive_ack_conversation_event(device, *, from_user: str, to_user: str, timeout: float = 60.0) -> dict:
+def _receive_ack_conversation_event(device, *, from_user: str, to_user: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.read_ack', module='chat') if timeout is None else timeout
     expected_types = {
         "onConversationRead",
         Cmd.onConversationHasRead.value,
@@ -198,7 +203,7 @@ def _receive_ack_conversation_event(device, *, from_user: str, to_user: str, tim
     seen_events = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        evt = device.receive_message(timeout=2.0)
+        evt = device.receive_message(timeout=timing_seconds('poll.receive', module='chat'))
         if evt:
             seen_events.append(evt)
         evt_type = (evt or {}).get("eventType")
@@ -208,7 +213,8 @@ def _receive_ack_conversation_event(device, *, from_user: str, to_user: str, tim
     raise AssertionError(f"未收到目标 ackConversationRead 事件: from={from_user}, to={to_user}, events={seen_events}")
 
 
-def _pin_conversation_after_pending_ops(device, *, conv_id: str, is_pinned: bool, timeout: float = 15.0) -> dict:
+def _pin_conversation_after_pending_ops(device, *, conv_id: str, is_pinned: bool, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.pending_operations', module='chat') if timeout is None else timeout
     seen_responses = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -222,7 +228,7 @@ def _pin_conversation_after_pending_ops(device, *, conv_id: str, is_pinned: bool
             and result.get("code") == 303
             and "concurrent operation" in str(result.get("description", ""))
         ):
-            time.sleep(1.0)
+            time.sleep(timing_seconds('poll.interval', module='chat'))
             continue
         return resp
     raise AssertionError(
@@ -269,6 +275,7 @@ def _assert_invalid_conv_returns_cursor(assert_api, resp: dict, cmd: str, device
 
 def test_chat_ack_conversation_read_success_with_event(device_a, device_b, assert_api, user_a, user_b):
     real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s3-ack-conv-{uuid.uuid4().hex[:6]}")
+    timing_pause('step.interval', module='chat')
     resp_ack = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": user_a})
     assert_api.assert_response_matches(
         resp_ack,
@@ -281,7 +288,7 @@ def test_chat_ack_conversation_read_success_with_event(device_a, device_b, asser
         ignore_keys={"sequence"},
     )
 
-    evt = _receive_ack_conversation_event(device_a, from_user=user_b, to_user=user_a, timeout=60.0)
+    evt = _receive_ack_conversation_event(device_a, from_user=user_b, to_user=user_a, timeout=timing_seconds('timeout.read_ack', module='chat'))
     evt_type = (evt or {}).get("eventType")
     assert evt_type in (
         "onConversationRead",
@@ -304,6 +311,7 @@ def test_chat_ack_conversation_read_success_with_event(device_a, device_b, asser
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_ack_conversation_read_invalid_conv_id(device_b, assert_api):
     resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": "__invalid_conversation_id__"})
     _assert_error_with_envelope(
@@ -316,6 +324,7 @@ def test_chat_ack_conversation_read_invalid_conv_id(device_b, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_ack_conversation_read_empty_conv_id(device_b, assert_api):
     resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": ""})
     _assert_error_with_envelope(
@@ -328,6 +337,7 @@ def test_chat_ack_conversation_read_empty_conv_id(device_b, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_pin_conversation_success_toggle(device_a, device_b, assert_api, user_a, user_b):
     resp_prepare = device_a.call("ChatManager", Cmd.getConversation.value, info={"convId": user_b, "type": 0, "createIfNeed": True})
     prepare_conv = resp_prepare.get("result") or {}
@@ -366,6 +376,7 @@ def test_chat_pin_conversation_success_toggle(device_a, device_b, assert_api, us
         ignore_keys={"sequence"},
     )
 
+    timing_pause('step.interval', module='chat')
     resp_pin = _pin_conversation_after_pending_ops(device_a, conv_id=user_b, is_pinned=True)
     assert_api.assert_response_matches(
         resp_pin,
@@ -378,6 +389,7 @@ def test_chat_pin_conversation_success_toggle(device_a, device_b, assert_api, us
         ignore_keys={"sequence"},
     )
 
+    timing_pause('step.interval', module='chat')
     resp_conv = device_a.call("ChatManager", Cmd.getConversation.value, info={"convId": user_b, "type": 0, "createIfNeed": True})
     conv = resp_conv.get("result") or {}
     assert_api.assert_response_matches(
@@ -417,6 +429,7 @@ def test_chat_pin_conversation_success_toggle(device_a, device_b, assert_api, us
         ignore_keys={"sequence"},
     )
 
+    timing_pause('step.interval', module='chat')
     resp_conv2 = device_a.call("ChatManager", Cmd.getConversation.value, info={"convId": user_b, "type": 0, "createIfNeed": True})
     conv2 = resp_conv2.get("result") or {}
     assert_api.assert_response_matches(
@@ -445,6 +458,7 @@ def test_chat_pin_conversation_success_toggle(device_a, device_b, assert_api, us
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_pin_conversation_invalid_conv_id(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.pinConversation.value, info={"convId": "__invalid__", "isPinned": True})
     _assert_error_with_envelope(
@@ -457,6 +471,7 @@ def test_chat_pin_conversation_invalid_conv_id(device_a, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_pin_conversation_empty_conv_id(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.pinConversation.value, info={"convId": "", "isPinned": True})
     _assert_error_with_envelope(
@@ -472,7 +487,7 @@ def test_chat_pin_conversation_empty_conv_id(device_a, assert_api):
 def test_chat_fetch_history_messages_success(device_a, device_b, assert_api, user_a, user_b):
     content = f"s3-history-{uuid.uuid4().hex[:6]}"
     real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content)
-    time.sleep(2)
+    time.sleep(timing_seconds('settle.history_projection', module='chat'))
     info = {"convId": user_b, "type": 0, "pageSize": 20, "startMsgId": "", "direction": 0}
     resp = device_a.call(
         "ChatManager",
@@ -486,7 +501,7 @@ def test_chat_fetch_history_messages_success(device_a, device_b, assert_api, use
         if isinstance(item, dict) and str(item.get("msgId")) == str(real_id)
     ]
     if not hits:
-        time.sleep(2)
+        time.sleep(timing_seconds('settle.history_projection', module='chat'))
         resp = device_a.call("ChatManager", Cmd.fetchHistoryMessages.value, info=info)
         result = resp.get("result") or {}
         hits = [
@@ -514,6 +529,7 @@ def test_chat_fetch_history_messages_success(device_a, device_b, assert_api, use
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_history_messages_invalid_conv_id(device_a, assert_api):
     resp = device_a.call(
         "ChatManager",
@@ -523,6 +539,7 @@ def test_chat_fetch_history_messages_invalid_conv_id(device_a, assert_api):
     _assert_invalid_conv_returns_cursor(assert_api, resp, Cmd.fetchHistoryMessages.value, "deviceA")
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_history_messages_empty_conv_id(device_a, assert_api):
     resp = device_a.call(
         "ChatManager",
@@ -542,7 +559,7 @@ def test_chat_fetch_history_messages_empty_conv_id(device_a, assert_api):
 def test_chat_fetch_history_messages_by_options_success(device_a, device_b, assert_api, user_a, user_b):
     content = f"s3-history-opt-{uuid.uuid4().hex[:6]}"
     real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content)
-    time.sleep(2)
+    time.sleep(timing_seconds('settle.history_projection', module='chat'))
     info = {"convId": user_b, "type": 0, "pageSize": 20, "cursor": ""}
     resp = device_a.call(
         "ChatManager",
@@ -556,7 +573,7 @@ def test_chat_fetch_history_messages_by_options_success(device_a, device_b, asse
         if isinstance(item, dict) and str(item.get("msgId")) == str(real_id)
     ]
     if not hits:
-        time.sleep(2)
+        time.sleep(timing_seconds('settle.history_projection', module='chat'))
         resp = device_a.call("ChatManager", Cmd.fetchHistoryMessagesByOptions.value, info=info)
         result = resp.get("result") or {}
         hits = [
@@ -584,6 +601,7 @@ def test_chat_fetch_history_messages_by_options_success(device_a, device_b, asse
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_history_messages_by_options_invalid_conv_id(device_a, assert_api):
     resp = device_a.call(
         "ChatManager",
@@ -593,6 +611,7 @@ def test_chat_fetch_history_messages_by_options_invalid_conv_id(device_a, assert
     _assert_invalid_conv_returns_cursor(assert_api, resp, Cmd.fetchHistoryMessagesByOptions.value, "deviceA")
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_history_messages_by_options_empty_conv_id(device_a, assert_api):
     resp = device_a.call(
         "ChatManager",

@@ -4,6 +4,7 @@ Pytest fixtures：WebSocket 配置、topic、请求封装等。
 Allure：请求、响应、比对结果会写入报告（需安装 allure-pytest，运行 pytest --alluredir=...）。
 """
 from __future__ import annotations
+from src.tools.case_timing import seconds as timing_seconds
 
 import json
 import os
@@ -16,6 +17,8 @@ import pytest
 
 # 保证能 import src
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+pytest_plugins = ("src.tools.allure_metadata", "src.tools.relationship_fixtures")
 
 from src.tools.config import get_default_topic, get_topic, has_rest_credentials
 from src.rest_api.user_api import create_users, delete_user
@@ -61,8 +64,9 @@ def _attach_request_response_allure(step_name: str, request_body: dict, response
 
 # ----- 登录前清空回调 -----
 
-def _drain_all_callbacks_before_cases(device: str, idle_timeout: float = 2.0, max_messages: int = 200) -> None:
+def _drain_all_callbacks_before_cases(device: str, idle_timeout: float = None, max_messages: int = 200) -> None:
     """登录后把该设备 topic 上残留的所有回调收掉并丢弃，避免影响后续用例。"""
+    idle_timeout = timing_seconds('drain.generic', module='session') if idle_timeout is None else idle_timeout
     listener = MessageListener(topic=get_topic(device), device=device)
     listener.start()
     try:
@@ -161,14 +165,14 @@ def _session_login(
                 if attempt >= 3:
                     raise
                 _logout_before_retry()
-                time.sleep(float(attempt))
+                time.sleep(float(attempt) * timing_seconds('retry.backoff', module='session'))
                 continue
             if not (_is_transient_login_failure(resp_a) or _is_transient_login_failure(resp_b)):
                 break
             if attempt >= 3:
                 break
             _logout_before_retry()
-            time.sleep(float(attempt))
+            time.sleep(float(attempt) * timing_seconds('retry.backoff', module='session'))
 
         # 仅在未配置 REST token 时，允许 WS createAccount 兜底
         if (not has_rest_token) and (_need_create_user(resp_a) or _need_create_user(resp_b)):
@@ -343,16 +347,24 @@ def api(ws_topic: str, ws_device: str | None):
     topic = get_topic(ws_device) if ws_device else ws_topic
 
     def _call(manager: str, cmd: str, info: dict | None = None, **kwargs):
-        req = {"manager": manager, "cmd": cmd, "info": info or {}, "topic": topic, "device": ws_device, **kwargs}
-        resp = ws_request(manager=manager, cmd=cmd, info=info, topic=topic, device=ws_device, **kwargs)
-        _attach_request_response_allure(f"API 请求 {manager}.{cmd}", req, resp)
-        return resp
+        from src.tools.allure_evidence import observe_call
+        return observe_call(ws_device, manager, cmd, info,
+                            lambda: ws_request(manager=manager, cmd=cmd, info=info,
+                                               topic=topic, device=ws_device, **kwargs),
+                            {"topic": topic, **kwargs})
 
-    def _call_and_wait_event(manager: str, cmd: str, info: dict | None = None, *, event_type: str, event_timeout: float = 10.0, **kwargs):
-        return ws_request_and_wait_event(
-            manager=manager, cmd=cmd, info=info, topic=topic, device=ws_device,
-            event_type=event_type, event_timeout=event_timeout, **kwargs,
-        )
+    def _call_and_wait_event(manager: str, cmd: str, info: dict | None = None, *, event_type: str, event_timeout: float = None, **kwargs):
+        event_timeout = timing_seconds('timeout.event', module='session') if event_timeout is None else event_timeout
+        from src.tools.allure_evidence import attach, observe_call
+        from src.tools.allure_steps import business_step, action_title, event_title
+        filters = {"match_event_type": event_type, "timeout": event_timeout}
+        with business_step(action_title(ws_device, manager, cmd) + '，并' + event_title(ws_device, filters)):
+            attach('等待条件', filters)
+            return observe_call(ws_device, manager, cmd, info,
+                                lambda: ws_request_and_wait_event(
+                                    manager=manager, cmd=cmd, info=info, topic=topic, device=ws_device,
+                                    event_type=event_type, event_timeout=event_timeout, **kwargs),
+                                {"topic": topic, **kwargs})
 
     class _API:
         call = staticmethod(_call)
@@ -365,10 +377,11 @@ def _make_api(device: str):
     topic = get_topic(device)
 
     def _call(manager: str, cmd: str, info: dict | None = None, **kwargs):
-        req = {"manager": manager, "cmd": cmd, "info": info or {}, "topic": topic, "device": device, **kwargs}
-        resp = ws_request(manager=manager, cmd=cmd, info=info, topic=topic, device=device, **kwargs)
-        _attach_request_response_allure(f"API 请求 {manager}.{cmd} (device={device})", req, resp)
-        return resp
+        from src.tools.allure_evidence import observe_call
+        return observe_call(device, manager, cmd, info,
+                            lambda: ws_request(manager=manager, cmd=cmd, info=info,
+                                               topic=topic, device=device, **kwargs),
+                            {"topic": topic, **kwargs})
 
     class _API:
         call = staticmethod(_call)
@@ -440,7 +453,7 @@ def created_test_users():
     else:
         created = True
         # REST 创建成功后等待服务端用户数据完成可见，再开始登录和执行 cases。
-        time.sleep(5.0)
+        time.sleep(timing_seconds('settle.normal', module='session'))
     try:
         yield user_a, user_b, user_c
     finally:
@@ -575,13 +588,15 @@ class _DeviceChannelWrapper:
         return observe_call(self._device, manager, cmd, info,
                             lambda: self._conn.call(manager, cmd, info, **kwargs), kwargs)
 
-    def receive_message(self, *, match_cmd=None, match_event_type=None, timeout=10.0):
+    def receive_message(self, *, match_cmd=None, match_event_type=None, timeout=None):
+        timeout = timing_seconds('timeout.event', module='session') if timeout is None else timeout
         from src.tools.allure_evidence import observe_event
         filters = dict(match_cmd=match_cmd, match_event_type=match_event_type, timeout=timeout)
         return observe_event(self._device, filters,
                              lambda: self._conn.receive_message(**filters))
 
-    def drain_events(self, timeout: float = 2.0) -> None:
+    def drain_events(self, timeout: float = None) -> None:
+        timeout = timing_seconds('drain.generic', module='session') if timeout is None else timeout
         self._conn.drain_events(timeout=timeout)
 
 

@@ -1,15 +1,17 @@
 """Send-status diagnostics without retrying or relaxing success assertions."""
+from src.tools.case_timing import seconds as timing_seconds
 import time
 
 import pytest
 
 
-def wait_send_success(device, *, temp_id, predicate=None, timeout=60.0):
+def wait_send_success(device, *, temp_id, predicate=None, timeout=None):
     """Return the original success event; report only safe diagnostic fields.
 
     Filtered receives preserve unrelated events in the WS client's buffer.
     Error events correlate by the original local ID, not the server-assigned ID.
     """
+    timeout = timing_seconds('timeout.send_completion', module='shared') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
@@ -18,7 +20,7 @@ def wait_send_success(device, *, temp_id, predicate=None, timeout=60.0):
             if remaining <= 0:
                 break
             event = device.receive_message(
-                match_event_type=event_type, timeout=min(0.5, remaining)
+                match_event_type=event_type, timeout=min(timing_seconds('poll.receive_probe', module='shared'), remaining)
             )
             if not event:
                 continue

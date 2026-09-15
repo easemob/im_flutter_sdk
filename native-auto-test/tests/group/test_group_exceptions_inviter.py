@@ -1,5 +1,6 @@
 """Group inviterUser 异常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -33,6 +34,7 @@ def test_group_inviter_user_empty_members(device_a, assert_api, user_a):
             group_name=new_group_name("ex_inviter_empty"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.inviterUser.value,
@@ -63,6 +65,7 @@ def test_group_inviter_user_nonexistent_user(device_a, assert_api, user_a):
             group_name=new_group_name("ex_inviter_user"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.inviterUser.value,

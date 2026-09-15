@@ -1,5 +1,6 @@
 """Group remaining API coverage: normal and boundary cases."""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import uuid
 
@@ -92,6 +93,7 @@ def test_group_fetch_members_info_invalid_limit(device_a, assert_api, user_a):
             group_name=new_group_name("member_info_limit"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.fetchGroupMembersInfo.value,
@@ -136,6 +138,7 @@ def test_group_update_avatar_success(device_a, assert_api, user_a):
             group_name=new_group_name("avatar"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         group_name = (group_resp.get("result") or {}).get("name")
         resp = device_a.call(
             "GroupManager",
@@ -206,6 +209,7 @@ def test_group_update_avatar_abnormal_values(
             group_name=new_group_name("avatar_bad"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         group_name = (group_resp.get("result") or {}).get("name")
         resp = device_a.call(
             "GroupManager",

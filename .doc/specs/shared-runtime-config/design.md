@@ -247,6 +247,52 @@ sequenceDiagram
 - **兼容期**：不保留旧格式解析分支（不同时支持 `sdk_options` 与 `app`）。迁移一次性完成，旧本地 `config.yaml` 需要按模板改写；README 提供迁移步骤。
 - **无静态 token**：REST 凭据只支持 client_credentials；缺少 `client_id/client_secret` 时 REST 不可用，测试降级为 WS `createAccount`。部分环境禁止开放注册（返回 401），此时必须配置 client 凭据。
 
+## Cases Timing Extension
+
+Historical design below describes the initial migration. For the current timing API, configuration precedence and compatibility policy, see **Semantic vocabulary redesign A**; its rules supersede the old key/env/alias descriptions.
+
+### Overview / Architecture
+
+复用环境配置解析入口，在 `app.case_timing` 下按 `step / settle / timeout / observe / poll / drain / retry` 组织六类时间（poll 与 drain 同属辅助等待类）。Python 独立 `src/tools/case_timing.py` 提供 `seconds(key)` 与 `pause(key)`，配置解析入口仍是 `src/tools/config.py`。内置默认和旧环境变量映射集中维护；不在函数默认实参中读取配置，避免导入时冻结或触发设备环境要求。
+
+### Workflow / Sequence
+
+```mermaid
+sequenceDiagram
+    participant Case
+    participant Flow
+    participant SDK
+    Case->>Flow: logout_for_offline
+    Flow->>SDK: logout + 成功断言
+    Flow->>Flow: offline_after_logout (3s)
+    Case->>SDK: 对端执行离线业务操作
+    Case->>Flow: login_preserving_offline_events
+    Flow->>Flow: offline_before_login (3s)
+    Flow->>SDK: login + startCallback + 成功断言
+    Flow->>Flow: offline_after_login (3s)，保留事件队列
+    Case->>SDK: 严格等待目标离线事件
+```
+
+### Component / Data Design
+
+- `step.interval=1`：明确业务依赖边界使用；不在 device.call 注入。
+- `settle.offline_after_logout/offline_before_login/offline_after_login=3`；专用 settle 保留原值；子区父消息稳定等待初始 3 秒。
+- timeout/observe/poll/drain/retry 根据原代码按语义命名，不能仅凭原数值相同合并。
+- YAML 优先，已有专用时间环境变量其次，内置默认最后；无需填写全部参数。
+- 所有数值必须有限、非布尔、非负；timeout/observe/poll 严格为正。错误仅包含时间字段路径，不打印环境文件内容。
+- 模块和场景通过命名键区分：精确场景键 > 模块键 > 分类 default > 旧时间环境变量 > 内置默认。step.interval 是普通步骤兜底。场景键保留原文件/函数/用途，430 个迁移默认集中于 `src/tools/case_timing_defaults.py`，避免同值不同义混合。完整目录记录在 `native-auto-test/docs/case-timing-inventory.md`，不另建第二份任务清单。
+- 八模块显式普通步骤等待共 283 处；包含公共离线边界、原 sleep/default timeout/显式 timeout/轮询预算在内共 857 处配置引用。保留原较长专用等待，不叠加紧邻重登公共稳定等待和已有 sleep 的普通间隔。
+- 用户要求只完成调整，不执行设备回归或缺陷归因；验收限于静态和无设备工具测试。
+- `app.wait` 继续不消费；bridge websocket 的传输超时保留原配置位置。
+
+### Constraints / Tradeoffs
+
+稳定等待不是服务端就绪证明，不替代已有回调就绪条件。业务输入时间及时间排序所需的间距需逐场景检查，不能机械替换为普通 step。已知的断言缺口不顺手修改；设备验证前不宣称已解决报告中的 22 条失败。
+
+### Testing Strategy
+
+用临时 YAML、虚拟时钟和 fake device 测试默认值、覆盖优先级、非法配置、零等待、离线顺序及事件保留；回归现有 wait budget 测试。静态扫描业务文件等待字面量并人工分类遗漏。业务端不自动跑全量；设备冒烟需单独记录结果。
+
 ## Testing Strategy
 
 1. **Dart 纯函数测试**（不依赖设备/网络，`flutter test`）：
@@ -266,3 +312,36 @@ sequenceDiagram
 3. **配置与脚本静态检查**：`bash -n` 校验 run.sh；用临时目录与假配置验证 `--config` 选择与 lane 桥接改写（不启模拟器）。
 4. **构建/自检**：`cd im_flutter_test && flutter analyze && flutter test`；`cd native-auto-test && python -m compileall src tests && python -m pytest tests/tools -q`。
 5. **端到端冒烟（需设备，列为手工验收）**：`run.sh --config config/<env>.yaml` 跑一个最小用例，确认 App 用注入配置初始化、DNS 派生正确、桥接连通、pytest REST 动态 token 可用。
+
+## Simplified settling correction
+### Overview / Architecture
+Expose scalar step and settle.offline/normal/slow (3/5/15s). Resolve existing semantic call sites through a small alias map; preserve old explicit overrides and specialized sorting/long waits.
+### Workflow
+Group approval/invitation/offline flows: operation -> callback collection and assertions -> step pause -> next operation. Do not pause within a callback batch or drain during stabilization.
+### Constraints and testing
+Preserve business payloads/assertions, timeout budgets and legacy overrides. Test aliases and AST step placement without devices; update template and README.
+
+## Offline login entry audit
+Inventory all direct login/logout and shared offline helper call sites. Keep shared login-before pause (default 3s), do not duplicate it at its callers. Direct friend-sync relogin gains boundary pauses only; preserve its original callback activation semantics. Static regression rejects direct login in offline-named cases except the explicitly paced Client sync case. Fake-device sequence verifies peer invitation precedes sleep and login, with scalar settle.offline override.
+
+## Semantic vocabulary redesign A (current authority for timing)
+
+### Overview / Architecture
+Replace the 430 migration keys with 59 semantic DEFAULTS in case_timing_defaults.py. No module-specific built-in table is needed: explicit semantic profiles preserve every existing effective numeric default. seconds(key, *, module) and pause(key='step.interval', *, module) resolve only explicit dimensions; no prefix inference, SETTLE_CLASSES or legacy environment lookup. Existing timing sections remain. `session` covers session fixtures; `shared` is the documented generic sender helper scope. Offline helpers accept module and forward it from every business caller.
+
+### Component / data design
+Configuration example: `timeout: {event: 10, contact: {event: 20, default: 30}, default: 60}`. Per-section module scalar is shorthand for module.default. Resolution is module.name > section.name > module.default > section.default > built-in semantic default. Scalar step is shorthand for step.interval. Unknown config keys/modules and invalid values are rejected across the complete timing section, not only the selected branch. All values are seconds, with the existing zero/positive rules.
+
+Vocabulary distinguishes callback/event confirmation, message processing, offline replay, server visibility, friend readiness probes/completion, sync start/finish and downloads. Existing different callback budgets are kept as documented semantic profiles (event/message/replay/send terminal), not per-function aliases. Observation windows distinguish absence, late-delivery absence, full collection and incremental collection. Receive slices (poll.receive), polling sleep (poll.interval) and positive numeric epsilon have different purposes. YAML module overrides are explicit; real exceptional budgets retain descriptive semantic keys rather than arbitrary site names. Migration evidence records every original budget and any deliberate changes.
+
+### Workflow / sequence
+case -> semantic timing resolver -> validate YAML -> select explicit module/semantic override -> numeric seconds -> existing wait operation. Offline flow: logout + offline settle -> peer operation -> offline settle -> login/startCallback -> offline settle -> unchanged event assertions. No additional sleeps or device actions in this redesign.
+
+### Constraints / tradeoffs
+Old long-key YAML is a breaking change and is rejected; migrate to the documented vocabulary. Old timing environment variables are removed, not another priority layer. No real environment file is edited. Maintain scalar step and offline/normal/slow defaults 1/3/5/15. Parent-message stays 5, thumbnail completion 30, cursor ordering 1.1; sorting spacing remains special. We prefer a slightly larger vocabulary over silently changing deadlines to meet an arbitrary 30-key target. Existing per-case index remains evidence about boundaries, not a configuration source; replace the long inventory with a compact semantic reference.
+
+### Testing strategy
+Red/green resolver tests: all precedence levels, explicit module propagation, runtime reads, scalar/mapping shapes, unknown/stale keys, invalid numbers, zero rules, removed env lookup. AST migration checks: registered semantic keys/modules; no old prefixes; positive callback versus drain usage; known epsilon exceptions. Snapshot pre-migration expressions and compare defaults/AST after migration. Keep virtual-clock budget and offline event-preservation tests; run all tests/tools, compileall and diff check, no device runs or SDK builds.
+
+## Full dependency audit
+Use source call-effect inventory (mutations, observations, reads, explicit waits) with local/imported helper resolution. Inspect all test functions including branches and finite business loops; exclude cleanup/finally and deadline polling internals. Add explicit pauses only in case/flow source before dependent operations, never transport interception. Ordinary intervals remain 1s; shared offline pre-login remains 3s. Preserve legacy per-boundary aliases and all original timeout values. Store per-case evidence in docs/case-dependency-audit.md; validate helper resolution, boundary placement, assertions and device-free tools.

@@ -1,5 +1,13 @@
 # Chat 单聊缺失 Case 第一批设计
 
+## 合并视频缩略图前置设计（本次增量）
+
+- Overview / Architecture：只调整 `test_combine_forward_media_inner_attachment_download`，复用既有发送与下载 helper；不修改 bridge/SDK。
+- Workflow：A 发送图片 → 取成功消息 `body.localPath` → A 发送视频（显式 `thumbnailLocalPath`）→ 检查上传后的缩略图远端地址 → 合并转发 → B 解析并检查内部视频缩略图地址 → 原 helper 验证下载终态。
+- Data：本地路径来自同一发送端、同一次用例；图片仅作为测试缩略图，不声称是视频首帧。补充路径断言不打印完整消息或 secret。
+- Constraints / tradeoffs：不人工填充接收端远端地址、不增加重试或等待、不放宽终态；地址存在不等于可下载，最终成功仍需真实回调。
+- Testing strategy：mock 发送/解析/下载边界但执行真实 case，验证视频参数传递，空本地路径、空发送端 URL 和空解析 URL 分阶段失败；复跑既有缩略图虚拟时钟测试。设备单例由用户在 ngi 环境重跑，结果待回填。
+
 ## Overview
 
 本批只补基础消息与送达通知，不修改 SDK、桥接或消息协议。测试通过已有 `ChatManager.sendMessageWithType` 与事件桥接，在 deviceA/deviceB 两个 WebSocket topic 上采集真实响应，随后冻结稳定字段。送达回执依赖测试 App 初始化时显式开启 `EMOptions.requireDeliveryAck`；配置由 `native-auto-test/config.yaml` 经 Flutter asset 和 `SdkConfigLoader` 传入 SDK。
@@ -89,3 +97,15 @@ sequenceDiagram
 - 需要服务端开关的场景先做能力探测；未开启时进入 deferred，不以关闭态错误作为验收值。
 - Flutter SDK 未暴露 Robot/WebIM 参数时，记录接口语义差异，不构造无效桥接字段冒充覆盖。
 - 当前 5554/5556 AppKey 的翻译和 delivery receipt 均已开启；本批未发现需要用户开启的新服务能力。
+
+## 语音发送即时响应断言（2026-09-15，历史方案，已由后续修正替代）
+
+在共享发送助手增加默认空的 response_ignore_keys，仅用于即时响应；_send_online_typed 仅在 voice 分支传入 fileStatus。成功回调继续使用原 ignore_keys。此修正不增加固定等待，不改变 SDK 或收件端附件预期。验证使用离线合成响应检查即时响应可接受 PENDING、成功回调仍拒绝 PENDING，以及目标用例收集；真实设备结果单独记录。
+
+### 语音状态断言修正（2026-09-15）
+
+Android voiceBodyToJson 从 body.downloadStatus() 输出 fileStatus；该状态独立于发送回调。撤销上一节 response_ignore_keys 特例，以本模块的 _VoiceDownloadStatus 条件匹配器替换三条参数化用例的语音模板固定值，要求字段存在且为合法整数枚举。发送、接收、送达、已读、撤回、属性变更及本地查询沿用模板。删除属性修改后强制设为 1 的覆盖。其他消息类型和下载专项保持不变。通过合成完整发送/接收/送达事件回归验证旧代码失败、新代码通过，并验证错误 status/type/duration/msgId 仍失败。
+
+### 复用通用好友前置（2026-09-15）
+
+从三个参数化函数移除 _establish_friendship，所有消息类型一致复用 chat/conftest.py 的 ensure_friends。_restore_case 增加默认 False 的 preserve_friendship 参数；True 时仍调用双方 restore_user_login（含 startCallback 和 drain_events），仅跳过 _cleanup_relation。不改通用 fixture、离线登录节奏和业务断言。用无设备回归验证发送前不重复加好友、异常 finally 保留关系、默认调用仍清理。

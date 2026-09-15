@@ -1,4 +1,5 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import uuid
 
@@ -26,6 +27,7 @@ def _assert_success_envelope(assert_api, resp: dict, *, cmd: str, device: str) -
 
 def test_chatroom_update_and_fetch_announcement_success(device_a, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="announcement", desc_prefix="announcement")
+    timing_pause('step.interval', module='chatroom')
     announcement = f"notice-{uuid.uuid4().hex[:8]}"
     try:
         update_resp = device_a.call(
@@ -40,6 +42,7 @@ def test_chatroom_update_and_fetch_announcement_success(device_a, assert_api, us
             device="deviceA",
         )
 
+        timing_pause('step.interval', module='chatroom')
         fetch_resp = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomAnnouncement.value,
@@ -61,10 +64,12 @@ def test_chatroom_update_and_fetch_announcement_success(device_a, assert_api, us
 
 def test_chatroom_add_fetch_remove_white_list_success(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="whitelist", desc_prefix="whitelist")
+    timing_pause('step.interval', module='chatroom')
     try:
         join_resp = device_b.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
         assert_join_chatroom_response(assert_api, join_resp, device="deviceB", room_id=room_id)
 
+        timing_pause('step.interval', module='chatroom')
         add_resp = device_a.call(
             "ChatRoomManager",
             Cmd.addMembersToChatRoomWhiteList.value,
@@ -77,6 +82,7 @@ def test_chatroom_add_fetch_remove_white_list_success(device_a, device_b, assert
             device="deviceA",
         )
 
+        timing_pause('step.interval', module='chatroom')
         fetch_after_add = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomWhiteListFromServer.value,
@@ -108,6 +114,7 @@ def test_chatroom_add_fetch_remove_white_list_success(device_a, device_b, assert
             device="deviceA",
         )
 
+        timing_pause('step.interval', module='chatroom')
         fetch_after_remove = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomWhiteListFromServer.value,
@@ -157,9 +164,11 @@ def _assert_list_response(assert_api, resp: dict, *, cmd: str, device: str) -> l
 
 def test_chatroom_mute_fetch_unmute_member_success(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="mute", desc_prefix="mute")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
 
+        timing_pause('step.interval', module='chatroom')
         mute_resp = device_a.call(
             "ChatRoomManager",
             Cmd.muteChatRoomMembers.value,
@@ -167,6 +176,7 @@ def test_chatroom_mute_fetch_unmute_member_success(device_a, device_b, assert_ap
         )
         _assert_success_envelope(assert_api, mute_resp, cmd=Cmd.muteChatRoomMembers.value, device="deviceA")
 
+        timing_pause('step.interval', module='chatroom')
         mute_list_resp = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomMuteList.value,
@@ -187,6 +197,7 @@ def test_chatroom_mute_fetch_unmute_member_success(device_a, device_b, assert_ap
         )
         _assert_success_envelope(assert_api, unmute_resp, cmd=Cmd.unMuteChatRoomMembers.value, device="deviceA")
 
+        timing_pause('step.interval', module='chatroom')
         mute_list_after_resp = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomMuteList.value,
@@ -205,9 +216,11 @@ def test_chatroom_mute_fetch_unmute_member_success(device_a, device_b, assert_ap
 
 def test_chatroom_block_fetch_unblock_member_success(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="block", desc_prefix="block")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
 
+        timing_pause('step.interval', module='chatroom')
         block_resp = device_a.call(
             "ChatRoomManager",
             Cmd.blockChatRoomMembers.value,
@@ -215,6 +228,7 @@ def test_chatroom_block_fetch_unblock_member_success(device_a, device_b, assert_
         )
         _assert_success_envelope(assert_api, block_resp, cmd=Cmd.blockChatRoomMembers.value, device="deviceA")
 
+        timing_pause('step.interval', module='chatroom')
         block_list_resp = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomBlockList.value,
@@ -235,6 +249,7 @@ def test_chatroom_block_fetch_unblock_member_success(device_a, device_b, assert_
         )
         _assert_success_envelope(assert_api, unblock_resp, cmd=Cmd.unBlockChatRoomMembers.value, device="deviceA")
 
+        timing_pause('step.interval', module='chatroom')
         block_list_after_resp = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomBlockList.value,
@@ -253,6 +268,7 @@ def test_chatroom_block_fetch_unblock_member_success(device_a, device_b, assert_
 
 def test_chatroom_change_subject_and_description_success(device_a, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="profile", desc_prefix="profile")
+    timing_pause('step.interval', module='chatroom')
     new_subject = f"room-subject-{uuid.uuid4().hex[:8]}"
     new_description = f"room-description-{uuid.uuid4().hex[:8]}"
     try:
@@ -263,6 +279,7 @@ def test_chatroom_change_subject_and_description_success(device_a, assert_api, u
         )
         _assert_success_envelope(assert_api, subject_resp, cmd=Cmd.changeChatRoomSubject.value, device="deviceA")
 
+        timing_pause('step.interval', module='chatroom')
         description_resp = device_a.call(
             "ChatRoomManager",
             Cmd.changeChatRoomDescription.value,
@@ -275,6 +292,7 @@ def test_chatroom_change_subject_and_description_success(device_a, assert_api, u
             device="deviceA",
         )
 
+        timing_pause('step.interval', module='chatroom')
         fetch_resp = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomInfoFromServer.value,
@@ -315,9 +333,11 @@ def test_chatroom_change_subject_and_description_success(device_a, assert_api, u
 
 def test_chatroom_add_and_remove_admin_success(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="admin", desc_prefix="admin")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
 
+        timing_pause('step.interval', module='chatroom')
         add_resp = device_a.call(
             "ChatRoomManager",
             Cmd.addChatRoomAdmin.value,
@@ -325,6 +345,7 @@ def test_chatroom_add_and_remove_admin_success(device_a, device_b, assert_api, u
         )
         _assert_success_envelope(assert_api, add_resp, cmd=Cmd.addChatRoomAdmin.value, device="deviceA")
 
+        timing_pause('step.interval', module='chatroom')
         fetch_after_add = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomInfoFromServer.value,
@@ -341,6 +362,7 @@ def test_chatroom_add_and_remove_admin_success(device_a, device_b, assert_api, u
         )
         _assert_success_envelope(assert_api, remove_resp, cmd=Cmd.removeChatRoomAdmin.value, device="deviceA")
 
+        timing_pause('step.interval', module='chatroom')
         fetch_after_remove = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomInfoFromServer.value,
@@ -357,9 +379,11 @@ def test_chatroom_add_and_remove_admin_success(device_a, device_b, assert_api, u
 
 def test_chatroom_remove_member_success(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="kick", desc_prefix="kick")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
 
+        timing_pause('step.interval', module='chatroom')
         remove_resp = device_a.call(
             "ChatRoomManager",
             Cmd.removeChatRoomMembers.value,
@@ -367,6 +391,7 @@ def test_chatroom_remove_member_success(device_a, device_b, assert_api, user_a, 
         )
         _assert_success_envelope(assert_api, remove_resp, cmd=Cmd.removeChatRoomMembers.value, device="deviceA")
 
+        timing_pause('step.interval', module='chatroom')
         members_resp = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomMembers.value,
@@ -394,6 +419,7 @@ def test_chatroom_remove_member_success(device_a, device_b, assert_api, user_a, 
 
 def test_chatroom_mute_and_unmute_all_members_success(device_a, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="mute_all", desc_prefix="mute_all")
+    timing_pause('step.interval', module='chatroom')
     try:
         mute_resp = device_a.call(
             "ChatRoomManager",
@@ -402,6 +428,7 @@ def test_chatroom_mute_and_unmute_all_members_success(device_a, assert_api, user
         )
         _assert_success_envelope(assert_api, mute_resp, cmd=Cmd.muteAllChatRoomMembers.value, device="deviceA")
 
+        timing_pause('step.interval', module='chatroom')
         fetch_after_mute = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomInfoFromServer.value,
@@ -418,6 +445,7 @@ def test_chatroom_mute_and_unmute_all_members_success(device_a, assert_api, user
         )
         _assert_success_envelope(assert_api, unmute_resp, cmd=Cmd.unMuteAllChatRoomMembers.value, device="deviceA")
 
+        timing_pause('step.interval', module='chatroom')
         fetch_after_unmute = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomInfoFromServer.value,
@@ -432,6 +460,7 @@ def test_chatroom_mute_and_unmute_all_members_success(device_a, assert_api, user
 
 def test_chatroom_set_and_fetch_attributes_success(device_a, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="attrs", desc_prefix="attrs")
+    timing_pause('step.interval', module='chatroom')
     attr_key = f"room_attr_{uuid.uuid4().hex[:8]}"
     attr_value = f"value-{uuid.uuid4().hex[:8]}"
     try:
@@ -446,6 +475,7 @@ def test_chatroom_set_and_fetch_attributes_success(device_a, assert_api, user_a)
             },
         )
         _assert_success_envelope(assert_api, set_resp, cmd=Cmd.setChatRoomAttributes.value, device="deviceA")
+        timing_pause('step.interval', module='chatroom')
         failures = set_resp.get("result")
         assert isinstance(failures, dict), f"setChatRoomAttributes result 应为失败 key map: {set_resp}"
         assert attr_key not in failures, f"设置聊天室属性失败: key={attr_key}, failures={failures}"
@@ -473,6 +503,7 @@ def test_chatroom_set_and_fetch_attributes_success(device_a, assert_api, user_a)
 
 def test_chatroom_fetch_all_attributes_success(device_a, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="attrs_all", desc_prefix="attrs_all")
+    timing_pause('step.interval', module='chatroom')
     attr_key_1 = f"room_attr_all_1_{uuid.uuid4().hex[:8]}"
     attr_key_2 = f"room_attr_all_2_{uuid.uuid4().hex[:8]}"
     attributes = {
@@ -491,6 +522,7 @@ def test_chatroom_fetch_all_attributes_success(device_a, assert_api, user_a):
             },
         )
         _assert_success_envelope(assert_api, set_resp, cmd=Cmd.setChatRoomAttributes.value, device="deviceA")
+        timing_pause('step.interval', module='chatroom')
         failures = set_resp.get("result")
         assert isinstance(failures, dict), f"setChatRoomAttributes result 应为失败 key map: {set_resp}"
         assert not set(attributes).intersection(failures), f"设置聊天室属性失败: failures={failures}"
@@ -516,6 +548,7 @@ def test_chatroom_fetch_all_attributes_success(device_a, assert_api, user_a):
 
 def test_chatroom_fetch_attributes_by_partial_keys_success(device_a, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="attrs_partial", desc_prefix="attrs_partial")
+    timing_pause('step.interval', module='chatroom')
     attr_key_1 = f"room_attr_partial_1_{uuid.uuid4().hex[:8]}"
     attr_key_2 = f"room_attr_partial_2_{uuid.uuid4().hex[:8]}"
     attributes = {
@@ -534,6 +567,7 @@ def test_chatroom_fetch_attributes_by_partial_keys_success(device_a, assert_api,
             },
         )
         _assert_success_envelope(assert_api, set_resp, cmd=Cmd.setChatRoomAttributes.value, device="deviceA")
+        timing_pause('step.interval', module='chatroom')
         failures = set_resp.get("result")
         assert isinstance(failures, dict), f"setChatRoomAttributes result 应为失败 key map: {set_resp}"
         assert not set(attributes).intersection(failures), f"设置聊天室属性失败: failures={failures}"
@@ -563,6 +597,7 @@ def test_chatroom_fetch_attributes_by_partial_keys_success(device_a, assert_api,
 
 def test_chatroom_update_attribute_overwrites_previous_value(device_a, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="attrs_update", desc_prefix="attrs_update")
+    timing_pause('step.interval', module='chatroom')
     attr_key = f"room_attr_update_{uuid.uuid4().hex[:8]}"
     old_value = f"old-{uuid.uuid4().hex[:8]}"
     new_value = f"new-{uuid.uuid4().hex[:8]}"
@@ -579,6 +614,7 @@ def test_chatroom_update_attribute_overwrites_previous_value(device_a, assert_ap
         )
         _assert_success_envelope(assert_api, first_set_resp, cmd=Cmd.setChatRoomAttributes.value, device="deviceA")
 
+        timing_pause('step.interval', module='chatroom')
         second_set_resp = device_a.call(
             "ChatRoomManager",
             Cmd.setChatRoomAttributes.value,
@@ -590,6 +626,7 @@ def test_chatroom_update_attribute_overwrites_previous_value(device_a, assert_ap
             },
         )
         _assert_success_envelope(assert_api, second_set_resp, cmd=Cmd.setChatRoomAttributes.value, device="deviceA")
+        timing_pause('step.interval', module='chatroom')
         failures = second_set_resp.get("result")
         assert isinstance(failures, dict), f"setChatRoomAttributes result 应为失败 key map: {second_set_resp}"
         assert attr_key not in failures, f"覆盖更新聊天室属性失败: key={attr_key}, failures={failures}"
@@ -620,9 +657,11 @@ def test_chatroom_update_attribute_overwrites_previous_value(device_a, assert_ap
 
 def test_chatroom_change_owner_success(device_a, device_b, assert_api, user_a, user_b):
     room_id, room_name = create_chatroom_or_skip(owner=user_a, name_prefix="owner", desc_prefix="owner")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
 
+        timing_pause('step.interval', module='chatroom')
         change_resp = device_a.call(
             "ChatRoomManager",
             Cmd.changeChatRoomOwner.value,
@@ -661,6 +700,7 @@ def test_chatroom_change_owner_success(device_a, device_b, assert_api, user_a, u
 
 def test_chatroom_remove_attributes_success(device_a, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="remove_attrs", desc_prefix="remove_attrs")
+    timing_pause('step.interval', module='chatroom')
     attr_key = f"room_attr_remove_{uuid.uuid4().hex[:8]}"
     attr_value = f"value-{uuid.uuid4().hex[:8]}"
     try:
@@ -676,12 +716,14 @@ def test_chatroom_remove_attributes_success(device_a, assert_api, user_a):
         )
         _assert_success_envelope(assert_api, set_resp, cmd=Cmd.setChatRoomAttributes.value, device="deviceA")
 
+        timing_pause('step.interval', module='chatroom')
         remove_resp = device_a.call(
             "ChatRoomManager",
             Cmd.removeChatRoomAttributes.value,
             info={"roomId": room_id, "keys": [attr_key], "forced": True},
         )
         _assert_success_envelope(assert_api, remove_resp, cmd=Cmd.removeChatRoomAttributes.value, device="deviceA")
+        timing_pause('step.interval', module='chatroom')
         failures = remove_resp.get("result")
         assert isinstance(failures, dict), f"removeChatRoomAttributes result 应为失败 key map: {remove_resp}"
         assert attr_key not in failures, f"删除聊天室属性失败: key={attr_key}, failures={failures}"

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -10,11 +11,12 @@ from src import Cmd
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
 
-def _event(device, event_type, predicate=None, timeout=30.0):
+def _event(device, event_type, predicate=None, timeout=None):
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=event_type, timeout=2.0)
+        evt = device.receive_message(match_event_type=event_type, timeout=timing_seconds('poll.receive', module='chat'))
         if evt:
             seen.append(evt)
             if predicate is None or predicate(evt):
@@ -35,11 +37,13 @@ def _send_typed(device_a, device_b, assert_api, user_a, user_b, type_key, payloa
     return resp, success, received, real_id
 
 
+@pytest.mark.no_friend_setup
 def test_chat_missing_recall_empty_message_id(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": ""})
     assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.recallMessage.value, "device": "deviceA", "result": {"code": 500, "description": "The message was not found"}}, ignore_keys={"sequence"})
 
 
+@pytest.mark.no_friend_setup
 @pytest.mark.parametrize("info", [{"msgId": "", "to": "test0714user1"}, {"msgId": "__invalid_msg_id__", "to": ""}, {"msgId": "__invalid_msg_id__", "to": "__invalid_user__"}])
 def test_chat_missing_ack_message_read_boundaries(device_b, assert_api, info):
     resp = device_b.call("ChatManager", Cmd.ackMessageRead.value, info=info)

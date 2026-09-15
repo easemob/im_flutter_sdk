@@ -1,5 +1,13 @@
 # Chat 单聊缺失 Case 第一批任务
 
+## 合并视频缩略图有效前置
+
+- [x] 核对 `chat_manager.dart` 支持 video `thumbnailLocalPath`，测试 bridge 仅补 filePath；确认用户日志在解析阶段缩略图远端地址为空。
+- [x] 为真实目标 case 增加 mock 边界回归，先运行 RED（4 failed，原视频未传 thumbnailLocalPath）。
+- [x] 显式传递图片成功消息本地路径，补上传/解析两个缩略图地址前置检查；不修改原终态 helper。
+- [x] 运行 `tests/tools/test_combine_thumbnail_preconditions.py` + `tests/tools/test_chat_wait_budgets.py`：14 passed，1 条既有 websockets.legacy warning；目标文件 compileall 和 git diff --check 通过。已更新 Chat 台账；未触碰用户报告模块修改。
+- [ ] 用户复跑 ngi 环境单例，按上传/解析/下载阶段回填真实结果；未运行设备前不得声称 403 已解决。
+
 - [x] 确认 5556/5558 模拟器对应 deviceA/deviceB WebSocket topic。
 - [x] 检查 SDK、桥接和 Python Cmd 已暴露 location、voice、custom、onMessagesDelivered。
 - [x] 添加位置消息发送/接收 discovery case。
@@ -83,3 +91,22 @@
 - [x] 添加 `file/image/video/voice` 显式不存在设备路径边界。
 - [x] 对每类错误运行 RED/discovery，冻结真实同步 envelope 或异步 `onMessageError`。
 - [x] strict 同 session 回归并更新 Chat CASES_RECORD：`12 passed`。
+
+## 语音发送即时响应断言（2026-09-15，历史方案，已由后续修正替代）
+
+- [x] 限定三条语音离线操作的即时响应忽略 fileStatus，保留成功回调及其他断言。
+- [x] 离线合成响应验证 4 项通过：即时 PENDING 可接受、成功回调 PENDING 仍失败、原调用方仍严格、错误 duration 仍失败；目标 3 条用例 collect-only 成功。
+- [ ] 真实设备回归三条语音用例。
+
+### 语音发送成功事件修正（2026-09-15）
+
+- [x] 合成完整事件复现旧代码 data.msg.body.fileStatus 预期 1、实际 3 失败（与用户报告一致）。
+- [x] 仅为三条语音用例引入下载状态合法枚举校验，撤销即时响应忽略特例及修改属性后强制 fileStatus=1。
+- [x] 检查模板贯穿发送/接收/送达/已读/撤回/属性变更及本地查询；test_voice_offline_download_status.py：13 passed；目标 collect-only：3 tests collected；git diff --check 通过。
+- [ ] 真实设备三条回归（尚未执行）。
+
+### 复用通用好友前置（2026-09-15）
+
+- [x] 删除三个参数化函数内重复加好友，清理显式保留好友关系。
+- [x] test_voice_offline_download_status.py：18 passed（含 5 项前置与恢复回归）；三个参数化函数共 16 条 collect-only 成功；git diff --check 通过。
+- [ ] 真实设备回归（尚未执行）。

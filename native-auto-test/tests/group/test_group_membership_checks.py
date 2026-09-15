@@ -1,5 +1,6 @@
 """Group 成员白名单/禁言检查接口。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -21,6 +22,7 @@ def test_group_is_member_in_white_list_and_mute_list_success(device_a, assert_ap
             invite_members=[],
         )
 
+        timing_pause('step.interval', module='group')
         resp_white = device_a.call(
             "GroupManager",
             Cmd.isMemberInWhiteListFromServer.value,

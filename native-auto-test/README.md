@@ -2,6 +2,35 @@
 
 通过 WebSocket 与 Flutter demo 端通信，对环信 Flutter SDK 的 API 做自动化测试。Flutter 端需连接**同一 WebSocket 服务**且使用**相同 topic**。
 
+## Cases 时间配置
+
+在当前环境文件（默认 `config/config.yaml`，可通过 `IM_TEST_CONFIG` 指定）的 `app.case_timing` 中配置，单位统一为秒。例如：
+
+```yaml
+app:
+  case_timing:
+    step: 1.0             # 普通业务步骤；含回调验证到下次操作
+    settle:
+      offline: 3.0        # 退出后、重登前、重登后
+      normal: 5.0         # 常规历史消息、群成员/配置稳定
+      slow: 15.0          # 好友、reaction
+    timeout:
+      group:
+        group_event: 30.0 # 可选：只调 Group 的群事件预算
+```
+
+按语义组织 `step / settle / timeout / observe / poll / drain / retry`；代码使用 `seconds('timeout.event', module='contact')`、`pause('step.interval', module='group')`。所有段统一优先级：**模块语义值 > 全局语义值 > 模块 default > 全局 default > 内置默认**。模块标量是模块 default 的简写；`step: 1` 等价于 `step: {interval: 1}`。未填字段无需补齐，59 个语义键及用途见 [时间配置词汇表](docs/case-timing-inventory.md)，模板见 `config/env.yaml.template`。
+
+- 普通依赖步骤默认 1 秒，离线三个边界默认各 3 秒；已有较长专用等待保留。普通多步链路在回调验证完成到下一个依赖操作前同样等待 1 秒，同次操作的多个回调之间不额外暂停。全量 543 个测试函数的命令/helper/等待索引见 [依赖边界盘点](docs/case-dependency-audit.md)；其中 61 个函数经调用图到达公共离线登录前等待。
+- `settle` 常用配置只需 offline/normal/slow 三项；父消息 `parent_message=5`、排序间距、30 秒缩略图完成稳定等待使用独立语义键，不随 normal/slow 改变。
+- **迁移注意**：原文件/函数长键、`step.group` 等调用形式以及 `offline_before_login` 等别名已移除。旧 YAML 键报错；原 `*_SETTLE_SECONDS` 时间环境变量不再读取，统一改用 YAML。真实环境文件不会由迁移脚本自动改写。
+- 登录后等待只暂停操作，不清空离线回调；事件匹配及业务断言不变。
+- `step/settle/drain/retry` 可为 0；`timeout/observe/poll` 必须为有限正数，不接受布尔值、负数或非有限数。
+- 优先修改具体语义值；宽泛 default 会影响该范围内未显式配置的预算。`poll.receive*` 是单次读取上限，`poll.interval/server_state/member_state` 是轮询 sleep；算法读取下限不开放配置。
+- 业务时间戳、禁言期限、订阅 expiry 等不是执行等待，不随这些参数改变。
+- `app.wait` 继续不消费；传输连接/响应超时仍配置在 `bridge.yaml`。改文件后重新启动 pytest。
+- `pytest tests` 默认排除 tools；维护等待逻辑时可显式执行 `pytest tests/tools`。
+
 ## 快速开始（Quick Start）
 
 无需 Flutter、无需 Android Studio、无需手动装 Android SDK。一条命令跑通双端 E2E。
@@ -78,12 +107,24 @@ bash skills/im-flutter-run/scripts/run.sh --build
 
 # CI 里跑（不弹浏览器）
 bash skills/im-flutter-run/scripts/run.sh --no-open
+
+# 失败用例自动重试：先跑全部，再只重跑失败集合，最多重复 2 次，最后统一出一份报告
+bash skills/im-flutter-run/scripts/run.sh --config config/ngi.yaml --lanes 2 --retries 2 -v tests
 ```
 
 多 lane 并行说明：
 - `--lanes N` 启动 N×2 个模拟器，按文件轮询分片到各 lane，结果合并到一个 Allure 报告。
 - 每组独立：账号前缀（g0..gN-1，避免登录互踢）、relay 端口（40100+N）、AVD（`im_flutter_test_*_laneN`）。
 - 硬件参考：单模拟器约 3.7GB 内存；24GB 机器建议 `--lanes 1`，`--lanes 2`（4 模拟器）接近上限。
+
+失败用例自动重试（`--retries N`，默认 0 关闭，opt-in，复用已就绪环境）：
+- 按当前选择先跑一次，结束后收集 failed/error 用例，只重跑失败集合，最多再重复 N 次。
+- 重试**在已就绪的环境上就地进行**：复用已启动的模拟器、已安装的 APK 与已运行的桥接，用新的 pytest 进程仅重跑失败用例，**不重启模拟器、不重装 APK、不重启桥接**；每次重试的额外开销只有 pytest 启动与会话 fixture（如登录）。
+- 多 lane 时把 `--retries` 透传给每个 lane，各 lane 在各自环境内重试自己的失败分片；合并报告仍以每个用例最后一次执行为准。
+- 全程只获取一次 APK、只出一份 Allure 报告（早期尝试作为 Allure retries 展示，主状态与统计取最新一次）。
+- **首次失败、重试后通过**的用例会在报告中标记为 flaky（Allure 炸弹图标）并打上 `reran-passed` 标签，方便定位不稳定的业务场景；其主状态仍为通过，早期失败可在该用例的 retries 中查看。始终失败的用例仍为 failed，一次通过的用例不受影响。
+- 仅 failed/error 参与重跑；unreported/INCOMPLETE（如 mDNS 门禁、收集失败等基础设施中断）不自动重跑，会在汇总中暴露并以非零码退出。
+- 不带 `--retries` 时流程与报告完全不变；可与 `--lanes`、`--config`/`--bridge-config`、`--repo`、`--build`/`--refresh-apk`/`APK_PATH`、`--keep-emulator` 组合。
 
 > 详细说明见 skill：`skills/im-flutter-run/SKILL.md`；模拟器准备：`skills/im-flutter-run/scripts/setup_emulator.sh`。
 
@@ -290,6 +331,12 @@ pytest --html=out/report.html --self-contained-html
 pytest tests/test_client.py -v
 ```
 
+## 当前用例数量
+
+2026-09-15 按已确认清单完成精简后，八个业务模块收集 **738 条**（含参数化）：单聊 230、群组 276、聊天室 141、好友 34、客户端 28、在线状态 10、推送 8、用户资料 11。对应 494 个测试函数。`tests/tools` 为独立工具测试，不计入业务数量。
+
+等级表与这 738 个节点精确一致：P0=304、P1=264、P2=170。等级维护在 `src/tools/case_priorities.py`，不读取统计 MD/CSV。统计为用例收集结果，不代表真实设备通过结果。删除范围与验证见仓库 `.doc/specs/release-test-automation/tasks.md` 的“用例精简”章节。
+
 ## 报告
 
 - **HTML 报告**：`pytest --html=out/report.html --self-contained-html`，用浏览器打开 `out/report.html`。
@@ -302,6 +349,31 @@ pytest tests/test_client.py -v
   - **请求**：每次 `api.call` 的请求体（manager、cmd、info、topic、device 等）以 JSON 附件挂在对应 step 下。
   - **响应**：该次调用的完整响应 JSON 附件。
   - **比对结果**：调用 `assert_response_matches` 时，会附加「预期响应」「实际响应」「比对结果」；不一致时为「比对结果（差异）」并列出缺少/多出/值不同的字段。
+
+Allure 保留原有模块/文件/类分组、源码说明及用例名称，只在已定级业务用例名称前增加等级，例如 `[P0] test_group_add_remove_members`、`[P1] test_xxx[voice]`。等级维护在 [case_priorities.py](src/tools/case_priorities.py)，按完整参数化 nodeid 匹配；P0/P1/P2 对应 blocker/critical/normal。统计文档不参与运行，可独立删除；工具、契约、占位及尚未定级的节点保留原名称，不额外分组或推断等级。
+
+**Test body 执行步骤**参考业务操作的写法，由实际公共调用产生：
+
+```text
+步骤 1：用户 A 创建群组
+  附件：请求 / 实际响应 / 耗时
+步骤 2：用户 B 等待群邀请回调
+  附件：等待条件 / 实际事件 / 耗时
+步骤 3：校验用户 B 的群邀请回调是否符合预期
+  附件：预期 / 实际 / 字段差异 / 比对规则
+```
+
+编号在每个用例开始时归零；fixture 中的操作标为「前置」或「清理」。A/B 表示用例的逻辑设备角色，具体账号和业务目标查看脱敏请求附件。未知方法/事件显示真实协议名称；空等待只记录未收到事件，是否失败由原用例判断。`api`、`api_device_a/b`、`device_a/b` 及公共断言入口自动记录，已有手写 `assert`、`sleep` 等不会被自动改写成步骤。需要将多次调用组织成一个明确的业务步骤时，可在用例中使用：
+
+```python
+from src.tools.allure_steps import business_step
+
+with business_step("用户 B 接受邀请并校验入群结果"):
+    # 放置原有真实调用及断言；内部请求和校验证据嵌套展示。
+    ...
+```
+
+原 `run.sh` 或 `pytest --alluredir=...` 命令即可生效。等级只影响报告展示，不改变执行顺序、断言、skip/xfail、lane 分配，也不提供 `pytest -m P0` / `--allure-severities` 的执行筛选能力；历史报告不会自动重写。新增或重命名参数化用例时，同步维护代码等级表。
 
 ## 多端测试（多 topic）
 

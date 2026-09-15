@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import os
 import time
@@ -12,11 +14,12 @@ from tests.chat._utils import build_text
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
 
-def _wait_message_list_event(device, event_type, *, msg_id, timeout=30):
+def _wait_message_list_event(device, event_type, *, msg_id, timeout=None):
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        event = device.receive_message(match_event_type=event_type, timeout=2)
+        event = device.receive_message(match_event_type=event_type, timeout=timing_seconds('poll.receive', module='chat'))
         if event:
             seen.append(event)
         for message in (((event or {}).get("data") or {}).get("messages") or []):
@@ -59,10 +62,10 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
         ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState",
                      "deliverOnlineOnly", "targetLanguages", "translations"},
     )
-    deadline = time.monotonic() + 30
+    deadline = time.monotonic() + timing_seconds('timeout.send_terminal', module='chat')
     success_msg = None
     while time.monotonic() < deadline:
-        evt = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=2)
+        evt = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('poll.receive', module='chat'))
         msg = ((evt or {}).get("data") or {}).get("msg") or {}
         if str(((evt or {}).get("data") or {}).get("msgId")) == str(temp) and msg.get("msgId"):
             success_msg = msg
@@ -86,6 +89,7 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
 def test_chat_report_text_message_success(device_a, device_b, assert_api, user_a, user_b):
     content = f"report-text-{uuid.uuid4().hex[:8]}"
     msg_id = _send_text(device_a, device_b, assert_api, user_a, user_b, content)
+    timing_pause('step.interval', module='chat')
     resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": msg_id, "tag": "tag-text", "reason": "reason-text"})
     assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": True}, ignore_keys={"sequence"})
     delivered = _wait_message_list_event(device_a, Cmd.onMessagesDelivered.value, msg_id=msg_id)
@@ -96,16 +100,19 @@ def test_chat_report_text_message_success(device_a, device_b, assert_api, user_a
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_report_message_empty_message_id(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": "", "tag": "spam", "reason": "empty-id"})
     assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": {"code": 500, "description": "message id is invalid"}}, ignore_keys={"sequence"})
 
 
+@pytest.mark.no_friend_setup
 def test_chat_report_message_empty_tag(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": "__invalid_report_msg__", "tag": "", "reason": "empty-tag"})
     assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": {"code": 500, "description": "message id is invalid"}}, ignore_keys={"sequence"})
 
 
+@pytest.mark.no_friend_setup
 def test_chat_report_message_empty_reason(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": "__invalid_report_msg__", "tag": "spam", "reason": ""})
     assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": {"code": 500, "description": "message id is invalid"}}, ignore_keys={"sequence"})
@@ -114,9 +121,9 @@ def test_chat_report_message_empty_reason(device_a, assert_api):
 def test_chat_report_recalled_message(device_a, device_b, assert_api, user_a, user_b):
     content = f"report-recalled-{uuid.uuid4().hex[:8]}"
     msg_id = _send_text(device_a, device_b, assert_api, user_a, user_b, content)
-    time.sleep(float(os.getenv("CHAT_RECALL_SETTLE_SECONDS", "5")))
+    time.sleep(timing_seconds('settle.normal', module='chat'))
     recall = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
     assert_api.assert_response_matches(recall, expected={"manager": "ChatManager", "cmd": Cmd.recallMessage.value, "device": "deviceA", "result": True}, ignore_keys={"sequence"})
-    time.sleep(1)
+    time.sleep(timing_seconds('step.interval', module='chat'))
     resp = device_a.call("ChatManager", Cmd.reportMessage.value, info={"msgId": msg_id, "tag": "spam", "reason": "recalled"})
     assert_api.assert_response_matches(resp, expected={"manager": "ChatManager", "cmd": Cmd.reportMessage.value, "device": "deviceA", "result": {"code": 500, "description": "message id is invalid"}}, ignore_keys={"sequence"})

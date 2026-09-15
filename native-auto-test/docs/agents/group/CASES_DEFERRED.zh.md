@@ -1,5 +1,7 @@
 # Group 模块 Cases 暂缓清单（按 API）
 
+> 当前变更：显式 skip / xfail 业务用例已按用户要求删除，准确函数/参数清单见同目录 `CASES_RECORD.zh.md` 的“已删除的 skip / xfail 用例”节。下方涉及这些场景的旧 skip/xfail 和“移除标记恢复”描述仅为历史原因；恢复需重新实现与验收，不能直接去掉标记。其他运行时条件跳过和未实现能力不在本次删除范围。
+
 — 说明
 - 本文件仅记录当前缺少可控触发入口、不能由现有客户端 SDK 自动完成的 Group 项目。
 - 已通过现有 SDK 和真实双设备 ADB 补齐的四种群类型、邀请/申请状态、群主转让、成员移除、
@@ -34,7 +36,7 @@
 
 ## 不存在群的单成员属性查询暂缓
 
-- `tests/group/test_group_exceptions_member_attributes.py::test_group_fetch_member_attributes_nonexistent_group`
+- `tests/group/test_group_exceptions_member_attributes.py::test_group_fetch_member_attributes_nonexistent_group` 【对应已删除函数的历史记录】
   - 原因：按用户要求暂停执行该失败用例，保留原有业务断言。
   - 处理：添加 `pytest.mark.skip`，全量、分 lane 和指定 nodeid 执行均跳过；不影响批量成员属性查询用例。
   - 恢复条件：用户确认恢复执行后移除 skip，并重跑原严格断言。
@@ -45,3 +47,9 @@
 - 当前环境按用户要求只能使用 ADB 日志；相关 REST 请求未打印可用于 Jira 的 request traceId。
   `easemob-jira-bug-submit` 强制要求真实请求 traceId，禁止用登录或无关 SYNC traceId替代，
   因此当前不能执行在线 Jira preview/submit。
+
+
+## 用户指定跳过的失败用例
+
+- `test_group_invitation_cannot_be_processed_twice[accept-twice]`：按用户要求标记 skip，待确认后恢复。
+- `test_group_join_application_cannot_be_processed_twice[accept-twice]`：按用户要求标记 skip，待确认后恢复。

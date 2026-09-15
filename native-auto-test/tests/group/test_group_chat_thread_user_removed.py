@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -51,6 +53,7 @@ def test_chat_thread_remove_member_updates_member_list(device_a, device_b, asser
             invite_members=[user_b],
         )
 
+        timing_pause('step.interval', module='group')
         content = f"thread-parent-{uuid.uuid4().hex[:6]}"
         resp_parent = device_b.call(
             "ChatManager",
@@ -58,7 +61,7 @@ def test_chat_thread_remove_member_updates_member_list(device_a, device_b, asser
             info=build_text(user_b, group_id, content, chat_type=1),
         )
         send_temp_id = ((resp_parent.get("result") or {}).get("msgId"))
-        evt_success_b = device_b.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+        evt_success_b = device_b.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.thread_event', module='group'))
         parent_success_msg = ((evt_success_b.get("data") or {}).get("msg") or {})
         parent_msg_id = parent_success_msg.get("msgId")
         assert isinstance(parent_msg_id, str) and parent_msg_id, f"未拿到群父消息 msgId: {evt_success_b}"
@@ -135,7 +138,7 @@ def test_chat_thread_remove_member_updates_member_list(device_a, device_b, asser
                          "targetLanguages", "receiverList", "groupAckCount"},
         )
 
-        evt_group_recv = device_a.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+        evt_group_recv = device_a.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timing_seconds('timeout.thread_event', module='group'))
         messages = ((evt_group_recv.get("data") or {}).get("messages") or [])
         matched = _find_msg_with_id(messages, parent_msg_id)
         assert matched is not None, f"A 端未收到父消息: targetMsgId={parent_msg_id}, evt={evt_group_recv}"
@@ -172,6 +175,7 @@ def test_chat_thread_remove_member_updates_member_list(device_a, device_b, asser
         )
 
         thread_name = f"thr-{uuid.uuid4().hex[:8]}"
+        timing_pause('settle.parent_message', module='group')
         resp_create_thread = device_a.call(
             "ChatThreadManager",
             Cmd.createChatThread.value,
@@ -181,6 +185,7 @@ def test_chat_thread_remove_member_updates_member_list(device_a, device_b, asser
                 "parentId": group_id,
             },
         )
+        timing_pause('step.interval', module='group')
         thread_result = resp_create_thread.get("result") or {}
         thread_id = thread_result.get("threadId")
         assert isinstance(thread_id, str) and thread_id, f"createChatThread 未返回 threadId: {resp_create_thread}"
@@ -262,6 +267,7 @@ def test_chat_thread_remove_member_updates_member_list(device_a, device_b, asser
             },
         )
 
+        timing_pause('step.interval', module='group')
         members_before = device_a.call(
             "ChatThreadManager",
             Cmd.fetchChatThreadMember.value,
@@ -282,7 +288,7 @@ def test_chat_thread_remove_member_updates_member_list(device_a, device_b, asser
         assert user_a in before_list, f"加入后成员列表缺少 owner: {members_before}"
         assert user_b in before_list, f"joinChatThread 成功后成员列表缺少 B: {members_before}"
 
-        time.sleep(1)
+        time.sleep(timing_seconds('poll.interval', module='group'))
         resp_remove = device_a.call(
             "ChatThreadManager",
             Cmd.removeMemberFromChatThread.value,
@@ -299,9 +305,10 @@ def test_chat_thread_remove_member_updates_member_list(device_a, device_b, asser
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='group')
         members_after = None
         after_list = []
-        deadline = time.monotonic() + 20.0
+        deadline = time.monotonic() + timing_seconds('timeout.thread_event', module='group')
         while time.monotonic() < deadline:
             members_after = device_a.call(
                 "ChatThreadManager",
@@ -312,7 +319,7 @@ def test_chat_thread_remove_member_updates_member_list(device_a, device_b, asser
             after_list = members_after_result.get("list") or []
             if user_a in after_list and user_b not in after_list:
                 break
-            time.sleep(1)
+            time.sleep(timing_seconds('poll.interval', module='group'))
 
         assert members_after is not None
         assert_api.assert_response_matches(

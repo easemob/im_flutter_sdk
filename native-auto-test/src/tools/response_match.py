@@ -242,7 +242,8 @@ def assert_response_matches(
     """
     resolved = resolve_expected(expected, context or {})
     ok, diffs = compare_response(actual, resolved, ignore_keys=ignore_keys)
-    from .allure_evidence import comparison, identity, redact, step
+    from .allure_evidence import comparison, redact
+    from .allure_steps import business_step, expectation_title
     ignored = DEFAULT_IGNORE_KEYS | frozenset(ignore_keys or [])
 
     def field(value, path):
@@ -265,7 +266,7 @@ def assert_response_matches(
         kind = detail.split(' — ', 1)[0].split('，', 1)[0]
         rows.append({'path': path, 'expected': field(resolved, path),
                      'actual': field(actual, path), 'difference': kind})
-    with step(f'比对 {"失败" if not ok else "通过"} | {identity(actual)} | {len(rows)} 处差异'):
+    with business_step(expectation_title(actual, resolved)):
         comparison(actual, resolved, rows, ignored)
         if not ok:
             from .allure_evidence import pretty

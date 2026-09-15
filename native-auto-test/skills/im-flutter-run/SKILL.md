@@ -187,6 +187,50 @@ shows `INCOMPLETE`/`unreported` and the run fails rather than inventing outcomes
 Empty shards are excluded from missing-result checks. Raw pytest output and the
 existing merged Allure report remain available.
 
+## Automatic retry of failed cases (reuses the prepared environment)
+
+`--retries N` (default `0`, opt-in) reruns only the cases that failed, **in place on the
+already-prepared environment**. It runs the selection once, collects the failed/error
+cases, then reruns just that set with a fresh pytest process against the same booted
+emulators, installed APK and running bridge — **no emulator reboot, no APK reinstall, no
+bridge restart between attempts**. It repeats up to `N` times. One Allure report is
+generated at the end; each case reflects its **last execution** (earlier attempts appear
+as Allure retries, so the report's headline status and statistics count the final result).
+Without `--retries` the flow and report are exactly as before.
+
+```bash
+# run all cases, then rerun failures up to twice (3 executions max for a case)
+bash skills/im-flutter-run/scripts/run.sh --config config/ngi.yaml --lanes 2 --retries 2 -v tests
+
+# works for any selection, e.g. a single module
+bash skills/im-flutter-run/scripts/run.sh --config config/ngi.yaml --lanes 2 --retries 2 tests/chatroom
+```
+
+Semantics:
+
+- Retries only rerun pytest against the existing environment. The only per-attempt cost is
+  pytest startup and session fixtures (e.g. login) — the expensive boot/install/bridge
+  steps happen once.
+- In multi-lane mode each lane retries its own failed shard on its own emulators (the
+  `--retries` value is passed down per lane); the merged report still reflects the last
+  execution of every case.
+- The APK is obtained once (download/build/`APK_PATH`) and shared with all lanes.
+- `out/allure-results` is cleared once before the run; every attempt only appends, so
+  Allure keeps the latest run per case as the primary result.
+- Cases that failed on an earlier attempt but passed on a later one are flagged as **flaky**
+  in the report (Allure's flaky "bomb" marker) and tagged `reran-passed`, so unstable
+  business cases are easy to locate/filter. Their headline status stays "passed"; the
+  earlier failure is visible under the case's retries. Cases that never recovered stay
+  "failed"; cases that passed first time are untouched.
+- Only `failed`/`error` cases are retried. Infrastructure incidents that leave cases
+  `unreported`/`INCOMPLETE` (e.g. a blocked mDNS gate or collection failure) are not
+  silently retried; they surface in the lane summary and exit nonzero.
+- Each lane prints a per-attempt failure count; a lane's exit status reflects whether any
+  of its cases still fail on the last attempt. The overall run is nonzero if any case
+  remains failed.
+- Combines with `--lanes`, `--config`/`--bridge-config`, `--repo`, `--build`/`--refresh-apk`/
+  `APK_PATH`, and `--keep-emulator`.
+
 ## Config effectiveness rules (important)
 
 Environment config (`app:` schema) and bridge config (`websocket`/`topics`) are separate files, both injected at app startup (not bundled into the APK), so changing them does **not** require rebuilding the APK:

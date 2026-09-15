@@ -10,21 +10,6 @@ from tests.group.group_helpers import assert_group_list_response
 pytestmark = [pytest.mark.client, pytest.mark.group]
 
 
-def test_group_get_joined_groups_with_extra_info_fields(device_a, assert_api):
-    resp = device_a.call(
-        "GroupManager",
-        Cmd.getJoinedGroups.value,
-        info={"unexpected": "value", "pageNum": 0, "pageSize": -1},
-    )
-    # 当前端对该接口忽略无关参数并返回稳定列表结构
-    assert_group_list_response(
-        assert_api,
-        resp,
-        cmd=Cmd.getJoinedGroups.value,
-        device="deviceA",
-    )
-
-
 def test_group_get_joined_groups_from_server_with_extra_info_fields(device_a, assert_api):
     resp = device_a.call(
         "GroupManager",
@@ -38,4 +23,3 @@ def test_group_get_joined_groups_from_server_with_extra_info_fields(device_a, as
         cmd=Cmd.getJoinedGroupsFromServer.value,
         device="deviceA",
     )
-

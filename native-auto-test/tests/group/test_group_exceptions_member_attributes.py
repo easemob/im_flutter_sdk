@@ -1,5 +1,6 @@
 """Group 成员属性 API 异常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -31,26 +32,6 @@ def test_group_set_member_attributes_nonexistent_group(device_a, assert_api):
     )
 
 
-@pytest.mark.skip(reason="按用户要求暂缓：不存在群的单成员属性查询用例")
-def test_group_fetch_member_attributes_nonexistent_group(device_a, assert_api):
-    resp = device_a.call(
-        "GroupManager",
-        Cmd.fetchMemberAttributesFromGroup.value,
-        info={"groupId": _NONEXISTENT_GROUP_ID},
-    )
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "GroupManager",
-            "cmd": Cmd.fetchMemberAttributesFromGroup.value,
-            "device": "deviceA",
-        },
-        ignore_keys={"sequence", "result"},
-    )
-    result = resp.get("result")
-    assert isinstance(result, dict), f"fetchMemberAttributesFromGroup result 非 dict: {resp}"
-    assert "k" in result, f"fetchMemberAttributesFromGroup 当前端返回应包含 k: {resp}"
-    assert result.get("k") == "v", f"fetchMemberAttributesFromGroup 当前端返回值不匹配: {resp}"
 
 
 def test_group_fetch_members_attributes_nonexistent_group(device_a, assert_api):
@@ -86,6 +67,7 @@ def test_group_set_member_attributes_empty_attributes(device_a, assert_api, user
             group_name=new_group_name("ex_member_attr"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.setMemberAttributesFromGroup.value,

@@ -5,6 +5,7 @@
 - fetchOwnInfo：获取当前登录用户自己的属性信息
 """
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -78,6 +79,7 @@ def test_user_info_update_own_set_and_modify(device_a, assert_api, user_a):
         ignore_keys={"sequence", "ext", "avatarUrl", "phone", "birth", "gender"},
     )
 
+    timing_pause('step.interval', module='user_info')
     resp_modify = device_a.call(
         "UserInfoManager",
         Cmd.updateOwnUserInfo.value,
@@ -132,6 +134,7 @@ def test_user_info_update_then_fetch_user_info_by_id(device_a, assert_api, user_
             "mail": "mail-then-bid@example.com",
         },
     )
+    timing_pause('step.interval', module='user_info')
     resp = device_a.call(
         "UserInfoManager",
         Cmd.fetchUserInfoById.value,
@@ -167,6 +170,7 @@ def test_user_info_update_then_fetch_own_info(device_a, assert_api, user_a):
             "mail": "mail-own-info@example.com",
         },
     )
+    timing_pause('step.interval', module='user_info')
     resp = device_a.call(
         "UserInfoManager",
         Cmd.fetchOwnInfo.value,
@@ -200,6 +204,7 @@ def test_user_info_update_then_fetch_user_info_by_id_with_type(device_a, assert_
             "mail": "mail-then-wit@example.com",
         },
     )
+    timing_pause('step.interval', module='user_info')
     resp = device_a.call(
         "UserInfoManager",
         Cmd.fetchUserInfoByIdWithType.value,
@@ -221,61 +226,6 @@ def test_user_info_update_then_fetch_user_info_by_id_with_type(device_a, assert_
                     "sign": "sign-then-wit",
                 },
             },
-        },
-        ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS
-        | frozenset({"mail"}),
-    )
-
-
-def test_user_info_update_then_all_fetch_paths_in_one_flow(device_a, assert_api, user_a):
-    """一次更新后：先 fetchUserInfoById（全量），再 fetchUserInfoByIdWithType（nick+sign），字段一致。"""
-    device_a.call(
-        "UserInfoManager",
-        Cmd.updateOwnUserInfo.value,
-        info={
-            "nickName": "nick-flow-all",
-            "sign": "sign-flow-all",
-            "mail": "mail-flow-all@example.com",
-        },
-    )
-    expected_full = {
-        "userId": user_a,
-        "nickName": "nick-flow-all",
-        "sign": "sign-flow-all",
-        "mail": "mail-flow-all@example.com",
-    }
-    expected_partial = {
-        "userId": user_a,
-        "nickName": "nick-flow-all",
-        "sign": "sign-flow-all",
-    }
-    r_bid = device_a.call(
-        "UserInfoManager",
-        Cmd.fetchUserInfoById.value,
-        info={"userIds": [user_a]},
-    )
-    assert_api.assert_response_matches(
-        r_bid,
-        expected={
-            "manager": "UserInfoManager",
-            "cmd": Cmd.fetchUserInfoById.value,
-            "device": "deviceA",
-            "result": {user_a: expected_full},
-        },
-        ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS,
-    )
-    r_wit = device_a.call(
-        "UserInfoManager",
-        Cmd.fetchUserInfoByIdWithType.value,
-        info={"userIds": [user_a], "userInfoTypes": [0, 5]},
-    )
-    assert_api.assert_response_matches(
-        r_wit,
-        expected={
-            "manager": "UserInfoManager",
-            "cmd": Cmd.fetchUserInfoByIdWithType.value,
-            "device": "deviceA",
-            "result": {user_a: expected_partial},
         },
         ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS
         | frozenset({"mail"}),

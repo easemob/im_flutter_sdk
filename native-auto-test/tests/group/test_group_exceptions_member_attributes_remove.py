@@ -1,5 +1,6 @@
 """Group 成员属性删除 API 异常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -42,6 +43,7 @@ def test_group_remove_member_attributes_empty_keys(device_a, assert_api, user_a)
             group_name=new_group_name("ex_member_attr_rm"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.removeMemberAttributesFromGroup.value,
@@ -63,6 +65,7 @@ def test_group_remove_member_attributes_nonexistent_key(device_a, assert_api, us
             group_name=new_group_name("ex_member_attr_rm_key"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.removeMemberAttributesFromGroup.value,

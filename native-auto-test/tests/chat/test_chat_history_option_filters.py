@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -12,11 +14,12 @@ from tests.chat.test_chat_recall_and_message_read_ack import _send_typed
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
 
-def _wait_text_event(device, event_type, *, content, timeout=30.0):
+def _wait_text_event(device, event_type, *, content, timeout=None):
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        event = device.receive_message(match_event_type=event_type, timeout=2)
+        event = device.receive_message(match_event_type=event_type, timeout=timing_seconds('poll.receive', module='chat'))
         if event:
             seen.append(event)
         if event_type == Cmd.onMessageSuccess.value:
@@ -116,10 +119,10 @@ def test_chat_history_filters_direction_time_and_message_types(device_a, device_
     )
     # deleteRemoteConversation 的同步响应早于服务端删除真正完成；立即发送会
     # 与仍在执行的删除竞争，导致第一条新消息偶发被一并清掉。
-    time.sleep(5)
+    time.sleep(timing_seconds('settle.normal', module='chat'))
     text_content = f"history-filter-text-{uuid.uuid4().hex[:6]}"
     text = _send_text(device_a, device_b, assert_api, user_a, user_b, text_content)
-    time.sleep(1)
+    time.sleep(timing_seconds('step.interval', module='chat'))
     custom_event = f"history-filter-custom-{uuid.uuid4().hex[:6]}"
     _, custom_success, _, custom_id = _send_typed(
         device_a, device_b, assert_api, user_a, user_b, "custom",
@@ -137,7 +140,7 @@ def test_chat_history_filters_direction_time_and_message_types(device_a, device_
     # 发送成功回调早于漫游存储完成，尤其是 custom 消息。先等服务端的 UP
     # 查询能同时看见两条目标消息，再验证 DOWN 与过滤规则，避免把存储延迟
     # 误判成 direction 行为。
-    archive_deadline = time.monotonic() + 60
+    archive_deadline = time.monotonic() + timing_seconds('timeout.server_state', module='chat')
     archive_response = None
     while time.monotonic() < archive_deadline:
         archive_response = _fetch(
@@ -150,7 +153,7 @@ def test_chat_history_filters_direction_time_and_message_types(device_a, device_
         }
         if archived_ids == target_ids:
             break
-        time.sleep(2)
+        time.sleep(timing_seconds('poll.server_state', module='chat'))
     assert archive_response is not None and archived_ids == target_ids, (
         f"目标消息未在超时前进入漫游存储: response={archive_response}"
     )
@@ -159,6 +162,7 @@ def test_chat_history_filters_direction_time_and_message_types(device_a, device_
     down_cursor = ""
     down_found = set()
     seen_cursors = set()
+    timing_pause('step.interval', module='chat')
     for _ in range(50):
         down_response = _fetch(
             device_a, user_b, options=down_options, cursor=down_cursor, page_size=50,

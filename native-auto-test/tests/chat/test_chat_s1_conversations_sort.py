@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -68,7 +70,7 @@ def _send_text_and_get_real_id(
         },
     )
 
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
     assert evt_success is not None, "发送端未收到 onMessageSuccess"
     success_msg = (((evt_success.get("data") or {}).get("msg")) or {})
     real_id = success_msg.get("msgId")
@@ -87,7 +89,7 @@ def _send_text_and_get_real_id(
                      "targetLanguages"},
     )
     if expect_receive_on_b:
-        evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+        evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timing_seconds('timeout.message', module='chat'))
         assert evt_received is not None, "接收端未收到 onMessagesReceived"
         received = next(
             message for message in (((evt_received.get("data") or {}).get("messages")) or [])
@@ -106,7 +108,7 @@ def _send_text_and_get_real_id(
             ignore_keys={"timestamp", "sequence", "localTime", "serverTime", "broadcast", "onlineState",
                          "targetLanguages"},
         )
-        evt_delivered = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=20.0)
+        evt_delivered = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=timing_seconds('timeout.message', module='chat'))
         delivered = next(
             message for message in (((evt_delivered.get("data") or {}).get("messages")) or [])
             if isinstance(message, dict) and str(message.get("msgId")) == str(real_id)
@@ -154,12 +156,14 @@ def test_chat_get_all_conversations_by_sort_orders_latest_first(device_a, device
         Cmd.deleteConversation.value,
         info={"convId": self_conv_id, "deleteMessages": True},
     )
+    timing_pause('step.interval', module='chat')
     _ = device_a.call(
         "ChatManager",
         Cmd.deleteConversation.value,
         info={"convId": peer_conv_id, "deleteMessages": True},
     )
 
+    timing_pause('step.interval', module='chat')
     _send_text_and_get_real_id(
         device_a,
         device_b,
@@ -169,7 +173,7 @@ def test_chat_get_all_conversations_by_sort_orders_latest_first(device_a, device
         f"s1-sort-self-{uuid.uuid4().hex[:6]}",
         expect_receive_on_b=False,
     )
-    time.sleep(1.0)
+    time.sleep(timing_seconds('settle.sort_spacing', module='chat'))
     _send_text_and_get_real_id(
         device_a,
         device_b,
@@ -179,7 +183,7 @@ def test_chat_get_all_conversations_by_sort_orders_latest_first(device_a, device
         f"s1-sort-peer-{uuid.uuid4().hex[:6]}",
         expect_receive_on_b=True,
     )
-    time.sleep(1.5)
+    time.sleep(timing_seconds('settle.sort_projection', module='chat'))
 
     # SDK 原生方法 key 是 loadAllConversations（内部调用 getAllConversationsBySort）
     resp_sorted = device_a.call("ChatManager", Cmd.loadAllConversations.value, info={})

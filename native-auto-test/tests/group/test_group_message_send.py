@@ -1,4 +1,7 @@
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import os
 import time
@@ -151,13 +154,14 @@ def _body_expected(type_key: str, payload: dict, *, phase: str) -> dict:
     raise AssertionError(f"不支持的群消息类型: {type_key}")
 
 
-def _wait_success(device, *, temp_id: str, timeout: float = 60.0) -> dict:
+def _wait_success(device, *, temp_id: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.send_completion', module='group') if timeout is None else timeout
     seen = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         evt = device.receive_message(
             match_event_type=Cmd.onMessageSuccess.value,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='group'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if evt:
             seen.append(evt)
@@ -166,13 +170,14 @@ def _wait_success(device, *, temp_id: str, timeout: float = 60.0) -> dict:
     pytest.fail(f"A 端未收到目标 onMessageSuccess: tempId={temp_id}, events={seen}")
 
 
-def _wait_received(device, *, event_type: str, real_id: str, timeout: float = 60.0) -> dict:
+def _wait_received(device, *, event_type: str, real_id: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.online_delivery', module='group') if timeout is None else timeout
     seen = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         evt = device.receive_message(
             match_event_type=event_type,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='group'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if evt:
             seen.append(evt)
@@ -191,11 +196,12 @@ def _wait_received(device, *, event_type: str, real_id: str, timeout: float = 60
     pytest.fail(f"B 端未收到目标 {event_type}: realId={real_id}, events={seen}")
 
 
-def _wait_send_terminal(device, *, temp_id: str, timeout: float = 30.0) -> tuple[str, dict]:
+def _wait_send_terminal(device, *, temp_id: str, timeout: float = None) -> tuple[str, dict]:
+    timeout = timing_seconds('timeout.send_terminal', module='group') if timeout is None else timeout
     seen = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        event = device.receive_message(timeout=min(1.0, max(0.1, deadline - time.monotonic())))
+        event = device.receive_message(timeout=min(timing_seconds('poll.receive_batch', module='group'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())))
         if not event:
             continue
         seen.append(event)
@@ -214,14 +220,15 @@ def _assert_peer_did_not_receive_group_text(
     from_user: str,
     group_id: str,
     content: str,
-    timeout: float = 5.0,
+    timeout: float = None,
 ) -> None:
+    timeout = timing_seconds('observe.no_delivery', module='group') if timeout is None else timeout
     seen = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         evt = device.receive_message(
             match_event_type=Cmd.onMessagesReceived.value,
-            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive_batch', module='group'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if evt:
             seen.append(evt)
@@ -449,7 +456,7 @@ def message_group(device_a, device_b, assert_api, user_a, user_b):
         invite_members=[user_b],
     )
     try:
-        time.sleep(float(os.getenv("GROUP_MESSAGE_MEMBER_SETTLE_SECONDS", "5")))
+        time.sleep(timing_seconds('settle.normal', module='group'))
         wait_member_auto_joined(device_b, assert_api, group_id=group_id, inviter=user_a)
         yield group_id
     finally:
@@ -503,6 +510,7 @@ def test_group_message_send_receive_combine(
                 payload=payload,
             )
         )
+        timing_pause('step.interval', module='group')
     payload = {
         "targetId": message_group,
         "title": "group-combine-title",
@@ -510,6 +518,7 @@ def test_group_message_send_receive_combine(
         "compatibleText": "group-combine-compatible",
         "msgIds": source_ids,
     }
+    timing_pause('step.interval', module='group')
     _send_group_message(
         device_a,
         device_b,
@@ -549,9 +558,10 @@ def test_group_message_read_ack_updates_count(device_a, device_b, assert_api, us
             group_name=new_group_name("group_ack"),
             invite_members=[user_b],
         )
-        time.sleep(float(os.getenv("GROUP_MESSAGE_MEMBER_SETTLE_SECONDS", "5")))
+        time.sleep(timing_seconds('settle.normal', module='group'))
         wait_member_auto_joined(device_b, assert_api, group_id=group_id, inviter=user_a)
         content = f"group-ack-{uuid.uuid4().hex[:8]}"
+        timing_pause('step.interval', module='group')
         send_resp = device_a.call(
             "ChatManager",
             Cmd.sendMessage.value,
@@ -636,6 +646,7 @@ def test_group_message_read_ack_updates_count(device_a, device_b, assert_api, us
             ignore_keys=_MESSAGE_IGNORE_KEYS,
         )
 
+        timing_pause('step.interval', module='group')
         ack_resp = device_b.call(
             "ChatManager",
             Cmd.ackGroupMessageRead.value,
@@ -652,6 +663,7 @@ def test_group_message_read_ack_updates_count(device_a, device_b, assert_api, us
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='group')
         count_resp = {}
         for attempt in range(10):
             count_resp = device_a.call(
@@ -662,7 +674,7 @@ def test_group_message_read_ack_updates_count(device_a, device_b, assert_api, us
             if count_resp.get("result") == 1:
                 break
             if attempt < 9:
-                time.sleep(1.0)
+                time.sleep(timing_seconds('poll.interval', module='group'))
         assert_api.assert_response_matches(
             count_resp,
             expected={
@@ -710,7 +722,7 @@ def _assert_owner_member_exited_events(device_a, assert_api, *, group_id: str, m
         expected_event_types=event_types,
         group_id=group_id,
         required_all_event_types=event_types,
-        timeout=10.0,
+        timeout=timing_seconds('observe.collect', module='group'),
     )
     by_type = {event["eventType"]: event for event in events}
     assert_api.assert_response_matches(
@@ -753,13 +765,14 @@ def test_group_message_send_rejects_non_member_states(
             group_name=group_name,
             invite_members=[] if member_state == "never-member" else [user_b],
         )
-        time.sleep(float(os.getenv("GROUP_MESSAGE_MEMBER_SETTLE_SECONDS", "5")))
+        time.sleep(timing_seconds('settle.normal', module='group'))
         if member_state != "never-member":
             wait_member_auto_joined(device_b, assert_api, group_id=group_id, inviter=user_a)
         device_a.drain_events()
         device_b.drain_events()
 
         if member_state == "left":
+            timing_pause('step.interval', module='group')
             leave_resp = device_b.call("GroupManager", Cmd.leaveGroup.value, info={"groupId": group_id})
             assert_api.assert_response_matches(
                 leave_resp,
@@ -778,6 +791,7 @@ def test_group_message_send_rejects_non_member_states(
                 event_types={"onMembersExitedFromGroup", "onMemberExitedFromGroup"},
             )
         elif member_state == "removed":
+            timing_pause('step.interval', module='group')
             remove_resp = device_a.call(
                 "GroupManager",
                 Cmd.removeMembers.value,
@@ -804,7 +818,7 @@ def test_group_message_send_rejects_non_member_states(
                 group_id=group_id,
                 allow_missing_group_id=True,
                 required_all_event_types={"onUserRemovedFromGroup"},
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
             assert_group_events(
                 assert_api,
@@ -817,6 +831,7 @@ def test_group_message_send_rejects_non_member_states(
             )
             _assert_owner_member_exited_events(device_a, assert_api, group_id=group_id, member=user_b)
 
+        timing_pause('step.interval', module='group')
         snapshot = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,

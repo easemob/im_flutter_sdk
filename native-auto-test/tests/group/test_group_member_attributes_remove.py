@@ -1,5 +1,7 @@
 """Group 成员属性删除 API 正常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import pytest
 
@@ -29,6 +31,7 @@ def test_group_remove_member_attributes_success(device_a, device_b, assert_api, 
         )
 
         # 先设置属性
+        timing_pause('step.interval', module='group')
         resp_set = device_b.call(
             "GroupManager",
             Cmd.setMemberAttributesFromGroup.value,
@@ -53,7 +56,7 @@ def test_group_remove_member_attributes_success(device_a, device_b, assert_api, 
             },
             group_id=group_id,
             required_all_event_types={"onAttributesChangedOfGroupMember"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -69,6 +72,7 @@ def test_group_remove_member_attributes_success(device_a, device_b, assert_api, 
         )
 
         # 删除部分属性
+        timing_pause('step.interval', module='group')
         resp_remove = device_b.call(
             "GroupManager",
             Cmd.removeMemberAttributesFromGroup.value,
@@ -94,7 +98,7 @@ def test_group_remove_member_attributes_success(device_a, device_b, assert_api, 
             },
             group_id=group_id,
             required_all_event_types={"onAttributesChangedOfGroupMember"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_group_events(
             assert_api,
@@ -110,6 +114,7 @@ def test_group_remove_member_attributes_success(device_a, device_b, assert_api, 
         )
 
         # 单成员拉取：k1 被删除，k2 保留
+        timing_pause('step.interval', module='group')
         resp_fetch_single = device_b.call(
             "GroupManager",
             Cmd.fetchMemberAttributesFromGroup.value,

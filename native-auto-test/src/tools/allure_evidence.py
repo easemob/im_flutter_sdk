@@ -6,6 +6,8 @@ import json
 import re
 import time
 
+from .allure_steps import business_step, action_title, event_title, expectation_title
+
 
 SENSITIVE = re.compile(r'password|passwd|token|secret|authorization|cookie|credential', re.I)
 
@@ -77,7 +79,7 @@ def comparison(actual, expected, rows, ignored):
 
 
 def observe_call(device, manager, cmd, info, invoke, kwargs):
-    with step(f'API | {device} | {manager}.{cmd}'):
+    with business_step(action_title(device, manager, cmd)):
         attach('01 请求', {'device': device, 'manager': manager, 'cmd': cmd, 'info': info, **kwargs})
         start = time.monotonic()
         try:
@@ -92,7 +94,7 @@ def observe_call(device, manager, cmd, info, invoke, kwargs):
 
 
 def observe_event(device, filters, invoke):
-    with step(f'事件等待 | {device} | {filters.get("match_event_type") or filters.get("match_cmd") or "任意消息"}'):
+    with business_step(event_title(device, filters)):
         attach('01 等待条件', {**filters, 'note': '此接口仅提供类型过滤；用户/msgId等条件由上层用例判断'})
         start = time.monotonic()
         try:
@@ -111,7 +113,11 @@ def observe_event(device, filters, invoke):
 def assertion_evidence(fn):
     @wraps(fn)
     def wrapper(resp, *args, **kwargs):
-        with step(f'断言 | {fn.__name__} | {identity(resp)}'):
+        requirement = {'assert_success': '校验操作响应为成功',
+                       'assert_error': '校验错误码和错误描述符合预期',
+                       'assert_result_equals': '校验返回结果等于预期',
+                       'assert_result_matches': '校验返回结果的指定字段符合预期'}
+        with business_step(expectation_title(resp) + '：' + requirement.get(fn.__name__, fn.__name__)):
             attach('01 校验要求', {'assertion': fn.__name__, 'args': args, 'kwargs': kwargs})
             attach('02 实际响应', resp)
             return fn(resp, *args, **kwargs)

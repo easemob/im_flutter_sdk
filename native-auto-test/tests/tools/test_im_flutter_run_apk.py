@@ -22,7 +22,7 @@ def runner(tmp_path):
     native = project / 'native-auto-test'
     scripts = native / 'skills/im-flutter-run/scripts'
     scripts.mkdir(parents=True)
-    for name in ('run.sh', 'config_helpers.sh', 'release_apk_cache.py', 'adb_preflight.py', 'summarize_lanes.py', 'clean_install.py'):
+    for name in ('run.sh', 'config_helpers.sh', 'release_apk_cache.py', 'adb_preflight.py', 'summarize_lanes.py', 'clean_install.py', 'retry_merge.py', 'mark_flaky.py'):
         if (SCRIPTS / name).exists():
             shutil.copy(SCRIPTS / name, scripts / name)
     executable(native / 'scripts/collect_cases.py', "print('tests/test_example.py::test_a\\ntests/test_example.py::test_b')\n")
@@ -441,3 +441,148 @@ def test_runner_empty_shards_are_not_missing_results(runner):
     assert result.returncode == 0, result.stdout + result.stderr
     assert 'Total: 1' in result.stdout and '1 passed' in result.stdout
     assert '0 unreported' in result.stdout
+
+
+# --- In-place failed-case retry (--retries N), reusing the prepared environment ---
+
+# A stateful fake pytest: fails a nodeid the first FAIL_TIMES executions, then passes.
+# Node selection mirrors pytest_lane: use the IM_FLUTTER_LANE_NODEIDS filter file when
+# present (retry attempts + multi-lane shards), else the nodeids in argv (single-lane
+# attempt 0). A shared RETRY_COUNT_DIR persists counts across attempts and lanes.
+_STATEFUL_REPORTER = r'''import json, os, re, sys
+from pathlib import Path
+result = os.environ.get('IM_FLUTTER_LANE_RESULT')
+if result:
+    filt = os.environ.get('IM_FLUTTER_LANE_NODEIDS')
+    if filt and os.path.exists(filt):
+        nodes = [n for n in Path(filt).read_text().splitlines() if n]
+    else:
+        nodes = [a for a in sys.argv[1:] if a.startswith('tests/')]
+    count_dir = Path(os.environ['RETRY_COUNT_DIR']); count_dir.mkdir(parents=True, exist_ok=True)
+    fail_times = int(os.environ.get('FAIL_TIMES', '0'))
+    outcomes, code = {}, 0
+    for n in nodes:
+        marker = count_dir / re.sub(r'[^A-Za-z0-9]', '_', n)
+        prev = int(marker.read_text()) if marker.exists() else 0
+        marker.write_text(str(prev + 1))
+        if prev < fail_times:
+            outcomes[n] = 'failed'; code = 1
+        else:
+            outcomes[n] = 'passed'
+    Path(result).write_text(json.dumps({'schema_version': 1, 'exitstatus': code, 'results': outcomes}))
+    raise SystemExit(code)
+'''
+
+
+def _logging_allure(tmp):
+    executable(tmp / 'bin/allure', '#!/bin/sh\nprintf "allure %s\\n" "$*" >> "$CALLS"\nexit 0\n')
+
+
+def _reporter_make(tmp, reporter):
+    # make stub that forwards pytest ARGS to the reporter (so argv-based node discovery works).
+    make = tmp / 'bin/make'
+    make.write_text('#!/bin/sh\nprintf "make %s\\n" "$*" >> "$CALLS"\n'
+                    'if [ "$1" = test-local ]; then\n'
+                    '  for a in "$@"; do case "$a" in ARGS=*) argstr="${a#ARGS=}";; esac; done\n'
+                    f'  "{sys.executable}" "{reporter}" $argstr\n'
+                    'fi\n')
+    make.chmod(0o755)
+
+
+def _count_boot_installs(calls):
+    # Number of APK installs == number of full boots/installs performed.
+    return len([c for c in calls if ' install ' in c])
+
+
+def test_multilane_retry_converges_reusing_env_and_reports_once(runner):
+    run, tmp = runner
+    _logging_allure(tmp)
+    (tmp / 'fake-pytest-result.py').write_text(_STATEFUL_REPORTER)
+    count_dir = tmp / 'retry-counts'
+    result, calls = run('--lanes', '2', '--retries', '2',
+                        FAIL_TIMES='1', RETRY_COUNT_DIR=str(count_dir))
+    assert result.returncode == 0, result.stdout + result.stderr
+    # Each lane fails its case once, then the in-place retry passes it.
+    assert '重试' in result.stdout
+    assert 'Total: 2' in result.stdout and '2 passed' in result.stdout
+    assert 'Overall: PASS' in result.stdout
+    assert '[lane 0] PASS' in result.stdout and '[lane 1] PASS' in result.stdout
+    # Retries reuse the environment: still exactly one install per emulator (4), no reboot.
+    assert _count_boot_installs(calls) == 4
+    # One merged report; APK obtained once (query + download).
+    assert len([c for c in calls if c.startswith('allure generate')]) == 1
+    assert len([c for c in calls if c.startswith('curl ')]) == 2
+
+
+def test_multilane_retry_exhausts_limit_and_fails(runner):
+    run, tmp = runner
+    _logging_allure(tmp)
+    (tmp / 'fake-pytest-result.py').write_text(_STATEFUL_REPORTER)
+    count_dir = tmp / 'retry-counts'
+    result, calls = run('--lanes', '2', '--retries', '1',
+                        FAIL_TIMES='9', RETRY_COUNT_DIR=str(count_dir))
+    assert result.returncode != 0
+    assert 'Total: 2' in result.stdout and '2 failed' in result.stdout
+    assert 'Overall: FAIL' in result.stdout
+    # Still no reboot/reinstall for the retry: one install per emulator.
+    assert _count_boot_installs(calls) == 4
+    assert len([c for c in calls if c.startswith('allure generate')]) == 1
+
+
+def test_default_run_has_no_retry(runner):
+    run, tmp = runner
+    result, _ = run('--lanes', '2')
+    assert result.returncode == 0, result.stderr
+    assert '重试' not in result.stdout
+    assert '尝试' not in result.stdout
+
+
+def test_singlelane_retry_converges_reusing_env(runner):
+    run, tmp = runner
+    _logging_allure(tmp)
+    count_dir = tmp / 'retry-counts'
+    reporter = tmp / 'reporter.py'
+    reporter.write_text(_STATEFUL_REPORTER)
+    _reporter_make(tmp, reporter)
+    nodeids = ['tests/test_example.py::test_a', 'tests/test_example.py::test_b']
+    result, calls = run('--retries', '2', *nodeids,
+                        FAIL_TIMES='1', RETRY_COUNT_DIR=str(count_dir))
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert '首次: 2 失败' in result.stdout
+    assert '第 1 次重试后: 0 失败' in result.stdout
+    # Single lane: 2 emulators booted/installed once; retry reuses them.
+    assert _count_boot_installs(calls) == 2
+    assert len([c for c in calls if c.startswith('allure generate')]) == 1
+    assert any('-p scripts.pytest_lane' in c for c in calls if c.startswith('make test-local'))
+
+
+def _result(history_id, status, stop):
+    return json.dumps({'uuid': f'{history_id}-{stop}', 'historyId': history_id,
+                       'name': history_id, 'status': status, 'start': stop - 5, 'stop': stop})
+
+
+def test_mark_flaky_flags_only_reran_passed_cases(tmp_path):
+    d = tmp_path / 'allure-results'
+    d.mkdir()
+    # Recovered: failed then passed -> flaky on the latest (passed) result.
+    (d / 'x0-result.json').write_text(_result('HX', 'failed', 110))
+    (d / 'x1-result.json').write_text(_result('HX', 'passed', 210))
+    # Passed once, no retry -> untouched.
+    (d / 'y0-result.json').write_text(_result('HY', 'passed', 110))
+    # Never recovered: failed both attempts -> untouched (a real failure).
+    (d / 'z0-result.json').write_text(_result('HZ', 'failed', 110))
+    (d / 'z1-result.json').write_text(_result('HZ', 'broken', 210))
+    result = subprocess.run([sys.executable, str(SCRIPTS / 'mark_flaky.py'), str(d)],
+                            capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    assert 'Flaky-marked 1' in result.stdout
+
+    recovered = json.loads((d / 'x1-result.json').read_text())
+    assert recovered['statusDetails']['flaky'] is True
+    assert {'name': 'tag', 'value': 'reran-passed'} in recovered['labels']
+    # The earlier failed attempt of the recovered case is left as-is.
+    earlier = json.loads((d / 'x0-result.json').read_text())
+    assert not (earlier.get('statusDetails') or {}).get('flaky')
+    # A single-run pass and a never-recovered failure are untouched.
+    assert not (json.loads((d / 'y0-result.json').read_text()).get('statusDetails') or {}).get('flaky')
+    assert not (json.loads((d / 'z1-result.json').read_text()).get('statusDetails') or {}).get('flaky')

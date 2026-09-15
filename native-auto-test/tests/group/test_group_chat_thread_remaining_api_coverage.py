@@ -5,6 +5,9 @@
 A 建群并邀请 B、B 发送群父消息、A 基于父消息创建子区、B 加入子区。
 """
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import uuid
 import time
@@ -26,13 +29,14 @@ def _find_msg_with_id(messages: list, msg_id: str) -> dict | None:
     return None
 
 
-def _wait_chat_thread_event(device, event_type: str, thread_id: str, *, timeout: float = 20.0) -> dict:
+def _wait_chat_thread_event(device, event_type: str, thread_id: str, *, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.thread_event', module='group') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
         evt = device.receive_message(
             match_event_type=event_type,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='group'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if evt:
             seen.append(evt)
@@ -105,7 +109,7 @@ def _create_thread_context(device_a, device_b, assert_api, user_a: str, user_b: 
             last_group_error = exc
             if "Server is unreachable" not in str(exc) or attempt == 1:
                 raise
-            time.sleep(1)
+            time.sleep(timing_seconds('retry.backoff', module='group'))
     if not group_id and last_group_error is not None:
         raise last_group_error
 
@@ -115,6 +119,7 @@ def _create_thread_context(device_a, device_b, assert_api, user_a: str, user_b: 
     resp_create = {}
     for attempt in range(2):
         content = f"thread-parent-{uuid.uuid4().hex[:8]}"
+        timing_pause('step.interval', module='group')
         resp_parent = device_b.call(
             "ChatManager",
             Cmd.sendMessage.value,
@@ -129,7 +134,7 @@ def _create_thread_context(device_a, device_b, assert_api, user_a: str, user_b: 
             },
             ignore_keys={"sequence", "result"},
         )
-        evt_success = device_b.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+        evt_success = device_b.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.thread_event', module='group'))
         parent_msg_id = ((evt_success or {}).get("data") or {}).get("msg", {}).get("msgId")
         assert isinstance(parent_msg_id, str) and parent_msg_id, f"未拿到群父消息 msgId: {evt_success}"
         assert_api.assert_response_matches(
@@ -161,7 +166,7 @@ def _create_thread_context(device_a, device_b, assert_api, user_a: str, user_b: 
             ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "translations", "broadcast", "onlineState", "targetLanguages"},
         )
 
-        evt_group_recv = device_a.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+        evt_group_recv = device_a.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timing_seconds('timeout.thread_event', module='group'))
         messages = ((evt_group_recv or {}).get("data") or {}).get("messages") or []
         parent_received = _find_msg_with_id(messages, parent_msg_id)
         assert parent_received is not None, (
@@ -189,17 +194,19 @@ def _create_thread_context(device_a, device_b, assert_api, user_a: str, user_b: 
             ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "translations", "receiverList"},
         )
 
+        timing_pause('settle.parent_message', module='group')
         resp_create = device_a.call(
             "ChatThreadManager",
             Cmd.createChatThread.value,
             info={"name": thread_name, "msgId": parent_msg_id, "parentId": group_id},
         )
+        timing_pause('step.interval', module='group')
         thread = resp_create.get("result") or {}
         thread_id = thread.get("threadId") if isinstance(thread, dict) else None
         if isinstance(thread_id, str) and thread_id:
             break
         if attempt == 0:
-            time.sleep(1)
+            time.sleep(timing_seconds('retry.backoff', module='group'))
     thread = resp_create.get("result") or {}
     thread_id = thread.get("threadId") if isinstance(thread, dict) else None
     assert isinstance(thread_id, str) and thread_id, f"createChatThread 未返回 threadId: {resp_create}"
@@ -255,6 +262,7 @@ def _create_thread_context(device_a, device_b, assert_api, user_a: str, user_b: 
         create_at=ne(None),
     )
 
+    timing_pause('step.interval', module='group')
     resp_join = device_b.call(
         "ChatThreadManager",
         Cmd.joinChatThread.value,
@@ -337,6 +345,7 @@ def test_chat_thread_fetch_detail_and_lists(device_a, device_b, assert_api, user
         thread_id = context["thread_id"]
         group_id = context["group_id"]
 
+        timing_pause('step.interval', module='group')
         detail_resp = device_a.call(
             "ChatThreadManager",
             Cmd.fetchChatThreadDetail.value,
@@ -465,6 +474,7 @@ def test_chat_thread_fetch_members_and_latest_message(device_a, device_b, assert
         context = _create_thread_context(device_a, device_b, assert_api, user_a, user_b)
         thread_id = context["thread_id"]
 
+        timing_pause('step.interval', module='group')
         members_resp = device_a.call(
             "ChatThreadManager",
             Cmd.fetchChatThreadMember.value,
@@ -513,6 +523,7 @@ def test_chat_thread_update_name_and_leave(device_a, device_b, assert_api, user_
         group_id = context["group_id"]
         new_name = f"thr-new-{uuid.uuid4().hex[:6]}"
 
+        timing_pause('step.interval', module='group')
         update_resp = device_a.call(
             "ChatThreadManager",
             Cmd.updateChatThreadSubject.value,
@@ -529,6 +540,7 @@ def test_chat_thread_update_name_and_leave(device_a, device_b, assert_api, user_
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='group')
         for device in (device_a, device_b):
             update_evt = _wait_chat_thread_event(device, Cmd.onChatThreadUpdate.value, thread_id)
             _assert_thread_lifecycle_event(
@@ -544,6 +556,7 @@ def test_chat_thread_update_name_and_leave(device_a, device_b, assert_api, user_
                 create_at=0,
             )
 
+        timing_pause('step.interval', module='group')
         detail_resp = device_a.call(
             "ChatThreadManager",
             Cmd.fetchChatThreadDetail.value,
@@ -580,6 +593,7 @@ def test_chat_thread_update_name_and_leave(device_a, device_b, assert_api, user_
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='group')
         joined_parent_resp = device_b.call(
             "ChatThreadManager",
             Cmd.fetchJoinedChatThreadsWithParentId.value,
@@ -607,6 +621,7 @@ def test_chat_thread_destroy_event_received_by_group_member(device_a, device_b, 
         context = _create_thread_context(device_a, device_b, assert_api, user_a, user_b)
         thread_id = context["thread_id"]
 
+        timing_pause('step.interval', module='group')
         destroy_resp = device_a.call(
             "ChatThreadManager",
             Cmd.destroyChatThread.value,
@@ -623,6 +638,7 @@ def test_chat_thread_destroy_event_received_by_group_member(device_a, device_b, 
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='group')
         for device in (device_a, device_b):
             destroy_evt = _wait_chat_thread_event(device, Cmd.onChatThreadDestroy.value, thread_id)
             _assert_thread_lifecycle_event(

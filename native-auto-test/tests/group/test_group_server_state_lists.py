@@ -1,5 +1,6 @@
 """Group 服务端状态列表 API 正常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -47,6 +48,7 @@ def test_group_get_group_block_list_from_server_success(device_a, assert_api, us
             group_name=new_group_name("block_list"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.getGroupBlockListFromServer.value,
@@ -82,6 +84,7 @@ def test_group_get_group_mute_list_from_server_success(device_a, assert_api, use
             group_name=new_group_name("mute_list"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.getGroupMuteListFromServer.value,
@@ -117,6 +120,7 @@ def test_group_get_group_white_list_and_member_check_success(device_a, assert_ap
             group_name=new_group_name("white_list"),
             invite_members=[],
         )
+        timing_pause('step.interval', module='group')
         resp_white = device_a.call(
             "GroupManager",
             Cmd.getGroupWhiteListFromServer.value,

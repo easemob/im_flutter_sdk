@@ -1,5 +1,6 @@
 """Group member list API 正常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -45,6 +46,7 @@ def test_group_get_group_member_list_from_server_success(device_a, assert_api, u
             group_name=new_group_name("member_list"),
             invite_members=[user_b],
         )
+        timing_pause('step.interval', module='group')
         resp = device_a.call(
             "GroupManager",
             Cmd.getGroupMemberListFromServer.value,

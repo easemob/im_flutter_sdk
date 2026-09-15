@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import json
 import time
@@ -20,10 +22,12 @@ pytestmark = [pytest.mark.client, pytest.mark.chatroom]
 
 def test_chatroom_join_public_chatroom_success(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="join", desc_prefix="join")
+    timing_pause('step.interval', module='chatroom')
     try:
         resp = device_b.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
         assert_join_chatroom_response(assert_api, resp, device="deviceB", room_id=room_id)
 
+        timing_pause('step.interval', module='chatroom')
         members_resp = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomMembers.value,
@@ -131,6 +135,7 @@ def _assert_joiner_ext_delivered_to_observer(
     )
 
     # 加入方必须在 joinChatRoom 请求里携带 ext；观察方收到的 SDK 回调 ext 必须与该入参完全一致。
+    timing_pause('step.interval', module='chatroom')
     join_resp = joiner_device.call(
         "ChatRoomManager",
         Cmd.joinChatRoom.value,
@@ -153,7 +158,7 @@ def _assert_joiner_ext_delivered_to_observer(
             observer_device,
             expected_event_types={"onMemberJoinedFromChatRoom"},
             chatroom_id=room_id,
-            timeout=0.5,
+            timeout=timing_seconds('observe.incremental', module='chatroom'),
             require_event=False,
             first_only=False,
         )
@@ -174,7 +179,7 @@ def _assert_joiner_ext_delivered_to_observer(
             joiner_device,
             expected_event_types={"onMemberJoinedFromChatRoom"},
             chatroom_id=room_id,
-            timeout=0.5,
+            timeout=timing_seconds('observe.incremental', module='chatroom'),
             require_event=False,
         )
         joiner_self_events.extend(
@@ -209,6 +214,7 @@ def test_chatroom_join_with_ext_member_joined_callback(
     # 用 user_c 建房，避免 A/B 任一方作为 REST 初始成员污染“真实加入”语义。
     room_id, _ = create_chatroom_or_skip(owner=user_c, name_prefix="join_ext", desc_prefix="join_ext")
     try:
+        timing_pause('step.interval', module='chatroom')
         _assert_joiner_ext_delivered_to_observer(
             assert_api,
             room_id=room_id,

@@ -55,6 +55,22 @@
 29. Python 端读取 `websocket.base_url` 的优先级应保持为：非空 `WS_BASE_URL` 环境变量 > 桥接文件 `websocket.base_url`。
 30. 当 App 加载环境配置时，加载结果应记录配置来源（外部文件或打包 asset），并在启动日志中输出，以便区分“读到注入配置”与“回退 asset”。
 
+### Cases 时间配置扩展
+
+初版迁移记录；其中旧场景键/环境变量兼容规则已被下方 Semantic timing vocabulary A 替代。等待位置、数值安全和事件保留要求仍有效。
+
+作为 E2E 维护者，我希望所有业务模块的执行等待集中在环境配置中，且离线操作有独立的稳定窗口，以便调整自动化节奏而不修改测试断言。
+
+- 当业务 cases 读取时间配置时，系统应使用当前环境文件的 `app.case_timing`，所有值以秒计；未配置使用内置默认。
+- 当配置普通依赖步骤间隔时，系统应默认使用 1 秒；当配置离线退出后、重登前、重登后稳定等待时，应默认各使用 3 秒。
+- 当迁移已有专用等待时，系统应保留原默认值，且优先使用 YAML，其次已有时间环境变量，最后内置默认。
+- 当设置 sleep/清理窗口为零时，系统应允许；当超时、轮询、无事件观察窗口非正或任意值为负数、布尔值、非有限数时，应明确报错且不输出配置中的凭据。
+- 当登录并启动回调后进行稳定等待时，系统应保留事件队列，不清理待验证的离线事件。
+- 当等待目标事件时，系统应保留精确匹配和总预算，收到目标事件立即返回；无事件断言应观察完整配置窗口。
+- 当实施本扩展时，系统不得向所有底层 API 调用注入 sleep，不得放宽断言、替换事件或新增业务重试掩盖失败。
+- 当盘点业务时间值时，应区分业务输入（时间戳、禁言/订阅期限及非法边界）与执行等待；前者保留并记录，不混入等待参数。
+- 本扩展覆盖 tests 下八个真实业务模块、公共 fixtures 和直接依赖的 flow/wait helper；tests/tools 仅作为无设备回归测试，不属于业务迁移范围。
+
 ### 文档与验证
 
 31. 当本功能完成时，`native-auto-test/README.md`、`skills/im-flutter-run/SKILL.md`、`config/env.yaml.template` 注释应说明新 schema、环境/桥接文件选择优先级、DNS 派生规则以及固定开关所在位置。
@@ -62,3 +78,32 @@
 33. 当本功能完成时，Dart 单元测试应覆盖：固定开关、DNS 派生、地址映射、空值/字符串端口处理、桥接解析与外部文件优先于 asset，且不依赖设备或网络。
 34. 当本功能完成时，Python 单元测试应覆盖：环境/桥接文件选择优先级、未知字段容错、REST base URL 派生、client_credentials token 获取与缓存、`verify_ssl` 行为、`WS_BASE_URL` 优先级，且不依赖设备或外部网络。
 35. 当本功能完成时，应确认 `cd im_flutter_test && flutter analyze`、`flutter test`、`cd native-auto-test && python -m compileall src tests` 与新增单元测试全部通过，并在交付说明中给出摘要。
+
+## Simplified settling and event-to-operation pacing
+User Story: As a case maintainer I want three settling knobs and explicit pacing after validated events.
+- WHEN step is a scalar THEN cases shall use it as the ordinary interval.
+- WHEN settle.offline/normal/slow are configured THEN related boundaries shall share those settings (defaults 3/5/15 seconds).
+- WHEN grouped callbacks have been validated before the next group workflow operation THEN cases shall pause for the ordinary interval without draining events.
+- WHILE collecting callbacks from one operation THEN cases shall retain matching and negative observation budgets without inter-callback sleeps.
+
+## Offline operation-to-login boundary audit
+User Story: As a case author I need the offline recipient to stay offline briefly after the peer operation succeeds.
+- WHEN a peer completes an invitation, approval, contact change or message operation for an offline recipient THEN the recipient shall wait settle.offline before initiating login.
+- WHEN a direct sync-relogin case bypasses the shared helper THEN it shall apply the same boundary pauses without changing callback activation or assertions.
+
+## Semantic timing vocabulary (A; supersedes call-site keys and legacy timing environment variables)
+User Story: As a maintainer I want a small vocabulary describing wait purposes with an explicit module dimension, so configuration survives case/helper renames.
+- WHEN a case resolves timing THEN it shall call seconds(key, module=...) or pause(key, module=...) with a registered semantic key and explicit module (including session/shared).
+- WHEN overrides overlap THEN precedence shall be module semantic value > global semantic value > module default > section default > built-in semantic default, uniformly for every section.
+- WHEN step is a scalar THEN it shall be equivalent to step.interval; module overrides may use a scalar or a mapping with semantic names/default.
+- WHEN migrating THEN existing pause positions, callback matching and numeric budgets shall remain unchanged unless a semantic budget normalization is explicitly recorded and regression-tested; special sorting/download waits shall not be shortened.
+- WHEN resolving configuration THEN unknown sections, semantic names, modules and malformed/unsafe values shall fail without exposing credentials; old call-site YAML names are not supported and must fail rather than silently fall back.
+- WHEN old *_SETTLE_SECONDS timing environment variables are present THEN they shall no longer affect timing; YAML is the single configurable source (IM_TEST_CONFIG still selects the environment file).
+- WHEN classifying waits THEN positive callback timeouts shall not use drain; event receive slices, polling sleeps and algorithmic positive epsilon shall remain distinct. Numeric epsilon is an implementation constant, not a configuration field.
+- WHEN shared offline helpers are used THEN callers shall pass their module explicitly; offline settling remains 3 seconds and shall not drain queued events.
+
+## Full business dependency coverage
+User Story: As a maintainer I want dependent operations paced even through helpers and branches.
+- WHEN a successful mutation or its validated callback batch precedes a dependent business operation THEN cases shall pause step unless an explicit settling pause already covers the boundary.
+- WHEN offline cases use nested preparation/relogin helpers THEN the audit shall resolve those helpers rather than rely on test names.
+- WHILE receiving callback batches or polling a deadline THEN pacing shall not consume that budget or replace assertions.

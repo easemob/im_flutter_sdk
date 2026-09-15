@@ -312,3 +312,131 @@ sequenceDiagram
 - 用并发子进程测试锁下命中/下载，验证正常并发只下载一次，失败不发布半包；锁超时需有确定性测试。
 - run.sh stub 测试覆盖单 lane、多 lane 外层一次查询/下载与子 lane 复用、`--refresh-apk` 传播、本地来源绕过 API、参数冲突及无效 APK_PATH。确认设备卸载仍先于安装，配置推送仍执行。
 - 自动化验证命令与完成状态仅记录在 tasks.md。真实 GitHub/模拟器冒烟如后续获得授权再执行，不用真实业务用例替代缓存工具测试。
+
+## IM 业务优先级 Allure 展示增量（2026-09-14，按用户修正）
+
+### Overview
+
+保留原模块树、test 名称和说明，仅增加 `[P0]` 等级前缀。此前中文重命名、重分组和统计表运行时依赖方案由本设计替代；用户已明确授权修正。
+
+### Architecture
+
+- `src/tools/case_priorities.py` 固化完整 nodeid 到等级的映射，仅包含确定的业务等级，无统计文件依赖。
+- `src/tools/allure_metadata.py` 在 setup 默认值写入后追加标题前缀及 priority/severity；原模块/类分组、说明和执行身份保持。
+- `src/tools/allure_steps.py` 使用 contextvars 隔离阶段与编号，提供真实业务步骤上下文及已知 API/事件的中文动作说明。
+- `allure_evidence.py`、`response_match.py` 和公共 API fixtures 接入编号步骤，原协议、断言、脱敏和附件逻辑保留。
+
+### Sequence diagrams
+
+```mermaid
+sequenceDiagram
+    participant P as pytest
+    participant A as Allure
+    participant E as 公共证据层
+    P->>A: 保留原名称/说明/模块，追加等级前缀
+    P->>E: call 开始，编号归零
+    E->>A: 步骤 N：用户操作，附请求/响应
+    E->>A: 步骤 N+1：等待回调，附条件/结果
+    E->>A: 步骤 N+2：校验预期，附实际/差异
+    P->>A: 原状态及 teardown
+```
+
+### Component / data / workflow design
+
+- 完整参数化 nodeid 精确匹配；从实际测试文件推导仓库相对路径，不依赖 cwd/rootdir。非业务和未定级节点保留原名称/分组。
+- `[P0] test_xxx[参数]`，不截断原名、不重复拼参数；P0/P1/P2 对应 blocker/critical/normal。
+- Test body 按实际公共入口执行顺序编号，setup/teardown 使用前置/清理。上下文在 hook finally 恢复，下一用例从1开始。显式 `business_step` 可包裹业务组合操作，内部证据嵌套且不重复编号。
+- 使用实际 deviceA/B/C/D 标识说明操作者，不推断群主/管理员角色；目标用户、群 ID 等保留于脱敏附件。已知方法和事件显示中文动作，未知项保留真实 manager/cmd/eventType。
+- 原始说明仍为原 docstring；统计描述不渲染为步骤。只记录实际调用和断言，空事件只表明等待无结果，是否失败仍由用例判断。
+
+### Constraints / tradeoffs
+
+- 不增加生产依赖，不改业务参数、断言、skip/xfail、等待、lane、SDK/App 或远端数据。
+- 已有手写 assert、sleep 或绕开公共入口的动作不会自动生成细分步骤；需要明确场景描述时可使用业务步骤上下文，不根据名称猜测场景。
+- 统计文档可删除，等级维护在代码中。历史报告不自动改写。
+- 参考 im-test-hub 的真实步骤/附件结构，不迁移其 SDK 实现或 skip/xfail 转失败策略。
+
+### Testing strategy
+
+真实隔离 pytest/Allure JSON 对照原名称、原分组、description、状态、historyId、参数；覆盖静态/动态 skip、xfail、fixture 异常、参数化、非业务/未知节点、不同 rootdir、无统计文件和双进程合并。模拟公共调用验证编号、前置/清理、嵌套、异常、空等待、预期/实际/差异及脱敏。回归 evidence/lane、collect-only、speckit check、diff check，生成合成报告检查 Test body；不跑真实业务。
+
+## 用例精简设计（2026-09-15）
+
+### Overview / Architecture
+按已审查清单删除20个节点；仅移除目标函数及其装饰器，容量测试整文件删除；容量配置实现保持。无需新组件或协议。
+
+### Workflow / Constraints
+先保存当前收集集合，再按精确文件+函数删除，同步代码等级表及模块台账/依赖审计。重复项保留另一份等价场景；APNs缺口探测直接删除，文档保留平台覆盖限制。历史验证数字标注为历史，本次新数量独立记录；其他工作区改动不回滚。
+
+### Testing strategy
+删除前后集合差恰好20、无新增节点、每个保留节点仍有合法等级；默认业务及tools分别collect-only，运行现有报告/evidence/lane回归和diff检查，不新增重复实现式测试。
+
+## 失败用例自动重试增量设计（2026-09-15）
+
+> 说明：本节最初设计为「最外层重试编排层，循环 re-invoke run.sh」。因每次内部运行都会重启模拟器/重装 APK/重启桥接、耗时高，已按用户要求改为**就地复用环境重试**（下述为当前权威实现）。历史的 `run_with_retries` 外层编排与 `emit_failures.py` 已移除。
+
+### Overview
+
+失败用例自动重试仅当传入 `--retries N`（N≥1）时激活；默认不带该参数时行为与实现完全不变。重试**在单 lane 执行器的 pytest 步骤内就地进行**：复用已启动的模拟器、已安装的 APK 与已就绪的桥接，仅用新的 pytest 进程重跑失败用例，不重启模拟器、不重装 APK、不重启桥接。多 lane 时由编排器把 `--retries` 透传给每个 lane，各 lane 在各自已就绪环境内重试自己的失败分片。报告以每个用例最后一次执行为准，直接借助 Allure 原生 retries 语义（同一 `historyId` 取最新一次为主状态与统计）。
+
+### Architecture
+
+- `run.sh` 新增 `--retries N` 解析、`emit_report`（抽出报告生成/打开）与 `build_make_args`（拼装 `make test-local` 的 ARGS）两个辅助函数。移除最外层 re-invoke 编排。
+- 单 lane 执行器 pytest 步骤（step 6）：
+  - `RETRIES=0`：保持原有单次 `make test-local` 调用，行为不变。
+  - `RETRIES>0`：进入就地重试循环。第 0 次跑全部选定用例；随后仅以「上一次失败集合」为过滤，重复运行 pytest，直到失败为空或达到 N 次。每次尝试写入独立的 attempt 结果 JSON，并用 `retry_merge.py` 合并进累计结果（后写覆盖，得到每用例的最后一次执行）。
+  - 选择与捕获复用 `scripts/pytest_lane.py`：`IM_FLUTTER_LANE_NODEIDS`（过滤文件）+ `IM_FLUTTER_LANE_RESULT`（逐 nodeid 结果）。多 lane 子 lane 由编排器已注入插件与分片；顶层单 lane 首轮不过滤（跑全部），并自行加 `-p scripts.pytest_lane`。
+- 多 lane 编排器：对每个 lane 子进程追加 `--retries "$RETRIES"`，各 lane 在其 pytest 步骤内就地重试自己的分片；子 lane 把累计结果写回编排器指定的 `laneN.result.json`（供 `summarize_lanes` 读取最终结果）。编排器结束后统一 `emit_report` 一次（受 `NO_REPORT` 守卫）。APK 仍由外层一次性获取并经 `APK_PATH` 分发。
+- 新增 `native-auto-test/skills/im-flutter-run/scripts/retry_merge.py`：把某次 attempt 结果并入累计结果（schema_version 1，后写覆盖），并把仍失败（failed/error）的 nodeid 写入 `--failures-out`（下一轮精确重跑集合）。缺失/非法输入被容忍（缺失 attempt 保持累计不变）。
+- 新增 `native-auto-test/skills/im-flutter-run/scripts/mark_flaky.py`：出报告前扫描 `out/allure-results`，按 `historyId` 分组，对「较早失败/broken、最后一次通过」的用例，把最后一次（通过）结果标记 `statusDetails.flaky=true`、追加 `reran-passed` 标签与说明。仅动最后一次通过结果，报告主状态仍为通过；始终失败或一次即通过的用例不改。顶层单 lane 在自身报告前调用，多 lane 由编排器在 `emit_report` 前统一调用（`RETRIES>0` 才执行）。
+
+### Sequence diagram
+
+```mermaid
+sequenceDiagram
+    participant O as 多 lane 编排器
+    participant C as lane 子进程（单 lane 执行器）
+    participant E as 已就绪环境（模拟器/APK/桥接）
+    participant M as retry_merge.py
+    participant A as Allure 合并报告
+    O->>O: setup + 一次性获取 APK + 清空 allure-results
+    O->>C: fork lane（--retries N，注入分片与结果路径）
+    C->>E: boot + install + bridge（仅一次）
+    C->>E: 尝试0：pytest 跑本 lane 全部分片（追加 allure-results）
+    C->>M: 合并 attempt0 → 累计；导出失败集合
+    loop 仍有失败 且 未达 N 次
+        C->>E: 重试：新 pytest 进程仅重跑失败集合（同环境，不重启/不重装）
+        C->>M: 合并 attemptK → 累计；导出失败集合
+    end
+    C->>O: 累计结果写回 laneN.result.json；退出码反映最终失败
+    O->>A: summarize_lanes 汇总最终结果；emit_report 出一份报告
+```
+
+### Component / data / workflow design
+
+- 触发与透传：`--retries N` 校验为非负整数；`N=0`/未传等价关闭且不改变默认路径。多 lane 编排器把 `--retries N` 连同既有 `--no-open --no-report --skip-setup` 一并透传给 lane 子进程。
+- 就地重试与环境复用：重试循环位于 boot/install/bridge 之后、cleanup 之前，仅重复调用 `make test-local`（新 pytest 进程）。两次尝试之间不重启模拟器、不重装 APK、不重启桥接；唯一固有开销是 pytest 启动与会话级 fixture（如双端登录）。
+- 结果累积与「最后一次为准」：`out/allure-results` 仅在初次前清空一次（顶层 `NO_REPORT=0`；lane 子进程 `--no-report` 不清空），此后每次尝试只追加。同一用例多次执行产生多个结果文件，Allure 按 `historyId` 取最新一次为主状态并计入统计，早期尝试作为 retries 展示；重跑时间戳更晚，天然满足「以最后一次执行为准」。
+- 收敛与退出码：设 `F_k` 为第 k 次后的失败集合，第 k+1 次仅跑 `F_k`；`retry_merge.py` 的累计结果中「仍失败」集合即下一轮精确选择，也即最终失败集合。lane 退出码由最终失败是否为空决定（恢复即通过）；多 lane 汇总据此判定整体成败。
+- 失败判定：仅 failed/error 进入重跑集合；unreported/incomplete 不纳入重跑，仍由 `summarize_lanes` 的 INCOMPLETE 与非零退出暴露。
+- lane 结果写回：子 lane 各尝试指向独立 attempt JSON，最终把累计结果 `cp` 到编排器的 `laneN.result.json`（键为该 lane 分片、值为合法 outcome、`exitstatus` 反映最终），满足 `summarize_lanes` 的 schema 校验。
+
+### Constraints / tradeoffs
+
+- 就地重试复用环境，显著降低重试耗时；代价是重试不提供「全新设备状态」，仅重跑 pytest（含会话 fixture）。可通过重装/重启恢复的失败不在重试覆盖范围。
+- 重试粒度为「上一次失败集合」的整批重跑（非 pytest 单用例即时重试），与用户原始「收集失败→整批重跑」语义一致。
+- 多 lane 下各 lane 重试自己的分片（非跨 lane 重新分片），换取环境复用与实现简单；合并报告仍以最后一次执行为准。
+- Bash 3.2 兼容：不使用 `mapfile`；`wc -l` 统计失败数；`$var` 后紧跟中文时使用 `${var}` 花括号定界，避免把多字节字节并入变量名。
+- 保持默认路径零改动：`RETRIES<=0` 完全走原单次 pytest 分支；`NO_REPORT` 守卫仅影响显式 `--no-report`（lane 子进程）。
+
+### Testing strategy
+
+复用 `tests/tools/test_im_flutter_run_apk.py` 的可弃用假工具树与有状态假 pytest（按 nodeid 计数，前 FAIL_TIMES 次失败后通过；按 `IM_FLUTTER_LANE_NODEIDS` 过滤文件或 argv 选节点）：
+
+- 多 lane 收敛：首轮失败、就地重试后通过；断言 `Overall: PASS`、各 lane PASS、每模拟器仅一次 install（无重启/重装）、只出一份报告、APK 仅获取一次。
+- 多 lane 达上限仍失败：断言 `Overall: FAIL`、每模拟器仍仅一次 install、报告仅一份。
+- 单 lane 收敛：断言分次失败汇总（首次/第 N 次重试后）、2 台模拟器各仅一次 install、加载 `-p scripts.pytest_lane`。
+- 默认无 `--retries`：断言无重试输出、行为与既有一致。
+- flaky 标记：以构造的 allure-results（同 historyId 的失败→通过、单次通过、始终失败）直接测试 `mark_flaky.py`，断言仅「重跑通过」用例被标记 `flaky` 与 `reran-passed`，其余不动。
+- 回归：既有单/多 lane、APK 缓存、lane 汇总与 mDNS 门禁测试全部通过；`bash -n` 通过。
+- 不执行真实 GitHub、模拟器或业务用例。

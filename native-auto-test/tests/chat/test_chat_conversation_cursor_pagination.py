@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -19,40 +21,16 @@ def _assert_call(assert_api, response, *, manager, cmd, device, result):
     )
 
 
-def _switch_user(device, assert_api, *, device_name, user_id):
-    logout = device.call("Client", Cmd.logout.value, info={"unbindToken": False})
-    _assert_call(assert_api, logout, manager="Client", cmd=Cmd.logout.value, device=device_name, result=True)
-    login = device.call(
-        "Client", Cmd.login.value,
-        info={"userId": user_id, "pwdOrToken": "1", "isPassword": True},
-    )
-    _assert_call(assert_api, login, manager="Client", cmd=Cmd.login.value, device=device_name, result=user_id)
-    callback = device.call("Client", Cmd.startCallback.value, info={})
-    _assert_call(assert_api, callback, manager="Client", cmd=Cmd.startCallback.value, device=device_name, result=None)
-    device.drain_events()
 
 
-def _ensure_friend(device_a, device_b, assert_api, *, user_a, peer):
-    contacts = device_a.call("ContactManager", Cmd.getAllContactsFromServer.value, info={})
-    if peer in (contacts.get("result") or []):
-        return
-    add = device_a.call(
-        "ContactManager", Cmd.addContact.value,
-        info={"userId": peer, "reason": "conversation-pagination"},
-    )
-    _assert_call(assert_api, add, manager="ContactManager", cmd=Cmd.addContact.value,
-                 device="deviceA", result=peer)
-    device_b.receive_message(match_event_type="onContactInvited", timeout=10)
-    accept = device_b.call("ContactManager", Cmd.acceptInvitation.value, info={"userId": user_a})
-    _assert_call(assert_api, accept, manager="ContactManager", cmd=Cmd.acceptInvitation.value,
-                 device="deviceB", result=user_a)
 
 
-def _wait_text_event(device, event_type, *, content, timeout=30.0):
+def _wait_text_event(device, event_type, *, content, timeout=None):
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        event = device.receive_message(match_event_type=event_type, timeout=2)
+        event = device.receive_message(match_event_type=event_type, timeout=timing_seconds('poll.receive', module='chat'))
         if event:
             seen.append(event)
         if event_type == Cmd.onMessageSuccess.value:
@@ -118,13 +96,13 @@ def _send_and_wait_server_conversation(device_a, device_b, assert_api, *, user_a
         assert_api, Cmd.onMessagesDelivered.value, delivered, msg_id=real_id, user_a=user_a, peer=peer,
         content=content, direction=0, conv_id=peer, has_read=True, has_deliver_ack=True,
     )
-    deadline = time.monotonic() + 60
+    deadline = time.monotonic() + timing_seconds('timeout.server_state', module='chat')
     while time.monotonic() < deadline:
         conversations = device_a.call("ChatManager", Cmd.getConversationsFromServer.value, info={})
         if any(isinstance(item, dict) and item.get("convId") == peer
                for item in (conversations.get("result") or [])):
             return
-        time.sleep(2)
+        time.sleep(timing_seconds('poll.server_state', module='chat'))
     pytest.fail(f"服务端未建立目标会话: {peer}")
 
 
@@ -139,15 +117,15 @@ def _page_projection(response):
 
 
 def test_chat_conversation_pinned_and_marked_cursor_pagination(
-    device_a, device_b, assert_api, user_a, user_b, user_c,
-):
+    device_a, device_b, assert_api, user_a, user_b, user_c, friends_ac):
     _send_and_wait_server_conversation(device_a, device_b, assert_api, user_a=user_a, peer=user_b)
-    _switch_user(device_b, assert_api, device_name="deviceB", user_id=user_c)
+    friends_ac()
     try:
-        _ensure_friend(device_a, device_b, assert_api, user_a=user_a, peer=user_c)
+        timing_pause('step.interval', module='chat')
         _send_and_wait_server_conversation(device_a, device_b, assert_api, user_a=user_a, peer=user_c)
 
         for index, peer in enumerate((user_b, user_c)):
+            timing_pause('step.interval', module='chat')
             pin = device_a.call(
                 "ChatManager", Cmd.pinConversation.value,
                 info={"convId": peer, "isPinned": True},
@@ -158,9 +136,9 @@ def test_chat_conversation_pinned_and_marked_cursor_pagination(
             # 第二页漏掉同时间戳记录。真实业务操作也会自然跨时刻，这里显式
             # 拉开置顶时间，保证用例验证的是 cursor，而不是时间戳碰撞。
             if index == 0:
-                time.sleep(1.1)
+                time.sleep(timing_seconds('settle.cursor_order', module='chat'))
 
-        deadline = time.monotonic() + 30
+        deadline = time.monotonic() + timing_seconds('timeout.state_projection', module='chat')
         pinned_by_peer = {}
         while time.monotonic() < deadline:
             conversations = device_a.call("ChatManager", Cmd.getConversationsFromServer.value, info={})
@@ -171,10 +149,11 @@ def test_chat_conversation_pinned_and_marked_cursor_pagination(
             }
             if len(pinned_by_peer) == 2 and all(item.get("isPinned") is True for item in pinned_by_peer.values()):
                 break
-            time.sleep(1)
+            time.sleep(timing_seconds('poll.interval', module='chat'))
         assert set(pinned_by_peer) == {user_b, user_c}, conversations
         assert all(item["type"] == 0 and item["isThread"] is False for item in pinned_by_peer.values())
 
+        timing_pause('step.interval', module='chat')
         first = device_a.call(
             "ChatManager", Cmd.fetchConversationsByOptions.value,
             info={"pageSize": 1, "cursor": "", "pinned": True},
@@ -201,10 +180,11 @@ def test_chat_conversation_pinned_and_marked_cursor_pagination(
             )
             _assert_call(assert_api, add, manager="ChatManager",
                          cmd=Cmd.addRemoteAndLocalConversationsMark.value, device="deviceA", result=None)
+            timing_pause('step.interval', module='chat')
 
         found = {}
         for mark, expected_peer in ((0, user_b), (1, user_c)):
-            deadline = time.monotonic() + 30
+            deadline = time.monotonic() + timing_seconds('timeout.state_projection', module='chat')
             response = None
             while time.monotonic() < deadline:
                 response = device_a.call(
@@ -215,7 +195,7 @@ def test_chat_conversation_pinned_and_marked_cursor_pagination(
                 if any(item["convId"] == expected_peer and mark in (item["marks"] or []) for item in page):
                     found[mark] = expected_peer
                     break
-                time.sleep(1)
+                time.sleep(timing_seconds('poll.interval', module='chat'))
             assert response is not None and found.get(mark) == expected_peer, response
         assert found == {0: user_b, 1: user_c}
     finally:
@@ -225,4 +205,3 @@ def test_chat_conversation_pinned_and_marked_cursor_pagination(
                       info={"convIds": [user_b], "mark": 0})
         device_a.call("ChatManager", Cmd.deleteRemoteAndLocalConversationsMark.value,
                       info={"convIds": [user_c], "mark": 1})
-        _switch_user(device_b, assert_api, device_name="deviceB", user_id=user_b)

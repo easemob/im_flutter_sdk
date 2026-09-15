@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -29,13 +31,14 @@ _MESSAGE_EVENT_IGNORE_KEYS = {
 }
 
 
-def _wait_success_event(device, *, temp_id: str | None = None, content: str | None = None, action: str | None = None, timeout: float = 60.0):
+def _wait_success_event(device, *, temp_id: str | None = None, content: str | None = None, action: str | None = None, timeout: float = None):
+    timeout = timing_seconds('timeout.send_completion', module='chat') if timeout is None else timeout
     seen_events = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         evt = device.receive_message(
             match_event_type=Cmd.onMessageSuccess.value,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if evt:
             seen_events.append(evt)
@@ -53,13 +56,14 @@ def _wait_success_event(device, *, temp_id: str | None = None, content: str | No
     pytest.fail(f"未收到目标 onMessageSuccess: tempId={temp_id}, content={content}, action={action}, events={seen_events}")
 
 
-def _wait_message_event(device, event_type: str, *, real_id: str, body_type: int | None = None, content: str | None = None, timeout: float = 60.0):
+def _wait_message_event(device, event_type: str, *, real_id: str, body_type: int | None = None, content: str | None = None, timeout: float = None):
+    timeout = timing_seconds('timeout.online_delivery', module='chat') if timeout is None else timeout
     seen_events = []
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         evt = device.receive_message(
             match_event_type=event_type,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if evt:
             seen_events.append(evt)
@@ -486,7 +490,7 @@ def test_send_message_with_type_cmd_received_by_cmd_callback(device_a, device_b,
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState"},
     )
 
-    evt_cmd = device_b.receive_message(match_event_type=Cmd.onCmdMessagesReceived.value, timeout=20.0)
+    evt_cmd = device_b.receive_message(match_event_type=Cmd.onCmdMessagesReceived.value, timeout=timing_seconds('timeout.message', module='chat'))
     assert_api.assert_response_matches(
         evt_cmd,
         expected={

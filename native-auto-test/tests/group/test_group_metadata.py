@@ -1,5 +1,8 @@
 """Group metadata 正常链路。"""
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 
@@ -36,7 +39,7 @@ def _assert_specification_updated_event(
         group_id=group_id,
         allow_missing_group_id=True,
         required_all_event_types={"onSpecificationDidUpdate"},
-        timeout=10.0,
+        timeout=timing_seconds('observe.collect', module='group'),
     )
     assert_group_events(
         assert_api,
@@ -56,12 +59,13 @@ def _assert_specification_updated_event(
     assert group.get("desc") == expected_desc, f"规格变更回调 desc 不匹配: {spec_event}"
 
 
-def _assert_no_specification_updated_event(device, *, group_id: str, timeout: float = 3.0) -> None:
+def _assert_no_specification_updated_event(device, *, group_id: str, timeout: float = None) -> None:
+    timeout = timing_seconds('observe.no_event', module='group') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen: list[dict] = []
     while time.monotonic() < deadline:
-        remaining = max(0.1, deadline - time.monotonic())
-        evt = device.receive_message(timeout=min(1.0, remaining))
+        remaining = max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())
+        evt = device.receive_message(timeout=min(timing_seconds('poll.receive_batch', module='group'), remaining))
         if not isinstance(evt, dict):
             continue
         if evt.get("type") != "event":
@@ -88,6 +92,7 @@ def test_group_update_subject(device_a, device_b, assert_api, user_a, user_b):
             invite_members=[user_b],
         )
 
+        timing_pause('step.interval', module='group')
         resp_update = device_a.call(
             "GroupManager",
             Cmd.updateGroupSubject.value,
@@ -112,6 +117,7 @@ def test_group_update_subject(device_a, device_b, assert_api, user_a, user_b):
         )
         _assert_no_specification_updated_event(device_a, group_id=group_id)
 
+        timing_pause('step.interval', module='group')
         resp_local = device_a.call("GroupManager", Cmd.getGroupWithId.value, info={"groupId": group_id})
         assert_group_snapshot(
             assert_api,
@@ -158,6 +164,7 @@ def test_group_update_description(device_a, device_b, assert_api, user_a, user_b
             invite_members=[user_b],
         )
 
+        timing_pause('step.interval', module='group')
         resp_update = device_a.call(
             "GroupManager",
             Cmd.updateDescription.value,
@@ -182,6 +189,7 @@ def test_group_update_description(device_a, device_b, assert_api, user_a, user_b
         )
         _assert_no_specification_updated_event(device_a, group_id=group_id)
 
+        timing_pause('step.interval', module='group')
         resp_local = device_a.call("GroupManager", Cmd.getGroupWithId.value, info={"groupId": group_id})
         assert_group_snapshot(
             assert_api,

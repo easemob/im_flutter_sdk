@@ -1,5 +1,7 @@
 """群角色、群配置和群资源在 SDK logout/login 窗口内的最终一致性。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import json
 import os
@@ -41,7 +43,7 @@ def _assert_group_event(
         device,
         event_type=event_type,
         group_id=group_id,
-        timeout=30.0,
+        timeout=timing_seconds('timeout.group_event', module='group'),
     )
     assert_api.assert_response_matches(
         event,
@@ -59,8 +61,8 @@ def _create_config_group(
     user_b: str,
     name_prefix: str,
 ) -> tuple[str, str]:
-    device_a.drain_events(timeout=0.5)
-    device_b.drain_events(timeout=0.5)
+    device_a.drain_events(timeout=timing_seconds('drain.offline', module='group'))
+    device_b.drain_events(timeout=timing_seconds('drain.offline', module='group'))
     group_name = new_group_name(name_prefix)
     group_id, _ = create_group(
         device_a,
@@ -70,13 +72,13 @@ def _create_config_group(
         invite_members=[user_b],
     )
     try:
-        time.sleep(float(os.getenv("GROUP_OFFLINE_CONFIG_SETTLE_SECONDS", "3")))
+        time.sleep(timing_seconds('settle.normal', module='group'))
         wait_member_auto_joined(device_b, assert_api, group_id=group_id, inviter=user_a)
     except Exception:
         safe_destroy_group(device_a, group_id)
         raise
-    device_a.drain_events(timeout=0.5)
-    device_b.drain_events(timeout=0.5)
+    device_a.drain_events(timeout=timing_seconds('drain.offline', module='group'))
+    device_b.drain_events(timeout=timing_seconds('drain.offline', module='group'))
     return group_id, group_name
 
 
@@ -86,6 +88,7 @@ def _relogin_b(device_b, assert_api, *, user_b: str) -> None:
         assert_api,
         device_name="deviceB",
         user_id=user_b,
+        module='group',
     )
 
 
@@ -230,7 +233,7 @@ def test_group_offline_admin_add_remove_final_state(
             user_b=user_b,
             name_prefix="offline_admin",
         )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         added = device_a.call(
             "GroupManager",
             Cmd.addAdmin.value,
@@ -247,6 +250,7 @@ def test_group_offline_admin_add_remove_final_state(
             member_count=2,
             admin_list=[user_b],
         )
+        timing_pause('step.interval', module='group')
         _relogin_b(device_b, assert_api, user_b=user_b)
         _assert_group_event(
             device_b,
@@ -255,6 +259,7 @@ def test_group_offline_admin_add_remove_final_state(
             group_id=group_id,
             data={"groupId": group_id, "admin": user_b},
         )
+        timing_pause('step.interval', module='group')
         local_added = device_b.call(
             "GroupManager", Cmd.getGroupWithId.value, info={"groupId": group_id}
         )
@@ -284,7 +289,7 @@ def test_group_offline_admin_add_remove_final_state(
             device="deviceB",
         )
 
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         removed = device_a.call(
             "GroupManager",
             Cmd.removeAdmin.value,
@@ -301,6 +306,7 @@ def test_group_offline_admin_add_remove_final_state(
             member_count=2,
             admin_list=[],
         )
+        timing_pause('step.interval', module='group')
         _relogin_b(device_b, assert_api, user_b=user_b)
         _assert_group_event(
             device_b,
@@ -309,6 +315,7 @@ def test_group_offline_admin_add_remove_final_state(
             group_id=group_id,
             data={"groupId": group_id, "admin": user_b},
         )
+        timing_pause('step.interval', module='group')
         local_removed = device_b.call(
             "GroupManager", Cmd.getGroupWithId.value, info={"groupId": group_id}
         )
@@ -348,103 +355,6 @@ def test_group_offline_admin_add_remove_final_state(
         )
 
 
-@pytest.mark.skip(reason="Reproduced native crash: Android SDK 4.23.0 ASSIGN_OWNER/onAssignOwnerFromGroup; restore after native fix verification")
-def test_group_offline_owner_transfer_final_state(
-    device_a,
-    device_b,
-    assert_api,
-    user_a,
-    user_b,
-):
-    """B 离线期间接任群主；重登后本地和服务端 owner/permissionType 均为新群主。"""
-    group_id = ""
-    group_name = ""
-    try:
-        group_id, group_name = _create_config_group(
-            device_a,
-            device_b,
-            assert_api,
-            user_a=user_a,
-            user_b=user_b,
-            name_prefix="offline_owner",
-        )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
-        transferred = device_a.call(
-            "GroupManager",
-            Cmd.updateGroupOwner.value,
-            info={"groupId": group_id, "owner": user_b},
-        )
-        _assert_group_projection(
-            assert_api,
-            transferred,
-            cmd=Cmd.updateGroupOwner.value,
-            device_name="deviceA",
-            group_id=group_id,
-            owner=user_b,
-            permission_type=0,
-            member_count=2,
-            admin_list=[],
-        )
-        _relogin_b(device_b, assert_api, user_b=user_b)
-        _assert_group_event(
-            device_b,
-            assert_api,
-            event_type="onOwnerChangedFromGroup",
-            group_id=group_id,
-            data={"groupId": group_id, "newOwner": user_b, "oldOwner": user_a},
-        )
-        local = device_b.call(
-            "GroupManager", Cmd.getGroupWithId.value, info={"groupId": group_id}
-        )
-        assert_group_snapshot(
-            assert_api,
-            local,
-            cmd=Cmd.getGroupWithId.value,
-            group_id=group_id,
-            group_name=group_name,
-            owner=user_b,
-            member_count_value=2,
-            permission_type=2,
-            device="deviceB",
-        )
-        server = _server_group(device_b, group_id=group_id)
-        assert_group_snapshot(
-            assert_api,
-            server,
-            cmd=Cmd.getGroupSpecificationFromServer.value,
-            group_id=group_id,
-            group_name=group_name,
-            owner=user_b,
-            member_count_value=2,
-            permission_type=2,
-            device="deviceB",
-        )
-        owner_back = device_b.call(
-            "GroupManager",
-            Cmd.updateGroupOwner.value,
-            info={"groupId": group_id, "owner": user_a},
-        )
-        _assert_group_projection(
-            assert_api,
-            owner_back,
-            cmd=Cmd.updateGroupOwner.value,
-            device_name="deviceB",
-            group_id=group_id,
-            owner=user_a,
-            permission_type=0,
-            member_count=2,
-            admin_list=[],
-        )
-    finally:
-        restore_group_users(
-            device_a,
-            device_b,
-            assert_api,
-            user_a=user_a,
-            user_b=user_b,
-        )
-        safe_destroy_group(device_a, group_id)
-        safe_destroy_group(device_b, group_id)
 
 
 @pytest.mark.parametrize("field", ["name", "desc", "avatarUrl", "ext"])
@@ -468,7 +378,7 @@ def test_group_offline_metadata_final_state(
             user_b=user_b,
             name_prefix=f"offline_meta_{field}",
         )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         marker = uuid.uuid4().hex[:8]
         if field == "name":
             cmd = Cmd.updateGroupSubject.value
@@ -537,6 +447,7 @@ def test_group_offline_metadata_final_state(
             group_id=group_id,
             data={"group": event_group},
         )
+        timing_pause('step.interval', module='group')
         server = _server_group(device_b, group_id=group_id)
         result = server.get("result") or {}
         assert_api.assert_response_matches(
@@ -583,7 +494,7 @@ def test_group_offline_announcement_final_state(
             name_prefix="offline_announcement",
         )
         announcement = f"offline-announcement-{uuid.uuid4().hex[:8]}"
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         updated = device_a.call(
             "GroupManager",
             Cmd.updateGroupAnnouncement.value,
@@ -597,6 +508,7 @@ def test_group_offline_announcement_final_state(
             device_name="deviceA",
             result=None,
         )
+        timing_pause('step.interval', module='group')
         _relogin_b(device_b, assert_api, user_b=user_b)
         _assert_group_event(
             device_b,
@@ -605,6 +517,7 @@ def test_group_offline_announcement_final_state(
             group_id=group_id,
             data={"groupId": group_id, "announcement": announcement},
         )
+        timing_pause('step.interval', module='group')
         fetched = device_b.call(
             "GroupManager",
             Cmd.getGroupAnnouncementFromServer.value,
@@ -647,12 +560,13 @@ def test_group_offline_member_mute_unmute_final_state(
             user_b=user_b,
             name_prefix="offline_mute",
         )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         muted = device_a.call(
             "GroupManager",
             Cmd.muteMembers.value,
             info={"groupId": group_id, "members": [user_b], "duration": 60},
         )
+        timing_pause('step.interval', module='group')
         muted_group = muted.get("result") or {}
         assert_api.assert_response_matches(
             {
@@ -680,6 +594,7 @@ def test_group_offline_member_mute_unmute_final_state(
                 "muteExpire": 4_638_873_600_000,
             },
         )
+        timing_pause('step.interval', module='group')
         muted_server = _server_group(device_b, group_id=group_id)
         muted_server_group = muted_server.get("result") or {}
         assert_api.assert_response_matches(
@@ -700,7 +615,7 @@ def test_group_offline_member_mute_unmute_final_state(
             },
         )
 
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         unmuted = device_a.call(
             "GroupManager",
             Cmd.unMuteMembers.value,
@@ -729,6 +644,7 @@ def test_group_offline_member_mute_unmute_final_state(
             group_id=group_id,
             data={"groupId": group_id, "mutes": [user_b]},
         )
+        timing_pause('step.interval', module='group')
         unmuted_server = _server_group(device_b, group_id=group_id)
         unmuted_server_group = unmuted_server.get("result") or {}
         assert_api.assert_response_matches(
@@ -782,7 +698,7 @@ def test_group_offline_mute_all_unmute_all_final_state(
             (Cmd.muteAllMembers.value, True),
             (Cmd.unMuteAllMembers.value, False),
         ):
-            logout_for_offline(device_b, assert_api, device_name="deviceB")
+            logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
             response = device_a.call("GroupManager", cmd, info={"groupId": group_id})
             assert_group_snapshot(
                 assert_api,
@@ -802,6 +718,7 @@ def test_group_offline_mute_all_unmute_all_final_state(
                 group_id=group_id,
                 data={"groupId": group_id, "isAllMuted": expected_state},
             )
+            timing_pause('step.interval', module='group')
             server = _server_group(device_b, group_id=group_id)
             assert_group_snapshot(
                 assert_api,
@@ -848,7 +765,7 @@ def test_group_offline_allow_list_add_remove_final_state(
             (Cmd.addWhiteList.value, True, [user_a, user_b]),
             (Cmd.removeWhiteList.value, False, [user_a]),
         ):
-            logout_for_offline(device_b, assert_api, device_name="deviceB")
+            logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
             response = device_a.call(
                 "GroupManager", cmd, info={"groupId": group_id, "members": [user_b]}
             )
@@ -875,6 +792,7 @@ def test_group_offline_allow_list_add_remove_final_state(
                 data={"groupId": group_id, "members": [user_b]},
             )
 
+            timing_pause('step.interval', module='group')
             membership = device_b.call(
                 "GroupManager",
                 Cmd.isMemberInWhiteListFromServer.value,
@@ -926,7 +844,7 @@ def test_group_offline_member_attributes_final_state(
             name_prefix="offline_member_attrs",
         )
         attrs = {"offlineRole": "member", "marker": uuid.uuid4().hex[:8]}
-        logout_for_offline(device_a, assert_api, device_name="deviceA")
+        logout_for_offline(device_a, assert_api, device_name="deviceA", module='group')
         updated = device_b.call(
             "GroupManager",
             Cmd.setMemberAttributesFromGroup.value,
@@ -945,6 +863,7 @@ def test_group_offline_member_attributes_final_state(
             assert_api,
             device_name="deviceA",
             user_id=user_a,
+            module='group',
         )
         _assert_group_event(
             device_a,
@@ -958,6 +877,7 @@ def test_group_offline_member_attributes_final_state(
                 "operatorId": user_b,
             },
         )
+        timing_pause('step.interval', module='group')
         fetched = device_a.call(
             "GroupManager",
             Cmd.fetchMembersAttributesFromGroup.value,
@@ -1000,7 +920,7 @@ def test_group_offline_shared_file_upload_delete_final_state(
             user_b=user_b,
             name_prefix="offline_shared_file",
         )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         uploaded = device_a.call(
             "GroupManager",
             Cmd.uploadGroupSharedFile.value,
@@ -1014,6 +934,7 @@ def test_group_offline_shared_file_upload_delete_final_state(
             device_name="deviceA",
             result=True,
         )
+        timing_pause('step.interval', module='group')
         owner_list = device_a.call(
             "GroupManager",
             Cmd.getGroupFileListFromServer.value,
@@ -1058,6 +979,7 @@ def test_group_offline_shared_file_upload_delete_final_state(
                 },
             },
         )
+        timing_pause('step.interval', module='group')
         member_list = device_b.call(
             "GroupManager",
             Cmd.getGroupFileListFromServer.value,
@@ -1072,7 +994,7 @@ def test_group_offline_shared_file_upload_delete_final_state(
             result=[expected_file],
         )
 
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         deleted = device_a.call(
             "GroupManager",
             Cmd.removeGroupSharedFile.value,
@@ -1086,6 +1008,7 @@ def test_group_offline_shared_file_upload_delete_final_state(
             device_name="deviceA",
             result=True,
         )
+        timing_pause('step.interval', module='group')
         _relogin_b(device_b, assert_api, user_b=user_b)
         _assert_group_event(
             device_b,
@@ -1094,6 +1017,7 @@ def test_group_offline_shared_file_upload_delete_final_state(
             group_id=group_id,
             data={"groupId": group_id, "fileId": file_id},
         )
+        timing_pause('step.interval', module='group')
         empty = device_b.call(
             "GroupManager",
             Cmd.getGroupFileListFromServer.value,

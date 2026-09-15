@@ -1,5 +1,7 @@
 """Group 群主转让、权限迁移与成员移除矩阵。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import pytest
 
@@ -92,6 +94,7 @@ def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
         },
         ignore_keys={"sequence"},
     )
+    timing_pause('settle.offline', module='group')
     login = device.call(
         "Client",
         Cmd.login.value,
@@ -118,94 +121,15 @@ def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
         },
         ignore_keys={"sequence"},
     )
+    timing_pause('settle.offline', module='group')
     device.drain_events()
 
 
-@pytest.mark.skip(reason="Reproduced native crash: Android SDK 4.23.0 ASSIGN_OWNER/onAssignOwnerFromGroup; restore after native fix verification")
-def test_group_transfer_owner_to_admin_normalizes_roles(
-    device_a,
-    device_b,
-    assert_api,
-    user_a,
-    user_b,
-):
-    """A 将群主转让给管理员 B 后，B 成为 owner，A 成为普通成员，adminList 清空。"""
-    group_id = ""
-    group_name = new_group_name("owner_to_admin")
-    owner_is_b = False
-    try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=group_name,
-            invite_members=[user_b],
-        )
-        device_a.drain_events()
-        device_b.drain_events()
-        add_admin = device_a.call(
-            "GroupManager",
-            Cmd.addAdmin.value,
-            info={"groupId": group_id, "admin": user_b},
-        )
-        assert isinstance(add_admin.get("result"), dict), add_admin
-        device_a.drain_events()
-        device_b.drain_events()
-
-        response = device_a.call(
-            "GroupManager",
-            Cmd.updateGroupOwner.value,
-            info={"groupId": group_id, "owner": user_b},
-        )
-        result = response.get("result")
-        assert isinstance(result, dict), response
-        assert result.get("owner") == user_b, response
-        assert result.get("adminList") == [], response
-        owner_is_b = True
-
-        events_a = collect_group_events(
-            device_a,
-            expected_event_types={"onOwnerChangedFromGroup"},
-            group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
-            timeout=10.0,
-        )
-        events_b = collect_group_events(
-            device_b,
-            expected_event_types={"onOwnerChangedFromGroup"},
-            group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
-            timeout=10.0,
-        )
-        _assert_owner_changed(assert_api, events_a[0], group_id=group_id,
-                              new_owner=user_b, old_owner=user_a)
-        _assert_owner_changed(assert_api, events_b[0], group_id=group_id,
-                              new_owner=user_b, old_owner=user_a)
-        _fetch_group(
-            device_b,
-            assert_api,
-            group_id=group_id,
-            group_name=group_name,
-            owner=user_b,
-            member_count=2,
-            members=[user_a],
-            admins=[],
-            device_name="deviceB",
-        )
-    finally:
-        if group_id:
-            destroy_group(device_b if owner_is_b else device_a, assert_api, group_id,
-                          device_b=device_a if owner_is_b else device_b,
-                          device_name="deviceB" if owner_is_b else "deviceA")
 
 
 @pytest.mark.parametrize(
     ("target_kind", "expected_code"),
     [
-        pytest.param(
-            "current-owner", None, id="current-owner-idempotent",
-            marks=pytest.mark.skip(reason="Preventive quarantine: successful updateGroupOwner path may trigger Android SDK 4.23.0 native crash; restore after native fix verification"),
-        ),
         pytest.param("non-member", 603, id="non-member"),
         pytest.param("nonexistent", 603, id="nonexistent"),
         pytest.param("empty", 600, id="empty"),
@@ -240,6 +164,7 @@ def test_group_transfer_owner_target_boundaries(
         )
         device_a.drain_events()
         device_b.drain_events()
+        timing_pause('step.interval', module='group')
         response = device_a.call(
             "GroupManager",
             Cmd.updateGroupOwner.value,
@@ -251,6 +176,7 @@ def test_group_transfer_owner_target_boundaries(
             assert result.get("owner") == user_a, response
         else:
             assert_api.assert_error(response, code=expected_code)
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -295,6 +221,7 @@ def test_group_non_owner_cannot_transfer_ownership(
         device_a.drain_events()
         device_b.drain_events()
         if make_admin:
+            timing_pause('step.interval', module='group')
             add_admin = device_a.call(
                 "GroupManager",
                 Cmd.addAdmin.value,
@@ -302,6 +229,7 @@ def test_group_non_owner_cannot_transfer_ownership(
             )
             assert isinstance(add_admin.get("result"), dict), add_admin
             device_b.drain_events()
+        timing_pause('step.interval', module='group')
         response = device_b.call(
             "GroupManager",
             Cmd.updateGroupOwner.value,
@@ -371,95 +299,6 @@ def test_group_non_member_cannot_transfer_ownership(
             destroy_group(device_a, assert_api, group_id, device_b=device_b)
 
 
-@pytest.mark.skip(reason="Preventive quarantine: Android SDK 4.23.0 crashes in ASSIGN_OWNER/onAssignOwnerFromGroup; restore after native fix verification")
-def test_group_transfer_then_new_owner_removes_former_owner(
-    device_a,
-    device_b,
-    assert_api,
-    user_a,
-    user_b,
-):
-    """A 转让给 B 后，A 失去 owner 权限，B 可以将原群主 A 移出群。"""
-    group_id = ""
-    group_name = new_group_name("remove_former_owner")
-    owner_is_b = False
-    try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=group_name,
-            invite_members=[user_b],
-        )
-        device_a.drain_events()
-        device_b.drain_events()
-        transfer = device_a.call(
-            "GroupManager",
-            Cmd.updateGroupOwner.value,
-            info={"groupId": group_id, "owner": user_b},
-        )
-        assert isinstance(transfer.get("result"), dict), transfer
-        assert transfer["result"].get("owner") == user_b, transfer
-        owner_is_b = True
-        collect_group_events(
-            device_a,
-            expected_event_types={"onOwnerChangedFromGroup"},
-            group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
-            timeout=10.0,
-        )
-        collect_group_events(
-            device_b,
-            expected_event_types={"onOwnerChangedFromGroup"},
-            group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
-            timeout=10.0,
-        )
-
-        former_owner_attempt = device_a.call(
-            "GroupManager",
-            Cmd.removeMembers.value,
-            info={"groupId": group_id, "members": [user_b]},
-        )
-        assert_api.assert_error(former_owner_attempt, code=603, description="permission")
-
-        remove = device_b.call(
-            "GroupManager",
-            Cmd.removeMembers.value,
-            info={"groupId": group_id, "members": [user_a]},
-        )
-        _assert_true(assert_api, remove, cmd=Cmd.removeMembers.value, device="deviceB")
-        removed_events = collect_group_events(
-            device_a,
-            expected_event_types={"onUserRemovedFromGroup"},
-            group_id=group_id,
-            required_all_event_types={"onUserRemovedFromGroup"},
-            timeout=10.0,
-        )
-        assert_api.assert_response_matches(
-            removed_events[0],
-            expected={
-                "type": "event",
-                "eventType": "onUserRemovedFromGroup",
-                "data": {"groupId": group_id, "groupName": group_name},
-            },
-            ignore_keys={"timestamp", "sequence"},
-        )
-        _fetch_group(
-            device_b,
-            assert_api,
-            group_id=group_id,
-            group_name=group_name,
-            owner=user_b,
-            member_count=1,
-            members=[],
-            device_name="deviceB",
-        )
-    finally:
-        if group_id and owner_is_b:
-            destroy_group(device_b, assert_api, group_id, device_name="deviceB")
-        elif group_id:
-            destroy_group(device_a, assert_api, group_id, device_b=device_b)
 
 
 def test_group_remove_current_owner_is_ignored(
@@ -482,12 +321,14 @@ def test_group_remove_current_owner_is_ignored(
         )
         device_a.drain_events()
         device_b.drain_events()
+        timing_pause('step.interval', module='group')
         response = device_a.call(
             "GroupManager",
             Cmd.removeMembers.value,
             info={"groupId": group_id, "members": [user_a]},
         )
         _assert_true(assert_api, response, cmd=Cmd.removeMembers.value, device="deviceA")
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -528,6 +369,7 @@ def test_group_owner_removes_admin_success(
         )
         device_a.drain_events()
         device_b.drain_events()
+        timing_pause('step.interval', module='group')
         add_admin = device_a.call(
             "GroupManager",
             Cmd.addAdmin.value,
@@ -536,6 +378,7 @@ def test_group_owner_removes_admin_success(
         assert isinstance(add_admin.get("result"), dict), add_admin
         device_a.drain_events()
         device_b.drain_events()
+        timing_pause('step.interval', module='group')
         response = device_a.call(
             "GroupManager",
             Cmd.removeMembers.value,
@@ -547,7 +390,7 @@ def test_group_owner_removes_admin_success(
             expected_event_types={"onUserRemovedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onUserRemovedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_api.assert_response_matches(
             removed_events[0],
@@ -558,6 +401,7 @@ def test_group_owner_removes_admin_success(
             },
             ignore_keys={"timestamp", "sequence"},
         )
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -598,6 +442,7 @@ def test_group_remove_other_member_permission_by_role(
         device_a.drain_events()
         device_b.drain_events()
         if make_admin:
+            timing_pause('step.interval', module='group')
             add_admin = device_a.call(
                 "GroupManager",
                 Cmd.addAdmin.value,
@@ -605,6 +450,7 @@ def test_group_remove_other_member_permission_by_role(
             )
             assert isinstance(add_admin.get("result"), dict), add_admin
             device_b.drain_events()
+        timing_pause('step.interval', module='group')
         response = device_b.call(
             "GroupManager",
             Cmd.removeMembers.value,
@@ -618,14 +464,14 @@ def test_group_remove_other_member_permission_by_role(
                 expected_event_types=joined_event_types,
                 group_id=group_id,
                 required_all_event_types=joined_event_types,
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
             admin_events = collect_group_events(
                 device_b,
                 expected_event_types=joined_event_types,
                 group_id=group_id,
                 required_all_event_types=joined_event_types,
-                timeout=10.0,
+                timeout=timing_seconds('observe.collect', module='group'),
             )
             for events in (owner_events, admin_events):
                 by_type = {event["eventType"]: event for event in events}
@@ -638,6 +484,7 @@ def test_group_remove_other_member_permission_by_role(
                     },
                     ignore_keys={"timestamp", "sequence"},
                 )
+            timing_pause('step.interval', module='group')
             _fetch_group(
                 device_a,
                 assert_api,
@@ -667,93 +514,6 @@ def test_group_remove_other_member_permission_by_role(
             destroy_group(device_a, assert_api, group_id, device_b=device_b)
 
 
-@pytest.mark.skip(reason="Preventive quarantine: Android SDK 4.23.0 crashes in ASSIGN_OWNER/onAssignOwnerFromGroup; restore after native fix verification")
-def test_group_owner_must_transfer_before_leaving(
-    device_a,
-    device_b,
-    assert_api,
-    user_a,
-    user_b,
-):
-    """当前群主不能退群；转让给 B 后，原群主 A 可以正常退出。"""
-    group_id = ""
-    group_name = new_group_name("owner_leave_after_transfer")
-    owner_is_b = False
-    try:
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=group_name,
-            invite_members=[user_b],
-        )
-        device_a.drain_events()
-        device_b.drain_events()
-        owner_leave = device_a.call(
-            "GroupManager",
-            Cmd.leaveGroup.value,
-            info={"groupId": group_id},
-        )
-        assert_api.assert_error(owner_leave, code=603)
-        transfer = device_a.call(
-            "GroupManager",
-            Cmd.updateGroupOwner.value,
-            info={"groupId": group_id, "owner": user_b},
-        )
-        assert isinstance(transfer.get("result"), dict), transfer
-        owner_is_b = True
-        collect_group_events(
-            device_a,
-            expected_event_types={"onOwnerChangedFromGroup"},
-            group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
-            timeout=10.0,
-        )
-        collect_group_events(
-            device_b,
-            expected_event_types={"onOwnerChangedFromGroup"},
-            group_id=group_id,
-            required_all_event_types={"onOwnerChangedFromGroup"},
-            timeout=10.0,
-        )
-        former_owner_leave = device_a.call(
-            "GroupManager",
-            Cmd.leaveGroup.value,
-            info={"groupId": group_id},
-        )
-        _assert_true(assert_api, former_owner_leave, cmd=Cmd.leaveGroup.value, device="deviceA")
-        exited_events = collect_group_events(
-            device_b,
-            expected_event_types={"onMembersExitedFromGroup", "onMemberExitedFromGroup"},
-            group_id=group_id,
-            required_all_event_types={"onMembersExitedFromGroup", "onMemberExitedFromGroup"},
-            timeout=10.0,
-        )
-        by_type = {event["eventType"]: event for event in exited_events}
-        assert_api.assert_response_matches(
-            by_type["onMembersExitedFromGroup"],
-            expected={
-                "type": "event",
-                "eventType": "onMembersExitedFromGroup",
-                "data": {"groupId": group_id, "userIds": [user_a]},
-            },
-            ignore_keys={"timestamp", "sequence"},
-        )
-        _fetch_group(
-            device_b,
-            assert_api,
-            group_id=group_id,
-            group_name=group_name,
-            owner=user_b,
-            member_count=1,
-            members=[],
-            device_name="deviceB",
-        )
-    finally:
-        if group_id and owner_is_b:
-            destroy_group(device_b, assert_api, group_id, device_name="deviceB")
-        elif group_id:
-            destroy_group(device_a, assert_api, group_id, device_b=device_b)
 
 
 def test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_member(
@@ -777,6 +537,7 @@ def test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_membe
         )
         device_a.drain_events()
         device_b.drain_events()
+        timing_pause('step.interval', module='group')
         response = device_a.call(
             "GroupManager",
             Cmd.removeMembers.value,
@@ -788,7 +549,7 @@ def test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_membe
             expected_event_types={"onUserRemovedFromGroup"},
             group_id=group_id,
             required_all_event_types={"onUserRemovedFromGroup"},
-            timeout=10.0,
+            timeout=timing_seconds('observe.collect', module='group'),
         )
         assert_api.assert_response_matches(
             removed_events[0],
@@ -799,6 +560,7 @@ def test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_membe
             },
             ignore_keys={"timestamp", "sequence"},
         )
+        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,

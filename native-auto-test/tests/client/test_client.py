@@ -3,6 +3,8 @@ Client 模块 API 用例：init、login、logout、getCurrentUser 等。
 请求参数与 Flutter 端一致，info 为方法参数；cmd 使用 Cmd 枚举与 chat_method_keys 对齐。
 """
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import json
 import time
@@ -49,7 +51,8 @@ def test_client_change_app_id(device_a, assert_api):
     assert result is not None or "result" in resp
 
 
-def _wait_offline_sync_event(device, *, timeout: float = 15.0) -> dict:
+def _wait_offline_sync_event(device, *, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.offline_sync', module='client') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     accepted = {Cmd.onOfflineMessageSyncStart.value, Cmd.onOfflineMessageSyncFinish.value}
     while time.monotonic() < deadline:
@@ -69,7 +72,8 @@ def test_login_then_receive_offline_sync_event(device_a, assert_api, user_a):
     """
     # 1) 先登出
     device_a.call("Client", Cmd.logout.value, info={"unbindToken": False})
-    time.sleep(1)
+    timing_pause('settle.offline', module='client')
+    time.sleep(timing_seconds('step.interval', module='client'))
 
     # 2) 清空残留事件
     try:
@@ -78,6 +82,7 @@ def test_login_then_receive_offline_sync_event(device_a, assert_api, user_a):
         pass
 
     # 3) 重新登录同一用户
+    timing_pause('settle.offline', module='client')
     resp = device_a.call(
         "Client",
         Cmd.login.value,
@@ -91,6 +96,8 @@ def test_login_then_receive_offline_sync_event(device_a, assert_api, user_a):
         device_a.call("Client", Cmd.startCallback.value, info={})
     except Exception:
         pass
+
+    timing_pause('settle.offline', module='client')
 
     # 5) 等待 onOfflineMessageSyncStart 或 onOfflineMessageSyncFinish
     #    注意：如果没有离线消息，部分 SDK 版本可能不触发 Start 而直接触发 Finish，

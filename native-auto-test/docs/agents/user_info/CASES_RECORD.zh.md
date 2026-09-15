@@ -1,8 +1,10 @@
 # UserInfo 模块 Cases 总记录（按 API）
 
+> 2026-09-15 精简后：pytest 收集 **11 条**（展开参数），源码 **11 个测试函数**。历史条目编号不重排，不能用最大编号计算用例数。删除组合查询重复用例；全量查询和指定字段查询分别由 test_user_info_update_then_fetch_user_info_by_id、test_user_info_update_then_fetch_user_info_by_id_with_type 保留。
+
 — 说明
 - 本文件记录 UserInfo 模块已覆盖用例（按 API 组织）。
-- 每条 case 以全局序号编号；统计按“当前记录条目数”计算。
+- 条目序号保留历史编号，删除后不重排；当前用例数量以 pytest 收集为准。
 - 暂缓与 skip 项统一写 `CASES_DEFERRED.zh.md`。
 
 ## updateOwnUserInfo
@@ -14,9 +16,6 @@
    更新本人资料后按 userId 查询，验证更新结果可被服务端读取。
 3. `tests/user_info/test_user_info.py::test_user_info_update_then_fetch_user_info_by_id_with_type`
    更新本人资料后按类型查询，验证 type 过滤下字段回传正确。
-4. `tests/user_info/test_user_info.py::test_user_info_update_then_all_fetch_paths_in_one_flow`
-   在同一链路中通过多种查询路径验证更新后的字段一致性。
-
 异常 cases
 5. `tests/user_info/test_user_info.py::test_user_info_update_own_nickname_length_over_64`
    昵称长度超过上限更新，验证长度边界错误语义。
@@ -69,4 +68,4 @@
     当前仅覆盖正常类型过滤路径，异常 type 组合待补充。
 
 ## 统计
-- 当前记录 case 条目总数：`17`
+- 当前记录 case 条目总数：`16`

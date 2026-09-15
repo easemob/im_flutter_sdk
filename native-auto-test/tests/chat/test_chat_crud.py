@@ -1,4 +1,7 @@
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -9,13 +12,14 @@ from src.tools.assertions import get_result
 from tests.chat._utils import build_text
 
 
-def _wait_message_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 20.0) -> dict:
+def _wait_message_event(device, event_type: str, *, real_id: str, content: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.message', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
         evt = device.receive_message(
             match_event_type=event_type,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if evt:
             seen.append(evt)
@@ -65,11 +69,12 @@ def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_i
     )
 
 
-def _wait_recall_info_event(device, *, real_id: str, content: str, timeout: float = 20.0) -> dict:
+def _wait_recall_info_event(device, *, real_id: str, content: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.message', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=Cmd.onMessagesRecalledInfo.value, timeout=min(2.0, max(0.1, deadline - time.monotonic())))
+        evt = device.receive_message(match_event_type=Cmd.onMessagesRecalledInfo.value, timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())))
         if evt:
             seen.append(evt)
         for info in ((evt or {}).get("data") or {}).get("infos") or []:
@@ -99,7 +104,7 @@ def test_chat_send_and_received(device_a, device_b, assert_api, user_a, user_b):
 
     content = "hello-basic"
     resp_send = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, content))
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
     temp_id = (evt_success.get("data") or {}).get("msgId")
     real_id = ((evt_success.get("data") or {}).get("msg") or {}).get("msgId")
     assert_api.assert_response_matches(
@@ -157,7 +162,7 @@ def test_chat_send_and_received(device_a, device_b, assert_api, user_a, user_b):
         context={"tempId": temp_id, "fromUser": user_a, "toUser": user_b, "content": content},
         ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState", "deliverOnlineOnly", "targetLanguages", "translations"},
     )
-    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timing_seconds('timeout.message', module='chat'))
     assert_api.assert_response_matches(
         evt_received,
         expected={
@@ -204,6 +209,7 @@ def test_chat_send_and_received(device_a, device_b, assert_api, user_a, user_b):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_send_to_self_event(device_a, assert_api, user_a):
     try:
         device_a.drain_events()
@@ -211,7 +217,7 @@ def test_chat_send_to_self_event(device_a, assert_api, user_a):
         pass
     content = f"self-msg-{uuid.uuid4().hex[:6]}"
     resp_send = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_a, content))
-    evt = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    evt = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
     temp_id = (evt.get("data") or {}).get("msgId")
     real_id = ((evt.get("data") or {}).get("msg") or {}).get("msgId")
     assert_api.assert_response_matches(
@@ -274,6 +280,7 @@ def test_chat_send_to_self_event(device_a, assert_api, user_a):
 # ======================== Read ========================
 
 
+@pytest.mark.no_friend_setup
 def test_chat_get_message_invalid_id_returns_none(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.getMessage.value, info={"msgId": "__invalid_msg_id__"})
     assert_api.assert_response_matches(
@@ -283,6 +290,7 @@ def test_chat_get_message_invalid_id_returns_none(device_a, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_support_languages_success(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.fetchSupportLanguages.value, info={})
     languages = resp.get("result")
@@ -313,6 +321,7 @@ def test_chat_fetch_support_languages_success(device_a, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_history_invalid_conversation(device_b, assert_api):
     resp = device_b.call(
         "ChatManager",
@@ -334,6 +343,7 @@ def test_chat_fetch_history_invalid_conversation(device_b, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_history_by_options_invalid_conversation(device_a, assert_api):
     resp = device_a.call(
         "ChatManager",
@@ -355,17 +365,6 @@ def test_chat_fetch_history_by_options_invalid_conversation(device_a, assert_api
     )
 
 
-@pytest.mark.skip(reason="MissingPlugin: searchChatMsgFromDB 未在当前集成端实现")
-def test_chat_search_chat_msg_from_db_success(device_a, device_b, assert_api, user_a, user_b):
-    keyword = f"kw-{uuid.uuid4().hex[:6]}"
-    _ = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, keyword))
-    _ = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
-    resp = device_a.call("ChatManager", Cmd.searchChatMsgFromDB.value, info={"keywords": keyword})
-    assert_api.assert_response_matches(
-        resp,
-        expected={"manager": "ChatManager", "cmd": Cmd.searchChatMsgFromDB.value, "device": "deviceA"},
-        ignore_keys={"sequence"},
-    )
 
 
 # ======================== Update ========================
@@ -378,13 +377,14 @@ def test_chat_translate_message_basic(device_a, device_b, assert_api, user_a, us
         pass
     content = "translate-basic"
     _ = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, content))
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
     real_id = ((evt_success.get("data") or {}).get("msg") or {}).get("msgId")
     assert real_id, f"missing real msgId from onMessageSuccess: {evt_success!r}"
     evt_received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id, content=content)
     _assert_text_message_event(assert_api, evt_received, event_type=Cmd.onMessagesReceived.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True)
     evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, content=content)
     _assert_text_message_event(assert_api, evt_delivered, event_type=Cmd.onMessagesDelivered.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True)
+    timing_pause('step.interval', module='chat')
     resp_get = device_a.call("ChatManager", Cmd.getMessage.value, info={"msgId": real_id})
     msg_obj = get_result(resp_get)
     resp_tr = device_a.call("ChatManager", Cmd.translateMessage.value, info={"message": msg_obj, "targetLanguages": ["zh-Hans"]})
@@ -421,11 +421,13 @@ def test_chat_translate_message_basic(device_a, device_b, assert_api, user_a, us
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_pin_conversation_nonexistent_conversation(device_a, assert_api):
     resp_pin = device_a.call("ChatManager", Cmd.pinConversation.value, info={"conversationId": "__nonexistent_chat_user__", "isPinned": True})
     assert_api.assert_error(resp_pin, code=107, description="Invalid conversation")
 
 
+@pytest.mark.no_friend_setup
 def test_chat_modify_message_invalid_id_response(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.modifyMessage.value, info={"msgId": "__invalid_msg_id__", "body": {"type": 0, "content": "edit"}})
     assert_api.assert_response_matches(
@@ -438,13 +440,13 @@ def test_chat_modify_message_invalid_id_response(device_a, assert_api):
 def test_chat_translate_message_recalled_message(device_a, device_b, assert_api, user_a, user_b):
     content = "recalled-translate"
     _ = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, content))
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
     real_id = (((evt_success or {}).get("data") or {}).get("msg") or {}).get("msgId")
     evt_received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id, content=content)
     _assert_text_message_event(assert_api, evt_received, event_type=Cmd.onMessagesReceived.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True)
     evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, content=content)
     _assert_text_message_event(assert_api, evt_delivered, event_type=Cmd.onMessagesDelivered.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True)
-    time.sleep(2)
+    time.sleep(timing_seconds('settle.local_projection', module='chat'))
     resp_recall = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": real_id})
     assert_api.assert_response_matches(
         resp_recall,
@@ -504,7 +506,7 @@ def test_chat_ack_message_read_success(device_a, device_b, assert_api, user_a, u
         pass
     content = f"ackread-{uuid.uuid4().hex[:6]}"
     resp_send = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, content))
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
     temp_id = (evt_success.get("data") or {}).get("msgId")
     sent_real_id = (((evt_success or {}).get("data") or {}).get("msg") or {}).get("msgId")
     assert sent_real_id, f"missing real msgId from onMessageSuccess: {evt_success!r}"
@@ -514,7 +516,7 @@ def test_chat_ack_message_read_success(device_a, device_b, assert_api, user_a, u
         ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState", "deliverOnlineOnly", "targetLanguages", "translations"},
     )
 
-    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timing_seconds('timeout.message', module='chat'))
     recv_msgs = ((evt_received or {}).get("data") or {}).get("messages") or []
     recv_msg_id = None
     for msg in recv_msgs:
@@ -544,6 +546,7 @@ def test_chat_ack_message_read_success(device_a, device_b, assert_api, user_a, u
     evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=sent_real_id, content=content)
     _assert_text_message_event(assert_api, evt_delivered, event_type=Cmd.onMessagesDelivered.value, real_id=sent_real_id, user_a=user_a, user_b=user_b, content=content, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True)
 
+    timing_pause('step.interval', module='chat')
     resp_ack = device_b.call("ChatManager", Cmd.ackMessageRead.value, info={"msgId": recv_msg_id, "to": user_a})
     assert_api.assert_response_matches(
         resp_ack,
@@ -556,7 +559,7 @@ def test_chat_ack_message_read_success(device_a, device_b, assert_api, user_a, u
         ignore_keys={"sequence"},
     )
     assert_api.assert_response_matches(
-        device_a.receive_message(match_event_type=Cmd.onMessagesRead.value, timeout=20.0),
+        device_a.receive_message(match_event_type=Cmd.onMessagesRead.value, timeout=timing_seconds('timeout.message', module='chat')),
         expected={
             "type": "event",
             "eventType": Cmd.onMessagesRead.value,
@@ -590,6 +593,7 @@ def test_chat_ack_message_read_success(device_a, device_b, assert_api, user_a, u
 # ======================== Delete ========================
 
 
+@pytest.mark.no_friend_setup
 def test_chat_recall_message_invalid_id_response(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": "__invalid_msg_id__"})
     assert_api.assert_response_matches(
@@ -599,18 +603,10 @@ def test_chat_recall_message_invalid_id_response(device_a, assert_api):
     )
 
 
-def test_chat_remove_reaction_invalid_id_response(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.removeReaction.value, info={"reaction": "👍", "msgId": "__invalid_msg_id__"})
-    assert_api.assert_response_matches(
-        resp,
-        expected={"manager": "ChatManager", "cmd": Cmd.removeReaction.value, "device": "deviceA", "result": None},
-        ignore_keys={"sequence"},
-    )
-
-
 # ======================== Errors / Edge ========================
 
 
+@pytest.mark.no_friend_setup
 def test_chat_ack_conversation_read_invalid_id_response(device_b, assert_api):
     resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": "__invalid_conversation_id__"})
     assert_api.assert_response_matches(
@@ -625,6 +621,7 @@ def test_chat_ack_conversation_read_invalid_id_response(device_b, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_add_reaction_invalid_id_response(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": "👍", "msgId": "__invalid_msg_id__"})
     assert_api.assert_response_matches(
@@ -637,12 +634,13 @@ def test_chat_add_reaction_invalid_id_response(device_a, assert_api):
 def test_chat_add_reaction_empty_reaction_response(device_a, device_b, assert_api, user_a, user_b):
     content = "for-reaction-empty"
     _ = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, content))
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
     real_id = (((evt_success or {}).get("data") or {}).get("msg") or {}).get("msgId")
     evt_received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id, content=content)
     _assert_text_message_event(assert_api, evt_received, event_type=Cmd.onMessagesReceived.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True)
     evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, content=content)
     _assert_text_message_event(assert_api, evt_delivered, event_type=Cmd.onMessagesDelivered.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True)
+    timing_pause('step.interval', module='chat')
     resp = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": "", "msgId": real_id})
     assert_api.assert_response_matches(
         resp,
@@ -652,15 +650,3 @@ def test_chat_add_reaction_empty_reaction_response(device_a, device_b, assert_ap
 
 
 # ======================== Attachments (invalid) ========================
-
-
-@pytest.mark.skip(reason="message 对象入参 API 暂缓；避免 MissingPlugin 非被测端语义")
-def test_chat_download_attachment_invalid_id_response(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.downloadAttachment.value, info={"msgId": "__invalid_msg_id__"})
-    assert_api.assert_error(resp, code=500, description="Message is invalid")
-
-
-@pytest.mark.skip(reason="message 对象入参 API 暂缓；避免 MissingPlugin 非被测端语义")
-def test_chat_download_thumbnail_invalid_id_response(device_a, assert_api):
-    resp = device_a.call("ChatManager", Cmd.downloadThumbnail.value, info={"msgId": "__invalid_msg_id__"})
-    assert_api.assert_error(resp, code=500, description="Message is invalid")

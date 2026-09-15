@@ -1,8 +1,29 @@
 # Group 模块 Cases 总记录（按 API）
 
+## 已删除的 skip / xfail 用例（当前状态）
+
+按用户要求删除 8 个整函数及 6 个单独参数项，不是移除标记恢复执行。下列场景不再计入当前覆盖；后文旧批次实测统计仅为历史记录，不代表这些用例仍存在。运行时条件 skip 以及工具层报告回归保留。
+
+- 已删除 仅该参数项：`tests/group/test_group_style_membership_matrix.py::test_group_request_to_join_rejects_every_non_approval_style[public-open]`。
+- 已删除 仅该参数项：`tests/group/test_group_style_membership_matrix.py::test_group_member_invitation_permission_depends_on_style[private-owner-admin-denied]`。
+- 已删除 整函数（包含其全部参数）：`tests/group/test_group_offline_roles_and_configuration.py::test_group_offline_owner_transfer_final_state`。
+- 已删除 整函数（包含其全部参数）：`tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_to_admin_normalizes_roles`。
+- 已删除 仅该参数项：`tests/group/test_group_owner_removal_matrix.py::test_group_transfer_owner_target_boundaries[current-owner-idempotent]`。
+- 已删除 整函数（包含其全部参数）：`tests/group/test_group_owner_removal_matrix.py::test_group_transfer_then_new_owner_removes_former_owner`。
+- 已删除 整函数（包含其全部参数）：`tests/group/test_group_owner_removal_matrix.py::test_group_owner_must_transfer_before_leaving`。
+- 已删除 仅该参数项：`tests/group/test_group_join_application_state_matrix.py::test_group_join_application_cannot_be_processed_twice[accept-twice]`。
+- 已删除 仅该参数项：`tests/group/test_group_join_application_state_matrix.py::test_group_join_application_processing_permission_by_role[admin-accept]`。
+- 已删除 整函数（包含其全部参数）：`tests/group/test_group_exceptions_member_attributes.py::test_group_fetch_member_attributes_nonexistent_group`。
+- 已删除 整函数（包含其全部参数）：`tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_explicit_decline_when_auto_accept_disabled`。
+- 已删除 整函数（包含其全部参数）：`tests/group/test_group_invitation_state_matrix.py::test_group_invitation_wrong_inviter_does_not_consume_pending`。
+- 已删除 仅该参数项：`tests/group/test_group_invitation_state_matrix.py::test_group_invitation_cannot_be_processed_twice[accept-twice]`。
+- 已删除 整函数（包含其全部参数）：`tests/group/test_group_roles.py::test_group_update_owner_success`。
+
+> 2026-09-15 精简后：pytest 收集 **293 条**（展开参数），源码 **185 个测试函数**。历史条目编号不重排，不能用最大编号计算用例数。直接删除5条容量配置测试及2条无业务额外参数测试，未迁移至tools。保留容量配置实现和服务端群列表分页用例。
+
 — 说明
 - 本文件记录 Group 模块已覆盖用例（按 API 组织）。
-- 每条 case 以全局序号编号；统计按“当前记录条目数”计算。
+- 条目序号保留历史编号，删除后不重排；当前用例数量以 pytest 收集为准。
 - 暂缓与 skip 项统一写 `CASES_DEFERRED.zh.md`。
 
 ## 等待耗时优化（设备回归待执行）
@@ -18,7 +39,7 @@
 - 默认场景：`cd native-auto-test && .venv/bin/python -m pytest -q tests/group`；未传参数时，常规 `createGroup.options.maxCount` 为 `200`。
 - 扩容场景：`cd native-auto-test && .venv/bin/python -m pytest -q --group-create-max-count=3100 tests/group`；复用同一套 case，常规建群和相关 `maxUserCount` 严格断言均为 `3100`。
 - 容量边界豁免：专门验证容量语义的 `maxCount=0/-1/1/2` 保持显式值，不受场景参数覆盖。
-- 静态验证（2026-08-13）：无设备容量契约测试待按 3100 场景复验；`--group-create-max-count=0 --collect-only` 仍应以参数错误拒绝。尚未执行会创建真实群的 3100 discovery/strict 回归。
+- 静态验证（2026-08-13）：当时的无设备容量契约测试已于2026-09-15按用户要求删除；`--group-create-max-count=0 --collect-only` 仍应以参数错误拒绝。尚未执行会创建真实群的 3100 discovery/strict 回归。
 
 ## createGroup
 
@@ -83,9 +104,6 @@
     创建群后拉取本地已加入群列表，校验包含目标群且 `groupId/owner/name` 一致。
 
 异常 cases
-18. `tests/group/test_group_exceptions_joined_groups.py::test_group_get_joined_groups_with_extra_info_fields`
-    传入无关参数与边界分页字段，冻结当前端“忽略无关参数并返回稳定列表结构”语义。
-
 ## getJoinedGroupsFromServer
 
 正常 cases
@@ -120,9 +138,6 @@
     拉取已加入群数量，校验响应信封与 `result` 为非负整数。
 
 异常 cases
-27. `tests/group/test_group_exceptions_public_groups_count.py::test_group_fetch_joined_group_count_with_extra_info`
-    传入无关参数拉取已加入群数量，冻结当前端稳定返回非负整数语义。
-
 ## getGroupMemberListFromServer
 
 正常 cases
@@ -332,7 +347,7 @@
 ## updateGroupOwner
 
 正常 cases
-78. `tests/group/test_group_roles.py::test_group_update_owner_success`
+78. `tests/group/test_group_roles.py::test_group_update_owner_success` 【历史记录：该测试函数已删除，不计入当前覆盖】
     群主转让给成员并回切，按真实 ADB 日志断言 A/B 双端都收到 `onOwnerChangedFromGroup`，再校验两次同步响应关键字段与服务端群主字段变化。
 
 异常 cases
@@ -372,7 +387,7 @@
     设置成员属性后拉取当前成员属性，校验返回字典中关键键值一致。
 
 异常 cases
-88. `tests/group/test_group_exceptions_member_attributes.py::test_group_fetch_member_attributes_nonexistent_group`
+88. `tests/group/test_group_exceptions_member_attributes.py::test_group_fetch_member_attributes_nonexistent_group` 【历史记录：该测试函数已删除，不计入当前覆盖】
     不存在群拉取单成员属性，冻结当前端“返回已有属性字典”的稳定语义。
     当前按用户要求标记为 skip，保留原严格断言；恢复条件见 `CASES_DEFERRED.zh.md`。
 
@@ -463,7 +478,7 @@
 ## declineInvitationFromGroup
 
 正常 cases
-109. `tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_explicit_decline_when_auto_accept_disabled`
+109. `tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_explicit_decline_when_auto_accept_disabled` 【历史记录：该测试函数已删除，不计入当前覆盖】
      B 收到待处理邀请后显式拒绝，API 返回 `result=null` 且服务端成员仍为 1；邀请方 A
      未按预期收到 `onInvitationDeclinedFromGroup`，该 case 当前按已知 Android 适配问题 skip，并记录于
      `CASES_FAILURES.zh.md`。
@@ -648,21 +663,21 @@
 | 157 | `test_group_join_application_valid_group_without_pending_is_rejected` | 有效审批群无 pending 时同意/拒绝 | 2 | 通过，`110` |
 | 158 | `test_group_join_application_empty_reason_uses_server_default` | 空申请原因回调规范化为 `apply to join`，pending 可正常处理 | 1 | 通过 |
 | 159 | `test_group_duplicate_join_application_keeps_single_pending_request` | 同一用户重复申请，仅一个 pending 可处理 | 1 | 通过 |
-| 160 | `test_group_join_application_cannot_be_processed_twice` | 同意两次、拒绝两次、同意后拒绝、拒绝后同意 | 4 | 通过 |
+| 160 | `test_group_join_application_cannot_be_processed_twice` | 拒绝两次、拒绝后同意 | 2 | 待回归 |
 | 161 | `test_group_join_application_processing_permission_by_role` | 普通成员/管理员 × 同意/拒绝 | 4 | 3 通过，管理员同意回调字段已知问题 skip |
 | 162 | `test_group_non_member_cannot_process_join_application` | 非成员同意/拒绝申请 | 2 | 通过，`603` |
 | 163 | `test_group_invitation_valid_group_without_pending_is_rejected` | 有效群无 pending 时同意/拒绝邀请 | 2 | 通过，`603` |
-| 164 | `test_group_invitation_wrong_inviter_does_not_consume_pending` | 错误 inviter 同意/拒绝后再由正确 inviter 接受 | 2 | 2 条已知问题 skip |
+| 164 | `test_group_invitation_wrong_inviter_does_not_consume_pending` | 错误 inviter 同意/拒绝后再由正确 inviter 接受 | 2 | 2 条已知问题 skip | 【历史记录：该测试函数已删除，不计入当前覆盖】
 | 165 | `test_group_invitation_cannot_be_processed_twice` | 同意两次、拒绝两次、同意后拒绝、拒绝后同意 | 4 | 通过 |
-| 166 | `test_group_transfer_owner_to_admin_normalizes_roles` | 转让给管理员后角色列表和双方事件归一化 | 1 | 通过 |
+| 166 | `test_group_transfer_owner_to_admin_normalizes_roles` | 转让给管理员后角色列表和双方事件归一化 | 1 | 通过 | 【历史记录：该测试函数已删除，不计入当前覆盖】
 | 167 | `test_group_transfer_owner_target_boundaries` | 转给自己、非成员、不存在用户、空用户 | 4 | 通过 |
 | 168 | `test_group_non_owner_cannot_transfer_ownership` | 普通成员/管理员越权转让 | 2 | 通过，`603` |
 | 169 | `test_group_non_member_cannot_transfer_ownership` | 非成员越权转让 | 1 | 通过，`603` |
-| 170 | `test_group_transfer_then_new_owner_removes_former_owner` | 转让后新群主移除原群主 | 1 | 通过 |
+| 170 | `test_group_transfer_then_new_owner_removes_former_owner` | 转让后新群主移除原群主 | 1 | 通过 | 【历史记录：该测试函数已删除，不计入当前覆盖】
 | 171 | `test_group_remove_current_owner_is_ignored` | 成员列表包含现任群主时不得移除群主 | 1 | 通过，状态不变 |
 | 172 | `test_group_owner_removes_admin_success` | 群主移除管理员 | 1 | 通过 |
 | 173 | `test_group_remove_other_member_permission_by_role` | 普通成员越权、管理员移普通成员 | 2 | 通过 |
-| 174 | `test_group_owner_must_transfer_before_leaving` | 群主直接退群失败，转让后原群主可退出 | 1 | 通过 |
+| 174 | `test_group_owner_must_transfer_before_leaving` | 群主直接退群失败，转让后原群主可退出 | 1 | 通过 | 【历史记录：该测试函数已删除，不计入当前覆盖】
 | 175 | `test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_member` | 批量名单混合群主、有效成员、非成员 | 1 | 通过，仅移除有效成员 |
 
 ## 第三阶段：群消息发送与群回执归档
@@ -763,7 +778,7 @@
 | 编号 | 测试函数 | 展开场景 | Items | 结果 |
 |---|---|---|---:|---|
 | 209 | `test_group_offline_admin_add_remove_final_state` | B 离线期间添加、移除管理员 | 1 | 严格通过 |
-| 210 | `test_group_offline_owner_transfer_final_state` | B 离线期间成为群主；验证 owner 与权限迁移 | 1 | 严格通过 |
+| 210 | `test_group_offline_owner_transfer_final_state` | B 离线期间成为群主；验证 owner 与权限迁移 | 1 | 严格通过 | 【历史记录：该测试函数已删除，不计入当前覆盖】
 | 211 | `test_group_offline_metadata_final_state` | 名称、描述、头像、扩展字段分别修改 | 4 | 真实返回严格通过 |
 | 212 | `test_group_offline_announcement_final_state` | B 离线期间修改公告 | 1 | 严格通过 |
 | 213 | `test_group_offline_member_mute_unmute_final_state` | B 离线期间禁言、解除禁言 | 1 | 严格通过 |
@@ -790,7 +805,7 @@
   `out/group_offline_20260730_185752/`。
 
 ## 统计
-- 当前记录测试函数条目：`217`；第二阶段新增 `29` 个函数、展开 `66 items`；第三阶段累计 `6` 个函数、展开 `16 items`；第四阶段迁移 `5` 个 ChatThread 函数、展开 `5 items`；第五阶段新增 `7` 个函数、展开 `18 items`；第六阶段新增 `24` 个函数、展开 `31 items`。
+- 历史阶段台账编号上限：`217`（不代表当前测试函数数）；第二阶段新增 `29` 个函数、展开 `66 items`；第三阶段累计 `6` 个函数、展开 `16 items`；第四阶段迁移 `5` 个 ChatThread 函数、展开 `5 items`；第五阶段新增 `7` 个函数、展开 `18 items`；第六阶段新增 `24` 个函数、展开 `31 items`。
 - 第二阶段逐文件严格结果：`60 passed, 6 failed`；原邀请/申请文件为 `10 passed, 1 failed`。
 - 当前 pytest 收集：`297 items`。
 - 已完成的 Group 全量（补空原因 case 前）：`215 passed, 7 failed, 1 skipped, 1 warning in 718.82s`，

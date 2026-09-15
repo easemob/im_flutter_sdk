@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import pytest
@@ -89,15 +91,16 @@ def _wait_for_member_state(
     should_contain: bool,
     device_name: str,
     context: str = "",
-    timeout: float = 8.0,
+    timeout: float = None,
 ) -> list[str]:
+    timeout = timing_seconds('timeout.member_state', module='chatroom') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     last_members: list[str] = []
     while time.monotonic() < deadline:
         last_members = _fetch_room_members(device, assert_api, room_id=room_id, device_name=device_name)
         if (user_id in last_members) is should_contain:
             return last_members
-        time.sleep(0.5)
+        time.sleep(timing_seconds('poll.member_state', module='chatroom'))
     expectation = "包含" if should_contain else "不包含"
     prefix = f"{context}：" if context else ""
     raise AssertionError(f"{prefix}成员列表未达到预期：roomId={room_id} 应{expectation} {user_id}, members={last_members}")
@@ -126,9 +129,11 @@ def _assert_local_rooms(
 
 def test_chatroom_join_then_get_local_room_and_all_rooms(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="local_room", desc_prefix="local_room")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_room(device_b, assert_api, room_id=room_id)
 
+        timing_pause('step.interval', module='chatroom')
         local_resp = device_b.call("ChatRoomManager", Cmd.getChatRoom.value, info={"roomId": room_id})
         assert_api.assert_response_matches(
             local_resp,
@@ -212,9 +217,11 @@ def test_chatroom_get_all_local_rooms_returns_list(device_b, assert_api):
 
 def test_chatroom_fetch_members_after_join_success(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="members", desc_prefix="members")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_room(device_b, assert_api, room_id=room_id)
 
+        timing_pause('step.interval', module='chatroom')
         resp = device_b.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomMembers.value,
@@ -244,9 +251,11 @@ def test_chatroom_fetch_members_after_join_success(device_a, device_b, assert_ap
 
 def test_chatroom_fetch_members_with_cursor_pagination(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="members_page", desc_prefix="members_page")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_room(device_b, assert_api, room_id=room_id)
 
+        timing_pause('step.interval', module='chatroom')
         first_resp = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomMembers.value,
@@ -308,15 +317,21 @@ def test_chatroom_join_leave_other_rooms_option_controls_existing_rooms(device_a
     """joinChatRoom：leaveOtherRooms=false 保留其他聊天室，leaveOtherRooms=true 退出其他聊天室。"""
     # false 分支：B 先加入 room_keep_a，再以 leaveOtherRooms=false 加入 room_keep_b，预期两个房间都保留 B。
     room_keep_a, _ = create_chatroom_or_skip(owner=user_a, name_prefix="leave_other_false_a", desc_prefix="leave_other_false")
+    timing_pause('step.interval', module='chatroom')
     room_keep_b, _ = create_chatroom_or_skip(owner=user_a, name_prefix="leave_other_false_b", desc_prefix="leave_other_false")
     # true 分支：B 先加入 room_drop_a，再以 leaveOtherRooms=true 加入 room_drop_b，预期从 room_drop_a 自动退出。
+    timing_pause('step.interval', module='chatroom')
     room_drop_a, _ = create_chatroom_or_skip(owner=user_a, name_prefix="leave_other_true_a", desc_prefix="leave_other_true")
+    timing_pause('step.interval', module='chatroom')
     room_drop_b, _ = create_chatroom_or_skip(owner=user_a, name_prefix="leave_other_true_b", desc_prefix="leave_other_true")
+    timing_pause('step.interval', module='chatroom')
     created_room_ids = [room_keep_a, room_keep_b, room_drop_a, room_drop_b]
     try:
         _join_room(device_b, assert_api, room_id=room_keep_a, leave_other_rooms=False)
+        timing_pause('step.interval', module='chatroom')
         _join_room(device_b, assert_api, room_id=room_keep_b, leave_other_rooms=False)
 
+        timing_pause('step.interval', module='chatroom')
         _wait_for_member_state(
             device_a,
             assert_api,
@@ -338,6 +353,7 @@ def test_chatroom_join_leave_other_rooms_option_controls_existing_rooms(device_a
         _assert_local_rooms(device_b, assert_api)
 
         _join_room(device_b, assert_api, room_id=room_drop_a, leave_other_rooms=False)
+        timing_pause('step.interval', module='chatroom')
         _wait_for_member_state(
             device_a,
             assert_api,
@@ -349,6 +365,7 @@ def test_chatroom_join_leave_other_rooms_option_controls_existing_rooms(device_a
         )
 
         _join_room(device_b, assert_api, room_id=room_drop_b, leave_other_rooms=True)
+        timing_pause('step.interval', module='chatroom')
         _wait_for_member_state(
             device_a,
             assert_api,
@@ -375,9 +392,11 @@ def test_chatroom_join_leave_other_rooms_option_controls_existing_rooms(device_a
 
 def test_chatroom_leave_room_updates_local_cache(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="leave", desc_prefix="leave")
+    timing_pause('step.interval', module='chatroom')
     try:
         _join_room(device_b, assert_api, room_id=room_id)
 
+        timing_pause('step.interval', module='chatroom')
         leave_resp = device_b.call("ChatRoomManager", Cmd.leaveChatRoom.value, info={"roomId": room_id})
         assert_api.assert_response_matches(
             leave_resp,
@@ -390,6 +409,7 @@ def test_chatroom_leave_room_updates_local_cache(device_a, device_b, assert_api,
             ignore_keys={"sequence"},
         )
 
+        timing_pause('step.interval', module='chatroom')
         members_resp = device_a.call(
             "ChatRoomManager",
             Cmd.fetchChatRoomMembers.value,

@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import pytest
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
+
 import os
 import time
 import uuid
@@ -11,11 +16,12 @@ from tests.chat._utils import build_text
 ON_MESSAGE_REACTION_DID_CHANGE = "onMessageReactionDidChange"
 
 
-def _wait_message_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 30.0) -> dict:
+def _wait_message_event(device, event_type: str, *, real_id: str, content: str, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        evt = device.receive_message(match_event_type=event_type, timeout=min(2.0, max(0.1, deadline - time.monotonic())))
+        evt = device.receive_message(match_event_type=event_type, timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())))
         if evt:
             seen.append(evt)
         for msg in ((evt or {}).get("data") or {}).get("messages") or []:
@@ -63,13 +69,14 @@ def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_i
     )
 
 
-def _wait_reaction_change_event(device, *, real_id: str, operator: str, reaction: str, is_added_by_self: bool, timeout: float = 60.0) -> dict:
+def _wait_reaction_change_event(device, *, real_id: str, operator: str, reaction: str, is_added_by_self: bool, timeout: float = None) -> dict:
+    timeout = timing_seconds('timeout.reaction', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
         evt = device.receive_message(
             match_event_type=ON_MESSAGE_REACTION_DID_CHANGE,
-            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+            timeout=min(timing_seconds('poll.receive', module='chat'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())),
         )
         if evt:
             seen.append(evt)
@@ -191,7 +198,7 @@ def _send_text_and_wait_received(device_a, device_b, assert_api, user_a: str, us
         },
         ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState", "deliverOnlineOnly", "targetLanguages", "translations"},
     )
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
     real_id = (((evt_success or {}).get("data") or {}).get("msg") or {}).get("msgId")
     assert real_id, f"missing real msgId from onMessageSuccess: {evt_success!r}"
     assert_api.assert_response_matches(
@@ -241,7 +248,7 @@ def test_chat_reaction_change_event_received_by_sender(device_a, device_b, asser
         user_b,
         f"reaction-event-{uuid.uuid4().hex[:8]}",
     )
-    time.sleep(float(os.getenv("CHAT_REACTION_SETTLE_SECONDS", "10")))
+    time.sleep(timing_seconds('settle.slow', module='chat'))
 
     resp = device_b.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})
     assert_api.assert_response_matches(
@@ -259,6 +266,7 @@ def test_chat_reaction_change_event_received_by_sender(device_a, device_b, asser
     _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_b, reaction=reaction, is_added_by_self=True)
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_reaction_list_invalid_msg_id(device_a, assert_api):
     """fetchReactionList 传入不存在的 msgId 列表；先断言信封。"""
     # Flutter 端签名要求 chatType 必填；请求体键名为 msgIds。
@@ -276,6 +284,7 @@ def test_chat_fetch_reaction_list_invalid_msg_id(device_a, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_reaction_list_empty_msg_ids(device_a, assert_api):
     """fetchReactionList 传入空 msgIds；应返回参数错误。"""
     info = {"msgIds": [], "chatType": 0}
@@ -292,6 +301,7 @@ def test_chat_fetch_reaction_list_empty_msg_ids(device_a, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_reaction_list_invalid_chat_type(device_a, assert_api):
     """fetchReactionList 传入非法 chatType；当前实现返回空 reaction 列表映射。"""
     info = {"msgIds": ["__invalid_msg_id__"], "chatType": -1}
@@ -308,6 +318,7 @@ def test_chat_fetch_reaction_list_invalid_chat_type(device_a, assert_api):
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_fetch_reaction_detail_invalid(device_a, assert_api):
     """fetchReactionDetail 使用无效 msgId/reaction；先校验信封。"""
     # 原生 wrapper 将 pageSize 按必填读取（Android: getInt），缺失会直接抛参错。
@@ -332,6 +343,7 @@ def test_chat_fetch_reaction_detail_invalid_page_size(device_a, device_b, assert
     )
 
     info = {"msgId": real_id, "reaction": "👍", "pageSize": -1}
+    timing_pause('step.interval', module='chat')
     resp = device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info)
     assert_api.assert_response_matches(
         resp,
@@ -352,6 +364,7 @@ def test_chat_fetch_reaction_detail_empty_reaction(device_a, device_b, assert_ap
     )
 
     info = {"msgId": real_id, "reaction": "", "pageSize": 20}
+    timing_pause('step.interval', module='chat')
     resp = device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info)
     assert_api.assert_response_matches(
         resp,
@@ -372,6 +385,7 @@ def test_chat_fetch_reaction_detail_oversize_page_size(device_a, device_b, asser
     )
 
     info = {"msgId": real_id, "reaction": "👍", "pageSize": 1000}
+    timing_pause('step.interval', module='chat')
     resp = device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info)
     assert_api.assert_response_matches(
         resp,
@@ -390,7 +404,7 @@ def test_chat_add_reaction_duplicate_reaction(device_a, device_b, assert_api, us
     real_id = _send_text_and_wait_received(
         device_a, device_b, assert_api, user_a, user_b, "reaction-duplicate"
     )
-    time.sleep(5)
+    time.sleep(timing_seconds('settle.normal', module='chat'))
 
     reaction = "👍"
     resp_add_first = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})
@@ -407,6 +421,7 @@ def test_chat_add_reaction_duplicate_reaction(device_a, device_b, assert_api, us
     _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction, is_added_by_self=True)
     _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction, is_added_by_self=False)
 
+    timing_pause('step.interval', module='chat')
     resp_add_second = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})
     assert_api.assert_response_matches(
         resp_add_second,
@@ -426,6 +441,7 @@ def test_chat_remove_reaction_not_exists_reaction(device_a, device_b, assert_api
         device_a, device_b, assert_api, user_a, user_b, "reaction-remove-not-exists"
     )
 
+    timing_pause('step.interval', module='chat')
     resp = device_a.call("ChatManager", Cmd.removeReaction.value, info={"reaction": "👍", "msgId": real_id})
     assert_api.assert_response_matches(
         resp,
@@ -439,6 +455,7 @@ def test_chat_remove_reaction_not_exists_reaction(device_a, device_b, assert_api
     )
 
 
+@pytest.mark.no_friend_setup
 def test_chat_remove_reaction_invalid_msg_id(device_a, assert_api):
     """removeReaction 使用无效 msgId；按不存在语义冻结。"""
     resp = device_a.call("ChatManager", Cmd.removeReaction.value, info={"reaction": "👍", "msgId": "__invalid_msg_id__"})
@@ -454,41 +471,6 @@ def test_chat_remove_reaction_invalid_msg_id(device_a, assert_api):
     )
 
 
-def test_chat_add_reaction_too_long_reaction(device_a, device_b, assert_api, user_a, user_b):
-    """addReaction 超长 reaction；按被测端实际语义冻结。"""
-    real_id = _send_text_and_wait_received(
-        device_a, device_b, assert_api, user_a, user_b, "reaction-too-long"
-    )
-
-    reaction_128 = "a" * 128
-    resp_128 = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction_128, "msgId": real_id})
-    assert_api.assert_response_matches(
-        resp_128,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.addReaction.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
-    _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction_128, is_added_by_self=True)
-    _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction_128, is_added_by_self=False)
-
-    reaction_256 = "b" * 256
-    resp_256 = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction_256, "msgId": real_id})
-    assert_api.assert_response_matches(
-        resp_256,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.addReaction.value,
-            "device": "deviceA",
-            "result": None,
-        },
-        ignore_keys={"sequence"},
-    )
-    _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction_256, is_added_by_self=True)
-    _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction_256, is_added_by_self=False)
 
 
 def test_chat_add_reaction_special_char_reaction(device_a, device_b, assert_api, user_a, user_b):
@@ -498,6 +480,7 @@ def test_chat_add_reaction_special_char_reaction(device_a, device_b, assert_api,
     )
 
     reaction = "\n\t"
+    timing_pause('step.interval', module='chat')
     resp = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})
     assert_api.assert_response_matches(
         resp,

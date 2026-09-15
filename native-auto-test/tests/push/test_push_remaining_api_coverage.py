@@ -5,6 +5,7 @@ Push 模块剩余 API 覆盖用例。
 预期返回通过 discovery 从真实模拟器响应确认后固定。
 """
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -76,6 +77,7 @@ def test_push_fetch_configs_update_nickname_and_style(device_a, assert_api):
     )
     _assert_push_config_update_result(assert_api, nick_resp, cmd=Cmd.updatePushNickname.value)
 
+    timing_pause('step.interval', module='push')
     style_resp = device_a.call(
         "PushManager",
         Cmd.updateImPushStyle.value,
@@ -93,6 +95,7 @@ def test_push_global_silent_mode_flow(device_a, assert_api):
     )
     _assert_success_null(assert_api, set_resp, cmd=Cmd.setSilentModeForAll.value)
 
+    timing_pause('step.interval', module='push')
     fetch_resp = device_a.call("PushManager", Cmd.fetchSilentModeForAll.value, info={})
     assert_api.assert_response_matches(
         fetch_resp,
@@ -127,6 +130,7 @@ def test_push_conversation_silent_mode_flow(device_a, assert_api, user_b):
     )
     _assert_success_null(assert_api, set_resp, cmd=Cmd.setConversationSilentMode.value)
 
+    timing_pause('step.interval', module='push')
     fetch_resp = device_a.call(
         "PushManager",
         Cmd.fetchConversationSilentMode.value,
@@ -192,6 +196,7 @@ def test_push_preferred_language_and_template(device_a, assert_api):
     )
     _assert_success_null(assert_api, set_lang_resp, cmd=Cmd.setPreferredNotificationLanguage.value)
 
+    timing_pause('step.interval', module='push')
     fetch_lang_resp = device_a.call(
         "PushManager",
         Cmd.fetchPreferredNotificationLanguage.value,
@@ -215,6 +220,7 @@ def test_push_preferred_language_and_template(device_a, assert_api):
     )
     _assert_success_null(assert_api, set_template_resp, cmd=Cmd.setPushTemplate.value)
 
+    timing_pause('step.interval', module='push')
     get_template_resp = device_a.call("PushManager", Cmd.getPushTemplate.value, info={})
     assert_api.assert_response_matches(
         get_template_resp,
@@ -261,18 +267,6 @@ def test_push_vendor_token_update_current_environment(device_a, assert_api, cmd,
         },
         ignore_keys={"sequence"},
     )
-
-
-def test_push_apns_token_update_android_missing_plugin(device_a):
-    """updateAPNsPushToken：Android 模拟器不适用 APNs，MissingPlugin 记录为平台/桥接缺口。"""
-    resp = device_a.call(
-        "PushManager",
-        Cmd.updateAPNsPushToken.value,
-        info={"token": "apns-token-api-coverage"},
-    )
-    if resp.get("success") is False and "MissingPluginException" in str((resp.get("error") or {}).get("description", "")):
-        pytest.xfail("updateAPNsPushToken 在 Android 模拟器当前返回 MissingPluginException，记录为平台/桥接缺口。")
-    pytest.fail(f"updateAPNsPushToken 已不再返回 MissingPluginException，需按真实返回重新修订 case: {resp!r}")
 
 
 def test_push_sync_conversations_silent_mode_current_environment(device_a, assert_api):

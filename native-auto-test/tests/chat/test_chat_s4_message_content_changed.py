@@ -1,4 +1,5 @@
 from __future__ import annotations
+from src.tools.case_timing import seconds as timing_seconds
 
 import os
 import time
@@ -44,7 +45,7 @@ def test_chat_modify_custom_message_content_changed_event(device_a, device_b, as
     if resp_send.get("success") is False and "MissingPluginException" in str((resp_send.get("error") or {}).get("description", "")):
         pytest.skip("MissingPlugin: sendMessageWithType 未在当前集成端实现")
 
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
     temp_id = (evt_success.get("data") or {}).get("msgId")
     success_msg = ((evt_success.get("data") or {}).get("msg") or {})
     real_id = success_msg.get("msgId")
@@ -118,7 +119,7 @@ def test_chat_modify_custom_message_content_changed_event(device_a, device_b, as
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState"},
     )
 
-    evt_recv = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+    evt_recv = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=timing_seconds('timeout.message', module='chat'))
     assert_api.assert_response_matches(
         evt_recv,
         expected={
@@ -153,7 +154,7 @@ def test_chat_modify_custom_message_content_changed_event(device_a, device_b, as
         context={"realId": real_id, "fromUser": user_a, "toUser": user_b, "oldEvent": old_event},
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState", "attributes", "targetLanguages", "translations", "receiverList"},
     )
-    time.sleep(float(os.getenv("CHAT_MODIFY_SETTLE_SECONDS", "5")))
+    time.sleep(timing_seconds('settle.normal', module='chat'))
 
     resp_modify = device_a.call(
         "ChatManager",
@@ -210,7 +211,7 @@ def test_chat_modify_custom_message_content_changed_event(device_a, device_b, as
             "translations",
         },
     )
-    evt_delivered = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=20.0)
+    evt_delivered = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=timing_seconds('timeout.message', module='chat'))
     delivered_messages = ((evt_delivered or {}).get("data") or {}).get("messages") or []
     delivered = next(
         message for message in delivered_messages
@@ -247,7 +248,7 @@ def test_chat_modify_custom_message_content_changed_event(device_a, device_b, as
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState"},
     )
 
-    evt_changed = device_b.receive_message(match_event_type=Cmd.onMessageContentChanged.value, timeout=20.0)
+    evt_changed = device_b.receive_message(match_event_type=Cmd.onMessageContentChanged.value, timeout=timing_seconds('timeout.message', module='chat'))
     assert evt_changed, "接收端未收到 onMessageContentChanged 回调"
     assert_api.assert_response_matches(
         evt_changed,

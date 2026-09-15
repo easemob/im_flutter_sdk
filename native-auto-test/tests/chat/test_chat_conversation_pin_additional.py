@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -11,11 +13,12 @@ from tests.chat._utils import build_text
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
 
-def _wait_text_event(device, event_type, *, content, timeout=30.0):
+def _wait_text_event(device, event_type, *, content, timeout=None):
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        event = device.receive_message(match_event_type=event_type, timeout=2)
+        event = device.receive_message(match_event_type=event_type, timeout=timing_seconds('poll.receive', module='chat'))
         if event:
             seen.append(event)
         if event_type == Cmd.onMessageSuccess.value:
@@ -81,13 +84,13 @@ def _prepare_conversation(device_a, device_b, assert_api, user_a, user_b):
         assert_api, Cmd.onMessagesDelivered.value, delivered, msg_id=real_id, user_a=user_a, user_b=user_b,
         content=content, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True,
     )
-    deadline = time.monotonic() + 60
+    deadline = time.monotonic() + timing_seconds('timeout.server_state', module='chat')
     while time.monotonic() < deadline:
         conversations = device_a.call("ChatManager", Cmd.getConversationsFromServer.value, info={})
         if any(isinstance(item, dict) and item.get("convId") == user_b
                for item in (conversations.get("result") or [])):
             return
-        time.sleep(2)
+        time.sleep(timing_seconds('poll.server_state', module='chat'))
     pytest.fail("未准备好服务端单聊会话")
 
 
@@ -103,6 +106,7 @@ def _target_pinned(response, conv_id):
 def test_chat_conversation_pin_and_unpin_are_idempotent(device_a, device_b, assert_api, user_a, user_b):
     _prepare_conversation(device_a, device_b, assert_api, user_a, user_b)
     for is_pinned in (False, True, True):
+        timing_pause('step.interval', module='chat')
         response = device_a.call(
             "ChatManager", Cmd.pinConversation.value,
             info={"convId": user_b, "isPinned": is_pinned},
@@ -113,6 +117,7 @@ def test_chat_conversation_pin_and_unpin_are_idempotent(device_a, device_b, asse
                       "device": "deviceA", "result": None},
             ignore_keys={"sequence"},
         )
+    timing_pause('step.interval', module='chat')
     fetch = device_a.call(
         "ChatManager", Cmd.fetchConversationsByOptions.value,
         info={"pageSize": 20, "cursor": "", "pinned": True},
@@ -136,6 +141,8 @@ def test_chat_conversation_pin_and_unpin_are_idempotent(device_a, device_b, asse
                       "device": "deviceA", "result": None},
             ignore_keys={"sequence"},
         )
+        timing_pause('step.interval', module='chat')
+    timing_pause('step.interval', module='chat')
     fetch_after = device_a.call(
         "ChatManager", Cmd.fetchConversationsByOptions.value,
         info={"pageSize": 20, "cursor": "", "pinned": True},
@@ -147,6 +154,7 @@ def test_chat_pin_conversation_non_boolean_coerces_to_unpin(
 ):
     """Generic bridge 实测 Android 会将非布尔 isPinned 按 false 处理。"""
     _prepare_conversation(device_a, device_b, assert_api, user_a, user_b)
+    timing_pause('step.interval', module='chat')
     pin = device_a.call(
         "ChatManager", Cmd.pinConversation.value,
         info={"convId": user_b, "isPinned": True},
@@ -157,6 +165,7 @@ def test_chat_pin_conversation_non_boolean_coerces_to_unpin(
                   "device": "deviceA", "result": None},
         ignore_keys={"sequence"},
     )
+    timing_pause('step.interval', module='chat')
     response = device_a.call(
         "ChatManager", Cmd.pinConversation.value,
         info={"convId": user_b, "isPinned": "not-a-boolean"},
@@ -167,6 +176,7 @@ def test_chat_pin_conversation_non_boolean_coerces_to_unpin(
                   "device": "deviceA", "result": None},
         ignore_keys={"sequence"},
     )
+    timing_pause('step.interval', module='chat')
     conversation = device_a.call(
         "ChatManager", Cmd.getConversation.value,
         info={"convId": user_b, "type": 0, "createIfNeed": True},
@@ -184,6 +194,7 @@ def test_chat_pin_conversation_non_boolean_coerces_to_unpin(
     )
 
 
+@pytest.mark.no_friend_setup
 @pytest.mark.parametrize(
     ("page_size", "expected"),
     [

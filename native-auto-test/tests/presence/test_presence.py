@@ -3,6 +3,7 @@ Presence 在线状态用例，对应 presence_manager.dart。
 场景：A 发布 presence，B 订阅 A → B 查询 A 的在线状态与订阅列表 → B 取消订阅 → 再次查询应返回空。
 """
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -50,6 +51,7 @@ def test_presence_publish_subscribe_query_unsubscribe(device_a, device_b, assert
     )
 
     # 2. B 订阅 A 的在线状态（PresenceManager.presenceSubscribe）
+    timing_pause('step.interval', module='presence')
     resp_sub = device_b.call(
         "PresenceManager",
         Cmd.presenceSubscribe.value,
@@ -70,6 +72,7 @@ def test_presence_publish_subscribe_query_unsubscribe(device_a, device_b, assert
     )
 
     # 3. B 查询指定用户 A 的当前在线状态（fetchPresenceStatus）
+    timing_pause('step.interval', module='presence')
     resp_status = device_b.call(
         "PresenceManager",
         Cmd.fetchPresenceStatus.value,
@@ -126,6 +129,7 @@ def test_presence_publish_subscribe_query_unsubscribe(device_a, device_b, assert
     )
 
     # # 6. B 再次查询订阅列表，应返回空
+    timing_pause('step.interval', module='presence')
     resp_members_after = device_b.call(
         "PresenceManager",
         Cmd.fetchSubscribedMembersWithPageNum.value,
@@ -158,6 +162,7 @@ def test_presence_publish_empty_desc_then_fetch(device_a, device_b, assert_api, 
     assert_api.assert_success(resp_pub)
 
     # 2. B 订阅 A
+    timing_pause('step.interval', module='presence')
     resp_sub = device_b.call(
         "PresenceManager",
         Cmd.presenceSubscribe.value,
@@ -166,6 +171,7 @@ def test_presence_publish_empty_desc_then_fetch(device_a, device_b, assert_api, 
     assert_api.assert_success(resp_sub)
 
     # 3. B 查询 A 的在线状态，断言 statusDescription 为空
+    timing_pause('step.interval', module='presence')
     resp_status = device_b.call(
         "PresenceManager",
         Cmd.fetchPresenceStatus.value,
@@ -249,6 +255,7 @@ def test_presence_subscribe_expiry_over_30_days(device_a, device_b, assert_api, 
     )
     assert_api.assert_success(resp_pub)
     # B 订阅 A，但 expiry 超过 30 天（30*24*3600 + 1 秒）
+    timing_pause('step.interval', module='presence')
     resp = device_b.call(
         "PresenceManager",
         Cmd.presenceSubscribe.value,
@@ -326,6 +333,7 @@ def test_fetch_subscribed_members_pagination(device_a, device_b, assert_api, use
         info={"desc": "online"},
     )
     assert_api.assert_success(resp_pub)
+    timing_pause('step.interval', module='presence')
     resp_sub = device_b.call(
         "PresenceManager",
         Cmd.presenceSubscribe.value,
@@ -334,6 +342,7 @@ def test_fetch_subscribed_members_pagination(device_a, device_b, assert_api, use
     assert_api.assert_success(resp_sub)
 
     # 第 1 页：pageNum=1, pageSize=20，应返回 [user_a]
+    timing_pause('step.interval', module='presence')
     resp_p1 = device_b.call(
         "PresenceManager",
         Cmd.fetchSubscribedMembersWithPageNum.value,
@@ -380,6 +389,7 @@ def test_fetch_subscribed_members_pagination_page_size_one(device_a, device_b, a
         info={"desc": "online"},
     )
     assert_api.assert_success(resp_pub)
+    timing_pause('step.interval', module='presence')
     resp_sub = device_b.call(
         "PresenceManager",
         Cmd.presenceSubscribe.value,
@@ -387,6 +397,7 @@ def test_fetch_subscribed_members_pagination_page_size_one(device_a, device_b, a
     )
     assert_api.assert_success(resp_sub)
 
+    timing_pause('step.interval', module='presence')
     resp_1 = device_b.call(
         "PresenceManager",
         Cmd.fetchSubscribedMembersWithPageNum.value,

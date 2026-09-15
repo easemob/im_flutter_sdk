@@ -1,5 +1,7 @@
 """群成员终态在 SDK logout/login 窗口内的离线一致性。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
+from src.tools.case_timing import seconds as timing_seconds
 
 import os
 import time
@@ -34,8 +36,8 @@ def _create_member_group(
     name_prefix: str,
     style: int = 0,
 ) -> tuple[str, str]:
-    device_a.drain_events(timeout=0.5)
-    device_b.drain_events(timeout=0.5)
+    device_a.drain_events(timeout=timing_seconds('drain.offline', module='group'))
+    device_b.drain_events(timeout=timing_seconds('drain.offline', module='group'))
     group_name = new_group_name(name_prefix)
     group_id, _ = create_group(
         device_a,
@@ -46,13 +48,13 @@ def _create_member_group(
         style=style,
     )
     try:
-        time.sleep(float(os.getenv("GROUP_OFFLINE_MEMBER_SETTLE_SECONDS", "3")))
+        time.sleep(timing_seconds('settle.normal', module='group'))
         wait_member_auto_joined(device_b, assert_api, group_id=group_id, inviter=user_a)
     except Exception:
         safe_destroy_group(device_a, group_id)
         raise
-    device_a.drain_events(timeout=0.5)
-    device_b.drain_events(timeout=0.5)
+    device_a.drain_events(timeout=timing_seconds('drain.offline', module='group'))
+    device_b.drain_events(timeout=timing_seconds('drain.offline', module='group'))
     return group_id, group_name
 
 
@@ -125,7 +127,7 @@ def _assert_member_terminal_event(
         device_b,
         event_type=event_type,
         group_id=group_id,
-        timeout=30.0,
+        timeout=timing_seconds('timeout.group_event', module='group'),
     )
     assert_api.assert_response_matches(
         event,
@@ -176,7 +178,7 @@ def test_group_offline_member_removed_state_after_login(
             user_b=user_b,
             name_prefix="offline_member_removed",
         )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         removed = device_a.call(
             "GroupManager",
             Cmd.removeMembers.value,
@@ -195,6 +197,7 @@ def test_group_offline_member_removed_state_after_login(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='group',
         )
         _assert_member_terminal_event(
             device_b,
@@ -203,6 +206,7 @@ def test_group_offline_member_removed_state_after_login(
             group_id=group_id,
             group_name=group_name,
         )
+        timing_pause('step.interval', module='group')
         _assert_owner_server_state(
             device_a,
             assert_api,
@@ -244,7 +248,7 @@ def test_group_offline_member_blocked_state_after_login(
             name_prefix="offline_member_blocked",
             style=3,
         )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         blocked = device_a.call(
             "GroupManager",
             Cmd.blockMembers.value,
@@ -263,6 +267,7 @@ def test_group_offline_member_blocked_state_after_login(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='group',
         )
         _assert_member_terminal_event(
             device_b,
@@ -271,6 +276,7 @@ def test_group_offline_member_blocked_state_after_login(
             group_id=group_id,
             group_name=group_name,
         )
+        timing_pause('step.interval', module='group')
         _assert_owner_server_state(
             device_a,
             assert_api,
@@ -282,6 +288,7 @@ def test_group_offline_member_blocked_state_after_login(
             is_member_only=False,
         )
         _assert_member_group_absent(device_b, assert_api, group_id=group_id)
+        timing_pause('step.interval', module='group')
         rejoin = device_b.call(
             "GroupManager",
             Cmd.joinPublicGroup.value,
@@ -328,7 +335,7 @@ def test_group_offline_group_destroyed_state_after_login(
             user_b=user_b,
             name_prefix="offline_group_destroyed",
         )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         destroyed = device_a.call(
             "GroupManager",
             Cmd.destroyGroup.value,
@@ -347,6 +354,7 @@ def test_group_offline_group_destroyed_state_after_login(
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='group',
         )
         _assert_member_terminal_event(
             device_b,
@@ -355,6 +363,7 @@ def test_group_offline_group_destroyed_state_after_login(
             group_id=group_id,
             group_name=group_name,
         )
+        timing_pause('step.interval', module='group')
         _assert_member_group_absent(device_b, assert_api, group_id=group_id)
         group_id = ""
     finally:
@@ -387,6 +396,7 @@ def test_group_offline_member_leave_state_persists_after_relogin(
             user_b=user_b,
             name_prefix="offline_member_leave",
         )
+        timing_pause('step.interval', module='group')
         left = device_b.call(
             "GroupManager",
             Cmd.leaveGroup.value,
@@ -400,12 +410,13 @@ def test_group_offline_member_leave_state_persists_after_relogin(
             device_name="deviceB",
             result=True,
         )
-        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        logout_for_offline(device_b, assert_api, device_name="deviceB", module='group')
         login_preserving_offline_events(
             device_b,
             assert_api,
             device_name="deviceB",
             user_id=user_b,
+            module='group',
         )
         _assert_owner_server_state(
             device_a,

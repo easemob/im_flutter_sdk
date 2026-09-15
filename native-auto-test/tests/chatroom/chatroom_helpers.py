@@ -1,4 +1,6 @@
 from __future__ import annotations
+from src.tools.case_timing_defaults import RECEIVE_TIMEOUT_FLOOR
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -44,7 +46,7 @@ def collect_chatroom_events(
     *,
     expected_event_types: set[str],
     chatroom_id: str | None = None,
-    timeout: float = 10.0,
+    timeout: float = None,
     require_event: bool = True,
     first_only: bool = False,
 ) -> list[dict]:
@@ -53,10 +55,11 @@ def collect_chatroom_events(
     - first_only=True：收到第一个匹配事件立即返回（用于「只需首条回调」的场景，timeout 仅作失败上限）。
     - first_only=False：收集满整个 timeout 窗口（用于「观察一段时间内所有事件/验证无事件」）。
     """
+    timeout = timing_seconds('observe.collect', module='chatroom') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     events: list[dict] = []
     while time.monotonic() < deadline:
-        evt = device.receive_message(timeout=min(1.0, max(0.1, deadline - time.monotonic())))
+        evt = device.receive_message(timeout=min(timing_seconds('poll.receive_batch', module='chatroom'), max(RECEIVE_TIMEOUT_FLOOR, deadline - time.monotonic())))
         if not isinstance(evt, dict):
             continue
         if evt.get("type") != "event":

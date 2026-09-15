@@ -1,5 +1,6 @@
 """Group members 异常用例（strict）。"""
 from __future__ import annotations
+from src.tools.case_timing import pause as timing_pause
 
 import pytest
 
@@ -18,6 +19,7 @@ def test_group_add_members_empty_members(device_a, assert_api, user_a):
     group_id = ""
     try:
         group_id, _ = create_group(device_a, assert_api, owner=user_a, group_name=new_group_name("ex_mem"), invite_members=[])
+        timing_pause('step.interval', module='group')
         resp = device_a.call("GroupManager", Cmd.addMembers.value, info={"groupId": group_id, "members": []})
         assert_api.assert_response_matches(
             resp,
@@ -47,6 +49,7 @@ def test_group_add_members_nonexistent_user(device_a, assert_api, user_a):
     group_id = ""
     try:
         group_id, _ = create_group(device_a, assert_api, owner=user_a, group_name=new_group_name("ex_user"), invite_members=[])
+        timing_pause('step.interval', module='group')
         resp = device_a.call("GroupManager", Cmd.addMembers.value, info={"groupId": group_id, "members": [_NONEXISTENT_USER]})
         assert_api.assert_error(resp, code=603, description="doesn't exist")
     finally:
@@ -58,6 +61,7 @@ def test_group_remove_members_non_member(device_a, assert_api, user_a, user_b):
     group_id = ""
     try:
         group_id, _ = create_group(device_a, assert_api, owner=user_a, group_name=new_group_name("ex_rm"), invite_members=[])
+        timing_pause('step.interval', module='group')
         resp = device_a.call("GroupManager", Cmd.removeMembers.value, info={"groupId": group_id, "members": [user_b]})
         assert_api.assert_error(resp, code=603, description="are not members of this group")
     finally:

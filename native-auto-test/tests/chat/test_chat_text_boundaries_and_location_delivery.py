@@ -1,4 +1,5 @@
 from __future__ import annotations
+from src.tools.case_timing import seconds as timing_seconds
 
 import time
 import uuid
@@ -12,11 +13,12 @@ from tests.chat.test_chat_message_types_and_delivery import _send_type_and_recei
 pytestmark = [pytest.mark.client, pytest.mark.chat]
 
 
-def _wait_text_event(device, event_type, *, content, timeout=30.0):
+def _wait_text_event(device, event_type, *, content, timeout=None):
+    timeout = timing_seconds('timeout.message_delivery', module='chat') if timeout is None else timeout
     deadline = time.monotonic() + timeout
     seen = []
     while time.monotonic() < deadline:
-        event = device.receive_message(match_event_type=event_type, timeout=2.0)
+        event = device.receive_message(match_event_type=event_type, timeout=timing_seconds('poll.receive', module='chat'))
         if event:
             seen.append(event)
         messages = ((event or {}).get("data") or {}).get("messages") or []
@@ -116,7 +118,7 @@ def test_chat_send_rejects_mismatched_from(device_a, device_b, assert_api, user_
         }},
         ignore_keys={"sequence", "localTime", "serverTime", "broadcast", "onlineState", "deliverOnlineOnly", "targetLanguages", "translations"},
     )
-    event = device_a.receive_message(match_event_type=Cmd.onMessageError.value, timeout=20)
+    event = device_a.receive_message(match_event_type=Cmd.onMessageError.value, timeout=timing_seconds('timeout.message', module='chat'))
     assert_api.assert_response_matches(
         event,
         expected={"type": "event", "eventType": Cmd.onMessageError.value, "data": {
