@@ -103,7 +103,10 @@ class RelationshipState:
             lists = [self.read_ids(i) for i in range(2)]
             if all((self.users[1-i] in lists[i]) == present for i in range(2)):
                 return
-            time.sleep(seconds('poll.server_state', module='chat'))
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            time.sleep(min(seconds('poll.server_state', module='chat'), remaining))
         raise AssertionError(f'好友前置未达到双端目标状态：friends={present}')
 
     def drain(self):
@@ -176,5 +179,8 @@ class RelationshipState:
             if restored:
                 self.drain()
                 return
-            time.sleep(seconds('poll.server_state', module='chat'))
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            time.sleep(min(seconds('poll.server_state', module='chat'), remaining))
         raise AssertionError('清理后好友/黑名单/备注 result 未恢复到原基线')

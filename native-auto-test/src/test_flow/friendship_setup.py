@@ -65,7 +65,11 @@ def ensure_friendship(device_a, device_b, assert_api, user_a, user_b):
             contacts_b = _contact_list(device_b, 'deviceB')
             if user_b in contacts_a and user_a in contacts_b:
                 return True
-            time.sleep(timing_seconds('poll.server_state', module='chat'))
+            # 间隔夹在剩余预算内：满足即已返回，不会因为间隔越过上限。
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            time.sleep(min(timing_seconds('poll.server_state', module='chat'), remaining))
         return False
 
     def _drain_events():

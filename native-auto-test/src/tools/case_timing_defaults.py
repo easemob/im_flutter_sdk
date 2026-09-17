@@ -11,6 +11,9 @@ MODULES = frozenset({
 
 POSITIVE_TIMEOUT_EPSILON = 1e-6
 RECEIVE_TIMEOUT_FLOOR = 0.1
+# Idle window that proves a receive queue is drained; bounds early exit only,
+# never the configured drain budget. Algorithmic constant, not configuration.
+DRAIN_IDLE_SECONDS = 0.3
 
 DEFAULTS = {
     'step.interval': 1.0,

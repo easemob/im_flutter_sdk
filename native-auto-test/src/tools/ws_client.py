@@ -24,6 +24,7 @@ from .config import (
     get_ws_base_url,
     get_topic,
 )
+from .case_timing_defaults import DRAIN_IDLE_SECONDS
 
 # ---- Debug flags (WS layer only) ----
 import os
@@ -622,13 +623,21 @@ class DeviceConnection:
             self._event_buffer.append(m)
 
     def drain_events(self, timeout: float = 2.0) -> None:
-        """清空当前连接上积压的推送/响应，避免影响后续 receive_message。登录后调用。"""
+        """清空当前连接上积压的推送/响应，避免影响后续 receive_message。登录后调用。
+
+        timeout 是上限，不是必须等满的时长：队列连续空闲 DRAIN_IDLE_SECONDS
+        即视为积压清完并立即返回；只要还有消息在产出就继续清，但不超过上限。
+        """
         deadline = time.monotonic() + timeout
-        while time.monotonic() < deadline:
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
             try:
-                self._recv_queue.get(timeout=0.2)
+                self._recv_queue.get(timeout=min(remaining, DRAIN_IDLE_SECONDS))
             except queue.Empty:
-                pass
+                # 空闲已达 DRAIN_IDLE_SECONDS（或已到上限）：无更多积压，提前结束。
+                break
         self._event_buffer.clear()
 
     def stop(self) -> None:

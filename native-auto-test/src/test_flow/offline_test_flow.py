@@ -5,7 +5,12 @@
 from __future__ import annotations
 
 from src import Cmd
-from src.tools.case_timing import pause, seconds
+from src.tools.case_timing import pause, seconds, wait_until
+
+
+def _current_user(device):
+    """只读幂等探针；响应按请求 id 路由，不会消费离线事件队列。"""
+    return device.call("Client", Cmd.getCurrentUser.value, info={}).get("result")
 
 
 def _assert_client_response(assert_api, response: dict, *, cmd: str,
@@ -38,7 +43,12 @@ def logout_for_offline(device, assert_api, *, device_name: str, module: str) -> 
         result=True,
     )
     device.drain_events(timeout=seconds('drain.offline', module=module))
-    pause('settle.offline', module=module)
+    wait_until(
+        lambda: _current_user(device),
+        lambda current: not (isinstance(current, str) and current),
+        key='settle.offline', module=module,
+        reason=f'{device_name} 退出后登录态未清空',
+    )
 
 
 def login_preserving_offline_events(
@@ -51,6 +61,7 @@ def login_preserving_offline_events(
     password: str = "1",
 ) -> None:
     """登录并启动回调；登录后的离线事件必须留在队列中供 case 断言。"""
+    # 重登前保留固定等待：等的是服务端把对端离线期操作落库，本地没有只读探针。
     pause('settle.offline', module=module)
     response = device.call(
         "Client",
@@ -76,7 +87,12 @@ def login_preserving_offline_events(
         device_name=device_name,
         result=None,
     )
-    pause('settle.offline', module=module)
+    wait_until(
+        lambda: _current_user(device),
+        lambda current: current == user_id,
+        key='settle.offline', module=module,
+        reason=f'{device_name} 重登后登录态未就绪',
+    )
 
 
 def restore_user_login(device, *, user_id: str, module: str, password: str = "1") -> None:
