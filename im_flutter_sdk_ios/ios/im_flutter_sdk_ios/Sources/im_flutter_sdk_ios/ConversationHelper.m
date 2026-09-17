@@ -19,6 +19,9 @@
     ret[@"isPinned"] = @(self.isPinned);
     ret[@"pinnedTime"] = @(self.pinnedTime);
     ret[@"marks"] = self.marks;
+    // 5.0.0
+    ret[@"name"] = [self conversationName];
+    ret[@"avatar"] = [self conversationAvatar];
     return ret;
 }
 

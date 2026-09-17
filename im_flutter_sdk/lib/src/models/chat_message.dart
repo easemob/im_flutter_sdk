@@ -124,21 +124,40 @@ class ChatMessage {
   /// - `true`：是；
   /// - `false`：否。
   /// ~end
-  bool hasReadAck = false;
+  bool _isPeerRead = false;
 
   /// ~english
-  /// Whether read receipts are required for group messages.
+  /// Whether the peer has read the message.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 对端是否已读该消息。
+  /// ~end
+  bool get isPeerRead => _isPeerRead;
+
+  /// ~english
+  /// Whether read receipts are required for the message.
   /// - `true`: Yes.
   /// - `false`: No.
   ///
   /// ~end
   ///
   /// ~chinese
-  /// 设置是否需要群组已读回执。
+  /// 设置该消息是否需要已读回执。
   /// - `true`：是；
   /// - `false`：否。
   /// ~end
-  bool needGroupAck = false;
+  bool isNeedReadReceipt = false;
+
+  /// ~english
+  /// The number of read receipts for a group message.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 群消息的已读回执数量。
+  /// ~end
+  int get groupReadReceiptCount => _groupReadReceiptCount;
+  int _groupReadReceiptCount = 0;
 
   /// ~english
   /// Whether the message is sent within a chat thread.
@@ -165,7 +184,9 @@ class ChatMessage {
   /// - `true`：是；
   /// - `false`：否。
   /// ~end
-  bool hasRead = false;
+  bool _isRead = false;
+
+  bool get isRead => _isRead;
 
   /// ~english
   /// The enumeration of chat types.
@@ -323,15 +344,14 @@ class ChatMessage {
     }
     Map req = {"msgId": msgId};
     Map result = await platform_interface.Client.instance.messageManager
-        .callNativeMethod(
-      ChatMethodKeys.getPinInfo,
-      req,
-    );
+        .callNativeMethod(ChatMethodKeys.getPinInfo, req);
     try {
       ChatError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getPinInfo)) {
-        return result.getValue<MessagePinInfo>(ChatMethodKeys.getPinInfo,
-            callback: (obj) => MessagePinInfo.fromJson(obj));
+        return result.getValue<MessagePinInfo>(
+          ChatMethodKeys.getPinInfo,
+          callback: (obj) => MessagePinInfo.fromJson(obj),
+        );
       } else {
         return null;
       }
@@ -417,7 +437,7 @@ class ChatMessage {
     this.chatType = ChatType.Chat,
   })  : from = ChatClient.getInstance.currentUserId,
         conversationId = to {
-    hasRead = true;
+    _isRead = true;
     direction = MessageDirection.SEND;
     onlineState = true;
   }
@@ -515,13 +535,14 @@ class ChatMessage {
     int? fileSize,
     ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
-            chatType: chatType,
-            to: targetId,
-            body: ChatFileMessageBody(
-              localPath: filePath,
-              fileSize: fileSize,
-              displayName: displayName,
-            ));
+          chatType: chatType,
+          to: targetId,
+          body: ChatFileMessageBody(
+            localPath: filePath,
+            fileSize: fileSize,
+            displayName: displayName,
+          ),
+        );
 
   /// ~english
   /// Creates an image message for sending.
@@ -592,17 +613,18 @@ class ChatMessage {
     double? height,
     ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
-            chatType: chatType,
-            to: targetId,
-            body: ChatImageMessageBody(
-              localPath: filePath,
-              displayName: displayName,
-              thumbnailLocalPath: thumbnailLocalPath,
-              sendOriginalImage: sendOriginalImage,
-              width: width,
-              height: height,
-              isGif: isGif,
-            ));
+          chatType: chatType,
+          to: targetId,
+          body: ChatImageMessageBody(
+            localPath: filePath,
+            displayName: displayName,
+            thumbnailLocalPath: thumbnailLocalPath,
+            sendOriginalImage: sendOriginalImage,
+            width: width,
+            height: height,
+            isGif: isGif,
+          ),
+        );
 
   /// ~english
   /// Creates a video message instance for sending.
@@ -668,17 +690,18 @@ class ChatMessage {
     double? height,
     ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
-            chatType: chatType,
-            to: targetId,
-            body: ChatVideoMessageBody(
-              localPath: filePath,
-              displayName: displayName,
-              duration: duration,
-              fileSize: fileSize,
-              thumbnailLocalPath: thumbnailLocalPath,
-              width: width,
-              height: height,
-            ));
+          chatType: chatType,
+          to: targetId,
+          body: ChatVideoMessageBody(
+            localPath: filePath,
+            displayName: displayName,
+            duration: duration,
+            fileSize: fileSize,
+            thumbnailLocalPath: thumbnailLocalPath,
+            width: width,
+            height: height,
+          ),
+        );
 
   /// ~english
   /// Creates a voice message for sending.
@@ -729,13 +752,15 @@ class ChatMessage {
     String? displayName,
     ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
-            chatType: chatType,
-            to: targetId,
-            body: ChatVoiceMessageBody(
-                localPath: filePath,
-                duration: duration,
-                fileSize: fileSize,
-                displayName: displayName));
+          chatType: chatType,
+          to: targetId,
+          body: ChatVoiceMessageBody(
+            localPath: filePath,
+            duration: duration,
+            fileSize: fileSize,
+            displayName: displayName,
+          ),
+        );
 
   /// ~english
   /// Creates a location message for sending.
@@ -786,14 +811,15 @@ class ChatMessage {
     String? buildingName,
     ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
-            chatType: chatType,
-            to: targetId,
-            body: ChatLocationMessageBody(
-              latitude: latitude,
-              longitude: longitude,
-              address: address,
-              buildingName: buildingName,
-            ));
+          chatType: chatType,
+          to: targetId,
+          body: ChatLocationMessageBody(
+            latitude: latitude,
+            longitude: longitude,
+            address: address,
+            buildingName: buildingName,
+          ),
+        );
 
   /// ~english
   /// Creates a command message for sending.
@@ -834,10 +860,13 @@ class ChatMessage {
     bool deliverOnlineOnly = false,
     ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
-            chatType: chatType,
-            to: targetId,
-            body: ChatCmdMessageBody(
-                action: action, deliverOnlineOnly: deliverOnlineOnly));
+          chatType: chatType,
+          to: targetId,
+          body: ChatCmdMessageBody(
+            action: action,
+            deliverOnlineOnly: deliverOnlineOnly,
+          ),
+        );
 
   /// ~english
   /// Creates a custom message for sending.
@@ -878,9 +907,10 @@ class ChatMessage {
     Map<String, String>? params,
     ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
-            chatType: chatType,
-            to: targetId,
-            body: ChatCustomMessageBody(event: event, params: params));
+          chatType: chatType,
+          to: targetId,
+          body: ChatCustomMessageBody(event: event, params: params),
+        );
 
   /// ~english
   /// Creates a combined message for sending.
@@ -931,14 +961,15 @@ class ChatMessage {
     required List<String> msgIds,
     ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
-            chatType: chatType,
-            to: targetId,
-            body: CombineMessageBody(
-              title: title,
-              summary: summary,
-              compatibleText: compatibleText,
-              messageList: msgIds,
-            ));
+          chatType: chatType,
+          to: targetId,
+          body: CombineMessageBody(
+            title: title,
+            summary: summary,
+            compatibleText: compatibleText,
+            messageList: msgIds,
+          ),
+        );
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
@@ -947,10 +978,11 @@ class ChatMessage {
     data.putIfNotNull("body", body.toJson());
     data.putIfNotNull("attributes", attributes);
     data.putIfNotNull("direction", direction.index);
-    data.putIfNotNull("hasRead", hasRead);
-    data.putIfNotNull("hasReadAck", hasReadAck);
+    data.putIfNotNull("isRead", isRead);
+    data.putIfNotNull("isPeerRead", isPeerRead);
     data.putIfNotNull("hasDeliverAck", hasDeliverAck);
-    data.putIfNotNull("needGroupAck", needGroupAck);
+    data.putIfNotNull("isNeedReadReceipt", isNeedReadReceipt);
+    data.putIfNotNull("groupReadReceiptCount", groupReadReceiptCount);
     data.putIfNotNull("msgId", msgId);
     data.putIfNotNull("convId", conversationId ?? to);
     data.putIfNotNull("chatType", chatType.index);
@@ -979,9 +1011,10 @@ class ChatMessage {
       ..attributes = map.getMapValue("attributes")
       ..direction = MessageDirection
           .values[map["direction"] ?? MessageDirection.SEND.index]
-      ..hasRead = map.boolValue('hasRead')
-      ..hasReadAck = map.boolValue('hasReadAck')
-      ..needGroupAck = map.boolValue('needGroupAck')
+      .._isRead = map.boolValue('isRead')
+      .._isPeerRead = map.boolValue('isPeerRead')
+      ..isNeedReadReceipt = map.boolValue('isNeedReadReceipt')
+      .._groupReadReceiptCount = map['groupReadReceiptCount'] ?? 0
       ..hasDeliverAck = map.boolValue('hasDeliverAck')
       .._msgId = map["msgId"]
       ..conversationId = map["convId"]
@@ -1065,49 +1098,13 @@ class ChatMessage {
     try {
       Map req = {"msgId": msgId};
       Map result = await platform_interface.Client.instance.messageManager
-          .callNativeMethod(
-        ChatMethodKeys.getReactionList,
-        req,
-      );
+          .callNativeMethod(ChatMethodKeys.getReactionList, req);
       ChatError.hasErrorFromResult(result);
       List<ChatMessageReaction> list = [];
       result[ChatMethodKeys.getReactionList]?.forEach(
-        (element) => list.add(
-          ChatMessageReaction.fromJson(element),
-        ),
+        (element) => list.add(ChatMessageReaction.fromJson(element)),
       );
       return list;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Gets the number of members that have read the group message.
-  ///
-  /// **Return** group ack count
-  ///
-  /// **Throws** A description of the exception. See [ChatError]
-  /// ~end
-  ///
-  /// ~chinese
-  /// 获取群消息已读人数。
-  ///
-  /// **Return** 群消息已读人数。
-  ///
-  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [ChatError]。
-  /// ~end
-  Future<int> groupAckCount() async {
-    try {
-      Map req = {"msgId": msgId};
-      Map result = await platform_interface.Client.instance.messageManager
-          .callNativeMethod(ChatMethodKeys.groupAckCount, req);
-      ChatError.hasErrorFromResult(result);
-      if (result.containsKey(ChatMethodKeys.groupAckCount)) {
-        return result[ChatMethodKeys.groupAckCount];
-      } else {
-        return 0;
-      }
     } catch (e) {
       rethrow;
     }
@@ -1138,8 +1135,10 @@ class ChatMessage {
           .callNativeMethod(ChatMethodKeys.getChatThread, req);
       ChatError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getChatThread)) {
-        return result.getValue<ChatThread>(ChatMethodKeys.getChatThread,
-            callback: (obj) => ChatThread.fromJson(obj));
+        return result.getValue<ChatThread>(
+          ChatMethodKeys.getChatThread,
+          callback: (obj) => ChatThread.fromJson(obj),
+        );
       } else {
         return null;
       }
@@ -1152,10 +1151,7 @@ class ChatMessage {
 abstract class ChatMessageBody {
   ChatMessageBody({required this.type});
 
-  ChatMessageBody.fromJson({
-    required Map map,
-    required this.type,
-  }) {
+  ChatMessageBody.fromJson({required Map map, required this.type}) {
     _operatorTime = map["operatorTime"];
     _operatorId = map["operatorId"];
     _operatorCount = map["operatorCount"];
@@ -1404,9 +1400,10 @@ class ChatFileMessageBody extends ChatMessageBody {
     super.type = MessageType.FILE,
   });
 
-  ChatFileMessageBody.fromJson(
-      {required Map map, super.type = MessageType.FILE})
-      : super.fromJson(map: map) {
+  ChatFileMessageBody.fromJson({
+    required Map map,
+    super.type = MessageType.FILE,
+  }) : super.fromJson(map: map) {
     secret = map["secret"];
     remotePath = map["remotePath"];
     fileSize = map["fileSize"];
@@ -1536,9 +1533,7 @@ class ChatImageMessageBody extends ChatFileMessageBody {
     this.width,
     this.height,
     this.isGif = false,
-  }) : super(
-          type: MessageType.IMAGE,
-        );
+  }) : super(type: MessageType.IMAGE);
 
   ChatImageMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.IMAGE) {
@@ -1702,10 +1697,8 @@ class ChatTextMessageBody extends ChatMessageBody {
   ///
   /// Param [content] 文本消息内容。
   /// ~end
-  ChatTextMessageBody({
-    required this.content,
-    this.targetLanguages,
-  }) : super(type: MessageType.TXT);
+  ChatTextMessageBody({required this.content, this.targetLanguages})
+      : super(type: MessageType.TXT);
 
   ChatTextMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.TXT) {
@@ -1833,9 +1826,7 @@ class ChatVideoMessageBody extends ChatFileMessageBody {
     this.thumbnailLocalPath,
     this.height,
     this.width,
-  }) : super(
-          type: MessageType.VIDEO,
-        );
+  }) : super(type: MessageType.VIDEO);
 
   ChatVideoMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.VIDEO) {
@@ -1963,9 +1954,7 @@ class ChatVoiceMessageBody extends ChatFileMessageBody {
     this.duration = 0,
     super.displayName,
     super.fileSize,
-  }) : super(
-          type: MessageType.VOICE,
-        );
+  }) : super(type: MessageType.VOICE);
 
   ChatVoiceMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.VOICE) {
@@ -2018,10 +2007,8 @@ class ChatCustomMessageBody extends ChatMessageBody {
   /// ~chinese
   /// 自定义消息体类。
   /// ~end
-  ChatCustomMessageBody({
-    required this.event,
-    this.params,
-  }) : super(type: MessageType.CUSTOM);
+  ChatCustomMessageBody({required this.event, this.params})
+      : super(type: MessageType.CUSTOM);
   ChatCustomMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.CUSTOM) {
     event = map["event"];

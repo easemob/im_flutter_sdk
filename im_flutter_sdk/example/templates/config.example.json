@@ -1,9 +1,9 @@
 {
   "appKey": "",
-  "autoLogin": false,
+  "dataSyncType": 1,
   "debugMode": true,
   "loginUser": "",
-  "loginPassword": "",
+  "loginToken": "",
   "userId01": "",
   "groupId01": "",
   "roomId01": ""

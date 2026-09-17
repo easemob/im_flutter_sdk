@@ -61,9 +61,9 @@ flutter run --dart-define=API_SCRIPT=/absolute/path/script.json \
 `API_CONFIG` points to a JSON file with test data (appKey, accounts, group/room
 ids). When omitted, a `config.json` next to the script file is used
 automatically. With a config file, `init` and `login` can be left out of the
-script: `init` is derived from the config's EMOptions keys (`appKey`,
-`autoLogin`, `debugMode`, `enableUserInfo`, `enableAutoSyncContacts`) and
-`login` from `loginUser` + `loginToken`/`loginPassword`. Explicit `init` /
+script: `init` is derived from the config's ChatOptions keys (`appKey`,
+`dataSyncType`, `debugMode`, `enableUserInfo`) and
+`login` from `loginUser` + `loginToken`. Explicit `init` /
 `login` blocks in the script override the derived values.
 
 ```json
@@ -75,7 +75,7 @@ script: `init` is derived from the config's EMOptions keys (`appKey`,
 }
 ```
 
-- `login` accepts `password` or `token`. A failed login is retried up to 5
+- `login` accepts `token`. A failed login is retried up to 5
   times (1s apart, each attempt logged) — native init can report success
   before the SDK is actually ready.
 - Reference syntax (a param string that matches exactly is replaced, keeping

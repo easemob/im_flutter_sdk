@@ -14,6 +14,7 @@
 #import "ChatroomManagerWrapper.h"
 #import "PushManagerWrapper.h"
 #import "DeviceConfigHelper.h"
+#import "ErrorHelper.h"
 #import "LoginExtensionInfoHelper.h"
 #import "OptionsHelper.h"
 #import "UserInfoManagerWrapper.h"
@@ -75,12 +76,6 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
                   channelName:call.method
                        result:result];
     }
-    else if ([ChatCreateAccount isEqualToString:call.method])
-    {
-        [self createAccount:call.arguments
-                channelName:call.method
-                     result:result];
-    }
     else if ([ChatLogin isEqualToString:call.method])
     {
         [self login:call.arguments
@@ -129,12 +124,6 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
                  channelName:call.method
                       result:result];
     }
-    else if([ChatIsLoggedInBefore isEqualToString:call.method])
-    {
-        [self isLoggedInBefore:call.arguments
-                   channelName:call.method
-                        result:result];
-    }
     else if([ChatGetCurrentUser isEqualToString:call.method])
     {
         [self getCurrentUser:call.arguments
@@ -152,10 +141,6 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
         [self getCurrentDeviceId:call.arguments
                      channelName:call.method
                           result:result];
-    }
-    else if ([ChatLoginWithAgoraToken isEqualToString:call.method])
-    {
-        [self loginWithAgoraToken:call.arguments channelName:call.method result:result];
     }
     else if([ChatIsConnected isEqualToString:call.method])
     {
@@ -212,11 +197,6 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
         [self updateAutoDownloadAttachmentThumbnailSetting:call.arguments
                                                channelName:call.method
                                                     result:result];
-    }
-    else if ([ChatUpdateRequireAckSetting isEqualToString:call.method]){
-        [self updateRequireAckSetting:call.arguments
-                          channelName:call.method
-                               result:result];
     }
     else if ([ChatUpdateDeliveryAckSetting isEqualToString:call.method]){
         [self updateDeliveryAckSetting:call.arguments
@@ -356,49 +336,19 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     return _progressManager;
 }
 
-- (void)createAccount:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+- (void)login:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *username = param[@"userId"];
-    NSString *password = param[@"password"];
-    [EMClient.sharedClient registerWithUsername:username
-                                       password:password
-                                     completion:^(NSString *aUsername, EMError *aError)
+    NSString *token = param[@"token"];
+    [EMClient.sharedClient loginWithUsername:username
+                                       token:token
+                                  completion:^(NSString *aUsername, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:aUsername];
+                           object:EMClient.sharedClient.currentUsername];
     }];
-}
-
-- (void)login:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self)weakSelf = self;
-    NSString *username = param[@"userId"];
-    NSString *pwdOrToken = param[@"pwdOrToken"];
-    BOOL isPwd = [param[@"isPassword"] boolValue];
-    
-    if (isPwd) {
-
-        [EMClient.sharedClient loginWithUsername:username
-                                        password:pwdOrToken
-                                      completion:^(NSString *aUsername, EMError *aError){
-
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:aError
-                               object:EMClient.sharedClient.currentUsername];
-        }];
-    }else {
-        [EMClient.sharedClient loginWithUsername:username
-                                           token:pwdOrToken
-                                      completion:^(NSString *aUsername, EMError *aError)
-         {
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:aError
-                               object:EMClient.sharedClient.currentUsername];
-        }];
-    }
 }
 
 - (void)logout:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
@@ -459,76 +409,25 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 - (void)kickDevice:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *username = param[@"userId"];
-    NSString *pwdOrToken = param[@"password"];
+    NSString *token = param[@"token"];
     NSString *resource = param[@"resource"];
-    bool isPwd = [param[@"isPwd"] boolValue];
-    if(isPwd) {
-        [EMClient.sharedClient kickDeviceWithUsername:username
-                                             password:pwdOrToken
-                                             resource:resource
-                                           completion:^(EMError *aError)
-         {
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:aError
-                               object:nil];
-        }];
-    }else {
-        [EMClient.sharedClient kickDeviceWithUserId:username token:pwdOrToken resource:resource completion:^(EMError * _Nullable aError) {
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:aError
-                               object:nil];
-        }];
-    }
+    [EMClient.sharedClient kickDeviceWithUserId:username token:token resource:resource completion:^(EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:nil];
+    }];
 }
 
 - (void)kickAllDevices:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *username = param[@"userId"];
-    NSString *pwdOrToken = param[@"password"];
-    bool isPwd = [param[@"isPwd"] boolValue];
-    if(isPwd) {
-        [EMClient.sharedClient kickAllDevicesWithUsername:username
-                                                 password:pwdOrToken
-                                               completion:^(EMError *aError)
-         {
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:aError
-                               object:nil];
-        }];
-    }else {
-        [EMClient.sharedClient kickAllDevicesWithUserId:username token:pwdOrToken completion:^(EMError * _Nullable aError) {
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:aError
-                               object:nil];
-        }];
-    }
-}
-
-- (void)isLoggedInBefore:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    [weakSelf wrapperCallBack:result
-                  channelName:aChannelName
-                        error:nil
-                       object:@(EMClient.sharedClient.isLoggedIn)];
-    
-}
-
-- (void)loginWithAgoraToken:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    NSString *username = param[@"userId"];
-    NSString *agoraToken = param[@"agora_token"];
-    [EMClient.sharedClient loginWithUsername:username
-                                  agoraToken:agoraToken
-                                  completion:^(NSString *aUsername, EMError *aError)
-     {
+    NSString *token = param[@"token"];
+    [EMClient.sharedClient kickAllDevicesWithUserId:username token:token completion:^(EMError * _Nullable aError) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:EMClient.sharedClient.currentUsername];
+                           object:nil];
     }];
 }
 
@@ -579,11 +478,11 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 
 - (void)renewToken:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
     __weak typeof(self)weakSelf = self;
-    NSString *newAgoraToken = param[@"agora_token"];
-    [EMClient.sharedClient renewToken:newAgoraToken completion:^(EMError * _Nullable aError) {
+    NSString *token = param[@"token"];
+    [EMClient.sharedClient renewToken:token completion:^(EMError * _Nullable aError) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
-                            error:nil
+                            error:aError
                            object:nil];
     }];
 }
@@ -591,43 +490,20 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 - (void)getLoggedInDevicesFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *username = param[@"userId"];
-    NSString *pwdOrToken = param[@"password"];
-    bool isPwd = [param[@"isPwd"] boolValue];
-    if(isPwd) {
-        [EMClient.sharedClient getLoggedInDevicesFromServerWithUsername:username
-                                                               password:pwdOrToken
-                                                             completion:^(NSArray *aList, EMError *aError)
-         {
-            
-            NSMutableArray *list = [NSMutableArray array];
-            for (EMDeviceConfig *deviceInfo in aList) {
-                [list addObject:[deviceInfo toJson]];
-            }
-            
-            
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:aError
-                               object:list];
-        }];
-    }else {
-        [EMClient.sharedClient getLoggedInDevicesFromServerWithUserId:username
-                                                                token:pwdOrToken
-                                                           completion:^(NSArray<EMDeviceConfig *> * _Nullable aList, EMError * _Nullable aError)
-         {
-            NSMutableArray *list = [NSMutableArray array];
-            for (EMDeviceConfig *deviceInfo in aList) {
-                [list addObject:[deviceInfo toJson]];
-            }
-            
-            
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:aError
-                               object:list];
-        }];
-    }
-    
+    NSString *token = param[@"token"];
+    [EMClient.sharedClient getLoggedInDevicesFromServerWithUserId:username
+                                                            token:token
+                                                       completion:^(NSArray<EMDeviceConfig *> * _Nullable aList, EMError * _Nullable aError)
+     {
+        NSMutableArray *list = [NSMutableArray array];
+        for (EMDeviceConfig *deviceInfo in aList) {
+            [list addObject:[deviceInfo toJson]];
+        }
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:list];
+    }];
 }
 
 - (void)startCallBack:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
@@ -649,14 +525,6 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     }else {
         [self.channel invokeMethod:ChatOnDisconnected
                          arguments:nil];
-    }
-}
-
-- (void)autoLoginDidCompleteWithError:(EMError *)aError {
-    if (aError.code == EMErrorServerServingForbidden) {
-         [self userDidForbidByServer];
-    }else if (aError.code == EMErrorAppActiveNumbersReachLimitation) {
-        [self activeNumbersReachLimitation];
     }
 }
 
@@ -690,6 +558,29 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 - (void)onOfflineMessageSyncFinish {
     [self.channel invokeMethod:onOfflineMessageSyncFinish
                      arguments:nil];
+}
+
+#pragma mark - 5.0.0
+
+- (void)syncDataStartWithType:(EMDataSyncType)type {
+    [self.channel invokeMethod:ChatOnDataSyncStart
+                     arguments:@{@"type": @(type)}];
+}
+
+- (void)syncDataFinished:(EMError *)error type:(EMDataSyncType)type {
+    [self.channel invokeMethod:ChatOnDataSyncFinish
+                     arguments:@{
+        @"type": @(type),
+        @"error": error ? [error toJson] : [NSNull null]
+    }];
+}
+
+- (void)onDatabaseOpened:(EMError *)error username:(NSString *)username {
+    [self.channel invokeMethod:ChatOnDatabaseOpened
+                     arguments:@{
+        @"username": username,
+        @"error": error ? [error toJson] : [NSNull null]
+    }];
 }
 
 - (void)userAccountDidRemoveFromServer {
@@ -882,19 +773,6 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     __weak typeof(self)weakSelf = self;
     BOOL autoDownloadThumbnail = [param[@"autoDownloadThumbnail"] boolValue];
     EMClient.sharedClient.options.autoDownloadThumbnail = autoDownloadThumbnail;
-    [weakSelf wrapperCallBack:result
-                  channelName:aChannelName
-                        error:nil
-                       object:nil];
-}
-
-- (void)updateRequireAckSetting:(NSDictionary *)param
-                    channelName:(NSString *)aChannelName
-                         result:(FlutterResult)result
-{
-    __weak typeof(self)weakSelf = self;
-    BOOL requireAck = [param[@"requireAck"] boolValue];
-    EMClient.sharedClient.options.enableRequireReadAck = requireAck;
     [weakSelf wrapperCallBack:result
                   channelName:aChannelName
                         error:nil

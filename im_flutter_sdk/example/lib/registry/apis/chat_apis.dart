@@ -87,6 +87,67 @@ final chatApis = <ApiEntry>[
     },
   ),
   ApiEntry(
+    name: 'ChatManager.sendMessageReadReceipts',
+    group: 'ChatManager',
+    description: '批量发送同一会话消息的已读回执，最多 50 条。',
+    paramsTemplate: '{"messages": []}',
+    invoke: (p) => ChatClient.getInstance.chatManager.sendMessageReadReceipts(
+      (p['messages'] as List)
+          .map((e) => ChatMessage.fromJson(Map<String, dynamic>.from(e)))
+          .toList(),
+    ),
+  ),
+  ApiEntry(
+    name: 'ChatManager.clearConversationUnreadMessageCount',
+    group: 'ChatManager',
+    description: '清除指定会话未读数，不发送消息已读回执。',
+    paramsTemplate: '{"conversationId": ""}',
+    invoke: (p) => ChatClient.getInstance.chatManager
+        .clearConversationUnreadMessageCount(p['conversationId'] as String),
+  ),
+  ApiEntry(
+    name: 'ChatManager.clearAllConversationUnreadMessageCount',
+    group: 'ChatManager',
+    description: '清除全部会话未读数。',
+    paramsTemplate: '{}',
+    invoke: (_) => ChatClient.getInstance.chatManager
+        .clearAllConversationUnreadMessageCount(),
+  ),
+  ApiEntry(
+    name: 'ChatManager.getGroupMessageReadReceipts',
+    group: 'ChatManager',
+    description: '批量获取同一会话群消息的已读回执汇总，最多 20 条。',
+    paramsTemplate: '{"messages": []}',
+    invoke: (p) async =>
+        (await ChatClient.getInstance.chatManager.getGroupMessageReadReceipts(
+      (p['messages'] as List)
+          .map((e) => ChatMessage.fromJson(Map<String, dynamic>.from(e)))
+          .toList(),
+    ))
+            .map((e) => e.toJson())
+            .toList(),
+  ),
+  ApiEntry(
+    name: 'ChatManager.fetchGroupMessageReadReceipts',
+    group: 'ChatManager',
+    description: '分页获取群消息已读回执详情。',
+    paramsTemplate:
+        '{"messageId": "", "groupId": "", "cursor": "", "pageSize": 20}',
+    invoke: (p) async {
+      final result = await ChatClient.getInstance.chatManager
+          .fetchGroupMessageReadReceipts(
+        p['messageId'] as String,
+        p['groupId'] as String,
+        cursor: p['cursor'] as String? ?? '',
+        pageSize: p['pageSize'] as int? ?? 20,
+      );
+      return {
+        'cursor': result.cursor,
+        'list': result.data.map((e) => e.toJson()).toList(),
+      };
+    },
+  ),
+  ApiEntry(
     name: 'ChatManager.searchMessagesFromServer',
     group: 'ChatManager',
     description: '服务端消息搜索（4.24 新增，需 Console 开通「消息搜索」增值服务，未开通时调用报错）。'

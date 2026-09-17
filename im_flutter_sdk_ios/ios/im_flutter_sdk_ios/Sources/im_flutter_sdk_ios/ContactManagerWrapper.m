@@ -9,8 +9,6 @@
 #import "MethodKeys.h"
 #import "ListenerHandle.h"
 #import "ContactHelper.h"
-#import "CursorResultHelper.h"
-#import "ErrorHelper.h"
 
 @interface ContactManagerWrapper () <EMContactManagerDelegate>
 
@@ -43,10 +41,6 @@
         [self deleteContact:call.arguments
                 channelName:call.method
                      result:result];
-    } else if ([ChatGetAllContactsFromServer isEqualToString:call.method]) {
-        [self getAllContactsFromServer:call.arguments
-                           channelName:call.method
-                                result:result];
     } else if ([ChatGetAllContactsFromDB isEqualToString:call.method]) {
         [self getAllContactsFromDB:call.arguments
                        channelName:call.method
@@ -91,14 +85,6 @@
         [self getContact:call.arguments
                             channelName:call.method
                                  result:result];
-    } else if ([ChatFetchAllContacts isEqualToString:call.method]) {
-        [self fetchAllContacts:call.arguments
-                            channelName:call.method
-                                 result:result];
-    } else if ([ChatFetchContacts isEqualToString:call.method]) {
-        [self fetchContacts:call.arguments
-                            channelName:call.method
-                                 result:result];
     } else {
         [super handleMethodCall:call result:result];
     }
@@ -133,17 +119,6 @@
                       channelName:aChannelName
                             error:aError
                            object:aUsername];
-    }];
-}
-
-- (void)getAllContactsFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self)weakSelf = self;
-    [EMClient.sharedClient.contactManager getContactsFromServerWithCompletion:^(NSArray *aList, EMError *aError)
-     {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:aList];
     }];
 }
 
@@ -282,38 +257,6 @@
                    object:[contact toJson]];
 }
 
-- (void)fetchAllContacts:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self)weakSelf = self;
-    [EMClient.sharedClient.contactManager getAllContactsFromServerWithCompletion:^(NSArray<EMContact *> * _Nullable aList, EMError * _Nullable aError) {
-        NSMutableArray *contactList = [NSMutableArray array];
-        for (EMContact *contact in aList) {
-            [contactList addObject:[contact toJson]];
-        }
-        
-        [weakSelf wrapperCallBack:result
-                  channelName:aChannelName
-                        error:aError
-                       object:contactList];
-    }];
-}
-
-
-- (void)fetchContacts:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    NSString *cursor = param[@"cursor"];
-    int pageSize = [param[@"pageSize"] intValue];
-    [EMClient.sharedClient.contactManager getContactsFromServerWithCursor:cursor
-                                                                 pageSize:pageSize
-                                                               completion:^(EMCursorResult<EMContact *> * _Nullable aResult, EMError * _Nullable aError)
-     {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:[aResult toJson]];
-    }];
-}
-
-
 #pragma mark - EMContactManagerDelegate
 
 - (void)friendshipDidAddByUser:(NSString *)aUsername {
@@ -370,28 +313,6 @@
         NSDictionary *map = @{
             @"type":@"onFriendRequestDeclined",
             @"userId":aUsername
-        };
-        [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
-    }];
-}
-
-// 4.22.0
-- (void)onFriendStartSync {
-    __weak typeof(self) weakSelf = self;
-    [ListenerHandle.sharedInstance addHandle:^{
-        NSDictionary *map = @{
-            @"type":@"onContactSyncStart"
-        };
-        [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
-    }];
-}
-
-- (void)onFriendSyncFinished:(EMError *)error {
-    __weak typeof(self) weakSelf = self;
-    [ListenerHandle.sharedInstance addHandle:^{
-        NSDictionary *map = @{
-            @"type":@"onContactSyncFinish",
-            @"error":error ? [error toJson] : [NSNull null]
         };
         [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
     }];

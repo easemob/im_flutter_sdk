@@ -8,8 +8,6 @@ class ChatContactChangeEvent {
   static const String INVITATION_DECLINED = 'onFriendRequestDeclined';
 
   // 4.22.0
-  static const String CONTACT_SYNC_START = 'onContactSyncStart';
-  static const String CONTACT_SYNC_FINISH = 'onContactSyncFinish';
   static const String CONTACT_INFO_UPDATE = 'onContactInfoUpdate';
 }
 

@@ -44,7 +44,7 @@
         [self updateImPushStyle:call.arguments
                     channelName:call.method
                          result:result];
-    } else if ([ChatBindDeviceToken isEqualToString:call.method] || [ChatUpdateFCMPushToken isEqualToString:call.method]) {
+    } else if ([ChatBindDeviceToken isEqualToString:call.method]) {
         [self  bindAPNsDeviceToken:call.arguments
                        channelName:call.method
                             result:result];
@@ -175,15 +175,13 @@
     
     EMPushDisplayStyle pushStyle = [param[@"pushStyle"] intValue];
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        EMError *aError = [EMClient.sharedClient.pushManager updatePushDisplayStyle:pushStyle];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:aError
-                               object:@(!aError)];
-        });
-    });
+    [EMClient.sharedClient.pushManager updatePushDisplayStyle:pushStyle
+                                                   completion:^(EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:@(!aError)];
+    }];
 }
 
 - (void)bindAPNsDeviceToken:(NSDictionary *)param

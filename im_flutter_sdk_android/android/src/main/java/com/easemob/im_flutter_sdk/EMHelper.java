@@ -15,16 +15,16 @@ import com.hyphenate.chat.EMDeviceInfo;
 import com.hyphenate.chat.EMFetchMessageOption;
 import com.hyphenate.chat.EMFileMessageBody;
 import com.hyphenate.chat.EMGroup;
+import com.hyphenate.chat.EMGroupConfigs;
 import com.hyphenate.chat.EMGroupInfo;
-import com.hyphenate.chat.EMGroupManager;
 import com.hyphenate.chat.EMGroupMemberInfo;
-import com.hyphenate.chat.EMGroupOptions;
-import com.hyphenate.chat.EMGroupReadAck;
+import com.hyphenate.chat.EMGroupReadReceipt;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMLanguage;
 import com.hyphenate.chat.EMLocationMessageBody;
 import com.hyphenate.chat.EMLoginExtensionInfo;
 import com.hyphenate.chat.EMMessage;
+import com.hyphenate.chat.EMMessageReadReceipt;
 import com.hyphenate.chat.EMMessage.Type;
 import com.hyphenate.chat.EMMessageBody;
 import com.hyphenate.chat.EMMessagePinInfo;
@@ -75,8 +75,6 @@ class OptionsHelper {
 
         options.setSDKPlatform(EMOptions.EMSDKPlatform.EMSDKPlatformFlutter);
 
-        options.setAutoLogin(json.getBoolean("autoLogin"));
-        options.setRequireAck(json.getBoolean("requireAck"));
         options.setRequireDeliveryAck(json.getBoolean("requireDeliveryAck"));
         options.setSortMessageByServerTime(json.getBoolean("sortMessageByServerTime"));
         options.setAcceptInvitationAlways(json.getBoolean("acceptInvitationAlways"));
@@ -86,7 +84,7 @@ class OptionsHelper {
         options.setAutoDownloadThumbnail(json.getBoolean("isAutoDownload"));
         options.allowChatroomOwnerLeave(json.getBoolean("isChatRoomOwnerLeaveAllowed"));
         options.setAutoTransferMessageAttachments(json.getBoolean("serverTransfer"));
-        options.setAreaCode(json.getInt("areaCode"));
+        options.setAreaCode(areaCodeFromInt(json.getInt("areaCode")));
         options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
         options.enableDNSConfig(json.getBoolean("enableDNSConfig"));
         options.setLoadEmptyConversations(json.optBoolean("loadEmptyConversations", false));
@@ -158,8 +156,9 @@ class OptionsHelper {
         if (json.has("enableUserInfo")) {
             options.setEnableUserInfo(json.getBoolean("enableUserInfo"));
         }
-        if (json.has("enableAutoSyncContacts")) {
-            options.setEnableAutoSyncContacts(json.getBoolean("enableAutoSyncContacts"));
+        // 5.0.0
+        if (json.has("dataSyncType") && !json.isNull("dataSyncType")) {
+            options.setDataSyncType(EMOptions.EMDataSyncType.fromNativeMask(json.getInt("dataSyncType")));
         }
         // 4.24.0
         if (json.has("ntpServers")) {
@@ -174,34 +173,25 @@ class OptionsHelper {
 
     }
 
-    /*
-    static Map<String, Object> toJson(EMOptions options) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("appKey", options.getAppKey());
-        data.put("autoLogin", options.getAutoLogin());
-        data.put("requireAck", options.getRequireAck());
-        data.put("requireDeliveryAck", options.getRequireDeliveryAck());
-        data.put("sortMessageByServerTime", options.isSortMessageByServerTime());
-        data.put("acceptInvitationAlways", options.getAcceptInvitationAlways());
-        data.put("autoAcceptGroupInvitation", options.isAutoAcceptGroupInvitation());
-        data.put("deleteMessagesAsExitGroup", options.isDeleteMessagesAsExitGroup());
-        data.put("deleteMessagesAsExitChatRoom", options.isDeleteMessagesAsExitChatRoom());
-        data.put("isAutoDownload", options.getAutodownloadThumbnail());
-        data.put("isChatRoomOwnerLeaveAllowed", options.isChatroomOwnerLeaveAllowed());
-        // data.put("serverTransfer", "");
-        // data.put("debugModel", options.);
-        // data.put("serverTransfer", options.);
-        data.put("usingHttpsOnly", options.getUsingHttpsOnly());
-        // data.put("EMPushConfig", "");
-        // data.put("enableDNSConfig", "");
-        data.put("imPort", options.getImPort());
-        data.put("imServer", options.getImServer());
-        data.put("restServer", options.getRestServer());
-        data.put("dnsUrl", options.getDnsUrl());
-
-        return data;
+    private static EMOptions.AreaCode areaCodeFromInt(int areaCode) {
+        switch (areaCode) {
+            case 1:
+                return EMOptions.AreaCode.CN;
+            case 2:
+                return EMOptions.AreaCode.NA;
+            case 4:
+                return EMOptions.AreaCode.EU;
+            case 8:
+                return EMOptions.AreaCode.AS;
+            case 16:
+                return EMOptions.AreaCode.JP;
+            case 32:
+                return EMOptions.AreaCode.IN;
+            case -1:
+            default:
+                return EMOptions.AreaCode.GLOB;
+        }
     }
-     */
 }
 
 
@@ -224,9 +214,11 @@ class GroupHelper {
         CommonUtil.putObjectToMap(data, "isAllMemberMuted", group.isAllMemberMuted());
         CommonUtil.putObjectToMap(data, "permissionType", EnumTools.groupPermissionTypeToInt(group.getGroupPermissionType()));
         CommonUtil.putObjectToMap(data, "maxUserCount", group.getMaxUserCount());
-        CommonUtil.putObjectToMap(data, "isMemberOnly", group.isMemberOnly());
+        CommonUtil.putObjectToMap(data, "isPublic", group.isPublic());
+        CommonUtil.putObjectToMap(data, "isJoinApprovalRequired", group.isJoinApprovalRequired());
         CommonUtil.putObjectToMap(data, "isMemberAllowToInvite", group.isMemberAllowToInvite());
         CommonUtil.putObjectToMap(data, "ext", group.getExtension());
+        CommonUtil.putObjectToMap(data, "configs", GroupConfigsHelper.toJson(group));
         return data;
     }
 }
@@ -267,56 +259,28 @@ class MucSharedFileHelper {
     }
 }
 
-class GroupOptionsHelper {
+class GroupConfigsHelper {
 
-    static EMGroupOptions fromJson(JSONObject json) throws JSONException {
-        EMGroupOptions options = new EMGroupOptions();
-        options.maxUsers = json.getInt("maxCount");
-        options.inviteNeedConfirm = json.getBoolean("inviteNeedConfirm");
-        if (json.has("ext")){
-            options.extField = json.getString("ext");
-        }
-        options.style = styleFromInt(json.getInt("style"));
-        return options;
+    static EMGroupConfigs fromJson(JSONObject json) throws JSONException {
+        EMGroupConfigs configs = new EMGroupConfigs();
+        configs.maxUsers = json.optInt("maxCount", 200);
+        configs.inviteNeedConfirm = json.optBoolean("inviteNeedConfirm", false);
+        configs.extField = json.has("ext") && !json.isNull("ext") ? json.getString("ext") : null;
+        configs.isPublic = json.optBoolean("isPublic", false);
+        configs.joinApprovalRequired = json.optBoolean("joinApprovalRequired", false);
+        configs.allowInvites = json.optBoolean("allowInvites", false);
+        return configs;
     }
 
-    static Map<String, Object> toJson(EMGroupOptions options) {
+    static Map<String, Object> toJson(EMGroup group) {
         Map<String, Object> data = new HashMap<>();
-        data.put("maxCount", options.maxUsers);
-        data.put("inviteNeedConfirm", options.inviteNeedConfirm);
-        data.put("ext", options.extField);
-        data.put("style", styleToInt(options.style));
+        data.put("maxCount", group.getMaxUserCount());
+        data.put("inviteNeedConfirm", false);
+        data.put("ext", group.getExtension());
+        data.put("isPublic", group.isPublic());
+        data.put("joinApprovalRequired", group.isJoinApprovalRequired());
+        data.put("allowInvites", group.isMemberAllowToInvite());
         return data;
-    }
-
-    private static EMGroupManager.EMGroupStyle styleFromInt(int style) {
-        switch (style) {
-        case 0:
-            return EMGroupManager.EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite;
-        case 1:
-            return EMGroupManager.EMGroupStyle.EMGroupStylePrivateMemberCanInvite;
-        case 2:
-            return EMGroupManager.EMGroupStyle.EMGroupStylePublicJoinNeedApproval;
-        case 3:
-            return EMGroupManager.EMGroupStyle.EMGroupStylePublicOpenJoin;
-        }
-
-        return EMGroupManager.EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite;
-    }
-
-    private static int styleToInt(EMGroupManager.EMGroupStyle style) {
-        switch (style) {
-        case EMGroupStylePrivateOnlyOwnerInvite:
-            return 0;
-        case EMGroupStylePrivateMemberCanInvite:
-            return 1;
-        case EMGroupStylePublicJoinNeedApproval:
-            return 2;
-        case EMGroupStylePublicOpenJoin:
-            return 3;
-        }
-
-        return 0;
     }
 }
 
@@ -485,14 +449,9 @@ class MessageHelper {
         if (json.has("from")) {
             message.setFrom(json.getString("from"));
         }
-        message.setAcked(json.getBoolean("hasReadAck"));
-        if (EnumTools.messageStatusFromInt(json.getInt("status")) == EMMessage.Status.SUCCESS) {
-            message.setUnread(!json.getBoolean("hasRead"));
-        }
         // message.setDeliverAcked(json.getBoolean("hasDeliverAck"));
-        message.setIsNeedGroupAck(json.getBoolean("needGroupAck"));
-        if (json.has("groupAckCount")) {
-            message.setGroupAckCount(json.getInt("groupAckCount"));
+        if (json.has("isNeedReadReceipt")) {
+            message.setIsNeedReadReceipt(json.getBoolean("isNeedReadReceipt"));
         }
 
         message.setIsChatThreadMessage(json.getBoolean("isThread"));
@@ -605,7 +564,7 @@ class MessageHelper {
         }
         data.put("from", message.getFrom());
         data.put("to", message.getTo());
-        data.put("hasReadAck", message.isAcked());
+        data.put("isPeerRead", message.isPeerRead());
         data.put("hasDeliverAck", message.isDelivered());
         data.put("localTime", message.localTime());
         data.put("serverTime", message.getMsgTime());
@@ -614,8 +573,9 @@ class MessageHelper {
         data.put("direction", EnumTools.messageDirectToInt(message.direct()));
         data.put("convId", message.conversationId());
         data.put("msgId", message.getMsgId());
-        data.put("hasRead", !message.isUnread());
-        data.put("needGroupAck", message.isNeedGroupAck());
+        data.put("isRead", message.isRead());
+        data.put("isNeedReadReceipt", message.isNeedReadReceipt());
+        data.put("groupReadReceiptCount", message.readReceiptCount());
         data.put("onlineState", message.isOnlineState());
         data.put("broadcast", message.isBroadcast());
         data.put("isContentReplaced", message.isContentReplaced());
@@ -623,8 +583,6 @@ class MessageHelper {
         // 4.24.0
         data.put("webhookEnv", message.getWebhookEnv());
 
-        // 通过EMMessageWrapper获取
-        // data.put("groupAckCount", message.groupAckCount());
         data.put("isThread", message.isChatThreadMessage());
 
         // 4.22.0
@@ -674,17 +632,25 @@ class MessageHelper {
     }
 }
 
-class GroupAckHelper {
-    static Map<String, Object>toJson(EMGroupReadAck ack) {
+class GroupReadReceiptHelper {
+    static Map<String, Object> toJson(EMGroupReadReceipt receipt) {
         Map<String, Object> data = new HashMap<>();
-        data.put("msgId", ack.getMsgId());
-        data.put("ack_id", ack.getAckId());
-        data.put("from", ack.getFrom());
-        data.put("count", ack.getCount());
-        data.put("timestamp", ack.getTimestamp());
-        if (ack.getContent() != null) {
-            data.put("content", ack.getContent());
-        }
+        data.put("msgId", receipt.getMsgId());
+        data.put("ack_id", receipt.getAckId());
+        data.put("from", receipt.getFrom() == null ? null : GroupMemberInfoHelper.toJson(receipt.getFrom()));
+        data.put("count", receipt.getCount());
+        data.put("timestamp", receipt.getTimestamp());
+        return data;
+    }
+}
+
+class MessageReadReceiptHelper {
+    static Map<String, Object> toJson(EMMessageReadReceipt receipt) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("messageId", receipt.getMessageId());
+        data.put("conversationId", receipt.getConversationId());
+        data.put("isPeerReceipt", receipt.isPeerReceipt());
+        data.put("readCount", receipt.getReadCount());
         return data;
     }
 }
@@ -1128,6 +1094,8 @@ class ConversationHelper {
     static Map<String, Object> toJson(EMConversation conversation) {
         Map<String, Object> data = new HashMap<>();
         data.put("convId", conversation.conversationId());
+        data.put("name", conversation.getConversationName());
+        data.put("avatar", conversation.getConversationAvatar());
         data.put("type", EnumTools.conversationTypeToInt(conversation.getType()));
         data.put("isThread", conversation.isChatThread());
         data.put("isPinned", conversation.isPinned());
@@ -1223,8 +1191,8 @@ class CursorResultHelper {
                     jsonList.add(ChatRoomHelper.toJson((EMChatRoom) obj));
                 }
 
-                if (obj instanceof EMGroupReadAck) {
-                    jsonList.add(GroupAckHelper.toJson((EMGroupReadAck) obj));
+                if (obj instanceof EMGroupReadReceipt) {
+                    jsonList.add(GroupReadReceiptHelper.toJson((EMGroupReadReceipt) obj));
                 }
 
                 if (obj instanceof String) {

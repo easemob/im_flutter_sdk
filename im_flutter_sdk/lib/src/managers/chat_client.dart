@@ -59,6 +59,12 @@ class ChatClient {
         _onTokenDidExpire(argMap);
       } else if (call.method == ChatMethodKeys.onAppActiveNumberReachLimit) {
         _onAppActiveNumberReachLimit(argMap);
+      } else if (call.method == ChatMethodKeys.onDataSyncStart) {
+        _onDataSyncStart(argMap!);
+      } else if (call.method == ChatMethodKeys.onDataSyncFinish) {
+        _onDataSyncFinish(argMap!);
+      } else if (call.method == ChatMethodKeys.onDatabaseOpened) {
+        _onDatabaseOpened(argMap!);
       } else if (call.method == ChatMethodKeys.onOfflineMessageSyncStart) {
         _onOfflineMessageSyncStart(argMap);
       } else if (call.method == ChatMethodKeys.onOfflineMessageSyncFinish) {
@@ -139,6 +145,30 @@ class ChatClient {
     }
   }
 
+  void _onDataSyncStart(Map map) {
+    for (var item in _connectionHandlers.values) {
+      item.onDataSyncStart?.call(map['type']);
+    }
+  }
+
+  void _onDataSyncFinish(Map map) {
+    final error = map['error'] == null
+        ? null
+        : ChatError.fromJson(Map<String, dynamic>.from(map['error']));
+    for (var item in _connectionHandlers.values) {
+      item.onDataSyncFinish?.call(map['type'], error);
+    }
+  }
+
+  void _onDatabaseOpened(Map map) {
+    final error = map['error'] == null
+        ? null
+        : ChatError.fromJson(Map<String, dynamic>.from(map['error']));
+    for (var item in _connectionHandlers.values) {
+      item.onDatabaseOpened?.call(map['username'], error);
+    }
+  }
+
   void _onOfflineMessageSyncStart(Map? map) {
     for (var item in _connectionHandlers.values) {
       item.onOfflineMessageSyncStart?.call();
@@ -152,8 +182,9 @@ class ChatClient {
   }
 
   Future<void> _onMultiDeviceGroupEvent(Map map) async {
-    ChatMultiDevicesEvent event =
-        convertIntToChatMultiDevicesEvent(map['event'])!;
+    ChatMultiDevicesEvent event = convertIntToChatMultiDevicesEvent(
+      map['event'],
+    )!;
     String target = map['target'];
     List<String>? users = map.getList("userIds");
 
@@ -163,8 +194,9 @@ class ChatClient {
   }
 
   Future<void> _onMultiDeviceContactEvent(Map map) async {
-    ChatMultiDevicesEvent event =
-        convertIntToChatMultiDevicesEvent(map['event'])!;
+    ChatMultiDevicesEvent event = convertIntToChatMultiDevicesEvent(
+      map['event'],
+    )!;
     String target = map['target'];
     String? ext = map['ext'];
 
@@ -174,8 +206,9 @@ class ChatClient {
   }
 
   Future<void> _onMultiDeviceThreadEvent(Map map) async {
-    ChatMultiDevicesEvent event =
-        convertIntToChatMultiDevicesEvent(map['event'])!;
+    ChatMultiDevicesEvent event = convertIntToChatMultiDevicesEvent(
+      map['event'],
+    )!;
     String target = map['target'] ?? '';
     List<String> users = map.getList("userIds") ?? [];
 
@@ -193,8 +226,9 @@ class ChatClient {
   }
 
   Future<void> _onMultiDevicesConversationEvent(Map map) async {
-    ChatMultiDevicesEvent event =
-        convertIntToChatMultiDevicesEvent(map['event'])!;
+    ChatMultiDevicesEvent event = convertIntToChatMultiDevicesEvent(
+      map['event'],
+    )!;
     String convId = map['convId'];
     ChatConversationType type = ChatConversationType.values[map['convType']];
     for (var handler in _multiDeviceHandlers.values) {
@@ -398,8 +432,9 @@ class ChatClient {
   /// ~end
   Future<void> startCallback() async {
     try {
-      await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.startCallback);
+      await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.startCallback,
+      );
     } catch (e) {
       rethrow;
     }
@@ -432,34 +467,6 @@ class ChatClient {
   }
 
   /// ~english
-  /// Checks whether the user has logged in before and did not log out.
-  ///
-  /// If you need to check whether the SDK is connected to the server, please use [isConnected].
-  ///
-  /// **Return** Whether the user has logged in before.
-  /// `true`: The user has logged in before,
-  /// `false`: The user has not logged in before or has called the [logout] method.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 检查用户是否已登录 Chat 服务。
-  ///
-  /// **Return** 用户是否已经登录 Chat 服务。
-  ///   - `true`：是；
-  ///   - `false`：否。
-  /// ~end
-  Future<bool> isLoginBefore() async {
-    try {
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.isLoggedInBefore);
-      ChatError.hasErrorFromResult(result);
-      return result.boolValue(ChatMethodKeys.isLoggedInBefore);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
   /// Gets the current login user ID.
   ///
   /// **Return** The current login user ID.
@@ -472,8 +479,9 @@ class ChatClient {
   /// ~end
   Future<String?> getCurrentUserId() async {
     try {
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.getCurrentUser);
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.getCurrentUser,
+      );
       ChatError.hasErrorFromResult(result);
       _currentUserId = result[ChatMethodKeys.getCurrentUser];
       if (_currentUserId != null) {
@@ -498,8 +506,9 @@ class ChatClient {
   /// ~end
   Future<String> getAccessToken() async {
     try {
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.getToken);
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.getToken,
+      );
       ChatError.hasErrorFromResult(result);
       return result[ChatMethodKeys.getToken];
     } catch (e) {
@@ -520,11 +529,13 @@ class ChatClient {
   /// ~end
   Future<String> getCurrentDeviceId() async {
     try {
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.getCurrentDeviceId);
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.getCurrentDeviceId,
+      );
       ChatError.hasErrorFromResult(result);
-      ChatDeviceInfo deviceInfo =
-          ChatDeviceInfo.fromJson(result[ChatMethodKeys.getCurrentDeviceId]);
+      ChatDeviceInfo deviceInfo = ChatDeviceInfo.fromJson(
+        result[ChatMethodKeys.getCurrentDeviceId],
+      );
       return deviceInfo.deviceUUID ?? '';
     } catch (e) {
       rethrow;
@@ -548,8 +559,10 @@ class ChatClient {
     try {
       _options = options;
       ChatLog.v('init');
-      await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.init, options.toJson());
+      await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.init,
+        options.toJson(),
+      );
       _currentUserId = await getCurrentUserId();
     } catch (e) {
       rethrow;
@@ -557,87 +570,20 @@ class ChatClient {
   }
 
   /// ~english
-  /// Registers a new user.
-  ///
-  /// Param [userId] The user Id. The maximum length is 64 characters. Ensure that you set this parameter.
-  /// Supported characters include the 26 English letters (a-z), the ten numbers (0-9), the underscore (_), the hyphen (-),
-  /// and the English period (.). This parameter is case insensitive, and upper-case letters are automatically changed to low-case ones.
-  /// If you want to set this parameter as a regular expression, set it as ^[a-zA-Z0-9_-]+$.
-  ///
-  /// Param [password] The password. The maximum length is 64 characters. Ensure that you set this parameter.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
+  /// Logs in to the chat server with a user ID and token.
   /// ~end
   ///
   /// ~chinese
-  /// 创建账号。
-  ///
-  /// Param [userId] 用户 ID，长度不超过 64 个字符。请确保你对该参数设值。支持的字符包括英文字母（a-z），数字（0-9），下划线（_），英文横线（-），英文句号（.）。该参数不区分大小写，大写字母会被自动转为小写字母。如果使用正则表达式设置该参数，则可以将表达式写为：^[a-zA-Z0-9_-]+$。请确保同一个 app 下，userId 唯一；`userId` 用户 ID 是会公开的信息，请勿使用 UUID、邮箱地址、手机号等敏感信息。
-  ///
-  /// Param [password] 密码，长度不超过 64 个字符。请确保你对该参数设值。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
+  /// 使用用户 ID 和 Token 登录聊天服务器。
   /// ~end
-  Future<void> createAccount(String userId, String password) async {
+  Future<void> loginWithToken(String userId, String token) async {
     try {
-      ChatLog.v('create account: $userId : ******');
-      Map req = {'userId': userId, 'password': password};
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.createAccount, req);
-      ChatError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  @Deprecated('Use [loginWithToken or loginWithPassword] instead')
-
-  /// ~english
-  /// Logs in to the chat server with a password or token.
-  ///
-  /// Param [userId] The user ID. The maximum length is 64 characters. Ensure that you set this parameter.
-  /// Supported characters include the 26 English letters (a-z), the ten numbers (0-9), the underscore (_), the hyphen (-), and the English period (.).
-  /// This parameter is case insensitive, and upper-case letters are automatically changed to low-case ones.
-  /// If you want to set this parameter as a regular expression, set it as ^[a-zA-Z0-9_-]+$.
-  ///
-  /// Param [pwdOrToken] The password or token.
-  ///
-  /// Param [isPassword] Whether to log in with a password or a token.
-  /// (Default) `true`: A password is used.
-  /// `false`: A token is used.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 使用密码或 Token 登录服务器。
-  ///
-  /// Param [userId] 用户 ID，长度不超过 64 个字符。请确保你对该参数设值。
-  /// 支持的字符包括英文字母（a-z），数字（0-9），下划线（_），英文横线（-），英文句号（.）。
-  /// 该参数不区分大小写，大写字母会被自动转为小写字母。如果使用正则表达式设置该参数，则可以将表达式写为：^[a-zA-Z0-9_-]+$。
-  ///
-  /// Param [pwdOrToken] 登录密码或 Token。
-  ///
-  /// Param [isPassword] 是否用密码登录。
-  /// - （默认）`true`：是。
-  /// - `false`：否。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  /// ~end
-  Future<void> login(
-    String userId,
-    String pwdOrToken, [
-    bool isPassword = true,
-  ]) async {
-    try {
-      ChatLog.v('login: $userId : ******, isPassword: $isPassword');
-      Map req = {
-        'userId': userId,
-        'pwdOrToken': pwdOrToken,
-        'isPassword': isPassword
-      };
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.login, req);
+      ChatLog.v('loginWithToken: $userId, ******');
+      Map req = {'userId': userId, 'token': token};
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.login,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       _currentUserId = userId;
     } catch (e) {
@@ -645,126 +591,20 @@ class ChatClient {
     }
   }
 
-  @Deprecated('Use [loginWithToken] instead')
-
   /// ~english
-  /// Logs in to the chat server by user ID and Agora token. This method supports automatic login.
-  ///
-  /// Another method to login to chat server is to login with user ID and token, See [login].
-  ///
-  /// Param [userId] The user Id.
-  ///
-  /// Param [agoraToken] The Agora token.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
+  /// Renews the token of the current login session.
   /// ~end
   ///
   /// ~chinese
-  /// 用声网 Token 登录服务器，该方法支持自动登录。
-  ///
-  /// **Note**
-  /// 通过 token 登录服务器的方法见[login]。
-  ///
-  /// Param [userId] 用户 ID。
-  ///
-  /// Param [agoraToken] Token。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
+  /// 更新当前登录会话的 Token。
   /// ~end
-  Future<void> loginWithAgoraToken(String userId, String agoraToken) async {
-    return login(userId, agoraToken, false);
-  }
-
-  /// ~english
-  /// Logs in to the chat server with a token.
-  ///
-  /// Param [userId]  The user ID. The maximum length is 64 characters.
-  /// Ensure that you set this parameter.
-  /// Supported characters include the 26 English letters (a-z), the ten numbers (0-9), the underscore (_), the hyphen (-), and the English period (.).
-  /// This parameter is case insensitive, and upper-case letters are automatically changed to low-case ones. If you want to set this parameter as a regular expression, set it as ^[a-zA-Z0-9_-]+$.
-  ///
-  /// Param [token] The token for login to the chat server.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 用户使用 token 登录。
-  ///
-  /// **Note**
-  ///
-  /// Param [userId] 用户 ID，长度不超过 64 个字符。请确保你对该参数设值。
-  /// 支持的字符包括英文字母（a-z），数字（0-9），下划线（_），英文横线（-），英文句号（.）。
-  /// 该参数不区分大小写，大写字母会被自动转为小写字母。如果使用正则表达式设置该参数，则可以将表达式写为：^[a-zA-Z0-9_-]+$。
-  ///
-  /// Param [token] 登录 Token。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  /// ~end
-  Future<void> loginWithToken(
-    String userId,
-    String token,
-  ) async {
-    // ignore: deprecated_member_use_from_same_package
-    return login(userId, token, false);
-  }
-
-  /// ~english
-  /// Logs in to the chat server with a password.
-  ///
-  /// Param [userId]  The user ID. The maximum length is 64 characters.
-  /// Ensure that you set this parameter.
-  /// Supported characters include the 26 English letters (a-z), the ten numbers (0-9), the underscore (_), the hyphen (-), and the English period (.).
-  /// This parameter is case insensitive, and upper-case letters are automatically changed to low-case ones. If you want to set this parameter as a regular expression, set it as ^[a-zA-Z0-9_-]+$.
-  ///
-  /// Param [password] The password. The maximum length is 64 characters. Ensure that you set this parameter.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 用户使用密码登录聊天服务器。
-  ///
-  /// **Note**
-  ///
-  /// Param [userId] 用户 ID，长度不超过 64 个字符。请确保你对该参数设值。
-  /// 支持的字符包括英文字母（a-z），数字（0-9），下划线（_），英文横线（-），英文句号（.）。
-  /// 该参数不区分大小写，大写字母会被自动转为小写字母。如果使用正则表达式设置该参数，则可以将表达式写为：^[a-zA-Z0-9_-]+$。
-  ///
-  /// Param [password] 密码，长度不超过 64 个字符。请确保你对该参数设值。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  /// ~end
-  Future<void> loginWithPassword(
-    String userId,
-    String password,
-  ) async {
-    // ignore: deprecated_member_use_from_same_package
-    return login(userId, password, true);
-  }
-
-  /// ~english
-  /// Renews the Agora token.
-  ///
-  /// If a user is logged in with an Agora token, when the token expires, you need to call this method to update the token.
-  ///
-  /// Param [agoraToken] The new Agora token.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 当用户在声网 token 登录状态时，且在 [ConnectionEventHandler.onTokenWillExpire] 实现类中收到 token 即将过期事件的回调通知可以调用这个 API 来更新 token，避免因 token 失效产生的未知问题。
-  ///
-  /// Param [agoraToken] 新声网 Token.
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  /// ~end
-  Future<void> renewAgoraToken(String agoraToken) async {
+  Future<void> renewToken(String token) async {
     try {
-      Map req = {"agora_token": agoraToken};
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.renewToken, req);
+      Map req = {'token': token};
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.renewToken,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -791,14 +631,14 @@ class ChatClient {
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
   /// ~end
-  Future<void> logout([
-    bool unbindDeviceToken = true,
-  ]) async {
+  Future<void> logout([bool unbindDeviceToken = true]) async {
     try {
       ChatLog.v('logout unbindDeviceToken: $unbindDeviceToken');
       Map req = {'unbindToken': unbindDeviceToken};
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.logout, req);
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.logout,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       _clearAllInfo();
     } catch (e) {
@@ -832,8 +672,10 @@ class ChatClient {
     try {
       ChatLog.v('changeAppKey');
       Map req = {'appKey': newAppKey};
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.changeAppKey, req);
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.changeAppKey,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       return result.boolValue(ChatMethodKeys.changeAppKey);
     } catch (e) {
@@ -867,8 +709,10 @@ class ChatClient {
     try {
       ChatLog.v('newAppId: $newAppId');
       Map req = {'appId': newAppId};
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.changeAppId, req);
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.changeAppId,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       return result.boolValue(ChatMethodKeys.changeAppKey);
     } catch (e) {
@@ -896,8 +740,9 @@ class ChatClient {
   Future<String> compressLogs() async {
     try {
       ChatLog.v('compressLogs:');
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.compressLogs);
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.compressLogs,
+      );
       ChatError.hasErrorFromResult(result);
       return result[ChatMethodKeys.compressLogs];
     } catch (e) {
@@ -905,84 +750,23 @@ class ChatClient {
     }
   }
 
-  @Deprecated('Use [fetchLoggedInDevices] instead')
-
   /// ~english
-  /// Gets the list of currently logged-in devices of a specified account.
-  ///
-  /// Param [userId] The user ID.
-  ///
-  /// Param [password] The password.
-  ///
-  /// **Return** The list of the logged-in devices.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
+  /// Gets the devices logged in to the specified account by token.
   /// ~end
   ///
   /// ~chinese
-  /// 获取指定账号下登录的在线设备列表。
-  ///
-  /// Param [userId] 用户 ID。
-  ///
-  /// Param [password] 密码。
-  ///
-  /// **Return**  获取到到设备列表。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  /// ~end
-  Future<List<ChatDeviceInfo>> getLoggedInDevicesFromServer(
-      {required String userId, required String password}) async {
-    try {
-      Map req = {'userId': userId, 'password': password};
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.getLoggedInDevicesFromServer, req);
-      ChatError.hasErrorFromResult(result);
-      List<ChatDeviceInfo> list = [];
-      result[ChatMethodKeys.getLoggedInDevicesFromServer]?.forEach((info) {
-        list.add(ChatDeviceInfo.fromJson(info));
-      });
-      return list;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Gets the list of currently logged-in devices of a specified account.
-  ///
-  /// Param [userId] The user ID.
-  ///
-  /// Param [pwdOrToken] The password or token.
-  ///
-  /// Param [isPwd] Whether a password or token is used: (Default)`true`: A password is used; `false`: A token is used.
-  ///
-  /// **Return** The list of the logged-in devices.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 获取指定账号下登录的在线设备列表。
-  ///
-  /// Param [userId] 用户 ID。
-  ///
-  /// Param [pwdOrToken] 密码或者 token。
-  ///
-  /// Param [isPwd] 是否使用密码或 token：（默认）`true`：使用密码；`false`：使用 token。
-  ///
-  /// **Return**  获取到到设备列表。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
+  /// 使用 Token 获取指定账号当前登录的设备列表。
   /// ~end
   Future<List<ChatDeviceInfo>> fetchLoggedInDevices({
     required String userId,
-    required String pwdOrToken,
-    bool isPwd = true,
+    required String token,
   }) async {
     try {
-      Map req = {'userId': userId, 'password': pwdOrToken, 'isPwd': isPwd};
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.getLoggedInDevicesFromServer, req);
+      Map req = {'userId': userId, 'token': token};
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.getLoggedInDevicesFromServer,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       List<ChatDeviceInfo> list = [];
       result[ChatMethodKeys.getLoggedInDevicesFromServer]?.forEach((info) {
@@ -995,44 +779,23 @@ class ChatClient {
   }
 
   /// ~english
-  /// Forces the specified account to log out from the specified device.
-  ///
-  /// Param [userId] The account you want to force to log out.
-  ///
-  /// Param [pwdOrToken] The password or token.
-  ///
-  /// Param [resource] The device ID. For how to fetch the device ID, See [ChatDeviceInfo.resource].
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
+  /// Forces the specified account to log out from one device by token.
   /// ~end
   ///
   /// ~chinese
-  /// 将指定账号登录的指定设备踢下线。
-  ///
-  /// Param [userId] 用户 ID。
-  ///
-  /// Param [pwdOrToken] 密码 / token。
-  ///
-  /// Param [resource] 设备 ID，详见 [ChatDeviceInfo.resource]。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
+  /// 使用 Token 将指定账号的一个设备踢下线。
   /// ~end
   Future<void> kickDevice({
     required String userId,
-    required String pwdOrToken,
+    required String token,
     required String resource,
-    bool isPwd = true,
   }) async {
     try {
-      ChatLog.v('kickDevice: $userId, "******"');
-      Map req = {
-        'userId': userId,
-        'password': pwdOrToken,
-        'resource': resource,
-        'isPwd': isPwd,
-      };
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.kickDevice, req);
+      Map req = {'userId': userId, 'token': token, 'resource': resource};
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.kickDevice,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -1040,38 +803,22 @@ class ChatClient {
   }
 
   /// ~english
-  /// Forces the specified account to log out from all devices.
-  ///
-  /// Param [userId] The account you want to force to log out from all the devices.
-  ///
-  /// Param [pwdOrToken] The password or token.
-  ///
-  /// Param [isPwd] Whether a password or token is used: (Default)`true`: A password is used; `false`: A token is used.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
+  /// Forces the specified account to log out from all devices by token.
   /// ~end
   ///
   /// ~chinese
-  /// 将指定账号登录的所有设备都踢下线。
-  ///
-  /// Param [userId] 用户 ID。
-  ///
-  /// Param [pwdOrToken] 密码 或 token。
-  ///
-  /// Param [isPwd] 是否使用密码或 token：（默认）`true`：使用密码；`false`：使用 token。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  ///
+  /// 使用 Token 将指定账号的全部设备踢下线。
   /// ~end
   Future<void> kickAllDevices({
     required String userId,
-    required String pwdOrToken,
-    bool isPwd = true,
+    required String token,
   }) async {
     try {
-      Map req = {'userId': userId, 'password': pwdOrToken, 'isPwd': isPwd};
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.kickAllDevices, req);
+      Map req = {'userId': userId, 'token': token};
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.kickAllDevices,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -1081,8 +828,10 @@ class ChatClient {
   Future<void> updateUsingHttpsOnlySetting(bool usingHttpsOnly) async {
     try {
       Map req = {'usingHttpsOnly': usingHttpsOnly};
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.updateUsingHttpsOnlySetting, req);
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.updateUsingHttpsOnlySetting,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       _options = _options?.copyWith(usingHttpsOnly: usingHttpsOnly);
     } catch (e) {
@@ -1100,8 +849,10 @@ class ChatClient {
   Future<void> updateLoginExtensionInfoSetting(String extension) async {
     try {
       Map req = {'extension': extension};
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.updateLoginExtensionInfo, req);
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.updateLoginExtensionInfo,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       _options = _options?.copyWith(loginExtension: extension);
     } catch (e) {
@@ -1110,28 +861,36 @@ class ChatClient {
   }
 
   Future<void> updateDeleteMessagesWhenLeaveGroupSetting(
-      bool deleteMessagesWhenLeaveGroup) async {
+    bool deleteMessagesWhenLeaveGroup,
+  ) async {
     try {
       Map req = {'deleteMessagesWhenLeaveGroup': deleteMessagesWhenLeaveGroup};
       Map result = await platform_interface.Client.instance.callNativeMethod(
-          ChatMethodKeys.updateDeleteMessagesWhenLeaveGroupSetting, req);
+        ChatMethodKeys.updateDeleteMessagesWhenLeaveGroupSetting,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       _options = _options?.copyWith(
-          deleteMessagesWhenLeaveGroup: deleteMessagesWhenLeaveGroup);
+        deleteMessagesWhenLeaveGroup: deleteMessagesWhenLeaveGroup,
+      );
     } catch (e) {
       rethrow;
     }
   }
 
   Future<void> updateDeleteMessageWhenLeaveRoomSetting(
-      bool deleteMessageWhenLeaveRoom) async {
+    bool deleteMessageWhenLeaveRoom,
+  ) async {
     try {
       Map req = {'deleteMessageWhenLeaveRoom': deleteMessageWhenLeaveRoom};
       Map result = await platform_interface.Client.instance.callNativeMethod(
-          ChatMethodKeys.updateDeleteMessageWhenLeaveRoomSetting, req);
+        ChatMethodKeys.updateDeleteMessageWhenLeaveRoomSetting,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       _options = _options?.copyWith(
-          deleteMessageWhenLeaveRoom: deleteMessageWhenLeaveRoom);
+        deleteMessageWhenLeaveRoom: deleteMessageWhenLeaveRoom,
+      );
     } catch (e) {
       rethrow;
     }
@@ -1140,8 +899,10 @@ class ChatClient {
   Future<void> updateRoomOwnerCanLeaveSetting(bool roomOwnerCanLeave) async {
     try {
       Map req = {'roomOwnerCanLeave': roomOwnerCanLeave};
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.updateRoomOwnerCanLeaveSetting, req);
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.updateRoomOwnerCanLeaveSetting,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       _options = _options?.copyWith(roomOwnerCanLeave: roomOwnerCanLeave);
     } catch (e) {
@@ -1150,54 +911,54 @@ class ChatClient {
   }
 
   Future<void> updateAutoAcceptGroupInvitationSetting(
-      bool autoAcceptGroupInvitation) async {
+    bool autoAcceptGroupInvitation,
+  ) async {
     try {
       Map req = {'autoAcceptGroupInvitation': autoAcceptGroupInvitation};
       Map result = await platform_interface.Client.instance.callNativeMethod(
-          ChatMethodKeys.updateAutoAcceptGroupInvitationSetting, req);
+        ChatMethodKeys.updateAutoAcceptGroupInvitationSetting,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       _options = _options?.copyWith(
-          autoAcceptGroupInvitation: autoAcceptGroupInvitation);
+        autoAcceptGroupInvitation: autoAcceptGroupInvitation,
+      );
     } catch (e) {
       rethrow;
     }
   }
 
   Future<void> updateAutoAcceptFriendInvitationSetting(
-      bool acceptInvitationAlways) async {
+    bool acceptInvitationAlways,
+  ) async {
     try {
       Map req = {'acceptInvitationAlways': acceptInvitationAlways};
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.updateAcceptInvitationAlways, req);
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.updateAcceptInvitationAlways,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
-      _options =
-          _options?.copyWith(acceptInvitationAlways: acceptInvitationAlways);
+      _options = _options?.copyWith(
+        acceptInvitationAlways: acceptInvitationAlways,
+      );
     } catch (e) {
       rethrow;
     }
   }
 
   Future<void> updateAutoDownloadAttachmentThumbnailSetting(
-      bool autoDownloadThumbnail) async {
+    bool autoDownloadThumbnail,
+  ) async {
     try {
       Map req = {'autoDownloadThumbnail': autoDownloadThumbnail};
       Map result = await platform_interface.Client.instance.callNativeMethod(
-          ChatMethodKeys.updateAutoDownloadAttachmentThumbnailSetting, req);
+        ChatMethodKeys.updateAutoDownloadAttachmentThumbnailSetting,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
-      _options =
-          _options?.copyWith(autoDownloadThumbnail: autoDownloadThumbnail);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  Future<void> updateRequireAckSetting(bool requireAck) async {
-    try {
-      Map req = {'requireAck': requireAck};
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.updateRequireAckSetting, req);
-      ChatError.hasErrorFromResult(result);
-      _options = _options?.copyWith(requireAck: requireAck);
+      _options = _options?.copyWith(
+        autoDownloadThumbnail: autoDownloadThumbnail,
+      );
     } catch (e) {
       rethrow;
     }
@@ -1206,8 +967,10 @@ class ChatClient {
   Future<void> updateDeliveryAckSetting(bool requireDeliveryAck) async {
     try {
       Map req = {'requireDeliveryAck': requireDeliveryAck};
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.updateDeliveryAckSetting, req);
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.updateDeliveryAckSetting,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       _options = _options?.copyWith(requireDeliveryAck: requireDeliveryAck);
     } catch (e) {
@@ -1216,28 +979,36 @@ class ChatClient {
   }
 
   Future<void> updateSortMessageByServerTimeSetting(
-      bool sortMessageByServerTime) async {
+    bool sortMessageByServerTime,
+  ) async {
     try {
       Map req = {'sortMessageByServerTime': sortMessageByServerTime};
       Map result = await platform_interface.Client.instance.callNativeMethod(
-          ChatMethodKeys.updateSortMessageByServerTimeSetting, req);
+        ChatMethodKeys.updateSortMessageByServerTimeSetting,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
-      _options =
-          _options?.copyWith(sortMessageByServerTime: sortMessageByServerTime);
+      _options = _options?.copyWith(
+        sortMessageByServerTime: sortMessageByServerTime,
+      );
     } catch (e) {
       rethrow;
     }
   }
 
   Future<void> updateMessagesReceiveCallbackIncludeSendSetting(
-      bool includeSend) async {
+    bool includeSend,
+  ) async {
     try {
       Map req = {'includeSend': includeSend};
       Map result = await platform_interface.Client.instance.callNativeMethod(
-          ChatMethodKeys.updateMessagesReceiveCallbackIncludeSendSetting, req);
+        ChatMethodKeys.updateMessagesReceiveCallbackIncludeSendSetting,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
-      _options =
-          _options?.copyWith(messagesReceiveCallbackIncludeSend: includeSend);
+      _options = _options?.copyWith(
+        messagesReceiveCallbackIncludeSend: includeSend,
+      );
     } catch (e) {
       rethrow;
     }
@@ -1246,8 +1017,10 @@ class ChatClient {
   Future<void> updateRegradeMessagesAsReadSetting(bool isRead) async {
     try {
       Map req = {'isRead': isRead};
-      Map result = await platform_interface.Client.instance
-          .callNativeMethod(ChatMethodKeys.updateRegradeMessagesSetting, req);
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.updateRegradeMessagesSetting,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       _options = _options?.copyWith(regardImportMessagesAsRead: isRead);
     } catch (e) {

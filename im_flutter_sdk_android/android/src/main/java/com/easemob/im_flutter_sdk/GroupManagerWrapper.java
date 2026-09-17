@@ -9,9 +9,9 @@ import io.flutter.plugin.common.MethodChannel.Result;
 
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMGroup;
-import com.hyphenate.chat.EMGroupInfo;
+import com.hyphenate.chat.EMGroupConfigs;
+import com.hyphenate.chat.EMGroupManager;
 import com.hyphenate.chat.EMGroupMemberInfo;
-import com.hyphenate.chat.EMGroupOptions;
 import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.exceptions.HyphenateException;
 
@@ -20,6 +20,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -49,12 +50,10 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
                 getGroupWithId(param, call.method, result);
             } else if (MethodKey.getJoinedGroups.equals(call.method)) {
                 getJoinedGroups(param, call.method, result);
-            } else if (MethodKey.getJoinedGroupsFromServer.equals(call.method)) {
-                getJoinedGroupsFromServer(param, call.method, result);
-            } else if (MethodKey.getPublicGroupsFromServer.equals(call.method)) {
-                getPublicGroupsFromServer(param, call.method, result);
             } else if (MethodKey.createGroup.equals(call.method)) {
                 createGroup(param, call.method, result);
+            } else if (MethodKey.updateGroupConfigs.equals(call.method)) {
+                updateGroupConfigs(param, call.method, result);
             } else if (MethodKey.getGroupSpecificationFromServer.equals(call.method)) {
                 getGroupSpecificationFromServer(param, call.method, result);
             } else if (MethodKey.getGroupMemberListFromServer.equals(call.method)) {
@@ -197,62 +196,6 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
         });
     }
 
-    private void getJoinedGroupsFromServer(JSONObject param, String channelName, Result result) throws JSONException {
-
-        int pageSize = 0;
-        if (param.has("pageSize")){
-            pageSize = param.getInt("pageSize");
-        }
-        int pageNum = 0;
-        if (param.has("pageNum")){
-            pageNum = param.getInt("pageNum");
-        }
-
-        boolean needMemberCount = false;
-        if (param.has("needMemberCount")) {
-            needMemberCount = param.getBoolean("needMemberCount");
-        }
-
-        boolean needRole = false;
-        if (param.has("needRole")) {
-            needRole = param.getBoolean("needRole");
-        }
-
-        EMValueWrapperCallBack<List<EMGroup>> callBack = new EMValueWrapperCallBack<List<EMGroup>>(result,
-                channelName) {
-            @Override
-            public void onSuccess(List<EMGroup> object) {
-                List<Map> groupList = new ArrayList<>();
-                for (EMGroup group : object) {
-                    groupList.add(GroupHelper.toJson(group));
-                }
-                updateObject(groupList);
-            }
-        };
-
-        EMClient.getInstance().groupManager().asyncGetJoinedGroupsFromServer(pageNum, pageSize, needMemberCount, needRole,callBack);
-    }
-
-    private void getPublicGroupsFromServer(JSONObject param, String channelName, Result result) throws JSONException {
-        int pageSize = 0;
-        if (param.has("pageSize")){
-            pageSize = param.getInt("pageSize");
-        }
-        String cursor = null;
-        if (param.has("cursor")){
-            cursor = param.getString("cursor");
-        }
-        EMValueWrapperCallBack<EMCursorResult<EMGroupInfo>> callBack = new EMValueWrapperCallBack<EMCursorResult<EMGroupInfo>>(
-                result, channelName) {
-            @Override
-            public void onSuccess(EMCursorResult<EMGroupInfo> object) {
-                updateObject(CursorResultHelper.toJson(object));
-            }
-        };
-
-        EMClient.getInstance().groupManager().asyncGetPublicGroupsFromServer(pageSize, cursor, callBack);
-    }
-
     private void createGroup(JSONObject param, String channelName, Result result) throws JSONException {
         String groupName = null;
 
@@ -287,7 +230,7 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
             inviteReason = param.getString("inviteReason");
         }
 
-        EMGroupOptions options = GroupOptionsHelper.fromJson(param.getJSONObject("options"));
+        EMGroupConfigs configs = GroupConfigsHelper.fromJson(param.getJSONObject("configs"));
 
         EMValueWrapperCallBack<EMGroup> callBack = new EMValueWrapperCallBack<EMGroup>(result, channelName) {
             @Override
@@ -295,21 +238,53 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
                 updateObject(GroupHelper.toJson(object));
             }
         };
-        EMClient.getInstance().groupManager().asyncCreateGroup(groupName, avatarUrl, desc, members, inviteReason, options, callBack);
+        EMClient.getInstance().groupManager().asyncCreateGroup(groupName, avatarUrl, desc, members, inviteReason, configs, callBack);
+    }
+
+    // 5.0.0
+    private void updateGroupConfigs(JSONObject param, String channelName, Result result) throws JSONException {
+        String groupId = param.getString("groupId");
+        EnumSet<EMGroupManager.EMGroupConfigsType> types = groupConfigsTypesFromMask(param.getInt("types"));
+        EMGroupConfigs configs = GroupConfigsHelper.fromJson(param.getJSONObject("configs"));
+        EMClient.getInstance().groupManager().asyncUpdateGroupConfigs(groupId, types, configs,
+                new EMValueWrapperCallBack<EMGroup>(result, channelName) {
+                    @Override
+                    public void onSuccess(EMGroup group) {
+                        updateObject(GroupHelper.toJson(group));
+                    }
+                });
+    }
+
+    private EnumSet<EMGroupManager.EMGroupConfigsType> groupConfigsTypesFromMask(int mask) {
+        EnumSet<EMGroupManager.EMGroupConfigsType> types =
+                EnumSet.noneOf(EMGroupManager.EMGroupConfigsType.class);
+        if ((mask & 1) != 0) {
+            types.add(EMGroupManager.EMGroupConfigsType.ALLOW_INVITES);
+        }
+        if ((mask & 2) != 0) {
+            types.add(EMGroupManager.EMGroupConfigsType.MAX_USERS);
+        }
+        if ((mask & 4) != 0) {
+            types.add(EMGroupManager.EMGroupConfigsType.INVITE_NEED_CONFIRM);
+        }
+        if ((mask & 8) != 0) {
+            types.add(EMGroupManager.EMGroupConfigsType.JOIN_APPROVAL_REQUIRED);
+        }
+        if ((mask & 16) != 0) {
+            types.add(EMGroupManager.EMGroupConfigsType.IS_PUBLIC);
+        }
+        if ((mask & 32) != 0) {
+            types.add(EMGroupManager.EMGroupConfigsType.EXT);
+        }
+        return types;
     }
 
     private void getGroupSpecificationFromServer(JSONObject param, String channelName, Result result)
             throws JSONException {
         String groupId = param.getString("groupId");
-        final boolean fetchMembers = param.optBoolean("fetchMembers", false);
         asyncRunnable(() -> {
             try {
-                EMGroup group;
-                if(fetchMembers) {
-                    group = EMClient.getInstance().groupManager().getGroupFromServer(groupId, true);
-                }else {
-                    group = EMClient.getInstance().groupManager().getGroupFromServer(groupId);
-                }
+                EMGroup group = EMClient.getInstance().groupManager().getGroupFromServer(groupId);
                 onSuccess(result, channelName, GroupHelper.toJson(group));
             } catch (HyphenateException e) {
                 onError(result, e);
@@ -706,7 +681,12 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
         }
 
         EMClient.getInstance().groupManager().asyncUploadGroupSharedFile(groupId, filePath,
-                new EMWrapperCallBack(result, channelName, true));
+                new EMValueWrapperCallBack<EMMucSharedFile>(result, channelName) {
+                    @Override
+                    public void onSuccess(EMMucSharedFile sharedFile) {
+                        updateObject(null);
+                    }
+                });
     }
 
     private void downloadGroupSharedFile(JSONObject param, String channelName, Result result) throws JSONException {
@@ -787,7 +767,7 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
         asyncRunnable(()->{
             try{
                 EMGroup group = EMClient.getInstance().groupManager().getGroupFromServer(groupId);
-                if (group.isMemberOnly()){
+                if (!group.isPublic() || group.isJoinApprovalRequired()) {
                     throw new HyphenateException(603,"User has no permission for this operation");
                 }
                 EMClient.getInstance().groupManager().joinGroup(groupId);
@@ -1044,17 +1024,13 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
             }
 
             @Override
-            public void onRequestToJoinDeclined(String groupId, String groupName, String decliner, String reason) {
-
-            }
-
-            @Override
             public void onRequestToJoinDeclined(String groupId, String groupName, String decliner, String reason, String applicant) {
                 ListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
                             data.put("type", "onGroupRequestToJoinDeclined");
                             data.put("groupId", groupId);
+                            data.put("groupName", groupName);
                             data.put("applicant", applicant);
                             data.put("decliner", decliner);
                             data.put("reason", reason);
@@ -1200,32 +1176,6 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
                             data.put("groupId", groupId);
                             data.put("newOwner", newOwner);
                             data.put("oldOwner", oldOwner);
-                            post(() -> channel.invokeMethod(MethodKey.onGroupChanged, data));
-                        }
-                );
-            }
-
-            @Override
-            public void onMemberJoined(String groupId, String member) {
-                ListenerHandle.getInstance().addHandle(
-                        ()-> {
-                            Map<String, Object> data = new HashMap<>();
-                            data.put("type", "onGroupMemberJoined");
-                            data.put("groupId", groupId);
-                            data.put("member", member);
-                            post(() -> channel.invokeMethod(MethodKey.onGroupChanged, data));
-                        }
-                );
-            }
-
-            @Override
-            public void onMemberExited(String groupId, String member) {
-                ListenerHandle.getInstance().addHandle(
-                        ()-> {
-                            Map<String, Object> data = new HashMap<>();
-                            data.put("type", "onGroupMemberExited");
-                            data.put("groupId", groupId);
-                            data.put("member", member);
                             post(() -> channel.invokeMethod(MethodKey.onGroupChanged, data));
                         }
                 );

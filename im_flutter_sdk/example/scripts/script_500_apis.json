@@ -1,0 +1,51 @@
+{
+  "steps": [
+    {
+      "api": "ChatManager.clearAllConversationUnreadMessageCount",
+      "params": {}
+    },
+    {
+      "api": "ChatManager.clearConversationUnreadMessageCount",
+      "params": {"conversationId": "$config.userId01"}
+    },
+    {
+      "api": "ChatManager.sendMessageReadReceipts",
+      "params": {
+        "messages": [
+          {
+            "msgId": "not-exist-msg-id-500",
+            "to": "$config.userId01",
+            "chatType": 0,
+            "direction": 1,
+            "status": 2,
+            "body": {"type": 0, "content": "missing receipt message"}
+          }
+        ]
+      }
+    },
+    {
+      "api": "ChatManager.getGroupMessageReadReceipts",
+      "params": {
+        "messages": [
+          {
+            "msgId": "not-exist-group-msg-id-500",
+            "to": "$config.groupId01",
+            "chatType": 1,
+            "direction": 1,
+            "status": 2,
+            "body": {"type": 0, "content": "missing group receipt message"}
+          }
+        ]
+      }
+    },
+    {
+      "api": "ChatManager.fetchGroupMessageReadReceipts",
+      "params": {
+        "messageId": "not-exist-group-msg-id-500",
+        "groupId": "$config.groupId01",
+        "cursor": "",
+        "pageSize": 20
+      }
+    }
+  ]
+}

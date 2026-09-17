@@ -6,10 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.hyphenate.EMContactListener;
-import com.hyphenate.EMError;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMContact;
-import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.exceptions.HyphenateException;
 
 import org.json.JSONException;
@@ -38,8 +36,6 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
                 addContact(param, call.method, result);
             } else if (MethodKey.deleteContact.equals(call.method)) {
                 deleteContact(param, call.method, result);
-            } else if (MethodKey.getAllContactsFromServer.equals(call.method)) {
-                getAllContactsFromServer(param, call.method, result);
             } else if (MethodKey.getAllContactsFromDB.equals(call.method)) {
                 getAllContactsFromDB(param, call.method, result);
             } else if (MethodKey.addUserToBlockList.equals(call.method)) {
@@ -62,10 +58,6 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
                 setContactRemark(param, call.method, result);
             }else if (MethodKey.getContact.equals(call.method)) {
                 getContact(param, call.method, result);
-            }else if (MethodKey.fetchAllContacts.equals(call.method)) {
-                fetchAllContacts(param, call.method, result);
-            }else if (MethodKey.fetchContacts.equals(call.method)) {
-                fetchContacts(param, call.method, result);
             }
             else {
                 super.onMethodCall(call, result);
@@ -99,17 +91,6 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
             try {
                 EMClient.getInstance().contactManager().deleteContact(username, keepConversation);
                 onSuccess(result, channelName, username);
-            } catch (HyphenateException e) {
-                onError(result, e);
-            }
-        });
-    }
-
-    private void getAllContactsFromServer(JSONObject params, String channelName, Result result) throws JSONException {
-        asyncRunnable(() -> {
-            try {
-                List contacts = EMClient.getInstance().contactManager().getAllContactsFromServer();
-                onSuccess(result, channelName, contacts);
             } catch (HyphenateException e) {
                 onError(result, e);
             }
@@ -239,35 +220,6 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
         });
     }
 
-    private void fetchAllContacts(JSONObject params, String channelName, Result result) throws JSONException {
-        EMClient.getInstance().contactManager().asyncFetchAllContactsFromServer(new EMValueWrapperCallBack<List<EMContact>>(result, channelName) {
-            @Override
-            public void onSuccess(List<EMContact> list){
-                List<Map> contactList = new ArrayList<>();
-                for (EMContact contact : list) {
-                    contactList.add(ContactHelper.toJson(contact));
-                }
-                updateObject(contactList);
-            }
-        });
-    }
-
-    private void fetchContacts(JSONObject params, String channelName, Result result) throws JSONException {
-        int pageSize = params.getInt("pageSize");
-        String cursor = null;
-        if (params.has("cursor")) {
-            cursor = params.getString("cursor");
-        }
-
-        EMClient.getInstance().contactManager().asyncFetchAllContactsFromServer(pageSize, cursor, new EMValueWrapperCallBack<EMCursorResult<EMContact>>(result, channelName){
-            @Override
-            public void onSuccess(EMCursorResult<EMContact> object) {
-                super.updateObject(CursorResultHelper.toJson(object));
-            }
-        });
-    }
-
-
     private void registerEaseListener() {
 
         if (contactListener != null) {
@@ -331,35 +283,6 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
                             Map<String, Object> data = new HashMap<>();
                             data.put("type", "onFriendRequestDeclined");
                             data.put("userId", userName);
-                            post(() -> channel.invokeMethod(MethodKey.onContactChanged, data));
-                        }
-                );
-            }
-
-            // 4.22.0
-            @Override
-            public void onContactSyncStart() {
-                ListenerHandle.getInstance().addHandle(
-                        ()-> {
-                            Map<String, Object> data = new HashMap<>();
-                            data.put("type", "onContactSyncStart");
-                            post(() -> channel.invokeMethod(MethodKey.onContactChanged, data));
-                        }
-                );
-            }
-
-            // 4.22.0
-            @Override
-            public void onContactSyncFinishWithError(int errorCode, String error) {
-                ListenerHandle.getInstance().addHandle(
-                        ()-> {
-                            Map<String, Object> data = new HashMap<>();
-                            data.put("type", "onContactSyncFinish");
-                            if (errorCode == EMError.EM_NO_ERROR) {
-                                data.put("error", null);
-                            }else {
-                                data.put("error", ErrorHelper.toJson(errorCode, error));
-                            }
                             post(() -> channel.invokeMethod(MethodKey.onContactChanged, data));
                         }
                 );

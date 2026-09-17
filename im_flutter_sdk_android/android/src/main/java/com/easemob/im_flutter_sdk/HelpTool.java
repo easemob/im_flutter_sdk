@@ -9,11 +9,9 @@ public class HelpTool {
         dbMsg.setMsgTime(msg.getMsgTime());
         dbMsg.setLocalTime(msg.localTime());
         dbMsg.setStatus(msg.status());
-        dbMsg.setAcked(msg.isAcked());
         dbMsg.setIsChatThreadMessage(msg.isChatThreadMessage());
-        dbMsg.setIsNeedGroupAck(msg.isNeedGroupAck());
-        dbMsg.setDeliverAcked(msg.isDelivered());
-        dbMsg.setUnread(msg.isUnread());
+        dbMsg.setIsNeedReadReceipt(msg.isNeedReadReceipt());
+        dbMsg.setDelivered(msg.isDelivered());
         dbMsg.setListened(msg.isListened());
         dbMsg.setReceiverList(msg.receiverList());
         dbMsg.deliverOnlineOnly(msg.isDeliverOnlineOnly());

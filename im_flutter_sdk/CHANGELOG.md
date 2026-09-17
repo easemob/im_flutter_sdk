@@ -1,3 +1,13 @@
+## 5.0.0
+- iOS/Android 依赖 SDK 升级到 5.0.0；
+- 登录仅支持 Token，移除注册、密码登录、自动登录和密码设备管理 API；
+- 新增登录后数据同步配置、数据同步事件和数据库打开事件；
+- 重构消息已读回执：新增批量发送/查询回执与清除会话未读数 API，统一单聊和群聊回执模型；
+- 重构群组配置模型，新增 `ChatGroupConfigs` 和 `updateGroupConfigs`；
+- 移除会话、好友、已加入群组和公开群组的旧服务端拉取 API，改用自动同步后的本地数据；
+- 移除客户端举报消息及创建、解散聊天室 API；
+- `getUnreadMessageCount` 不再统计聊天室、Thread 和免打扰会话；
+
 ## 4.24.0
 - 新增服务端消息搜索 `searchMessagesFromServer` API；
 - `ChatMessage` 新增 `webhookEnv` 属性，支持消息回调路由环境标识；

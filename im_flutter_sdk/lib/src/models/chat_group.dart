@@ -30,9 +30,11 @@ class ChatGroup {
     this.isAllMemberMuted,
     this.permissionType,
     this.maxUserCount,
-    this.isMemberOnly,
+    this.isPublic,
+    this.isJoinApprovalRequired,
     this.isMemberAllowToInvite,
     this.extension,
+    this.configs,
     this.isDisabled = false,
   });
 
@@ -286,8 +288,6 @@ class ChatGroup {
   /// ~end
   final bool? isAllMemberMuted;
 
-  ChatGroupOptions? _options;
-
   /// ~english
   /// Gets the current user's role in group.
   ///
@@ -323,32 +323,22 @@ class ChatGroup {
   final int? maxUserCount;
 
   /// ~english
-  /// Checks whether users cannot join a chat group freely:
-  /// - `true`: Yes. Needs the approval from the group owner(admin) or being invited by group members(PrivateOnlyOwnerInvite, PrivateMemberCanInvite, PublicJoinNeedApproval).
-  /// - `false`: No. Users can join freely [ChatGroupStyle.PublicOpenJoin].
-  ///
-  /// **Note**
-  /// There are four types of group properties used to define the style of a group: [ChatGroupStyle].
-  ///
-  /// **Return**
-  /// Whether users can join a chat group with only the approval of the group owner(admin):
-  /// - `true`: Yes. Needs the approval from the group owner(admin) or being invited by group members.
-  /// - `false`: No.
+  /// Whether the group is public.
   /// ~end
   ///
   /// ~chinese
-  /// 从内存中获取群组类型：成员是否能自由加入，还是需要申请或者被邀请。
-  ///
-  /// 群组有四个类型属性，`isMemberOnly`是除了 [ChatGroupStyle.PublicOpenJoin] 之外的三种属性，表示该群不是自由加入的群组。
-  ///
-  /// **Note**
-  /// 如需最新数据，需先从服务器获取： [ChatGroupManager.fetchGroupInfoFromServer]。
-  ///
-  /// **Return**
-  ///  - `true`：进群需要群主邀请，群成员邀请，或者群主和管理员同意入群申请；
-  /// - `false`：意味着用户可以自由加入群，不需要申请和被邀请。
+  /// 群组是否为公开群。
   /// ~end
-  final bool? isMemberOnly;
+  final bool? isPublic;
+
+  /// ~english
+  /// Whether joining the public group requires approval.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 加入公开群是否需要审批。
+  /// ~end
+  final bool? isJoinApprovalRequired;
 
   /// ~english
   /// Checks whether a group member is allowed to invite other users to join the group.
@@ -391,9 +381,14 @@ class ChatGroup {
   /// ~end
   final bool isDisabled;
 
-  @Deprecated(
-      "Switch to using isMemberOnly | isMemberAllowToInvite | maxUserCount to instead")
-  ChatGroupOptions? get settings => _options;
+  /// ~english
+  /// The group configurations.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 群组配置。
+  /// ~end
+  final ChatGroupConfigs? configs;
 
   factory ChatGroup.fromJson(Map map) {
     String groupId = map['groupId'];
@@ -412,10 +407,14 @@ class ChatGroup {
     ChatGroupPermissionType? permissionType =
         ChatGroupPermissionTypeExtension.values(map['permissionType']);
     int? maxUserCount = map["maxUserCount"];
-    bool? isMemberOnly = map["isMemberOnly"];
+    bool? isPublic = map["isPublic"];
+    bool? isJoinApprovalRequired = map["isJoinApprovalRequired"];
     bool? isMemberAllowToInvite = map["isMemberAllowToInvite"];
     bool? isDisabled = map["isDisabled"];
     String? extension = map["ext"];
+    ChatGroupConfigs? configs = map['configs'] == null
+        ? null
+        : ChatGroupConfigs.fromJson(map['configs']);
 
     return ChatGroup(
       groupId: groupId,
@@ -437,9 +436,11 @@ class ChatGroup {
       isAllMemberMuted: isAllMemberMuted,
       permissionType: permissionType,
       maxUserCount: maxUserCount,
-      isMemberOnly: isMemberOnly,
+      isPublic: isPublic,
+      isJoinApprovalRequired: isJoinApprovalRequired,
       isMemberAllowToInvite: isMemberAllowToInvite,
       extension: extension,
+      configs: configs,
       isDisabled: isDisabled ?? false,
     );
   }
@@ -462,7 +463,12 @@ class ChatGroup {
     data.putIfNotNull("messageBlocked", messageBlocked);
     data.putIfNotNull("isDisabled", isDisabled);
     data.putIfNotNull("isAllMemberMuted", isAllMemberMuted);
-    data.putIfNotNull("options", _options?.toJson());
+    data.putIfNotNull("maxUserCount", maxUserCount);
+    data.putIfNotNull("isPublic", isPublic);
+    data.putIfNotNull("isJoinApprovalRequired", isJoinApprovalRequired);
+    data.putIfNotNull("isMemberAllowToInvite", isMemberAllowToInvite);
+    data.putIfNotNull("ext", extension);
+    data.putIfNotNull("configs", configs?.toJson());
     if (permissionType?.index != null) {
       data.putIfNotNull("permissionType", (permissionType!.index - 1));
     }
@@ -499,17 +505,11 @@ class ChatGroupInfo {
   /// ~end
   final String? name;
 
-  ChatGroupInfo._private({
-    required this.groupId,
-    required this.name,
-  });
+  ChatGroupInfo._private({required this.groupId, required this.name});
 
   factory ChatGroupInfo.fromJson(Map map) {
     String groupId = map["groupId"];
     String? groupName = map["name"];
-    return ChatGroupInfo._private(
-      groupId: groupId,
-      name: groupName,
-    );
+    return ChatGroupInfo._private(groupId: groupId, name: groupName);
   }
 }

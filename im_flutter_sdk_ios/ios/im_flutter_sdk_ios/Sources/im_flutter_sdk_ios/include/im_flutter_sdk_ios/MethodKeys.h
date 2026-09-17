@@ -9,10 +9,8 @@
 
 #pragma mark - EMClientWrapper
 static NSString *const ChatInit = @"init";
-static NSString *const ChatCreateAccount = @"createAccount";
 static NSString *const ChatLogin = @"login";
 static NSString *const ChatRenewToken = @"renewToken";
-static NSString *const ChatLoginWithAgoraToken = @"loginWithAgoraToken";
 static NSString *const ChatLogout = @"logout";
 static NSString *const ChatChangeAppKey = @"changeAppKey";
 
@@ -25,7 +23,6 @@ static NSString *const ChatGetLoggedInDevicesFromServer = @"getLoggedInDevicesFr
 static NSString *const ChatGetToken = @"getToken";
 static NSString *const ChatGetCurrentUser = @"getCurrentUser";
 static NSString *const ChatGetCurrentDeviceId = @"getCurrentDeviceId";
-static NSString *const ChatIsLoggedInBefore = @"isLoggedInBefore";
 static NSString *const ChatIsConnected = @"isConnected";
 
 static NSString *const ChatOnMultiDeviceGroupEvent = @"onMultiDeviceGroupEvent";
@@ -49,11 +46,14 @@ static NSString *const ChatSendDataToFlutter = @"onSendDataToFlutter";
 static NSString *const ChatOnTokenWillExpire = @"onTokenWillExpire";
 static NSString *const ChatOnTokenDidExpire = @"onTokenDidExpire";
 static NSString *const ChatOnAppActiveNumberReachLimit = @"onAppActiveNumberReachLimit";
+// 5.0.0
+static NSString *const ChatOnDataSyncStart = @"onDataSyncStart";
+static NSString *const ChatOnDataSyncFinish = @"onDataSyncFinish";
+static NSString *const ChatOnDatabaseOpened = @"onDatabaseOpened";
 
 #pragma mark - EMContactManagerWrapper
 static NSString *const ChatAddContact = @"addContact";
 static NSString *const ChatDeleteContact = @"deleteContact";
-static NSString *const ChatGetAllContactsFromServer = @"getAllContactsFromServer";
 static NSString *const ChatGetAllContactsFromDB = @"getAllContactsFromDB";
 static NSString *const ChatAddUserToBlockList = @"addUserToBlockList";
 static NSString *const ChatRemoveUserFromBlockList = @"removeUserFromBlockList";
@@ -65,8 +65,6 @@ static NSString *const ChatGetSelfIdsOnOtherPlatform = @"getSelfIdsOnOtherPlatfo
 static NSString *const ChatGetAllContacts = @"getAllContacts";
 static NSString *const ChatSetContactRemark = @"setContactRemark";
 static NSString *const ChatGetContact = @"getContact";
-static NSString *const ChatFetchAllContacts = @"fetchAllContacts";
-static NSString *const ChatFetchContacts = @"fetchContacts";
 
 
 #pragma mark - EMContactDelegate
@@ -75,13 +73,15 @@ static NSString *const ChatOnContactChanged = @"onContactChanged";
 #pragma mark - EMChatManagerWrapper
 static NSString *const ChatSendMessage = @"sendMessage";
 static NSString *const ChatResendMessage = @"resendMessage";
-static NSString *const ChatAckMessageRead = @"ackMessageRead";
-static NSString *const ChatAckGroupMessageRead = @"ackGroupMessageRead";
-static NSString *const ChatAckConversationRead = @"ackConversationRead";
+// 5.0.0
+static NSString *const ChatSendMessageReadReceipts = @"sendMessageReadReceipts";
+static NSString *const ChatClearConversationUnreadMessageCount = @"clearConversationUnreadMessageCount";
+static NSString *const ChatClearAllConversationUnreadMessageCount = @"clearAllConversationUnreadMessageCount";
+static NSString *const ChatGetGroupMessageReadReceipts = @"getGroupMessageReadReceipts";
+static NSString *const ChatFetchGroupMessageReadReceipts = @"fetchGroupMessageReadReceipts";
 static NSString *const ChatRecallMessage = @"recallMessage";
 static NSString *const ChatGetConversation = @"getConversation";
 static NSString *const ChatGetThreadConversation = @"getThreadConversation";
-static NSString *const ChatMarkAllChatMsgAsRead = @"markAllChatMsgAsRead";
 static NSString *const ChatGetUnreadMessageCount = @"getUnreadMessageCount";
 static NSString *const ChatUpdateChatMessage = @"updateChatMessage";
 static NSString *const ChatDownloadAttachment = @"downloadAttachment";
@@ -90,14 +90,11 @@ static NSString *const ChatDownloadMessageAttachmentInCombine = @"downloadMessag
 static NSString *const ChatDownloadMessageThumbnailInCombine = @"downloadMessageThumbnailInCombine";
 static NSString *const ChatImportMessages = @"importMessages";
 static NSString *const ChatLoadAllConversations = @"loadAllConversations";
-static NSString *const ChatGetConversationsFromServer = @"getConversationsFromServer";
 
 static NSString *const ChatDeleteConversation = @"deleteConversation";
-static NSString *const ChatFetchHistoryMessages = @"fetchHistoryMessages";
 static NSString *const ChatFetchHistoryMessagesByOptions = @"fetchHistoryMessagesByOptions";
 static NSString *const ChatSearchChatMsgFromDB = @"searchChatMsgFromDB";
 static NSString *const ChatGetMessage = @"getMessage";
-static NSString *const ChatAsyncFetchGroupAcks = @"asyncFetchGroupAcks";
 static NSString *const ChatDeleteRemoteConversation = @"deleteRemoteConversation";
 static NSString *const ChatDeleteMessagesBeforeTimestamp = @"deleteMessagesBeforeTimestamp";
 
@@ -108,13 +105,9 @@ static NSString *const ChatAddReaction = @"addReaction";
 static NSString *const ChatRemoveReaction = @"removeReaction";
 static NSString *const ChatFetchReactionList = @"fetchReactionList";
 static NSString *const ChatFetchReactionDetail = @"fetchReactionDetail";
-static NSString *const ChatReportMessage = @"reportMessage";
-static NSString *const ChatFetchConversationsFromServerWithPage = @"fetchConversationsFromServerWithPage";
 static NSString *const ChatRemoveMessagesFromServerWithMsgIds = @"removeMessagesFromServerWithMsgIds";
 static NSString *const ChatRemoveMessagesFromServerWithTs = @"removeMessagesFromServerWithTs";
 
-static NSString *const GetConversationsFromServerWithCursor = @"getConversationsFromServerWithCursor";
-static NSString *const GetPinnedConversationsFromServerWithCursor = @"getPinnedConversationsFromServerWithCursor";
 static NSString *const PinConversation = @"pinConversation";
 static NSString *const modifyMessage = @"modifyMessage";
 static NSString *const downloadAndParseCombineMessage = @"downloadAndParseCombineMessage";
@@ -124,14 +117,12 @@ static NSString *const downloadAndParseCombineMessage = @"downloadAndParseCombin
 static NSString *const ChatOnMessagesReceived = @"onMessagesReceived";
 static NSString *const ChatOnStreamMessagesReceived = @"onStreamMessagesReceived";
 static NSString *const ChatOnCmdMessagesReceived = @"onCmdMessagesReceived";
-static NSString *const ChatOnMessagesRead = @"onMessagesRead";
-static NSString *const ChatOnGroupMessageRead = @"onGroupMessageRead";
-static NSString *const ChatOnReadAckForGroupMessageUpdated = @"onReadAckForGroupMessageUpdated";
+// 5.0.0
+static NSString *const ChatOnMessageReadReceipts = @"onMessageReadReceipts";
 static NSString *const ChatOnMessagesDelivered = @"onMessagesDelivered";
 static NSString *const ChatOnMessagesRecalled = @"onMessagesRecalled";
 
 static NSString *const ChatOnConversationUpdate = @"onConversationUpdate";
-static NSString *const ChatOnConversationHasRead = @"onConversationHasRead";
 
 static NSString *const ChatOnMessageReactionDidChange = @"messageReactionDidChange";
 
@@ -143,15 +134,12 @@ static NSString *const onMessageContentChanged = @"onMessageContentChanged";
 static NSString *const ChatOnMessageProgressUpdate = @"onMessageProgressUpdate";
 static NSString *const ChatOnMessageSuccess = @"onMessageSuccess";
 static NSString *const ChatOnMessageError = @"onMessageError";
-static NSString *const ChatOnMessageReadAck = @"onMessageReadAck";
 static NSString *const ChatOnMessageDeliveryAck = @"onMessageDeliveryAck";
 
 
 #pragma mark - EMConversationWrapper
 
 static NSString *const ChatGetUnreadMsgCount = @"getUnreadMsgCount";
-static NSString *const ChatMarkAllMsgsAsRead = @"markAllMessagesAsRead";
-static NSString *const ChatMarkMsgAsRead = @"markMessageAsRead";
 static NSString *const ChatSyncConversationExt = @"syncConversationExt";
 static NSString *const ChatRemoveMsg = @"removeMessage";
 static NSString *const ChatDeleteMessageByIds = @"deleteMessageByIds";
@@ -173,7 +161,6 @@ static NSString *const ChatRemoveMsgFromServerWithTimeStamp = @"removeMsgFromSer
 
 #pragma mark - EMChatMessageWrapper
 static NSString *const ChatGetReactionList = @"getReactionList";
-static NSString *const ChatGroupAckCount = @"groupAckCount";
 static NSString *const ChatThread = @"chatThread";
 
 
@@ -186,8 +173,6 @@ static NSString *const ChatGetChatroomsFromServer = @"fetchPublicChatRoomsFromSe
 static NSString *const ChatFetchChatRoomFromServer = @"fetchChatRoomInfoFromServer";
 static NSString *const ChatGetChatRoom = @"getChatRoom";
 static NSString *const ChatGetAllChatRooms = @"getAllChatRooms";
-static NSString *const ChatCreateChatRoom = @"createChatRoom";
-static NSString *const ChatDestroyChatRoom = @"destroyChatRoom";
 static NSString *const ChatChatRoomUpdateSubject = @"changeChatRoomSubject";
 static NSString *const ChatChatRoomUpdateDescription = @"changeChatRoomDescription";
 static NSString *const ChatGetChatroomMemberListFromServer = @"fetchChatRoomMembers";
@@ -221,9 +206,9 @@ static NSString *const ChatChatroomChanged = @"onChatRoomChanged";
 
 static NSString *const ChatGetGroupWithId = @"getGroupWithId";
 static NSString *const ChatGetJoinedGroups = @"getJoinedGroups";
-static NSString *const ChatGetJoinedGroupsFromServer = @"getJoinedGroupsFromServer";
-static NSString *const ChatGetPublicGroupsFromServer = @"getPublicGroupsFromServer";
 static NSString *const ChatCreateGroup = @"createGroup";
+// 5.0.0
+static NSString *const ChatUpdateGroupConfigs = @"updateGroupConfigs";
 static NSString *const ChatGetGroupSpecificationFromServer = @"getGroupSpecificationFromServer";
 static NSString *const ChatGetGroupMemberListFromServer = @"getGroupMemberListFromServer";
 static NSString *const ChatGetGroupBlockListFromServer = @"getGroupBlockListFromServer";
@@ -341,7 +326,6 @@ static NSString *const pinnedMessages = @"pinnedMessages";
 static NSString *const onMessagePinChanged = @"onMessagePinChanged";
 static NSString *const addRemoteAndLocalConversationsMark = @"addRemoteAndLocalConversationsMark";
 static NSString *const deleteRemoteAndLocalConversationsMark = @"deleteRemoteAndLocalConversationsMark";
-static NSString *const fetchConversationsByOptions = @"fetchConversationsByOptions";
 static NSString *const deleteAllMessageAndConversation = @"deleteAllMessageAndConversation";
 static NSString *const pinMessage = @"pinMessage";
 static NSString *const unpinMessage = @"unpinMessage";
@@ -374,7 +358,6 @@ static NSString *const ChatUpdateAutoAcceptGroupInvitationSetting =
 static NSString *const ChatUpdateAcceptInvitationAlways = @"acceptInvitationAlways";
 static NSString *const ChatUpdateAutoDownloadAttachmentThumbnailSetting =
     @"updateAutoDownloadAttachmentThumbnailSetting";
-static NSString *const ChatUpdateRequireAckSetting = @"updateRequireAckSetting";
 static NSString *const ChatUpdateDeliveryAckSetting = @"updateDeliveryAckSetting";
 static NSString *const ChatUpdateSortMessageByServerTimeSetting =
     @"updateSortMessageByServerTimeSetting";

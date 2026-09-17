@@ -12,9 +12,7 @@
 - (NSDictionary *)toJson {
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
     data[@"appKey"] = self.appkey;
-    data[@"autoLogin"] = @(self.isAutoLogin);
     data[@"debugModel"] = @(self.enableConsoleLog);
-    data[@"requireAck"] = @(self.enableRequireReadAck);
     data[@"requireDeliveryAck"] = @(self.enableDeliveryAck);
     data[@"sortMessageByServerTime"] = @(self.sortMessageByServerTime);
     data[@"acceptInvitationAlways"] = @(self.autoAcceptFriendInvitation);
@@ -42,6 +40,7 @@
     data[@"enableTLS"] = @(self.enableTLSConnection);
     data[@"messagesReceiveCallbackIncludeSend"] = @(self.includeSendMessageInMessageListener);
     data[@"regardImportMessagesAsRead"] = @(self.regardImportMessagesAsRead);
+    data[@"dataSyncType"] = @(self.dataSyncType);
     // 481
     data[@"loginExtensionInfo"] = self.loginExtensionInfo;
     
@@ -60,9 +59,7 @@
 
     options.platform = EMSDKPlatformFlutter;
 
-    options.isAutoLogin = [aJson[@"autoLogin"] boolValue];
     options.enableConsoleLog = YES;// [aJson[@"debugModel"] boolValue];
-    options.enableRequireReadAck = [aJson[@"requireAck"] boolValue];
     options.enableDeliveryAck = [aJson[@"requireDeliveryAck"] boolValue];
     options.sortMessageByServerTime = [aJson[@"sortMessageByServerTime"] boolValue];
     options.autoAcceptFriendInvitation = [aJson[@"acceptInvitationAlways"] boolValue];
@@ -82,7 +79,7 @@
     options.webSocketPort = [aJson[@"webSocketPort"] intValue];
     options.restServer = aJson[@"restServer"];
     options.dnsURL = aJson[@"dnsURL"];
-    options.area = [aJson[@"areaCode"] intValue];
+    options.area = (AreaCode)[aJson[@"areaCode"] intValue];
     options.customDeviceName = aJson[@"deviceName"];
     // 450
     options.enableTLSConnection = [aJson[@"enableTLS"] boolValue];
@@ -101,10 +98,13 @@
     options.workPathCopiable = [aJson[@"workPathCopiable"] boolValue];
     // 4.22.0
     options.enableUserInfo = [aJson[@"enableUserInfo"] boolValue];
-    options.enableAutoSyncContacts = [aJson[@"enableAutoSyncContacts"] boolValue];
     // 4.24.0
     if (aJson[@"ntpServers"] && ![aJson[@"ntpServers"] isKindOfClass:[NSNull class]]) {
         options.ntpServers = aJson[@"ntpServers"];
+    }
+    // 5.0.0
+    if (aJson[@"dataSyncType"] && ![aJson[@"dataSyncType"] isKindOfClass:[NSNull class]]) {
+        options.dataSyncType = (EMDataSyncType)[aJson[@"dataSyncType"] integerValue];
     }
     return options;
 }

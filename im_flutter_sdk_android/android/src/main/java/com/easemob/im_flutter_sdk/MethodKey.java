@@ -3,9 +3,7 @@ package com.easemob.im_flutter_sdk;
 public class MethodKey {
     /// EMClient methods
     static final String init = "init";
-    static final String createAccount = "createAccount";
     static final String login = "login";
-    static final String loginWithAgoraToken = "loginWithAgoraToken";
     static final String renewToken = "renewToken";
     static final String logout = "logout";
     static final String changeAppKey = "changeAppKey";
@@ -19,7 +17,6 @@ public class MethodKey {
     static final String getToken = "getToken";
     static final String getCurrentUser = "getCurrentUser";
     static final String getCurrentDeviceId = "getCurrentDeviceId";
-    static final String isLoggedInBefore = "isLoggedInBefore";
     static final String isConnected = "isConnected";
 
     static final String onConnected = "onConnected";
@@ -40,11 +37,14 @@ public class MethodKey {
     static final String onSendDataToFlutter = "onSendDataToFlutter";
     static final String onTokenWillExpire = "onTokenWillExpire";
     static final String onTokenDidExpire = "onTokenDidExpire";
+    // 5.0.0
+    static final String onDataSyncStart = "onDataSyncStart";
+    static final String onDataSyncFinish = "onDataSyncFinish";
+    static final String onDatabaseOpened = "onDatabaseOpened";
 
     /// EMContactManager methods
     static final String addContact = "addContact";
     static final String deleteContact = "deleteContact";
-    static final String getAllContactsFromServer = "getAllContactsFromServer";
     static final String getAllContactsFromDB = "getAllContactsFromDB";
     static final String addUserToBlockList = "addUserToBlockList";
     static final String removeUserFromBlockList = "removeUserFromBlockList";
@@ -56,21 +56,20 @@ public class MethodKey {
     static final String getAllContacts = "getAllContacts";
     static final String setContactRemark = "setContactRemark";
     static final String getContact = "getContact";
-    static final String fetchAllContacts = "fetchAllContacts";
-    static final String fetchContacts = "fetchContacts";
-
     static final String onContactChanged = "onContactChanged";
 
     /// EMChatManager methods
     static final String sendMessage = "sendMessage";
     static final String resendMessage = "resendMessage";
-    static final String ackMessageRead = "ackMessageRead";
-    static final String ackGroupMessageRead = "ackGroupMessageRead";
-    static final String ackConversationRead = "ackConversationRead";
+    // 5.0.0
+    static final String sendMessageReadReceipts = "sendMessageReadReceipts";
+    static final String clearConversationUnreadMessageCount = "clearConversationUnreadMessageCount";
+    static final String clearAllConversationUnreadMessageCount = "clearAllConversationUnreadMessageCount";
+    static final String getGroupMessageReadReceipts = "getGroupMessageReadReceipts";
+    static final String fetchGroupMessageReadReceipts = "fetchGroupMessageReadReceipts";
     static final String recallMessage = "recallMessage";
     static final String getConversation = "getConversation";
     static final String getThreadConversation = "getThreadConversation";
-    static final String markAllChatMsgAsRead = "markAllChatMsgAsRead";
     static final String getUnreadMessageCount = "getUnreadMessageCount";
     static final String updateChatMessage = "updateChatMessage";
     static final String downloadAttachment = "downloadAttachment";
@@ -79,13 +78,10 @@ public class MethodKey {
     static final String downloadMessageThumbnailInCombine = "downloadMessageThumbnailInCombine";
     static final String importMessages = "importMessages";
     static final String loadAllConversations = "loadAllConversations";
-    static final String getConversationsFromServer = "getConversationsFromServer";
     static final String deleteConversation = "deleteConversation";
-    static final String fetchHistoryMessages = "fetchHistoryMessages";
     static final String fetchHistoryMessagesByOptions = "fetchHistoryMessagesByOptions";
     static final String searchChatMsgFromDB = "searchChatMsgFromDB";
     static final String getMessage = "getMessage";
-    static final String asyncFetchGroupAcks = "asyncFetchGroupAcks";
     static final String deleteRemoteConversation = "deleteRemoteConversation";
     static final String deleteMessagesBeforeTimestamp = "deleteMessagesBeforeTimestamp";
 
@@ -96,13 +92,9 @@ public class MethodKey {
     static final String removeReaction = "removeReaction";
     static final String fetchReactionList = "fetchReactionList";
     static final String fetchReactionDetail = "fetchReactionDetail";
-    static final String reportMessage = "reportMessage";
-    static final String fetchConversationsFromServerWithPage = "fetchConversationsFromServerWithPage";
     static final String removeMessagesFromServerWithMsgIds = "removeMessagesFromServerWithMsgIds";
     static final String removeMessagesFromServerWithTs = "removeMessagesFromServerWithTs";
 
-    static final String getConversationsFromServerWithCursor = "getConversationsFromServerWithCursor";
-    static final String getPinnedConversationsFromServerWithCursor = "getPinnedConversationsFromServerWithCursor";
     static final String pinConversation = "pinConversation";
     static final String modifyMessage = "modifyMessage";
     static final String downloadAndParseCombineMessage = "downloadAndParseCombineMessage";
@@ -110,14 +102,12 @@ public class MethodKey {
     static final String onMessagesReceived = "onMessagesReceived";
     static final String onStreamMessagesReceived = "onStreamMessagesReceived";
     static final String onCmdMessagesReceived = "onCmdMessagesReceived";
-    static final String onMessagesRead = "onMessagesRead";
-    static final String onGroupMessageRead = "onGroupMessageRead";
-    static final String onReadAckForGroupMessageUpdated = "onReadAckForGroupMessageUpdated";
+    // 5.0.0
+    static final String onMessageReadReceipts = "onMessageReadReceipts";
     static final String onMessagesDelivered = "onMessagesDelivered";
     static final String onMessagesRecalled = "onMessagesRecalled";
 
     static final String onConversationUpdate = "onConversationUpdate";
-    static final String onConversationHasRead = "onConversationHasRead";
 
     static final String onMessageReactionDidChange = "messageReactionDidChange";
     static final String onMessageContentChanged = "onMessageContentChanged";
@@ -127,13 +117,10 @@ public class MethodKey {
     static final String onMessageProgressUpdate = "onMessageProgressUpdate";
     static final String onMessageError = "onMessageError";
     static final String onMessageSuccess = "onMessageSuccess";
-    static final String onMessageReadAck = "onMessageReadAck";
     static final String onMessageDeliveryAck = "onMessageDeliveryAck";
 
     /// EMConversation
     static final String getUnreadMsgCount = "getUnreadMsgCount";
-    static final String markAllMessagesAsRead = "markAllMessagesAsRead";
-    static final String markMessageAsRead = "markMessageAsRead";
     static final String syncConversationExt = "syncConversationExt";
     static final String removeMessage = "removeMessage";
     static final String deleteMessageByIds = "deleteMessageByIds";
@@ -155,7 +142,6 @@ public class MethodKey {
 
     // EMMessage method
     static final String getReactionList = "getReactionList";
-    static final String groupAckCount = "groupAckCount";
     static final String getChatThread = "chatThread";
 
     // EMChatRoomManager
@@ -164,9 +150,6 @@ public class MethodKey {
     static final String fetchPublicChatRoomsFromServer = "fetchPublicChatRoomsFromServer";
     static final String fetchChatRoomInfoFromServer = "fetchChatRoomInfoFromServer";
     static final String getChatRoom = "getChatRoom";
-    static final String getAllChatRooms = "getAllChatRooms";
-    static final String createChatRoom = "createChatRoom";
-    static final String destroyChatRoom = "destroyChatRoom";
     static final String changeChatRoomSubject = "changeChatRoomSubject";
     static final String changeChatRoomDescription = "changeChatRoomDescription";
     static final String fetchChatRoomMembers = "fetchChatRoomMembers";
@@ -200,9 +183,9 @@ public class MethodKey {
     /// EMGroupManager
     static final String getGroupWithId = "getGroupWithId";
     static final String getJoinedGroups = "getJoinedGroups";
-    static final String getJoinedGroupsFromServer = "getJoinedGroupsFromServer";
-    static final String getPublicGroupsFromServer = "getPublicGroupsFromServer";
     static final String createGroup = "createGroup";
+    // 5.0.0
+    static final String updateGroupConfigs = "updateGroupConfigs";
     static final String getGroupSpecificationFromServer = "getGroupSpecificationFromServer";
     static final String getGroupMemberListFromServer = "getGroupMemberListFromServer";
     static final String getGroupBlockListFromServer = "getGroupBlockListFromServer";
@@ -317,7 +300,6 @@ public class MethodKey {
     static final String onMessagePinChanged = "onMessagePinChanged";
     static final String addRemoteAndLocalConversationsMark = "addRemoteAndLocalConversationsMark";
     static final String deleteRemoteAndLocalConversationsMark = "deleteRemoteAndLocalConversationsMark";
-    static final String fetchConversationsByOptions = "fetchConversationsByOptions";
     static final String deleteAllMessageAndConversation = "deleteAllMessageAndConversation";
     static final String pinMessage = "pinMessage";
     static final String unpinMessage = "unpinMessage";
@@ -349,7 +331,6 @@ public class MethodKey {
     static final String acceptInvitationAlways = "acceptInvitationAlways";
     static final String updateAutoDownloadAttachmentThumbnailSetting =
             "updateAutoDownloadAttachmentThumbnailSetting";
-    static final String updateRequireAckSetting = "updateRequireAckSetting";
     static final String updateDeliveryAckSetting = "updateDeliveryAckSetting";
     static final String updateSortMessageByServerTimeSetting =
             "updateSortMessageByServerTimeSetting";

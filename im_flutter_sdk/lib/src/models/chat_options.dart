@@ -2,15 +2,25 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/chat_extension.dart';
 
 /// ~english
-/// The ChatOptions class, which contains the settings of the Chat SDK.
-///
-/// For example, whether to encrypt the messages before sending and whether to automatically accept the friend invitations.
+/// Bit-mask values for the data synchronized automatically after login.
 /// ~end
 ///
 /// ~chinese
-/// 提供 SDK 聊天相关的设置。
-/// 用户可以用来配置 SDK 的各种参数、选项，
-/// 比如，发送消息加密，是否自动接受加好友邀请。
+/// 登录后自动同步的数据类型位掩码值。
+/// ~end
+abstract final class ChatDataSyncType {
+  static const int none = 0;
+  static const int conversations = 1 << 0;
+  static const int contacts = 1 << 1;
+  static const int joinedGroups = 1 << 2;
+}
+
+/// ~english
+/// The ChatOptions class, which contains the settings of the Chat SDK.
+/// ~end
+///
+/// ~chinese
+/// SDK 聊天相关的设置。
 /// ~end
 class ChatOptions {
   /// ~english
@@ -30,21 +40,6 @@ class ChatOptions {
   /// 创建 app 时在 console 后台上注册的 app 唯一识别符。
   /// ~end
   final String? appId;
-
-  /// ~english
-  /// Whether to enable automatic login.
-  ///
-  /// - (Default) `true`: Yes;
-  /// - `false`: No.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 是否允许自动登录。
-  ///
-  /// - (默认) `true`：允许;
-  /// - `false`：不允许.
-  /// ~end
-  final bool autoLogin;
 
   /// ~english
   /// Whether to output the debug information. Make sure to call the method after initializing the ChatClient using [ChatClient.init].
@@ -87,20 +82,6 @@ class ChatOptions {
   /// - （默认）`false`：否。
   /// ~end
   final bool autoAcceptGroupInvitation;
-
-  /// ~english
-  /// Whether to require read receipt after sending a message.
-  ///
-  /// - (Default) `true`: Yes;
-  /// - `false`: No.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 是否发送消息已读回执.
-  /// - （默认）`true`：是；
-  /// - `false`：否。
-  /// ~end
-  final bool requireAck;
 
   /// ~english
   /// Whether to require the delivery receipt after sending a message.
@@ -418,19 +399,16 @@ class ChatOptions {
   final bool enableUserInfo;
 
   /// ~english
-  /// Whether to automatically sync the contact list from the server after login.
-  ///
-  /// - `true`: Yes.
-  /// - (Default) `false`: No.
+  /// The data types automatically synchronized after login.
+  /// Combine [ChatDataSyncType] values with the bitwise OR operator.
+  /// If omitted, the native platform default is used.
   /// ~end
   ///
   /// ~chinese
-  /// 是否在登录后自动从服务器同步联系人列表。
-  ///
-  /// - `true`：是；
-  /// - （默认）`false`：否。
+  /// 登录后自动同步的数据类型。多个 [ChatDataSyncType] 值可使用按位或组合。
+  /// 未设置时使用 native 平台默认值。
   /// ~end
-  final bool enableAutoSyncContacts;
+  final int? dataSyncType;
 
   /// ~english
   /// The custom NTP server list used by the SDK to calibrate time.
@@ -600,10 +578,6 @@ class ChatOptions {
   ///
   /// Param [appId] The app Id that you get from the console when creating an app.
   ///
-  /// Param [autoLogin] Whether to enable automatic login.
-  /// - (Default) `true`: Enables automatic login.
-  /// - `false`: Disables automatic login.
-  ///
   /// Param [debugMode] Whether to output the debug information. Make sure to call the method after the ChatClient is initialized.
   /// - `true`: Yes.
   /// - (Default) `false`: No.
@@ -614,10 +588,6 @@ class ChatOptions {
   /// Param [autoAcceptGroupInvitation] Whether to accept group invitations automatically.
   /// - `true`: Yes.
   /// - (Default) `false`: No.
-  ///
-  /// Param [requireAck] Whether to require the message read receipt from the recipient.
-  /// - (Default) `true`: Yes.
-  /// - `false`: No.
   ///
   /// Param [requireDeliveryAck] Whether the delivery receipt is required.
   /// `true`: Yes.
@@ -699,10 +669,6 @@ class ChatOptions {
   /// 设置 SDK
   /// Param [appKey] 创建 app 时在 console 后台上注册的 app 唯一识别符。
   ///
-  /// Param [autoLogin] 是否开启自动登录。
-  /// - （默认）`true`：是；
-  /// - `false`：否。
-  ///
   /// Param [debugMode] 是否输出调试信息，在 ChatClient 初始化完成后调用，详见 [ChatClient.init]。
   /// - `true`：SDK 会在 log 里输出调试信息；
   /// - （默认）`false`：不会输出调试信息。
@@ -714,10 +680,6 @@ class ChatOptions {
   /// Param [autoAcceptGroupInvitation] 是否自动接受群组邀请。
   /// - `true`：是；
   /// - （默认）`false`：否。
-  ///
-  /// Param [requireAck] 是否发送已读回执。
-  /// - （默认）`true`：是；
-  /// - `false`：否。
   ///
   /// Param [requireDeliveryAck] 是否发送已送达回执。
   /// - （默认）`true`：是；
@@ -795,11 +757,9 @@ class ChatOptions {
   /// ~end
   ChatOptions.withAppId(
     String appId, {
-    bool autoLogin = true,
     bool debugMode = false,
     bool acceptInvitationAlways = false,
     bool autoAcceptGroupInvitation = false,
-    bool requireAck = true,
     bool requireDeliveryAck = false,
     bool deleteMessagesAsExitGroup = true,
     bool deleteMessagesAsExitChatRoom = true,
@@ -825,17 +785,15 @@ class ChatOptions {
     bool regardImportMessagesAsRead = false,
     bool workPathCopiable = false,
     bool enableUserInfo = false,
-    bool enableAutoSyncContacts = false,
+    int? dataSyncType,
     String? loginExtension,
     List<String>? ntpServers,
     Map<String, dynamic>? extSettings,
   }) : this._(
           appId: appId,
-          autoLogin: autoLogin,
           debugMode: debugMode,
           acceptInvitationAlways: acceptInvitationAlways,
           autoAcceptGroupInvitation: autoAcceptGroupInvitation,
-          requireAck: requireAck,
           requireDeliveryAck: requireDeliveryAck,
           deleteMessagesAsExitGroup: deleteMessagesAsExitGroup,
           deleteMessagesAsExitChatRoom: deleteMessagesAsExitChatRoom,
@@ -862,7 +820,7 @@ class ChatOptions {
           regardImportMessagesAsRead: regardImportMessagesAsRead,
           workPathCopiable: workPathCopiable,
           enableUserInfo: enableUserInfo,
-          enableAutoSyncContacts: enableAutoSyncContacts,
+          dataSyncType: dataSyncType,
           loginExtension: loginExtension,
           ntpServers: ntpServers,
           extSettings: extSettings,
@@ -872,10 +830,6 @@ class ChatOptions {
   /// Sets the app options.
   ///
   /// Param [appKey] The app key that you get from the console when creating an app.
-  ///
-  /// Param [autoLogin] Whether to enable automatic login.
-  /// - (Default) `true`: Enables automatic login.
-  /// - `false`: Disables automatic login.
   ///
   /// Param [debugMode] Whether to output the debug information. Make sure to call the method after the ChatClient is initialized.
   /// - `true`: Yes.
@@ -887,10 +841,6 @@ class ChatOptions {
   /// Param [autoAcceptGroupInvitation] Whether to accept group invitations automatically.
   /// - `true`: Yes.
   /// - (Default) `false`: No.
-  ///
-  /// Param [requireAck] Whether to require the message read receipt from the recipient.
-  /// - (Default) `true`: Yes.
-  /// - `false`: No.
   ///
   /// Param [requireDeliveryAck] Whether the delivery receipt is required.
   /// `true`: Yes.
@@ -972,10 +922,6 @@ class ChatOptions {
   /// 设置 SDK
   /// Param [appKey] 创建 app 时在 console 后台上注册的 app 唯一识别符。
   ///
-  /// Param [autoLogin] 是否开启自动登录。
-  /// - （默认）`true`：是；
-  /// - `false`：否。
-  ///
   /// Param [debugMode] 是否输出调试信息，在 ChatClient 初始化完成后调用，详见 [ChatClient.init]。
   /// - `true`：SDK 会在 log 里输出调试信息；
   /// - （默认）`false`：不会输出调试信息。
@@ -987,10 +933,6 @@ class ChatOptions {
   /// Param [autoAcceptGroupInvitation] 是否自动接受群组邀请。
   /// - `true`：是；
   /// - （默认）`false`：否。
-  ///
-  /// Param [requireAck] 是否发送已读回执。
-  /// - （默认）`true`：是；
-  /// - `false`：否。
   ///
   /// Param [requireDeliveryAck] 是否发送已送达回执。
   /// - （默认）`true`：是；
@@ -1068,11 +1010,9 @@ class ChatOptions {
   /// ~end
   ChatOptions.withAppKey(
     String appKey, {
-    bool autoLogin = true,
     bool debugMode = false,
     bool acceptInvitationAlways = false,
     bool autoAcceptGroupInvitation = false,
-    bool requireAck = true,
     bool requireDeliveryAck = false,
     bool deleteMessagesAsExitGroup = true,
     bool deleteMessagesAsExitChatRoom = true,
@@ -1098,17 +1038,15 @@ class ChatOptions {
     bool regardImportMessagesAsRead = false,
     bool workPathCopiable = false,
     bool enableUserInfo = false,
-    bool enableAutoSyncContacts = false,
+    int? dataSyncType,
     String? loginExtension,
     List<String>? ntpServers,
     Map<String, dynamic>? extSettings,
   }) : this._(
           appKey: appKey,
-          autoLogin: autoLogin,
           debugMode: debugMode,
           acceptInvitationAlways: acceptInvitationAlways,
           autoAcceptGroupInvitation: autoAcceptGroupInvitation,
-          requireAck: requireAck,
           requireDeliveryAck: requireDeliveryAck,
           deleteMessagesAsExitGroup: deleteMessagesAsExitGroup,
           deleteMessagesAsExitChatRoom: deleteMessagesAsExitChatRoom,
@@ -1135,7 +1073,7 @@ class ChatOptions {
           regardImportMessagesAsRead: regardImportMessagesAsRead,
           workPathCopiable: workPathCopiable,
           enableUserInfo: enableUserInfo,
-          enableAutoSyncContacts: enableAutoSyncContacts,
+          dataSyncType: dataSyncType,
           loginExtension: loginExtension,
           ntpServers: ntpServers,
           extSettings: extSettings,
@@ -1148,10 +1086,6 @@ class ChatOptions {
   ///
   /// Param [appKey] The app key that you get from the console when creating an app.
   ///
-  /// Param [autoLogin] Whether to enable automatic login.
-  /// - (Default) `true`: Enables automatic login.
-  /// - `false`: Disables automatic login.
-  ///
   /// Param [debugMode] Whether to output the debug information. Make sure to call the method after the ChatClient is initialized.
   /// - `true`: Yes.
   /// - (Default) `false`: No.
@@ -1162,10 +1096,6 @@ class ChatOptions {
   /// Param [autoAcceptGroupInvitation] Whether to accept group invitations automatically.
   /// - `true`: Yes.
   /// - (Default) `false`: No.
-  ///
-  /// Param [requireAck] Whether to require the message read receipt from the recipient.
-  /// - (Default) `true`: Yes.
-  /// - `false`: No.
   ///
   /// Param [requireDeliveryAck] Whether the delivery receipt is required.
   /// `true`: Yes.
@@ -1186,7 +1116,6 @@ class ChatOptions {
   /// Param [sortMessageByServerTime] Whether to sort the messages in the reverse chronological order of the time when they are received by the server.
   /// - (Default) `true`: Yes;
   /// - `false`: No. Messages are sorted in the reverse chronological order of the time when they are created.
-
   /// Param [usingHttpsOnly] Whether only HTTPS is used for REST operations.
   /// - (Default) `true`: Only HTTPS is supported.
   /// - `false`: Both HTTP and HTTPS are allowed.
@@ -1247,10 +1176,6 @@ class ChatOptions {
   /// 设置 SDK
   /// Param [appKey] 创建 app 时在 console 后台上注册的 app 唯一识别符。
   ///
-  /// Param [autoLogin] 是否开启自动登录。
-  /// - （默认）`true`：是；
-  /// - `false`：否。
-  ///
   /// Param [debugMode] 是否输出调试信息，在 ChatClient 初始化完成后调用，详见 [ChatClient.init]。
   /// - `true`：SDK 会在 log 里输出调试信息；
   /// - （默认）`false`：不会输出调试信息。
@@ -1262,10 +1187,6 @@ class ChatOptions {
   /// Param [autoAcceptGroupInvitation] 是否自动接受群组邀请。
   /// - `true`：是；
   /// - （默认）`false`：否。
-  ///
-  /// Param [requireAck] 是否发送已读回执。
-  /// - （默认）`true`：是；
-  /// - `false`：否。
   ///
   /// Param [requireDeliveryAck] 是否发送已送达回执。
   /// - （默认）`true`：是；
@@ -1343,11 +1264,9 @@ class ChatOptions {
   /// ~end
   ChatOptions({
     required String appKey,
-    bool autoLogin = true,
     bool debugMode = false,
     bool acceptInvitationAlways = false,
     bool autoAcceptGroupInvitation = false,
-    bool requireAck = true,
     bool requireDeliveryAck = false,
     bool deleteMessagesAsExitGroup = true,
     bool deleteMessagesAsExitChatRoom = true,
@@ -1373,16 +1292,14 @@ class ChatOptions {
     bool regardImportMessagesAsRead = false,
     bool workPathCopiable = false,
     bool enableUserInfo = false,
-    bool enableAutoSyncContacts = false,
+    int? dataSyncType,
     String? loginExtension,
     List<String>? ntpServers,
   }) : this._(
           appKey: appKey,
-          autoLogin: autoLogin,
           debugMode: debugMode,
           acceptInvitationAlways: acceptInvitationAlways,
           autoAcceptGroupInvitation: autoAcceptGroupInvitation,
-          requireAck: requireAck,
           requireDeliveryAck: requireDeliveryAck,
           deleteMessagesAsExitGroup: deleteMessagesAsExitGroup,
           deleteMessagesAsExitChatRoom: deleteMessagesAsExitChatRoom,
@@ -1409,7 +1326,7 @@ class ChatOptions {
           regardImportMessagesAsRead: regardImportMessagesAsRead,
           workPathCopiable: workPathCopiable,
           enableUserInfo: enableUserInfo,
-          enableAutoSyncContacts: enableAutoSyncContacts,
+          dataSyncType: dataSyncType,
           loginExtension: loginExtension,
           ntpServers: ntpServers,
         );
@@ -1417,11 +1334,9 @@ class ChatOptions {
   ChatOptions._({
     this.appId,
     this.appKey,
-    this.autoLogin = true,
     this.debugMode = false,
     this.acceptInvitationAlways = false,
     this.autoAcceptGroupInvitation = false,
-    this.requireAck = true,
     this.requireDeliveryAck = false,
     this.deleteMessagesAsExitGroup = true,
     this.deleteMessagesAsExitChatRoom = true,
@@ -1447,7 +1362,7 @@ class ChatOptions {
     this.regardImportMessagesAsRead = false,
     this.workPathCopiable = false,
     this.enableUserInfo = false,
-    this.enableAutoSyncContacts = false,
+    this.dataSyncType,
     this.loginExtension,
     this.ntpServers,
     Map<String, dynamic>? extSettings,
@@ -1457,16 +1372,14 @@ class ChatOptions {
     Map data = {};
     data.putIfNotNull("appKey", appKey);
     data.putIfNotNull("appId", appId);
-    data.putIfNotNull("autoLogin", autoLogin);
     data.putIfNotNull("debugModel", debugMode);
     data.putIfNotNull("acceptInvitationAlways", acceptInvitationAlways);
-    data.putIfNotNull(
-      "autoAcceptGroupInvitation",
-      autoAcceptGroupInvitation,
-    );
+    data.putIfNotNull("autoAcceptGroupInvitation", autoAcceptGroupInvitation);
     data.putIfNotNull("deleteMessagesAsExitGroup", deleteMessagesAsExitGroup);
     data.putIfNotNull(
-        "deleteMessagesAsExitChatRoom", deleteMessagesAsExitChatRoom);
+      "deleteMessagesAsExitChatRoom",
+      deleteMessagesAsExitChatRoom,
+    );
     data.putIfNotNull("dnsUrl", dnsUrl);
     data.putIfNotNull("enableDNSConfig", enableDNSConfig);
     data.putIfNotNull("imPort", imPort);
@@ -1475,8 +1388,9 @@ class ChatOptions {
     data.putIfNotNull("webSocketPort", webSocketPort);
     data.putIfNotNull("isAutoDownload", isAutoDownloadThumbnail);
     data.putIfNotNull(
-        "isChatRoomOwnerLeaveAllowed", isChatRoomOwnerLeaveAllowed);
-    data.putIfNotNull("requireAck", requireAck);
+      "isChatRoomOwnerLeaveAllowed",
+      isChatRoomOwnerLeaveAllowed,
+    );
     data.putIfNotNull("requireDeliveryAck", requireDeliveryAck);
     data.putIfNotNull("restServer", restServer);
     data.putIfNotNull("serverTransfer", serverTransfer);
@@ -1487,8 +1401,10 @@ class ChatOptions {
     data.putIfNotNull('osType', osType);
     data.putIfNotNull('useReplacedMessageContents', useReplacedMessageContents);
     data.putIfNotNull('enableTLS', enableTLS);
-    data.putIfNotNull('messagesReceiveCallbackIncludeSend',
-        messagesReceiveCallbackIncludeSend);
+    data.putIfNotNull(
+      'messagesReceiveCallbackIncludeSend',
+      messagesReceiveCallbackIncludeSend,
+    );
     data.putIfNotNull('regardImportMessagesAsRead', regardImportMessagesAsRead);
 
     data["usingHttpsOnly"] = usingHttpsOnly;
@@ -1504,7 +1420,7 @@ class ChatOptions {
 
     // 4.22.0
     data.putIfNotNull('enableUserInfo', enableUserInfo);
-    data.putIfNotNull('enableAutoSyncContacts', enableAutoSyncContacts);
+    data.putIfNotNull('dataSyncType', dataSyncType);
 
     // 4.24.0
     data.putIfNotNull('ntpServers', ntpServers);
@@ -1538,22 +1454,20 @@ class ChatOptions {
     bool? acceptInvitationAlways,
     bool? autoDownloadThumbnail,
     bool? requireDeliveryAck,
-    bool? requireAck,
     bool? sortMessageByServerTime,
     bool? messagesReceiveCallbackIncludeSend,
     bool? regardImportMessagesAsRead,
+    int? dataSyncType,
     Map<String, dynamic>? extSettings,
   }) {
     return ChatOptions._(
       appKey: appKey,
       appId: appId,
-      autoLogin: autoLogin,
       debugMode: debugMode,
       acceptInvitationAlways:
           acceptInvitationAlways ?? this.acceptInvitationAlways,
       autoAcceptGroupInvitation:
           autoAcceptGroupInvitation ?? this.autoAcceptGroupInvitation,
-      requireAck: requireAck ?? this.requireAck,
       requireDeliveryAck: requireDeliveryAck ?? this.requireDeliveryAck,
       deleteMessagesAsExitGroup:
           deleteMessagesWhenLeaveGroup ?? deleteMessagesAsExitGroup,
@@ -1584,7 +1498,7 @@ class ChatOptions {
       regardImportMessagesAsRead:
           regardImportMessagesAsRead ?? this.regardImportMessagesAsRead,
       enableUserInfo: enableUserInfo,
-      enableAutoSyncContacts: enableAutoSyncContacts,
+      dataSyncType: dataSyncType ?? this.dataSyncType,
       loginExtension: loginExtension,
       extSettings: extSettings,
     );

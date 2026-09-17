@@ -7,7 +7,7 @@
       "priority": "P0",
       "origin": "flutter-only",
       "sourceCases": [],
-      "flutterApis": ["EMClient.init", "EMClient.isLoginBefore"],
+      "flutterApis": ["EMClient.init"],
       "platforms": ["android", "ios"],
       "assertions": ["Native plugin registers and initializes while logged out"],
       "testFile": "example/integration_test/no_login_presence_test.dart"
@@ -72,10 +72,9 @@
         "wayang.TestCase.登录注册::登出"
       ],
       "flutterApis": [
-        "EMClient.loginWithPassword",
+        "EMClient.loginWithToken",
         "EMClient.getCurrentUserId",
         "EMClient.isConnected",
-        "EMClient.isLoginBefore",
         "EMClient.getAccessToken",
         "EMClient.logout"
       ],
@@ -103,9 +102,9 @@
       "priority": "P1",
       "origin": "native-shared",
       "sourceCases": ["wayang.TestCase.会话::插入消息", "wayang.TestCase.会话::未读数和已读", "wayang.TestCase.会话::最新消息"],
-      "flutterApis": ["EMConversation.insertMessage", "EMConversation.messagesCount", "EMConversation.unreadCount", "EMConversation.markMessageAsRead", "EMConversation.markAllMessagesAsRead", "EMConversation.latestMessage", "EMConversation.lastReceivedMessage"],
+      "flutterApis": ["EMConversation.insertMessage", "EMConversation.messagesCount", "EMConversation.unreadCount", "EMChatManager.clearConversationUnreadMessageCount", "EMConversation.latestMessage", "EMConversation.lastReceivedMessage"],
       "platforms": ["android", "ios"],
-      "assertions": ["Inserted messages update count, latest message, and read state"],
+      "assertions": ["Inserted messages update count and latest message; clearing the conversation resets unread count"],
       "testFile": "example/integration_test/single_account_local_test.dart"
     },
     {

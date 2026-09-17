@@ -17,8 +17,9 @@ class ChatContactManager {
   final Map<String, ChatContactEventHandler> _eventHandlesMap = {};
 
   ChatContactManager() {
-    platform_interface.Client.instance.contactManager
-        .updateNativeHandler((MethodCall call) async {
+    platform_interface.Client.instance.contactManager.updateNativeHandler((
+      MethodCall call,
+    ) async {
       ChatLog.d("${call.method}: arguments: ${call.arguments}");
       Map? argMap = call.arguments;
       if (call.method == ChatMethodKeys.onContactChanged) {
@@ -49,15 +50,6 @@ class ChatContactManager {
         case ChatContactChangeEvent.INVITATION_DECLINED:
           element.onFriendRequestDeclined?.call(username);
           break;
-        case ChatContactChangeEvent.CONTACT_SYNC_START:
-          element.onContactSyncStart?.call();
-          break;
-        case ChatContactChangeEvent.CONTACT_SYNC_FINISH:
-          ChatError? error = event['error'] != null
-              ? ChatError.fromJson(event['error'])
-              : null;
-          element.onContactSyncFinish?.call(error);
-          break;
         case ChatContactChangeEvent.CONTACT_INFO_UPDATE:
           ChatContact contact = ChatContact.fromJson(event['contact']);
           element.onContactInfoUpdate?.call(contact);
@@ -82,10 +74,7 @@ class ChatContactManager {
   ///
   /// Param [handler] 事件的句柄. See [ChatContactEventHandler].
   /// ~end
-  void addEventHandler(
-    String identifier,
-    ChatContactEventHandler handler,
-  ) {
+  void addEventHandler(String identifier, ChatContactEventHandler handler) {
     _eventHandlesMap[identifier] = handler;
   }
 
@@ -154,14 +143,9 @@ class ChatContactManager {
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [ChatError]。
   /// ~end
 
-  Future<void> addContact(
-    String userId, {
-    String? reason,
-  }) async {
+  Future<void> addContact(String userId, {String? reason}) async {
     try {
-      Map req = {
-        'userId': userId,
-      };
+      Map req = {'userId': userId};
       req.putIfNotNull("reason", reason);
       Map result = await platform_interface.Client.instance.contactManager
           .callNativeMethod(ChatMethodKeys.addContact, req);
@@ -204,73 +188,6 @@ class ChatContactManager {
       Map result = await platform_interface.Client.instance.contactManager
           .callNativeMethod(ChatMethodKeys.deleteContact, req);
       ChatError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  @Deprecated('Use fetchAllContactIds instead.')
-
-  /// ~english
-  /// Gets all the contact ids from the server.
-  ///
-  /// **Return** The list of contact ids.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 从服务器获取联系人列表。
-  ///
-  /// **Return** 联系人列表。
-  ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [ChatError]。
-  /// ~end
-  Future<List<String>> getAllContactsFromServer() async {
-    try {
-      Map result = await platform_interface.Client.instance.contactManager
-          .callNativeMethod(ChatMethodKeys.getAllContactsFromServer);
-      ChatError.hasErrorFromResult(result);
-      List<String> list = [];
-      result[ChatMethodKeys.getAllContactsFromServer]?.forEach((element) {
-        if (element is String) {
-          list.add(element);
-        }
-      });
-      return list;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Gets all the contact ids from the server.
-  ///
-  /// **Return** The list of contact ids.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 从服务器获取联系人列表。
-  ///
-  /// **Return** 联系人列表。
-  ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [ChatError]。
-  /// ~end
-
-  Future<List<String>> fetchAllContactIds() async {
-    try {
-      Map result = await platform_interface.Client.instance.contactManager
-          .callNativeMethod(ChatMethodKeys.getAllContactsFromServer);
-      ChatError.hasErrorFromResult(result);
-      List<String> list = [];
-      result[ChatMethodKeys.getAllContactsFromServer]?.forEach((element) {
-        if (element is String) {
-          list.add(element);
-        }
-      });
-      return list;
     } catch (e) {
       rethrow;
     }
@@ -363,16 +280,11 @@ class ChatContactManager {
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [ChatError]。
   /// ~end
 
-  Future<void> addUserToBlockList(
-    String userId,
-  ) async {
+  Future<void> addUserToBlockList(String userId) async {
     try {
       Map req = {'userId': userId};
       Map result = await platform_interface.Client.instance.contactManager
-          .callNativeMethod(
-        ChatMethodKeys.addUserToBlockList,
-        req,
-      );
+          .callNativeMethod(ChatMethodKeys.addUserToBlockList, req);
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -713,83 +625,6 @@ class ChatContactManager {
       } else {
         return null;
       }
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Gets all contacts from the server.
-  ///
-  /// **Return** The contact list.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 从服务器获取所有的好友。
-  ///
-  /// **Return** 好友列表。
-  ///
-  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [ChatError]。
-  /// ~end
-
-  Future<List<ChatContact>> fetchAllContacts() async {
-    try {
-      Map result = await platform_interface.Client.instance.contactManager
-          .callNativeMethod(ChatMethodKeys.fetchAllContacts);
-      ChatError.hasErrorFromResult(result);
-      List<ChatContact> list = [];
-      result[ChatMethodKeys.fetchAllContacts]?.forEach((element) {
-        list.add(ChatContact.fromJson(element));
-      });
-      return list;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Gets the contact list from the server by page.
-  ///
-  /// Param [cursor] The cursor of the page, the first page can be passed in null.
-  ///
-  /// Param [pageSize] The size of the page.
-  ///
-  /// **Return** The contact result.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 从服务器分页获取友。
-  ///
-  /// Param [cursor] 分页的游标，第一页可以不传。
-  ///
-  /// Param [pageSize] 分页的大小。
-  ///
-  /// **Return** 好友列表获取结果。
-  ///
-  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [ChatError]。
-  /// ~end
-
-  Future<ChatCursorResult<ChatContact>> fetchContacts({
-    String? cursor,
-    int pageSize = 20,
-  }) async {
-    try {
-      Map map = {"pageSize": pageSize};
-      map.putIfNotNull('cursor', cursor);
-      Map result = await platform_interface.Client.instance.contactManager
-          .callNativeMethod(
-        ChatMethodKeys.fetchContacts,
-        map,
-      );
-      ChatError.hasErrorFromResult(result);
-      return ChatCursorResult.fromJson(result[ChatMethodKeys.fetchContacts],
-          dataItemCallback: (map) {
-        return ChatContact.fromJson(map);
-      });
     } catch (e) {
       rethrow;
     }

@@ -78,6 +78,7 @@
 #define EMConversationType AgoraChatConversationType
 #define EMConversationTypeGroupChat AgoraChatConversationTypeGroupChat
 #define EMConversationTypeChatRoom AgoraChatConversationTypeChatRoom
+#define EMDataSyncType AgoraChatDataSyncType
 
 #define EMSilentModeParamType AgoraChatSilentModeParamType
 #define EMSilentModeParamTypeRemindType AgoraChatSilentModeParamTypeRemindType
@@ -98,11 +99,6 @@
 
 #define EMMessageSearchDirection AgoraChatMessageSearchDirection
 
-#define EMGroupStylePrivateOnlyOwnerInvite AgoraChatGroupStylePrivateOnlyOwnerInvite
-#define EMGroupStylePrivateMemberCanInvite AgoraChatGroupStylePrivateMemberCanInvite
-#define EMGroupStylePublicJoinNeedApproval AgoraChatGroupStylePublicJoinNeedApproval
-#define EMGroupStylePublicOpenJoin AgoraChatGroupStylePublicOpenJoin
-
 #define EMPresenceManagerDelegate AgoraChatPresenceManagerDelegate
 #define EMConversation AgoraChatConversation
 #define EMPresenceStatusDetail AgoraChatPresenceStatusDetail
@@ -111,7 +107,8 @@
 #define EMMessagePinInfo AgoraChatMessagePinInfo
 #define EMMessagePinOperation AgoraChatMessagePinOperation
 #define EMGroup AgoraChatGroup
-#define EMGroupOptions AgoraChatGroupOptions
+#define EMGroupConfigs AgoraChatGroupConfigs
+#define EMGroupConfigsType AgoraChatGroupConfigsType
 #define EMGroupSharedFile AgoraChatGroupSharedFile 
 #define EMConversationFilter AgoraChatConversationFilter
 #define EMPushOptions AgoraChatPushOptions
@@ -134,9 +131,10 @@
 #define EMMarkType AgoraChatMarkType
 
 #define EMChatManagerDelegate AgoraChatManagerDelegate
+#define EMConversationDelegate AgoraChatConversationDelegate
 #define EMPushDisplayStyle AgoraChatPushDisplayStyle
-#define EMGroupStyle AgoraChatGroupStyle
-#define EMGroupMessageAck AgoraChatGroupMessageAck
+#define EMGroupReadReceipt AgoraChatGroupReadReceipt
+#define EMMessageReadReceipt AgoraChatMessageReadReceipt
 #define EMUserInfoType AgoraChatUserInfoType
 #define EMUserInfoTypeNickName AgoraChatUserInfoTypeNickName
 #define EMUserInfoTypeAvatarURL AgoraChatUserInfoTypeAvatarURL
@@ -184,4 +182,3 @@
 #import <HyphenateChat/EMOptions+PrivateDeploy.h>
 
 #endif
-

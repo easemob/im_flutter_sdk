@@ -52,16 +52,6 @@
                          channelName:call.method
                               result:result];
     }
-    else if ([ChatCreateChatRoom isEqualToString:call.method]) {
-        [self createChatroom:call.arguments
-                 channelName:call.method
-                      result:result];
-    }
-    else if ([ChatDestroyChatRoom isEqualToString:call.method]) {
-        [self destroyChatRoom:call.arguments
-                  channelName:call.method
-                       result:result];
-    }
     else if ([ChatFetchChatRoomFromServer isEqualToString:call.method]) {
         [self fetchChatroomInfoFromServer:call.arguments
                               channelName:call.method
@@ -220,31 +210,6 @@
     }];
 }
 
-- (void)createChatroom:(NSDictionary *)param
-           channelName:(NSString *)aChannelName
-                result:(FlutterResult)result {
-    
-    __weak typeof(self) weakSelf = self;
-    
-    NSString *subject = param[@"subject"];
-    NSString *description = param[@"desc"];
-    NSArray *invitees = param[@"members"];
-    NSString *message = param[@"welcomeMsg"];
-    NSInteger maxMembersCount = [param[@"maxUserCount"] integerValue];
-    [EMClient.sharedClient.roomManager createChatroomWithSubject:subject
-                                                     description:description
-                                                        invitees:invitees
-                                                         message:message
-                                                 maxMembersCount:maxMembersCount
-                                                      completion:^(EMChatroom *aChatroom, EMError *aError)
-     {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:[aChatroom toJson]];
-    }];
-}
-
 - (void)joinChatroom:(NSDictionary *)param
          channelName:(NSString *)aChannelName
               result:(FlutterResult)result {
@@ -271,19 +236,6 @@
     [EMClient.sharedClient.roomManager leaveChatroom:chatroomId
                                           completion:^(EMError *aError)
      {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:nil];
-    }];
-}
-
-- (void)destroyChatRoom:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    
-    __weak typeof(self) weakSelf = self;
-    
-    NSString *chatroomId = param[@"roomId"];
-    [EMClient.sharedClient.roomManager destroyChatroom:chatroomId completion:^(EMError *aError) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError

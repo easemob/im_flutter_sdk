@@ -29,8 +29,6 @@ public class MessageWrapper extends Wrapper implements MethodChannel.MethodCallH
         try {
             if (MethodKey.getReactionList.equals(call.method)) {
                 reactionList(param, call.method, result);
-            }else if (MethodKey.groupAckCount.equals(call.method)){
-                getAckCount(param, call.method, result);
             }else if (MethodKey.getChatThread.equals(call.method)) {
                 getChatThread(param, call.method, result);
             }
@@ -63,14 +61,6 @@ public class MessageWrapper extends Wrapper implements MethodChannel.MethodCallH
         onSuccess(result, channelName, list);
     }
 
-
-    private void getAckCount(JSONObject params, String channelName, MethodChannel.Result result) throws JSONException {
-        String msgId = params.getString("msgId");
-        EMMessage msg = getMessageWithId(msgId);
-        asyncRunnable(()->{
-            onSuccess(result, channelName,  msg != null ? msg.groupAckCount() : 0);
-        });
-    }
 
     private void getChatThread(JSONObject params, String channelName, MethodChannel.Result result) throws JSONException {
         String msgId = params.getString("msgId");

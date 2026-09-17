@@ -107,20 +107,11 @@ typedef EMGroupInfo = ChatGroupInfo;
 @Deprecated('Use [ChatGroupManager] instead')
 typedef EMGroupManager = ChatGroupManager;
 
-@Deprecated('Use [ChatGroupMessageAck] instead')
-typedef EMGroupMessageAck = ChatGroupMessageAck;
-
-@Deprecated('Use [ChatGroupOptions] instead')
-typedef EMGroupOptions = ChatGroupOptions;
-
 @Deprecated('Use [ChatGroupPermissionType] instead')
 typedef EMGroupPermissionType = ChatGroupPermissionType;
 
 @Deprecated('Use [ChatGroupSharedFile] instead')
 typedef EMGroupSharedFile = ChatGroupSharedFile;
-
-@Deprecated('Use [ChatGroupStyle] instead')
-typedef EMGroupStyle = ChatGroupStyle;
 
 @Deprecated('Use [ChatImageMessageBody] instead')
 typedef EMImageMessageBody = ChatImageMessageBody;

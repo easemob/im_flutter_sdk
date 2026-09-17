@@ -150,6 +150,33 @@ class ConnectionEventHandler {
   final VoidCallback? onAppActiveNumberReachLimit;
 
   /// ~english
+  /// Occurs when synchronization of a data type starts.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 指定类型的数据开始同步时触发。
+  /// ~end
+  final void Function(int type)? onDataSyncStart;
+
+  /// ~english
+  /// Occurs when synchronization of a data type finishes.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 指定类型的数据同步结束时触发。
+  /// ~end
+  final void Function(int type, ChatError? error)? onDataSyncFinish;
+
+  /// ~english
+  /// Occurs when the local database for a user is opened.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 指定用户的本地数据库打开时触发。
+  /// ~end
+  final void Function(String username, ChatError? error)? onDatabaseOpened;
+
+  /// ~english
   /// Occurs when the SDK starts pulling offline messages from the server.
   /// ~end
   ///
@@ -245,6 +272,9 @@ class ConnectionEventHandler {
     this.onTokenWillExpire,
     this.onTokenDidExpire,
     this.onAppActiveNumberReachLimit,
+    this.onDataSyncStart,
+    this.onDataSyncFinish,
+    this.onDatabaseOpened,
     this.onOfflineMessageSyncStart,
     this.onOfflineMessageSyncFinish,
   });
@@ -287,11 +317,8 @@ class ChatMultiDeviceEventHandler {
   /// ~chinese
   /// 多设备联系人事件。
   /// ~end
-  final void Function(
-    ChatMultiDevicesEvent event,
-    String userId,
-    String? ext,
-  )? onContactEvent;
+  final void Function(ChatMultiDevicesEvent event, String userId, String? ext)?
+      onContactEvent;
 
   /// ~english
   /// The multi-device event of group.
@@ -326,10 +353,8 @@ class ChatMultiDeviceEventHandler {
   /// ~chinese
   /// 开启多设备后对单个会话删除漫游消息后对其他设备的回调。
   /// ~end
-  final void Function(
-    String conversationId,
-    String deviceId,
-  )? onRemoteMessagesRemoved;
+  final void Function(String conversationId, String deviceId)?
+      onRemoteMessagesRemoved;
 
   /// ~english
   /// The multi-device event callback for the operation of a conversation.
@@ -386,7 +411,7 @@ class ChatMultiDeviceEventHandler {
 /// The chat event handler.
 ///
 /// This handler is used to check whether messages are received. If messages are sent successfully, a delivery receipt will be returned (delivery receipt needs to be enabled: [ChatOptions.requireDeliveryAck].
-/// If the peer user reads the received message, a read receipt will be returned (read receipt needs to be enabled: [ChatOptions.requireAck]).
+/// If the peer user reads a message that requests a read receipt, a read receipt is returned.
 /// This API should be implemented in the app to listen for message status changes.
 ///
 /// Adds chat event handler:
@@ -453,32 +478,14 @@ class ChatEventHandler {
   final void Function(List<ChatMessage> messages)? onCmdMessagesReceived;
 
   /// ~english
-  /// Occurs when a read receipt is received for a message.
+  /// Occurs when message read receipts are received.
   /// ~end
   ///
   /// ~chinese
-  /// 收到单聊消息已读回执的回调。
+  /// 收到消息已读回执时触发。
   /// ~end
-  final void Function(List<ChatMessage> messages)? onMessagesRead;
-
-  /// ~english
-  /// Occurs when a read receipt is received for a group message.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 收到群组消息的已读回执的回调。
-  /// ~end
-  final void Function(List<ChatGroupMessageAck> groupMessageAcks)?
-      onGroupMessageRead;
-
-  /// ~english
-  /// Occurs when the update for the group message read status is received.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 群消息已读变更。
-  /// ~end
-  final VoidCallback? onReadAckForGroupMessageUpdated;
+  final void Function(List<ChatMessageReadReceipt> receipts)?
+      onMessageReadReceipts;
 
   /// ~english
   /// Occurs when a delivery receipt is received.
@@ -519,28 +526,6 @@ class ChatEventHandler {
   final VoidCallback? onConversationsUpdate;
 
   /// ~english
-  /// Occurs when a conversation read receipt is received.
-  ///
-  /// This event is triggered in the following scenarios:
-  /// (1) The message is read by the recipient (The conversation read receipt is sent).
-  /// Upon receiving this event, the SDK sets the [ChatMessage.hasReadAck] property of the message in the conversation to `true` in the local database.
-  /// (2) In the multi-device login scenario, when one device sends a conversation read receipt,
-  /// the server will set the number of unread messages to 0, and the callback occurs on the other devices.
-  /// and the [ChatMessage.hasReadAck] property of the message in the conversation is set to `true` in the local database.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 收到会话已读回执的回调。
-  ///
-  /// 回调此方法的场景：
-  /// （1）消息被接收方阅读，即接收方发送了会话已读回执。
-  /// SDK 在接收到此事件时，会将本地数据库中该会话中消息的 `[ChatMessage.hasReadAck]` 属性置为 `true`。
-  /// （2）多端多设备登录场景下，一端发送会话已读回执，服务器端会将会话的未读消息数置为 0，
-  /// 同时其他端会回调此方法，并将本地数据库中该会话中消息的 `[ChatMessage.hasReadAck]` 属性置为 `true`。
-  /// ~end
-  final void Function(String from, String to)? onConversationRead;
-
-  /// ~english
   /// Occurs when the Reaction data changes.
   /// ~end
   ///
@@ -558,8 +543,10 @@ class ChatEventHandler {
   /// 收到消息内容变化。
   /// ~end
   final void Function(
-          ChatMessage message, String operatorId, int operationTime)?
-      onMessageContentChanged;
+    ChatMessage message,
+    String operatorId,
+    int operationTime,
+  )? onMessageContentChanged;
 
   /// ~english
   /// Occurs when the message pinning status changes.
@@ -588,19 +575,13 @@ class ChatEventHandler {
   ///
   /// Param [onCmdMessagesReceived] Occurs when a command message is received.
   ///
-  /// Param [onMessagesRead] Occurs when a read receipt is received for a one-to-one message.
-  ///
-  /// Param [onGroupMessageRead] Occurs when a read receipt is received for a group message.
-  ///
-  /// Param [onReadAckForGroupMessageUpdated] Occurs when the group message read status is received.
+  /// Param [onMessageReadReceipts] Occurs when message read receipts are received.
   ///
   /// Param [onMessagesDelivered] Occurs when a delivery receipt is received.
   ///
   /// Param [onMessagesRecalled] Occurs when a received message is recalled.
   ///
   /// Param [onConversationsUpdate] Occurs when a conversation is updated.
-  ///
-  /// Param [onConversationRead] Occurs when a conversation read receipt is received.
   ///
   /// Param [onMessageReactionDidChange] Occurs when the Reaction data changes.
   ///
@@ -620,19 +601,13 @@ class ChatEventHandler {
   ///
   /// Param [onCmdMessagesReceived] 收到命令消息回调。
   ///
-  /// Param [onMessagesRead] 收到单聊消息已读回执的回调。
-  ///
-  /// Param [onGroupMessageRead] 收到群组消息的已读回执的回调。
-  ///
-  /// Param [onReadAckForGroupMessageUpdated] 群消息已读变更。
+  /// Param [onMessageReadReceipts] 收到消息已读回执的回调。
   ///
   /// Param [onMessagesDelivered] 收到消息已送达回执的回调。
   ///
   /// Param [onMessagesRecalled] 已收到的消息被撤回的回调。
   ///
   /// Param [onConversationsUpdate] 会话更新事件回调。
-  ///
-  /// Param [onConversationRead] 收到会话已读回执的回调。
   ///
   /// Param [onMessageReactionDidChange] 消息表情回复（Reaction）变化监听器。
   ///
@@ -642,21 +617,19 @@ class ChatEventHandler {
   ///
   /// Param [onMessagesRecalledInfo] 已收到的消息被撤回的回调。
   /// ~end
-  ChatEventHandler(
-      {this.onMessagesReceived,
-      this.onStreamMessagesReceived,
-      this.onCmdMessagesReceived,
-      this.onMessagesRead,
-      this.onGroupMessageRead,
-      this.onReadAckForGroupMessageUpdated,
-      this.onMessagesDelivered,
-      this.onMessagesRecalled,
-      this.onConversationsUpdate,
-      this.onConversationRead,
-      this.onMessageReactionDidChange,
-      this.onMessageContentChanged,
-      this.onMessagePinChanged,
-      this.onMessagesRecalledInfo});
+  ChatEventHandler({
+    this.onMessagesReceived,
+    this.onStreamMessagesReceived,
+    this.onCmdMessagesReceived,
+    this.onMessageReadReceipts,
+    this.onMessagesDelivered,
+    this.onMessagesRecalled,
+    this.onConversationsUpdate,
+    this.onMessageReactionDidChange,
+    this.onMessageContentChanged,
+    this.onMessagePinChanged,
+    this.onMessagesRecalledInfo,
+  });
 }
 
 /// ~english
@@ -694,10 +667,7 @@ class ChatRoomEventHandler {
   /// ~chinese
   /// 有成员设置为聊天室管理员的回调。
   /// ~end
-  final void Function(
-    String roomId,
-    String admin,
-  )? onAdminAddedFromChatRoom;
+  final void Function(String roomId, String admin)? onAdminAddedFromChatRoom;
 
   /// ~english
   /// Occurs when an admin is removed.
@@ -706,10 +676,7 @@ class ChatRoomEventHandler {
   /// ~chinese
   /// 移除聊天室管理员权限的回调。
   /// ~end
-  final void Function(
-    String roomId,
-    String admin,
-  )? onAdminRemovedFromChatRoom;
+  final void Function(String roomId, String admin)? onAdminRemovedFromChatRoom;
 
   /// ~english
   /// Occurs when all members in the chat room are muted or unmuted.
@@ -718,10 +685,8 @@ class ChatRoomEventHandler {
   /// ~chinese
   /// 聊天室全员禁言状态变化回调。
   /// ~end
-  final void Function(
-    String roomId,
-    bool isAllMuted,
-  )? onAllChatRoomMemberMuteStateChanged;
+  final void Function(String roomId, bool isAllMuted)?
+      onAllChatRoomMemberMuteStateChanged;
 
   /// ~english
   /// Occurs when the chat room member(s) is/are added to the allowlist.
@@ -730,10 +695,8 @@ class ChatRoomEventHandler {
   /// ~chinese
   /// 有成员被加入聊天室白名单的回调。
   /// ~end
-  final void Function(
-    String roomId,
-    List<String> members,
-  )? onAllowListAddedFromChatRoom;
+  final void Function(String roomId, List<String> members)?
+      onAllowListAddedFromChatRoom;
 
   /// ~english
   /// Occurs when the chat room member(s) is/are removed from the allowlist.
@@ -742,10 +705,8 @@ class ChatRoomEventHandler {
   /// ~chinese
   /// 有成员被移出聊天室白名单的回调。
   /// ~end
-  final void Function(
-    String roomId,
-    List<String> members,
-  )? onAllowListRemovedFromChatRoom;
+  final void Function(String roomId, List<String> members)?
+      onAllowListRemovedFromChatRoom;
 
   /// ~english
   /// Occurs when the announcement changed.
@@ -754,10 +715,8 @@ class ChatRoomEventHandler {
   /// ~chinese
   /// 聊天室公告更新回调。
   /// ~end
-  final void Function(
-    String roomId,
-    String? announcement,
-  )? onAnnouncementChangedFromChatRoom;
+  final void Function(String roomId, String? announcement)?
+      onAnnouncementChangedFromChatRoom;
 
   /// ~english
   /// Occurs when the chat room is destroyed.
@@ -766,10 +725,7 @@ class ChatRoomEventHandler {
   /// ~chinese
   /// 聊天室解散的回调。
   /// ~end
-  final void Function(
-    String roomId,
-    String? roomName,
-  )? onChatRoomDestroyed;
+  final void Function(String roomId, String? roomName)? onChatRoomDestroyed;
 
   /// ~english
   /// Occurs when a member leaves the chat room.
@@ -778,11 +734,8 @@ class ChatRoomEventHandler {
   /// ~chinese
   /// 聊天室成员主动退出回调。
   /// ~end
-  final void Function(
-    String roomId,
-    String? roomName,
-    String participant,
-  )? onMemberExitedFromChatRoom;
+  final void Function(String roomId, String? roomName, String participant)?
+      onMemberExitedFromChatRoom;
 
   /// ~english
   /// Occurs when a user joins the chat room.
@@ -801,10 +754,8 @@ class ChatRoomEventHandler {
   /// ~chinese
   /// 有成员被禁言回调。
   /// ~end
-  final void Function(
-    String roomId,
-    Map<String, int> mutes,
-  )? onMuteListAddedFromChatRoom;
+  final void Function(String roomId, Map<String, int> mutes)?
+      onMuteListAddedFromChatRoom;
 
   /// ~english
   /// Occurs when the a chat room member(s) is/are removed from mute list.
@@ -813,10 +764,8 @@ class ChatRoomEventHandler {
   /// ~chinese
   /// 有成员从禁言列表中移除回调。
   /// ~end
-  final void Function(
-    String roomId,
-    List<String> mutes,
-  )? onMuteListRemovedFromChatRoom;
+  final void Function(String roomId, List<String> mutes)?
+      onMuteListRemovedFromChatRoom;
 
   /// ~english
   /// Occurs when the chat room ownership is transferred.
@@ -825,11 +774,8 @@ class ChatRoomEventHandler {
   /// ~chinese
   /// 转移聊天室的所有权的回调。
   /// ~end
-  final void Function(
-    String roomId,
-    String newOwner,
-    String oldOwner,
-  )? onOwnerChangedFromChatRoom;
+  final void Function(String roomId, String newOwner, String oldOwner)?
+      onOwnerChangedFromChatRoom;
 
   /// ~english
   /// Occurs when a user is removed from a chat room.
@@ -874,11 +820,8 @@ class ChatRoomEventHandler {
   /// ~chinese
   /// 聊天室属性被删除。
   /// ~end
-  final void Function(
-    String roomId,
-    List<String> removedKeys,
-    String from,
-  )? onAttributesRemoved;
+  final void Function(String roomId, List<String> removedKeys, String from)?
+      onAttributesRemoved;
 
   /// ~english
   /// The chat room manager listener callback.
@@ -1008,9 +951,7 @@ class ChatThreadEventHandler {
   /// ~chinese
   /// 子区创建回调。
   /// ~end
-  final void Function(
-    ChatThreadEvent event,
-  )? onChatThreadCreate;
+  final void Function(ChatThreadEvent event)? onChatThreadCreate;
 
   /// ~english
   /// Occurs when a message thread is destroyed.
@@ -1022,9 +963,7 @@ class ChatThreadEventHandler {
   /// 子区解散事件。
   /// 子区所属群组的所有成员均可调用该方法。
   /// ~end
-  final void Function(
-    ChatThreadEvent event,
-  )? onChatThreadDestroy;
+  final void Function(ChatThreadEvent event)? onChatThreadDestroy;
 
   /// ~english
   /// Occurs when a message thread is updated.
@@ -1038,9 +977,7 @@ class ChatThreadEventHandler {
   /// 子区更新回调。
   /// 子区所属群组的所有成员均可调用该方法。
   /// ~end
-  final void Function(
-    ChatThreadEvent event,
-  )? onChatThreadUpdate;
+  final void Function(ChatThreadEvent event)? onChatThreadUpdate;
 
   /// ~english
   /// Occurs when the current user is removed from the message thread by the group owner or a group admin to which the message thread belongs.
@@ -1049,9 +986,7 @@ class ChatThreadEventHandler {
   /// ~chinese
   /// 管理员移除子区用户的回调。
   /// ~end
-  final void Function(
-    ChatThreadEvent event,
-  )? onUserKickOutOfChatThread;
+  final void Function(ChatThreadEvent event)? onUserKickOutOfChatThread;
 
   /// ~english
   /// The message thread listener callback.
@@ -1121,9 +1056,7 @@ class ChatContactEventHandler {
   /// ~chinese
   /// 添加好友回调。
   /// ~end
-  final void Function(
-    String userId,
-  )? onContactAdded;
+  final void Function(String userId)? onContactAdded;
 
   /// ~english
   /// Occurs when a user is removed from the contact list by another user.
@@ -1132,9 +1065,7 @@ class ChatContactEventHandler {
   /// ~chinese
   /// 删除好友回调。
   /// ~end
-  final void Function(
-    String userId,
-  )? onContactDeleted;
+  final void Function(String userId)? onContactDeleted;
 
   /// ~english
   /// Occurs when a user receives a friend request.
@@ -1143,10 +1074,7 @@ class ChatContactEventHandler {
   /// ~chinese
   /// 好友申请回调。
   /// ~end
-  final void Function(
-    String userId,
-    String? reason,
-  )? onContactInvited;
+  final void Function(String userId, String? reason)? onContactInvited;
 
   /// ~english
   /// Occurs when a friend request is approved.
@@ -1155,9 +1083,7 @@ class ChatContactEventHandler {
   /// ~chinese
   /// 发出的好友申请被对方同意。
   /// ~end
-  final void Function(
-    String userId,
-  )? onFriendRequestAccepted;
+  final void Function(String userId)? onFriendRequestAccepted;
 
   /// ~english
   /// Occurs when a friend request is declined.
@@ -1166,31 +1092,7 @@ class ChatContactEventHandler {
   /// ~chinese
   /// 发出的好友申请被对方拒绝。
   /// ~end
-  final void Function(
-    String userId,
-  )? onFriendRequestDeclined;
-
-  /// ~english
-  /// Occurs when the SDK starts syncing the contact list from the server.
-  /// ~end
-  ///
-  /// ~chinese
-  /// SDK 开始从服务器同步联系人列表时触发的回调。
-  /// ~end
-  final void Function()? onContactSyncStart;
-
-  /// ~english
-  /// Occurs when the SDK finishes syncing the contact list from the server.
-  ///
-  /// Param [error] The error information if the sync fails, `null` if the sync succeeds.
-  /// ~end
-  ///
-  /// ~chinese
-  /// SDK 从服务器同步联系人列表结束时触发的回调。
-  ///
-  /// Param [error] 同步失败的错误信息，同步成功时为 `null`。
-  /// ~end
-  final void Function(ChatError? error)? onContactSyncFinish;
+  final void Function(String userId)? onFriendRequestDeclined;
 
   /// ~english
   /// Occurs when the information of a contact is updated.
@@ -1218,10 +1120,6 @@ class ChatContactEventHandler {
   ///
   /// Param [onFriendRequestDeclined] A friend request is declined.
   ///
-  /// Param [onContactSyncStart] The SDK starts syncing the contact list from the server.
-  ///
-  /// Param [onContactSyncFinish] The SDK finishes syncing the contact list from the server.
-  ///
   /// Param [onContactInfoUpdate] The information of a contact is updated.
   /// ~end
   ///
@@ -1238,10 +1136,6 @@ class ChatContactEventHandler {
   ///
   /// Param [onFriendRequestDeclined] 发出的好友申请被对方拒绝。
   ///
-  /// Param [onContactSyncStart] 开始从服务器同步联系人列表回调。
-  ///
-  /// Param [onContactSyncFinish] 从服务器同步联系人列表结束回调。
-  ///
   /// Param [onContactInfoUpdate] 联系人信息更新回调。
   /// ~end
   ChatContactEventHandler({
@@ -1250,8 +1144,6 @@ class ChatContactEventHandler {
     this.onContactInvited,
     this.onFriendRequestAccepted,
     this.onFriendRequestDeclined,
-    this.onContactSyncStart,
-    this.onContactSyncFinish,
     this.onContactInfoUpdate,
   });
 }
@@ -1293,10 +1185,7 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 成员设置为管理员的回调。
   /// ~end
-  final void Function(
-    String groupId,
-    String admin,
-  )? onAdminAddedFromGroup;
+  final void Function(String groupId, String admin)? onAdminAddedFromGroup;
 
   /// ~english
   /// Occurs when a member's admin privileges are removed.
@@ -1305,10 +1194,7 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 取消成员的管理员权限的回调。
   /// ~end
-  final void Function(
-    String groupId,
-    String admin,
-  )? onAdminRemovedFromGroup;
+  final void Function(String groupId, String admin)? onAdminRemovedFromGroup;
 
   /// ~english
   /// Occurs when all group members are muted or unmuted.
@@ -1317,10 +1203,8 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 全员禁言状态变化回调。
   /// ~end
-  final void Function(
-    String groupId,
-    bool isAllMuted,
-  )? onAllGroupMemberMuteStateChanged;
+  final void Function(String groupId, bool isAllMuted)?
+      onAllGroupMemberMuteStateChanged;
 
   /// ~english
   /// Occurs when one or more group members are added to the allowlist.
@@ -1329,10 +1213,8 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 成员加入群组白名单回调。
   /// ~end
-  final void Function(
-    String groupId,
-    List<String> members,
-  )? onAllowListAddedFromGroup;
+  final void Function(String groupId, List<String> members)?
+      onAllowListAddedFromGroup;
 
   /// ~english
   /// Occurs when one or more members are removed from the allowlist.
@@ -1341,10 +1223,8 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 成员移出群组白名单回调。
   /// ~end
-  final void Function(
-    String groupId,
-    List<String> members,
-  )? onAllowListRemovedFromGroup;
+  final void Function(String groupId, List<String> members)?
+      onAllowListRemovedFromGroup;
 
   /// ~english
   /// Occurs when the announcement is updated.
@@ -1353,10 +1233,8 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 群公告更新回调。
   /// ~end
-  final void Function(
-    String groupId,
-    String? announcement,
-  )? onAnnouncementChangedFromGroup;
+  final void Function(String groupId, String? announcement)?
+      onAnnouncementChangedFromGroup;
 
   /// ~english
   /// Occurs when the group invitation is accepted automatically.
@@ -1368,11 +1246,8 @@ class ChatGroupEventHandler {
   /// 当前用户自动同意入群邀请的回调。
   /// 设置请见 [ChatOptions.autoAcceptGroupInvitation].
   /// ~end
-  final void Function(
-    String groupId,
-    String inviter,
-    String? inviteMessage,
-  )? onAutoAcceptInvitationFromGroup;
+  final void Function(String groupId, String inviter, String? inviteMessage)?
+      onAutoAcceptInvitationFromGroup;
 
   /// ~english
   /// Occurs when a group is destroyed.
@@ -1381,10 +1256,7 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 当前用户收到群组被解散的回调。
   /// ~end
-  final void Function(
-    String groupId,
-    String? groupName,
-  )? onGroupDestroyed;
+  final void Function(String groupId, String? groupName)? onGroupDestroyed;
 
   /// ~english
   /// Occurs when a group invitation is accepted.
@@ -1393,11 +1265,8 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 当前用户收到对端用户同意入群邀请触发的回调。
   /// ~end
-  final void Function(
-    String groupId,
-    String invitee,
-    String? reason,
-  )? onInvitationAcceptedFromGroup;
+  final void Function(String groupId, String invitee, String? reason)?
+      onInvitationAcceptedFromGroup;
 
   /// ~english
   /// Occurs when a group invitation is declined.
@@ -1407,11 +1276,8 @@ class ChatGroupEventHandler {
   /// 当前用户收到群组邀请被拒绝的回调。
   /// 该回调是由当前用户收到对端用户拒绝入群邀请触发的。例如，用户 B 拒绝了用户 A 的群组邀请，用户 A 会收到该回调。
   /// ~end
-  final void Function(
-    String groupId,
-    String invitee,
-    String? reason,
-  )? onInvitationDeclinedFromGroup;
+  final void Function(String groupId, String invitee, String? reason)?
+      onInvitationDeclinedFromGroup;
 
   /// ~english
   /// Occurs when the user receives a group invitation.
@@ -1434,10 +1300,7 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 群组成员主动退出回调。
   /// ~end
-  final void Function(
-    String groupId,
-    String member,
-  )? onMemberExitedFromGroup;
+  final void Function(String groupId, String member)? onMemberExitedFromGroup;
 
   /// ~english
   /// Occurs when a user joins a group.
@@ -1446,10 +1309,7 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 新成员加入群组的回调。
   /// ~end
-  final void Function(
-    String groupId,
-    String member,
-  )? onMemberJoinedFromGroup;
+  final void Function(String groupId, String member)? onMemberJoinedFromGroup;
 
   /// ~english
   /// Occurs when one or more group members are muted.
@@ -1463,11 +1323,8 @@ class ChatGroupEventHandler {
   /// 有成员被禁言回调。
   /// 用户禁言后，将无法在群中发送消息，但可查看群组中的消息，而黑名单中的用户无法查看和发送群组消息。
   /// ~end
-  final void Function(
-    String groupId,
-    List<String> mutes,
-    int? muteExpire,
-  )? onMuteListAddedFromGroup;
+  final void Function(String groupId, List<String> mutes, int? muteExpire)?
+      onMuteListAddedFromGroup;
 
   /// ~english
   /// Occurs when one or more group members are unmuted.
@@ -1476,10 +1333,8 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 有成员被解除禁言的回调。
   /// ~end
-  final void Function(
-    String groupId,
-    List<String> mutes,
-  )? onMuteListRemovedFromGroup;
+  final void Function(String groupId, List<String> mutes)?
+      onMuteListRemovedFromGroup;
 
   /// ~english
   /// Occurs when the group ownership is transferred.
@@ -1488,11 +1343,8 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 转移群主权限的回调。
   /// ~end
-  final void Function(
-    String groupId,
-    String newOwner,
-    String oldOwner,
-  )? onOwnerChangedFromGroup;
+  final void Function(String groupId, String newOwner, String oldOwner)?
+      onOwnerChangedFromGroup;
 
   /// ~english
   /// Occurs when a group request is accepted.
@@ -1501,11 +1353,8 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 对端用户接受当前用户发送的群组申请的回调。
   /// ~end
-  final void Function(
-    String groupId,
-    String? groupName,
-    String accepter,
-  )? onRequestToJoinAcceptedFromGroup;
+  final void Function(String groupId, String? groupName, String accepter)?
+      onRequestToJoinAcceptedFromGroup;
 
   /// ~english
   /// Occurs when a group request is declined.
@@ -1543,10 +1392,8 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 群组添加共享文件回调。
   /// ~end
-  final void Function(
-    String groupId,
-    ChatGroupSharedFile sharedFile,
-  )? onSharedFileAddedFromGroup;
+  final void Function(String groupId, ChatGroupSharedFile sharedFile)?
+      onSharedFileAddedFromGroup;
 
   /// ~english
   /// Occurs when the group detail information is updated.
@@ -1555,9 +1402,7 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 群详情变更回调。
   /// ~end
-  final void Function(
-    ChatGroup group,
-  )? onSpecificationDidUpdate;
+  final void Function(ChatGroup group)? onSpecificationDidUpdate;
 
   /// ~english
   /// Occurs when the group is enabled or disabled.
@@ -1566,10 +1411,7 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 群是禁用状态变更。
   /// ~end
-  final void Function(
-    String groupId,
-    bool isDisable,
-  )? onDisableChanged;
+  final void Function(String groupId, bool isDisable)? onDisableChanged;
 
   /// ~english
   /// Occurs when a shared file is removed from a group.
@@ -1578,10 +1420,8 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 群组删除共享文件回调。
   /// ~end
-  final void Function(
-    String groupId,
-    String fileId,
-  )? onSharedFileDeletedFromGroup;
+  final void Function(String groupId, String fileId)?
+      onSharedFileDeletedFromGroup;
 
   /// ~english
   /// Occurs when the current user is removed from the group by the group admin.
@@ -1590,10 +1430,8 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 当前用户被移出群组时的回调。
   /// ~end
-  final void Function(
-    String groupId,
-    String? groupName,
-  )? onUserRemovedFromGroup;
+  final void Function(String groupId, String? groupName)?
+      onUserRemovedFromGroup;
 
   /// ~english
   /// Occurs when a custom attribute(s) of a group member is/are changed.
@@ -1634,10 +1472,8 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 成员加入群组的回调。
   /// ~end
-  final void Function(
-    String groupId,
-    List<String> userIds,
-  )? onMembersJoinedFromGroup;
+  final void Function(String groupId, List<String> userIds)?
+      onMembersJoinedFromGroup;
 
   /// ~english
   /// Occurs when members leave the group.
@@ -1646,10 +1482,8 @@ class ChatGroupEventHandler {
   /// ~chinese
   /// 成员离开群组的回调。
   /// ~end
-  final void Function(
-    String groupId,
-    List<String> userIds,
-  )? onMembersExitedFromGroup;
+  final void Function(String groupId, List<String> userIds)?
+      onMembersExitedFromGroup;
 
   /// ~english
   /// Occurs when the group namecard of a user is changed.
@@ -1670,11 +1504,8 @@ class ChatGroupEventHandler {
   ///
   /// Param [namecard] 新的群名片，名片被移除时为 `null`。
   /// ~end
-  final void Function(
-    String groupId,
-    String userId,
-    String? namecard,
-  )? onUserGroupNamecardChanged;
+  final void Function(String groupId, String userId, String? namecard)?
+      onUserGroupNamecardChanged;
 
   /// ~english
   /// The group manager listener callback.
@@ -1878,9 +1709,7 @@ class ChatPresenceEventHandler {
   /// ~chinese
   /// 订阅用户状态变更监听。
   /// ~end
-  ChatPresenceEventHandler({
-    this.onPresenceStatusChanged,
-  });
+  ChatPresenceEventHandler({this.onPresenceStatusChanged});
 }
 
 /// ~english
@@ -1893,11 +1722,7 @@ class ChatPresenceEventHandler {
 /// 消息状态事件类。
 /// ~end
 class ChatMessageEvent {
-  ChatMessageEvent({
-    this.onSuccess,
-    this.onError,
-    this.onProgress,
-  });
+  ChatMessageEvent({this.onSuccess, this.onError, this.onProgress});
 
   /// ~english
   /// Occurs when a message is successfully sent or downloaded.
@@ -2020,8 +1845,5 @@ class ChatUserInfoEventHandler {
   ///
   /// Param [onUserInfoUpdate] 被订阅用户的用户属性更新回调。
   /// ~end
-  ChatUserInfoEventHandler({
-    this.onSelfUserInfoUpdate,
-    this.onUserInfoUpdate,
-  });
+  ChatUserInfoEventHandler({this.onSelfUserInfoUpdate, this.onUserInfoUpdate});
 }

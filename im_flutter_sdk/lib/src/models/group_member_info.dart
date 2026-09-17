@@ -85,4 +85,13 @@ class GroupMemberInfo {
         namecard = map["namecard"],
         nickname = map["nickname"],
         avatarUrl = map["avatarUrl"];
+
+  Map<String, dynamic> toJson() => {
+        'userId': userId,
+        'joinedTs': joinedTs,
+        'role': role.index - 1,
+        'namecard': namecard,
+        'nickname': nickname,
+        'avatarUrl': avatarUrl,
+      };
 }

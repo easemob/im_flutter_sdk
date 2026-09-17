@@ -12,11 +12,9 @@ ChatOptions emOptionsFromJson(Map<String, dynamic> j) {
   int? i(String k) => j[k] as int?;
   return ChatOptions.withAppKey(
     appKey,
-    autoLogin: b('autoLogin') ?? true,
     debugMode: b('debugMode') ?? false,
     acceptInvitationAlways: b('acceptInvitationAlways') ?? false,
     autoAcceptGroupInvitation: b('autoAcceptGroupInvitation') ?? false,
-    requireAck: b('requireAck') ?? true,
     requireDeliveryAck: b('requireDeliveryAck') ?? false,
     deleteMessagesAsExitGroup: b('deleteMessagesAsExitGroup') ?? true,
     deleteMessagesAsExitChatRoom: b('deleteMessagesAsExitChatRoom') ?? true,
@@ -43,7 +41,7 @@ ChatOptions emOptionsFromJson(Map<String, dynamic> j) {
     regardImportMessagesAsRead: b('regardImportMessagesAsRead') ?? false,
     workPathCopiable: b('workPathCopiable') ?? false,
     enableUserInfo: b('enableUserInfo') ?? false,
-    enableAutoSyncContacts: b('enableAutoSyncContacts') ?? false,
+    dataSyncType: i('dataSyncType'),
     loginExtension: s('loginExtension'),
   );
 }
@@ -51,6 +49,6 @@ ChatOptions emOptionsFromJson(Map<String, dynamic> j) {
 /// Init page pre-fill template: contains only required fields.
 const String emOptionsTemplate = '''{
   "appKey": "",
-  "autoLogin": false,
+  "dataSyncType": 1,
   "debugMode": true
 }''';

@@ -56,12 +56,6 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
             if (MethodKey.getUnreadMsgCount.equals(call.method)) {
                 getUnreadMsgCount(param, call.method, result);
             }
-            else if (MethodKey.markAllMessagesAsRead.equals(call.method)) {
-                markAllMessagesAsRead(param, call.method, result);
-            }
-            else if (MethodKey.markMessageAsRead.equals(call.method)) {
-                markMessageAsRead(param, call.method, result);
-            }
             else if (MethodKey.syncConversationExt.equals(call.method)){
                 syncConversationExt(param, call.method, result);
             }
@@ -148,25 +142,6 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
         asyncHeavyWorkRunnable(()->{
             EMConversation conversation = conversationParams.getConversation();
             onSuccess(result, channelName,  conversation.getUnreadMsgCount());   
-        });
-    }
-
-    private void markAllMessagesAsRead(JSONObject params, String channelName, Result result) throws JSONException {
-        ConversationParams conversationParams = new ConversationParams(params);
-        asyncRunnable(()->{
-            EMConversation conversation = conversationParams.getConversation();
-            conversation.markAllMessagesAsRead();
-            onSuccess(result, channelName, true);
-        });
-    }
-
-    private void markMessageAsRead(JSONObject params, String channelName, Result result) throws JSONException {
-        ConversationParams conversationParams = new ConversationParams(params);
-        String msgId = params.getString("msgId");
-        asyncRunnable(()->{
-            EMConversation conversation = conversationParams.getConversation();
-            conversation.markMessageAsRead(msgId);
-            onSuccess(result, channelName, true);
         });
     }
 

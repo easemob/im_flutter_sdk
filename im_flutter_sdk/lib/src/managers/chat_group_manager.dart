@@ -16,8 +16,9 @@ class ChatGroupManager {
   final Map<String, ChatGroupEventHandler> _eventHandlesMap = {};
 
   ChatGroupManager() {
-    platform_interface.Client.instance.groupManager
-        .updateNativeHandler((MethodCall call) async {
+    platform_interface.Client.instance.groupManager.updateNativeHandler((
+      MethodCall call,
+    ) async {
       ChatLog.d("${call.method}: arguments: ${call.arguments}");
       Map? argMap = call.arguments;
       if (call.method == ChatMethodKeys.onGroupChanged) {
@@ -35,8 +36,12 @@ class ChatGroupManager {
           String? groupName = map['groupName'];
           String inviter = map['inviter'];
           String? reason = map['reason'];
-          element.onInvitationReceivedFromGroup
-              ?.call(groupId, groupName, inviter, reason);
+          element.onInvitationReceivedFromGroup?.call(
+            groupId,
+            groupName,
+            inviter,
+            reason,
+          );
           break;
         case ChatGroupChangeEvent.ON_INVITATION_ACCEPTED:
           String groupId = map['groupId'];
@@ -54,8 +59,11 @@ class ChatGroupManager {
           String groupId = map['groupId'];
           String inviter = map['inviter'];
           String? inviteMessage = map['inviteMessage'];
-          element.onAutoAcceptInvitationFromGroup
-              ?.call(groupId, inviter, inviteMessage);
+          element.onAutoAcceptInvitationFromGroup?.call(
+            groupId,
+            inviter,
+            inviteMessage,
+          );
           break;
         case ChatGroupChangeEvent.ON_USER_REMOVED:
           String groupId = map['groupId'];
@@ -67,8 +75,12 @@ class ChatGroupManager {
           String? groupName = map['groupName'];
           String applicant = map['applicant'];
           String? reason = map['reason'];
-          element.onRequestToJoinReceivedFromGroup
-              ?.call(groupId, groupName, applicant, reason);
+          element.onRequestToJoinReceivedFromGroup?.call(
+            groupId,
+            groupName,
+            applicant,
+            reason,
+          );
           break;
         case ChatGroupChangeEvent.ON_REQUEST_TO_JOIN_DECLINED:
           String groupId = map['groupId'];
@@ -76,15 +88,23 @@ class ChatGroupManager {
           String? applicant = map['applicant'];
           String? reason = map['reason'];
           String? decliner = map['decliner'];
-          element.onRequestToJoinDeclinedFromGroup
-              ?.call(groupId, groupName, decliner, reason, applicant);
+          element.onRequestToJoinDeclinedFromGroup?.call(
+            groupId,
+            groupName,
+            decliner,
+            reason,
+            applicant,
+          );
           break;
         case ChatGroupChangeEvent.ON_REQUEST_TO_JOIN_ACCEPTED:
           String groupId = map['groupId'];
           String? groupName = map['groupName'];
           String accepter = map['accepter'];
-          element.onRequestToJoinAcceptedFromGroup
-              ?.call(groupId, groupName, accepter);
+          element.onRequestToJoinAcceptedFromGroup?.call(
+            groupId,
+            groupName,
+            accepter,
+          );
           break;
         case ChatGroupChangeEvent.ON_GROUP_DESTROYED:
           String groupId = map['groupId'];
@@ -135,8 +155,9 @@ class ChatGroupManager {
           break;
         case ChatGroupChangeEvent.ON_SHARED_FILE_ADDED:
           String groupId = map['groupId'];
-          ChatGroupSharedFile sharedFile =
-              ChatGroupSharedFile.fromJson(map['sharedFile']);
+          ChatGroupSharedFile sharedFile = ChatGroupSharedFile.fromJson(
+            map['sharedFile'],
+          );
           element.onSharedFileAddedFromGroup?.call(groupId, sharedFile);
           break;
         case ChatGroupChangeEvent.ON_SHARED_FILE__DELETED:
@@ -215,10 +236,7 @@ class ChatGroupManager {
   ///
   /// Param [handler] 群组事件监听，请见 [ChatGroupEventHandler].
   /// ~end
-  void addEventHandler(
-    String identifier,
-    ChatGroupEventHandler handler,
-  ) {
+  void addEventHandler(String identifier, ChatGroupEventHandler handler) {
     _eventHandlesMap[identifier] = handler;
   }
 
@@ -323,100 +341,10 @@ class ChatGroupManager {
           .callNativeMethod(ChatMethodKeys.getJoinedGroups);
       ChatError.hasErrorFromResult(result);
       List<ChatGroup> list = [];
-      result[ChatMethodKeys.getJoinedGroups]
-          ?.forEach((element) => list.add(ChatGroup.fromJson(element)));
+      result[ChatMethodKeys.getJoinedGroups]?.forEach(
+        (element) => list.add(ChatGroup.fromJson(element)),
+      );
       return list;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Gets the groups joined by the current user from the server with pagination.
-  ///
-  /// Param [pageNum]        The current page number, starting from 0. The SDK queries in reverse order of group joining.
-  /// Param [pageSize]       The number of groups to get per page. Value range: [1,20].
-  /// Param [needMemberCount] Whether to get the group member count.
-  /// Param [needRole]       Whether to get the role of the current user in the group.
-  ///
-  /// **Returns** The list of retrieved groups.
-  ///
-  /// **Throws** Exception description, see [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 从服务器分页获取当前用户加入的群组。
-  ///
-  /// Param [pageNum]        当前页码，从 0 开始，SDK 按照加入群组逆序查询。
-  /// Param [pageSize]       每页获取的群组数量，取值范围 [1,20]。
-  /// Param [needMemberCount] 是否需要群组成员数。
-  /// Param [needRole]       是否需要当前用户在群组内的角色。
-  ///
-  /// **Return** 获取到的群组列表。
-  ///
-  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
-  /// ~end
-  Future<List<ChatGroup>> fetchJoinedGroupsFromServer({
-    int pageSize = 20,
-    int pageNum = 0,
-    bool needMemberCount = false,
-    bool needRole = false,
-  }) async {
-    try {
-      Map req = {
-        'pageSize': pageSize,
-        'pageNum': pageNum,
-        "needMemberCount": needMemberCount,
-        "needRole": needRole,
-      };
-      Map result = await platform_interface.Client.instance.groupManager
-          .callNativeMethod(ChatMethodKeys.getJoinedGroupsFromServer, req);
-      ChatError.hasErrorFromResult(result);
-      List<ChatGroup> list = [];
-      result[ChatMethodKeys.getJoinedGroupsFromServer]
-          ?.forEach((element) => list.add(ChatGroup.fromJson(element)));
-      return list;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Gets public groups within the specified range from the server.
-  ///
-  /// Param [cursor]    The cursor for getting public groups, null for the first call.
-  /// Param [pageSize]  The number of results expected to be returned.
-  ///
-  /// **Returns** The result of retrieved public groups.
-  ///
-  /// **Throws** Exception description, see [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 从服务器获取指定范围内的公开群。
-  ///
-  /// Param [cursor]    获取公开群的游标，首次调用传空。
-  /// Param [pageSize]  期望返回结果的数量。
-  ///
-  /// **Return** 获取到的公开群结果。
-  ///
-  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
-  /// ~end
-  Future<ChatCursorResult<ChatGroupInfo>> fetchPublicGroupsFromServer({
-    int pageSize = 200,
-    String? cursor,
-  }) async {
-    try {
-      Map req = {'pageSize': pageSize};
-      req.putIfNotNull("cursor", cursor);
-      Map result = await platform_interface.Client.instance.groupManager
-          .callNativeMethod(ChatMethodKeys.getPublicGroupsFromServer, req);
-      ChatError.hasErrorFromResult(result);
-      return ChatCursorResult<ChatGroupInfo>.fromJson(
-          result[ChatMethodKeys.getPublicGroupsFromServer],
-          dataItemCallback: (value) {
-        return ChatGroupInfo.fromJson(value);
-      });
     } catch (e) {
       rethrow;
     }
@@ -430,7 +358,7 @@ class ChatGroupManager {
   /// Param [desc]           The group description.
   /// Param [inviteMembers]  The group members to invite, not including the creator.
   /// Param [inviteReason]   The invitation message for joining the group.
-  /// Param [options]        The group options, see [ChatGroupOptions].
+  /// Param [configs]        The group configurations, see [ChatGroupConfigs].
   ///
   /// **Returns** The created group instance.
   ///
@@ -445,7 +373,7 @@ class ChatGroupManager {
   /// Param [desc]           群组描述。
   /// Param [inviteMembers]  邀请的群成员，不包含创建者自己。
   /// Param [inviteReason]   加入群组的邀请消息。
-  /// Param [options]        群组属性，详见 [ChatGroupOptions]。
+  /// Param [configs]        群组配置，详见 [ChatGroupConfigs]。
   ///
   /// **Return** 创建的群组实例。
   ///
@@ -457,10 +385,10 @@ class ChatGroupManager {
     String? desc,
     List<String>? inviteMembers,
     String? inviteReason,
-    required ChatGroupOptions options,
+    required ChatGroupConfigs configs,
   }) async {
     try {
-      Map req = {'options': options.toJson()};
+      Map req = {'configs': configs.toJson()};
       req.putIfNotNull("groupName", groupName);
       req.putIfNotNull("avatarUrl", avatarUrl);
       req.putIfNotNull("desc", desc);
@@ -471,6 +399,37 @@ class ChatGroupManager {
           .callNativeMethod(ChatMethodKeys.createGroup, req);
       ChatError.hasErrorFromResult(result);
       return ChatGroup.fromJson(result[ChatMethodKeys.createGroup]);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// ~english
+  /// Updates the selected group configuration fields.
+  ///
+  /// Param [types] A bit mask composed of [ChatGroupConfigsType] values.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 更新指定的群组配置字段。
+  ///
+  /// Param [types] 由 [ChatGroupConfigsType] 值组合而成的位掩码。
+  /// ~end
+  Future<ChatGroup> updateGroupConfigs({
+    required String groupId,
+    required int types,
+    required ChatGroupConfigs configs,
+  }) async {
+    try {
+      final req = {
+        'groupId': groupId,
+        'types': types,
+        'configs': configs.toJson(),
+      };
+      final result = await platform_interface.Client.instance.groupManager
+          .callNativeMethod(ChatMethodKeys.updateGroupConfigs, req);
+      ChatError.hasErrorFromResult(result);
+      return ChatGroup.fromJson(result[ChatMethodKeys.updateGroupConfigs]);
     } catch (e) {
       rethrow;
     }
@@ -506,7 +465,8 @@ class ChatGroupManager {
     try {
       ChatError.hasErrorFromResult(result);
       return ChatGroup.fromJson(
-          result[ChatMethodKeys.getGroupSpecificationFromServer]);
+        result[ChatMethodKeys.getGroupSpecificationFromServer],
+      );
     } catch (e) {
       rethrow;
     }
@@ -541,20 +501,15 @@ class ChatGroupManager {
     String? cursor,
   }) async {
     try {
-      Map req = {
-        'groupId': groupId,
-        'pageSize': pageSize,
-      };
+      Map req = {'groupId': groupId, 'pageSize': pageSize};
       req.putIfNotNull("cursor", cursor);
       Map result = await platform_interface.Client.instance.groupManager
-          .callNativeMethod(
-        ChatMethodKeys.getGroupMemberListFromServer,
-        req,
-      );
+          .callNativeMethod(ChatMethodKeys.getGroupMemberListFromServer, req);
       ChatError.hasErrorFromResult(result);
       return ChatCursorResult<String>.fromJson(
-          result[ChatMethodKeys.getGroupMemberListFromServer],
-          dataItemCallback: (value) => value);
+        result[ChatMethodKeys.getGroupMemberListFromServer],
+        dataItemCallback: (value) => value,
+      );
     } catch (e) {
       rethrow;
     }
@@ -863,17 +818,11 @@ class ChatGroupManager {
     String? reason,
   }) async {
     try {
-      Map req = {
-        'groupId': groupId,
-        'members': members,
-      };
+      Map req = {'groupId': groupId, 'members': members};
       req.putIfNotNull("reason", reason);
 
       Map result = await platform_interface.Client.instance.groupManager
-          .callNativeMethod(
-        ChatMethodKeys.inviterUser,
-        req,
-      );
+          .callNativeMethod(ChatMethodKeys.inviterUser, req);
 
       ChatError.hasErrorFromResult(result);
     } catch (e) {
@@ -904,10 +853,7 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<void> removeMembers(
-    String groupId,
-    List<String> members,
-  ) async {
+  Future<void> removeMembers(String groupId, List<String> members) async {
     try {
       Map req = {'groupId': groupId, 'members': members};
       Map result = await platform_interface.Client.instance.groupManager
@@ -941,10 +887,7 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<void> blockMembers(
-    String groupId,
-    List<String> members,
-  ) async {
+  Future<void> blockMembers(String groupId, List<String> members) async {
     try {
       Map req = {'groupId': groupId, 'members': members};
       Map result = await platform_interface.Client.instance.groupManager
@@ -978,10 +921,7 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<void> unblockMembers(
-    String groupId,
-    List<String> members,
-  ) async {
+  Future<void> unblockMembers(String groupId, List<String> members) async {
     try {
       Map req = {'groupId': groupId, 'members': members};
       Map result = await platform_interface.Client.instance.groupManager
@@ -993,10 +933,7 @@ class ChatGroupManager {
   }
 
   @Deprecated('Use [updateGroupName] instead')
-  Future<void> changeGroupName(
-    String groupId,
-    String name,
-  ) async {
+  Future<void> changeGroupName(String groupId, String name) async {
     try {
       Map req = {'name': name, 'groupId': groupId};
       Map result = await platform_interface.Client.instance.groupManager
@@ -1030,10 +967,7 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<void> updateGroupName(
-    String groupId,
-    String name,
-  ) async {
+  Future<void> updateGroupName(String groupId, String name) async {
     Map req = {'name': name, 'groupId': groupId};
     Map result = await platform_interface.Client.instance.groupManager
         .callNativeMethod(ChatMethodKeys.updateGroupSubject, req);
@@ -1045,10 +979,7 @@ class ChatGroupManager {
   }
 
   @Deprecated('Use [updateGroupDesc] instead')
-  Future<void> changeGroupDescription(
-    String groupId,
-    String desc,
-  ) async {
+  Future<void> changeGroupDescription(String groupId, String desc) async {
     try {
       Map req = {'desc': desc, 'groupId': groupId};
       Map result = await platform_interface.Client.instance.groupManager
@@ -1082,10 +1013,7 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<void> updateGroupDesc(
-    String groupId,
-    String desc,
-  ) async {
+  Future<void> updateGroupDesc(String groupId, String desc) async {
     try {
       Map req = {'desc': desc, 'groupId': groupId};
       Map result = await platform_interface.Client.instance.groupManager
@@ -1242,10 +1170,7 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<void> changeOwner(
-    String groupId,
-    String newOwner,
-  ) async {
+  Future<void> changeOwner(String groupId, String newOwner) async {
     try {
       Map req = {'groupId': groupId, 'owner': newOwner};
       Map result = await platform_interface.Client.instance.groupManager
@@ -1279,10 +1204,7 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<void> addAdmin(
-    String groupId,
-    String memberId,
-  ) async {
+  Future<void> addAdmin(String groupId, String memberId) async {
     Map req = {'groupId': groupId, 'admin': memberId};
     Map result = await platform_interface.Client.instance.groupManager
         .callNativeMethod(ChatMethodKeys.addAdmin, req);
@@ -1316,10 +1238,7 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<void> removeAdmin(
-    String groupId,
-    String adminId,
-  ) async {
+  Future<void> removeAdmin(String groupId, String adminId) async {
     try {
       Map req = {'groupId': groupId, 'admin': adminId};
       Map result = await platform_interface.Client.instance.groupManager
@@ -1393,10 +1312,7 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<void> unMuteMembers(
-    String groupId,
-    List<String> members,
-  ) async {
+  Future<void> unMuteMembers(String groupId, List<String> members) async {
     try {
       Map req = {'groupId': groupId, 'members': members};
       Map result = await platform_interface.Client.instance.groupManager
@@ -1494,10 +1410,7 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<void> addAllowList(
-    String groupId,
-    List<String> members,
-  ) async {
+  Future<void> addAllowList(String groupId, List<String> members) async {
     try {
       Map req = {'groupId': groupId, 'members': members};
       Map result = await platform_interface.Client.instance.groupManager
@@ -1531,10 +1444,7 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<void> removeAllowList(
-    String groupId,
-    List<String> members,
-  ) async {
+  Future<void> removeAllowList(String groupId, List<String> members) async {
     try {
       Map req = {'groupId': groupId, 'members': members};
       Map result = await platform_interface.Client.instance.groupManager
@@ -1566,10 +1476,7 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<void> uploadGroupSharedFile(
-    String groupId,
-    String filePath,
-  ) async {
+  Future<void> uploadGroupSharedFile(String groupId, String filePath) async {
     try {
       Map req = {'groupId': groupId, 'filePath': filePath};
       Map result = await platform_interface.Client.instance.groupManager
@@ -1639,10 +1546,7 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<void> removeGroupSharedFile(
-    String groupId,
-    String fileId,
-  ) async {
+  Future<void> removeGroupSharedFile(String groupId, String fileId) async {
     Map req = {'groupId': groupId, 'fileId': fileId};
     Map result = await platform_interface.Client.instance.groupManager
         .callNativeMethod(ChatMethodKeys.removeGroupSharedFile, req);
@@ -1713,10 +1617,7 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<void> updateGroupExtension(
-    String groupId,
-    String extension,
-  ) async {
+  Future<void> updateGroupExtension(String groupId, String extension) async {
     try {
       Map req = {'groupId': groupId, 'ext': extension};
       Map result = await platform_interface.Client.instance.groupManager
@@ -1728,7 +1629,7 @@ class ChatGroupManager {
   }
 
   /// ~english
-  /// Joins a public group. The group style should be ChatGroupStylePublicOpenJoin.
+  /// Joins a public group that does not require approval.
   ///
   /// Param [groupId]   The ID of the public group to join.
   ///
@@ -1738,7 +1639,7 @@ class ChatGroupManager {
   /// ~end
   ///
   /// ~chinese
-  /// 加入一个公开群组，群类型应该是 ChatGroupStylePublicOpenJoin。
+  /// 加入无需审批的公开群组。
   ///
   /// Param [groupId]   要加入的公开群组 ID。
   ///
@@ -1746,9 +1647,7 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<void> joinPublicGroup(
-    String groupId,
-  ) async {
+  Future<void> joinPublicGroup(String groupId) async {
     try {
       Map req = {'groupId': groupId};
       Map result = await platform_interface.Client.instance.groupManager
@@ -1819,10 +1718,7 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<void> acceptJoinApplication(
-    String groupId,
-    String username,
-  ) async {
+  Future<void> acceptJoinApplication(String groupId, String username) async {
     try {
       Map req = {'groupId': groupId, 'userId': username};
       Map result = await platform_interface.Client.instance.groupManager
@@ -1896,17 +1792,15 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<ChatGroup> acceptInvitation(
-    String groupId,
-    String inviter,
-  ) async {
+  Future<ChatGroup> acceptInvitation(String groupId, String inviter) async {
     try {
       Map req = {'groupId': groupId, 'inviter': inviter};
       Map result = await platform_interface.Client.instance.groupManager
           .callNativeMethod(ChatMethodKeys.acceptInvitationFromGroup, req);
       ChatError.hasErrorFromResult(result);
       return ChatGroup.fromJson(
-          result[ChatMethodKeys.acceptInvitationFromGroup]);
+        result[ChatMethodKeys.acceptInvitationFromGroup],
+      );
     } catch (e) {
       rethrow;
     }
@@ -1980,9 +1874,7 @@ class ChatGroupManager {
     String? userId,
   }) async {
     try {
-      Map req = {
-        'groupId': groupId,
-      };
+      Map req = {'groupId': groupId};
       req.putIfNotNull('userId', userId);
       req.putIfNotNull('attributes', attributes);
       Map result = await platform_interface.Client.instance.groupManager
@@ -2022,14 +1914,14 @@ class ChatGroupManager {
     String? userId,
   }) async {
     try {
-      Map req = {
-        'groupId': groupId,
-      };
+      Map req = {'groupId': groupId};
       req.putIfNotNull('userId', userId);
       req.putIfNotNull('keys', keys);
       Map result = await platform_interface.Client.instance.groupManager
           .callNativeMethod(
-              ChatMethodKeys.removeMemberAttributesFromGroup, req);
+        ChatMethodKeys.removeMemberAttributesFromGroup,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -2068,8 +1960,10 @@ class ChatGroupManager {
           .callNativeMethod(ChatMethodKeys.fetchMemberAttributesFromGroup, req);
       ChatError.hasErrorFromResult(result);
       Map<String, String> ret = {};
-      result[ChatMethodKeys.fetchMemberAttributesFromGroup]
-          .forEach((key, value) {
+      result[ChatMethodKeys.fetchMemberAttributesFromGroup].forEach((
+        key,
+        value,
+      ) {
         ret[key] = value;
       });
       return ret;
@@ -2111,15 +2005,18 @@ class ChatGroupManager {
       req.putIfNotNull("keys", keys);
       Map result = await platform_interface.Client.instance.groupManager
           .callNativeMethod(
-              ChatMethodKeys.fetchMembersAttributesFromGroup, req);
+        ChatMethodKeys.fetchMembersAttributesFromGroup,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       var map = result[ChatMethodKeys.fetchMembersAttributesFromGroup];
       Map<String, Map<String, String>> ret = {};
       if (map is Map) {
         for (var element in map.keys) {
           if (map[element] is Map) {
-            Map<String, String> value =
-                Map<String, String>.from(map[element] ?? {});
+            Map<String, String> value = Map<String, String>.from(
+              map[element] ?? {},
+            );
             ret[element] = value;
           }
         }
@@ -2242,24 +2139,19 @@ class ChatGroupManager {
     int limit = 20,
   }) async {
     try {
-      Map req = {
-        "groupId": groupId,
-        "limit": limit,
-      };
+      Map req = {"groupId": groupId, "limit": limit};
 
       req.putIfNotNull('cursor', cursor);
 
       Map result = await platform_interface.Client.instance.groupManager
-          .callNativeMethod(
-        ChatMethodKeys.fetchGroupMembersInfo,
-        req,
-      );
+          .callNativeMethod(ChatMethodKeys.fetchGroupMembersInfo, req);
       ChatError.hasErrorFromResult(result);
       return ChatCursorResult<GroupMemberInfo>.fromJson(
-          result[ChatMethodKeys.fetchGroupMembersInfo],
-          dataItemCallback: (value) {
-        return GroupMemberInfo.fromJson(value);
-      });
+        result[ChatMethodKeys.fetchGroupMembersInfo],
+        dataItemCallback: (value) {
+          return GroupMemberInfo.fromJson(value);
+        },
+      );
     } catch (e) {
       rethrow;
     }
@@ -2293,10 +2185,7 @@ class ChatGroupManager {
     required String avatarUrl,
   }) async {
     try {
-      Map req = {
-        "groupId": groupId,
-        "avatarUrl": avatarUrl,
-      };
+      Map req = {"groupId": groupId, "avatarUrl": avatarUrl};
       Map result = await platform_interface.Client.instance.groupManager
           .callNativeMethod(ChatMethodKeys.updateGroupAvatar, req);
       ChatError.hasErrorFromResult(result);

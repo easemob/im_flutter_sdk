@@ -13,13 +13,7 @@ void main() {
   final client = ChatClient.getInstance;
 
   setUpAll(() async {
-    await client.init(
-      ChatOptions.withAppKey(_publicAppKey, autoLogin: false, debugMode: false),
-    );
-
-    if (await client.isLoginBefore()) {
-      await client.logout(false);
-    }
+    await client.init(ChatOptions.withAppKey(_publicAppKey, debugMode: false));
   });
 
   Future<void> expectNotLoggedIn(Future<void> Function() operation) async {
@@ -29,29 +23,33 @@ void main() {
     );
   }
 
-  testWidgets('FL-APP-001 initializes the native SDK while logged out',
-      (tester) async {
-    expect(await client.isLoginBefore(), isFalse);
+  testWidgets('FL-APP-001 initializes the native SDK while logged out', (
+    tester,
+  ) async {
     expect(client.currentUserId, isNull);
   });
 
-  testWidgets('FL-PRESENCE-001 rejects publish while logged out',
-      (tester) async {
+  testWidgets('FL-PRESENCE-001 rejects publish while logged out', (
+    tester,
+  ) async {
     await expectNotLoggedIn(
       () => client.presenceManager.publishPresence('flutter-ci'),
     );
   });
 
-  testWidgets('FL-PRESENCE-002 rejects status fetch while logged out',
-      (tester) async {
+  testWidgets('FL-PRESENCE-002 rejects status fetch while logged out', (
+    tester,
+  ) async {
     await expectNotLoggedIn(
-      () => client.presenceManager
-          .fetchPresenceStatus(members: const <String>['flutter-ci-peer']),
+      () => client.presenceManager.fetchPresenceStatus(
+        members: const <String>['flutter-ci-peer'],
+      ),
     );
   });
 
-  testWidgets('FL-PRESENCE-003 rejects subscribe while logged out',
-      (tester) async {
+  testWidgets('FL-PRESENCE-003 rejects subscribe while logged out', (
+    tester,
+  ) async {
     await expectNotLoggedIn(
       () => client.presenceManager.subscribe(
         members: const <String>['flutter-ci-peer'],
@@ -60,16 +58,19 @@ void main() {
     );
   });
 
-  testWidgets('FL-PRESENCE-004 rejects unsubscribe while logged out',
-      (tester) async {
+  testWidgets('FL-PRESENCE-004 rejects unsubscribe while logged out', (
+    tester,
+  ) async {
     await expectNotLoggedIn(
-      () => client.presenceManager
-          .unsubscribe(members: const <String>['flutter-ci-peer']),
+      () => client.presenceManager.unsubscribe(
+        members: const <String>['flutter-ci-peer'],
+      ),
     );
   });
 
-  testWidgets('FL-PRESENCE-005 rejects subscription query while logged out',
-      (tester) async {
+  testWidgets('FL-PRESENCE-005 rejects subscription query while logged out', (
+    tester,
+  ) async {
     await expectNotLoggedIn(
       () => client.presenceManager.fetchSubscribedMembers(
         pageNum: 1,

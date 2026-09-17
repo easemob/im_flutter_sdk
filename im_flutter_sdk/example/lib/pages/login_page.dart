@@ -8,7 +8,7 @@ import '../registry/api_entry.dart';
 import '../sdk_state.dart';
 import 'search_page.dart';
 
-/// Login page: password / token modes; pushes search page on success (can go back to switch account / logout).
+/// Token login page; pushes search page on success.
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -19,7 +19,6 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _userController = TextEditingController();
   final _secretController = TextEditingController();
-  bool _usePassword = true;
   String? _result;
   bool _running = false;
 
@@ -50,17 +49,12 @@ class _LoginPageState extends State<LoginPage> {
     final userId = _userController.text.trim();
     final secret = _secretController.text;
     final ok = await _run('ChatClient.login', () async {
-      if (_usePassword) {
-        await ChatClient.getInstance.loginWithPassword(userId, secret);
-      } else {
-        await ChatClient.getInstance.loginWithToken(userId, secret);
-      }
+      await ChatClient.getInstance.loginWithToken(userId, secret);
       SdkState.instance.markLoggedIn(userId);
     });
     if (ok && mounted) {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const SearchPage()),
-      );
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => const SearchPage()));
     }
   }
 
@@ -103,15 +97,6 @@ class _LoginPageState extends State<LoginPage> {
                 ],
               ),
             ),
-          SegmentedButton<bool>(
-            segments: const [
-              ButtonSegment(value: true, label: Text('密码')),
-              ButtonSegment(value: false, label: Text('Token')),
-            ],
-            selected: {_usePassword},
-            onSelectionChanged: (s) => setState(() => _usePassword = s.first),
-          ),
-          const SizedBox(height: 8),
           TextField(
             controller: _userController,
             decoration: const InputDecoration(
@@ -123,9 +108,9 @@ class _LoginPageState extends State<LoginPage> {
           TextField(
             controller: _secretController,
             obscureText: true,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              labelText: _usePassword ? 'password' : 'token',
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'token',
             ),
           ),
           const SizedBox(height: 12),

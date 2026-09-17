@@ -1,51 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
 /// ~english
-/// The group types.
-/// ~end
-///
-/// ~chinese
-/// 群组类型枚举。
-/// ~end
-enum ChatGroupStyle {
-  /// ~english
-  /// Private groups where only the the group owner can invite users to join.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 私有群组，创建完成后，只允许群主邀请用户加入。
-  /// ~end
-  PrivateOnlyOwnerInvite,
-
-  /// ~english
-  /// Private groups where all group members can invite users to join.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 私有群组，创建完成后，只允许群主和群成员邀请用户加入。
-  /// ~end
-  PrivateMemberCanInvite,
-
-  /// ~english
-  /// Public groups where users can join only after receiving an invitation from the group owner(admin) or the joining request being approved by the  group owner(admin).
-  /// ~end
-  ///
-  /// ~chinese
-  /// 公开群组，创建完成后，只允许群主邀请用户加入；非群成员用户需发送入群申请，群主同意后才能入群。
-  /// ~end
-  PublicJoinNeedApproval,
-
-  /// ~english
-  /// Public groups where users can join freely.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 公开群组，创建完成后，允许非群组成员加入，无需群主同意。
-  /// ~end
-  PublicOpenJoin,
-}
-
-/// ~english
 /// The conversation types.
 /// ~end
 ///
@@ -848,6 +803,24 @@ enum ChatMultiDevicesEvent {
   ///  用户 A 在设备 A1 设置会话免打扰，则设备 A2 上会收到该事件。
   /// ~end
   CONVERSATION_MUTE_INFO_CHANGED,
+
+  /// ~english
+  /// Another device cleared the unread count of a conversation.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 其他设备清除了指定会话的未读数。
+  /// ~end
+  CONVERSATION_UNREAD_MESSAGE_COUNT_CLEARED,
+
+  /// ~english
+  /// Another device cleared the unread count of all conversations.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 其他设备清除了全部会话的未读数。
+  /// ~end
+  ALL_CONVERSATION_UNREAD_MESSAGE_COUNT_CLEARED,
 }
 
 /// ~english

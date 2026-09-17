@@ -56,14 +56,6 @@
         [self getUnreadMsgCount:call.arguments
                     channelName:call.method
                          result:result];
-    } else if ([ChatMarkAllMsgsAsRead isEqualToString:call.method]) {
-        [self markAllMessagesAsRead:call.arguments
-                        channelName:call.method
-                             result:result];
-    } else if ([ChatMarkMsgAsRead isEqualToString:call.method]) {
-        [self markMessageAsRead:call.arguments
-                    channelName:call.method
-                         result:result];
     } else if ([ChatSyncConversationExt isEqualToString:call.method]){
         [self syncConversationExt:call.arguments
                       channelName:call.method
@@ -219,25 +211,6 @@
     }];
 }
 
-- (void)markMessageAsRead:(NSDictionary *)param
-              channelName:(NSString *)aChannelName
-                   result:(FlutterResult)result
-{
-    __weak typeof(self) weakSelf = self;
-    [self getConversationWithParam:param
-                        completion:^(EMConversation *conversation)
-     {
-        NSString *msgId = param[@"msgId"];
-        EMError *error = nil;
-        [conversation markMessageAsReadWithId:msgId error:&error];
-        
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:error
-                           object:@(!error)];
-    }];
-}
-
 - (void)syncConversationExt:(NSDictionary *)param
                 channelName:(NSString *)aChannelName
                      result:(FlutterResult)result
@@ -252,22 +225,6 @@
                       channelName:aChannelName
                             error:nil
                            object:@(YES)];
-    }];
-}
-
-- (void)markAllMessagesAsRead:(NSDictionary *)param
-                  channelName:(NSString *)aChannelName
-                       result:(FlutterResult)result
-{
-    __weak typeof(self) weakSelf = self;
-    [self getConversationWithParam:param
-                        completion:^(EMConversation *conversation) {
-        EMError *error = nil;
-        [conversation markAllMessagesAsRead:&error];
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:error
-                           object:@(!error)];
     }];
 }
 

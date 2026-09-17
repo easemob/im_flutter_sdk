@@ -12,11 +12,9 @@
     dbMsg.timestamp = msg.timestamp;
     dbMsg.localTime = msg.localTime;
     dbMsg.status = msg.status;
-    dbMsg.isReadAcked = msg.isReadAcked;
     dbMsg.isChatThreadMessage = msg.isChatThreadMessage;
-    dbMsg.isNeedGroupAck = msg.isNeedGroupAck;
+    dbMsg.isNeedReadReceipt = msg.isNeedReadReceipt;
     dbMsg.isDeliverAcked = msg.isDeliverAcked;
-    dbMsg.isRead = msg.isRead;
     dbMsg.isListened = msg.isListened;
     dbMsg.receiverList = msg.receiverList;
     dbMsg.priority = msg.priority;

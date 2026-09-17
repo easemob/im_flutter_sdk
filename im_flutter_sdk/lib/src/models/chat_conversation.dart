@@ -34,8 +34,10 @@ class ChatConversation {
     this.isChatThread,
     this.isPinned,
     this.pinnedTime,
-    this.marks,
-  );
+    this.marks, [
+    this.name,
+    this.avatar,
+  ]);
 
   factory ChatConversation.fromJson(Map<String, dynamic> map) {
     Map<String, String>? ext = map["ext"]?.cast<String, String>();
@@ -46,15 +48,20 @@ class ChatConversation {
       map["isThread"] ?? false,
       map["isPinned"] ?? false,
       map["pinnedTime"] ?? 0,
-      map.getValue('marks', callback: (obj) {
-        List<ConversationMarkType> marks = [];
-        if (obj is List) {
-          for (var mark in obj) {
-            marks.add(ConversationMarkType.values[mark]);
+      map.getValue(
+        'marks',
+        callback: (obj) {
+          List<ConversationMarkType> marks = [];
+          if (obj is List) {
+            for (var mark in obj) {
+              marks.add(ConversationMarkType.values[mark]);
+            }
           }
-        }
-        return marks;
-      }),
+          return marks;
+        },
+      ),
+      map['name'],
+      map['avatar'],
     );
 
     return ret;
@@ -92,6 +99,24 @@ class ChatConversation {
   /// **Return** 会话 ID。
   /// ~end
   final String id;
+
+  /// ~english
+  /// The display name of the conversation. It may be empty before data synchronization completes.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 会话显示名称。数据同步完成前可能为空。
+  /// ~end
+  final String? name;
+
+  /// ~english
+  /// The display avatar of the conversation. It may be empty before data synchronization completes.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 会话显示头像。数据同步完成前可能为空。
+  /// ~end
+  final String? avatar;
 
   /// ~english
   /// The conversation type.
@@ -237,7 +262,8 @@ class ChatConversation {
       ChatError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getLatestMessageFromOthers)) {
         return ChatMessage.fromJson(
-            result[ChatMethodKeys.getLatestMessageFromOthers]);
+          result[ChatMethodKeys.getLatestMessageFromOthers],
+        );
       } else {
         return null;
       }
@@ -272,50 +298,6 @@ class ChatConversation {
       } else {
         return 0;
       }
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Marks a message as read.
-  ///
-  /// Param [messageId] The message ID.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 将消息标为已读。
-  ///
-  /// Param [messageId] 消息 ID。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  /// ~end
-  Future<void> markMessageAsRead(String messageId) async {
-    try {
-      Map req = _toJson();
-      req['msgId'] = messageId;
-      Map result = await platform_interface.Client.instance.conversationManager
-          .callNativeMethod(ChatMethodKeys.markMessageAsRead, req);
-      ChatError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Marks all messages as read.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 将所有消息标为已读。
-  /// ~end
-  Future<void> markAllMessagesAsRead() async {
-    try {
-      Map result = await platform_interface.Client.instance.conversationManager
-          .callNativeMethod(ChatMethodKeys.markAllMessagesAsRead, _toJson());
-      ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
     }
@@ -814,10 +796,7 @@ class ChatConversation {
       Map req = _toJson();
       Map<String, dynamic> result = await platform_interface
           .Client.instance.conversationManager
-          .callNativeMethod(
-        ChatMethodKeys.messageCount,
-        req,
-      );
+          .callNativeMethod(ChatMethodKeys.messageCount, req);
       ChatError.hasErrorFromResult(result);
       int count = result[ChatMethodKeys.messageCount];
       return count;
@@ -927,7 +906,8 @@ class ChatConversation {
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
   /// ~end
   Future<List<ChatMessage>> searchMsgsByOptions(
-      MessageSearchOptions options) async {
+    MessageSearchOptions options,
+  ) async {
     try {
       Map req = _toJson();
       req['ts'] = options.ts;
@@ -937,7 +917,9 @@ class ChatConversation {
       req['types'] = options.types.map((e) => (e).index).toList();
       Map result = await platform_interface.Client.instance.conversationManager
           .callNativeMethod(
-              ChatMethodKeys.conversationSearchMsgsByOptions, req);
+        ChatMethodKeys.conversationSearchMsgsByOptions,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       List<ChatMessage> messages = [];
       List list = result[ChatMethodKeys.conversationSearchMsgsByOptions];
@@ -989,7 +971,9 @@ class ChatConversation {
       req.putIfNotNull("endTs", endMs);
       Map result = await platform_interface.Client.instance.conversationManager
           .callNativeMethod(
-              ChatMethodKeys.conversationGetLocalMessageCount, req);
+        ChatMethodKeys.conversationGetLocalMessageCount,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       return result[ChatMethodKeys.conversationGetLocalMessageCount];
     } catch (e) {
@@ -1016,14 +1000,17 @@ class ChatConversation {
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
   ///
   /// ~end
-  Future<void> deleteLocalAndServerMessages(
-      {required List<String> msgIds}) async {
+  Future<void> deleteLocalAndServerMessages({
+    required List<String> msgIds,
+  }) async {
     try {
       Map req = _toJson();
       req.putIfNotNull("msgIds", msgIds);
       Map result = await platform_interface.Client.instance.conversationManager
           .callNativeMethod(
-              ChatMethodKeys.conversationDeleteServerMessageWithIds, req);
+        ChatMethodKeys.conversationDeleteServerMessageWithIds,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       return result[ChatMethodKeys.conversationGetLocalMessageCount];
     } catch (e) {
@@ -1050,13 +1037,16 @@ class ChatConversation {
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
   ///
   /// ~end
-  Future<void> deleteLocalAndServerMessagesByTime(
-      {required int beforeMs}) async {
+  Future<void> deleteLocalAndServerMessagesByTime({
+    required int beforeMs,
+  }) async {
     try {
       Map req = {"beforeTs": beforeMs};
       Map result = await platform_interface.Client.instance.conversationManager
           .callNativeMethod(
-              ChatMethodKeys.conversationDeleteServerMessageWithTime, req);
+        ChatMethodKeys.conversationDeleteServerMessageWithTime,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       return result[ChatMethodKeys.conversationGetLocalMessageCount];
     } catch (e) {

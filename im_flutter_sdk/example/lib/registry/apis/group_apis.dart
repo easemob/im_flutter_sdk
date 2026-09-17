@@ -5,6 +5,25 @@ import '../api_entry.dart';
 /// GroupManager related entries.
 final groupApis = <ApiEntry>[
   ApiEntry(
+    name: 'ChatGroupManager.updateGroupConfigs',
+    group: 'GroupManager',
+    description: '按位掩码更新群组配置。types 使用 ChatGroupConfigsType 常量按位或组合。',
+    paramsTemplate: '''{
+  "groupId": "yourGroupId",
+  "types": 16,
+  "configs": {"isPublic": true}
+}''',
+    invoke: (p) async {
+      final result =
+          await ChatClient.getInstance.groupManager.updateGroupConfigs(
+        groupId: p['groupId'] as String,
+        types: p['types'] as int,
+        configs: ChatGroupConfigs.fromJson(p['configs'] as Map),
+      );
+      return result.toJson();
+    },
+  ),
+  ApiEntry(
     name: 'ChatGroupManager.updateGroupNamecard',
     group: 'GroupManager',
     description: '更新当前用户的群名片（4.22 新增）。可选参数 "namecard"：字符串；'

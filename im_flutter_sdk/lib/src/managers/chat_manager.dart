@@ -33,8 +33,9 @@ class ChatManager {
   final Map<String, ChatEventHandler> _eventHandlesMap = {};
 
   ChatManager() {
-    platform_interface.Client.instance.chatManager
-        .updateNativeHandler((MethodCall call) {
+    platform_interface.Client.instance.chatManager.updateNativeHandler((
+      MethodCall call,
+    ) {
       ChatLog.d("${call.method}: arguments: ${call.arguments}");
       if (call.method == ChatMethodKeys.onMessagesReceived) {
         return _onMessagesReceived(call.arguments);
@@ -42,21 +43,14 @@ class ChatManager {
         return _onStreamMessagesReceived(call.arguments);
       } else if (call.method == ChatMethodKeys.onCmdMessagesReceived) {
         return _onCmdMessagesReceived(call.arguments);
-      } else if (call.method == ChatMethodKeys.onMessagesRead) {
-        return _onMessagesRead(call.arguments);
-      } else if (call.method == ChatMethodKeys.onGroupMessageRead) {
-        return _onGroupMessageRead(call.arguments);
-      } else if (call.method ==
-          ChatMethodKeys.onReadAckForGroupMessageUpdated) {
-        return _onReadAckForGroupMessageUpdated(call.arguments);
+      } else if (call.method == ChatMethodKeys.onMessageReadReceipts) {
+        return _onMessageReadReceipts(call.arguments);
       } else if (call.method == ChatMethodKeys.onMessagesDelivered) {
         return _onMessagesDelivered(call.arguments);
       } else if (call.method == ChatMethodKeys.onMessagesRecalled) {
         return _onMessagesRecalled(call.arguments);
       } else if (call.method == ChatMethodKeys.onConversationUpdate) {
         return _onConversationsUpdate(call.arguments);
-      } else if (call.method == ChatMethodKeys.onConversationHasRead) {
-        return _onConversationHasRead(call.arguments);
       } else if (call.method == ChatMethodKeys.onMessageReactionDidChange) {
         return _messageReactionDidChange(call.arguments);
       } else if (call.method == ChatMethodKeys.onMessageContentChanged) {
@@ -102,31 +96,12 @@ class ChatManager {
     }
   }
 
-  Future<void> _onMessagesRead(List messages) async {
-    List<ChatMessage> list = [];
-    for (var message in messages) {
-      list.add(ChatMessage.fromJson(message));
-    }
-
+  Future<void> _onMessageReadReceipts(Map payload) async {
+    final receipts = (payload['receipts'] as List? ?? const [])
+        .map((item) => ChatMessageReadReceipt.fromJson(item))
+        .toList();
     for (var item in _eventHandlesMap.values) {
-      item.onMessagesRead?.call(list);
-    }
-  }
-
-  Future<void> _onGroupMessageRead(List messages) async {
-    List<ChatGroupMessageAck> list = [];
-    for (var message in messages) {
-      list.add(ChatGroupMessageAck.fromJson(message));
-    }
-
-    for (var item in _eventHandlesMap.values) {
-      item.onGroupMessageRead?.call(list);
-    }
-  }
-
-  Future<void> _onReadAckForGroupMessageUpdated(List messages) async {
-    for (var item in _eventHandlesMap.values) {
-      item.onReadAckForGroupMessageUpdated?.call();
+      item.onMessageReadReceipts?.call(receipts);
     }
   }
 
@@ -170,15 +145,6 @@ class ChatManager {
     }
   }
 
-  Future<void> _onConversationHasRead(dynamic obj) async {
-    String from = (obj as Map)['from'];
-    String to = obj['to'];
-
-    for (var item in _eventHandlesMap.values) {
-      item.onConversationRead?.call(from, to);
-    }
-  }
-
   Future<void> _messageReactionDidChange(List reactionChangeList) async {
     List<ChatMessageReactionEvent> list = [];
     for (var reactionChange in reactionChangeList) {
@@ -206,8 +172,12 @@ class ChatManager {
         MessagePinOperation.values[obj["pinOperation"]];
     MessagePinInfo pinInfo = MessagePinInfo.fromJson(obj["pinInfo"]);
     for (var item in _eventHandlesMap.values) {
-      item.onMessagePinChanged
-          ?.call(messageId, conversationId, pinOperation, pinInfo);
+      item.onMessagePinChanged?.call(
+        messageId,
+        conversationId,
+        pinOperation,
+        pinInfo,
+      );
     }
   }
 
@@ -226,10 +196,7 @@ class ChatManager {
   ///
   /// Param [handler] 事件监听. 请见 [ChatEventHandler].
   /// ~end
-  void addEventHandler(
-    String identifier,
-    ChatEventHandler handler,
-  ) {
+  void addEventHandler(String identifier, ChatEventHandler handler) {
     _eventHandlesMap[identifier] = handler;
   }
 
@@ -356,8 +323,9 @@ class ChatManager {
       Map result = await platform_interface.Client.instance.chatManager
           .callNativeMethod(ChatMethodKeys.sendMessage, message.toJson());
       ChatError.hasErrorFromResult(result);
-      ChatMessage msg =
-          ChatMessage.fromJson(result[ChatMethodKeys.sendMessage]);
+      ChatMessage msg = ChatMessage.fromJson(
+        result[ChatMethodKeys.sendMessage],
+      );
       message.from = msg.from;
       message.to = msg.to;
       message.status = msg.status;
@@ -387,8 +355,9 @@ class ChatManager {
       Map result = await platform_interface.Client.instance.chatManager
           .callNativeMethod(ChatMethodKeys.resendMessage, message.toJson());
       ChatError.hasErrorFromResult(result);
-      ChatMessage msg =
-          ChatMessage.fromJson(result[ChatMethodKeys.resendMessage]);
+      ChatMessage msg = ChatMessage.fromJson(
+        result[ChatMethodKeys.resendMessage],
+      );
       message.from = msg.from;
       message.to = msg.to;
       message.status = msg.status;
@@ -400,137 +369,97 @@ class ChatManager {
   }
 
   /// ~english
-  /// Sends the read receipt to the server.
-  ///
-  /// This method applies to one-to-one chats only.
-  ///
-  /// **Warning**
-  /// This method only takes effect if you set [ChatOptions.requireAck] as `true`.
-  ///
-  /// **Note**
-  /// To send the group message read receipt, call [sendGroupMessageReadAck].
-  ///
-  /// We recommend that you call [sendConversationReadAck] when entering a chat page, and call this method to reduce the number of method calls.
-  ///
-  /// Param [message] The message body: [ChatMessage].
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
+  /// Sends read receipts for up to 50 messages in the same conversation.
   /// ~end
   ///
   /// ~chinese
-  /// 发送消息的已读回执，该方法只针对单聊会话。
-  ///
-  /// **Warning**
-  /// 该方法只有在 [ChatOptions.requireAck] 为 `true` 时才生效。
-  ///
-  /// **Note**
-  /// 群消息已读回执，详见 [sendGroupMessageReadAck]。
-  ///
-  /// 推荐进入会话页面时调用 [sendConversationReadAck]，其他情况下调用该方法以减少调用频率。
-  ///
-  /// Param [message] 需要发送已读回执的消息。
-  ///
-  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
+  /// 批量发送同一会话中最多 50 条消息的已读回执。
   /// ~end
-  Future<void> sendMessageReadAck(ChatMessage message) async {
-    try {
-      Map req = {"to": message.from, "msgId": message.msgId};
-      Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.ackMessageRead, req);
-      ChatError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
-    }
+  Future<void> sendMessageReadReceipts(List<ChatMessage> messages) async {
+    final req = {'msgIds': messages.map((e) => e.msgId).toList()};
+    final result = await platform_interface.Client.instance.chatManager
+        .callNativeMethod(ChatMethodKeys.sendMessageReadReceipts, req);
+    ChatError.hasErrorFromResult(result);
   }
 
   /// ~english
-  /// Sends the group message receipt to the server.
-  ///
-  ///
-  /// **Note**
-  /// - This method takes effect only after you set [ChatOptions.requireAck] and [ChatMessage.needGroupAck] as `true`.
-  /// - This method applies to group messages only. To send a one-to-one chat message receipt, call [sendMessageReadAck]; to send a conversation receipt, call [sendConversationReadAck].
-  ///
-  ///
-  /// Param [msgId] The message ID.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [content] The extension information, which is a custom keyword that specifies a custom action or command.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
+  /// Clears the unread count of a conversation without sending read receipts.
   /// ~end
   ///
   /// ~chinese
-  /// 发送群消息已读回执。
-  ///
-  /// **Note**
-  /// 1. 使用该方法前，需将 [ChatOptions.requireAck] 和 [ChatMessage.needGroupAck] 设置为 `true`。
-  /// 2. 发送单聊消息已读回执，详见 [sendMessageReadAck]。
-  /// 3. 会话已读回执，详见 [sendConversationReadAck]。
-  ///
-  /// Param [msgId] 消息 ID。
-  ///
-  /// Param [groupId] 群组 ID。
-  ///
-  /// Param [content] 扩展信息。用户自己定义的关键字，接收后，解析出自定义的字符串，可以自行处理。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
+  /// 清除指定会话未读数，但不发送消息已读回执。
   /// ~end
-  Future<void> sendGroupMessageReadAck(
-    String msgId,
+  Future<void> clearConversationUnreadMessageCount(
+    String conversationId,
+  ) async {
+    final result = await platform_interface.Client.instance.chatManager
+        .callNativeMethod(ChatMethodKeys.clearConversationUnreadMessageCount, {
+      'conversationId': conversationId,
+    });
+    ChatError.hasErrorFromResult(result);
+  }
+
+  /// ~english
+  /// Clears the unread count of all conversations.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 清除全部会话的未读数。
+  /// ~end
+  Future<void> clearAllConversationUnreadMessageCount() async {
+    final result =
+        await platform_interface.Client.instance.chatManager.callNativeMethod(
+      ChatMethodKeys.clearAllConversationUnreadMessageCount,
+    );
+    ChatError.hasErrorFromResult(result);
+  }
+
+  /// ~english
+  /// Gets read-receipt summaries for up to 20 group messages in one conversation.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取同一会话中最多 20 条群消息的已读回执汇总。
+  /// ~end
+  Future<List<ChatMessageReadReceipt>> getGroupMessageReadReceipts(
+    List<ChatMessage> messages,
+  ) async {
+    final result = await platform_interface.Client.instance.chatManager
+        .callNativeMethod(ChatMethodKeys.getGroupMessageReadReceipts, {
+      'msgIds': messages.map((e) => e.msgId).toList(),
+    });
+    ChatError.hasErrorFromResult(result);
+    return (result[ChatMethodKeys.getGroupMessageReadReceipts] as List? ??
+            const [])
+        .map((item) => ChatMessageReadReceipt.fromJson(item))
+        .toList();
+  }
+
+  /// ~english
+  /// Gets group-message read-receipt details with pagination.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 分页获取群消息已读回执详情。
+  /// ~end
+  Future<ChatCursorResult<ChatGroupReadReceipt>> fetchGroupMessageReadReceipts(
+    String messageId,
     String groupId, {
-    String? content,
+    String cursor = '',
+    int pageSize = 20,
   }) async {
-    try {
-      Map req = {
-        "msgId": msgId,
-        "group_id": groupId,
-      };
-      req.putIfNotNull("content", content);
-      Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.ackGroupMessageRead, req);
-      ChatError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Sends the conversation read receipt to the server. This method is only for one-to-one chat conversations.
-  ///
-  /// This method informs the server to set the unread message count of the conversation to 0. In multi-device scenarios, all the devices receive the [ChatEventHandler.onConversationRead] callback.
-  ///
-  /// **Note**
-  /// This method applies to one-to-one chat conversations only. To send a group message read receipt, call [sendGroupMessageReadAck].
-  ///
-  /// Param [conversationId] The conversation ID.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 发送会话的已读回执，该方法只针对单聊会话。
-  ///
-  /// 该方法会通知服务器将此会话未读数设置为 0，对话方（包含多端多设备）将会在下面这个回调方法中接收到回调：
-  /// [ChatEventHandler.onConversationRead]。
-  ///
-  /// **Note**
-  /// 发送群组消息已读回执见 [sendGroupMessageReadAck]。
-  ///
-  /// Param [conversationId] 会话 ID。
-  ///
-  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  /// ~end
-  Future<void> sendConversationReadAck(String conversationId) async {
-    try {
-      Map req = {"convId": conversationId};
-      Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.ackConversationRead, req);
-      ChatError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
-    }
+    final result = await platform_interface.Client.instance.chatManager
+        .callNativeMethod(ChatMethodKeys.fetchGroupMessageReadReceipts, {
+      'messageId': messageId,
+      'groupId': groupId,
+      'cursor': cursor,
+      'pageSize': pageSize,
+    });
+    ChatError.hasErrorFromResult(result);
+    return ChatCursorResult<ChatGroupReadReceipt>.fromJson(
+      result[ChatMethodKeys.fetchGroupMessageReadReceipts],
+      dataItemCallback: (item) => ChatGroupReadReceipt.fromJson(item),
+    );
   }
 
   /// ~english
@@ -624,10 +553,7 @@ class ChatManager {
     String conversationId,
   ) async {
     try {
-      Map req = {
-        "messageIds": messageIds,
-        "conversationId": conversationId,
-      };
+      Map req = {"messageIds": messageIds, "conversationId": conversationId};
       Map result = await platform_interface.Client.instance.chatManager
           .callNativeMethod(ChatMethodKeys.loadMessagesWithIds, req);
       ChatError.hasErrorFromResult(result);
@@ -687,14 +613,15 @@ class ChatManager {
       Map req = {
         "convId": conversationId,
         "type": type.index,
-        "createIfNeed": createIfNeed
+        "createIfNeed": createIfNeed,
       };
       Map result = await platform_interface.Client.instance.chatManager
           .callNativeMethod(ChatMethodKeys.getConversation, req);
       ChatError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getConversation)) {
         return ChatConversation.fromJson(
-            result[ChatMethodKeys.getConversation]);
+          result[ChatMethodKeys.getConversation],
+        );
       } else {
         return null;
       }
@@ -730,35 +657,11 @@ class ChatManager {
       ChatError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getThreadConversation)) {
         return ChatConversation.fromJson(
-            result[ChatMethodKeys.getThreadConversation]);
+          result[ChatMethodKeys.getThreadConversation],
+        );
       } else {
         return null;
       }
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Marks all conversations as read.
-  ///
-  /// This method is for the local conversations only.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 把所有的会话都设成已读。
-  ///
-  /// 这里针对的是本地会话。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  /// ~end
-  Future<void> markAllConversationsAsRead() async {
-    try {
-      Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.markAllChatMsgAsRead);
-      ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
     }
@@ -879,8 +782,9 @@ class ChatManager {
   Future<void> downloadAttachment(ChatMessage message) async {
     try {
       Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(
-              ChatMethodKeys.downloadAttachment, {"message": message.toJson()});
+          .callNativeMethod(ChatMethodKeys.downloadAttachment, {
+        "message": message.toJson(),
+      });
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -905,8 +809,9 @@ class ChatManager {
   Future<void> downloadThumbnail(ChatMessage message) async {
     try {
       Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(
-              ChatMethodKeys.downloadThumbnail, {"message": message.toJson()});
+          .callNativeMethod(ChatMethodKeys.downloadThumbnail, {
+        "message": message.toJson(),
+      });
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -935,8 +840,9 @@ class ChatManager {
   Future<void> downloadMessageAttachmentInCombine(ChatMessage message) async {
     try {
       Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.downloadMessageAttachmentInCombine,
-              {"message": message.toJson()});
+          .callNativeMethod(ChatMethodKeys.downloadMessageAttachmentInCombine, {
+        "message": message.toJson(),
+      });
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -961,8 +867,9 @@ class ChatManager {
   Future<void> downloadMessageThumbnailInCombine(ChatMessage message) async {
     try {
       Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.downloadMessageThumbnailInCombine,
-              {"message": message.toJson()});
+          .callNativeMethod(ChatMethodKeys.downloadMessageThumbnailInCombine, {
+        "message": message.toJson(),
+      });
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -1003,141 +910,6 @@ class ChatManager {
     }
   }
 
-  @Deprecated('Use [fetchConversationsByOptions] instead')
-
-  /// ~english
-  /// Gets the conversation list from the server.
-  ///
-  /// **Return** The conversation list of the current user.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 从服务器获取会话列表。
-  ///
-  /// **Return** 返回获取的会话列表。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  /// ~end
-  Future<List<ChatConversation>> getConversationsFromServer() async {
-    try {
-      Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.getConversationsFromServer);
-      ChatError.hasErrorFromResult(result);
-      List<ChatConversation> conversationList = [];
-      result[ChatMethodKeys.getConversationsFromServer]?.forEach((element) {
-        conversationList.add(ChatConversation.fromJson(element));
-      });
-      return conversationList;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  @Deprecated('Use [fetchConversationsByOptions] instead')
-
-  /// ~english
-  /// Gets the list of conversations from the server.
-  ///
-  /// Param [pageNum] The current page number.
-  ///
-  /// Param [pageSize] The number of conversations to get on each page.
-  ///
-  /// **Return** The conversation list of the current user.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 获取服务器会话列表。
-  ///
-  /// Param [pageNum] 当前页码。
-  ///
-  /// Param [pageSize] 每页期望返回的会话数量。
-  ///
-  /// **Return** 当前用户的会话列表。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  /// ~end
-  Future<List<ChatConversation>> fetchConversationListFromServer({
-    int pageNum = 1,
-    int pageSize = 20,
-  }) async {
-    try {
-      Map request = {
-        "pageNum": pageNum,
-        "pageSize": pageSize,
-      };
-      Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(
-              ChatMethodKeys.fetchConversationsFromServerWithPage, request);
-      ChatError.hasErrorFromResult(result);
-      List<ChatConversation> conversationList = [];
-      result[ChatMethodKeys.fetchConversationsFromServerWithPage]
-          ?.forEach((element) {
-        conversationList.add(ChatConversation.fromJson(element));
-      });
-      return conversationList;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  @Deprecated('Use fetchConversationsByOptions instead')
-
-  /// ~english
-  /// Get the list of conversations from the server with pagination.
-  ///
-  /// The SDK retrieves the list of conversations in the reverse chronological order of their active time (the timestamp of the last message).
-  /// If there is no message in the conversation, the SDK retrieves the list of conversations in the reverse chronological order of their creation time.
-  ///
-  /// Param [cursor] The position from which to start getting data. The SDK retrieves conversations from the latest active one if this parameter is not set.
-  ///
-  /// Param [pageSize] The number of conversations that you expect to get on each page. The value range is [1,50].
-  ///
-  /// **Return** The conversation list of the current user.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 从服务器分页获取会话列表。
-  ///
-  /// SDK 按照会话活跃时间（会话的最后一条消息的时间戳）倒序返回会话列表。
-  /// 若会话中没有消息，则 SDK 按照会话创建时间的倒序返回会话列表。
-  ///
-  /// Param [cursor] 查询的开始位置，如不传， SDK 从最新活跃的会话开始获取。
-  ///
-  /// Param [pageSize] 每页期望返回的会话数量。取值范围为 [1,50]。
-  ///
-  /// **Return** 当前用户的会话列表。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  /// ~end
-  Future<ChatCursorResult<ChatConversation>> fetchConversation({
-    String? cursor,
-    int pageSize = 20,
-  }) async {
-    try {
-      Map map = {
-        "pageSize": pageSize,
-      };
-      map.putIfNotNull('cursor', cursor);
-      Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(
-              ChatMethodKeys.getConversationsFromServerWithCursor, map);
-      ChatError.hasErrorFromResult(result);
-      return ChatCursorResult.fromJson(
-          result[ChatMethodKeys.getConversationsFromServerWithCursor],
-          dataItemCallback: (map) {
-        return ChatConversation.fromJson(map);
-      });
-    } catch (e) {
-      rethrow;
-    }
-  }
-
   /// ~english
   /// Unidirectionally removes historical message by message ID from the server.
   ///
@@ -1157,19 +929,22 @@ class ChatManager {
   ///
   /// Param [msgIds] 需要删除的消息 ID。
   /// ~end
-  Future<void> deleteRemoteMessagesWithIds(
-      {required String conversationId,
-      required ChatConversationType type,
-      required List<String> msgIds}) async {
+  Future<void> deleteRemoteMessagesWithIds({
+    required String conversationId,
+    required ChatConversationType type,
+    required List<String> msgIds,
+  }) async {
     try {
       Map request = {
         "convId": conversationId,
         "type": type.index,
         "msgIds": msgIds,
       };
-      Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(
-              ChatMethodKeys.removeMessagesFromServerWithMsgIds, request);
+      Map result =
+          await platform_interface.Client.instance.chatManager.callNativeMethod(
+        ChatMethodKeys.removeMessagesFromServerWithMsgIds,
+        request,
+      );
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -1195,19 +970,22 @@ class ChatManager {
   /// Param [timestamp] 以毫秒为单位的UNIX时间戳。时间戳小于指定时间戳的消息将被删除。
   /// ~end
 
-  Future<void> deleteRemoteMessagesBefore(
-      {required String conversationId,
-      required ChatConversationType type,
-      required int timestamp}) async {
+  Future<void> deleteRemoteMessagesBefore({
+    required String conversationId,
+    required ChatConversationType type,
+    required int timestamp,
+  }) async {
     try {
       Map request = {
         "convId": conversationId,
         "type": type.index,
         "timestamp": timestamp,
       };
-      Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(
-              ChatMethodKeys.removeMessagesFromServerWithTs, request);
+      Map result =
+          await platform_interface.Client.instance.chatManager.callNativeMethod(
+        ChatMethodKeys.removeMessagesFromServerWithTs,
+        request,
+      );
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -1260,70 +1038,6 @@ class ChatManager {
     }
   }
 
-  @Deprecated('Use [fetchHistoryMessagesByOption] instead')
-
-  /// ~english
-  /// Gets historical messages of the conversation from the server with pagination.
-  ///
-  /// Param [conversationId] The conversation ID.
-  ///
-  /// Param [type] The conversation type. See [ChatConversationType].
-  ///
-  /// Param [pageSize] The number of messages per page.
-  ///
-  /// Param [direction] The message search direction. See [ChatSearchDirection].
-  ///
-  /// Param [startMsgId] The ID of the message from which you start to get the historical messages. If `null` is passed, the SDK gets messages in the reverse chronological order.
-  ///
-  /// **Return** The obtained messages and the cursor for the next query.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 从服务器分页获取历史消息。
-  ///
-  /// Param [conversationId] 会话 ID。
-  ///
-  /// Param [type] 会话类型，详见[ChatConversationType]。
-  ///
-  /// Param [pageSize] 每页获取的消息数量。
-  ///
-  /// Param [direction] 要搜索的消息方向. 见 [ChatSearchDirection].
-  ///
-  /// Param [startMsgId] 获取历史消息的开始消息 ID，如果为空，从最新的消息向前开始获取。
-  ///
-  /// **Return** 返回消息列表和用于继续获取历史消息的 [ChatCursorResult]
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  /// ~end
-  Future<ChatCursorResult<ChatMessage>> fetchHistoryMessages({
-    required String conversationId,
-    ChatConversationType type = ChatConversationType.Chat,
-    int pageSize = 20,
-    ChatSearchDirection direction = ChatSearchDirection.Up,
-    String startMsgId = '',
-  }) async {
-    try {
-      Map req = {};
-      req['convId'] = conversationId;
-      req['type'] = type.index;
-      req['pageSize'] = pageSize;
-      req['startMsgId'] = startMsgId;
-      req['direction'] = direction.index;
-      Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.fetchHistoryMessages, req);
-      ChatError.hasErrorFromResult(result);
-      return ChatCursorResult<ChatMessage>.fromJson(
-          result[ChatMethodKeys.fetchHistoryMessages],
-          dataItemCallback: (value) {
-        return ChatMessage.fromJson(value);
-      });
-    } catch (e) {
-      rethrow;
-    }
-  }
-
   /// ~english
   /// Gets historical messages of a conversation from the server according to [FetchMessageOptions].
   ///
@@ -1370,10 +1084,11 @@ class ChatManager {
           .callNativeMethod(ChatMethodKeys.fetchHistoryMessagesByOptions, req);
       ChatError.hasErrorFromResult(result);
       return ChatCursorResult<ChatMessage>.fromJson(
-          result[ChatMethodKeys.fetchHistoryMessagesByOptions],
-          dataItemCallback: (value) {
-        return ChatMessage.fromJson(value);
-      });
+        result[ChatMethodKeys.fetchHistoryMessagesByOptions],
+        dataItemCallback: (value) {
+          return ChatMessage.fromJson(value);
+        },
+      );
     } catch (e) {
       rethrow;
     }
@@ -1522,69 +1237,6 @@ class ChatManager {
   }
 
   /// ~english
-  /// Gets read receipts for group messages from the server with pagination.
-  ///
-  /// For how to send read receipts for group messages, see [sendConversationReadAck].
-  ///
-  /// Param [msgId] The message ID.
-  ///
-  /// Param [startAckId] The starting read receipt ID for query. If you set it as null, the SDK retrieves the read receipts in the in reverse chronological order.
-  ///
-  /// Param [pageSize] The number of read receipts to retrieve per page.
-  ///
-  /// **Return** The list of obtained read receipts and the cursor for the next query.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 从服务器获取群组消息回执详情。
-  ///
-  /// 分页获取。
-  ///
-  /// **Note**
-  /// 发送群组消息回执，详见 [sendConversationReadAck]。
-  ///
-  /// Param [msgId] 消息 ID。
-  ///
-  /// Param [startAckId] 已读回执的 ID，如果为空，从最新的回执向前开始获取。
-  ///
-  /// Param [pageSize] 每页获取群消息已读回执的条数。
-  ///
-  /// **Return** 返回回执列表和用于下次获取群消息回执的 [ChatCursorResult]
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  /// ~end
-
-  Future<ChatCursorResult<ChatGroupMessageAck>> fetchGroupAcks(
-    String msgId,
-    String groupId, {
-    String? startAckId,
-    int pageSize = 0,
-  }) async {
-    try {
-      Map req = {"msgId": msgId, "group_id": groupId};
-      req["pageSize"] = pageSize;
-      req.putIfNotNull("ack_id", startAckId);
-
-      Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.asyncFetchGroupAcks, req);
-      ChatError.hasErrorFromResult(result);
-      ChatCursorResult<ChatGroupMessageAck> cursorResult =
-          ChatCursorResult.fromJson(
-        result[ChatMethodKeys.asyncFetchGroupAcks],
-        dataItemCallback: (map) {
-          return ChatGroupMessageAck.fromJson(map);
-        },
-      );
-
-      return cursorResult;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
   /// Deletes the specified conversation and the related historical messages from the server.
   ///
   /// Param [conversationId] The conversation ID.
@@ -1658,47 +1310,9 @@ class ChatManager {
   Future<void> deleteMessagesBefore(int timestamp) async {
     try {
       Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.deleteMessagesBeforeTimestamp,
-              {"timestamp": timestamp});
-      ChatError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  ///  Reports an inappropriate message.
-  ///
-  /// Param [messageId] The ID of the message to report.
-  ///
-  /// Param [tag] The tag of the inappropriate message. You need to type a custom tag, like `porn` or `ad`.
-  ///
-  /// Param [reason] The reporting reason. You need to type a specific reason.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 举报消息。
-  ///
-  /// Param [messageId] 要举报的消息 ID。
-  ///
-  /// Param [tag] 非法消息的标签。你需要填写自定义标签，例如`涉政`或`广告`。
-  ///
-  /// Param [reason] 举报原因。你需要自行填写举报原因。
-  ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
-  /// ~end
-
-  Future<void> reportMessage({
-    required String messageId,
-    required String tag,
-    required String reason,
-  }) async {
-    try {
-      Map req = {"msgId": messageId, "tag": tag, "reason": reason};
-      Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.reportMessage, req);
+          .callNativeMethod(ChatMethodKeys.deleteMessagesBeforeTimestamp, {
+        "timestamp": timestamp,
+      });
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -1806,16 +1420,10 @@ class ChatManager {
     String? groupId,
   }) async {
     try {
-      Map req = {
-        "msgIds": messageIds,
-        "chatType": chatType.index,
-      };
+      Map req = {"msgIds": messageIds, "chatType": chatType.index};
       req.putIfNotNull("groupId", groupId);
-      Map result =
-          await platform_interface.Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.fetchReactionList,
-        req,
-      );
+      Map result = await platform_interface.Client.instance.chatManager
+          .callNativeMethod(ChatMethodKeys.fetchReactionList, req);
       ChatError.hasErrorFromResult(result);
       Map<String, List<ChatMessageReaction>> ret = {};
       for (var info in result[ChatMethodKeys.fetchReactionList].entries) {
@@ -1870,24 +1478,20 @@ class ChatManager {
     int pageSize = 20,
   }) async {
     try {
-      Map req = {
-        "msgId": messageId,
-        "reaction": reaction,
-      };
+      Map req = {"msgId": messageId, "reaction": reaction};
       req.putIfNotNull("cursor", cursor);
       req.putIfNotNull("pageSize", pageSize);
-      Map result =
-          await platform_interface.Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.fetchReactionDetail,
-        req,
-      );
+      Map result = await platform_interface.Client.instance.chatManager
+          .callNativeMethod(ChatMethodKeys.fetchReactionDetail, req);
       ChatError.hasErrorFromResult(result);
       final data = result[ChatMethodKeys.fetchReactionDetail];
       if (data != null) {
-        return ChatCursorResult<ChatMessageReaction>.fromJson(data,
-            dataItemCallback: (value) {
-          return ChatMessageReaction.fromJson(value);
-        });
+        return ChatCursorResult<ChatMessageReaction>.fromJson(
+          data,
+          dataItemCallback: (value) {
+            return ChatMessageReaction.fromJson(value);
+          },
+        );
       } else {
         return ChatCursorResult<ChatMessageReaction>(null, []);
       }
@@ -1968,60 +1572,6 @@ class ChatManager {
     }
   }
 
-  @Deprecated('Use [fetchConversationsByOptions] instead')
-
-  /// ~english
-  /// Gets the list of pinned conversations from the server with pagination.
-  ///
-  /// The SDK returns the pinned conversations in the reverse chronological order of their pinning.
-  ///
-  /// Param [cursor] The position from which to start getting data. If this parameter is not set, the SDK retrieves conversations from the latest pinned one.
-  ///
-  /// Param [pageSize] The number of conversations that you expect to get on each page. The value range is [1,50].
-  ///
-  /// **Return** The pinned conversation list of the current user.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 分页从服务器获取置顶会话。
-  ///
-  /// SDK 按照会话的置顶时间的倒序返回会话列表。
-  ///
-  /// Param [cursor] 查询的开始位置，如不传， SDK 从最新置顶的会话开始查询。
-  ///
-  /// Param [pageSize] 每页期望返回的会话数量。取值范围为 [1,50]。
-  ///
-  /// **Return** 当前用户的置顶会话列表。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  /// ~end
-  Future<ChatCursorResult<ChatConversation>> fetchPinnedConversations({
-    String? cursor,
-    int pageSize = 20,
-  }) async {
-    try {
-      Map map = {
-        "pageSize": pageSize,
-      };
-      map.putIfNotNull('cursor', cursor);
-      Map result =
-          await platform_interface.Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.getPinnedConversationsFromServerWithCursor,
-        map,
-      );
-      ChatError.hasErrorFromResult(result);
-      return ChatCursorResult.fromJson(
-          result[ChatMethodKeys.getPinnedConversationsFromServerWithCursor],
-          dataItemCallback: (map) {
-        return ChatConversation.fromJson(map);
-      });
-    } catch (e) {
-      rethrow;
-    }
-  }
-
   /// ~english
   /// Sets whether to pin a conversation.
   ///
@@ -2046,19 +1596,15 @@ class ChatManager {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
   /// ~end
 
-  Future<void> pinConversation(
-      {required String conversationId, required bool isPinned}) async {
+  Future<void> pinConversation({
+    required String conversationId,
+    required bool isPinned,
+  }) async {
     try {
-      Map map = {
-        'convId': conversationId,
-        'isPinned': isPinned,
-      };
+      Map map = {'convId': conversationId, 'isPinned': isPinned};
 
-      Map result =
-          await platform_interface.Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.pinConversation,
-        map,
-      );
+      Map result = await platform_interface.Client.instance.chatManager
+          .callNativeMethod(ChatMethodKeys.pinConversation, map);
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -2111,11 +1657,8 @@ class ChatManager {
       map.putIfNotNull('msgBody', msgBody?.toJson());
       map.putIfNotNull('attributes', attributes);
 
-      Map result =
-          await platform_interface.Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.modifyMessage,
-        map,
-      );
+      Map result = await platform_interface.Client.instance.chatManager
+          .callNativeMethod(ChatMethodKeys.modifyMessage, map);
       ChatError.hasErrorFromResult(result);
       return ChatMessage.fromJson(result[ChatMethodKeys.modifyMessage]);
     } catch (e) {
@@ -2147,15 +1690,10 @@ class ChatManager {
     required ChatMessage message,
   }) async {
     try {
-      Map map = {
-        'message': message.toJson(),
-      };
+      Map map = {'message': message.toJson()};
 
-      Map result =
-          await platform_interface.Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.downloadAndParseCombineMessage,
-        map,
-      );
+      Map result = await platform_interface.Client.instance.chatManager
+          .callNativeMethod(ChatMethodKeys.downloadAndParseCombineMessage, map);
 
       ChatError.hasErrorFromResult(result);
       List<ChatMessage> messages = [];
@@ -2201,10 +1739,7 @@ class ChatManager {
     required ConversationMarkType mark,
   }) async {
     try {
-      Map map = {
-        'convIds': conversationIds,
-        'mark': mark.index,
-      };
+      Map map = {'convIds': conversationIds, 'mark': mark.index};
 
       Map result =
           await platform_interface.Client.instance.chatManager.callNativeMethod(
@@ -2240,10 +1775,7 @@ class ChatManager {
     required ConversationMarkType mark,
   }) async {
     try {
-      Map map = {
-        'convIds': conversationIds,
-        'mark': mark.index,
-      };
+      Map map = {'convIds': conversationIds, 'mark': mark.index};
 
       Map result =
           await platform_interface.Client.instance.chatManager.callNativeMethod(
@@ -2252,38 +1784,6 @@ class ChatManager {
       );
 
       ChatError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ~english
-  /// Gets conversations from the server by conversation filter options.
-  ///
-  /// Param [options] The conversation filter options. See [ConversationFetchOptions].
-  /// Returns The list of retrieved conversations.
-  /// Throws A description of the exception. See [ChatError].
-  /// ~end
-  /// ~chinese
-  /// 根据会话过滤选项获取服务端的会话。
-  /// Param [options] 会话过滤选项, 详见 [ConversationFetchOptions]。
-  /// Returns 会话列表。
-  /// Throws 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  /// ~end
-
-  Future<ChatCursorResult<ChatConversation>> fetchConversationsByOptions({
-    required ConversationFetchOptions options,
-  }) async {
-    try {
-      Map req = options.toJson();
-      Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.fetchConversationsByOptions, req);
-      ChatError.hasErrorFromResult(result);
-      return ChatCursorResult<ChatConversation>.fromJson(
-          result[ChatMethodKeys.fetchConversationsByOptions],
-          dataItemCallback: (value) {
-        return ChatConversation.fromJson(value);
-      });
     } catch (e) {
       rethrow;
     }
@@ -2304,8 +1804,9 @@ class ChatManager {
   /// - （默认）false: 否。只清除本地所有会话及其消息，服务端的会话及其消息仍保留。
   /// ~end
 
-  Future<void> deleteAllMessageAndConversation(
-      {bool clearServerData = false}) async {
+  Future<void> deleteAllMessageAndConversation({
+    bool clearServerData = false,
+  }) async {
     try {
       Map result = await platform_interface.Client.instance.chatManager
           .callNativeMethod(ChatMethodKeys.deleteAllMessageAndConversation, {
@@ -2334,11 +1835,8 @@ class ChatManager {
   Future<void> pinMessage({required String messageId}) async {
     try {
       Map map = {'msgId': messageId};
-      Map result =
-          await platform_interface.Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.pinMessage,
-        map,
-      );
+      Map result = await platform_interface.Client.instance.chatManager
+          .callNativeMethod(ChatMethodKeys.pinMessage, map);
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -2363,11 +1861,8 @@ class ChatManager {
   Future<void> unpinMessage({required String messageId}) async {
     try {
       Map map = {'msgId': messageId};
-      Map result =
-          await platform_interface.Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.unpinMessage,
-        map,
-      );
+      Map result = await platform_interface.Client.instance.chatManager
+          .callNativeMethod(ChatMethodKeys.unpinMessage, map);
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -2389,15 +1884,13 @@ class ChatManager {
   /// Throws 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
   /// ~end
 
-  Future<List<ChatMessage>> fetchPinnedMessages(
-      {required String conversationId}) async {
+  Future<List<ChatMessage>> fetchPinnedMessages({
+    required String conversationId,
+  }) async {
     try {
       Map map = {'convId': conversationId};
-      Map result =
-          await platform_interface.Client.instance.chatManager.callNativeMethod(
-        ChatMethodKeys.fetchPinnedMessages,
-        map,
-      );
+      Map result = await platform_interface.Client.instance.chatManager
+          .callNativeMethod(ChatMethodKeys.fetchPinnedMessages, map);
       ChatError.hasErrorFromResult(result);
       List<ChatMessage> messages = [];
       List list = result[ChatMethodKeys.fetchPinnedMessages];
@@ -2410,7 +1903,7 @@ class ChatManager {
     }
   }
 
-// 481
+  // 481
 
   /// ~english
   /// Loads messages with the specified keyword from the local database.
@@ -2433,7 +1926,8 @@ class ChatManager {
   /// ~end
 
   Future<List<ChatMessage>> searchMsgsByOptions(
-      MessageSearchOptions options) async {
+    MessageSearchOptions options,
+  ) async {
     try {
       Map req = {};
       req['ts'] = options.ts;
@@ -2534,9 +2028,11 @@ class ChatManager {
       req.putIfNotNull("sender", sender);
       req["direction"] = direction.index;
       req["scope"] = scope.index;
-      Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(
-              ChatMethodKeys.loadConversationMessagesWithKeyword, req);
+      Map result =
+          await platform_interface.Client.instance.chatManager.callNativeMethod(
+        ChatMethodKeys.loadConversationMessagesWithKeyword,
+        req,
+      );
       ChatError.hasErrorFromResult(result);
       Map<String, List<String>> resultMap = {};
       Map? data = result[ChatMethodKeys.loadConversationMessagesWithKeyword];
@@ -2551,7 +2047,7 @@ class ChatManager {
     }
   }
 
-// 4.22.0
+  // 4.22.0
 
   /// ~english
   /// Downloads the original (big) image of an image message from the server.
@@ -2575,8 +2071,9 @@ class ChatManager {
   Future<void> downloadBigImage(ChatMessage message) async {
     try {
       Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(
-              ChatMethodKeys.downloadBigImage, {"message": message.toJson()});
+          .callNativeMethod(ChatMethodKeys.downloadBigImage, {
+        "message": message.toJson(),
+      });
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -2605,8 +2102,9 @@ class ChatManager {
   Future<String> voiceMessageToText(ChatMessage message) async {
     try {
       Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(
-              ChatMethodKeys.voiceMessageToText, {"message": message.toJson()});
+          .callNativeMethod(ChatMethodKeys.voiceMessageToText, {
+        "message": message.toJson(),
+      });
       ChatError.hasErrorFromResult(result);
       return result[ChatMethodKeys.voiceMessageToText]?["text"];
     } catch (e) {
@@ -2653,7 +2151,7 @@ class ChatManager {
     }
   }
 
-// 4.24.0
+  // 4.24.0
 
   /// ~english
   /// Searches for messages from the server.
@@ -2714,8 +2212,10 @@ class ChatManager {
 
 class MessageCallBackManager {
   static const _channelPrefix = 'com.chat.im';
-  static const MethodChannel _emMessageChannel =
-      MethodChannel('$_channelPrefix/chat_message', JSONMethodCodec());
+  static const MethodChannel _emMessageChannel = MethodChannel(
+    '$_channelPrefix/chat_message',
+    JSONMethodCodec(),
+  );
   Map<String, ChatMessageEvent> cacheHandleMap = {};
   static MessageCallBackManager? _instance;
   static MessageCallBackManager get getInstance =>

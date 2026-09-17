@@ -45,13 +45,10 @@
     msg.status = [EnumTools messageStatusFromInt:[aJson[@"status"] integerValue]];
     msg.localTime = [aJson[@"localTime"] longLongValue];
     msg.timestamp = [aJson[@"serverTime"] longLongValue];
-    msg.isReadAcked = [aJson[@"hasReadAck"] boolValue];
     msg.isDeliverAcked = [aJson[@"hasDeliverAck"] boolValue];
-    msg.isRead = [aJson[@"hasRead"] boolValue];
-    msg.isNeedGroupAck = [aJson[@"needGroupAck"] boolValue];
+    // 5.0.0
+    msg.isNeedReadReceipt = [aJson[@"isNeedReadReceipt"] boolValue];
     msg.deliverOnlineOnly = [aJson[@"deliverOnlineOnly"] boolValue];
-    // read only
-    // msg.groupAckCount = [aJson[@"groupAckCount"] intValue]
     // msg.chatThread = [EMChatThread forJson:aJson[@"thread"]];
     // msg.isContentReplaced = [aJson[@"isContentReplaced"] boolValue];
     // msg.pinnedInfo = [EMMessagaPinInfo forJson:aJson[@"pinnedInfo"]];
@@ -78,12 +75,13 @@
     ret[@"msgId"] = self.messageId;
     ret[@"to"] = self.to;
     ret[@"convId"] = self.conversationId;
-    ret[@"hasRead"] = @(self.isRead);
+    // 5.0.0
+    ret[@"isRead"] = @(self.isRead);
     ret[@"hasDeliverAck"] = @(self.isDeliverAcked);
-    ret[@"hasReadAck"] = @(self.isReadAcked);
-    ret[@"needGroupAck"] = @(self.isNeedGroupAck);
+    ret[@"isPeerRead"] = @(self.isPeerRead);
+    ret[@"isNeedReadReceipt"] = @(self.isNeedReadReceipt);
     ret[@"serverTime"] = @(self.timestamp);
-    ret[@"groupAckCount"] = @(self.groupAckCount);
+    ret[@"groupReadReceiptCount"] = @(self.groupReadReceiptCount);
     ret[@"attributes"] = self.ext;
     ret[@"localTime"] = @(self.localTime);
     ret[@"status"] = [NSNumber numberWithInteger:[EnumTools messageStatusToInt:self.status]];

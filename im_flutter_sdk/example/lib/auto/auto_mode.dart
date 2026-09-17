@@ -18,17 +18,21 @@ import '../sdk_state.dart';
 /// Test data is separated from the script: `--dart-define=API_CONFIG=<config.json absolute path>`,
 /// defaults to config.json in the same directory as the script (empty config if not found).
 /// - init: ChatOptions keys in config (see [_optionKeys]) as base, script init overrides;
-/// - login: script login takes priority, otherwise derived from config loginUser + loginToken/loginPassword.
+/// - login: script login takes priority, otherwise derived from config loginUser + loginToken.
 ///
 /// Parameter string references (replaced only on exact full-string match, preserving original value types):
 /// - `$config.key` / `$config.key.sub`: value from config.json;
 /// - `$prev` / `$prev.a.b`: data returned by the previous step, dot path for nesting (numeric index for lists);
 /// - `$step.id` / `$step.id.a.b`: data from a step with "id", cross-step reference.
 class AutoMode {
-  static const String scriptPath =
-      String.fromEnvironment('API_SCRIPT', defaultValue: '');
-  static const String configPath =
-      String.fromEnvironment('API_CONFIG', defaultValue: '');
+  static const String scriptPath = String.fromEnvironment(
+    'API_SCRIPT',
+    defaultValue: '',
+  );
+  static const String configPath = String.fromEnvironment(
+    'API_CONFIG',
+    defaultValue: '',
+  );
 
   static bool get enabled => scriptPath.isNotEmpty;
 
@@ -38,10 +42,9 @@ class AutoMode {
   /// ChatOptions keys that init can inherit from config.json.
   static const List<String> _optionKeys = [
     'appKey',
-    'autoLogin',
     'debugMode',
     'enableUserInfo',
-    'enableAutoSyncContacts',
+    'dataSyncType',
   ];
 
   static Object? _dig(Object? v, List<String> path) {
@@ -112,10 +115,7 @@ class AutoMode {
         'data': {'path': file.path, 'bytes': bytes.length},
       };
     } catch (e) {
-      return {
-        'success': false,
-        'error': errorToJson(e),
-      };
+      return {'success': false, 'error': errorToJson(e)};
     }
   }
 
@@ -188,24 +188,14 @@ class AutoMode {
           loginJson = Map<String, dynamic>.from(sLogin);
         } else {
           loginJson = {'userId': config['loginUser'] ?? ''};
-          final token = config['loginToken'];
-          if (token is String && token.isNotEmpty) {
-            loginJson['token'] = token;
-          } else {
-            loginJson['password'] = config['loginPassword'] ?? '';
-          }
+          loginJson['token'] = config['loginToken'] ?? '';
         }
         final resolved = Map<String, dynamic>.from(
           _resolveRefs(loginJson, null, config, const {}) as Map,
         );
         final userId = resolved['userId'] as String? ?? '';
-        final password = resolved['password'] as String?;
         final token = resolved['token'] as String?;
-        if (password != null) {
-          await ChatClient.getInstance.loginWithPassword(userId, password);
-        } else {
-          await ChatClient.getInstance.loginWithToken(userId, token ?? '');
-        }
+        await ChatClient.getInstance.loginWithToken(userId, token ?? '');
         SdkState.instance.markLoggedIn(userId);
         store.log('api.ChatClient.login', {
           'success': true,
@@ -261,7 +251,7 @@ class AutoMode {
                 'success': false,
                 'error': {
                   'code': -2,
-                  'message': 'timeout after ${timeoutMs}ms'
+                  'message': 'timeout after ${timeoutMs}ms',
                 },
               },
             );
@@ -278,10 +268,7 @@ class AutoMode {
       } catch (e) {
         // Per-step parse/execution errors do not interrupt the script; counted as failed.
         failed++;
-        store.log('api.$name', {
-          'success': false,
-          'error': errorToJson(e),
-        });
+        store.log('api.$name', {'success': false, 'error': errorToJson(e)});
       }
     }
     store.log('script.done', {'total': steps.length, 'failed': failed});

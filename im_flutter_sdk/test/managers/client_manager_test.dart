@@ -18,7 +18,6 @@ void main() {
       return switch (method) {
         'getCurrentUser' => <String, Object>{'getCurrentUser': 'unit-user'},
         'isConnected' => <String, Object>{'isConnected': true},
-        'isLoggedInBefore' => <String, Object>{'isLoggedInBefore': true},
         'getToken' => <String, Object>{'getToken': 'token-value'},
         _ => <String, Object>{},
       };
@@ -41,15 +40,14 @@ void main() {
     return logs;
   }
 
-  test('loginWithPassword sends a password login request', () async {
-    await EMClient.getInstance.loginWithPassword('unit-user', 'password');
+  test('loginWithToken sends a token login request', () async {
+    await EMClient.getInstance.loginWithToken('unit-user', 'token');
 
     final call = recordingClient.calls.single;
     expect(call.method, 'login');
     expect(call.arguments, <String, Object>{
       'userId': 'unit-user',
-      'pwdOrToken': 'password',
-      'isPassword': true,
+      'token': 'token',
     });
     expect(EMClient.getInstance.currentUserId, 'unit-user');
   });
@@ -57,12 +55,11 @@ void main() {
   test('client state APIs preserve native values', () async {
     expect(await EMClient.getInstance.getCurrentUserId(), 'unit-user');
     expect(await EMClient.getInstance.isConnected(), isTrue);
-    expect(await EMClient.getInstance.isLoginBefore(), isTrue);
     expect(await EMClient.getInstance.getAccessToken(), 'token-value');
   });
 
   test('logout forwards unbind flag and clears current user', () async {
-    await EMClient.getInstance.loginWithPassword('unit-user', 'password');
+    await EMClient.getInstance.loginWithToken('unit-user', 'token');
     recordingClient.calls.clear();
 
     await EMClient.getInstance.logout(false);
@@ -75,20 +72,16 @@ void main() {
   });
 
   test('client logs never expose credentials or app keys', () async {
-    const password = 'ci-super-secret-password';
     const token = 'ci-super-secret-token';
     const appKey = 'ci#super-secret-app-key';
 
     final logs = await captureLogs(() async {
       await EMClient.getInstance.init(EMOptions.withAppKey(appKey));
-      await EMClient.getInstance.createAccount('unit-user', password);
-      await EMClient.getInstance.loginWithPassword('unit-user', password);
       await EMClient.getInstance.loginWithToken('unit-user', token);
       await EMClient.getInstance.changeAppKey(newAppKey: appKey);
     });
 
     expect(logs, isNotEmpty);
-    expect(logs.join('\n'), isNot(contains(password)));
     expect(logs.join('\n'), isNot(contains(token)));
     expect(logs.join('\n'), isNot(contains(appKey)));
   });

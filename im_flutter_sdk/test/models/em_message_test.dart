@@ -4,12 +4,10 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 void main() {
   group('EMMessage JSON contract', () {
     test('text message round trip preserves routing and content', () {
-      final message = EMMessage.createTxtSendMessage(
-        targetId: 'receiver',
-        content: 'hello',
-      )
-        ..attributes = <String, Object>{'trace': 'unit'}
-        ..deliverOnlineOnly = true;
+      final message =
+          EMMessage.createTxtSendMessage(targetId: 'receiver', content: 'hello')
+            ..attributes = <String, Object>{'trace': 'unit'}
+            ..deliverOnlineOnly = true;
 
       final decoded = EMMessage.fromJson(message.toJson());
 
@@ -72,8 +70,7 @@ void main() {
       )
         ..from = 'sender'
         ..to = 'current-user'
-        ..conversationId = 'sender'
-        ..hasRead = false;
+        ..conversationId = 'sender';
 
       final decoded = EMMessage.fromJson(message.toJson());
 
@@ -81,7 +78,7 @@ void main() {
       expect(decoded.to, 'current-user');
       expect(decoded.conversationId, 'sender');
       expect(decoded.direction, MessageDirection.RECEIVE);
-      expect(decoded.hasRead, isFalse);
+      expect(decoded.isRead, isFalse);
     });
   });
 }

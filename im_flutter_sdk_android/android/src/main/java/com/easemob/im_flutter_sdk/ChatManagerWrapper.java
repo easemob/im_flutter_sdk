@@ -18,7 +18,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,20 +55,22 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                 sendMessage(params, call.method, result);
             } else if (MethodKey.resendMessage.equals(call.method)) {
                 resendMessage(params, call.method, result);
-            } else if (MethodKey.ackMessageRead.equals(call.method)) {
-                ackMessageRead(params, call.method, result);
-            } else if (MethodKey.ackGroupMessageRead.equals(call.method)) {
-                ackGroupMessageRead(params, call.method, result);
-            } else if (MethodKey.ackConversationRead.equals(call.method)) {
-                ackConversationRead(params, call.method, result);
+            } else if (MethodKey.sendMessageReadReceipts.equals(call.method)) {
+                sendMessageReadReceipts(params, call.method, result);
+            } else if (MethodKey.clearConversationUnreadMessageCount.equals(call.method)) {
+                clearConversationUnreadMessageCount(params, call.method, result);
+            } else if (MethodKey.clearAllConversationUnreadMessageCount.equals(call.method)) {
+                clearAllConversationUnreadMessageCount(params, call.method, result);
+            } else if (MethodKey.getGroupMessageReadReceipts.equals(call.method)) {
+                getGroupMessageReadReceipts(params, call.method, result);
+            } else if (MethodKey.fetchGroupMessageReadReceipts.equals(call.method)) {
+                fetchGroupMessageReadReceipts(params, call.method, result);
             } else if (MethodKey.recallMessage.equals(call.method)) {
                 recallMessage(params, call.method, result);
             } else if (MethodKey.getConversation.equals(call.method)) {
                 getConversation(params, call.method, result);
             } else if (MethodKey.getThreadConversation.equals(call.method)) {
                 getThreadConversation(params, call.method, result);
-            } else if (MethodKey.markAllChatMsgAsRead.equals(call.method)) {
-                markAllChatMsgAsRead(params, call.method, result);
             } else if (MethodKey.getUnreadMessageCount.equals(call.method)) {
                 getUnreadMessageCount(params, call.method, result);
             } else if (MethodKey.updateChatMessage.equals(call.method)) {
@@ -86,20 +87,14 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                 importMessages(params, call.method, result);
             } else if (MethodKey.loadAllConversations.equals(call.method)) {
                 loadAllConversations(params, call.method, result);
-            } else if (MethodKey.getConversationsFromServer.equals(call.method)) {
-                getConversationsFromServer(params, call.method, result);
             } else if (MethodKey.deleteConversation.equals(call.method)) {
                 deleteConversation(params, call.method, result);
-            } else if (MethodKey.fetchHistoryMessages.equals(call.method)) {
-                fetchHistoryMessages(params, call.method, result);
             } else if (MethodKey.fetchHistoryMessagesByOptions.equals(call.method)) {
                 fetchHistoryMessagesByOptions(params, call.method, result);
             } else if (MethodKey.searchChatMsgFromDB.equals(call.method)) {
                 searchChatMsgFromDB(params, call.method, result);
             } else if (MethodKey.getMessage.equals(call.method)) {
                 getMessage(params, call.method, result);
-            } else if (MethodKey.asyncFetchGroupAcks.equals(call.method)){
-                asyncFetchGroupMessageAckFromServer(params, call.method, result);
             } else if (MethodKey.deleteRemoteConversation.equals(call.method)){
                 deleteRemoteConversation(params, call.method, result);
             } else if (MethodKey.deleteMessagesBeforeTimestamp.equals(call.method)) {
@@ -116,18 +111,10 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                 fetchReactionList(params, call.method, result);
             } else if (MethodKey.fetchReactionDetail.equals(call.method)) {
                 fetchReactionDetail(params, call.method, result);
-            } else if (MethodKey.reportMessage.equals(call.method)) {
-                reportMessage(params, call.method, result);
-            } else if (MethodKey.fetchConversationsFromServerWithPage.equals(call.method)) {
-                getConversationsFromServerWithPage(params, call.method, result);
             } else if (MethodKey.removeMessagesFromServerWithMsgIds.equals(call.method)) {
                 removeMessagesFromServerWithMsgIds(params, call.method, result);
             } else if (MethodKey.removeMessagesFromServerWithTs.equals(call.method)) {
                 removeMessagesFromServerWithTs(params, call.method, result);
-            } else if (MethodKey.getConversationsFromServerWithCursor.equals(call.method)) {
-                getConversationsFromServerWithCursor(params, call.method, result);
-            } else if (MethodKey.getPinnedConversationsFromServerWithCursor.equals(call.method)) {
-                getPinnedConversationsFromServerWithCursor(params, call.method, result);
             } else if (MethodKey.pinConversation.equals(call.method)) {
                 pinConversation(params, call.method, result);
             } else if (MethodKey.modifyMessage.equals(call.method)) {
@@ -141,9 +128,6 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             }
             else if (MethodKey.deleteRemoteAndLocalConversationsMark.equals(call.method)) {
                 deleteRemoteAndLocalConversationsMark(params, call.method, result);
-            }
-            else if (MethodKey.fetchConversationsByOptions.equals(call.method)) {
-                fetchConversationsByOptions(params, call.method, result);
             }
             else if (MethodKey.deleteAllMessageAndConversation.equals(call.method)) {
                 deleteAllMessageAndConversation(params, call.method, result);
@@ -283,52 +267,85 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                 });
             }
         });
+        EMClient.getInstance().chatManager().sendMessage(finalMsg);
+        asyncRunnable(() -> onSuccess(result, channelName, MessageHelper.toJson(finalMsg)));
         EMClient.getInstance().chatManager().sendMessage(msg);
         asyncRunnable(() -> onSuccess(result, channelName, MessageHelper.toJson(finalMsg)));
     }
 
-    private void ackMessageRead(JSONObject params, String channelName, Result result) throws JSONException {
-        String msgId = params.getString("msgId");
-        String to = params.getString("to");
-
-        asyncRunnable(() -> {
-            try {
-                EMClient.getInstance().chatManager().ackMessageRead(to, msgId);
-                onSuccess(result, channelName, true);
-            } catch (HyphenateException e) {
-                onError(result, e);
-            }
-        });
-    }
-
-    private void ackGroupMessageRead(JSONObject params, String channelName, Result result) throws JSONException {
-        String msgId = params.getString("msgId");
-        String to = params.getString("group_id");
-        String content = null;
-        if(params.has("content")) {
-            content = params.getString("content");
+    // 5.0.0
+    private void sendMessageReadReceipts(JSONObject params, String channelName, Result result) throws JSONException {
+        List<EMMessage> messages = messagesFromIds(params.getJSONArray("msgIds"));
+        if (messages == null) {
+            onError(result, new HyphenateException(EMError.GENERAL_ERROR, "The message was not found"));
+            return;
         }
-        String finalContent = content;
-        asyncRunnable(()->{
-            try {
-                EMClient.getInstance().chatManager().ackGroupMessageRead(to, msgId, finalContent);
-                onSuccess(result, channelName, true);
-            } catch (HyphenateException e) {
-                onError(result, e);
-            }
-        });
+        EMClient.getInstance().chatManager().asyncSendMessageReadReceipts(
+                messages, new EMWrapperCallBack(result, channelName, null));
     }
 
-    private void ackConversationRead(JSONObject params, String channelName, Result result) throws JSONException {
-        String conversationId = params.getString("convId");
-        asyncRunnable(() -> {
-            try {
-                EMClient.getInstance().chatManager().ackConversationRead(conversationId);
-                onSuccess(result, channelName, true);
-            } catch (HyphenateException e) {
-                onError(result, e);
+    // 5.0.0
+    private void clearConversationUnreadMessageCount(JSONObject params, String channelName, Result result)
+            throws JSONException {
+        String conversationId = params.getString("conversationId");
+        EMClient.getInstance().chatManager().asyncClearConversationUnreadMessageCount(
+                conversationId, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    // 5.0.0
+    private void clearAllConversationUnreadMessageCount(JSONObject params, String channelName, Result result) {
+        EMClient.getInstance().chatManager().asyncClearAllConversationUnreadMessageCount(
+                new EMWrapperCallBack(result, channelName, null));
+    }
+
+    // 5.0.0
+    private void getGroupMessageReadReceipts(JSONObject params, String channelName, Result result)
+            throws JSONException {
+        List<EMMessage> messages = messagesFromIds(params.getJSONArray("msgIds"));
+        if (messages == null) {
+            onError(result, new HyphenateException(EMError.GENERAL_ERROR, "The message was not found"));
+            return;
+        }
+        EMClient.getInstance().chatManager().asyncGetGroupMessageReadReceipts(
+                messages, new EMValueWrapperCallBack<List<EMMessageReadReceipt>>(result, channelName) {
+                    @Override
+                    public void onSuccess(List<EMMessageReadReceipt> receipts) {
+                        List<Map<String, Object>> data = new ArrayList<>();
+                        for (EMMessageReadReceipt receipt : receipts) {
+                            data.add(MessageReadReceiptHelper.toJson(receipt));
+                        }
+                        updateObject(data);
+                    }
+                });
+    }
+
+    // 5.0.0
+    private void fetchGroupMessageReadReceipts(JSONObject params, String channelName, Result result)
+            throws JSONException {
+        String messageId = params.getString("messageId");
+        params.getString("groupId");
+        int pageSize = params.getInt("pageSize");
+        String cursor = params.optString("cursor");
+        EMClient.getInstance().chatManager().asyncFetchGroupMessageReadReceipts(
+                messageId, pageSize, cursor,
+                new EMValueWrapperCallBack<EMCursorResult<EMGroupReadReceipt>>(result, channelName) {
+                    @Override
+                    public void onSuccess(EMCursorResult<EMGroupReadReceipt> cursorResult) {
+                        updateObject(CursorResultHelper.toJson(cursorResult));
+                    }
+                });
+    }
+
+    private List<EMMessage> messagesFromIds(JSONArray messageIds) throws JSONException {
+        List<EMMessage> messages = new ArrayList<>();
+        for (int i = 0; i < messageIds.length(); i++) {
+            EMMessage message = EMClient.getInstance().chatManager().getMessage(messageIds.getString(i));
+            if (message == null) {
+                return null;
             }
-        });
+            messages.add(message);
+        }
+        return messages;
     }
 
     private void recallMessage(JSONObject params, String channelName, Result result) throws JSONException {
@@ -391,65 +408,11 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
         });
     }
 
-    private void markAllChatMsgAsRead(JSONObject params, String channelName, Result result) throws JSONException {
-        asyncRunnable(() -> {
-            boolean ret = EMClient.getInstance().chatManager().markAllConversationsAsRead();
-            onSuccess(result, channelName, ret);
-        });
-    }
-
     private void getUnreadMessageCount(JSONObject params, String channelName, Result result) throws JSONException {
         asyncRunnable(() -> {
             int count = EMClient.getInstance().chatManager().getUnreadMessageCount();
             onSuccess(result, channelName, count);
         });
-    }
-
-    private void getConversationsFromServerWithPage(JSONObject params, String channelName, Result result) throws JSONException {
-        int pageNum = params.getInt("pageNum");
-        int pageSize = params.getInt("pageSize");
-        EMValueWrapperCallBack<Map<String, EMConversation>> callBack = new EMValueWrapperCallBack<Map<String, EMConversation>>(result,
-                channelName) {
-            @Override
-            public void onSuccess(Map<String, EMConversation> object) {
-                ArrayList<EMConversation>list = new ArrayList<>(object.values());
-                asyncRunnable(() -> {
-                    boolean retry;
-                    List<Map> conversations = new ArrayList<>();
-                    do{
-                        try{
-                            retry = false;
-                            Collections.sort(list, (o1, o2) -> {
-                                if (o1 == null && o2 == null) {
-                                    return 0;
-                                }
-                                if (o1.getLastMessage() == null) {
-                                    return 1;
-                                }
-
-                                if (o2.getLastMessage() == null) {
-                                    return -1;
-                                }
-
-                                if (o1.getLastMessage().getMsgTime() == o2.getLastMessage().getMsgTime()) {
-                                    return 0;
-                                }
-
-                                return o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime() > 0 ? 1 : -1;
-                            });
-                            for (EMConversation conversation : list) {
-                                conversations.add(ConversationHelper.toJson(conversation));
-                            }
-
-                        }catch(IllegalArgumentException e) {
-                            retry = true;
-                        }
-                    }while (retry);
-                    updateObject(conversations);
-                });
-            }
-        };
-        EMClient.getInstance().chatManager().asyncFetchConversationsFromServer(pageNum, pageSize, callBack);
     }
 
     private void removeMessagesFromServerWithMsgIds(JSONObject params, String channelName, Result result) throws JSONException {
@@ -748,60 +711,12 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
         });
     }
 
-    private void getConversationsFromServer(JSONObject params, String channelName, Result result) throws JSONException {
-        asyncRunnable(() -> {
-            try {
-                List<EMConversation> list = new ArrayList<>(
-                        EMClient.getInstance().chatManager().fetchConversationsFromServer().values());
-                Collections.sort(list, (o1, o2) -> {
-                    if (o1.getLastMessage() == null) {
-                        return 1;
-                    }
-
-                    if (o2.getLastMessage() == null) {
-                        return -1;
-                    }
-
-                    if (o1.getLastMessage().getMsgTime() == o2.getLastMessage().getMsgTime()) {
-                        return 0;
-                    }
-
-                    return o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime() > 0 ? 1 : -1;
-                });
-                List<Map> conversations = new ArrayList<>();
-                for (EMConversation conversation : list) {
-                    conversations.add(ConversationHelper.toJson(conversation));
-                }
-                onSuccess(result, channelName, conversations);
-            } catch (HyphenateException e) {
-                onError(result, e);
-            }
-        });
-    }
-
     private void deleteConversation(JSONObject params, String channelName, Result result) throws JSONException {
         String conId = params.getString("convId");
         boolean isDelete = params.getBoolean("deleteMessages");
         asyncRunnable(() -> {
             boolean ret = EMClient.getInstance().chatManager().deleteConversation(conId, isDelete);
             onSuccess(result, channelName, ret);
-        });
-    }
-
-    private void fetchHistoryMessages(JSONObject params, String channelName, Result result) throws JSONException {
-        String conId = params.getString("convId");
-        EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("type"));
-        int pageSize = params.getInt("pageSize");
-        String startMsgId = params.getString("startMsgId");
-        EMSearchDirection direction = EnumTools.searchDirectionFromInt(params.optInt("direction"));
-        asyncRunnable(() -> {
-            try {
-                EMCursorResult<EMMessage> cursorResult = EMClient.getInstance().chatManager().fetchHistoryMessages(conId,
-                        type, pageSize, startMsgId, direction);
-                onSuccess(result, channelName, CursorResultHelper.toJson(cursorResult));
-            } catch (HyphenateException e) {
-                onError(result, e);
-            }
         });
     }
 
@@ -856,26 +771,6 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             }
             onSuccess(result, channelName, messages);
         });
-    }
-
-
-    private void asyncFetchGroupMessageAckFromServer(JSONObject params, String channelName, Result result) throws JSONException {
-        String msgId = params.getString("msgId");
-        String ackId = null;
-        if (params.has("ack_id")){
-            ackId = params.getString("ack_id");
-        }
-        int pageSize = params.getInt("pageSize");
-
-        EMValueWrapperCallBack<EMCursorResult<EMGroupReadAck>> callBack = new EMValueWrapperCallBack<EMCursorResult<EMGroupReadAck>>(result,
-                channelName) {
-            @Override
-            public void onSuccess(EMCursorResult<EMGroupReadAck> result) {
-                updateObject(CursorResultHelper.toJson(result));
-            }
-        };
-
-        EMClient.getInstance().chatManager().asyncFetchGroupReadAcks(msgId, pageSize, ackId, callBack);
     }
 
 
@@ -993,33 +888,6 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
         });
     }
 
-    private void reportMessage(JSONObject params, String channelName, Result result) throws JSONException {
-        String msgId = params.getString("msgId");
-        String tag = params.getString("tag");
-        String reason = params.getString("reason");
-        EMClient.getInstance().chatManager().asyncReportMessage(msgId, tag, reason, new EMWrapperCallBack(result, channelName, true));
-    }
-
-    private void getConversationsFromServerWithCursor(JSONObject params, String channelName, Result result) throws JSONException {
-        String cursor = params.optString("cursor");
-        int pageSize = params.optInt("pageSize");
-        EMClient.getInstance().chatManager().asyncFetchConversationsFromServer(pageSize, cursor, new EMValueWrapperCallBack<EMCursorResult<EMConversation>>(result, channelName){
-            @Override
-            public void onSuccess(EMCursorResult<EMConversation> object) {
-                super.updateObject(CursorResultHelper.toJson(object));
-            }
-        });
-    }
-    private void getPinnedConversationsFromServerWithCursor(JSONObject params, String channelName, Result result) throws JSONException {
-        String cursor = params.optString("cursor");
-        int pageSize = params.optInt("pageSize");
-        EMClient.getInstance().chatManager().asyncFetchPinnedConversationsFromServer(pageSize, cursor, new EMValueWrapperCallBack<EMCursorResult<EMConversation>>(result, channelName){
-            @Override
-            public void onSuccess(EMCursorResult<EMConversation> object) {
-                super.updateObject(CursorResultHelper.toJson(object));
-            }
-        });
-    }
     private void pinConversation(JSONObject params, String channelName, Result result) throws JSONException {
         String convId = params.optString("convId");
         boolean isPinned = params.optBoolean("isPinned", false);
@@ -1031,8 +899,9 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
         EMMessageBody body = (params.has("msgBody") && !params.isNull("msgBody"))
                 ? MessageBodyHelper.fromJson(params.optJSONObject("msgBody"))
                 : null;
-        Map<String, Object> ext = new HashMap<>();
-        if(params.has("attributes")) {
+        Map<String, Object> ext = null;
+        if(params.has("attributes") && !params.isNull("attributes")) {
+            ext = new HashMap<>();
             JSONObject data = params.getJSONObject("attributes");
             Iterator iterator = data.keys();
             while (iterator.hasNext()) {
@@ -1081,40 +950,6 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
         }
         EMConversation.EMMarkType mark = EMConversation.EMMarkType.values()[params.getInt("mark")];
         EMClient.getInstance().chatManager().asyncRemoveConversationMark(convIds,mark,  new EMWrapperCallBack(result, channelName, null));
-    }
-
-    private void fetchConversationsByOptions(JSONObject params, String channelName, Result result) throws JSONException {
-        String cursor = ConversationFilterHelper.cursor(params);
-        Boolean isPinned = ConversationFilterHelper.pinned(params);
-        Boolean isMark = ConversationFilterHelper.hasMark(params);
-        int pageSize = ConversationFilterHelper.pageSize(params);
-        if(isPinned) {
-            EMClient.getInstance().chatManager().asyncFetchPinnedConversationsFromServer(pageSize, cursor, new EMValueWrapperCallBack<EMCursorResult<EMConversation>>(result, channelName){
-                @Override
-                public void onSuccess(EMCursorResult<EMConversation> object) {
-                    super.updateObject(CursorResultHelper.toJson(object));
-                }
-            });
-            return;
-        }
-
-        if(isMark){
-            EMConversationFilter filter = ConversationFilterHelper.fromJson(params);
-            EMClient.getInstance().chatManager().asyncGetConversationsFromServerWithCursor(cursor, filter, new EMValueWrapperCallBack<EMCursorResult<EMConversation>>(result, channelName){
-                @Override
-                public void onSuccess(EMCursorResult<EMConversation> object) {
-                    super.updateObject(CursorResultHelper.toJson(object));
-                }
-            });
-            return;
-        }
-
-        EMClient.getInstance().chatManager().asyncFetchConversationsFromServer(pageSize, cursor, new EMValueWrapperCallBack<EMCursorResult<EMConversation>>(result, channelName){
-            @Override
-            public void onSuccess(EMCursorResult<EMConversation> object) {
-                super.updateObject(CursorResultHelper.toJson(object));
-            }
-        });
     }
 
     private void deleteAllMessageAndConversation(JSONObject params, String channelName, Result result) throws JSONException {
@@ -1186,15 +1021,14 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             }
 
             @Override
-            public void onMessageRead(List<EMMessage> messages) {
-                ArrayList<Map<String, Object>> msgList = new ArrayList<>();
-                for (EMMessage message : messages) {
-                    msgList.add(MessageHelper.toJson(message));
-                    post(() -> messageChannel.invokeMethod(MethodKey.onMessageReadAck,
-                            MessageHelper.toJson(message)));
+            public void onMessageReadReceipts(List<EMMessageReadReceipt> receipts) {
+                List<Map<String, Object>> receiptList = new ArrayList<>();
+                for (EMMessageReadReceipt receipt : receipts) {
+                    receiptList.add(MessageReadReceiptHelper.toJson(receipt));
                 }
-
-                post(() -> channel.invokeMethod(MethodKey.onMessagesRead, msgList));
+                Map<String, Object> data = new HashMap<>();
+                data.put("receipts", receiptList);
+                post(() -> channel.invokeMethod(MethodKey.onMessageReadReceipts, data));
             }
 
             @Override
@@ -1215,29 +1049,6 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                             MessageHelper.toJson(message)));
                 }
                 post(() -> channel.invokeMethod(MethodKey.onMessagesDelivered, msgList));
-            }
-
-            @Override
-            public void onMessageRecalled(List<EMMessage> messages) {
-                ArrayList<Map<String, Object>> msgList = new ArrayList<>();
-                for (EMMessage message : messages) {
-                    msgList.add(MessageHelper.toJson(message));
-                }
-                post(() -> channel.invokeMethod(MethodKey.onMessagesRecalled, msgList));
-            }
-
-            @Override
-            public void onGroupMessageRead(List<EMGroupReadAck> var1) {
-                ArrayList<Map<String, Object>> msgList = new ArrayList<>();
-                for (EMGroupReadAck ack : var1) {
-                    msgList.add(GroupAckHelper.toJson(ack));
-                }
-                post(() -> channel.invokeMethod(MethodKey.onGroupMessageRead, msgList));
-            }
-
-            @Override
-            public void onReadAckForGroupMessageUpdated() {
-                post(() -> channel.invokeMethod(MethodKey.onReadAckForGroupMessageUpdated, null));
             }
 
             @Override
@@ -1281,13 +1092,6 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                 post(() -> channel.invokeMethod(MethodKey.onConversationUpdate, data));
             }
 
-            @Override
-            public void onConversationRead(String from, String to) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("from", from);
-                data.put("to", to);
-                post(() -> channel.invokeMethod(MethodKey.onConversationHasRead, data));
-            }
         };
 
         EMClient.getInstance().chatManager().addMessageListener(messageListener);

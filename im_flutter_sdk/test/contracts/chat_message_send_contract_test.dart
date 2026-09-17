@@ -39,10 +39,7 @@ void main() {
         'retry': 2,
         'silent': true,
         'score': 1.5,
-        'meta': <String, Object>{
-          'source': 'contract-test',
-          'level': 3,
-        },
+        'meta': <String, Object>{'source': 'contract-test', 'level': 3},
         'tags': <String>['a', 'b'],
       }
       ..deliverOnlineOnly = true
@@ -50,8 +47,9 @@ void main() {
       ..chatroomMessagePriority = ChatRoomMessagePriority.High;
     final localId = message.msgId;
 
-    final returned =
-        await ChatClient.getInstance.chatManager.sendMessage(message);
+    final returned = await ChatClient.getInstance.chatManager.sendMessage(
+      message,
+    );
 
     expect(returned, same(message));
     expect(recordingClient.calls, hasLength(1));
@@ -71,17 +69,15 @@ void main() {
         'retry': 2,
         'silent': true,
         'score': 1.5,
-        'meta': <String, Object>{
-          'source': 'contract-test',
-          'level': 3,
-        },
+        'meta': <String, Object>{'source': 'contract-test', 'level': 3},
         'tags': <String>['a', 'b'],
       },
       'direction': MessageDirection.SEND.index,
-      'hasRead': true,
-      'hasReadAck': false,
+      'isRead': true,
+      'isPeerRead': false,
       'hasDeliverAck': false,
-      'needGroupAck': false,
+      'isNeedReadReceipt': false,
+      'groupReadReceiptCount': 0,
       'msgId': localId,
       'convId': 'room-001',
       'chatType': ChatType.ChatRoom.index,

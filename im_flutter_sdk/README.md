@@ -58,7 +58,6 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 Future<void> initSDK() async {
   ChatOptions options = ChatOptions(
     appKey: "你的 AppKey",
-    autoLogin: false,
   );
   await ChatClient.getInstance.init(options);
   // 通知 SDK UI 已准备好，执行后才会收到事件回调
@@ -66,9 +65,9 @@ Future<void> initSDK() async {
 }
 
 // 2. 登录（生产环境建议使用 token 登录，token 由你的应用服务器下发）
-Future<void> signIn(String userId, String password) async {
+Future<void> signIn(String userId, String token) async {
   try {
-    await ChatClient.getInstance.login(userId, password);
+    await ChatClient.getInstance.loginWithToken(userId, token);
   } on ChatError catch (e) {
     // 登录失败：e.code / e.description
   }
@@ -132,7 +131,7 @@ void dispose() {
 }
 ```
 
-> 注意：注册账号（`ChatClient.getInstance.createAccount`）仅建议在 demo 中使用，生产环境应由你的应用服务器调用环信 REST API 完成注册。
+> 注意：5.0.0 起客户端仅支持 Token 登录。账号注册与 Token 获取应由你的应用服务器通过 REST API 完成。
 
 > 说明：4.22.0 起公开 API 统一为 `Chat` 前缀命名（如 `ChatClient`、`ChatOptions`）。旧 `EM` 前缀名字仍可通过 `em_compat.dart` 中的 `@Deprecated` typedef 使用，建议新代码使用新名字。
 

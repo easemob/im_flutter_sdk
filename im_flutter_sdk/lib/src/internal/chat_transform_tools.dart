@@ -78,61 +78,11 @@ ChatMultiDevicesEvent? convertIntToChatMultiDevicesEvent(int? i) {
       return ChatMultiDevicesEvent.CONVERSATION_UPDATE_MARK;
     case 64:
       return ChatMultiDevicesEvent.CONVERSATION_MUTE_INFO_CHANGED;
+    case 65:
+      return ChatMultiDevicesEvent.CONVERSATION_UNREAD_MESSAGE_COUNT_CLEARED;
+    case 66:
+      return ChatMultiDevicesEvent
+          .ALL_CONVERSATION_UNREAD_MESSAGE_COUNT_CLEARED;
   }
   return null;
-}
-
-ChatGroupStyle groupStyleTypeFromInt(int? type) {
-  ChatGroupStyle ret = ChatGroupStyle.PrivateOnlyOwnerInvite;
-  switch (type) {
-    case 0:
-      {
-        ret = ChatGroupStyle.PrivateOnlyOwnerInvite;
-      }
-      break;
-    case 1:
-      {
-        ret = ChatGroupStyle.PrivateMemberCanInvite;
-      }
-      break;
-    case 2:
-      {
-        ret = ChatGroupStyle.PublicJoinNeedApproval;
-      }
-      break;
-    case 3:
-      {
-        ret = ChatGroupStyle.PublicOpenJoin;
-      }
-      break;
-  }
-  return ret;
-}
-
-int groupStyleTypeToInt(ChatGroupStyle? type) {
-  int ret = 0;
-  if (type == null) return ret;
-  switch (type) {
-    case ChatGroupStyle.PrivateOnlyOwnerInvite:
-      {
-        ret = 0;
-      }
-      break;
-    case ChatGroupStyle.PrivateMemberCanInvite:
-      {
-        ret = 1;
-      }
-      break;
-    case ChatGroupStyle.PublicJoinNeedApproval:
-      {
-        ret = 2;
-      }
-      break;
-    case ChatGroupStyle.PublicOpenJoin:
-      {
-        ret = 3;
-      }
-      break;
-  }
-  return ret;
 }

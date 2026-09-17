@@ -6,7 +6,7 @@ typedef CursorResultCallback = Object Function(dynamic obj);
 ///
 ///   ```dart
 ///     String? cursor;
-///     ChatCursorResult<ChatGroup> result = await ChatClient.getInstance.groupManager.fetchPublicGroupsFromServer(pageSize: 10, cursor: cursor);
+///     ChatCursorResult<ChatMessage> result = await ChatClient.getInstance.chatManager.fetchHistoryMessagesByOption(conversationId, ChatConversationType.Chat);
 ///     List<ChatGroup>? group = result.data;
 ///     cursor = result.cursor;
 ///   ```
@@ -25,13 +25,12 @@ typedef CursorResultCallback = Object Function(dynamic obj);
 ///   ```
 /// ~end
 class ChatCursorResult<T> {
-  ChatCursorResult(
-    this.cursor,
-    this.data,
-  );
+  ChatCursorResult(this.cursor, this.data);
 
-  factory ChatCursorResult.fromJson(Map<String, dynamic> map,
-      {dataItemCallback = CursorResultCallback}) {
+  factory ChatCursorResult.fromJson(
+    Map<String, dynamic> map, {
+    dataItemCallback = CursorResultCallback,
+  }) {
     List<T> list = [];
     for (var element in (map['list'] as List)) {
       list.add(dataItemCallback(element));

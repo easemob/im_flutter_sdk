@@ -52,23 +52,17 @@
                        result:result];
     }
     
-    else if ([ChatGetJoinedGroupsFromServer isEqualToString:call.method])
-    {
-        [self getJoinedGroupsFromServer:call.arguments
-                            channelName:call.method
-                                 result:result];
-    }
-    else if ([ChatGetPublicGroupsFromServer isEqualToString:call.method])
-    {
-        [self getPublicGroupsFromServer:call.arguments
-                            channelName:call.method
-                                 result:result];
-    }
     else if ([ChatCreateGroup isEqualToString:call.method])
     {
         [self createGroup:call.arguments
               channelName:call.method
                    result:result];
+    }
+    else if ([ChatUpdateGroupConfigs isEqualToString:call.method])
+    {
+        [self updateGroupConfigs:call.arguments
+                    channelName:call.method
+                         result:result];
     }
     else if ([ChatGetGroupSpecificationFromServer isEqualToString:call.method])
     {
@@ -371,46 +365,6 @@
                        object:list];
 }
 
-- (void)getJoinedGroupsFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    
-    __weak typeof(self) weakSelf = self;
-    
-    int pageNum = [param[@"pageNum"] intValue];
-    int pageSize = [param[@"pageSize"] intValue];
-    BOOL needRole = [param[@"needRole"] boolValue];
-    BOOL needMemberCount = [param[@"needMemberCount"] boolValue];
-    
-    [EMClient.sharedClient.groupManager getJoinedGroupsFromServerWithPage:pageNum
-                                                                 pageSize:pageSize
-                                                          needMemberCount:needMemberCount
-                                                                 needRole:needRole
-                                                               completion:^(NSArray<EMGroup *> *aList, EMError * _Nullable aError)
-     {
-        NSMutableArray *list = [NSMutableArray array];
-        for (EMGroup *group in aList) {
-            [list addObject:[group toJson]];
-        }
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:list];
-    }];
-    
-}
-
-- (void)getPublicGroupsFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    [EMClient.sharedClient.groupManager getPublicGroupsFromServerWithCursor:param[@"cursor"]
-                                                                   pageSize:[param[@"pageSize"] integerValue]
-                                                                 completion:^(EMCursorResult *aResult, EMError *aError)
-     {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:[aResult toJson]];
-    }];
-}
-
 - (void)createGroup:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager createGroupWithSubject:param[@"groupName"]
@@ -418,13 +372,31 @@
                                                    description:param[@"desc"]
                                                       invitees:param[@"inviteMembers"]
                                                        message:param[@"inviteReason"]
-                                                       setting:[EMGroupOptions fromJson:param[@"options"]]
+                                                       setting:[EMGroupConfigs fromJson:param[@"configs"]]
                                                     completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
+    }];
+}
+
+#pragma mark - 5.0.0
+
+- (void)updateGroupConfigs:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *groupId = param[@"groupId"];
+    EMGroupConfigsType types = (EMGroupConfigsType)[param[@"types"] unsignedIntegerValue];
+    EMGroupConfigs *configs = [EMGroupConfigs fromJson:param[@"configs"]];
+    [EMClient.sharedClient.groupManager updateGroupWithId:groupId
+                                                    types:types
+                                                  configs:configs
+                                               completion:^(EMGroup * _Nullable group, EMError * _Nullable error) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:[group toJson]];
     }];
 }
 
