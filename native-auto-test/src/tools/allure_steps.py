@@ -5,6 +5,25 @@ from contextvars import ContextVar
 _PHASE = ContextVar('allure_phase', default=None)
 _ORDINAL = ContextVar('allure_step_ordinal', default=0)
 _DEPTH = ContextVar('allure_step_depth', default=0)
+_QUIET = ContextVar('allure_quiet', default=False)
+
+
+def quiet() -> bool:
+    return _QUIET.get()
+
+
+@contextmanager
+def quiet_evidence():
+    """Drop steps/attachments for bounded-wait probe attempts.
+
+    Only the deciding attempt records evidence, so retries never leave failed
+    steps in the report. Assertions themselves are unchanged.
+    """
+    token = _QUIET.set(True)
+    try:
+        yield
+    finally:
+        _QUIET.reset(token)
 
 
 @contextmanager
@@ -21,6 +40,9 @@ def report_phase(phase):
 @contextmanager
 def business_step(title):
     from .allure_evidence import redact, step
+    if _QUIET.get():
+        yield
+        return
     title = str(redact(title))
     if not _DEPTH.get():
         if _PHASE.get() == 'call':

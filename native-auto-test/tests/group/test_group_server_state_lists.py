@@ -48,14 +48,13 @@ def test_group_get_group_block_list_from_server_success(device_a, assert_api, us
             group_name=new_group_name("block_list"),
             invite_members=[],
         )
-        timing_pause('step.interval', module='group')
-        resp = device_a.call(
-            "GroupManager",
-            Cmd.getGroupBlockListFromServer.value,
-            info={"groupId": group_id, "pageNum": 1, "pageSize": 20},
-        )
-        assert_api.assert_response_matches(
-            resp,
+        resp = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "GroupManager",
+                Cmd.getGroupBlockListFromServer.value,
+                info={"groupId": group_id, "pageNum": 1, "pageSize": 20},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "GroupManager",
                 "cmd": Cmd.getGroupBlockListFromServer.value,
@@ -84,14 +83,13 @@ def test_group_get_group_mute_list_from_server_success(device_a, assert_api, use
             group_name=new_group_name("mute_list"),
             invite_members=[],
         )
-        timing_pause('step.interval', module='group')
-        resp = device_a.call(
-            "GroupManager",
-            Cmd.getGroupMuteListFromServer.value,
-            info={"groupId": group_id, "pageNum": 1, "pageSize": 20},
-        )
-        assert_api.assert_response_matches(
-            resp,
+        resp = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "GroupManager",
+                Cmd.getGroupMuteListFromServer.value,
+                info={"groupId": group_id, "pageNum": 1, "pageSize": 20},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "GroupManager",
                 "cmd": Cmd.getGroupMuteListFromServer.value,
@@ -120,14 +118,13 @@ def test_group_get_group_white_list_and_member_check_success(device_a, assert_ap
             group_name=new_group_name("white_list"),
             invite_members=[],
         )
-        timing_pause('step.interval', module='group')
-        resp_white = device_a.call(
-            "GroupManager",
-            Cmd.getGroupWhiteListFromServer.value,
-            info={"groupId": group_id},
-        )
-        assert_api.assert_response_matches(
-            resp_white,
+        resp_white = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "GroupManager",
+                Cmd.getGroupWhiteListFromServer.value,
+                info={"groupId": group_id},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "GroupManager",
                 "cmd": Cmd.getGroupWhiteListFromServer.value,

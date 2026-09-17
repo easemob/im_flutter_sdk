@@ -817,36 +817,40 @@ def test_chat_offline_mixed_backlog_local_state_after_recipient_login(
         assert pending == set(), f"B 上线后缺少混合离线消息: {sorted(pending)}"
 
         for message_id, body, ignore_keys in messages:
-            timing_pause('step.interval', module='chat')
-            local = device_b.call(
-                "ChatManager", Cmd.getMessage.value, info={"msgId": message_id}
-            )
             local_expected = dict(expected_by_id[message_id])
             local_expected.pop("deliverOnlineOnly")
-            assert_api.assert_response_matches(
-                local,
-                expected={
-                    "manager": "ChatManager",
-                    "cmd": Cmd.getMessage.value,
-                    "device": "deviceB",
-                    "result": local_expected,
-                },
-                ignore_keys=ignore_keys,
+            assert_api.assert_eventually(
+                lambda message_id=message_id: device_b.call(
+                    "ChatManager", Cmd.getMessage.value, info={"msgId": message_id}
+                ),
+                lambda actual, local_expected=local_expected, ignore_keys=ignore_keys: assert_api.assert_response_matches(
+                    actual,
+                    expected={
+                        "manager": "ChatManager",
+                        "cmd": Cmd.getMessage.value,
+                        "device": "deviceB",
+                        "result": local_expected,
+                    },
+                    ignore_keys=ignore_keys,
+                ),
+                key='step.interval', module='chat',
             )
 
-        timing_pause('step.interval', module='chat')
-        unread = device_b.call(
-            "ConversationManager",
-            Cmd.getUnreadMsgCount.value,
-            info={"convId": user_a, "type": 0},
-        )
-        _assert_call(
-            assert_api,
-            unread,
-            manager="ConversationManager",
-            cmd=Cmd.getUnreadMsgCount.value,
-            device_name="deviceB",
-            result=4,
+        assert_api.assert_eventually(
+            lambda: device_b.call(
+                "ConversationManager",
+                Cmd.getUnreadMsgCount.value,
+                info={"convId": user_a, "type": 0},
+            ),
+            lambda actual: _assert_call(
+                assert_api,
+                actual,
+                manager="ConversationManager",
+                cmd=Cmd.getUnreadMsgCount.value,
+                device_name="deviceB",
+                result=4,
+            ),
+            key='step.interval', module='chat',
         )
         latest_expected = dict(expected_by_id[combine_id])
         latest_expected.pop("deliverOnlineOnly")

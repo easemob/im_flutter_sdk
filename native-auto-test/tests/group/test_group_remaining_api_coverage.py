@@ -93,14 +93,13 @@ def test_group_fetch_members_info_invalid_limit(device_a, assert_api, user_a):
             group_name=new_group_name("member_info_limit"),
             invite_members=[],
         )
-        timing_pause('step.interval', module='group')
-        resp = device_a.call(
-            "GroupManager",
-            Cmd.fetchGroupMembersInfo.value,
-            info={"groupId": group_id, "cursor": None, "limit": 0},
-        )
-        assert_api.assert_response_matches(
-            resp,
+        resp = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "GroupManager",
+                Cmd.fetchGroupMembersInfo.value,
+                info={"groupId": group_id, "cursor": None, "limit": 0},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "GroupManager",
                 "cmd": Cmd.fetchGroupMembersInfo.value,

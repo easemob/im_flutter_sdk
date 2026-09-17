@@ -218,6 +218,7 @@ def test_chat_send_to_self_event(device_a, assert_api, user_a):
     content = f"self-msg-{uuid.uuid4().hex[:6]}"
     resp_send = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_a, content))
     evt = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=timing_seconds('timeout.message', module='chat'))
+    assert evt is not None, f"未收到 onMessageSuccess：content={content}"
     temp_id = (evt.get("data") or {}).get("msgId")
     real_id = ((evt.get("data") or {}).get("msg") or {}).get("msgId")
     assert_api.assert_response_matches(

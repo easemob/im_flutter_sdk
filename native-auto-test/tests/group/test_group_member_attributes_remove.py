@@ -114,14 +114,13 @@ def test_group_remove_member_attributes_success(device_a, device_b, assert_api, 
         )
 
         # 单成员拉取：k1 被删除，k2 保留
-        timing_pause('step.interval', module='group')
-        resp_fetch_single = device_b.call(
-            "GroupManager",
-            Cmd.fetchMemberAttributesFromGroup.value,
-            info={"groupId": group_id},
-        )
-        assert_api.assert_response_matches(
-            resp_fetch_single,
+        resp_fetch_single = assert_api.assert_response_eventually(
+            lambda: device_b.call(
+                "GroupManager",
+                Cmd.fetchMemberAttributesFromGroup.value,
+                info={"groupId": group_id},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "GroupManager",
                 "cmd": Cmd.fetchMemberAttributesFromGroup.value,

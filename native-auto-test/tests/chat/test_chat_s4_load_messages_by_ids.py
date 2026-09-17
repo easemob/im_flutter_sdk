@@ -231,17 +231,16 @@ def test_chat_load_messages_with_ids_single_and_multi_success(device_a, device_b
     msg_id_2 = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content_2)
 
     # 单 ID
-    timing_pause('step.interval', module='chat')
-    resp_single = device_a.call(
-        "ChatManager",
-        Cmd.loadMessagesWithIds.value,
-        info={
-            "messageIds": [msg_id_1],
-            "conversationId": user_b,
-        },
-    )
-    assert_api.assert_response_matches(
-        resp_single,
+    resp_single = assert_api.assert_response_eventually(
+        lambda: device_a.call(
+            "ChatManager",
+            Cmd.loadMessagesWithIds.value,
+            info={
+                "messageIds": [msg_id_1],
+                "conversationId": user_b,
+            },
+        ),
+        key='step.interval', module='chat',
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.loadMessagesWithIds.value,

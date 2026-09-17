@@ -133,10 +133,9 @@ def test_chatroom_join_then_get_local_room_and_all_rooms(device_a, device_b, ass
     try:
         _join_room(device_b, assert_api, room_id=room_id)
 
-        timing_pause('step.interval', module='chatroom')
-        local_resp = device_b.call("ChatRoomManager", Cmd.getChatRoom.value, info={"roomId": room_id})
-        assert_api.assert_response_matches(
-            local_resp,
+        local_resp = assert_api.assert_response_eventually(
+            lambda: device_b.call("ChatRoomManager", Cmd.getChatRoom.value, info={"roomId": room_id}),
+            key='step.interval', module='chatroom',
             expected={
                 "manager": "ChatRoomManager",
                 "cmd": Cmd.getChatRoom.value,
@@ -221,14 +220,13 @@ def test_chatroom_fetch_members_after_join_success(device_a, device_b, assert_ap
     try:
         _join_room(device_b, assert_api, room_id=room_id)
 
-        timing_pause('step.interval', module='chatroom')
-        resp = device_b.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomMembers.value,
-            info={"roomId": room_id, "cursor": "", "pageSize": 20},
-        )
-        assert_api.assert_response_matches(
-            resp,
+        resp = assert_api.assert_response_eventually(
+            lambda: device_b.call(
+                "ChatRoomManager",
+                Cmd.fetchChatRoomMembers.value,
+                info={"roomId": room_id, "cursor": "", "pageSize": 20},
+            ),
+            key='step.interval', module='chatroom',
             expected={
                 "manager": "ChatRoomManager",
                 "cmd": Cmd.fetchChatRoomMembers.value,
@@ -255,14 +253,13 @@ def test_chatroom_fetch_members_with_cursor_pagination(device_a, device_b, asser
     try:
         _join_room(device_b, assert_api, room_id=room_id)
 
-        timing_pause('step.interval', module='chatroom')
-        first_resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomMembers.value,
-            info={"roomId": room_id, "cursor": "", "pageSize": 1},
-        )
-        assert_api.assert_response_matches(
-            first_resp,
+        first_resp = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "ChatRoomManager",
+                Cmd.fetchChatRoomMembers.value,
+                info={"roomId": room_id, "cursor": "", "pageSize": 1},
+            ),
+            key='step.interval', module='chatroom',
             expected={
                 "manager": "ChatRoomManager",
                 "cmd": Cmd.fetchChatRoomMembers.value,
@@ -409,14 +406,13 @@ def test_chatroom_leave_room_updates_local_cache(device_a, device_b, assert_api,
             ignore_keys={"sequence"},
         )
 
-        timing_pause('step.interval', module='chatroom')
-        members_resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomMembers.value,
-            info={"roomId": room_id, "cursor": "", "pageSize": 20},
-        )
-        assert_api.assert_response_matches(
-            members_resp,
+        members_resp = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "ChatRoomManager",
+                Cmd.fetchChatRoomMembers.value,
+                info={"roomId": room_id, "cursor": "", "pageSize": 20},
+            ),
+            key='step.interval', module='chatroom',
             expected={
                 "manager": "ChatRoomManager",
                 "cmd": Cmd.fetchChatRoomMembers.value,

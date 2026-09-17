@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import Any
 import os
 import json
+import time
 
 import pytest
 from .allure_evidence import assertion_evidence, pretty
@@ -136,3 +137,67 @@ def assert_response_matches(
     print("  - actual:\n" + _pretty(actual))
     if not ok:
         print("  - diffs:\n  * " + "\n  * ".join(diffs))
+
+
+def assert_eventually(probe, check, *, key: str = 'step.interval', module: str,
+                      interval: str = 'poll.interval'):
+    """轮询只读查询直到断言通过；预算是上限，通过即继续，超上限交给原断言报错。
+
+    - `probe` 必须只读且幂等：禁止发送、已读回执、下载、历史拉取等会改状态的调用。
+    - `check(actual)` 是原来的断言本身，不放宽、不替换；重试期间静默执行，
+      只有决定性的那一次（通过或超上限）写 Allure 证据，报告里不会留下红色的中间步骤。
+    - 期望"不出现/不变化"的负向断言不要用这里：条件在 t=0 即成立，轮询会让断言失去意义。
+    - 返回最后一次响应，供调用方继续取字段。
+    """
+    from .allure_steps import quiet_evidence
+    from .case_timing import seconds
+
+    budget = seconds(key, module=module)
+    step_seconds = seconds(interval, module=module)
+    deadline = time.monotonic() + budget
+    while True:
+        actual = probe()
+        with quiet_evidence():
+            try:
+                check(actual)
+            except AssertionError:
+                satisfied = False
+            else:
+                satisfied = True
+        remaining = deadline - time.monotonic()
+        if satisfied or remaining <= 0:
+            check(actual)
+            return actual
+        time.sleep(min(step_seconds, remaining))
+
+
+def assert_response_eventually(probe, *, expected: dict[str, Any],
+                               context: dict[str, Any] | None = None,
+                               ignore_keys: set[str] | frozenset[str] | None = None,
+                               key: str = 'step.interval', module: str,
+                               interval: str = 'poll.interval'):
+    """`assert_response_matches` 的有界重试版：符合预期即继续，超上限报原字段差异。
+
+    与 `assert_eventually` 的区别只是调用形态：这里直接接收 `expected` 字典，
+    重试期间用 `compare_response` 静默判断，不写 Allure 证据；决定性的那一次
+    仍走 `assert_response_matches`，失败信息与证据链完全不变。
+
+    约束同 `assert_eventually`：`probe` 只读幂等；期望"不出现/不变化"的负向断言
+    不要用这里。
+    """
+    if _discover_mode():
+        return assert_response_matches(probe(), expected, context, ignore_keys)
+    from .case_timing import seconds
+
+    resolved = resolve_expected(expected, context or {})
+    budget = seconds(key, module=module)
+    step_seconds = seconds(interval, module=module)
+    deadline = time.monotonic() + budget
+    while True:
+        actual = probe()
+        ok, _ = compare_response(actual, resolved, ignore_keys=ignore_keys)
+        remaining = deadline - time.monotonic()
+        if ok or remaining <= 0:
+            assert_response_matches(actual, expected, context, ignore_keys)
+            return actual
+        time.sleep(min(step_seconds, remaining))

@@ -559,6 +559,7 @@ def test_chat_offline_typed_message_recall_after_recipient_relogin(
             body=recall_body,
             ignore_keys=ignore_keys,
         )
+        # 负向断言（撤回后本地不应存在该消息）：必须等满窗口，不能改成有界等待提前返回。
         timing_pause('step.interval', module='chat')
         local = device_b.call(
             "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
@@ -684,6 +685,7 @@ def test_chat_offline_combine_message_recall_after_recipient_relogin(
             body=received_body,
             ignore_keys=_COMBINE_DYNAMIC_KEYS,
         )
+        # 负向断言（撤回后本地不应存在该消息）：必须等满窗口，不能改成有界等待提前返回。
         timing_pause('step.interval', module='chat')
         local = device_b.call(
             "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
@@ -803,12 +805,11 @@ def test_chat_offline_custom_body_modified_after_recipient_relogin(
             ignore_keys=_MESSAGE_DYNAMIC_KEYS
             | {"deliverOnlineOnly", "receiverList"},
         )
-        timing_pause('step.interval', module='chat')
-        local = device_b.call(
-            "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
-        )
-        assert_api.assert_response_matches(
-            local,
+        assert_api.assert_response_eventually(
+            lambda: device_b.call(
+                "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
+            ),
+            key='step.interval', module='chat',
             expected={
                 "manager": "ChatManager",
                 "cmd": Cmd.getMessage.value,
@@ -949,12 +950,11 @@ def test_chat_offline_media_attributes_modified_after_recipient_relogin(
             ignore_keys=_MEDIA_DYNAMIC_KEYS
             | {"deliverOnlineOnly", "receiverList"},
         )
-        timing_pause('step.interval', module='chat')
-        local = device_b.call(
-            "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
-        )
-        assert_api.assert_response_matches(
-            local,
+        assert_api.assert_response_eventually(
+            lambda: device_b.call(
+                "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
+            ),
+            key='step.interval', module='chat',
             expected={
                 "manager": "ChatManager",
                 "cmd": Cmd.getMessage.value,
@@ -1038,6 +1038,7 @@ def test_chat_offline_text_recalled_before_first_recipient_login(
             real_id=real_id,
             user_a=user_a,
         )
+        # 负向断言（撤回后本地不应存在该消息）：必须等满窗口，不能改成有界等待提前返回。
         timing_pause('step.interval', module='chat')
         local = device_b.call(
             "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
@@ -1143,12 +1144,11 @@ def test_chat_offline_text_modified_before_first_recipient_login(
             body=final_body,
             ignore_keys=_MESSAGE_DYNAMIC_KEYS,
         )
-        timing_pause('step.interval', module='chat')
-        local = device_b.call(
-            "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
-        )
-        assert_api.assert_response_matches(
-            local,
+        assert_api.assert_response_eventually(
+            lambda: device_b.call(
+                "ChatManager", Cmd.getMessage.value, info={"msgId": real_id}
+            ),
+            key='step.interval', module='chat',
             expected={
                 "manager": "ChatManager",
                 "cmd": Cmd.getMessage.value,

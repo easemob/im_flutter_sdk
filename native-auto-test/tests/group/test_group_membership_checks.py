@@ -22,14 +22,13 @@ def test_group_is_member_in_white_list_and_mute_list_success(device_a, assert_ap
             invite_members=[],
         )
 
-        timing_pause('step.interval', module='group')
-        resp_white = device_a.call(
-            "GroupManager",
-            Cmd.isMemberInWhiteListFromServer.value,
-            info={"groupId": group_id},
-        )
-        assert_api.assert_response_matches(
-            resp_white,
+        resp_white = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "GroupManager",
+                Cmd.isMemberInWhiteListFromServer.value,
+                info={"groupId": group_id},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "GroupManager",
                 "cmd": Cmd.isMemberInWhiteListFromServer.value,

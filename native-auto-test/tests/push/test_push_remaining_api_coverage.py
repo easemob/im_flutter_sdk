@@ -95,10 +95,9 @@ def test_push_global_silent_mode_flow(device_a, assert_api):
     )
     _assert_success_null(assert_api, set_resp, cmd=Cmd.setSilentModeForAll.value)
 
-    timing_pause('step.interval', module='push')
-    fetch_resp = device_a.call("PushManager", Cmd.fetchSilentModeForAll.value, info={})
-    assert_api.assert_response_matches(
-        fetch_resp,
+    fetch_resp = assert_api.assert_response_eventually(
+        lambda: device_a.call("PushManager", Cmd.fetchSilentModeForAll.value, info={}),
+        key='step.interval', module='push',
         expected={
             "manager": "PushManager",
             "cmd": Cmd.fetchSilentModeForAll.value,
@@ -130,14 +129,13 @@ def test_push_conversation_silent_mode_flow(device_a, assert_api, user_b):
     )
     _assert_success_null(assert_api, set_resp, cmd=Cmd.setConversationSilentMode.value)
 
-    timing_pause('step.interval', module='push')
-    fetch_resp = device_a.call(
-        "PushManager",
-        Cmd.fetchConversationSilentMode.value,
-        info={"convId": conv_id, "conversationType": 0},
-    )
-    assert_api.assert_response_matches(
-        fetch_resp,
+    fetch_resp = assert_api.assert_response_eventually(
+        lambda: device_a.call(
+            "PushManager",
+            Cmd.fetchConversationSilentMode.value,
+            info={"convId": conv_id, "conversationType": 0},
+        ),
+        key='step.interval', module='push',
         expected={
             "manager": "PushManager",
             "cmd": Cmd.fetchConversationSilentMode.value,
@@ -196,14 +194,13 @@ def test_push_preferred_language_and_template(device_a, assert_api):
     )
     _assert_success_null(assert_api, set_lang_resp, cmd=Cmd.setPreferredNotificationLanguage.value)
 
-    timing_pause('step.interval', module='push')
-    fetch_lang_resp = device_a.call(
-        "PushManager",
-        Cmd.fetchPreferredNotificationLanguage.value,
-        info={},
-    )
-    assert_api.assert_response_matches(
-        fetch_lang_resp,
+    fetch_lang_resp = assert_api.assert_response_eventually(
+        lambda: device_a.call(
+            "PushManager",
+            Cmd.fetchPreferredNotificationLanguage.value,
+            info={},
+        ),
+        key='step.interval', module='push',
         expected={
             "manager": "PushManager",
             "cmd": Cmd.fetchPreferredNotificationLanguage.value,
@@ -220,10 +217,9 @@ def test_push_preferred_language_and_template(device_a, assert_api):
     )
     _assert_success_null(assert_api, set_template_resp, cmd=Cmd.setPushTemplate.value)
 
-    timing_pause('step.interval', module='push')
-    get_template_resp = device_a.call("PushManager", Cmd.getPushTemplate.value, info={})
-    assert_api.assert_response_matches(
-        get_template_resp,
+    get_template_resp = assert_api.assert_response_eventually(
+        lambda: device_a.call("PushManager", Cmd.getPushTemplate.value, info={}),
+        key='step.interval', module='push',
         expected={
             "manager": "PushManager",
             "cmd": Cmd.getPushTemplate.value,

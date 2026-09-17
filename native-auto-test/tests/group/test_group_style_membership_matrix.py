@@ -51,32 +51,37 @@ def _fetch_group(device, assert_api, *, group_id: str, group_name: str, owner: s
                  member_count: int, members: list[str], style: int = 0,
                  admins: list[str] | None = None,
                  block_list: list[str] | None = None, max_count: int | None = None,
-                 device_name: str = "deviceA") -> dict:
+                 device_name: str = "deviceA",
+                 wait_key: str = 'step.interval') -> dict:
     if max_count is None:
         max_count = get_group_create_max_count()
 
-    response = device.call(
-        "GroupManager",
-        Cmd.getGroupSpecificationFromServer.value,
-        info={"groupId": group_id, "fetchMembers": True},
-    )
-    assert_group_snapshot(
-        assert_api,
-        response,
-        cmd=Cmd.getGroupSpecificationFromServer.value,
-        group_id=group_id,
-        group_name=group_name,
-        owner=owner,
-        member_count_value=member_count,
-        admin_list_value=admins,
-        block_list_value=block_list,
-        max_user_count_value=max_count,
-        is_member_allow_to_invite=(style == 1),
-        is_member_only=(style != 3),
-        device=device_name,
-    )
-    assert_group_members_exact(response, members, err_prefix="服务端群成员快照")
-    return response
+    def _probe():
+        return device.call(
+            "GroupManager",
+            Cmd.getGroupSpecificationFromServer.value,
+            info={"groupId": group_id, "fetchMembers": True},
+        )
+
+    def _check(response):
+        assert_group_snapshot(
+            assert_api,
+            response,
+            cmd=Cmd.getGroupSpecificationFromServer.value,
+            group_id=group_id,
+            group_name=group_name,
+            owner=owner,
+            member_count_value=member_count,
+            admin_list_value=admins,
+            block_list_value=block_list,
+            max_user_count_value=max_count,
+            is_member_allow_to_invite=(style == 1),
+            is_member_only=(style != 3),
+            device=device_name,
+        )
+        assert_group_members_exact(response, members, err_prefix="服务端群成员快照")
+
+    return assert_api.assert_eventually(_probe, _check, key=wait_key, module='group')
 
 
 def _switch_user(device, assert_api, *, device_name: str, user_id: str) -> None:
@@ -223,7 +228,6 @@ def test_group_request_to_join_rejects_every_non_approval_style(
                 },
                 ignore_keys={"timestamp", "sequence"},
             )
-            timing_pause('step.interval', module='group')
             _fetch_group(
                 device_a,
                 assert_api,
@@ -323,7 +327,6 @@ def test_group_direct_invite_ignores_auto_accept_disabled_when_confirmation_not_
             },
             ignore_keys={"timestamp", "sequence"},
         )
-        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -399,7 +402,6 @@ def test_group_create_group_invites_member_for_each_remaining_style(
             required_all_event_types=owner_joined_types,
             timeout=timing_seconds('observe.collect', module='group'),
         )
-        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -462,7 +464,6 @@ def test_group_owner_can_invite_for_each_remaining_style(
             },
             ignore_keys={"timestamp", "sequence"},
         )
-        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -551,7 +552,6 @@ def test_group_member_invitation_permission_depends_on_style(
                 },
                 ignore_keys={"timestamp", "sequence"},
             )
-            timing_pause('step.interval', module='group')
             _fetch_group(
                 device_a,
                 assert_api,
@@ -582,7 +582,6 @@ def test_group_member_invitation_permission_depends_on_style(
                     },
                     ignore_keys={"timestamp", "sequence"},
                 )
-                timing_pause('step.interval', module='group')
                 _fetch_group(
                     device_a,
                     assert_api,
@@ -602,7 +601,6 @@ def test_group_member_invitation_permission_depends_on_style(
             assert_api.assert_error(response, code=603, description="invite is not allowed")
             assert_no_group_event(device_a, group_id=group_id, event_types=joined_events)
             assert_no_group_event(device_b, group_id=group_id, event_types=joined_events)
-            timing_pause('step.interval', module='group')
             _fetch_group(
                 device_a,
                 assert_api,
@@ -712,7 +710,6 @@ def test_group_public_open_join_rejects_duplicate_membership(
         )
         assert_api.assert_error(second, code=601, description="already joined")
         assert_no_group_event(device_a, group_id=group_id, event_types=joined_types)
-        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -840,7 +837,6 @@ def test_group_public_open_join_rejects_blocked_user(
             group_id=group_id,
             event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
         )
-        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,

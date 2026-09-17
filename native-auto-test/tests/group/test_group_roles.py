@@ -115,14 +115,13 @@ def test_group_add_admin_and_remove_admin_success(device_a, device_b, assert_api
             },
         )
 
-        timing_pause('step.interval', module='group')
-        resp_get_admin_added = device_a.call(
-            "GroupManager",
-            Cmd.getGroupSpecificationFromServer.value,
-            info={"groupId": group_id, "fetchMembers": True},
-        )
-        assert_api.assert_response_matches(
-            resp_get_admin_added,
+        resp_get_admin_added = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "GroupManager",
+                Cmd.getGroupSpecificationFromServer.value,
+                info={"groupId": group_id, "fetchMembers": True},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "GroupManager",
                 "cmd": Cmd.getGroupSpecificationFromServer.value,

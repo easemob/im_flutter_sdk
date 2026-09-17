@@ -250,10 +250,9 @@ def test_chat_get_unread_count_positive_then_zero(device_a, device_b, assert_api
     timing_pause('step.interval', module='chat')
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s1-unread-{uuid.uuid4().hex[:6]}")
 
-    timing_pause('step.interval', module='chat')
-    resp_unread = device_b.call("ChatManager", Cmd.getUnreadMessageCount.value, info={})
-    assert_api.assert_response_matches(
-        resp_unread,
+    resp_unread = assert_api.assert_response_eventually(
+        lambda: device_b.call("ChatManager", Cmd.getUnreadMessageCount.value, info={}),
+        key='step.interval', module='chat',
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.getUnreadMessageCount.value,

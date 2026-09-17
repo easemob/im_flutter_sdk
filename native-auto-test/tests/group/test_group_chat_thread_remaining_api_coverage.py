@@ -345,14 +345,13 @@ def test_chat_thread_fetch_detail_and_lists(device_a, device_b, assert_api, user
         thread_id = context["thread_id"]
         group_id = context["group_id"]
 
-        timing_pause('step.interval', module='group')
-        detail_resp = device_a.call(
-            "ChatThreadManager",
-            Cmd.fetchChatThreadDetail.value,
-            info={"threadId": thread_id},
-        )
-        assert_api.assert_response_matches(
-            detail_resp,
+        detail_resp = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "ChatThreadManager",
+                Cmd.fetchChatThreadDetail.value,
+                info={"threadId": thread_id},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "ChatThreadManager",
                 "cmd": Cmd.fetchChatThreadDetail.value,
@@ -474,14 +473,13 @@ def test_chat_thread_fetch_members_and_latest_message(device_a, device_b, assert
         context = _create_thread_context(device_a, device_b, assert_api, user_a, user_b)
         thread_id = context["thread_id"]
 
-        timing_pause('step.interval', module='group')
-        members_resp = device_a.call(
-            "ChatThreadManager",
-            Cmd.fetchChatThreadMember.value,
-            info={"threadId": thread_id, "cursor": "", "pageSize": 20},
-        )
-        assert_api.assert_response_matches(
-            members_resp,
+        members_resp = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "ChatThreadManager",
+                Cmd.fetchChatThreadMember.value,
+                info={"threadId": thread_id, "cursor": "", "pageSize": 20},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "ChatThreadManager",
                 "cmd": Cmd.fetchChatThreadMember.value,
@@ -556,14 +554,13 @@ def test_chat_thread_update_name_and_leave(device_a, device_b, assert_api, user_
                 create_at=0,
             )
 
-        timing_pause('step.interval', module='group')
-        detail_resp = device_a.call(
-            "ChatThreadManager",
-            Cmd.fetchChatThreadDetail.value,
-            info={"threadId": thread_id},
-        )
-        assert_api.assert_response_matches(
-            detail_resp,
+        detail_resp = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "ChatThreadManager",
+                Cmd.fetchChatThreadDetail.value,
+                info={"threadId": thread_id},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "ChatThreadManager",
                 "cmd": Cmd.fetchChatThreadDetail.value,
@@ -593,14 +590,13 @@ def test_chat_thread_update_name_and_leave(device_a, device_b, assert_api, user_
             ignore_keys={"sequence"},
         )
 
-        timing_pause('step.interval', module='group')
-        joined_parent_resp = device_b.call(
-            "ChatThreadManager",
-            Cmd.fetchJoinedChatThreadsWithParentId.value,
-            info={"parentId": group_id, "cursor": "", "pageSize": 20},
-        )
-        assert_api.assert_response_matches(
-            joined_parent_resp,
+        joined_parent_resp = assert_api.assert_response_eventually(
+            lambda: device_b.call(
+                "ChatThreadManager",
+                Cmd.fetchJoinedChatThreadsWithParentId.value,
+                info={"parentId": group_id, "cursor": "", "pageSize": 20},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "ChatThreadManager",
                 "cmd": Cmd.fetchJoinedChatThreadsWithParentId.value,

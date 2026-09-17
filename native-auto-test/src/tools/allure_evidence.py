@@ -32,6 +32,9 @@ def pretty(value):
 
 
 def step(title):
+    from .allure_steps import quiet
+    if quiet():
+        return nullcontext()
     try:
         import allure
         return allure.step(title)
@@ -40,6 +43,9 @@ def step(title):
 
 
 def attach(name, value):
+    from .allure_steps import quiet
+    if quiet():
+        return
     try:
         import allure
         allure.attach(pretty(value), name, allure.attachment_type.JSON)
@@ -73,6 +79,9 @@ def comparison(actual, expected, rows, ignored):
                 + '<h3>忽略字段 / 路径</h3>' + cell(sorted(ignored)))
     try:
         import allure
+        from .allure_steps import quiet
+        if quiet():
+            return
         allure.attach(document, '00 排查总览：期望 vs 实际 vs 差异', allure.attachment_type.HTML)
     except ImportError:
         pass

@@ -65,3 +65,19 @@ def test_zero_bound_returns_immediately_and_still_clears_buffer():
     elapsed = drain(connection, 0.0)
     assert elapsed < DRAIN_IDLE_SECONDS
     assert list(connection._event_buffer) == []
+
+
+def test_events_arriving_after_the_idle_window_stay_queued():
+    """早退语义：晚于空闲窗口到达的事件留在队列里，由后续断言自行判断。
+
+    需要吞掉迟到事件的调用方应显式给更大的 timeout，而不是依赖 drain 等满。
+    """
+    connection = make_connection()
+    drain(connection, 3.0)
+    late = {'type': 'event', 'eventType': 'onMessagesReceived'}
+    connection._recv_queue.put(late)
+    assert connection._recv_queue.get_nowait() is late
+    # 再次 drain 会清掉它：迟到事件不会被永久保留。
+    connection._recv_queue.put(late)
+    drain(connection, 3.0)
+    assert connection._recv_queue.empty()

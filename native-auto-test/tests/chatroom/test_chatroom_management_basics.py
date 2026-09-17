@@ -42,14 +42,13 @@ def test_chatroom_update_and_fetch_announcement_success(device_a, assert_api, us
             device="deviceA",
         )
 
-        timing_pause('step.interval', module='chatroom')
-        fetch_resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomAnnouncement.value,
-            info={"roomId": room_id},
-        )
-        assert_api.assert_response_matches(
-            fetch_resp,
+        fetch_resp = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "ChatRoomManager",
+                Cmd.fetchChatRoomAnnouncement.value,
+                info={"roomId": room_id},
+            ),
+            key='step.interval', module='chatroom',
             expected={
                 "manager": "ChatRoomManager",
                 "cmd": Cmd.fetchChatRoomAnnouncement.value,
@@ -82,14 +81,13 @@ def test_chatroom_add_fetch_remove_white_list_success(device_a, device_b, assert
             device="deviceA",
         )
 
-        timing_pause('step.interval', module='chatroom')
-        fetch_after_add = device_a.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomWhiteListFromServer.value,
-            info={"roomId": room_id},
-        )
-        assert_api.assert_response_matches(
-            fetch_after_add,
+        fetch_after_add = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "ChatRoomManager",
+                Cmd.fetchChatRoomWhiteListFromServer.value,
+                info={"roomId": room_id},
+            ),
+            key='step.interval', module='chatroom',
             expected={
                 "manager": "ChatRoomManager",
                 "cmd": Cmd.fetchChatRoomWhiteListFromServer.value,
@@ -114,14 +112,13 @@ def test_chatroom_add_fetch_remove_white_list_success(device_a, device_b, assert
             device="deviceA",
         )
 
-        timing_pause('step.interval', module='chatroom')
-        fetch_after_remove = device_a.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomWhiteListFromServer.value,
-            info={"roomId": room_id},
-        )
-        assert_api.assert_response_matches(
-            fetch_after_remove,
+        fetch_after_remove = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "ChatRoomManager",
+                Cmd.fetchChatRoomWhiteListFromServer.value,
+                info={"roomId": room_id},
+            ),
+            key='step.interval', module='chatroom',
             expected={
                 "manager": "ChatRoomManager",
                 "cmd": Cmd.fetchChatRoomWhiteListFromServer.value,
@@ -292,14 +289,13 @@ def test_chatroom_change_subject_and_description_success(device_a, assert_api, u
             device="deviceA",
         )
 
-        timing_pause('step.interval', module='chatroom')
-        fetch_resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomInfoFromServer.value,
-            info={"roomId": room_id},
-        )
-        assert_api.assert_response_matches(
-            fetch_resp,
+        fetch_resp = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "ChatRoomManager",
+                Cmd.fetchChatRoomInfoFromServer.value,
+                info={"roomId": room_id},
+            ),
+            key='step.interval', module='chatroom',
             expected={
                 "manager": "ChatRoomManager",
                 "cmd": Cmd.fetchChatRoomInfoFromServer.value,
@@ -391,14 +387,13 @@ def test_chatroom_remove_member_success(device_a, device_b, assert_api, user_a, 
         )
         _assert_success_envelope(assert_api, remove_resp, cmd=Cmd.removeChatRoomMembers.value, device="deviceA")
 
-        timing_pause('step.interval', module='chatroom')
-        members_resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomMembers.value,
-            info={"roomId": room_id, "cursor": "", "pageSize": 20},
-        )
-        assert_api.assert_response_matches(
-            members_resp,
+        members_resp = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "ChatRoomManager",
+                Cmd.fetchChatRoomMembers.value,
+                info={"roomId": room_id, "cursor": "", "pageSize": 20},
+            ),
+            key='step.interval', module='chatroom',
             expected={
                 "manager": "ChatRoomManager",
                 "cmd": Cmd.fetchChatRoomMembers.value,

@@ -86,25 +86,31 @@ def _fetch_group(
     admins: list[str] | None = None,
     permission_type: int = 2,
     device_name: str,
+    wait_key: str = 'step.interval',
 ) -> None:
-    response = device.call(
-        "GroupManager",
-        Cmd.getGroupSpecificationFromServer.value,
-        info={"groupId": group_id, "fetchMembers": True},
-    )
-    assert_group_snapshot(
-        assert_api,
-        response,
-        cmd=Cmd.getGroupSpecificationFromServer.value,
-        group_id=group_id,
-        group_name=group_name,
-        owner=owner,
-        member_count_value=member_count,
-        admin_list_value=admins,
-        permission_type=permission_type,
-        device=device_name,
-    )
-    assert_group_members_exact(response, members, err_prefix="入群申请服务端快照")
+    def _probe():
+        return device.call(
+            "GroupManager",
+            Cmd.getGroupSpecificationFromServer.value,
+            info={"groupId": group_id, "fetchMembers": True},
+        )
+
+    def _check(response):
+        assert_group_snapshot(
+            assert_api,
+            response,
+            cmd=Cmd.getGroupSpecificationFromServer.value,
+            group_id=group_id,
+            group_name=group_name,
+            owner=owner,
+            member_count_value=member_count,
+            admin_list_value=admins,
+            permission_type=permission_type,
+            device=device_name,
+        )
+        assert_group_members_exact(response, members, err_prefix="入群申请服务端快照")
+
+    return assert_api.assert_eventually(_probe, _check, key=wait_key, module='group')
 
 
 def _request_join(
@@ -268,7 +274,6 @@ def test_group_join_application_empty_reason_uses_server_default(
             required_all_event_types={"onRequestToJoinDeclinedFromGroup"},
             timeout=timing_seconds('observe.collect', module='group'),
         )
-        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -358,7 +363,6 @@ def test_group_duplicate_join_application_keeps_single_pending_request(
                 "applicant": user_b,
             },
         )
-        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,

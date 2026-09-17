@@ -416,14 +416,13 @@ def test_chatroom_fetch_members_invalid_paging(device_a, device_b, assert_api, u
     timing_pause('step.interval', module='chatroom')
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
-        timing_pause('step.interval', module='chatroom')
-        resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomMembers.value,
-            info={"roomId": room_id, "cursor": "", "pageSize": page_size, "pageNum": page_num},
-        )
-        assert_api.assert_response_matches(
-            resp,
+        resp = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "ChatRoomManager",
+                Cmd.fetchChatRoomMembers.value,
+                info={"roomId": room_id, "cursor": "", "pageSize": page_size, "pageNum": page_num},
+            ),
+            key='step.interval', module='chatroom',
             expected={
                 "manager": "ChatRoomManager",
                 "cmd": Cmd.fetchChatRoomMembers.value,

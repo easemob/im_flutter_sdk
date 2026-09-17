@@ -63,14 +63,13 @@ def test_friend_info_sync_on_peer_metadata_change(device_a, device_b, assert_api
     # _wait_friend_sync_events(device_a, start_timeout=20.0, finish_timeout=30.0)
 
     # 同步完成后，A 拉取 B 的用户信息；根据实际返回断言关键字段（userId、nickName）
-    timing_pause('step.interval', module='contact')
-    content_after_readd = device_a.call(
-        "ContactManager",
-        Cmd.getContact.value,
-        info={"userId": user_b},
-    )
-    assert_api.assert_response_matches(
-        content_after_readd,
+    content_after_readd = assert_api.assert_response_eventually(
+        lambda: device_a.call(
+            "ContactManager",
+            Cmd.getContact.value,
+            info={"userId": user_b},
+        ),
+        key='step.interval', module='contact',
         expected={
             "manager": "ContactManager",
             "cmd": Cmd.getContact.value,
