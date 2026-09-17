@@ -87,7 +87,7 @@ class ChatDataSyncType {
 | `clearConversationUnreadMessageCount(String conversationId)` | `{conversationId}` | void |
 | `clearAllConversationUnreadMessageCount()` | `{}` | void |
 | `getGroupMessageReadReceipts(List<ChatMessage> messages)` | `{msgIds: [String]}`；≤20、同一会话 | `{getGroupMessageReadReceipts: [receipt...]}` |
-| `fetchGroupMessageReadReceipts(messageId, groupId, {pageSize=20, cursor=''})` | `{messageId, groupId, pageSize, cursor}` | `{fetchGroupMessageReadReceipts: {cursor, list}}`；iOS 的 totalCount 记入报告但不扩展现有 `ChatCursorResult` |
+| `fetchGroupMessageReadReceipts(messageId, groupId, {pageSize=20, cursor=''})` | `{messageId, groupId, pageSize, cursor}` | `{fetchGroupMessageReadReceipts: {cursor, list, totalCount?}}`；`ChatCursorResult.totalCount` 为可空字段，仅 iOS 返回，Android 为 null |
 
 事件：`onMessageReadReceipts`，负载 `{receipts: [...]}`，Dart 回调
 `ChatEventHandler.onMessageReadReceipts(List<ChatMessageReadReceipt>)`。
@@ -142,7 +142,7 @@ class ChatGroupConfigsType {
 ```
 
 - configs JSON key：`maxCount/inviteNeedConfirm/ext/isPublic/joinApprovalRequired/allowInvites`。
-- 双端 native 默认值不一致；Flutter 固定默认 `inviteNeedConfirm=false`、`ext=null` 以延续 4.x Dart 行为，wrapper 显式赋值，不依赖 native 默认值（验收标 ⚠️）。
+- 双端 native 默认值不一致；Flutter 固定默认 `inviteNeedConfirm=false`、`ext=null` 以延续 4.x Dart 行为，wrapper 显式赋值，不依赖 native 默认值。RN 5.0.0 采用同一上层默认，2026-09-17 对照后复用该结论。
 - `ChatGroup.configs` 使用 JSON key `configs`；顶层保留 `isDisabled`。
 - `isMemberOnly` 改为 `isJoinApprovalRequired`；`isPublic`、`isMemberAllowToInvite` 继续为顶层只读字段。
 - `createGroup` 参数 `options` 改为 `configs`，请求 key 同步改为 `configs`，继续携带 avatar。

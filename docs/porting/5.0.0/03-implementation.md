@@ -7,14 +7,14 @@
 - `01-api-diff.md` 的 69 个 include 项均已推进为 `implemented`。
 - 102 个单端 defer 项标为 `deferred`；未新增仅单端存在的 Flutter 公开 API。
 - native 5.0.0 导致的编译强制适配已按最小范围完成并单列于下文。
-- 未提交代码。
+- 5.0.0 基线平版已提交为 `dbab80b3`；2026-09-17 RN 对照修订尚未提交。
 
 ### Dart / public API
 
 - client：只保留 Token 登录；设备管理统一 token；删除注册、密码登录、自动登录状态和全局 read-ack 设置；新增 data sync/database 事件。
 - options：删除 `autoLogin/requireAck/enableAutoSyncContacts`，新增可空 `dataSyncType` 位掩码。
 - chat/message：删除旧逐条/会话回执与旧回调；新增批量回执、清除未读数、群消息回执查询及统一回执事件。
-- model：消息字段改为 `isPeerRead/isRead/isNeedReadReceipt/groupReadReceiptCount`；新增 `ChatMessageReadReceipt`、`ChatGroupReadReceipt`。
+- model：消息字段改为 `isPeerRead/isRead/isNeedReadReceipt/groupReadReceiptCount`；新增 `ChatMessageReadReceipt`、`ChatGroupReadReceipt`；RN 对照后为 `ChatCursorResult` 新增可空 `totalCount`，承接 iOS-only 群消息回执总数。
 - group：删除 `ChatGroupStyle/ChatGroupOptions` 及兼容 typedef；新增 `ChatGroupConfigs/ChatGroupConfigsType` 和 `updateGroupConfigs`。
 - conversation/contact/room：删除旧服务端拉取、逐条标记已读、客户端创建/解散聊天室 API；新增 conversation name/avatar。
 - example：切换 Token 登录，注册 5.0 新 API，新增 `script_500_apis.json` 错误路径脚本。
@@ -62,4 +62,4 @@ $ echo '{}' | bash /Users/asterisk/Codes/zuoyu_flutter/.agents/skills/platform-s
 gate_exit=0
 ```
 
-阶段三门禁通过。保留到验收报告的疑点：双端 dataSyncType 默认差异、group configs 默认差异、Android group inviteNeedConfirm 无 getter、iOS 基线 APNs token 类型 warning。
+阶段三门禁通过。2026-09-17 对照 RN 5.0.0 后，复用其已裁决结论：`dataSyncType` 不设统一默认、group configs 固定 Flutter/RN 上层默认、群回执 `totalCount` 作为可空字段。iOS 基线 APNs token 类型 warning 经用户裁决接受现状、不修复；登录态功能回归转入后续 token 自动化任务。

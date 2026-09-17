@@ -437,10 +437,14 @@ class ChatManager {
 
   /// ~english
   /// Gets group-message read-receipt details with pagination.
+  ///
+  /// The [ChatCursorResult.totalCount] field is available only on iOS.
   /// ~end
   ///
   /// ~chinese
   /// 分页获取群消息已读回执详情。
+  ///
+  /// 返回结果中的 [ChatCursorResult.totalCount] 字段仅在 iOS 平台可用。
   /// ~end
   Future<ChatCursorResult<ChatGroupReadReceipt>> fetchGroupMessageReadReceipts(
     String messageId,

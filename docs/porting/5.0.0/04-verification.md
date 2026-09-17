@@ -5,7 +5,7 @@
 | 验证项 | 结果 | 失败原因/备注 |
 | --- | --- | --- |
 | `flutter analyze`（主包） | ✅ 通过 | `No issues found` |
-| `flutter test`（主包） | ✅ 通过 | 28 个测试全部通过，含 version/contract checker |
+| `flutter test`（主包） | ✅ 通过 | 30 个测试全部通过，含 version/contract checker 与 `ChatCursorResult.totalCount` 双场景 |
 | example Android：`flutter build apk --debug` | ✅ 通过 | 生成 `app-debug.apk`；3 个 Java 8/deprecation/unchecked warning，不是错误 |
 | iOS CocoaPods 首次构建 | ⚠️ 环境预期失败 | Podfile.lock 锁定 HyphenateChat 4.24.1 |
 | `pod install --repo-update` → `pod update HyphenateChat` | ✅ 通过 | 安装 HyphenateChat 5.0.0、im_flutter_sdk_ios 5.0.0、ShengwangInfra_iOS 1.3.5 |
@@ -18,6 +18,7 @@
 | 四包版本与 podspec 版本 | ✅ 通过 | 全部 5.0.0 |
 | 三处 native 依赖版本 | ✅ 通过 | podspec / Package.swift / build.gradle 全部 5.0.0 |
 | API 脚本回归 | ⏭️ 未执行 | 主 checkout 的 config 只有 `loginPassword`，没有 native 5.0 必需的 `loginToken`；未复制无效凭据。已新增 `script_500_apis.json` 供取得 token 后运行 |
+| RN 对照修订：`ChatCursorResult.totalCount` 单元测试 | ✅ 通过 | iOS 提供字段时保留数值，Android/其他未提供场景保持 null；针对性测试 2 个、主包全量测试 30 个均通过 |
 
 ## 2. 契约逐字抽查
 

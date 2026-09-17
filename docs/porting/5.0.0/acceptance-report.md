@@ -7,7 +7,7 @@
 - 完整源签名与 decision：[`01-api-diff.md`](./01-api-diff.md)
 - 契约：[`02-contract.md`](./02-contract.md)
 - 实现与验证：[`03-implementation.md`](./03-implementation.md)、[`04-verification.md`](./04-verification.md)
-- 代码状态：**未提交**
+- 代码状态：5.0.0 基线平版已提交为 `dbab80b3`；2026-09-17 RN 对照修订尚未提交。
 
 ## 1. 二维对照
 
@@ -38,8 +38,8 @@
 | `client_is_database_opened_new` | 无 | 有 | 未实施（defer） | - | - | ⚠️ 单端变更，按契约 defer |
 | `client_get_device_info_new` | 无 | 有 | 未实施（defer） | - | - | ⚠️ 单端变更，按契约 defer |
 | `client_version_bump` | 无 | 有 | 未实施（defer） | - | - | ⚠️ 单端变更，按契约 defer |
-| `options_data_sync_type_enum` | 有 | 有 | 已实现 | 已实现 | 已实现 | ⚠️ 已实现，跨端差异见问题清单 |
-| `options_data_sync_type` | 有 | 有 | 已实现 | 已实现 | 已实现 | ⚠️ 已实现，跨端差异见问题清单 |
+| `options_data_sync_type_enum` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 已接受 native 默认差异，与 RN 5.0.0 一致 |
+| `options_data_sync_type` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 已接受 native 默认差异，与 RN 5.0.0 一致 |
 | `options_is_auto_login` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 一致 |
 | `options_enable_require_read_ack` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 一致 |
 | `options_enable_auto_sync_contacts` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 一致 |
@@ -61,7 +61,7 @@
 | `chat_clear_all_conversation_unread_message_count` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 一致 |
 | `chat_get_group_message_read_receipts` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 一致 |
 | `chat_fetch_history_messages` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 一致 |
-| `chat_fetch_group_message_read_receipts` | 有 | 有 | 已实现 | 已实现 | 已实现 | ⚠️ 已实现，跨端差异见问题清单 |
+| `chat_fetch_group_message_read_receipts` | 有 | 有 | 已实现（`totalCount?`） | 已实现（无 totalCount） | 已实现（含 totalCount） | ✅ 平台差异由可空字段承接，与 RN 5.0.0 一致 |
 | `chat_report_message` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 一致 |
 | `chat_mark_all_conversations_as_read` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 一致 |
 | `chat_delegate_messages_did_read` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 一致 |
@@ -105,11 +105,11 @@
 | `message_get_recaller_removed` | 无 | 有 | 未实施（defer） | - | - | ⚠️ 单端变更，按契约 defer |
 | `group_options_type` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 一致 |
 | `group_style_enum` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 一致 |
-| `group_configs_type` | 有 | 有 | 已实现 | 已实现 | 已实现 | ⚠️ 已实现，跨端差异见问题清单 |
-| `group_configs_type_enum` | 有 | 有 | 已实现 | 已实现 | 已实现 | ⚠️ 已实现，跨端差异见问题清单 |
-| `group_create_group` | 有 | 有 | 已实现 | 已实现 | 已实现 | ⚠️ 已实现，跨端差异见问题清单 |
-| `group_create_group_with_avatar` | 有 | 有 | 已实现 | 已实现 | 已实现 | ⚠️ 已实现，跨端差异见问题清单 |
-| `group_update_group_configs` | 有 | 有 | 已实现 | 已实现 | 已实现 | ⚠️ 已实现，跨端差异见问题清单 |
+| `group_configs_type` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 上层默认与 RN 5.0.0 一致 |
+| `group_configs_type_enum` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 位值逐端映射 |
+| `group_create_group` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 上层默认与 RN 5.0.0 一致 |
+| `group_create_group_with_avatar` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 上层默认与 RN 5.0.0 一致 |
+| `group_update_group_configs` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 上层默认与 RN 5.0.0 一致 |
 | `group_get_public_groups_from_server` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 一致 |
 | `group_get_joined_groups_from_server` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 一致 |
 | `group_delegate_join_request_declined` | 有 | 有 | 已实现 | 已实现 | 已实现 | ✅ 一致 |
@@ -185,7 +185,7 @@
 | `push_get_push_options_from_server_sync` | 有 | 无 | 未实施（defer） | - | - | ⚠️ 单端变更，按契约 defer |
 | `error_contact_add_faild_typo` | 有 | 无 | 未实施（defer） | - | - | ⚠️ 单端变更，按契约 defer |
 
-统计：✅ 59 / ⚠️ 112 / ❌ 0，共 171 行。⚠️ 包含 102 个按规则 defer 的单端变更，以及已实现但存在明确跨端差异的 include 项；没有缺失的 include 项。
+统计：✅ 67 / ⚠️ 104 / ❌ 0，共 171 行。⚠️ 包含 102 个按规则 defer 的单端变更，以及 2 个仍保留明确跨端差异的 include 项；没有缺失的 include 项。
 
 ## 2. 未匹配清单
 
@@ -198,35 +198,40 @@
 
 ## 3. 问题清单
 
-1. ⚠️ native 的 group configs 默认值不一致：iOS invite confirm 默认 YES/ext 空串，Android 为 false/null；Flutter 固定 false/null 延续既有 Dart 行为，wrapper 显式赋值。
-2. ⚠️ Android `EMGroup` 没有 inviteNeedConfirm getter，读取 `ChatGroup.configs` 时只能输出冻结默认 false。
-3. ⚠️ `dataSyncType` 未传时 iOS 默认 conversations、Android 默认 none；Flutter 保留 native 默认差异。
-4. ⚠️ iOS 群消息回执分页返回 `totalCount`，Android 不返回；当前沿用 `ChatCursorResult`，不新增 totalCount 字段。
-5. ⚠️ Android 群回执分页 native API 没有 groupId 参数；Flutter 为跨端统一仍接收 groupId，Android wrapper 校验读取后不下传。
-6. ⚠️ iOS `PushManagerWrapper.m` 存在基线已有的 APNs token NSString→NSData 编译 warning，不阻断构建，本次未扩范围。
-7. ⚠️ CocoaPods 首构建受旧 lock 阻断，按固定序列更新后通过；最终 lock 已锁定 5.0.0。
+1. ✅ group configs 默认值差异已关闭：RN 5.0.0 同样固定上层 `inviteNeedConfirm=false`、`ext` 可空；Flutter 保持 `false/null`，不依赖 native 默认。
+2. ✅ Android `EMGroup` 没有 inviteNeedConfirm getter 的差异已关闭：RN 同样在字段缺失时回落上层默认 false；Flutter 当前输出 false，行为一致。
+3. ✅ `dataSyncType` 默认值差异已关闭：复用 RN 5.0.0 已裁决方案，上层不设显式默认，遵循各端 native 默认。
+4. ✅ iOS-only `totalCount` 已关闭：参考 RN 5.0.0，为 `ChatCursorResult` 新增可空 `totalCount`；iOS 返回数值，Android 为 null。
+5. ✅ Android 群回执分页无 groupId 已关闭：复用 RN 5.0.0 已裁决方案，统一 API 保留 groupId，Android 接收但不下传。
+6. ✅ iOS APNs token 类型 warning 已关闭：用户决定接受基线现状，保留 `NSString *`→`NSData *` 调用，不修复。
+7. ✅ CocoaPods 旧 lock 问题已关闭：按固定序列更新后构建通过，最终 lock 已锁定 5.0.0；RN 侧也已确认 CocoaPods/SPM 5.0.0 发布可用。
 8. ⏭️ API 脚本未实机运行：现有私有 config 仅有 password，无 5.0 必需的 loginToken；已提供 `script_500_apis.json`。
-9. ⚠️ Android/群组与聊天室 native 删除 fetchMembers 重载，Flutter 旧 fetchMembers 参数保留但 wrapper 忽略。
+9. ✅ Android `fetchMembers` 重载差异已关闭：RN 5.0.0 同样保留上层参数、Android wrapper 忽略不下传；Flutter 当前行为一致。
 
 ## 4. 验证结论
 
 - ✅ `flutter analyze`
-- ✅ `flutter test`（28）
+- ✅ `flutter test`（30，含 `ChatCursorResult.totalCount` 双场景）
 - ✅ Android debug APK
 - ✅ iOS CocoaPods debug/no-codesign
 - ✅ iOS SPM debug/no-codesign
 - ✅ guard / contract checker / 旧 API grep / `git diff --check`
 - ✅ Flutter 全局 SPM 开关恢复为 false
 
-## 5. 待用户决策
+## 5. RN 对照结论与剩余待用户决策
 
-1. 是否接受 Flutter 将 group configs 缺省固定为 `inviteNeedConfirm=false/ext=null`，以延续 4.x Dart 行为。
-2. 是否接受 `dataSyncType=null` 时保留双端 native 默认差异；若要完全一致，后续需指定统一默认。
-3. 是否需要扩展 `ChatCursorResult` 暴露 iOS-only `totalCount`；当前未为单端信息新增字段。
-4. 是否单独修复 iOS APNs token 基线 warning。
-5. 提供可用 loginToken 后，是否补跑 `script_500_apis.json` 的双端功能回归。
+已直接复用 RN 5.0.0 的已裁决方案：
+
+1. group configs 固定上层默认 `inviteNeedConfirm=false`、`ext` 可空。
+2. `dataSyncType=null` 时不设统一默认，遵循双端 native 默认。
+3. `ChatCursorResult.totalCount` 作为可空字段承接 iOS-only 返回值。
+4. 群回执分页统一 API 保留 groupId，Android 接收但不下传。
+
+用户决策（2026-09-17）：
+
+1. iOS APNs token 基线 warning 不修复，保留现有 `NSString *`→`NSData *` 调用。
+2. 参考 RN 实现多集群 token 自动获取并生成未受 Git 管理的 `env.dart`；完成后补跑 `script_500_apis.json` 双端登录态功能回归。该实现作为后续独立任务处理。
 
 ## 6. 流程说明
 
-按用户“整个任务只在 worktree 中进行”的约束，未修改元工作区 `docs/PROGRESS.md`；本报告即本次人类第二轮统一入口。未执行 `git add`、`git commit` 或 push。
-
+按用户“整个任务只在 worktree 中进行”的约束，未修改元工作区 `docs/PROGRESS.md`；本报告即本次人类第二轮统一入口。基线平版已按用户授权提交为 `dbab80b3`，未 push；本轮 RN 对照修订尚未提交。

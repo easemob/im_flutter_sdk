@@ -25,7 +25,7 @@ typedef CursorResultCallback = Object Function(dynamic obj);
 ///   ```
 /// ~end
 class ChatCursorResult<T> {
-  ChatCursorResult(this.cursor, this.data);
+  ChatCursorResult(this.cursor, this.data, {this.totalCount});
 
   factory ChatCursorResult.fromJson(
     Map<String, dynamic> map, {
@@ -35,7 +35,11 @@ class ChatCursorResult<T> {
     for (var element in (map['list'] as List)) {
       list.add(dataItemCallback(element));
     }
-    ChatCursorResult<T> result = ChatCursorResult<T>(map['cursor'], list);
+    ChatCursorResult<T> result = ChatCursorResult<T>(
+      map['cursor'],
+      list,
+      totalCount: map['totalCount'],
+    );
 
     return result;
   }
@@ -57,4 +61,17 @@ class ChatCursorResult<T> {
   /// 获取一页数据列表。
   /// ~end
   final List<T> data;
+
+  /// ~english
+  /// Gets the total number of results on the server.
+  ///
+  /// This field is null when the native SDK does not provide it.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取服务端结果总数。
+  ///
+  /// 当原生 SDK 未提供该字段时，此字段为 null。
+  /// ~end
+  final int? totalCount;
 }
