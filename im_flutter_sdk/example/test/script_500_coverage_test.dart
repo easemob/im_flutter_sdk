@@ -91,22 +91,29 @@ void main() {
     });
   });
 
-  test('5.0.0 script covers the RN scenario and all APIs are registered', () {
-    final script = Map<String, dynamic>.from(
-      jsonDecode(File('scripts/script_500_apis.json').readAsStringSync())
-          as Map,
-    );
-    final steps = (script['steps'] as List).cast<Map>();
+  test('5.0.0 positive and negative scripts cover the RN scenario', () {
+    final positive = _stepsOf('scripts/script_500_apis_positive.json');
+    final negative = _stepsOf('scripts/script_500_apis_negative.json');
 
-    expect(steps, hasLength(21));
-    for (final step in steps) {
+    expect(positive, isNotEmpty);
+    expect(negative, isNotEmpty);
+    for (final step in <Map>[...positive, ...negative]) {
       final api = step['api'] as String;
       expect(findApi(api), isNotNull, reason: '$api is not registered');
     }
+    for (final steps in <List<Map>>[positive, negative]) {
+      final ids = steps.map((step) => step['id']).toList();
+      expect(
+        ids.toSet(),
+        hasLength(ids.length),
+        reason: 'step ids must stay unique for run comparison',
+      );
+    }
 
-    final names = steps.map((step) => step['api']).toSet();
+    final positiveApis = positive.map((step) => step['api'] as String).toSet();
+    final negativeApis = negative.map((step) => step['api'] as String).toSet();
     expect(
-      names,
+      positiveApis,
       containsAll(<String>{
         'ChatManager.getUnreadMessageCount',
         'ChatManager.modifyMessage',
@@ -123,5 +130,51 @@ void main() {
         'ChatClient.kickAllDevices',
       }),
     );
+    for (final api in <String>[
+      'ChatGroupManager.createGroup',
+      'ChatGroupManager.updateGroupConfigs',
+      'ChatManager.modifyMessage',
+      'ChatManager.clearConversationUnreadMessageCount',
+      'ChatManager.sendMessageReadReceipts',
+      'ChatManager.getGroupMessageReadReceipts',
+      'ChatClient.fetchLoggedInDevices',
+      'ChatClient.renewToken',
+      'ChatClient.kickDevice',
+      'ChatClient.kickAllDevices',
+    ]) {
+      expect(positiveApis, contains(api), reason: 'positive path missing $api');
+      expect(negativeApis, contains(api), reason: 'negative path missing $api');
+    }
+    expect(
+      negativeApis,
+      isNot(contains('ChatManager.fetchGroupMessageReadReceipts')),
+      reason: 'the Android-crashing case stays masked in the negative path',
+    );
   });
+
+  test('positive steps expect success and negative steps expect an error', () {
+    for (final step in _stepsOf('scripts/script_500_apis_positive.json')) {
+      final expectation = step['expect'] as Map;
+      expect(
+        expectation['success'],
+        isTrue,
+        reason: '${step['id']} must assert the positive contract',
+      );
+    }
+    for (final step in _stepsOf('scripts/script_500_apis_negative.json')) {
+      final expectation = step['expect'] as Map;
+      expect(
+        expectation['success'] == false || expectation['errorCode'] is int,
+        isTrue,
+        reason: '${step['id']} must assert an error',
+      );
+    }
+  });
+}
+
+List<Map> _stepsOf(String path) {
+  final script = Map<String, dynamic>.from(
+    jsonDecode(File(path).readAsStringSync()) as Map,
+  );
+  return (script['steps'] as List).cast<Map>();
 }

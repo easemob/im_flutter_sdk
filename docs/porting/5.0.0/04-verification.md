@@ -87,7 +87,7 @@ gate_exit=0
 
 ## 7. 后续运行报告流程
 
-- 入口：`make auto-report PLATFORM=<android|ios> [DEVICE=<id>]`。
+- 入口：`make auto-report PLATFORM=<android|ios> [DEVICE=<id>] [SCRIPT=<json>]`（默认执行正向脚本）与 `make auto-compare ANDROID=<run-dir> IOS=<run-dir>`。
 - 运行器显式激活 iOS Simulator；Android 通过 adb 唤醒并尽力将非 headless qemu 窗口置前；若 AVD 以 `-no-window` 启动，会明确提示其没有可激活窗口。
 - Android 自动把脚本推送到 `/sdcard/Android/data/com.example.example/files/`；iOS 使用宿主机绝对路径。
 - 只保存 `[APITEST]` 结构化事件与崩溃关键行，写入 Git 忽略的 `reports/5.0.0/<run-id>/`；不保存完整 native stdout，避免密钥/Token/原始网络日志进入报告。
@@ -95,3 +95,45 @@ gate_exit=0
 - app 端从参数中的 `$step.<id>` 自动识别依赖；生产步骤失败后，依赖步骤输出 `skipped=true/blockedBy=<id>`，不调用 SDK，报告将其归类为 `blocked` 而不是新问题。
 - `run.json` 保存 commit、worktree dirty 状态、脚本/runner SHA-256、平台、设备和 cluster，不保存 `clientSecret`、App Token 或 User Token。
 - `issues.md` 使用语义化 candidate key 供人工确认，不在运行器中硬编码版本化问题编号；确认结论再同步到本文件和 `acceptance-report.md`。
+
+## 8. 第五轮：正向/反向用例拆分与双端对比（2026-09-18）
+
+用例结构调整：
+
+- 原 `script_500_apis.json`（21 步混合）拆为 `script_500_apis_positive.json`（18 步，只断言成功）与 `script_500_apis_negative.json`（10 步，只断言目标契约错误码）。
+- 正向路径覆盖 5.0.0 新增/修改 API 的正常路径：未读数统计与清理、`modifyMessage`（含 attributes）、群配置创建与更新、4 个已读回执 API、设备管理 token 鉴权与 `renewToken`；`sendMessage`/`destroyGroup` 仅用于准备与清理。`kickDevice` 改用 `fetchLoggedInDevices` 返回的真实 resource，会踢掉本端，因此与 `kickAllDevices` 一起固定在正向末尾。
+- 反向路径只使用单账号可稳定构造的非法参数、缺失资源与无效 token；无参数的本地查询没有可控错误输入，不为凑数量机械构造反例。双账号场景（`onMessageReadReceipts`、非空群成员信息）按用户决定仍不纳入本轮。
+- `fetchGroupMessageReadReceipts` 的不存在消息场景已确认令 Android native 崩溃，按用户决定不单独出脚本、也不执行：反向脚本屏蔽该步骤，报告固定输出 `fetch-group-receipt-missing-disabled` known-crash 候选项；运行中真实发生的崩溃仍按 `crashed/not-run` 分类写入 `crash.log` 与候选清单。
+
+报告工具改造：
+
+- `make auto-report PLATFORM=... [SCRIPT=...]` 默认执行正向脚本，反向脚本用 `SCRIPT=im_flutter_sdk/example/scripts/script_500_apis_negative.json`；`run.json`/`summary.md` 记录实际脚本路径与路径类型（positive/negative）。
+- 新增 `make auto-compare ANDROID=<run-dir> IOS=<run-dir>`：按步骤对比双端状态、结果语义（`success`/`errorCode`）与响应结构，产物为 `reports/5.0.0/comparison-<路径>-<时间戳>.md`；存在步骤不一致时退出码为 1。反向路径额外输出 `## Error codes` 表，逐步给出「脚本期望 / Android / iOS」错误码。
+- `issues.md` 按路径类型生成候选项：反向路径固定记录被屏蔽的崩溃用例；`modify_self` 的 305 标注为环境限制；群回执分页 `totalCount` 缺失改为平台无关的 `group-receipt-total-count-missing`。
+
+本轮同时修复一个报告工具缺陷：
+
+- 设备控制台会截断约 1 KB 以上的单行日志，`loadAllConversations` 这类大事件 JSON 被截断后整步丢失（中间运行 `20260918094340-ios-...`、`20260918094448-android-...` 均为 6 通过 / 12 未运行，`crash.log` 可见被截断的原始行）。
+- 修复：`LogStore` 把超过 512 字节的事件按 UTF-8 字节切分成 `[APITEST+<index>/<total>]` 有序分片输出，文件副本仍保留完整单行记录；运行器重组分片，并把无法识别的 `[APITEST` 行计入 `summary.md` 的 `Malformed APITEST lines` 与 `apitest-line-not-reassembled` 候选项，不再静默丢弃。
+
+权威运行（同一版 runner；Android 15 / API 35 `emulator-5554`，iOS 18.2 iPhone 16 Pro simulator，集群 ngi）：
+
+| 路径 | Android | iOS | 结论 |
+| --- | --- | --- | --- |
+| 正向 18 步 | `20260918095219-android-emulator-5554` 18/18 | `20260918095149-ios-4BEA133B-4B24-430F-96FC-924632C2CF53` 18/18 | 双端无崩溃、无 malformed 行；`modifyMessage` 本轮返回成功（消息编辑服务已可用），不再出现 305 |
+| 反向 10 步 | `20260918095311-android-emulator-5554` 8 通过 / 2 失败 | `20260918095246-ios-4BEA133B-4B24-430F-96FC-924632C2CF53` 10/10 | 双端无崩溃；Android 两个批量回执 API 返回 1，与目标契约 500 不符 |
+| 正向双端对比 | `reports/5.0.0/comparison-positive-20260918095346.md` | 步骤不一致 0 | 仅响应结构差异，见下 |
+| 反向双端对比 | `reports/5.0.0/comparison-negative-20260918095346.md` | 错误码不一致 2 | `receipt_missing` / `group_receipt_missing`：Android 1 vs iOS 500 |
+
+反向错误码一致项：非法群成员 600、不存在群 600、缺失修改消息 500、空会话 ID 110、设备管理三方法无效 token 303、`renewToken("")` 104 —— 双端逐项一致。
+
+正向响应结构差异（均为既有字段差异，不是 5.0.0 新增语义）：
+
+- 群对象：Android 额外返回顶层 `maxUserCount`/`ext`，与 `configs` 内同名字段重复；iOS 只返回 `configs`。
+- 消息体：Android 返回 `body.translations`，iOS 不返回；iOS 返回 `receiverList`，Android 不返回。
+- 群回执分页：Android `totalCount: null`，iOS `0`。
+
+新增发现（交用户决策）：
+
+- Flutter iOS `renewToken("")` 返回 `104 INVALID_TOKEN`，与 Android 一致；RN 记录的「iOS 空 token 成功」差异在 Flutter 侧未复现。
+- Android 两个批量回执 API 仍返回 `1 GENERAL_ERROR`，未落实已裁决的 500 目标契约，与本文件第 6 节 003/004 结论一致，仍由 native 统一，Flutter 不保留兜底。

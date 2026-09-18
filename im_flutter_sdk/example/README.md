@@ -137,22 +137,33 @@ flutter run --dart-define=API_SCRIPT=/sdcard/Android/data/com.example.example/fi
 
 A full example covering the 4.22 additions lives at `scripts/script_422_apis.json`
 (expects at least two accounts and one group in the generated environment).
-The 21-step `scripts/script_500_apis.json` covers the 5.0.0 login-state scenario,
-including the RN-equivalent happy paths plus missing-message error paths.
+The 5.0.0 login-state scenario is split into two single-account scripts:
+`scripts/script_500_apis_positive.json` (18 steps, each expecting success) and
+`scripts/script_500_apis_negative.json` (10 steps, each expecting a target error
+code). The missing-message case of `fetchGroupMessageReadReceipts` crashes the
+Android native process, so it is not executed: the negative script masks it and
+the runner always records a `fetch-group-receipt-missing-disabled` candidate.
 
 For a traceable local run, execute from the worktree root:
 
 ```bash
 make auto-report PLATFORM=android DEVICE=emulator-5554
 make auto-report PLATFORM=ios DEVICE=<booted-simulator-udid>
+make auto-report PLATFORM=android SCRIPT=im_flutter_sdk/example/scripts/script_500_apis_negative.json
+make auto-compare ANDROID=reports/5.0.0/<android-run> IOS=reports/5.0.0/<ios-run>
 ```
 
 The runner brings the simulator app to the foreground where possible, pushes the
 script to Android's app-specific directory, and writes a timestamped report to
 `reports/5.0.0/<run-id>/`. Reports are Git-ignored because local events may
 contain account or resource identifiers. Each report contains `run.json`,
-`events.jsonl`, `crash.log`, `summary.md`, and `issues.md`; only confirmed,
-sanitized conclusions belong in `docs/porting/`.
+`events.jsonl`, `crash.log`, `summary.md`, `steps.json`, and `issues.md`; only
+confirmed, sanitized conclusions belong in `docs/porting/`.
+
+`make auto-compare` reads two finished runs of the same path and writes
+`reports/5.0.0/comparison-<path>-<timestamp>.md`: step status, result semantics,
+and response shape for both paths, plus an `expected / Android / iOS` error-code
+table for the negative path. It exits non-zero when steps disagree.
 
 An Android AVD started with `-no-window` is headless and cannot be brought to
 the foreground; the runner reports that state explicitly. Step parameters that

@@ -1,0 +1,124 @@
+{
+  "_comment": "5.0.0 反向路径（auto 模式）。只使用单账号可稳定构造的非法参数、缺失资源和无效 token，断言目标契约错误码；无参数本地查询没有可控错误输入，不强造反例。fetchGroupMessageReadReceipts 的缺失消息场景已确认会令 Android native 进程崩溃，按用户决策暂不执行，改由报告固定记录 known-crash 候选项（崩溃遇到即记录并屏蔽，不单独建脚本）。三个缺失消息回执 API 的目标契约为 500 MESSAGE_INVALID：当前 Android wrapper 返回 1 GENERAL_ERROR、iOS 返回 500，属于已知跨端差异，由双端对比报告如实暴露。设备管理使用无效 token，期望 303；renewToken 空 token 期望 104 INVALID_TOKEN。",
+  "steps": [
+    {
+      "api": "ChatGroupManager.createGroup",
+      "id": "create_group_invalid_member",
+      "params": {
+        "groupName": "flutter-port-500-negative",
+        "desc": "invalid member must reject group creation",
+        "inviteMembers": ["flutter-ci-nonexistent-user"],
+        "configs": {
+          "maxCount": 200,
+          "inviteNeedConfirm": false,
+          "ext": "negative",
+          "isPublic": false,
+          "joinApprovalRequired": false,
+          "allowInvites": true
+        }
+      },
+      "expect": {"errorCode": 600}
+    },
+    {
+      "api": "ChatGroupManager.updateGroupConfigs",
+      "id": "update_group_missing",
+      "params": {
+        "groupId": "not-exist-group-id-500",
+        "types": 32,
+        "configs": {
+          "maxCount": 200,
+          "inviteNeedConfirm": false,
+          "ext": "negative",
+          "isPublic": false,
+          "joinApprovalRequired": false,
+          "allowInvites": true
+        }
+      },
+      "expect": {"errorCode": 600}
+    },
+    {
+      "api": "ChatManager.modifyMessage",
+      "id": "modify_message_missing",
+      "params": {
+        "messageId": "not-exist-msg-id-500",
+        "content": "must not be applied",
+        "attributes": {"port": "5.0.0", "path": "negative"}
+      },
+      "expect": {"errorCode": 500}
+    },
+    {
+      "api": "ChatManager.clearConversationUnreadMessageCount",
+      "id": "clear_conversation_empty",
+      "params": {"conversationId": ""},
+      "expect": {"errorCode": 110}
+    },
+    {
+      "api": "ChatManager.sendMessageReadReceipts",
+      "id": "receipt_missing",
+      "params": {
+        "messages": [
+          {
+            "msgId": "not-exist-msg-id-500",
+            "to": "$config.accounts.0.id",
+            "chatType": 0,
+            "direction": 1,
+            "status": 2,
+            "body": {"type": 0, "content": "missing receipt message"}
+          }
+        ]
+      },
+      "expect": {"errorCode": 500}
+    },
+    {
+      "api": "ChatManager.getGroupMessageReadReceipts",
+      "id": "group_receipt_missing",
+      "params": {
+        "messages": [
+          {
+            "msgId": "not-exist-group-msg-id-500",
+            "to": "$config.groups.0.id",
+            "chatType": 1,
+            "direction": 1,
+            "status": 2,
+            "body": {"type": 0, "content": "missing group receipt message"}
+          }
+        ]
+      },
+      "expect": {"errorCode": 500}
+    },
+    {
+      "api": "ChatClient.fetchLoggedInDevices",
+      "id": "devices_invalid_token",
+      "params": {
+        "userId": "$config.accounts.0.id",
+        "token": "flutter-ci-invalid-token"
+      },
+      "expect": {"errorCode": 303}
+    },
+    {
+      "api": "ChatClient.renewToken",
+      "id": "renew_invalid_token",
+      "params": {"token": ""},
+      "expect": {"errorCode": 104}
+    },
+    {
+      "api": "ChatClient.kickDevice",
+      "id": "kick_device_invalid_token",
+      "params": {
+        "userId": "$config.accounts.0.id",
+        "token": "flutter-ci-invalid-token",
+        "resource": "flutter-ci-nonexistent-resource"
+      },
+      "expect": {"errorCode": 303}
+    },
+    {
+      "api": "ChatClient.kickAllDevices",
+      "id": "kick_all_invalid_token",
+      "params": {
+        "userId": "$config.accounts.0.id",
+        "token": "flutter-ci-invalid-token"
+      },
+      "expect": {"errorCode": 303}
+    }
+  ]
+}

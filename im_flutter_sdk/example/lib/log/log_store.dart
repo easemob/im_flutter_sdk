@@ -12,6 +12,17 @@ class LogStore extends ChangeNotifier {
 
   static const String stdoutPrefix = '[APITEST]';
 
+  /// Chunk marker for events longer than [stdoutChunkBytes]: `[APITEST+1/3] `.
+  static const String stdoutChunkPrefix = '[APITEST+';
+
+  /// Device consoles truncate long log lines (observed around 1 KB on both
+  /// Android and iOS), which corrupts the JSON and silently loses the event.
+  /// Longer events are therefore printed as ordered chunks marked with
+  /// `[APITEST+<index>/<total>]`, and the auto-mode runner reassembles them. The
+  /// budget is counted in UTF-8 bytes; the file copy always keeps the complete
+  /// single-line record.
+  static const int stdoutChunkBytes = 512;
+
   /// In-memory log limit; oldest entries are dropped when exceeded; stdout and file output are always complete.
   static const int maxLines = 2000;
 
@@ -38,8 +49,7 @@ class LogStore extends ChangeNotifier {
     });
     lines.add(line);
     if (lines.length > maxLines) lines.removeAt(0);
-    // ignore: avoid_print
-    print('$stdoutPrefix $line');
+    _printChunked(line);
     final file = _file;
     if (file != null) {
       // Serial async file write to avoid blocking UI; failures are silently ignored.
@@ -51,6 +61,39 @@ class LogStore extends ChangeNotifier {
       });
     }
     notifyListeners();
+  }
+
+  /// Prints one event, split into ordered chunks when it exceeds the console limit.
+  void _printChunked(String line) {
+    final chunks = _stdoutChunks(line);
+    if (chunks.length <= 1) {
+      // ignore: avoid_print
+      print('$stdoutPrefix ${chunks.isEmpty ? line : chunks.single}');
+      return;
+    }
+    for (var index = 0; index < chunks.length; index++) {
+      // ignore: avoid_print
+      print('$stdoutChunkPrefix${index + 1}/${chunks.length}] ${chunks[index]}');
+    }
+  }
+
+  List<String> _stdoutChunks(String line) {
+    final chunks = <String>[];
+    final buffer = StringBuffer();
+    var bytes = 0;
+    for (final rune in line.runes) {
+      final text = String.fromCharCode(rune);
+      final size = utf8.encode(text).length;
+      if (bytes + size > stdoutChunkBytes) {
+        chunks.add(buffer.toString());
+        buffer.clear();
+        bytes = 0;
+      }
+      buffer.write(text);
+      bytes += size;
+    }
+    if (buffer.isNotEmpty) chunks.add(buffer.toString());
+    return chunks;
   }
 
   void clear() {
