@@ -411,10 +411,12 @@
                                                                   readReceiptId:cursor
                                                                        pageSize:pageSize
                                                                      completion:^(EMCursorResult<EMGroupReadReceipt *> * _Nullable aResult, EMError * _Nullable aError, int totalCount) {
+        NSMutableDictionary *data = [[aResult toJson] mutableCopy] ?: [NSMutableDictionary dictionary];
+        data[@"totalCount"] = @(totalCount);
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aResult toJson]];
+                           object:data];
     }];
 }
 

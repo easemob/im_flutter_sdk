@@ -2,6 +2,7 @@
 - iOS 依赖 SDK 升级到 5.0.0，CocoaPods 与 SPM 保持一致；
 - 适配 Token 登录、数据同步、批量已读回执和群组配置重构；
 - 适配会话独立 delegate 及 native 5.0.0 删除项；
+- 修复分页获取群回执时未返回 `totalCount` 的问题；
 
 ## 4.24.0
 - iOS依赖 SDK 升级到 4.24.1；

@@ -154,6 +154,12 @@ contain account or resource identifiers. Each report contains `run.json`,
 `events.jsonl`, `crash.log`, `summary.md`, and `issues.md`; only confirmed,
 sanitized conclusions belong in `docs/porting/`.
 
+An Android AVD started with `-no-window` is headless and cannot be brought to
+the foreground; the runner reports that state explicitly. Step parameters that
+reference `$step.<id>` also establish a dependency: if the referenced producer
+fails, the dependent step is marked `blocked` and skipped without invoking the
+SDK.
+
 ## Coverage scope
 
 The registry covers the 4.22 additions and the 5.0.0 APIs needed by the scripted

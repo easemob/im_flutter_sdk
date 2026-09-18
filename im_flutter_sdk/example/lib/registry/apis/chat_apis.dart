@@ -4,6 +4,16 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import '../api_entry.dart';
 
+Map<String, Object?> conversationToScriptJson(
+  ChatConversation conversation,
+) =>
+    {
+      'id': conversation.id,
+      'type': conversation.type.index,
+      'name': conversation.name,
+      'avatar': conversation.avatar,
+    };
+
 /// ChatManager related entries.
 final chatApis = <ApiEntry>[
   ApiEntry(
@@ -18,7 +28,10 @@ final chatApis = <ApiEntry>[
     group: 'ChatManager',
     description: '从本地数据库读取全部会话；5.0.0 已移除旧服务端会话拉取接口。',
     paramsTemplate: '{}',
-    invoke: (_) => ChatClient.getInstance.chatManager.loadAllConversations(),
+    invoke: (_) async =>
+        (await ChatClient.getInstance.chatManager.loadAllConversations())
+            .map(conversationToScriptJson)
+            .toList(),
   ),
   ApiEntry(
     name: 'ChatManager.sendMessage',

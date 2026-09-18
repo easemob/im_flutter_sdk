@@ -7,7 +7,7 @@
 - `01-api-diff.md` 的 69 个 include 项均已推进为 `implemented`。
 - 102 个单端 defer 项标为 `deferred`；未新增仅单端存在的 Flutter 公开 API。
 - native 5.0.0 导致的编译强制适配已按最小范围完成并单列于下文。
-- 5.0.0 基线平版已提交为 `dbab80b3`；RN 对照修订已提交为 `a2f27eff`；token/env 与脚本自动化已提交为 `6d16ce85`；本地运行报告工具与本文档一并提交。
+- 5.0.0 基线平版已提交为 `dbab80b3`；RN 对照修订已提交为 `a2f27eff`；token/env 与脚本自动化已提交为 `6d16ce85`；本地运行报告工具已提交为 `4c555667`；本轮复验修订与本文档一并提交。
 
 ### Dart / public API
 
@@ -20,6 +20,7 @@
 - example：切换 Token 登录并注册 5.0 新 API；对照 RN 将 `script_500_apis.json` 从 5 步扩充为 21 步（RN 等价主链路 + 3 个不存在消息错误路径），增加 `success/errorCode` 预期判断与脚本—注册表覆盖测试。
 - example 凭据流：参考 RN 增加多集群 token 自动获取，生成 Git 忽略的 `env.dart`；人工/自动模式共用环境，移除旧 `config.json` 默认链路；ebs/ngi/私有化为平级互斥模式，私有化只由顶层开关与服务器字段启用，并将 `msyncServer` 映射为 Flutter `imServer`。公有配置只有一个集群时自动选择该集群，缺少可选的 ebs 不报错；旧 `defaultCluster` 对应的账号/资源随唯一集群迁移。
 - example 运行报告：新增 `make auto-report`，显式置前模拟器并将逐步期望对照、结构化事件和崩溃证据写入 Git 忽略的 `reports/5.0.0/<run-id>/`；仅将脱敏、人工确认后的结论同步到受版本管理的验收文档。
+- example 复验修复：`$step.<id>` 引用的生产步骤失败时，依赖步骤直接输出 `blocked/skipped` 而不再调用 SDK；会话列表输出结构化 `id/type/name/avatar`，可检查 5.0.0 元数据。
 
 ### Android wrapper
 
@@ -29,6 +30,7 @@
 - group config 位掩码按 Flutter/iOS 位值逐位映射到 Android 枚举，未直接透传。
 - `EMGroup` 无 `inviteNeedConfirm` getter：序列化 `ChatGroup.configs` 时固定输出冻结默认 `false`，标记 ⚠️。
 - 5.0 编译强制：AreaCode enum、删除 fetchMembers 重载、旧 listener 重载、旧聊天室缓存路由、群共享文件上传回调等均已适配。
+- 复验曾用 wrapper 判空验证 Android 崩溃可规避，但用户决定还原该修改：`fetchGroupMessageReadReceipts` 的空指针崩溃和跨端错误语义由 iOS/Android native 修复，Flutter wrapper 不提前统一。
 
 ### iOS wrapper
 
@@ -36,6 +38,7 @@
 - Token 登录/续期/设备 API、data sync/database 回调、统一已读回执、group configs、conversation delegate/name/avatar 均已接线。
 - 5.0 编译强制：`resendMessage` 改调 `sendMessage`，push style 改 completion，删除 `EMGroup.isPushNotificationEnabled` 与 `EMChatMessage#getReaction:` 引用。
 - group config 默认值由 Flutter JSON 显式赋值，不依赖 iOS native 默认。
+- 群回执分页 completion 的 `totalCount` 已参考 RN 写入返回 JSON；真实 iOS 回归确认零值返回为 `0` 而非 `null`。
 
 ## 2. 版本与发布文件
 

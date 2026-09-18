@@ -7,7 +7,7 @@
 - 完整源签名与 decision：[`01-api-diff.md`](./01-api-diff.md)
 - 契约：[`02-contract.md`](./02-contract.md)
 - 实现与验证：[`03-implementation.md`](./03-implementation.md)、[`04-verification.md`](./04-verification.md)
-- 代码状态：5.0.0 基线平版已提交为 `dbab80b3`，RN 对照修订已提交为 `a2f27eff`；本轮 token/env 自动化尚未提交。
+- 代码状态：5.0.0 基线平版、RN 对照修订、token/env 自动化、运行报告工具已分别提交为 `dbab80b3`、`a2f27eff`、`6d16ce85`、`4c555667`；本轮复验修订与本文档一并提交，均未 push。
 
 ## 1. 二维对照
 
@@ -201,25 +201,25 @@
 1. ✅ group configs 默认值差异已关闭：RN 5.0.0 同样固定上层 `inviteNeedConfirm=false`、`ext` 可空；Flutter 保持 `false/null`，不依赖 native 默认。
 2. ✅ Android `EMGroup` 没有 inviteNeedConfirm getter 的差异已关闭：RN 同样在字段缺失时回落上层默认 false；Flutter 当前输出 false，行为一致。
 3. ✅ `dataSyncType` 默认值差异已关闭：复用 RN 5.0.0 已裁决方案，上层不设显式默认，遵循各端 native 默认。
-4. ⚠️ iOS-only `totalCount` 未完全关闭：Dart 模型已新增可空字段，但真实回归发现 Flutter iOS wrapper 丢弃 native callback 的计数，iOS 仍返回 null；RN 5.0.0 wrapper 已正确写入该字段。
+4. ✅ iOS-only `totalCount` 已关闭：Dart 模型保留可空字段，Flutter iOS wrapper 已参考 RN 5.0.0 转发 native callback；真实回归确认零值返回 `0`，Android 保持 null。
 5. ✅ Android 群回执分页无 groupId 已关闭：复用 RN 5.0.0 已裁决方案，统一 API 保留 groupId，Android 接收但不下传。
 6. ✅ iOS APNs token 类型 warning 已关闭：用户决定接受基线现状，保留 `NSString *`→`NSData *` 调用，不修复。
 7. ✅ CocoaPods 旧 lock 问题已关闭：按固定序列更新后构建通过，最终 lock 已锁定 5.0.0；RN 侧也已确认 CocoaPods/SPM 5.0.0 发布可用。
-8. ⚠️ API 脚本真实模拟器回归已执行但未全通过：iOS receipt-pass 运行 20/21 通过，唯一失败为不存在消息返回空列表；后续同配置 iOS 运行群回执发送再次返回 505，说明服务状态仍需复核。Android 19 步通过后在同一错误路径发生 native NPE，最后一步未运行；该 Android 运行的群回执 happy path 已通过。
+8. ⚠️ API 脚本真实模拟器回归仍有 native 待修项：当前 Android wrapper 在不存在消息分页路径会触发 native NPE；iOS 可见窗口运行 20/21 通过，唯一失败为同一输入返回成功空列表。两端群回执 happy path 均通过，未再出现 505。Android 临时 wrapper 判空曾验证 21/21，但该 Java 修改已按用户决定还原。
 9. ✅ Android `fetchMembers` 重载差异已关闭：RN 5.0.0 同样保留上层参数、Android wrapper 忽略不下传；Flutter 当前行为一致。
 
 ## 4. 验证结论
 
 - ✅ `flutter analyze`
 - ✅ `flutter test`（30，含 `ChatCursorResult.totalCount` 双场景）
-- ✅ example `flutter analyze` 与环境/5.0.0 脚本覆盖测试（10）
+- ✅ example `flutter analyze` 与环境/5.0.0 脚本覆盖测试（12）
 - ✅ Android debug APK
 - ✅ iOS CocoaPods debug/no-codesign
 - ✅ iOS SPM debug/no-codesign
 - ✅ guard / contract checker / 旧 API grep / `git diff --check`
 - ✅ Flutter 全局 SPM 开关恢复为 false
-- ⚠️ iOS auto 模式完成：最佳运行 20/21 通过；后续运行复现群回执 505，但无崩溃且均输出 `script.done`
-- ❌ Android auto 模式未完成：19 步通过，`fetchGroupMessageReadReceipts` 不存在消息错误路径触发 native NPE，1 步未运行
+- ❌ Android auto 模式当前未完成：不存在消息分页触发 native NPE；临时 wrapper 判空的 21/21 结果不属于最终提交代码
+- ⚠️ iOS auto 模式完成：20/21 通过，唯一失败为不存在消息分页返回成功空列表
 
 ## 5. RN 对照结论与剩余待用户决策
 
@@ -227,7 +227,7 @@
 
 1. group configs 固定上层默认 `inviteNeedConfirm=false`、`ext` 可空。
 2. `dataSyncType=null` 时不设统一默认，遵循双端 native 默认。
-3. `ChatCursorResult.totalCount` 作为可空字段承接 iOS-only 返回值；模型契约已复用，但 Flutter iOS wrapper 的真实转发仍需修复。
+3. `ChatCursorResult.totalCount` 作为可空字段承接 iOS-only 返回值；Flutter iOS wrapper 已参考 RN 完成真实转发。
 4. 群回执分页统一 API 保留 groupId，Android 接收但不下传。
 
 用户决策（2026-09-17）：
@@ -235,14 +235,16 @@
 1. iOS APNs token 基线 warning 不修复，保留现有 `NSString *`→`NSData *` 调用。
 2. 已参考 RN 实现多集群 token 自动获取、默认/唯一集群激活、Git 忽略的 `env.dart`、私有化配置与脚本结构化引用迁移；`script_500_apis.json` 已由 5 步扩为 21 步并完成双端真实模拟器回归。
 
-新增待处理项（2026-09-18）：
+复验处理结果（2026-09-18）：
 
-1. Android `fetchGroupMessageReadReceipts` 对不存在 messageId 缺少 wrapper 判空，native 5.0.0 会 NPE 崩溃；建议在 Android wrapper 下传前查本地消息并返回 `MESSAGE_INVALID`，与同文件其他消息 API 的防护一致。
-2. iOS 对同一不存在 messageId 返回成功空列表。需决定脚本按平台接受该结果，还是在 Flutter iOS wrapper 主动统一为错误。
-3. iOS Flutter wrapper 未转发 native 群回执分页 completion 的 `totalCount`；RN 5.0.0 已通过 `data[@"totalCount"] = @(totalCount)` 处理，建议直接参考修复。
-4. `sendMessageReadReceipts` / `getGroupMessageReadReceipts` 的不存在消息错误码目前 Android 为 1、iOS 为 500；脚本只要求失败，是否统一错误码待用户决策。
-5. example 的 `loadAllConversations` 注册项输出对象字符串，无法检查 5.0.0 新增的 conversation name/avatar；应改为结构化 JSON。
-6. `onMessageReadReceipts` 仍需双账号协作场景验证，单账号脚本无法形成真实的接收方阅读回执。
+1. ⚠️ Android `fetchGroupMessageReadReceipts` 的临时 wrapper 判空已由用户还原；当前 native 5.0.0 对不存在消息仍会 NPE。用户决定由 Android native 修复崩溃，不在 Flutter wrapper 兜底。
+2. ⚠️ iOS 对同一不存在 messageId 返回成功空列表。Android native 依赖本地消息推导 groupId，iOS native 直接接收 groupId；用户决定由 iOS/Android native 统一行为，Flutter 后续跟随 native 结论。
+3. ✅ iOS wrapper 已转发群回执分页 `totalCount`；真实回归返回 `0`。
+4. ⚠️ `sendMessageReadReceipts` / `getGroupMessageReadReceipts` 的不存在消息错误码仍为 Android 1、iOS 500。源码确认非法 ID 当前由 Flutter wrapper 在 native 调用前拦截；用户决定本轮不在 Flutter 统一，待 native 双端修复并明确一致契约后再调整 wrapper。
+5. ✅ example 的 `loadAllConversations` 已输出结构化 `id/type/name/avatar`，真实双端结果可检查。
+6. ✅ 群消息发送失败时，引用该步骤结果的后续步骤会直接标记 `blocked/skipped`，不再调用 SDK；覆盖测试通过。
+7. ⏭️ `onMessageReadReceipts` 按用户决定暂不测试，不纳入本轮通过条件；后续如恢复验证，需要双账号协作场景。
+8. ✅ 模拟器窗口问题已关闭：iOS Simulator 与窗口模式 Android Emulator 均成功置前；原不可见实例实际由其他流程以 `-no-window` 启动，并非窗口被隐藏。
 
 ## 6. 流程说明
 

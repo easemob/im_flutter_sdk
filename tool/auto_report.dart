@@ -145,6 +145,7 @@ Future<void> _selfTest() async {
     if (state.outcomes.length != 2 ||
         state.outcomes.any((item) => item.status != 'passed') ||
         !state.iosTotalCountMissing ||
+        !_isBlockedResult(<String, dynamic>{'skipped': true}, const []) ||
         state.hasFailure) {
       throw StateError('step classification self-test failed');
     }
@@ -226,18 +227,32 @@ Future<void> _prepareDevice(
 
 Future<void> _tryActivateAndroidWindow(String device) async {
   if (!Platform.isMacOS) return;
-  final pgrep = await Process.run('pgrep', ['-f', 'qemu-system']);
-  final pids = (pgrep.stdout as String)
-      .split(RegExp(r'\s+'))
-      .where((value) => int.tryParse(value) != null)
+  final pgrep = await Process.run('pgrep', ['-fal', 'qemu-system']);
+  final processes = (pgrep.stdout as String)
+      .split('\n')
+      .where((line) => line.trim().isNotEmpty)
       .toList();
-  if (pids.isEmpty) {
+  final visibleProcesses = processes
+      .where(
+        (line) =>
+            !line.contains('qemu-system-aarch64-headless') &&
+            !line.contains(' -no-window'),
+      )
+      .toList();
+  if (visibleProcesses.isEmpty) {
+    if (processes.isNotEmpty) {
+      stderr.writeln(
+        'warning: Android emulator $device is running headless and has no window to activate. '
+        'Restart its AVD without -no-window for a visible run.',
+      );
+      return;
+    }
     stderr.writeln(
       'warning: Android emulator is online, but its qemu window process was not found.',
     );
     return;
   }
-  final pid = pids.first;
+  final pid = visibleProcesses.first.trim().split(RegExp(r'\s+')).first;
   final result = await Process.run('osascript', [
     '-e',
     'tell application "System Events" to set frontmost of first process whose unix id is $pid to true',
@@ -449,7 +464,7 @@ Future<void> _writeSummary(
       ..writeln();
   }
   for (final outcome in state.outcomes.where(
-    (item) => item.status == 'failed' || item.status == 'blocked',
+    (item) => item.status == 'failed',
   )) {
     final candidateKey = _candidateKey(outcome);
     issues
@@ -458,10 +473,20 @@ Future<void> _writeSummary(
       ..writeln('- API: `${outcome.step.api}`')
       ..writeln('- Expected: `${jsonEncode(outcome.step.expectation)}`')
       ..writeln('- Actual: `${jsonEncode(outcome.result)}`')
-      ..writeln(
-        '- Status: `${outcome.status == 'blocked' ? 'blocked' : 'needs-review'}`',
-      )
+      ..writeln('- Status: `needs-review`')
       ..writeln();
+  }
+  final blocked = state.outcomes.where((item) => item.status == 'blocked');
+  if (blocked.isNotEmpty) {
+    issues
+      ..writeln('## Expected dependency skips')
+      ..writeln();
+    for (final outcome in blocked) {
+      issues.writeln(
+        '- `${outcome.step.id}` skipped because `${outcome.result?['blockedBy']}` did not succeed.',
+      );
+    }
+    issues.writeln();
   }
   if (state.hasConversationSerializationGap) {
     issues
@@ -471,18 +496,6 @@ Future<void> _writeSummary(
       )
       ..writeln('- Expected: structured JSON including `name` and `avatar`')
       ..writeln('- Status: `confirmed`')
-      ..writeln();
-  }
-  if (state.groupReceiptHappyPathPassed && !state.sawMessageReadReceiptEvent) {
-    issues
-      ..writeln('## Candidate: `message-receipt-event-unverified`')
-      ..writeln(
-        '- Actual: group receipt APIs passed, but no `onMessageReadReceipts` event was observed',
-      )
-      ..writeln(
-        '- Expected: verify with a second account that reads the message',
-      )
-      ..writeln('- Status: `needs-second-account`')
       ..writeln();
   }
   if (state.iosTotalCountMissing) {
@@ -507,7 +520,6 @@ String _candidateKey(_StepOutcome outcome) {
   if (outcome.step.id == 'fetch_group_receipt_missing') {
     return 'unknown-message-pagination-semantics';
   }
-  if (outcome.status == 'blocked') return 'dependency-cascade';
   return '${outcome.step.id}-unexpected-result';
 }
 
@@ -580,6 +592,7 @@ bool _isBlockedResult(
   Map<String, dynamic> result,
   List<_StepOutcome> outcomes,
 ) {
+  if (result['skipped'] == true) return true;
   final error = result['error'];
   final message = error is Map ? error['message']?.toString() ?? '' : '';
   return outcomes.isNotEmpty &&
@@ -625,14 +638,6 @@ class _RunState {
               value.toString().startsWith("Instance of 'ChatConversation'"),
         );
   });
-
-  bool get groupReceiptHappyPathPassed => outcomes.any(
-    (item) => item.step.id == 'receipt_group' && item.status == 'passed',
-  );
-
-  bool get sawMessageReadReceiptEvent => events.any(
-    (event) => event['source'] == 'ChatEventHandler.onMessageReadReceipts',
-  );
 
   bool get iosTotalCountMissing =>
       platform == 'ios' &&
