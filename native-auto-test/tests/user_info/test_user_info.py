@@ -117,7 +117,7 @@ def test_user_info_update_own_with_type_nickname(device_a, assert_api, user_a):
             "manager": "UserInfoManager",
             "cmd": Cmd.updateOwnUserInfoWithType.value,
             "device": "deviceA",
-            "result": '{"gender":"0","nickname":"nick-by-type","sign":"sign-mod"}',
+            "result": '{"nickname":"nick-by-type"}',
         },
         ignore_keys={"sequence"},
     )

@@ -343,10 +343,9 @@ def test_chat_fetch_reaction_detail_invalid_page_size(device_a, device_b, assert
     )
 
     info = {"msgId": real_id, "reaction": "👍", "pageSize": -1}
-    timing_pause('step.interval', module='chat')
-    resp = device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info)
-    assert_api.assert_response_matches(
-        resp,
+    resp = assert_api.assert_response_eventually(
+        lambda: device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info),
+        key='step.interval', module='chat',
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.fetchReactionDetail.value,
@@ -364,10 +363,9 @@ def test_chat_fetch_reaction_detail_empty_reaction(device_a, device_b, assert_ap
     )
 
     info = {"msgId": real_id, "reaction": "", "pageSize": 20}
-    timing_pause('step.interval', module='chat')
-    resp = device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info)
-    assert_api.assert_response_matches(
-        resp,
+    resp = assert_api.assert_response_eventually(
+        lambda: device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info),
+        key='step.interval', module='chat',
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.fetchReactionDetail.value,
@@ -385,10 +383,9 @@ def test_chat_fetch_reaction_detail_oversize_page_size(device_a, device_b, asser
     )
 
     info = {"msgId": real_id, "reaction": "👍", "pageSize": 1000}
-    timing_pause('step.interval', module='chat')
-    resp = device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info)
-    assert_api.assert_response_matches(
-        resp,
+    resp = assert_api.assert_response_eventually(
+        lambda: device_a.call("ChatManager", Cmd.fetchReactionDetail.value, info=info),
+        key='step.interval', module='chat',
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.fetchReactionDetail.value,

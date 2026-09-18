@@ -385,14 +385,13 @@ def test_contact_remark_set_then_list_includes_remark(device_a, device_b, assert
         context={"device": "deviceA"},
         ignore_keys={"sequence"},
     )
-    timing_pause('step.interval', module='contact')
-    content_resp = device_a.call(
-        "ContactManager",
-        Cmd.getContact.value,
-        info={"userId": user_b},
-    )
-    assert_api.assert_response_matches(
-        content_resp,
+    content_resp = assert_api.assert_response_eventually(
+        lambda: device_a.call(
+            "ContactManager",
+            Cmd.getContact.value,
+            info={"userId": user_b},
+        ),
+        key='step.interval', module='contact',
         expected={
             "manager": "ContactManager",
             "cmd": Cmd.getContact.value,
@@ -424,14 +423,13 @@ def test_contact_remark_empty_string(device_a, device_b, assert_api, user_a, use
         context={"device": "deviceA"},
         ignore_keys={"sequence"},
     )
-    timing_pause('step.interval', module='contact')
-    content_resp = device_a.call(
-        "ContactManager",
-        Cmd.getContact.value,
-        info={"userId": user_b},
-    )
-    assert_api.assert_response_matches(
-        content_resp,
+    content_resp = assert_api.assert_response_eventually(
+        lambda: device_a.call(
+            "ContactManager",
+            Cmd.getContact.value,
+            info={"userId": user_b},
+        ),
+        key='step.interval', module='contact',
         expected={
             "manager": "ContactManager",
             "cmd": Cmd.getContact.value,
@@ -482,14 +480,13 @@ def test_contact_remark_not_preserved_after_delete_and_readd(device_a, device_b,
         context={"device": "deviceA"},
         ignore_keys={"sequence"},
     )
-    timing_pause('step.interval', module='contact')
-    content_after_set = device_a.call(
-        "ContactManager",
-        Cmd.getContact.value,
-        info={"userId": user_b},
-    )
-    assert_api.assert_response_matches(
-        content_after_set,
+    content_after_set = assert_api.assert_response_eventually(
+        lambda: device_a.call(
+            "ContactManager",
+            Cmd.getContact.value,
+            info={"userId": user_b},
+        ),
+        key='step.interval', module='contact',
         expected={
             "manager": "ContactManager",
             "cmd": Cmd.getContact.value,
@@ -503,14 +500,13 @@ def test_contact_remark_not_preserved_after_delete_and_readd(device_a, device_b,
 
     timing_pause('step.interval', module='contact')
     flow.establish_friends(device_a, device_b, user_a, user_b, reason="remark_readd_2")
-    timing_pause('step.interval', module='contact')
-    content_after_readd = device_a.call(
-        "ContactManager",
-        Cmd.getContact.value,
-        info={"userId": user_b},
-    )
-    assert_api.assert_response_matches(
-        content_after_readd,
+    content_after_readd = assert_api.assert_response_eventually(
+        lambda: device_a.call(
+            "ContactManager",
+            Cmd.getContact.value,
+            info={"userId": user_b},
+        ),
+        key='step.interval', module='contact',
         expected={
             "manager": "ContactManager",
             "cmd": Cmd.getContact.value,

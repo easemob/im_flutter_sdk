@@ -7,7 +7,15 @@
 ```python
 seconds('timeout.event', module='contact')
 pause('step.interval', module='group')
+wait_until(probe, predicate, key='settle.offline', module='group', reason='...')
 ```
+
+预算是**上限**，不是必须等满的时长（见 `.doc/specs/bounded-wait-early-exit`）：
+
+- `pause(key, module=)`：固定等待，用于没有只读探针的边界；语义不变。
+- `wait_until(probe, predicate, *, key, module, interval='poll.interval', reason)`：立即首探，条件满足即返回，间隔 sleep 夹在剩余预算内，上限耗尽仍未满足则抛 AssertionError（只报语义名/上限/探测次数，不回显探针返回值）。`probe` 必须只读幂等，禁止用发送、已读回执、历史拉取、下载类命令。
+- `drain_events(timeout=)`：`timeout` 是上限，接收队列连续空闲 `DRAIN_IDLE_SECONDS`（算法常量 0.3，不可配置）即提前返回；队列一直有货则到上限返回，不报错。
+- 负向观察窗口（`observe.*`）与时间戳间隔（`settle.sort_spacing`、`settle.cursor_order`）必须等满，不引入提前返回：它们的成功条件就是"整个窗口内没有响应"或"时间真实流逝"。
 
 配置来自当前环境文件 `app.case_timing`，单位秒。所有段统一：**模块语义值 > 全局语义值 > 模块 default > 全局 default > 内置默认**。default 只填未明确指定的语义值。
 

@@ -605,6 +605,7 @@ def test_chat_offline_recipient_receives_recall_after_relogin(
             user_b=user_b,
             body={"type": 0, "content": content, "translations": {}},
         )
+        # 负向断言（撤回后本地不应存在该消息）：必须等满窗口，不能改成有界等待提前返回。
         timing_pause('step.interval', module='chat')
         local = device_b.call(
             "ChatManager",
@@ -720,14 +721,13 @@ def test_chat_offline_recipient_receives_content_change_after_relogin(
             },
             ignore_keys=_MESSAGE_DYNAMIC_KEYS | {"deliverOnlineOnly", "translations"},
         )
-        timing_pause('step.interval', module='chat')
-        local = device_b.call(
-            "ChatManager",
-            Cmd.getMessage.value,
-            info={"msgId": real_id},
-        )
-        assert_api.assert_response_matches(
-            local,
+        assert_api.assert_response_eventually(
+            lambda: device_b.call(
+                "ChatManager",
+                Cmd.getMessage.value,
+                info={"msgId": real_id},
+            ),
+            key='step.interval', module='chat',
             expected={
                 "manager": "ChatManager",
                 "cmd": Cmd.getMessage.value,
@@ -882,18 +882,20 @@ def test_chat_offline_sender_receives_reaction_add_after_relogin(
             operate=1,
             reactions=expected_reactions,
         )
-        timing_pause('step.interval', module='chat')
-        fetched = device_a.call(
-            "ChatManager",
-            Cmd.fetchReactionList.value,
-            info={"msgIds": [real_id], "chatType": 0},
-        )
-        _assert_reaction_state(
-            assert_api,
-            fetched,
-            device_name="deviceA",
-            real_id=real_id,
-            reactions=expected_reactions,
+        assert_api.assert_eventually(
+            lambda: device_a.call(
+                "ChatManager",
+                Cmd.fetchReactionList.value,
+                info={"msgIds": [real_id], "chatType": 0},
+            ),
+            lambda actual: _assert_reaction_state(
+                assert_api,
+                actual,
+                device_name="deviceA",
+                real_id=real_id,
+                reactions=expected_reactions,
+            ),
+            key='step.interval', module='chat',
         )
     finally:
         _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
@@ -993,18 +995,20 @@ def test_chat_offline_sender_receives_reaction_remove_after_relogin(
                 }
             ],
         )
-        timing_pause('step.interval', module='chat')
-        fetched = device_a.call(
-            "ChatManager",
-            Cmd.fetchReactionList.value,
-            info={"msgIds": [real_id], "chatType": 0},
-        )
-        _assert_reaction_state(
-            assert_api,
-            fetched,
-            device_name="deviceA",
-            real_id=real_id,
-            reactions=[],
+        assert_api.assert_eventually(
+            lambda: device_a.call(
+                "ChatManager",
+                Cmd.fetchReactionList.value,
+                info={"msgIds": [real_id], "chatType": 0},
+            ),
+            lambda actual: _assert_reaction_state(
+                assert_api,
+                actual,
+                device_name="deviceA",
+                real_id=real_id,
+                reactions=[],
+            ),
+            key='step.interval', module='chat',
         )
     finally:
         _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)

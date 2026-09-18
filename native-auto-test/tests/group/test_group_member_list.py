@@ -46,14 +46,13 @@ def test_group_get_group_member_list_from_server_success(device_a, assert_api, u
             group_name=new_group_name("member_list"),
             invite_members=[user_b],
         )
-        timing_pause('step.interval', module='group')
-        resp = device_a.call(
-            "GroupManager",
-            Cmd.getGroupMemberListFromServer.value,
-            info={"groupId": group_id, "pageNum": 1, "pageSize": 20},
-        )
-        assert_api.assert_response_matches(
-            resp,
+        resp = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "GroupManager",
+                Cmd.getGroupMemberListFromServer.value,
+                info={"groupId": group_id, "pageNum": 1, "pageSize": 20},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "GroupManager",
                 "cmd": Cmd.getGroupMemberListFromServer.value,

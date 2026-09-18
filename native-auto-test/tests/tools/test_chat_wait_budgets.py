@@ -90,7 +90,8 @@ def test_thumbnail_download_returns_only_after_matching_success(clock):
     device = Device(clock, [success_event(msg_id="other"), success_event()])
     combine._assert_combine_thumbnail_download_completed(device, assertions,
         message={"msgId": "target"})
-    assert clock.now == pytest.approx(30.02)
+    # 缩略图完成窗口是上限而非固定等待：终态事件一到就返回，不再先睡 30s。
+    assert clock.now == pytest.approx(0.02)
 
 
 def test_thumbnail_download_error_fails_immediately(clock):
@@ -99,7 +100,7 @@ def test_thumbnail_download_error_fails_immediately(clock):
     with pytest.raises(pytest.fail.Exception, match="403"):
         combine._assert_combine_thumbnail_download_completed(Device(clock, [event]), assertions,
             message={"msgId": "target"})
-    assert clock.now == pytest.approx(30.01)
+    assert clock.now == pytest.approx(0.01)
 
 
 def test_thumbnail_download_requires_completed_status(clock):

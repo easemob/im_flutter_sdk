@@ -31,25 +31,30 @@ def _fetch_group(
     members: list[str],
     admins: list[str] | None = None,
     device_name: str,
+    wait_key: str = 'step.interval',
 ) -> dict:
-    response = device.call(
-        "GroupManager",
-        Cmd.getGroupSpecificationFromServer.value,
-        info={"groupId": group_id, "fetchMembers": True},
-    )
-    assert_group_snapshot(
-        assert_api,
-        response,
-        cmd=Cmd.getGroupSpecificationFromServer.value,
-        group_id=group_id,
-        group_name=group_name,
-        owner=owner,
-        member_count_value=member_count,
-        admin_list_value=admins,
-        device=device_name,
-    )
-    assert_group_members_exact(response, members, err_prefix="群主/成员服务端快照")
-    return response
+    def _probe():
+        return device.call(
+            "GroupManager",
+            Cmd.getGroupSpecificationFromServer.value,
+            info={"groupId": group_id, "fetchMembers": True},
+        )
+
+    def _check(response):
+        assert_group_snapshot(
+            assert_api,
+            response,
+            cmd=Cmd.getGroupSpecificationFromServer.value,
+            group_id=group_id,
+            group_name=group_name,
+            owner=owner,
+            member_count_value=member_count,
+            admin_list_value=admins,
+            device=device_name,
+        )
+        assert_group_members_exact(response, members, err_prefix="群主/成员服务端快照")
+
+    return assert_api.assert_eventually(_probe, _check, key=wait_key, module='group')
 
 
 def _assert_true(assert_api, response: dict, *, cmd: str, device: str) -> None:
@@ -176,7 +181,6 @@ def test_group_transfer_owner_target_boundaries(
             assert result.get("owner") == user_a, response
         else:
             assert_api.assert_error(response, code=expected_code)
-        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -328,7 +332,6 @@ def test_group_remove_current_owner_is_ignored(
             info={"groupId": group_id, "members": [user_a]},
         )
         _assert_true(assert_api, response, cmd=Cmd.removeMembers.value, device="deviceA")
-        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -401,7 +404,6 @@ def test_group_owner_removes_admin_success(
             },
             ignore_keys={"timestamp", "sequence"},
         )
-        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -484,7 +486,6 @@ def test_group_remove_other_member_permission_by_role(
                     },
                     ignore_keys={"timestamp", "sequence"},
                 )
-            timing_pause('step.interval', module='group')
             _fetch_group(
                 device_a,
                 assert_api,
@@ -560,7 +561,6 @@ def test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_membe
             },
             ignore_keys={"timestamp", "sequence"},
         )
-        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,

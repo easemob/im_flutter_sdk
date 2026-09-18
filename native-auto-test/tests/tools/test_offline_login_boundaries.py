@@ -45,3 +45,19 @@ def test_nested_offline_helpers_reach_the_paced_login():
     assert ast.unparse(login.body[1]) == "pause('settle.offline', module=module)"
     assert not any(isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
                    and n.func.attr == 'drain_events' for n in ast.walk(login))
+
+
+def test_offline_settle_waits_are_bounded_but_never_removed():
+    """登出后与重登后的等待必须仍然存在，且是有上限的有界等待。"""
+    flow = ROOT.parent / 'src/test_flow/offline_test_flow.py'
+    functions = {n.name: n for n in ast.parse(flow.read_text()).body
+                 if isinstance(n, ast.FunctionDef)}
+    for name in ('logout_for_offline', 'login_preserving_offline_events'):
+        bounded = [call for call in ast.walk(functions[name])
+                   if isinstance(call, ast.Call) and ast.unparse(call.func) == 'wait_until'
+                   and any(kw.arg == 'key' and ast.unparse(kw.value) == "'settle.offline'"
+                           for kw in call.keywords)]
+        assert len(bounded) == 1, name
+        keywords = {kw.arg for kw in bounded[0].keywords}
+        # 上限与模块必须显式传入，reason 用于超时报错时定位。
+        assert {'key', 'module', 'reason'} <= keywords, (name, keywords)

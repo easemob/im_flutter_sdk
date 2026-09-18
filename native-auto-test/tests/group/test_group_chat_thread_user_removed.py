@@ -267,14 +267,13 @@ def test_chat_thread_remove_member_updates_member_list(device_a, device_b, asser
             },
         )
 
-        timing_pause('step.interval', module='group')
-        members_before = device_a.call(
-            "ChatThreadManager",
-            Cmd.fetchChatThreadMember.value,
-            info={"threadId": thread_id, "cursor": "", "pageSize": 20},
-        )
-        assert_api.assert_response_matches(
-            members_before,
+        members_before = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "ChatThreadManager",
+                Cmd.fetchChatThreadMember.value,
+                info={"threadId": thread_id, "cursor": "", "pageSize": 20},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "ChatThreadManager",
                 "cmd": Cmd.fetchChatThreadMember.value,

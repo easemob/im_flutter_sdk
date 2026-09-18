@@ -27,14 +27,13 @@ def test_chatroom_join_public_chatroom_success(device_a, device_b, assert_api, u
         resp = device_b.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
         assert_join_chatroom_response(assert_api, resp, device="deviceB", room_id=room_id)
 
-        timing_pause('step.interval', module='chatroom')
-        members_resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomMembers.value,
-            info={"roomId": room_id, "cursor": "", "pageSize": 20},
-        )
-        assert_api.assert_response_matches(
-            members_resp,
+        members_resp = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "ChatRoomManager",
+                Cmd.fetchChatRoomMembers.value,
+                info={"roomId": room_id, "cursor": "", "pageSize": 20},
+            ),
+            key='step.interval', module='chatroom',
             expected={
                 "manager": "ChatRoomManager",
                 "cmd": Cmd.fetchChatRoomMembers.value,

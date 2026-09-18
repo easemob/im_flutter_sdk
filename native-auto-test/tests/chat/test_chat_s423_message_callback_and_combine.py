@@ -368,8 +368,9 @@ def _assert_combine_thumbnail_download_completed(
                   "result": {"msgId": msg_id, "body": {"type": 2, "thumbnailStatus": 0}}},
         ignore_keys=ignored,
     )
-    time.sleep(timing_seconds('settle.thumbnail_completion', module='chat'))
-    deadline = time.monotonic() + timeout
+    # 缩略图完成窗口折进下面的有界事件等待：上限仍是 settle + timeout，收到终态事件即返回。
+    deadline = (time.monotonic() + timeout
+                + timing_seconds('settle.thumbnail_completion', module='chat'))
     while time.monotonic() < deadline:
         event = device.receive_message(timeout=max(0.0, deadline - time.monotonic()))
         data = (event or {}).get("data") or {}

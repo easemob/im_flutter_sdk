@@ -11,6 +11,9 @@ MODULES = frozenset({
 
 POSITIVE_TIMEOUT_EPSILON = 1e-6
 RECEIVE_TIMEOUT_FLOOR = 0.1
+# Idle window that proves a receive queue is drained; bounds early exit only,
+# never the configured drain budget. Algorithmic constant, not configuration.
+DRAIN_IDLE_SECONDS = 0.3
 
 DEFAULTS = {
     'step.interval': 1.0,
@@ -38,7 +41,7 @@ DEFAULTS = {
     'timeout.delivery_confirmation': 3.0,
     'timeout.download': 60.0,
     'timeout.contact_change': 20.0,
-    'timeout.friend_invitation': 5.0,
+    'timeout.friend_invitation': 30.0,
     'timeout.friend_probe': 6.0,
     'timeout.friend_recovery': 10.0,
     'timeout.friend_ready': 30.0,

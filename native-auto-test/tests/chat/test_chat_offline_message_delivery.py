@@ -767,6 +767,7 @@ def test_chat_offline_deliver_online_only_not_received_after_login(
                 if str((message or {}).get("msgId")) == real_id:
                     seen_target.append(event)
         assert seen_target == [], f"online-only CMD 不应离线投递: {seen_target}"
+        # 负向断言（撤回后本地不应存在该消息）：必须等满窗口，不能改成有界等待提前返回。
         timing_pause('step.interval', module='chat')
         local = device_b.call(
             "ChatManager",
@@ -852,19 +853,21 @@ def test_chat_offline_multiple_text_messages_and_unread_count(
             },
             ignore_keys=_MESSAGE_DYNAMIC_KEYS,
         )
-        timing_pause('step.interval', module='chat')
-        unread = device_b.call(
-            "ConversationManager",
-            Cmd.getUnreadMsgCount.value,
-            info={"convId": user_a, "type": 0},
-        )
-        _assert_call(
-            assert_api,
-            unread,
-            manager="ConversationManager",
-            cmd=Cmd.getUnreadMsgCount.value,
-            device_name="deviceB",
-            result=3,
+        assert_api.assert_eventually(
+            lambda: device_b.call(
+                "ConversationManager",
+                Cmd.getUnreadMsgCount.value,
+                info={"convId": user_a, "type": 0},
+            ),
+            lambda actual: _assert_call(
+                assert_api,
+                actual,
+                manager="ConversationManager",
+                cmd=Cmd.getUnreadMsgCount.value,
+                device_name="deviceB",
+                result=3,
+            ),
+            key='step.interval', module='chat',
         )
         latest = device_b.call(
             "ConversationManager",

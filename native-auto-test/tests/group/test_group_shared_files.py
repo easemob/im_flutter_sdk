@@ -224,14 +224,13 @@ def _upload_remove_and_assert_peer_events(
         event_types={"onSharedFileDeletedFromGroup"},
     )
 
-    timing_pause('step.interval', module='group')
-    resp_empty = operator_device.call(
-        "GroupManager",
-        Cmd.getGroupFileListFromServer.value,
-        info={"groupId": group_id, "pageNum": 1, "pageSize": 20},
-    )
-    assert_api.assert_response_matches(
-        resp_empty,
+    resp_empty = assert_api.assert_response_eventually(
+        lambda: operator_device.call(
+            "GroupManager",
+            Cmd.getGroupFileListFromServer.value,
+            info={"groupId": group_id, "pageNum": 1, "pageSize": 20},
+        ),
+        key='step.interval', module='group',
         expected={
             "manager": "GroupManager",
             "cmd": Cmd.getGroupFileListFromServer.value,

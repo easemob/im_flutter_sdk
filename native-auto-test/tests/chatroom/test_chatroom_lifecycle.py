@@ -31,11 +31,10 @@ def test_chatroom_create_room_via_sdk_without_permission(device_a, assert_api):
 
 def test_chatroom_create_and_fetch_from_server(device_a, assert_api, user_a):
     room_id, room_name = create_chatroom_or_skip(owner=user_a, name_prefix="create", desc_prefix="create")
-    timing_pause('step.interval', module='chatroom')
     try:
-        resp = device_a.call("ChatRoomManager", Cmd.fetchChatRoomInfoFromServer.value, info={"roomId": room_id})
-        assert_api.assert_response_matches(
-            resp,
+        resp = assert_api.assert_response_eventually(
+            lambda: device_a.call("ChatRoomManager", Cmd.fetchChatRoomInfoFromServer.value, info={"roomId": room_id}),
+            key='step.interval', module='chatroom',
             expected={
                 "manager": "ChatRoomManager",
                 "cmd": Cmd.fetchChatRoomInfoFromServer.value,
@@ -72,14 +71,13 @@ def test_chatroom_fetch_room_info_with_members_from_server(device_a, device_b, a
         join_resp = device_b.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
         assert_join_chatroom_response(assert_api, join_resp, device="deviceB", room_id=room_id)
 
-        timing_pause('step.interval', module='chatroom')
-        resp = device_a.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomInfoFromServer.value,
-            info={"roomId": room_id, "fetchMembers": True},
-        )
-        assert_api.assert_response_matches(
-            resp,
+        resp = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "ChatRoomManager",
+                Cmd.fetchChatRoomInfoFromServer.value,
+                info={"roomId": room_id, "fetchMembers": True},
+            ),
+            key='step.interval', module='chatroom',
             expected={
                 "manager": "ChatRoomManager",
                 "cmd": Cmd.fetchChatRoomInfoFromServer.value,

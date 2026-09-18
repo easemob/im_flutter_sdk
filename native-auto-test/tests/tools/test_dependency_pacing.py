@@ -20,6 +20,7 @@ ROOT = Path(__file__).parents[1]
      'test_chatroom_owner_changed_callback', 'changeChatRoomOwner'),
 ])
 def test_dependency_operation_has_explicit_pause(file, function, command):
+    """依赖操作前的等待不得删除：固定 pause 或同预算的有界断言都算。"""
     tree = ast.parse((ROOT / file).read_text())
     fn = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == function)
     checked = 0
@@ -31,7 +32,10 @@ def test_dependency_operation_has_explicit_pause(file, function, command):
                 if not isinstance(stmt, ast.Assign) or not isinstance(stmt.value, ast.Call):
                     continue
                 if any(ast.unparse(a) == f'Cmd.{command}.value' for a in stmt.value.args):
-                    assert i and ast.unparse(block[i - 1]).startswith("timing_pause('step.")
+                    previous = ast.unparse(block[i - 1]) if i else ''
+                    assert (previous.startswith("timing_pause('step.")
+                            or 'assert_response_eventually(' in previous
+                            or 'assert_eventually(' in previous), previous
                     checked += 1
     assert checked
 

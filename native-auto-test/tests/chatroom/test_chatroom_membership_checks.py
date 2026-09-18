@@ -13,15 +13,14 @@ pytestmark = [pytest.mark.client, pytest.mark.chatroom, pytest.mark.agorachat1_4
 
 def test_chatroom_is_member_in_white_list_and_mute_list_success(device_a, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="member_check", desc_prefix="member_check")
-    timing_pause('step.interval', module='chatroom')
     try:
-        resp_white = device_a.call(
-            "ChatRoomManager",
-            Cmd.isMemberInChatRoomWhiteListFromServer.value,
-            info={"roomId": room_id},
-        )
-        assert_api.assert_response_matches(
-            resp_white,
+        resp_white = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "ChatRoomManager",
+                Cmd.isMemberInChatRoomWhiteListFromServer.value,
+                info={"roomId": room_id},
+            ),
+            key='step.interval', module='chatroom',
             expected={
                 "manager": "ChatRoomManager",
                 "cmd": Cmd.isMemberInChatRoomWhiteListFromServer.value,

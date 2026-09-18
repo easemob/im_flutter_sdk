@@ -259,14 +259,13 @@ def test_conversation_latest_and_last_received_messages(device_a, device_b, asse
     timing_pause('step.interval', module='chat')
     msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
 
-    timing_pause('step.interval', module='chat')
-    resp_latest = device_a.call(
-        "ConversationManager",
-        Cmd.getLatestMessage.value,
-        info=conv_a,
-    )
-    assert_api.assert_response_matches(
-        resp_latest,
+    resp_latest = assert_api.assert_response_eventually(
+        lambda: device_a.call(
+            "ConversationManager",
+            Cmd.getLatestMessage.value,
+            info=conv_a,
+        ),
+        key='step.interval', module='chat',
         expected={
             "manager": "ConversationManager",
             "cmd": Cmd.getLatestMessage.value,
@@ -335,10 +334,9 @@ def test_conversation_read_count_and_mark_read(device_a, device_b, assert_api, u
     content = f"conv-read-{uuid.uuid4().hex[:8]}"
     msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
 
-    timing_pause('step.interval', module='chat')
-    resp_unread = device_b.call("ConversationManager", Cmd.getUnreadMsgCount.value, info=conv_b)
-    assert_api.assert_response_matches(
-        resp_unread,
+    resp_unread = assert_api.assert_response_eventually(
+        lambda: device_b.call("ConversationManager", Cmd.getUnreadMsgCount.value, info=conv_b),
+        key='step.interval', module='chat',
         expected={
             "manager": "ConversationManager",
             "cmd": Cmd.getUnreadMsgCount.value,
@@ -389,10 +387,9 @@ def test_conversation_read_count_and_mark_read(device_a, device_b, assert_api, u
         ignore_keys={"sequence"},
     )
 
-    timing_pause('step.interval', module='chat')
-    resp_zero = device_b.call("ConversationManager", Cmd.getUnreadMsgCount.value, info=conv_b)
-    assert_api.assert_response_matches(
-        resp_zero,
+    resp_zero = assert_api.assert_response_eventually(
+        lambda: device_b.call("ConversationManager", Cmd.getUnreadMsgCount.value, info=conv_b),
+        key='step.interval', module='chat',
         expected={
             "manager": "ConversationManager",
             "cmd": Cmd.getUnreadMsgCount.value,
@@ -411,10 +408,9 @@ def test_conversation_load_message_and_message_lists(device_a, device_b, assert_
     start_time = int(time.time() * 1000) - 60_000
     end_time = int(time.time() * 1000) + 60_000
 
-    timing_pause('step.interval', module='chat')
-    resp_load_one = device_a.call("ConversationManager", Cmd.loadMsgWithId.value, info={**conv_a, "msgId": msg_id})
-    assert_api.assert_response_matches(
-        resp_load_one,
+    resp_load_one = assert_api.assert_response_eventually(
+        lambda: device_a.call("ConversationManager", Cmd.loadMsgWithId.value, info={**conv_a, "msgId": msg_id}),
+        key='step.interval', module='chat',
         expected={
             "manager": "ConversationManager",
             "cmd": Cmd.loadMsgWithId.value,
@@ -762,10 +758,9 @@ def test_conversation_local_insert_append_update_and_delete(device_a, assert_api
         ignore_keys={"sequence"},
     )
 
-    timing_pause('step.interval', module='chat')
-    resp_loaded = device_a.call("ConversationManager", Cmd.loadMsgWithId.value, info={**conv_a, "msgId": append_id})
-    assert_api.assert_response_matches(
-        resp_loaded,
+    resp_loaded = assert_api.assert_response_eventually(
+        lambda: device_a.call("ConversationManager", Cmd.loadMsgWithId.value, info={**conv_a, "msgId": append_id}),
+        key='step.interval', module='chat',
         expected={
             "manager": "ConversationManager",
             "cmd": Cmd.loadMsgWithId.value,

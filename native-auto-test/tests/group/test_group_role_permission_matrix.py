@@ -137,33 +137,38 @@ def _fetch_group(
     message_blocked: bool = False,
     expected_desc: str = "auto-test group",
     expected_ext: str = "auto-ext",
+    wait_key: str = 'step.interval',
 ) -> dict:
-    response = device.call(
-        "GroupManager",
-        Cmd.getGroupSpecificationFromServer.value,
-        info={"groupId": group_id, "fetchMembers": True},
-    )
-    assert_group_snapshot(
-        assert_api,
-        response,
-        cmd=Cmd.getGroupSpecificationFromServer.value,
-        group_id=group_id,
-        group_name=group_name,
-        owner=owner,
-        expected_desc=expected_desc,
-        expected_ext=expected_ext,
-        member_count_value=1 + len(members) + len(admins),
-        admin_list_value=admins,
-        mute_list_value=mute_list,
-        allow_list_value=allow_list,
-        block_list_value=block_list,
-        is_all_member_muted=is_all_member_muted,
-        message_blocked=message_blocked,
-        permission_type=permission_type,
-        device=device_name,
-    )
-    assert_group_members_exact(response, members, err_prefix="角色权限矩阵服务端快照")
-    return response
+    def _probe():
+        return device.call(
+            "GroupManager",
+            Cmd.getGroupSpecificationFromServer.value,
+            info={"groupId": group_id, "fetchMembers": True},
+        )
+
+    def _check(response):
+        assert_group_snapshot(
+            assert_api,
+            response,
+            cmd=Cmd.getGroupSpecificationFromServer.value,
+            group_id=group_id,
+            group_name=group_name,
+            owner=owner,
+            expected_desc=expected_desc,
+            expected_ext=expected_ext,
+            member_count_value=1 + len(members) + len(admins),
+            admin_list_value=admins,
+            mute_list_value=mute_list,
+            allow_list_value=allow_list,
+            block_list_value=block_list,
+            is_all_member_muted=is_all_member_muted,
+            message_blocked=message_blocked,
+            permission_type=permission_type,
+            device=device_name,
+        )
+        assert_group_members_exact(response, members, err_prefix="角色权限矩阵服务端快照")
+
+    return assert_api.assert_eventually(_probe, _check, key=wait_key, module='group')
 
 
 def _assert_server_user_list(
@@ -354,7 +359,6 @@ def test_group_mute_members_role_permission_matrix(
             )
         _restore_owner_if_needed(device_a, assert_api, switched=switched, user_a=user_a)
         switched = False
-        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -470,7 +474,6 @@ def test_group_mute_all_role_permission_matrix(
             )
         _restore_owner_if_needed(device_a, assert_api, switched=switched, user_a=user_a)
         switched = False
-        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -600,7 +603,6 @@ def test_group_allow_list_role_permission_matrix(
             )
         _restore_owner_if_needed(device_a, assert_api, switched=switched, user_a=user_a)
         switched = False
-        timing_pause('step.interval', module='group')
         _fetch_group(
             device_a,
             assert_api,
@@ -648,7 +650,6 @@ def test_group_blocklist_admin_member_role_matrix(
             Cmd.blockMembers.value,
             info={"groupId": group_id, "members": [user_c]},
         )
-        timing_pause('step.interval', module='group')
         if role == _ROLE_MEMBER:
             assert_api.assert_error(response, code=603, description=_ADMIN_PERMISSION_ERROR)
             _fetch_group(
@@ -723,7 +724,6 @@ def test_group_blocklist_admin_member_role_matrix(
                 group_id=group_id,
                 expected_users=[],
             )
-            timing_pause('step.interval', module='group')
             _fetch_group(
                 device_a,
                 assert_api,
@@ -775,7 +775,6 @@ def test_group_metadata_admin_member_role_matrix(
                 timing_pause('step.interval', module='group')
                 response = device_b.call("GroupManager", cmd, info=info)
                 assert_api.assert_error(response, code=603, description=_GROUP_FIELDS_PERMISSION_ERROR)
-            timing_pause('step.interval', module='group')
             _fetch_group(
                 device_a,
                 assert_api,
@@ -845,7 +844,6 @@ def test_group_metadata_admin_member_role_matrix(
                     },
                     ignore_keys={"memberList", "adminList"},
                 )
-            timing_pause('step.interval', module='group')
             _fetch_group(
                 device_a,
                 assert_api,
@@ -943,7 +941,6 @@ def test_group_message_block_role_matrix(
             device=actor_name,
             result=None,
         )
-        timing_pause('step.interval', module='group')
         _fetch_group(
             actor,
             assert_api,
@@ -965,7 +962,6 @@ def test_group_message_block_role_matrix(
             device=actor_name,
             result=None,
         )
-        timing_pause('step.interval', module='group')
         _fetch_group(
             actor,
             assert_api,

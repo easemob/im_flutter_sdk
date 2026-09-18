@@ -133,6 +133,8 @@ def restore_peer_nickname(friends_ab, device_b, assert_api, user_b):
         while time.monotonic() < deadline:
             if read_nickname() == old_nickname:
                 break
-            time.sleep(seconds('poll.server_state', module='chat'))
+            # 间隔夹在剩余预算内；预算耗尽时 sleep(0) 让循环走到 else 分支报错。
+            remaining = max(0.0, deadline - time.monotonic())
+            time.sleep(min(seconds('poll.server_state', module='chat'), remaining))
         else:
             raise AssertionError('昵称未恢复到原值')

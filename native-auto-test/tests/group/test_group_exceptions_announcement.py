@@ -59,14 +59,13 @@ def test_group_update_announcement_empty(device_a, assert_api, user_a):
             ignore_keys={"sequence"},
         )
 
-        timing_pause('step.interval', module='group')
-        resp_get = device_a.call(
-            "GroupManager",
-            Cmd.getGroupAnnouncementFromServer.value,
-            info={"groupId": group_id},
-        )
-        assert_api.assert_response_matches(
-            resp_get,
+        resp_get = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "GroupManager",
+                Cmd.getGroupAnnouncementFromServer.value,
+                info={"groupId": group_id},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "GroupManager",
                 "cmd": Cmd.getGroupAnnouncementFromServer.value,

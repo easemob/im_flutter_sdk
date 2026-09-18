@@ -84,14 +84,13 @@ def test_group_fetch_members_info_contains_updated_own_profile(device_a, assert_
             invite_members=[],
         )
 
-        timing_pause('step.interval', module='group')
-        resp_member_info = device_a.call(
-            "GroupManager",
-            Cmd.fetchGroupMembersInfo.value,
-            info={"groupId": group_id, "cursor": None, "limit": 50},
-        )
-        assert_api.assert_response_matches(
-            resp_member_info,
+        resp_member_info = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "GroupManager",
+                Cmd.fetchGroupMembersInfo.value,
+                info={"groupId": group_id, "cursor": None, "limit": 50},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "GroupManager",
                 "cmd": Cmd.fetchGroupMembersInfo.value,

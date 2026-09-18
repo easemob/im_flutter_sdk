@@ -342,14 +342,13 @@ def test_fetch_subscribed_members_pagination(device_a, device_b, assert_api, use
     assert_api.assert_success(resp_sub)
 
     # 第 1 页：pageNum=1, pageSize=20，应返回 [user_a]
-    timing_pause('step.interval', module='presence')
-    resp_p1 = device_b.call(
-        "PresenceManager",
-        Cmd.fetchSubscribedMembersWithPageNum.value,
-        info={"pageNum": 1, "pageSize": 20},
-    )
-    assert_api.assert_response_matches(
-        resp_p1,
+    resp_p1 = assert_api.assert_response_eventually(
+        lambda: device_b.call(
+            "PresenceManager",
+            Cmd.fetchSubscribedMembersWithPageNum.value,
+            info={"pageNum": 1, "pageSize": 20},
+        ),
+        key='step.interval', module='presence',
         expected={
             "manager": "PresenceManager",
             "cmd": Cmd.fetchSubscribedMembersWithPageNum.value,
@@ -397,14 +396,13 @@ def test_fetch_subscribed_members_pagination_page_size_one(device_a, device_b, a
     )
     assert_api.assert_success(resp_sub)
 
-    timing_pause('step.interval', module='presence')
-    resp_1 = device_b.call(
-        "PresenceManager",
-        Cmd.fetchSubscribedMembersWithPageNum.value,
-        info={"pageNum": 1, "pageSize": 1},
-    )
-    assert_api.assert_response_matches(
-        resp_1,
+    resp_1 = assert_api.assert_response_eventually(
+        lambda: device_b.call(
+            "PresenceManager",
+            Cmd.fetchSubscribedMembersWithPageNum.value,
+            info={"pageNum": 1, "pageSize": 1},
+        ),
+        key='step.interval', module='presence',
         expected={
             "manager": "PresenceManager",
             "cmd": Cmd.fetchSubscribedMembersWithPageNum.value,

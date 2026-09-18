@@ -120,14 +120,13 @@ def test_group_owner_update_announcement_notifies_member(device_a, device_b, ass
             event_types={"onAnnouncementChangedFromGroup"},
         )
 
-        timing_pause('step.interval', module='group')
-        resp_get = device_a.call(
-            "GroupManager",
-            Cmd.getGroupAnnouncementFromServer.value,
-            info={"groupId": group_id},
-        )
-        assert_api.assert_response_matches(
-            resp_get,
+        resp_get = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "GroupManager",
+                Cmd.getGroupAnnouncementFromServer.value,
+                info={"groupId": group_id},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "GroupManager",
                 "cmd": Cmd.getGroupAnnouncementFromServer.value,
@@ -240,14 +239,13 @@ def test_group_admin_update_announcement_notifies_owner(device_a, device_b, asse
             event_types={"onAnnouncementChangedFromGroup"},
         )
 
-        timing_pause('step.interval', module='group')
-        resp_get = device_a.call(
-            "GroupManager",
-            Cmd.getGroupAnnouncementFromServer.value,
-            info={"groupId": group_id},
-        )
-        assert_api.assert_response_matches(
-            resp_get,
+        resp_get = assert_api.assert_response_eventually(
+            lambda: device_a.call(
+                "GroupManager",
+                Cmd.getGroupAnnouncementFromServer.value,
+                info={"groupId": group_id},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "GroupManager",
                 "cmd": Cmd.getGroupAnnouncementFromServer.value,

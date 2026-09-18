@@ -87,3 +87,32 @@ def pause(key: str = 'step.interval', *, module: str) -> None:
     duration = seconds(key, module=module)
     if duration:
         time.sleep(duration)
+
+
+def wait_until(probe, predicate=None, *, key: str = 'step.interval', module: str,
+               interval: str = 'poll.interval', reason: str = ''):
+    """Bounded wait: probe now, return as soon as satisfied, fail at the bound.
+
+    The budget behind `key` becomes an upper bound instead of a fixed sleep;
+    the wait itself is never skipped and the caller still asserts afterwards.
+    `probe` must be read-only and idempotent (no send/read-ack/download/history
+    calls, which mutate local state). Failures report the semantic name, the
+    bound and the attempt count only: probe payloads may carry message bodies,
+    attachment secrets or tokens.
+    """
+    budget = seconds(key, module=module)
+    step = seconds(interval, module=module)
+    deadline = time.monotonic() + budget
+    attempts = 0
+    while True:
+        attempts += 1
+        value = probe()
+        if predicate(value) if predicate else bool(value):
+            return value
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise AssertionError(
+                f'有界等待超时：{reason or key}；上限 {budget}s（{key}, module={module}），'
+                f'探测 {attempts} 次仍未满足条件'
+            )
+        time.sleep(min(step, remaining))

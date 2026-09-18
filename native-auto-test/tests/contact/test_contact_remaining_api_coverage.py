@@ -21,14 +21,13 @@ def test_contact_get_all_contacts_from_db_after_server_sync(
     device_a, device_b, assert_api, user_a, user_b, friends_ab):
     """getAllContactsFromDB/getAllContactIds：同步服务端好友后，从本地 DB 获取好友 ID 列表；Dart getAllContactIds 复用同一 native cmd。"""
 
-    timing_pause('step.interval', module='contact')
-    sync_resp = device_a.call(
-        "ContactManager",
-        Cmd.getAllContactsFromServer.value,
-        info={},
-    )
-    assert_api.assert_response_matches(
-        sync_resp,
+    sync_resp = assert_api.assert_response_eventually(
+        lambda: device_a.call(
+            "ContactManager",
+            Cmd.getAllContactsFromServer.value,
+            info={},
+        ),
+        key='step.interval', module='contact',
         expected={
             "manager": "ContactManager",
             "cmd": Cmd.getAllContactsFromServer.value,
@@ -38,14 +37,13 @@ def test_contact_get_all_contacts_from_db_after_server_sync(
         ignore_keys={"sequence"},
     )
 
-    timing_pause('step.interval', module='contact')
-    local_resp = device_a.call(
-        "ContactManager",
-        Cmd.getAllContactsFromDB.value,
-        info={},
-    )
-    assert_api.assert_response_matches(
-        local_resp,
+    local_resp = assert_api.assert_response_eventually(
+        lambda: device_a.call(
+            "ContactManager",
+            Cmd.getAllContactsFromDB.value,
+            info={},
+        ),
+        key='step.interval', module='contact',
         expected={
             "manager": "ContactManager",
             "cmd": Cmd.getAllContactsFromDB.value,
@@ -65,14 +63,13 @@ def test_contact_get_block_list_from_db_after_server_sync(
     timing_pause('step.interval', module='contact')
     flow.add_to_block_list(device_a, user_b)
 
-    timing_pause('step.interval', module='contact')
-    server_resp = device_a.call(
-        "ContactManager",
-        Cmd.getBlockListFromServer.value,
-        info={},
-    )
-    assert_api.assert_response_matches(
-        server_resp,
+    server_resp = assert_api.assert_response_eventually(
+        lambda: device_a.call(
+            "ContactManager",
+            Cmd.getBlockListFromServer.value,
+            info={},
+        ),
+        key='step.interval', module='contact',
         expected={
             "manager": "ContactManager",
             "cmd": Cmd.getBlockListFromServer.value,
@@ -82,14 +79,13 @@ def test_contact_get_block_list_from_db_after_server_sync(
         ignore_keys={"sequence"},
     )
 
-    timing_pause('step.interval', module='contact')
-    local_resp = device_a.call(
-        "ContactManager",
-        Cmd.getBlockListFromDB.value,
-        info={},
-    )
-    assert_api.assert_response_matches(
-        local_resp,
+    local_resp = assert_api.assert_response_eventually(
+        lambda: device_a.call(
+            "ContactManager",
+            Cmd.getBlockListFromDB.value,
+            info={},
+        ),
+        key='step.interval', module='contact',
         expected={
             "manager": "ContactManager",
             "cmd": Cmd.getBlockListFromDB.value,

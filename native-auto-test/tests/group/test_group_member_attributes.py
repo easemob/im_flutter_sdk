@@ -71,14 +71,13 @@ def test_group_set_and_fetch_member_attributes_success(device_a, device_b, asser
             expected_member=user_b,
         )
 
-        timing_pause('step.interval', module='group')
-        resp_fetch_single = device_b.call(
-            "GroupManager",
-            Cmd.fetchMemberAttributesFromGroup.value,
-            info={"groupId": group_id},
-        )
-        assert_api.assert_response_matches(
-            resp_fetch_single,
+        resp_fetch_single = assert_api.assert_response_eventually(
+            lambda: device_b.call(
+                "GroupManager",
+                Cmd.fetchMemberAttributesFromGroup.value,
+                info={"groupId": group_id},
+            ),
+            key='step.interval', module='group',
             expected={
                 "manager": "GroupManager",
                 "cmd": Cmd.fetchMemberAttributesFromGroup.value,
