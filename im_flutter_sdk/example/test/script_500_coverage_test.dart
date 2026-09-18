@@ -150,6 +150,14 @@ void main() {
       isNot(contains('ChatManager.fetchGroupMessageReadReceipts')),
       reason: 'the Android-crashing case stays masked in the negative path',
     );
+    expect(
+      positive.map((step) => step['id']),
+      containsAll(<String>[
+        'group_receipts_local_mixed',
+        'receipt_group_mixed',
+      ]),
+      reason: 'batches mixing an unresolvable id must stay covered',
+    );
   });
 
   test('positive steps expect success and negative steps expect an error', () {

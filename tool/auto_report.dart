@@ -788,7 +788,7 @@ String _candidateNote(_StepOutcome outcome) {
   }
   if (outcome.step.id == 'receipt_missing' ||
       outcome.step.id == 'group_receipt_missing') {
-    return '- Note: the target contract is `500` `MESSAGE_INVALID`; a wrapper-constructed `1` `GENERAL_ERROR` is a known cross-platform difference handled by the native SDK.';
+    return '- Note: a batch without any resolvable message is expected to return the native `110` `INVALID_PARAM` (`messages is empty`); Flutter does not construct error codes or drop the batch.';
   }
   if (outcome.step.id == 'renew_invalid_token') {
     return '- Note: the target contract is `104` `INVALID_TOKEN`; a successful result means the native empty-token branch does not reject the input.';

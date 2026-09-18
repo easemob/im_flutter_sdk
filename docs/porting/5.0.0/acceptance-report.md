@@ -205,7 +205,7 @@
 5. ✅ Android 群回执分页无 groupId 已关闭：复用 RN 5.0.0 已裁决方案，统一 API 保留 groupId，Android 接收但不下传。
 6. ✅ iOS APNs token 类型 warning 已关闭：用户决定接受基线现状，保留 `NSString *`→`NSData *` 调用，不修复。
 7. ✅ CocoaPods 旧 lock 问题已关闭：按固定序列更新后构建通过，最终 lock 已锁定 5.0.0；RN 侧也已确认 CocoaPods/SPM 5.0.0 发布可用。
-8. ⚠️ API 脚本真实模拟器回归仍有 native 待修项：Android native 在不存在消息的 `fetchGroupMessageReadReceipts` 路径触发 NPE（该用例已在反向脚本中屏蔽，报告固定记录 `fetch-group-receipt-missing-disabled` 候选项）；两个批量回执 API 的缺失消息错误码 Android 1 / iOS 500。Android 临时 wrapper 判空已验证 21/21，但该 Java 修改已按用户决定还原。
+8. ⚠️ API 脚本真实模拟器回归仍有 native 待修项：Android native 在不存在消息的 `fetchGroupMessageReadReceipts` 路径触发 NPE（该用例已在反向脚本中屏蔽，报告固定记录 `fetch-group-receipt-missing-disabled` 候选项）。两个批量回执 API 的缺失消息错误码已按第五批裁决交回 native 决定，双端一致为 110；Android 临时 wrapper 判空已验证 21/21，该 Java 修改已按用户决定还原。
 9. ✅ Android `fetchMembers` 重载差异已关闭：RN 5.0.0 同样保留上层参数、Android wrapper 忽略不下传；Flutter 当前行为一致。
 10. ✅ 设备控制台长日志截断缺陷已修复：超过 512 字节的事件改为 `[APITEST+<index>/<total>]` 有序分片输出并在运行器重组，`summary.md` 增加 `Malformed APITEST lines` 计数；修复后双端运行均为 0 malformed。
 
@@ -220,8 +220,8 @@
 - ✅ guard / contract checker / 旧 API grep / `git diff --check`
 - ✅ Flutter 全局 SPM 开关恢复为 false
 - ✅ 正向/反向脚本拆分与双端对比工具（`dart tool/auto_report.dart --self-test`、`flutter test` 13 通过、example 覆盖测试通过）
-- ✅ auto 模式正向路径（拆分后 18 步）双端 18/18：Android `20260918095219-android-emulator-5554`、iOS `20260918095149-ios-4BEA133B-4B24-430F-96FC-924632C2CF53`；对比 `reports/5.0.0/comparison-positive-20260918095346.md` 步骤不一致 0
-- ⚠️ auto 模式反向路径（拆分后 10 步）：iOS `20260918095246-ios-...` 10/10 命中目标错误码；Android `20260918095311-android-emulator-5554` 8/10（两个批量回执 API 返回 1，目标 500）；对比 `reports/5.0.0/comparison-negative-20260918095346.md` 错误码不一致 2
+- ✅ auto 模式正向路径（20 步，含 mixed 批次用例）双端 20/20：Android `20260918111406-android-emulator-5554`、iOS `20260918111433-ios-4BEA133B-4B24-430F-96FC-924632C2CF53`；对比 `reports/5.0.0/comparison-positive-20260918111551.md` 步骤不一致 0
+- ✅ auto 模式反向路径（10 步）双端 10/10、错误码逐项一致：Android `20260918111505-android-emulator-5554`、iOS `20260918111526-ios-4BEA133B-4B24-430F-96FC-924632C2CF53`；对比 `reports/5.0.0/comparison-negative-20260918111552.md` 步骤不一致 0、错误码不一致 0
 - ⏭️ `fetchGroupMessageReadReceipts` 不存在消息用例（Android native NPE）在反向脚本中屏蔽并持续记录；崩溃与错误码统一由 native 处理，Flutter 不保留兜底
 
 ## 5. RN 对照结论与剩余待用户决策
@@ -251,13 +251,22 @@
 
 复验处理结果（2026-09-18，第四批：用例拆分与双端对比）：
 
-1. ✅ `script_500_apis.json` 按用户决定拆为正/反两条路径：正向 18 步只断言成功，反向 10 步只断言目标契约错误码；`make auto-report` 默认正向，`SCRIPT=` 指定反向；双账号场景仍不实施。
+1. ✅ `script_500_apis.json` 按用户决定拆为正/反两条路径：正向只断言成功（新增 mixed 批次用例后 20 步），反向 10 步只断言错误码；`make auto-report` 默认正向，`SCRIPT=` 指定反向；双账号场景仍不实施。
 2. ✅ 崩溃不再单独建脚本：反向脚本屏蔽 `fetchGroupMessageReadReceipts` 缺失消息用例，报告固定记录 known-crash 候选项；运行中真实崩溃仍按 `crashed/not-run` 记录。
 3. ✅ 新增 `make auto-compare ANDROID=<run-dir> IOS=<run-dir>`：正向对比输出结果语义与响应结构，反向额外输出「期望 / Android / iOS」错误码表；不一致时退出码 1。报告目录与文件名结构保持不变，仅新增 `comparison-<路径>-<时间戳>.md`。
-4. ⚠️ 反向双端错误码差异 2 处：`sendMessageReadReceipts`、`getGroupMessageReadReceipts` 的缺失消息 Android 返回 1、iOS 返回 500，未落实已裁决的 500 目标契约；仍由 native 统一，Flutter 不保留兜底。
+4. ✅（已被第六批结论取代）反向双端错误码差异 2 处曾为 `sendMessageReadReceipts`、`getGroupMessageReadReceipts` 的 Android 1 / iOS 500，均由 wrapper 构造；第六批按用户裁决改为完全由 native 决定，现已双端一致为 110。
 5. ✅ 正向响应结构差异仅剩既有字段：群对象 Android 额外返回顶层 `maxUserCount`/`ext`，消息体 Android 有 `body.translations`、iOS 有 `receiverList`，群回执分页 Android `totalCount: null` / iOS `0`；不作为 5.0.0 新增问题处理，除非用户要求统一。
 6. ✅ Flutter iOS `renewToken("")` 返回 104，与 Android 一致；RN 记录的 iOS 空 token 成功差异在 Flutter 侧未复现。
 7. ✅ 报告工具长日志截断缺陷已修复（`LogStore` 分片 + 运行器重组），四份权威运行均为 0 malformed 行。
+
+复验处理结果（2026-09-18，第五批：回执批次语义交给 native）：
+
+1. ✅ 用户裁决：回执类 API 的结果以 native 为准，Flutter wrapper 不做判空或错误码构造。据此删除 Android 两个回执 API 中构造 `GENERAL_ERROR(1)` 的判空分支、删除 iOS 两个回执 API 中构造 `MESSAGE_INVALID(500)` 的判空分支（iOS `invalidMessagesErrorIfNeeded` 成为死代码）。
+2. ✅ Android `messagesFromIds` 由「任一 id 无法解析就整批返回 null」改为「跳过无法解析的 id、把可解析消息交给 native」，与 iOS `messagesWithIds` 对齐，消除最后一处 Flutter 侧结果干预。
+3. ✅ 复验：全为无法解析 id 的批次双端返回 native 的 `110 INVALID_PARAM (messages is empty)`；混入无法解析 id 的批次双端 success 并处理其余消息。正向 20/20、反向 10/10 双端全通过，两份对比报告步骤不一致与错误码不一致均为 0；详见 `04-verification.md` 第 9 节。
+4. ✅ 上游依据已 grep 实证：Android native（`EMChatManager.java:987`、`:2893`）与 iOS native（`EMChatManager.mm:2123`、`:2180`）都只把可解析消息交给同一套 core，空集合由 core 判为 110。
+5. ✅ Android wrapper 文件换行符已恢复 HEAD 的混合结尾（CRLF 为主 + 118 行裸 LF），`git diff` 仅保留语义改动。
+6. ⏭️ `fetchGroupMessageReadReceipts` 的 Android native NPE 仍按用户决定由 native 修复，反向脚本继续屏蔽并记录候选项。
 
 ## 6. 流程说明
 

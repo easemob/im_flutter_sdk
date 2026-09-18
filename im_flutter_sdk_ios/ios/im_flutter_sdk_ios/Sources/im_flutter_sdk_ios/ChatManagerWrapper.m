@@ -343,11 +343,6 @@
                          result:(FlutterResult)result {
     NSArray<NSString *> *messageIds = param[@"msgIds"];
     NSArray<EMChatMessage *> *messages = [self messagesWithIds:messageIds];
-    EMError *error = [self invalidMessagesErrorIfNeeded:messageIds messages:messages];
-    if (error) {
-        [self wrapperCallBack:result channelName:aChannelName error:error object:nil];
-        return;
-    }
 
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.chatManager sendMessageReadReceipts:messages
@@ -381,11 +376,6 @@
                              result:(FlutterResult)result {
     NSArray<NSString *> *messageIds = param[@"msgIds"];
     NSArray<EMChatMessage *> *messages = [self messagesWithIds:messageIds];
-    EMError *error = [self invalidMessagesErrorIfNeeded:messageIds messages:messages];
-    if (error) {
-        [self wrapperCallBack:result channelName:aChannelName error:error object:nil];
-        return;
-    }
 
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.chatManager getGroupMessageReadReceipts:messages

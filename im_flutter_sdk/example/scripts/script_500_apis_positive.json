@@ -1,5 +1,5 @@
 {
-  "_comment": "5.0.0 正向路径（auto 模式）。只断言成功返回，覆盖 5.0.0 新增/修改 API 的正常路径：未读数统计与清理、消息修改 attributes、群配置创建与更新、4 个新已读回执 API、设备管理 token 鉴权和 renewToken。辅助步骤 sendMessage/destroyGroup 仅用于准备与清理。modifyMessage 按公开契约期待成功；ngi 集群未开通消息编辑服务时会返回 305，由报告标记为环境限制。kickDevice 使用 fetchLoggedInDevices 返回的真实 resource，会踢掉本端，因此与 kickAllDevices 固定放在最后。onDataSyncStart/onDataSyncFinish/onDatabaseOpened、会话 name/avatar 和 onMessageReadReceipts 仍需结合日志人工核对；双账号场景暂不覆盖。",
+  "_comment": "5.0.0 正向路径（auto 模式）。只断言成功返回，覆盖 5.0.0 新增/修改 API 的正常路径：未读数统计与清理、消息修改 attributes、群配置创建与更新、4 个新已读回执 API、设备管理 token 鉴权和 renewToken。辅助步骤 sendMessage/destroyGroup 仅用于准备与清理。modifyMessage 按公开契约期待成功；ngi 集群未开通消息编辑服务时会返回 305，由报告标记为环境限制。kickDevice 使用 fetchLoggedInDevices 返回的真实 resource，会踢掉本端，因此与 kickAllDevices 固定放在最后。group_receipts_local_mixed/receipt_group_mixed 覆盖“批次中混入无法解析的 id”的语义：回执结果以 native 为准，双端 native 忽略无法解析的 id 并处理其余消息，因此这两步断言成功。onDataSyncStart/onDataSyncFinish/onDatabaseOpened、会话 name/avatar 和 onMessageReadReceipts 仍需结合日志人工核对；双账号场景暂不覆盖。",
   "steps": [
     {
       "api": "ChatManager.getUnreadMessageCount",
@@ -123,6 +123,42 @@
       "api": "ChatManager.sendMessageReadReceipts",
       "id": "receipt_group",
       "params": {"messages": ["$step.group_message"]},
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatManager.getGroupMessageReadReceipts",
+      "id": "group_receipts_local_mixed",
+      "params": {
+        "messages": [
+          "$step.group_message",
+          {
+            "msgId": "not-exist-group-msg-id-mixed",
+            "to": "$step.group.groupId",
+            "chatType": 1,
+            "direction": 1,
+            "status": 2,
+            "body": {"type": 0, "content": "unresolvable id in a mixed batch"}
+          }
+        ]
+      },
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatManager.sendMessageReadReceipts",
+      "id": "receipt_group_mixed",
+      "params": {
+        "messages": [
+          "$step.group_message",
+          {
+            "msgId": "not-exist-group-msg-id-mixed-2",
+            "to": "$step.group.groupId",
+            "chatType": 1,
+            "direction": 1,
+            "status": 2,
+            "body": {"type": 0, "content": "unresolvable id in a mixed batch"}
+          }
+        ]
+      },
       "expect": {"success": true}
     },
     {

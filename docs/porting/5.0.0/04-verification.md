@@ -17,11 +17,11 @@
 | 新模型 barrel 导出链 | ✅ 通过 | `flutter analyze`/测试实证 |
 | 四包版本与 podspec 版本 | ✅ 通过 | 全部 5.0.0 |
 | 三处 native 依赖版本 | ✅ 通过 | podspec / Package.swift / build.gradle 全部 5.0.0 |
-| API 脚本回归（Android 15 模拟器） | ❌ 19/21 后崩溃 | 当前提交代码对应运行 `20260918041624-android-emulator-5554`：不存在消息分页触发 native NPE，最后一步未运行；`20260918071416-android-emulator-5554` 的 21/21 仅证明临时 wrapper 判空可规避，相关 Java 修改已按用户决定还原 |
-| API 脚本回归（iOS 18.2 模拟器） | ⚠️ 20/21 通过 | 可见窗口运行 `20260918071144-ios-4BEA133B-4B24-430F-96FC-924632C2CF53`；群回执服务正常且 `totalCount=0`；唯一失败为不存在消息分页返回成功空列表 |
+| API 脚本回归（Android 15 模拟器） | ✅ 通过（第 9 节口径） | 正向 20/20 `20260918111406-android-emulator-5554`、反向 10/10 `20260918111505-android-emulator-5554`；`fetchGroupMessageReadReceipts` 缺失消息用例按用户决定屏蔽（历史崩溃证据 `20260918041624-android-emulator-5554`） |
+| API 脚本回归（iOS 18.2 模拟器） | ✅ 通过（第 9 节口径） | 正向 20/20 `20260918111433-ios-4BEA133B-4B24-430F-96FC-924632C2CF53`、反向 10/10 `20260918111526-ios-4BEA133B-4B24-430F-96FC-924632C2CF53`；双端对比步骤与错误码不一致均为 0 |
 | RN 对照修订：`ChatCursorResult.totalCount` | ✅ 通过 | Dart 模型正数/null 单测通过；iOS wrapper 参考 RN 转发 native callback，真实回归确认零值为 `0`；Android 保持 null |
 | example 环境工具单测 | ✅ 通过 | 8 个测试覆盖公有集群、唯一 ngi 自动选择与旧 ebs 引用迁移、多集群默认值校验、顶层私有化 `msyncServer→imServer`、私有模式只生成 `env.private.dart`、Dart 渲染、本地 HTTP App/User Token 流程与集群激活 |
-| 5.0.0 脚本覆盖测试 | ✅ 通过 | 4 个测试覆盖 `success/errorCode`、依赖失败跳过、conversation 结构化输出、21 个步骤注册与 RN 主链路；example 全量 12 个测试通过 |
+| 5.0.0 脚本覆盖测试 | ✅ 通过 | 5 个测试覆盖 `success/errorCode`、依赖失败跳过、conversation 结构化输出、正/反脚本注册与可配对 API、断言方向（正向含 mixed 批次用例）；example 全量 13 个测试通过 |
 | example `flutter analyze` | ✅ 通过 | `No issues found`，含 env 工具、人工页预填和自动模式默认 env 数据源 |
 | example Android env 链路构建 | ✅ 通过 | `make config` 生成/保留占位环境后，`flutter build apk --debug` 成功生成 `app-debug.apk` |
 
@@ -100,8 +100,9 @@ gate_exit=0
 
 用例结构调整：
 
-- 原 `script_500_apis.json`（21 步混合）拆为 `script_500_apis_positive.json`（18 步，只断言成功）与 `script_500_apis_negative.json`（10 步，只断言目标契约错误码）。
+- 原 `script_500_apis.json`（21 步混合）拆为 `script_500_apis_positive.json`（20 步，只断言成功）与 `script_500_apis_negative.json`（10 步，只断言错误码）。
 - 正向路径覆盖 5.0.0 新增/修改 API 的正常路径：未读数统计与清理、`modifyMessage`（含 attributes）、群配置创建与更新、4 个已读回执 API、设备管理 token 鉴权与 `renewToken`；`sendMessage`/`destroyGroup` 仅用于准备与清理。`kickDevice` 改用 `fetchLoggedInDevices` 返回的真实 resource，会踢掉本端，因此与 `kickAllDevices` 一起固定在正向末尾。
+- 正向另含 `group_receipts_local_mixed` / `receipt_group_mixed` 两条「批次混入无法解析 id」用例：回执结果以 native 为准，双端 native 都忽略无法解析的 id 并处理其余消息，因此断言成功。
 - 反向路径只使用单账号可稳定构造的非法参数、缺失资源与无效 token；无参数的本地查询没有可控错误输入，不为凑数量机械构造反例。双账号场景（`onMessageReadReceipts`、非空群成员信息）按用户决定仍不纳入本轮。
 - `fetchGroupMessageReadReceipts` 的不存在消息场景已确认令 Android native 崩溃，按用户决定不单独出脚本、也不执行：反向脚本屏蔽该步骤，报告固定输出 `fetch-group-receipt-missing-disabled` known-crash 候选项；运行中真实发生的崩溃仍按 `crashed/not-run` 分类写入 `crash.log` 与候选清单。
 
@@ -120,12 +121,12 @@ gate_exit=0
 
 | 路径 | Android | iOS | 结论 |
 | --- | --- | --- | --- |
-| 正向 18 步 | `20260918095219-android-emulator-5554` 18/18 | `20260918095149-ios-4BEA133B-4B24-430F-96FC-924632C2CF53` 18/18 | 双端无崩溃、无 malformed 行；`modifyMessage` 本轮返回成功（消息编辑服务已可用），不再出现 305 |
-| 反向 10 步 | `20260918095311-android-emulator-5554` 8 通过 / 2 失败 | `20260918095246-ios-4BEA133B-4B24-430F-96FC-924632C2CF53` 10/10 | 双端无崩溃；Android 两个批量回执 API 返回 1，与目标契约 500 不符 |
-| 正向双端对比 | `reports/5.0.0/comparison-positive-20260918095346.md` | 步骤不一致 0 | 仅响应结构差异，见下 |
-| 反向双端对比 | `reports/5.0.0/comparison-negative-20260918095346.md` | 错误码不一致 2 | `receipt_missing` / `group_receipt_missing`：Android 1 vs iOS 500 |
+| 正向 20 步 | `20260918111406-android-emulator-5554` 20/20 | `20260918111433-ios-4BEA133B-4B24-430F-96FC-924632C2CF53` 20/20 | 双端无崩溃、无 malformed 行；含 mixed 批次用例；`modifyMessage` 返回成功（消息编辑服务已可用），无 305 |
+| 反向 10 步 | `20260918111505-android-emulator-5554` 10/10 | `20260918111526-ios-4BEA133B-4B24-430F-96FC-924632C2CF53` 10/10 | 双端无崩溃，双端逐步命中同一错误码 |
+| 正向双端对比 | `reports/5.0.0/comparison-positive-20260918111551.md` | 步骤不一致 0 | 仅响应结构差异，见下 |
+| 反向双端对比 | `reports/5.0.0/comparison-negative-20260918111552.md` | 步骤不一致 0、错误码不一致 0 | 双端错误码逐项一致 |
 
-反向错误码一致项：非法群成员 600、不存在群 600、缺失修改消息 500、空会话 ID 110、设备管理三方法无效 token 303、`renewToken("")` 104 —— 双端逐项一致。
+反向错误码（双端一致）：非法群成员 600、不存在群 600、缺失修改消息 500、空会话 ID 110、无任何可解析消息的回执批次 110、设备管理三方法无效 token 303、`renewToken("")` 104。
 
 正向响应结构差异（均为既有字段差异，不是 5.0.0 新增语义）：
 
@@ -133,7 +134,20 @@ gate_exit=0
 - 消息体：Android 返回 `body.translations`，iOS 不返回；iOS 返回 `receiverList`，Android 不返回。
 - 群回执分页：Android `totalCount: null`，iOS `0`。
 
-新增发现（交用户决策）：
+## 9. 第六轮：回执批次语义改为完全由 native 决定（2026-09-18）
 
-- Flutter iOS `renewToken("")` 返回 `104 INVALID_TOKEN`，与 Android 一致；RN 记录的「iOS 空 token 成功」差异在 Flutter 侧未复现。
-- Android 两个批量回执 API 仍返回 `1 GENERAL_ERROR`，未落实已裁决的 500 目标契约，与本文件第 6 节 003/004 结论一致，仍由 native 统一，Flutter 不保留兜底。
+用户裁决：**回执类 API 的结果以 native 为准，Flutter wrapper 不做任何判空或错误码构造**。据此修改：
+
+- Android `ChatManagerWrapper.messagesFromIds`：从「任一 id 无法解析就整批返回 null」改为「跳过无法解析的 id，把可解析的消息交给 native」（与 iOS `messagesWithIds` 一致），删除 `sendMessageReadReceipts` / `getGroupMessageReadReceipts` 中构造 `GENERAL_ERROR(1)` 的判空分支。
+- iOS `ChatManagerWrapper.m`：删除 `sendMessageReadReceipts` / `getGroupMessageReadReceipts` 中构造 `MESSAGE_INVALID(500)` 的判空分支（`invalidMessagesErrorIfNeeded` 因此成为死代码）。
+
+上游依据（grep 实证）：Android native `EMChatManager.sendMessageReadReceipts` / `getGroupMessageReadReceipts`（`EMChatManager.java:987`、`:2893`）对 list 做 `if (messages != null)` 容错；iOS native 用 `for (in aMessages)` 遍历（nil-safe，`EMChatManager.mm:2123`、`:2180`）。两端最终都把「可解析消息集合」交给同一套 core，核心对空集合返回 `110 INVALID_PARAM`（`messages is empty`）。
+
+复验结论：
+
+- 全为无法解析 id 的批次：双端 `110 "messages is empty"`（改动前为 Android 1 / iOS 500，均为 wrapper 构造）。
+- 混入无法解析 id 的批次：双端 success，并返回可解析消息的回执（改动前 Android 整批丢弃返回 1、iOS 500 拒绝整批）；该语义已由正向脚本的 `group_receipts_local_mixed` / `receipt_group_mixed` 钉住。
+- 正向 20 步、反向 10 步双端全通过，两份对比报告步骤不一致与错误码不一致均为 0。
+- 仍未处理：`fetchGroupMessageReadReceipts` 缺失消息在 Android native 触发 NPE，继续按用户决定屏蔽并记录 `fetch-group-receipt-missing-disabled`。
+- 顺带修复 Android wrapper 文件的换行符回退：该文件在 HEAD 中为 CRLF 为主 + 118 行裸 LF 的混合结尾，手工编辑时被整体转成 CRLF，已按字节恢复原始结尾，使 `git diff` 只保留上述语义改动。
+- 文档更新：`acceptance-report.md` 中「Android 1 / iOS 500、由 native 统一」的旧结论已由本节结论取代；第 6 节 003/004 与第 8 节仍保留当时的事实记录。

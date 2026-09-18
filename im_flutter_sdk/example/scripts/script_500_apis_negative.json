@@ -1,5 +1,5 @@
 {
-  "_comment": "5.0.0 反向路径（auto 模式）。只使用单账号可稳定构造的非法参数、缺失资源和无效 token，断言目标契约错误码；无参数本地查询没有可控错误输入，不强造反例。fetchGroupMessageReadReceipts 的缺失消息场景已确认会令 Android native 进程崩溃，按用户决策暂不执行，改由报告固定记录 known-crash 候选项（崩溃遇到即记录并屏蔽，不单独建脚本）。三个缺失消息回执 API 的目标契约为 500 MESSAGE_INVALID：当前 Android wrapper 返回 1 GENERAL_ERROR、iOS 返回 500，属于已知跨端差异，由双端对比报告如实暴露。设备管理使用无效 token，期望 303；renewToken 空 token 期望 104 INVALID_TOKEN。",
+  "_comment": "5.0.0 反向路径（auto 模式）。只使用单账号可稳定构造的非法参数、缺失资源和无效 token；无参数本地查询没有可控错误输入，不强造反例。fetchGroupMessageReadReceipts 的缺失消息场景已确认会令 Android native 进程崩溃，按用户决策暂不执行，改由报告固定记录 known-crash 候选项（崩溃遇到即记录并屏蔽，不单独建脚本）。回执类 API 的结果以 native 为准，Flutter wrapper 不做判空或错误码构造：批次中没有任何可解析消息时双端 native 一致返回 110 INVALID_PARAM（messages is empty），因此这两步断言 110；批次中混入无法解析的 id 时双端 native 都忽略该 id、处理其余消息，见正向脚本的 mixed 用例。设备管理使用无效 token，期望 303；renewToken 空 token 期望 104 INVALID_TOKEN。",
   "steps": [
     {
       "api": "ChatGroupManager.createGroup",
@@ -67,7 +67,7 @@
           }
         ]
       },
-      "expect": {"errorCode": 500}
+      "expect": {"errorCode": 110}
     },
     {
       "api": "ChatManager.getGroupMessageReadReceipts",
@@ -84,7 +84,7 @@
           }
         ]
       },
-      "expect": {"errorCode": 500}
+      "expect": {"errorCode": 110}
     },
     {
       "api": "ChatClient.fetchLoggedInDevices",

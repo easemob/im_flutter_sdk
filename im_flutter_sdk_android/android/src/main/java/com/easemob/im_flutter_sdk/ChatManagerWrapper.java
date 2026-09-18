@@ -276,10 +276,6 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     // 5.0.0
     private void sendMessageReadReceipts(JSONObject params, String channelName, Result result) throws JSONException {
         List<EMMessage> messages = messagesFromIds(params.getJSONArray("msgIds"));
-        if (messages == null) {
-            onError(result, new HyphenateException(EMError.GENERAL_ERROR, "The message was not found"));
-            return;
-        }
         EMClient.getInstance().chatManager().asyncSendMessageReadReceipts(
                 messages, new EMWrapperCallBack(result, channelName, null));
     }
@@ -302,10 +298,6 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     private void getGroupMessageReadReceipts(JSONObject params, String channelName, Result result)
             throws JSONException {
         List<EMMessage> messages = messagesFromIds(params.getJSONArray("msgIds"));
-        if (messages == null) {
-            onError(result, new HyphenateException(EMError.GENERAL_ERROR, "The message was not found"));
-            return;
-        }
         EMClient.getInstance().chatManager().asyncGetGroupMessageReadReceipts(
                 messages, new EMValueWrapperCallBack<List<EMMessageReadReceipt>>(result, channelName) {
                     @Override
@@ -340,10 +332,9 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
         List<EMMessage> messages = new ArrayList<>();
         for (int i = 0; i < messageIds.length(); i++) {
             EMMessage message = EMClient.getInstance().chatManager().getMessage(messageIds.getString(i));
-            if (message == null) {
-                return null;
+            if (message != null) {
+                messages.add(message);
             }
-            messages.add(message);
         }
         return messages;
     }

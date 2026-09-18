@@ -138,11 +138,14 @@ flutter run --dart-define=API_SCRIPT=/sdcard/Android/data/com.example.example/fi
 A full example covering the 4.22 additions lives at `scripts/script_422_apis.json`
 (expects at least two accounts and one group in the generated environment).
 The 5.0.0 login-state scenario is split into two single-account scripts:
-`scripts/script_500_apis_positive.json` (18 steps, each expecting success) and
-`scripts/script_500_apis_negative.json` (10 steps, each expecting a target error
-code). The missing-message case of `fetchGroupMessageReadReceipts` crashes the
-Android native process, so it is not executed: the negative script masks it and
-the runner always records a `fetch-group-receipt-missing-disabled` candidate.
+`scripts/script_500_apis_positive.json` (20 steps, each expecting success,
+including batches that mix an unresolvable message id) and
+`scripts/script_500_apis_negative.json` (10 steps, each expecting an error code).
+Receipt results are decided by native: Flutter builds no error codes and does not
+drop a batch because of an unresolvable id. The missing-message case of
+`fetchGroupMessageReadReceipts` crashes the Android native process, so it is not
+executed: the negative script masks it and the runner always records a
+`fetch-group-receipt-missing-disabled` candidate.
 
 For a traceable local run, execute from the worktree root:
 
