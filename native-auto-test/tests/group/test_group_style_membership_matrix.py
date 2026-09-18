@@ -599,8 +599,11 @@ def test_group_member_invitation_permission_depends_on_style(
                     "actual=result=true、群主收到加入事件且 C 已成为成员"
                 )
             assert_api.assert_error(response, code=603, description="invite is not allowed")
-            assert_no_group_event(device_a, group_id=group_id, event_types=joined_events)
-            assert_no_group_event(device_b, group_id=group_id, event_types=joined_events)
+            # 只针对 C：建群时邀请 B 产生的合法加入事件不算违规
+            assert_no_group_event(device_a, group_id=group_id, event_types=joined_events,
+                                  user_ids=[user_c])
+            assert_no_group_event(device_b, group_id=group_id, event_types=joined_events,
+                                  user_ids=[user_c])
             _fetch_group(
                 device_a,
                 assert_api,
@@ -757,10 +760,12 @@ def test_group_public_open_join_rejects_when_group_is_full(
             info={"groupId": group_id},
         )
         assert_api.assert_error(response, code=604, description="capacity is reached")
+        # 只针对 C：建群时邀请 B 产生的合法加入事件不算违规
         assert_no_group_event(
             device_a,
             group_id=group_id,
             event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+            user_ids=[user_c],
         )
     finally:
         if device_b_is_c:

@@ -480,6 +480,17 @@ else
   FAIL_FILE="$RETRY_DIR/failing.txt"
   : > "$CUMULATIVE"
   : > "$FAIL_FILE"
+  # 重试复用同一套环境（不重启模拟器/不重装 APK/不重启桥接），因此测试账号必须跨尝试存活：
+  # created_test_users 是 session fixture，每个新 pytest 进程都会重新创建、teardown 时删除。
+  # 账号被删掉重建后，设备上仍是旧账号的登录态，服务端不会把推送投给它 —— 重跑会出现
+  # 「好友申请回调收不到」「事件全空」这类与被测功能无关的假失败，也可能因数据全新而假通过。
+  # 这里统一接管账号生命周期：所有尝试都保留账号，全部尝试结束后再删一次。
+  RETRY_OWNS_TEST_USERS=0
+  case "${KEEP_TEST_USERS:-0}" in
+    1|true|True) ;;                       # 调用方已显式要求保留，不接管、不清理
+    *) export KEEP_TEST_USERS=1; RETRY_OWNS_TEST_USERS=1 ;;
+  esac
+  TEST_USER_DATE="$(date +%m%d)"          # 与 tests/conftest.py::_test_usernames 一致
   # Multi-lane child: orchestrator already put `-p scripts.pytest_lane` into PYTEST_ARGS and
   # set the shard filter + result path. Top-level single lane must add the plugin itself.
   LANE_RESULT_TARGET="${IM_FLUTTER_LANE_RESULT:-}"
@@ -516,6 +527,16 @@ else
 
   # Publish final per-nodeid outcomes for the multi-lane summary (last execution wins).
   [[ -n "$LANE_RESULT_TARGET" ]] && cp "$CUMULATIVE" "$LANE_RESULT_TARGET"
+
+  # 账号由重试模式接管时，这里补上 fixture 被抑制的那次删除（每个 lane 只删自己的账号）。
+  if [[ "$RETRY_OWNS_TEST_USERS" == "1" ]]; then
+    echo "==> [lane $LANE] 重试结束，清理本 lane 测试账号 test${TEST_USER_DATE}${TEST_USER_PREFIX}user1..3 ..."
+    for suffix in 1 2 3; do
+      (cd "$native_auto_test" && make delete-user PY="$PY" \
+        USERNAME="test${TEST_USER_DATE}${TEST_USER_PREFIX}user${suffix}" >/dev/null) \
+        || echo "==> [lane $LANE] 账号 test${TEST_USER_DATE}${TEST_USER_PREFIX}user${suffix} 清理失败（不影响用例结果）"
+    done
+  fi
 
   # Final status reflects whether any case still fails after the last attempt.
   if [[ "$failing" -gt 0 ]]; then PYTEST_EXIT=1; else PYTEST_EXIT=0; fi
