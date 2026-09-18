@@ -1,4 +1,50 @@
+import 'dart:convert';
+
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
+/// ChatOptions keys accepted by the example environment and script mode.
+const List<String> chatOptionKeys = <String>[
+  'appKey',
+  'debugMode',
+  'acceptInvitationAlways',
+  'autoAcceptGroupInvitation',
+  'requireDeliveryAck',
+  'deleteMessagesAsExitGroup',
+  'deleteMessagesAsExitChatRoom',
+  'isChatRoomOwnerLeaveAllowed',
+  'sortMessageByServerTime',
+  'usingHttpsOnly',
+  'serverTransfer',
+  'isAutoDownloadThumbnail',
+  'enableDNSConfig',
+  'dnsUrl',
+  'restServer',
+  'imPort',
+  'imServer',
+  'webSocketServer',
+  'webSocketPort',
+  'chatAreaCode',
+  'enableEmptyConversation',
+  'deviceName',
+  'osType',
+  'useReplacedMessageContents',
+  'enableTLS',
+  'messagesReceiveCallbackIncludeSend',
+  'regardImportMessagesAsRead',
+  'workPathCopiable',
+  'enableUserInfo',
+  'dataSyncType',
+  'loginExtension',
+];
+
+Map<String, dynamic> chatOptionsJsonFromEnvironment(
+  Map<String, dynamic> environment,
+) {
+  return <String, dynamic>{
+    for (final key in chatOptionKeys)
+      if (environment.containsKey(key)) key: environment[key],
+  };
+}
 
 /// Shared by init page and auto mode: JSON -> ChatOptions.
 /// appKey is required; other keys fall back to SDK defaults; unknown keys are ignored.
@@ -52,3 +98,11 @@ const String emOptionsTemplate = '''{
   "dataSyncType": 1,
   "debugMode": true
 }''';
+
+String emOptionsTemplateFromEnvironment(Map<String, dynamic> environment) {
+  final options = chatOptionsJsonFromEnvironment(environment);
+  if ((options['appKey'] as String?)?.isNotEmpty != true) {
+    return emOptionsTemplate;
+  }
+  return const JsonEncoder.withIndent('  ').convert(options);
+}

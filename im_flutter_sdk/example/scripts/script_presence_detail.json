@@ -1,15 +1,15 @@
 {
   "steps": [
-    { "api": "EMPresenceManager.subscribe", "id": "sub1",
-      "params": { "members": ["$config.userId01"], "expiry": 2592000 },
+    { "api": "ChatPresenceManager.subscribe", "id": "sub1",
+      "params": { "members": ["$config.accounts.1.id"], "expiry": 2592000 },
       "delayAfterMs": 2000 },
-    { "api": "EMPresenceManager.fetchPresenceStatus", "id": "status1",
-      "params": { "members": ["$config.userId01"] },
+    { "api": "ChatPresenceManager.fetchPresenceStatus", "id": "status1",
+      "params": { "members": ["$config.accounts.1.id"] },
       "delayAfterMs": 1000 },
-    { "api": "EMPresenceManager.publishPresence", "id": "pubNormal",
+    { "api": "ChatPresenceManager.publishPresence", "id": "pubNormal",
       "params": { "desc": "api-test-rerun" },
       "delayAfterMs": 4000 },
-    { "api": "EMPresenceManager.fetchSubscribedMembers", "id": "members0",
+    { "api": "ChatPresenceManager.fetchSubscribedMembers", "id": "members0",
       "params": { "pageNum": 1, "pageSize": 0 } }
   ]
 }

@@ -4,24 +4,26 @@ import 'dart:io';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../env.dart';
 import '../listeners.dart';
 import '../log/log_store.dart';
 import '../options_codec.dart';
 import '../registry/api_entry.dart';
 import '../registry/registry.dart';
 import '../sdk_state.dart';
+import 'step_expectation.dart';
 
 /// AI automation script mode: enter via `--dart-define=API_SCRIPT=<host file absolute path>`.
 /// Automatically executes init -> login -> sequential steps; all results go through the same structured log channel;
 /// no step failure interrupts the flow; outputs script.done on completion; App keeps running.
 ///
-/// Test data is separated from the script: `--dart-define=API_CONFIG=<config.json absolute path>`,
-/// defaults to config.json in the same directory as the script (empty config if not found).
-/// - init: ChatOptions keys in config (see [_optionKeys]) as base, script init overrides;
-/// - login: script login takes priority, otherwise derived from config loginUser + loginToken.
+/// Test data defaults to the generated env.dart. An external JSON file passed with
+/// `--dart-define=API_CONFIG=<absolute path>` overrides the generated environment.
+/// - init: ChatOptions keys in the environment as base, script init overrides;
+/// - login: script login takes priority, otherwise the first environment account is used.
 ///
 /// Parameter string references (replaced only on exact full-string match, preserving original value types):
-/// - `$config.key` / `$config.key.sub`: value from config.json;
+/// - `$config.key` / `$config.key.sub`: value from env.dart or API_CONFIG;
 /// - `$prev` / `$prev.a.b`: data returned by the previous step, dot path for nesting (numeric index for lists);
 /// - `$step.id` / `$step.id.a.b`: data from a step with "id", cross-step reference.
 class AutoMode {
@@ -38,14 +40,6 @@ class AutoMode {
 
   /// Default per-step timeout (can be overridden by step's "timeoutMs").
   static const int defaultStepTimeoutMs = 30000;
-
-  /// ChatOptions keys that init can inherit from config.json.
-  static const List<String> _optionKeys = [
-    'appKey',
-    'debugMode',
-    'enableUserInfo',
-    'dataSyncType',
-  ];
 
   static Object? _dig(Object? v, List<String> path) {
     var cur = v;
@@ -122,26 +116,27 @@ class AutoMode {
   static Future<void> run() async {
     final store = LogStore.instance;
 
-    // config.json: default init/login and $config reference data source for the script.
-    var config = <String, dynamic>{};
-    var effectiveConfigPath = configPath;
-    if (effectiveConfigPath.isEmpty) {
-      final sibling = '${File(scriptPath).parent.path}/config.json';
-      if (File(sibling).existsSync()) effectiveConfigPath = sibling;
-    }
-    if (effectiveConfigPath.isNotEmpty) {
+    // Generated env.dart is the default source for init/login and $config refs.
+    var config = Map<String, dynamic>.from(environment);
+    if (configPath.isNotEmpty) {
       try {
-        config = await _loadJsonFile(effectiveConfigPath);
+        config = await _loadJsonFile(configPath);
         store.log('config.load', {
-          'path': effectiveConfigPath,
+          'path': configPath,
           'keys': config.keys.toList(),
         });
       } catch (e) {
         store.log('config.load', {
-          'path': effectiveConfigPath,
+          'path': configPath,
           'error': errorToJson(e),
         });
       }
+    } else {
+      store.log('config.load', {
+        'source': 'env.dart',
+        'cluster': config['cluster'],
+        'keys': config.keys.toList(),
+      });
     }
 
     Map<String, dynamic> script;
@@ -156,10 +151,7 @@ class AutoMode {
 
     // init: ChatOptions keys from config as base, script init overrides.
     try {
-      final initJson = <String, dynamic>{
-        for (final k in _optionKeys)
-          if (config.containsKey(k)) k: config[k],
-      };
+      final initJson = chatOptionsJsonFromEnvironment(config);
       final sInit = script['init'];
       if (sInit is Map) initJson.addAll(Map<String, dynamic>.from(sInit));
       final resolved = Map<String, dynamic>.from(
@@ -176,7 +168,7 @@ class AutoMode {
       });
     }
 
-    // login: script login takes priority; otherwise derived from config (loginToken over loginPassword).
+    // login: script login takes priority; otherwise use the first generated account.
     // Observed in 4.22: SDK internals not ready after native init method channel returns
     //(login reports "SDK has not initialize" 2ms after init succeeds); auto-retry on failure.
     const maxLoginAttempts = 5;
@@ -187,8 +179,16 @@ class AutoMode {
         if (sLogin is Map) {
           loginJson = Map<String, dynamic>.from(sLogin);
         } else {
-          loginJson = {'userId': config['loginUser'] ?? ''};
-          loginJson['token'] = config['loginToken'] ?? '';
+          final accounts = config['accounts'];
+          final account = accounts is List && accounts.isNotEmpty
+              ? accounts.first
+              : const <String, dynamic>{};
+          loginJson = account is Map
+              ? {
+                  'userId': account['id'] ?? '',
+                  'token': account['token'] ?? '',
+                }
+              : {'userId': '', 'token': ''};
         }
         final resolved = Map<String, dynamic>.from(
           _resolveRefs(loginJson, null, config, const {}) as Map,
@@ -260,7 +260,7 @@ class AutoMode {
         store.log('api.$name', result);
         prev = result['data'];
         if (id != null) stepData[id] = result['data'];
-        if (result['success'] != true) failed++;
+        if (!stepResultMatchesExpectation(result, step['expect'])) failed++;
         final delay = step['delayAfterMs'] as int?;
         if (delay != null && delay > 0) {
           await Future.delayed(Duration(milliseconds: delay));

@@ -7,7 +7,7 @@
 - `01-api-diff.md` 的 69 个 include 项均已推进为 `implemented`。
 - 102 个单端 defer 项标为 `deferred`；未新增仅单端存在的 Flutter 公开 API。
 - native 5.0.0 导致的编译强制适配已按最小范围完成并单列于下文。
-- 5.0.0 基线平版已提交为 `dbab80b3`；2026-09-17 RN 对照修订尚未提交。
+- 5.0.0 基线平版已提交为 `dbab80b3`；RN 对照修订已提交为 `a2f27eff`；本轮 token/env 自动化尚未提交。
 
 ### Dart / public API
 
@@ -17,7 +17,8 @@
 - model：消息字段改为 `isPeerRead/isRead/isNeedReadReceipt/groupReadReceiptCount`；新增 `ChatMessageReadReceipt`、`ChatGroupReadReceipt`；RN 对照后为 `ChatCursorResult` 新增可空 `totalCount`，承接 iOS-only 群消息回执总数。
 - group：删除 `ChatGroupStyle/ChatGroupOptions` 及兼容 typedef；新增 `ChatGroupConfigs/ChatGroupConfigsType` 和 `updateGroupConfigs`。
 - conversation/contact/room：删除旧服务端拉取、逐条标记已读、客户端创建/解散聊天室 API；新增 conversation name/avatar。
-- example：切换 Token 登录，注册 5.0 新 API，新增 `script_500_apis.json` 错误路径脚本。
+- example：切换 Token 登录并注册 5.0 新 API；对照 RN 将 `script_500_apis.json` 从 5 步扩充为 21 步（RN 等价主链路 + 3 个不存在消息错误路径），增加 `success/errorCode` 预期判断与脚本—注册表覆盖测试。
+- example 凭据流：参考 RN 增加多集群 token 自动获取，生成 Git 忽略的 `env.dart`；人工/自动模式共用环境，移除旧 `config.json` 默认链路；ebs/ngi/私有化为平级互斥模式，私有化只由顶层开关与服务器字段启用，并将 `msyncServer` 映射为 Flutter `imServer`。公有配置只有一个集群时自动选择该集群，缺少可选的 ebs 不报错；旧 `defaultCluster` 对应的账号/资源随唯一集群迁移。
 
 ### Android wrapper
 
@@ -48,7 +49,7 @@
 | 检查 | 结果 |
 | --- | --- |
 | `flutter analyze` | ✅ 无问题 |
-| `flutter test` | ✅ 28 个测试通过 |
+| `flutter test` | ✅ 30 个测试通过 |
 | Android example debug APK | ✅ 通过；仅 Java 8/deprecation/unchecked warning |
 | iOS Sources + native 5.0 headers `clang -fsyntax-only` | ✅ 全部通过 |
 | `git diff --check` | ✅ |

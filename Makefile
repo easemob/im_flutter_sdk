@@ -3,15 +3,14 @@
 
 EXAMPLE_DIR := im_flutter_sdk/example
 IOS_DIR     := $(EXAMPLE_DIR)/ios
-CONFIG_SRC  := $(EXAMPLE_DIR)/templates/config.example.json
-CONFIG_DST  := $(EXAMPLE_DIR)/scripts/config.json
+ENV_TOOL    := $(EXAMPLE_DIR)/tool/env_tool.dart
 PODSPEC     := im_flutter_sdk_ios/ios/im_flutter_sdk_ios.podspec
 PODFILE     := $(IOS_DIR)/Podfile
 PODLOCK     := $(IOS_DIR)/Podfile.lock
 
 .DEFAULT_GOAL := help
 
-.PHONY: help setup config deps pods clean
+.PHONY: help setup config env-gettoken env-use deps pods clean
 
 help: ## Show this help
 	@echo "im_flutter_sdk - project setup"
@@ -22,15 +21,15 @@ setup: config deps pods ## Run all setup steps
 	@echo ""
 	@echo "Setup complete. Next: cd $(EXAMPLE_DIR) && flutter run -d <device>"
 
-config: ## Copy config template if not exists
-	@if [ ! -f "$(CONFIG_DST)" ]; then \
-		mkdir -p $(dir $(CONFIG_DST)); \
-		cp "$(CONFIG_SRC)" "$(CONFIG_DST)"; \
-		echo "Created: $(CONFIG_DST)"; \
-		echo "Edit it with your appKey / credentials"; \
-	else \
-		echo "Skip: $(CONFIG_DST) already exists"; \
-	fi
+config: ## Create local config and placeholder env.dart if missing
+	dart run $(ENV_TOOL) ensure
+
+env-gettoken: ## Fetch user tokens for all clusters and activate the default cluster
+	dart run $(ENV_TOOL) gettoken
+
+env-use: ## Activate an existing cluster: make env-use CLUSTER=ebs
+	@test -n "$(CLUSTER)" || (echo "Usage: make env-use CLUSTER=<name>" && exit 2)
+	dart run $(ENV_TOOL) use "$(CLUSTER)"
 
 deps: ## flutter pub get
 	@echo "Running flutter pub get..."

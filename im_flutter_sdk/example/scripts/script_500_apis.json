@@ -1,51 +1,214 @@
 {
+  "_comment": "5.0.0 登录态回归脚本。覆盖未读数统计/清理、消息修改 attributes、群配置创建与更新、4 个新已读回执 API、设备管理 token 鉴权和 renewToken；同时保留 3 个不存在消息的错误路径。onDataSyncStart/onDataSyncFinish/onDatabaseOpened、会话 name/avatar 和 onMessageReadReceipts 仍需结合日志人工核对。ngi 未开通消息编辑服务时 modifyMessage 预期返回 305；kickAllDevices 会踢掉本端，因此固定放在最后。",
   "steps": [
     {
-      "api": "ChatManager.clearAllConversationUnreadMessageCount",
-      "params": {}
+      "api": "ChatManager.getUnreadMessageCount",
+      "id": "unread_before",
+      "params": {},
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatManager.sendMessage",
+      "id": "msg_self",
+      "params": {
+        "to": "$config.accounts.0.id",
+        "chatType": 0,
+        "direction": 0,
+        "status": 0,
+        "body": {"type": 0, "content": "flutter-port-5.0.0 self-chat"}
+      },
+      "delayAfterMs": 1000,
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatManager.modifyMessage",
+      "id": "modify_self",
+      "params": {
+        "messageId": "$step.msg_self.msgId",
+        "content": "flutter-port-5.0.0 self-chat (modified)",
+        "attributes": {"port": "5.0.0"}
+      },
+      "expect": {"errorCode": 305}
     },
     {
       "api": "ChatManager.clearConversationUnreadMessageCount",
-      "params": {"conversationId": "$config.userId01"}
+      "id": "clear_conv",
+      "params": {"conversationId": "$config.accounts.0.id"},
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatManager.clearAllConversationUnreadMessageCount",
+      "id": "clear_all",
+      "params": {},
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatManager.getUnreadMessageCount",
+      "id": "unread_after",
+      "params": {},
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatManager.loadAllConversations",
+      "id": "conversations",
+      "params": {},
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatGroupManager.createGroup",
+      "id": "group",
+      "params": {
+        "groupName": "flutter-port-500",
+        "desc": "5.0.0 porting verification",
+        "configs": {
+          "maxCount": 200,
+          "inviteNeedConfirm": false,
+          "ext": "",
+          "isPublic": false,
+          "joinApprovalRequired": false,
+          "allowInvites": true
+        }
+      },
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatGroupManager.updateGroupConfigs",
+      "id": "group_update",
+      "params": {
+        "groupId": "$step.group.groupId",
+        "types": 34,
+        "configs": {
+          "maxCount": 300,
+          "inviteNeedConfirm": false,
+          "ext": "flutter-port-500",
+          "isPublic": false,
+          "joinApprovalRequired": false,
+          "allowInvites": true
+        }
+      },
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatManager.sendMessage",
+      "id": "group_message",
+      "params": {
+        "to": "$step.group.groupId",
+        "chatType": 1,
+        "direction": 0,
+        "status": 0,
+        "isNeedReadReceipt": true,
+        "body": {"type": 0, "content": "flutter-port-5.0.0 group receipt"}
+      },
+      "delayAfterMs": 1000,
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatManager.getGroupMessageReadReceipts",
+      "id": "group_receipts_local",
+      "params": {"messages": ["$step.group_message"]},
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatManager.fetchGroupMessageReadReceipts",
+      "id": "group_receipts_server",
+      "params": {
+        "messageId": "$step.group_message.msgId",
+        "groupId": "$step.group.groupId",
+        "cursor": "",
+        "pageSize": 20
+      },
+      "expect": {"success": true}
     },
     {
       "api": "ChatManager.sendMessageReadReceipts",
+      "id": "receipt_group",
+      "params": {"messages": ["$step.group_message"]},
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatClient.fetchLoggedInDevices",
+      "id": "devices",
+      "params": {
+        "userId": "$config.accounts.0.id",
+        "token": "$config.accounts.0.token"
+      },
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatClient.renewToken",
+      "id": "renew",
+      "params": {"token": "$config.accounts.0.token"},
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatClient.kickDevice",
+      "id": "kick_bogus",
+      "params": {
+        "userId": "$config.accounts.0.id",
+        "token": "$config.accounts.0.token",
+        "resource": "flutter-ci-nonexistent-resource"
+      },
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatGroupManager.destroyGroup",
+      "id": "group_destroy",
+      "params": {"groupId": "$step.group.groupId"},
+      "expect": {"success": true}
+    },
+    {
+      "api": "ChatManager.sendMessageReadReceipts",
+      "id": "receipt_missing",
       "params": {
         "messages": [
           {
             "msgId": "not-exist-msg-id-500",
-            "to": "$config.userId01",
+            "to": "$config.accounts.0.id",
             "chatType": 0,
             "direction": 1,
             "status": 2,
             "body": {"type": 0, "content": "missing receipt message"}
           }
         ]
-      }
+      },
+      "expect": {"success": false}
     },
     {
       "api": "ChatManager.getGroupMessageReadReceipts",
+      "id": "group_receipt_missing",
       "params": {
         "messages": [
           {
             "msgId": "not-exist-group-msg-id-500",
-            "to": "$config.groupId01",
+            "to": "$config.groups.0.id",
             "chatType": 1,
             "direction": 1,
             "status": 2,
             "body": {"type": 0, "content": "missing group receipt message"}
           }
         ]
-      }
+      },
+      "expect": {"success": false}
     },
     {
       "api": "ChatManager.fetchGroupMessageReadReceipts",
+      "id": "fetch_group_receipt_missing",
       "params": {
         "messageId": "not-exist-group-msg-id-500",
-        "groupId": "$config.groupId01",
+        "groupId": "$config.groups.0.id",
         "cursor": "",
         "pageSize": 20
-      }
+      },
+      "expect": {"success": false}
+    },
+    {
+      "api": "ChatClient.kickAllDevices",
+      "id": "kick_all",
+      "params": {
+        "userId": "$config.accounts.0.id",
+        "token": "$config.accounts.0.token"
+      },
+      "expect": {"success": true}
     }
   ]
 }

@@ -26,6 +26,11 @@ migrate_working_dir/
 /pubspec.lock
 **/doc/api/
 .dart_tool/
+.kotlin/
 build/
-config.json
 output/
+
+# Example local environment and generated credentials.
+/example/config.local.json
+/example/.env/
+/example/lib/env.dart

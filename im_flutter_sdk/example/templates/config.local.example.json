@@ -1,0 +1,40 @@
+{
+  "_comment": "Local secrets and test data. Run `make env-gettoken` after editing. ebs, ngi, and private deployment are mutually exclusive environment modes: clusters stores only public-cluster REST/app credentials; private deployment is enabled only by the top-level enablePrivateConfig and server fields. defaultCluster selects the active public cluster when multiple entries exist; if clusters contains only one entry, that entry is selected automatically and ebs may be omitted. This file is copied to example/config.local.json and is not tracked by Git.",
+  "defaultCluster": "ebs",
+  "tokenTtl": 86400,
+  "clusters": {
+    "ebs": {
+      "restApi": "TODO",
+      "appKey": "TODO(orgName#appName)",
+      "clientId": "TODO",
+      "clientSecret": "TODO",
+      "chatOptions": {}
+    },
+    "ngi": {
+      "restApi": "TODO",
+      "appKey": "TODO(orgName#appName)",
+      "clientId": "TODO",
+      "clientSecret": "TODO",
+      "chatOptions": {}
+    }
+  },
+  "accounts": [
+    {"id": "TODO-user1", "cluster": "ebs"},
+    {"id": "TODO-user2", "cluster": "ebs"}
+  ],
+  "groups": [
+    {"id": "TODO", "owner": "TODO-user1", "name": "TODO", "cluster": "ebs"}
+  ],
+  "rooms": [
+    {"id": "TODO", "name": "TODO", "cluster": "ebs"}
+  ],
+  "chatOptions": {
+    "dataSyncType": 7,
+    "debugMode": true,
+    "enableUserInfo": true
+  },
+  "enablePrivateConfig": false,
+  "webSocketServer": "TODO",
+  "restServer": "TODO",
+  "msyncServer": "TODO"
+}

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
+import '../env.dart';
 import '../listeners.dart';
 import '../log/log_store.dart';
 import '../options_codec.dart';
@@ -19,7 +20,11 @@ class InitPage extends StatefulWidget {
 }
 
 class _InitPageState extends State<InitPage> {
-  final _controller = TextEditingController(text: emOptionsTemplate);
+  final _controller = TextEditingController(
+    text: emOptionsTemplateFromEnvironment(
+      Map<String, dynamic>.from(environment),
+    ),
+  );
   String? _error;
   bool _running = false;
 

@@ -12,10 +12,38 @@ Before first run, from the project root:
 make setup
 ```
 
-This creates `scripts/config.json` from the template (edit it with your appKey
-and credentials), runs `flutter pub get`, and runs `pod install` if the Podfile
-or podspec changed. See the project root README for details on individual
-`make` targets.
+This creates the ignored local files `config.local.json` and `lib/env.dart`
+from templates, runs `flutter pub get`, and runs `pod install` if the Podfile or
+podspec changed. Fill `config.local.json`, then fetch user tokens and generate
+the environment:
+
+```bash
+make env-gettoken
+```
+
+In public mode, all configured clusters are generated under `.env/`. When
+multiple clusters are configured, `defaultCluster` selects the environment
+activated as `lib/env.dart`. With one configured cluster, that cluster is
+selected automatically, so `ebs` is optional; stale resource assignments that
+match the missing old `defaultCluster` follow the only configured cluster.
+Switch to another generated environment without fetching new tokens with:
+
+```bash
+make env-use CLUSTER=ngi
+```
+
+Token acquisition happens on the host: the tool gets an app token with
+`clientId` / `clientSecret`, uses it to get each account's user token, and never
+writes the app token or client secret to `env.dart`. ebs, ngi, and private
+deployment are mutually exclusive environment modes. `clusters` contains only
+public-cluster REST/app credentials; enable private deployment with the
+top-level `enablePrivateConfig` and server fields. In private mode,
+`msyncServer` is mapped to Flutter's `imServer` and `enableDNSConfig` is forced
+to `false`. Do not put private configuration inside a cluster entry.
+Public mode generates every configured public cluster and activates
+`defaultCluster`. Private mode uses the `defaultCluster` credentials/accounts
+to fetch tokens, but generates and activates only `.env/env.private.dart`; switch
+back to a cached private environment with `make env-use CLUSTER=private`.
 
 ## Page flow
 
@@ -55,22 +83,19 @@ Run a whole scenario without touching the UI:
 
 ```
 flutter run --dart-define=API_SCRIPT=/absolute/path/script.json \
-            --dart-define=API_CONFIG=/absolute/path/config.json   # optional
+            --dart-define=API_CONFIG=/absolute/path/config.json   # optional override
 ```
 
-`API_CONFIG` points to a JSON file with test data (appKey, accounts, group/room
-ids). When omitted, a `config.json` next to the script file is used
-automatically. With a config file, `init` and `login` can be left out of the
-script: `init` is derived from the config's ChatOptions keys (`appKey`,
-`dataSyncType`, `debugMode`, `enableUserInfo`) and
-`login` from `loginUser` + `loginToken`. Explicit `init` /
-`login` blocks in the script override the derived values.
+The generated `lib/env.dart` is the default test-data source. `API_CONFIG` can
+point to an external JSON file to override it for one run. `init` is derived
+from the environment's ChatOptions keys and `login` from the first account's
+`id` + `token`; explicit `init` / `login` blocks in the script take precedence.
 
 ```json
 {
   "steps": [
-    { "api": "EMChatManager.sendMessage", "params": { "to": "$config.userId01", "chatType": 0, "direction": 0, "status": 0, "body": {"type": 0, "content": "hi"} } },
-    { "api": "EMChatManager.downloadBigImage", "params": { "message": "$prev" }, "delayAfterMs": 1000 }
+    { "api": "ChatManager.sendMessage", "params": { "to": "$config.accounts.1.id", "chatType": 0, "direction": 0, "status": 0, "body": {"type": 0, "content": "hi"} } },
+    { "api": "ChatManager.downloadBigImage", "params": { "message": "$prev" }, "delayAfterMs": 1000 }
   ]
 }
 ```
@@ -93,6 +118,9 @@ script: `init` is derived from the config's ChatOptions keys (`appKey`,
 - Each step is guarded by a timeout (default 30s, override per step with
   `"timeoutMs"`): a timed-out step logs `{"code": -2}` and the run continues —
   native calls sometimes never call back (e.g. some APIs while logged out).
+- Optional `expect` assertions determine whether a step counts as failed:
+  `{"success": true}`, `{"success": false}`, or `{"errorCode": 305}`. Without
+  `expect`, only a successful API result passes.
 - Steps run sequentially; a failed step is counted and does not abort the run.
 - Ends with `{"source":"script.done","payload":{"total":N,"failed":M}}`; the app
   keeps running so listeners keep logging.
@@ -104,17 +132,16 @@ files into the app-specific external dir first and reference the device paths:
 
 ```
 adb push scripts/script_422_apis.json /sdcard/Android/data/com.example.example/files/
-adb push scripts/config.json          /sdcard/Android/data/com.example.example/files/
-flutter run --dart-define=API_SCRIPT=/sdcard/Android/data/com.example.example/files/script_422_apis.json \
-            --dart-define=API_CONFIG=/sdcard/Android/data/com.example.example/files/config.json
+flutter run --dart-define=API_SCRIPT=/sdcard/Android/data/com.example.example/files/script_422_apis.json
 ```
 
 A full example covering the 4.22 additions lives at `scripts/script_422_apis.json`
-(expects the keys of `scripts/config.json`).
+(expects at least two accounts and one group in the generated environment).
+The 21-step `scripts/script_500_apis.json` covers the 5.0.0 login-state scenario,
+including the RN-equivalent happy paths plus missing-message error paths.
 
 ## Coverage scope
 
-Phase 1 covers the 4.22 additions plus prerequisites (init / login / logout /
-sendMessage) — see `lib/registry/apis/`. Model-level additions (senderInfo, big
-image fields, voice text, contact/group fields) are verified through API outputs
-and event callbacks.
+The registry covers the 4.22 additions and the 5.0.0 APIs needed by the scripted
+regression scenarios. Model-level additions are verified through API outputs and
+event callbacks.

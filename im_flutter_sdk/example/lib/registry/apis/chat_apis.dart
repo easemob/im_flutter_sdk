@@ -7,6 +7,20 @@ import '../api_entry.dart';
 /// ChatManager related entries.
 final chatApis = <ApiEntry>[
   ApiEntry(
+    name: 'ChatManager.getUnreadMessageCount',
+    group: 'ChatManager',
+    description: '获取所有会话未读消息总数。5.0.0 起不统计聊天室和免打扰会话。',
+    paramsTemplate: '{}',
+    invoke: (_) => ChatClient.getInstance.chatManager.getUnreadMessageCount(),
+  ),
+  ApiEntry(
+    name: 'ChatManager.loadAllConversations',
+    group: 'ChatManager',
+    description: '从本地数据库读取全部会话；5.0.0 已移除旧服务端会话拉取接口。',
+    paramsTemplate: '{}',
+    invoke: (_) => ChatClient.getInstance.chatManager.loadAllConversations(),
+  ),
+  ApiEntry(
     name: 'ChatManager.sendMessage',
     group: 'ChatManager',
     description:
@@ -87,6 +101,28 @@ final chatApis = <ApiEntry>[
     },
   ),
   ApiEntry(
+    name: 'ChatManager.modifyMessage',
+    group: 'ChatManager',
+    description: '修改消息正文和/或扩展属性。5.0.0 起支持 attributes 参数。',
+    paramsTemplate: '''{
+  "messageId": "messageId",
+  "content": "modified content",
+  "attributes": {"key": "value"}
+}''',
+    invoke: (p) async {
+      final attributes = p['attributes'];
+      final result = await ChatClient.getInstance.chatManager.modifyMessage(
+        messageId: p['messageId'] as String,
+        msgBody: p['content'] == null
+            ? null
+            : ChatTextMessageBody(content: p['content'] as String),
+        attributes:
+            attributes is Map ? Map<String, dynamic>.from(attributes) : null,
+      );
+      return result.toJson();
+    },
+  ),
+  ApiEntry(
     name: 'ChatManager.sendMessageReadReceipts',
     group: 'ChatManager',
     description: '批量发送同一会话消息的已读回执，最多 50 条。',
@@ -144,6 +180,7 @@ final chatApis = <ApiEntry>[
       return {
         'cursor': result.cursor,
         'list': result.data.map((e) => e.toJson()).toList(),
+        'totalCount': result.totalCount,
       };
     },
   ),

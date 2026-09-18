@@ -5,6 +5,36 @@ import '../api_entry.dart';
 /// GroupManager related entries.
 final groupApis = <ApiEntry>[
   ApiEntry(
+    name: 'ChatGroupManager.createGroup',
+    group: 'GroupManager',
+    description: '创建群组。5.0.0 起使用 configs 描述群组配置。',
+    paramsTemplate: '''{
+  "groupName": "group name",
+  "desc": "group description",
+  "configs": {
+    "maxCount": 200,
+    "inviteNeedConfirm": false,
+    "isPublic": false,
+    "joinApprovalRequired": false,
+    "allowInvites": true
+  }
+}''',
+    invoke: (p) async {
+      final inviteMembers = p['inviteMembers'];
+      final result = await ChatClient.getInstance.groupManager.createGroup(
+        groupName: p['groupName'] as String?,
+        avatarUrl: p['avatarUrl'] as String?,
+        desc: p['desc'] as String?,
+        inviteMembers: inviteMembers is List
+            ? inviteMembers.map((value) => value.toString()).toList()
+            : null,
+        inviteReason: p['inviteReason'] as String?,
+        configs: ChatGroupConfigs.fromJson(p['configs'] as Map),
+      );
+      return result.toJson();
+    },
+  ),
+  ApiEntry(
     name: 'ChatGroupManager.updateGroupConfigs',
     group: 'GroupManager',
     description: '按位掩码更新群组配置。types 使用 ChatGroupConfigsType 常量按位或组合。',
@@ -22,6 +52,14 @@ final groupApis = <ApiEntry>[
       );
       return result.toJson();
     },
+  ),
+  ApiEntry(
+    name: 'ChatGroupManager.destroyGroup',
+    group: 'GroupManager',
+    description: '解散群组，仅群主可调用；用于清理 createGroup 创建的测试群。',
+    paramsTemplate: '{"groupId": "yourGroupId"}',
+    invoke: (p) => ChatClient.getInstance.groupManager
+        .destroyGroup(p['groupId'] as String),
   ),
   ApiEntry(
     name: 'ChatGroupManager.updateGroupNamecard',

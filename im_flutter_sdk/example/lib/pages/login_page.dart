@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
+import '../env.dart';
 import '../log/log_store.dart';
 import '../registry/api_entry.dart';
 import '../sdk_state.dart';
@@ -17,8 +18,12 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _userController = TextEditingController();
-  final _secretController = TextEditingController();
+  final _userController = TextEditingController(
+    text: _defaultAccountValue('id'),
+  );
+  final _secretController = TextEditingController(
+    text: _defaultAccountValue('token'),
+  );
   String? _result;
   bool _running = false;
 
@@ -153,4 +158,12 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+}
+
+String _defaultAccountValue(String key) {
+  final accounts = environment['accounts'];
+  if (accounts is! List || accounts.isEmpty || accounts.first is! Map) {
+    return '';
+  }
+  return (accounts.first as Map)[key]?.toString() ?? '';
 }

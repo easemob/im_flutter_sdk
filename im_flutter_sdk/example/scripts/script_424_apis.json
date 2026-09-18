@@ -4,7 +4,7 @@
       "api": "ChatManager.sendMessage",
       "id": "webhookMsg",
       "params": {
-        "to": "$config.userId01",
+        "to": "$config.accounts.1.id",
         "chatType": 0,
         "direction": 0,
         "status": 0,
@@ -42,7 +42,7 @@
         "option": {
           "keywordList": ["webhookEnv"],
           "msgTypes": [0],
-          "conversationId": "$config.userId01"
+          "conversationId": "$config.accounts.1.id"
         },
         "pageSize": 10,
         "pageNum": 1

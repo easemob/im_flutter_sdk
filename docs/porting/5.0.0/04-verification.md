@@ -17,8 +17,13 @@
 | 新模型 barrel 导出链 | ✅ 通过 | `flutter analyze`/测试实证 |
 | 四包版本与 podspec 版本 | ✅ 通过 | 全部 5.0.0 |
 | 三处 native 依赖版本 | ✅ 通过 | podspec / Package.swift / build.gradle 全部 5.0.0 |
-| API 脚本回归 | ⏭️ 未执行 | 主 checkout 的 config 只有 `loginPassword`，没有 native 5.0 必需的 `loginToken`；未复制无效凭据。已新增 `script_500_apis.json` 供取得 token 后运行 |
+| API 脚本回归（Android 15 模拟器） | ❌ 进程崩溃 | 登录、未读数、消息修改预期 305、群创建/更新、设备管理和前两个错误路径已执行；群回执服务未开通导致群消息发送返回 505；不存在消息调用 `fetchGroupMessageReadReceipts` 时 native 5.0.0 NPE，未输出 `script.done` |
+| API 脚本回归（iOS 18.2 模拟器） | ⚠️ 21 步完成，5 步失败 | `script.done={total:21,failed:5}`；群回执服务未开通导致群消息发送 505 并连带 3 步无输入；不存在消息的分页群回执返回成功空列表，与脚本预期错误不符；其余步骤符合预期，最终 `kickAllDevices` 成功 |
 | RN 对照修订：`ChatCursorResult.totalCount` 单元测试 | ✅ 通过 | iOS 提供字段时保留数值，Android/其他未提供场景保持 null；针对性测试 2 个、主包全量测试 30 个均通过 |
+| example 环境工具单测 | ✅ 通过 | 8 个测试覆盖公有集群、唯一 ngi 自动选择与旧 ebs 引用迁移、多集群默认值校验、顶层私有化 `msyncServer→imServer`、私有模式只生成 `env.private.dart`、Dart 渲染、本地 HTTP App/User Token 流程与集群激活 |
+| 5.0.0 脚本覆盖测试 | ✅ 通过 | 2 个测试覆盖 `success/errorCode` 预期判断、21 个步骤全部可在注册表解析，以及 RN 主链路关键能力集合 |
+| example `flutter analyze` | ✅ 通过 | `No issues found`，含 env 工具、人工页预填和自动模式默认 env 数据源 |
+| example Android env 链路构建 | ✅ 通过 | `make config` 生成/保留占位环境后，`flutter build apk --debug` 成功生成 `app-debug.apk` |
 
 ## 2. 契约逐字抽查
 
@@ -65,4 +70,12 @@ $ echo '{}' | bash /Users/asterisk/Codes/zuoyu_flutter/.agents/skills/platform-s
 gate_exit=0
 ```
 
-阶段四门禁通过；环境限制与跨端语义差异进入验收报告，不作为 SDK 编译缺陷。
+原构建与静态检查门禁通过；后续可选档真实功能回归发现 Android 崩溃缺陷及服务端环境限制，详见下节与验收报告，功能回归不能判定为通过。
+
+## 6. 真实 auto 模式补充验证（2026-09-18）
+
+- Android：`emulator-5554`，Android 15 / API 35；脚本从应用专属外部目录读取。
+- iOS：iPhone 16 Pro simulator，iOS 18.2；脚本从宿主机绝对路径读取。
+- 两端均使用生成的 `env.dart`，成功完成 init、Token 登录，并观察到 `onDatabaseOpened`、`onDataSyncStart`、`onDataSyncFinish`。
+- Android 崩溃栈：`EMChatManager.fetchGroupMessageReadReceipts` 对本地不存在的 messageId 解引用空 `EMMessage#getChatType()`。Flutter Android wrapper 当前未在下传前验证消息存在。
+- iOS 同一输入不崩溃，返回 `{cursor: "", list: [], totalCount: null}`；该行为与 Android 不一致，也与脚本的错误预期不一致。

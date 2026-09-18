@@ -7,7 +7,7 @@
 - 完整源签名与 decision：[`01-api-diff.md`](./01-api-diff.md)
 - 契约：[`02-contract.md`](./02-contract.md)
 - 实现与验证：[`03-implementation.md`](./03-implementation.md)、[`04-verification.md`](./04-verification.md)
-- 代码状态：5.0.0 基线平版已提交为 `dbab80b3`；2026-09-17 RN 对照修订尚未提交。
+- 代码状态：5.0.0 基线平版已提交为 `dbab80b3`，RN 对照修订已提交为 `a2f27eff`；本轮 token/env 自动化尚未提交。
 
 ## 1. 二维对照
 
@@ -205,18 +205,21 @@
 5. ✅ Android 群回执分页无 groupId 已关闭：复用 RN 5.0.0 已裁决方案，统一 API 保留 groupId，Android 接收但不下传。
 6. ✅ iOS APNs token 类型 warning 已关闭：用户决定接受基线现状，保留 `NSString *`→`NSData *` 调用，不修复。
 7. ✅ CocoaPods 旧 lock 问题已关闭：按固定序列更新后构建通过，最终 lock 已锁定 5.0.0；RN 侧也已确认 CocoaPods/SPM 5.0.0 发布可用。
-8. ⏭️ API 脚本未实机运行：现有私有 config 仅有 password，无 5.0 必需的 loginToken；已提供 `script_500_apis.json`。
+8. ⚠️ API 脚本真实模拟器回归已执行但未全通过：iOS 完成 21 步、失败 5 步；Android 在不存在消息的分页群回执错误路径发生 native NPE，未输出 `script.done`。共同环境限制为 ngi 未开通群回执服务（群消息发送返回 505），连带群回执 happy path 无法验证。
 9. ✅ Android `fetchMembers` 重载差异已关闭：RN 5.0.0 同样保留上层参数、Android wrapper 忽略不下传；Flutter 当前行为一致。
 
 ## 4. 验证结论
 
 - ✅ `flutter analyze`
 - ✅ `flutter test`（30，含 `ChatCursorResult.totalCount` 双场景）
+- ✅ example `flutter analyze` 与环境/5.0.0 脚本覆盖测试（10）
 - ✅ Android debug APK
 - ✅ iOS CocoaPods debug/no-codesign
 - ✅ iOS SPM debug/no-codesign
 - ✅ guard / contract checker / 旧 API grep / `git diff --check`
 - ✅ Flutter 全局 SPM 开关恢复为 false
+- ⚠️ iOS auto 模式完成：`script.done={total:21,failed:5}`
+- ❌ Android auto 模式未完成：`fetchGroupMessageReadReceipts` 不存在消息错误路径触发 native NPE
 
 ## 5. RN 对照结论与剩余待用户决策
 
@@ -230,8 +233,14 @@
 用户决策（2026-09-17）：
 
 1. iOS APNs token 基线 warning 不修复，保留现有 `NSString *`→`NSData *` 调用。
-2. 参考 RN 实现多集群 token 自动获取并生成未受 Git 管理的 `env.dart`；完成后补跑 `script_500_apis.json` 双端登录态功能回归。该实现作为后续独立任务处理。
+2. 已参考 RN 实现多集群 token 自动获取、默认/唯一集群激活、Git 忽略的 `env.dart`、私有化配置与脚本结构化引用迁移；`script_500_apis.json` 已由 5 步扩为 21 步并完成双端真实模拟器回归。
+
+新增待处理项（2026-09-18）：
+
+1. Android `fetchGroupMessageReadReceipts` 对不存在 messageId 缺少 wrapper 判空，native 5.0.0 会 NPE 崩溃；建议在 Android wrapper 下传前查本地消息并返回 `MESSAGE_INVALID`，与同文件其他消息 API 的防护一致。
+2. iOS 对同一不存在 messageId 返回成功空列表。需决定脚本按平台接受该结果，还是在 Flutter iOS wrapper 主动统一为错误。
+3. ngi 当前未开通群消息已读回执服务，需开通后重跑 4 个群回执 happy-path 步骤；这是服务端环境限制，不是本轮已确认的 SDK 实现缺陷。
 
 ## 6. 流程说明
 
-按用户“整个任务只在 worktree 中进行”的约束，未修改元工作区 `docs/PROGRESS.md`；本报告即本次人类第二轮统一入口。基线平版已按用户授权提交为 `dbab80b3`，未 push；本轮 RN 对照修订尚未提交。
+按用户“整个任务只在 worktree 中进行”的约束，未修改元工作区 `docs/PROGRESS.md`；本报告即本次人类第二轮统一入口。基线平版与 RN 对照修订已分别提交为 `dbab80b3`、`a2f27eff`，均未 push；本轮 token/env 自动化尚未提交。
