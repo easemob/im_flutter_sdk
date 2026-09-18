@@ -185,9 +185,17 @@ def assert_no_group_event(
     *,
     group_id: str,
     event_types: set[str],
+    user_ids: set[str] | list[str] | None = None,
     timeout: float = None,
 ) -> None:
+    """负向观察：整段窗口内不应出现目标群事件。
+
+    `user_ids` 给定时只针对这些成员判定。前置操作（建群时邀请成员、成员先合法加入等）
+    会产生同类型的合法事件，而 `drain_events` 只是"尽量"清积压、不能作为断言前提，
+    所以不限定成员就可能把前置产生的合法事件误判成违规事件。
+    """
     timeout = timing_seconds('observe.no_membership_event', module='group') if timeout is None else timeout
+    targets = None if user_ids is None else {str(u) for u in user_ids}
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         event = device.receive_message(timeout=min(timing_seconds('poll.receive_probe', module='group'), deadline - time.monotonic()))
@@ -196,8 +204,15 @@ def assert_no_group_event(
         if event.get("eventType") not in event_types:
             continue
         data = event.get("data")
-        if isinstance(data, dict) and data.get("groupId") == group_id:
-            raise AssertionError(f"不应收到群事件: eventTypes={sorted(event_types)}, event={event}")
+        if not isinstance(data, dict) or data.get("groupId") != group_id:
+            continue
+        if targets is not None:
+            involved = data.get("userIds")
+            if not isinstance(involved, (list, tuple)):
+                involved = [data.get("userId")] if data.get("userId") else []
+            if not targets & {str(u) for u in involved}:
+                continue
+        raise AssertionError(f"不应收到群事件: eventTypes={sorted(event_types)}, event={event}")
 
 
 def _assert_any_non_empty_str_field(

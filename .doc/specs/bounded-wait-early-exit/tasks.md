@@ -69,6 +69,9 @@
 - [x] 6.1 `timeout.friend_invitation` 5 → 30（`case_timing_defaults.DEFAULTS`）。理由：新账号首次建好友走 `addContact` → 等 `onContactInvited` 的冷启动路径，5s 上限偏紧；drain 早退移除了 `addContact` 前约 5.4s 的隐式缓冲，使这个既有紧上限暴露。该上限是早退式的（`receive_message` 收到即返回），热路径不付代价。
 - [x] 6.2 `tests/chat/test_chat_crud.py` 给 `evt` 判空：`assert evt is not None, f"未收到 onMessageSuccess：content={content}"`，避免 `evt` 为 None 时崩在 `.get` 报成 `AttributeError`。
 - [x] 6.3 drain 早退的跨用例语义已用单测固定：`test_events_arriving_after_the_idle_window_stay_queued`——晚于空闲窗口到达的事件留在队列里交给后续断言判断，再次 drain 会清掉；需要吞掉迟到事件的调用方应显式给更大的 timeout，而不是依赖 drain 等满。
+- [x] 6.4 设备验证暴露出一处真实的"事件串味"回归并已修复：group 的 `assert_no_group_event` 只按 `groupId` 过滤、不看是谁加入，`test_group_member_invitation_permission_depends_on_style[*-private-owner-normal-member-denied]` 与 `test_group_public_open_join_rejects_when_group_is_full` 因此把**建群时邀请 B 产生的合法 `onMembersJoinedFromGroup`** 判成违规事件。改造前该断言靠 `drain_events` 等满 3s 吞掉这个事件才通过，属于"被阻塞式 drain 掩盖的不精确断言"。修法是给该 helper 增加可选 `user_ids` 过滤（兼容 `userIds` 列表与 `userId` 单值），三个失败点传 `user_ids=[user_c]`；不传时行为不变，其余约 28 个调用点不受影响。设备验证 7 条参数化全通过。
+  - 同文件另有两处同类隐患未改（`已加入后重复加入报 601`、`黑名单加入报 613`）：其负向对象正是产生前置事件的成员，加成员过滤无效，正确修法是在第二次操作前用有界等待确定性消费掉第一次的加入事件。留待其真实失败时处理。
+- [x] 6.5 `--retries` 期间测试账号被反复删除重建（v1.4.0 既有缺陷，与本 spec 的等待改造无关）：`created_test_users` 是 session fixture，每个重试都是新 pytest 进程，teardown 会删号、下一次 setup 再建；而重试"就地复用环境"不重启 App，设备上仍是旧账号的登录态，服务端不会把推送投给它 → 出现「好友申请回调收不到」「事件全空」这类假失败，也可能因数据全新而假通过。修法：`run.sh` 重试分支在尝试 0 之前 `export KEEP_TEST_USERS=1` 接管账号生命周期，全部尝试结束后用 `make delete-user` 按 lane 清理；调用方已显式设置该变量时不接管、不代删。
 
 ## 待用户确认（非本任务改动）
 

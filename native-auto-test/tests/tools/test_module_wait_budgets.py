@@ -126,6 +126,32 @@ def test_group_negative_observation_rejects_late_event(clock):
             group_id="g", event_types={"one"}, timeout=2.5)
 
 
+def test_group_negative_observation_ignores_other_members(clock):
+    """前置操作（建群邀请等）产生的同类型合法事件不得判为违规；窗口仍要等满。"""
+    joined_b = event("onMembersJoinedFromGroup", groupId="g", userIds=["b"])
+    group.assert_no_group_event(Device(clock, [(0.2, joined_b)]), group_id="g",
+                                event_types={"onMembersJoinedFromGroup"},
+                                user_ids=["c"], timeout=2.5)
+    assert clock.now == pytest.approx(2.5)
+
+
+def test_group_negative_observation_still_rejects_target_member(clock):
+    joined_c = event("onMembersJoinedFromGroup", groupId="g", userIds=["c"])
+    with pytest.raises(AssertionError, match="不应收到群事件"):
+        group.assert_no_group_event(Device(clock, [(0.2, joined_c)]), group_id="g",
+                                    event_types={"onMembersJoinedFromGroup"},
+                                    user_ids=["c"], timeout=2.5)
+
+
+def test_group_negative_observation_matches_single_user_field(clock):
+    """onMemberJoinedFromGroup 用 userId 单值字段，同样要能命中。"""
+    joined_c = event("onMemberJoinedFromGroup", groupId="g", userId="c")
+    with pytest.raises(AssertionError, match="不应收到群事件"):
+        group.assert_no_group_event(Device(clock, [(0.2, joined_c)]), group_id="g",
+                                    event_types={"onMemberJoinedFromGroup"},
+                                    user_ids=["c"], timeout=2.5)
+
+
 def invitation(group_id="g", inviter="a"):
     return event("onAutoAcceptInvitationFromGroup", groupId=group_id, inviter=inviter, inviteMessage="")
 
