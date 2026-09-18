@@ -201,11 +201,11 @@
 1. ✅ group configs 默认值差异已关闭：RN 5.0.0 同样固定上层 `inviteNeedConfirm=false`、`ext` 可空；Flutter 保持 `false/null`，不依赖 native 默认。
 2. ✅ Android `EMGroup` 没有 inviteNeedConfirm getter 的差异已关闭：RN 同样在字段缺失时回落上层默认 false；Flutter 当前输出 false，行为一致。
 3. ✅ `dataSyncType` 默认值差异已关闭：复用 RN 5.0.0 已裁决方案，上层不设显式默认，遵循各端 native 默认。
-4. ✅ iOS-only `totalCount` 已关闭：参考 RN 5.0.0，为 `ChatCursorResult` 新增可空 `totalCount`；iOS 返回数值，Android 为 null。
+4. ⚠️ iOS-only `totalCount` 未完全关闭：Dart 模型已新增可空字段，但真实回归发现 Flutter iOS wrapper 丢弃 native callback 的计数，iOS 仍返回 null；RN 5.0.0 wrapper 已正确写入该字段。
 5. ✅ Android 群回执分页无 groupId 已关闭：复用 RN 5.0.0 已裁决方案，统一 API 保留 groupId，Android 接收但不下传。
 6. ✅ iOS APNs token 类型 warning 已关闭：用户决定接受基线现状，保留 `NSString *`→`NSData *` 调用，不修复。
 7. ✅ CocoaPods 旧 lock 问题已关闭：按固定序列更新后构建通过，最终 lock 已锁定 5.0.0；RN 侧也已确认 CocoaPods/SPM 5.0.0 发布可用。
-8. ⚠️ API 脚本真实模拟器回归已执行但未全通过：iOS 完成 21 步、失败 5 步；Android 在不存在消息的分页群回执错误路径发生 native NPE，未输出 `script.done`。共同环境限制为 ngi 未开通群回执服务（群消息发送返回 505），连带群回执 happy path 无法验证。
+8. ⚠️ API 脚本真实模拟器回归已执行但未全通过：iOS receipt-pass 运行 20/21 通过，唯一失败为不存在消息返回空列表；后续同配置 iOS 运行群回执发送再次返回 505，说明服务状态仍需复核。Android 19 步通过后在同一错误路径发生 native NPE，最后一步未运行；该 Android 运行的群回执 happy path 已通过。
 9. ✅ Android `fetchMembers` 重载差异已关闭：RN 5.0.0 同样保留上层参数、Android wrapper 忽略不下传；Flutter 当前行为一致。
 
 ## 4. 验证结论
@@ -218,8 +218,8 @@
 - ✅ iOS SPM debug/no-codesign
 - ✅ guard / contract checker / 旧 API grep / `git diff --check`
 - ✅ Flutter 全局 SPM 开关恢复为 false
-- ⚠️ iOS auto 模式完成：`script.done={total:21,failed:5}`
-- ❌ Android auto 模式未完成：`fetchGroupMessageReadReceipts` 不存在消息错误路径触发 native NPE
+- ⚠️ iOS auto 模式完成：最佳运行 20/21 通过；后续运行复现群回执 505，但无崩溃且均输出 `script.done`
+- ❌ Android auto 模式未完成：19 步通过，`fetchGroupMessageReadReceipts` 不存在消息错误路径触发 native NPE，1 步未运行
 
 ## 5. RN 对照结论与剩余待用户决策
 
@@ -227,7 +227,7 @@
 
 1. group configs 固定上层默认 `inviteNeedConfirm=false`、`ext` 可空。
 2. `dataSyncType=null` 时不设统一默认，遵循双端 native 默认。
-3. `ChatCursorResult.totalCount` 作为可空字段承接 iOS-only 返回值。
+3. `ChatCursorResult.totalCount` 作为可空字段承接 iOS-only 返回值；模型契约已复用，但 Flutter iOS wrapper 的真实转发仍需修复。
 4. 群回执分页统一 API 保留 groupId，Android 接收但不下传。
 
 用户决策（2026-09-17）：
@@ -239,8 +239,11 @@
 
 1. Android `fetchGroupMessageReadReceipts` 对不存在 messageId 缺少 wrapper 判空，native 5.0.0 会 NPE 崩溃；建议在 Android wrapper 下传前查本地消息并返回 `MESSAGE_INVALID`，与同文件其他消息 API 的防护一致。
 2. iOS 对同一不存在 messageId 返回成功空列表。需决定脚本按平台接受该结果，还是在 Flutter iOS wrapper 主动统一为错误。
-3. ngi 当前未开通群消息已读回执服务，需开通后重跑 4 个群回执 happy-path 步骤；这是服务端环境限制，不是本轮已确认的 SDK 实现缺陷。
+3. iOS Flutter wrapper 未转发 native 群回执分页 completion 的 `totalCount`；RN 5.0.0 已通过 `data[@"totalCount"] = @(totalCount)` 处理，建议直接参考修复。
+4. `sendMessageReadReceipts` / `getGroupMessageReadReceipts` 的不存在消息错误码目前 Android 为 1、iOS 为 500；脚本只要求失败，是否统一错误码待用户决策。
+5. example 的 `loadAllConversations` 注册项输出对象字符串，无法检查 5.0.0 新增的 conversation name/avatar；应改为结构化 JSON。
+6. `onMessageReadReceipts` 仍需双账号协作场景验证，单账号脚本无法形成真实的接收方阅读回执。
 
 ## 6. 流程说明
 
-按用户“整个任务只在 worktree 中进行”的约束，未修改元工作区 `docs/PROGRESS.md`；本报告即本次人类第二轮统一入口。基线平版与 RN 对照修订已分别提交为 `dbab80b3`、`a2f27eff`，均未 push；本轮 token/env 自动化尚未提交。
+按用户“整个任务只在 worktree 中进行”的约束，未修改元工作区 `docs/PROGRESS.md`；本报告即本次人类第二轮统一入口。基线平版、RN 对照修订、token/env 与脚本自动化已分别提交为 `dbab80b3`、`a2f27eff`、`6d16ce85`，均未 push；本地运行报告工具与本文档一并提交，原始证据与可协作问题台账位于被 Git 忽略的 `reports/5.0.0/`。

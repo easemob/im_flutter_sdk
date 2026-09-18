@@ -10,7 +10,7 @@ PODLOCK     := $(IOS_DIR)/Podfile.lock
 
 .DEFAULT_GOAL := help
 
-.PHONY: help setup config env-gettoken env-use deps pods clean
+.PHONY: help setup config env-gettoken env-use auto-report deps pods clean
 
 help: ## Show this help
 	@echo "im_flutter_sdk - project setup"
@@ -30,6 +30,10 @@ env-gettoken: ## Fetch user tokens for all clusters and activate the default clu
 env-use: ## Activate an existing cluster: make env-use CLUSTER=ebs
 	@test -n "$(CLUSTER)" || (echo "Usage: make env-use CLUSTER=<name>" && exit 2)
 	dart run $(ENV_TOOL) use "$(CLUSTER)"
+
+auto-report: ## Run 5.0.0 auto mode and write a local report: make auto-report PLATFORM=android [DEVICE=...]
+	@test "$(PLATFORM)" = "android" || test "$(PLATFORM)" = "ios" || (echo "Usage: make auto-report PLATFORM=<android|ios> [DEVICE=<id>]" && exit 2)
+	dart run tool/auto_report.dart --platform "$(PLATFORM)" $(if $(DEVICE),--device "$(DEVICE)",)
 
 deps: ## flutter pub get
 	@echo "Running flutter pub get..."

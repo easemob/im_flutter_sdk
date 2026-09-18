@@ -140,6 +140,20 @@ A full example covering the 4.22 additions lives at `scripts/script_422_apis.jso
 The 21-step `scripts/script_500_apis.json` covers the 5.0.0 login-state scenario,
 including the RN-equivalent happy paths plus missing-message error paths.
 
+For a traceable local run, execute from the worktree root:
+
+```bash
+make auto-report PLATFORM=android DEVICE=emulator-5554
+make auto-report PLATFORM=ios DEVICE=<booted-simulator-udid>
+```
+
+The runner brings the simulator app to the foreground where possible, pushes the
+script to Android's app-specific directory, and writes a timestamped report to
+`reports/5.0.0/<run-id>/`. Reports are Git-ignored because local events may
+contain account or resource identifiers. Each report contains `run.json`,
+`events.jsonl`, `crash.log`, `summary.md`, and `issues.md`; only confirmed,
+sanitized conclusions belong in `docs/porting/`.
+
 ## Coverage scope
 
 The registry covers the 4.22 additions and the 5.0.0 APIs needed by the scripted

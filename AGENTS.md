@@ -34,6 +34,7 @@ make setup   # config + deps + pods
 | `make config` | 创建本地 `example/config.local.json` 与占位 `example/lib/env.dart`（均已 gitignore） |
 | `make env-gettoken` | 按 `config.local.json` 为全部集群自动获取 User Token、生成 `.env/env.<cluster>.dart`，并激活默认/唯一集群 |
 | `make env-use CLUSTER=<name>` | 将已生成的指定集群环境激活为 `example/lib/env.dart` |
+| `make auto-report PLATFORM=<android|ios> [DEVICE=<id>]` | 运行 5.0.0 auto 脚本，显式激活模拟器并在被 Git 忽略的 `reports/5.0.0/<run-id>/` 生成脱敏事件、崩溃证据和问题候选 |
 | `make deps` | `flutter pub get`（example 目录，自动解析 path 依赖） |
 | `make pods` | `pod install`（仅 Podfile/podspec 变更时执行，通过 mtime 检测） |
 | `make clean` | 清理 build 产物和 Pods |
