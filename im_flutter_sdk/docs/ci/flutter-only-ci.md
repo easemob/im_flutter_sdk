@@ -11,12 +11,19 @@ These stages intentionally run without `im-test-hub`.
 3. `Flutter Single Account Nightly` logs in with one protected account and
    validates native client state plus local conversation/message database
    behavior. Android and iOS are serialized so the fixed account is never used
-   concurrently.
+   concurrently. A daily cron is configured, but scheduled runs use the default
+   branch, so until this file lands on `flutter2_stable` the job only runs on
+   manual dispatch.
 
-Stage 3 reads `E2E_APP_KEY`, `E2E_USER_ID`, and `E2E_USER_PASSWORD` only from
-the protected `flutter-single-account` GitHub Environment. The workflow writes
-them to a mode-0600 temporary dart-define file, never uploads that file, and
-deletes it in an `always()` step.
+Stage 3 reads `E2E_APP_KEY`, `E2E_USER_ID`, `E2E_REST_API`, `E2E_CLIENT_ID`, and
+`E2E_CLIENT_SECRET` only from the protected `flutter-single-account` GitHub
+Environment. 5.0.0 has no password login, and user tokens expire in ~24h, so a
+token cannot be stored as a secret: each job exchanges the app credentials for a
+fresh one (`tool/ci/fetch_e2e_user_token.sh`) before the emulator/simulator
+boots, which fails fast on auth problems and keeps the client secret off the
+device. The job masks the token, writes the app key, user id, and token to a
+mode-0600 temporary dart-define file, never uploads that file, and deletes it in
+an `always()` step.
 
 Cross-device message delivery, ACK/callback correlation, offline replay,
 contacts, groups, chat rooms, reactions, threads, and push are excluded here.

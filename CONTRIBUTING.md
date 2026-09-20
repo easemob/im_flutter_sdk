@@ -102,7 +102,9 @@ CI 上的设备任务都有等价的本地脚本，脚本会先比对本地 Flut
 |--------|------|------|--------------|
 | `.github/workflows/ci.yml` | PR、push 到 `flutter2_stable` / `4.*` / `5.*`、手工 | 质量门禁 + Android debug 编译 + iOS 模拟器编译 | `bash tool/ci/run_quality.sh` |
 | `.github/workflows/device-smoke.yml` | 每天定时 + 手工 | Android / iOS 免登录 Presence 冒烟（`integration_test/no_login_presence_test.dart`，用测试内置的公开 demo appKey，无需凭据） | `bash tool/ci/smoke_local.sh android\|ios` |
-| `.github/workflows/single-account-nightly.yml` | 仅手工 | Android / iOS 单账号登录 + 本地数据库（`integration_test/single_account_local_test.dart`），需要 `E2E_APP_KEY`、`E2E_USER_ID`、`E2E_USER_PASSWORD` | `E2E_APP_KEY=... E2E_USER_ID=... E2E_USER_PASSWORD=... bash tool/ci/nightly_local.sh android\|ios` |
+| `.github/workflows/single-account-nightly.yml` | 每天定时 + 手工 | Android / iOS 单账号登录 + 本地数据库（`integration_test/single_account_local_test.dart`），需要 `E2E_APP_KEY`、`E2E_USER_ID`、`E2E_REST_API`、`E2E_CLIENT_ID`、`E2E_CLIENT_SECRET`；user token 每次运行由 `tool/ci/fetch_e2e_user_token.sh` 现换（5.0.0 已无密码登录，token 约 24h 过期，不能存 secret） | `E2E_APP_KEY=... E2E_USER_ID=... E2E_REST_API=... E2E_CLIENT_ID=... E2E_CLIENT_SECRET=... bash tool/ci/nightly_local.sh android\|ios` |
+
+> `single-account-nightly.yml` 里的 cron（`37 18 * * *`，比 RN 的 nightly 早一小时）只在**默认分支**（`flutter2_stable`）上生效——GitHub 的定时任务是"跑默认分支最新提交、用默认分支的工作流文件"，所以在该文件落地默认分支之前，5.0.0 分支上的定时触发不会发生，只能手工 dispatch。
 
 Android 侧需要已启动的模拟器（脚本固定连 `emulator-5554`）；iOS 侧由 `run_ios_simulator_test.sh` 自行拉起模拟器，日志写到 `artifacts/*.log`（已 gitignore）。
 
