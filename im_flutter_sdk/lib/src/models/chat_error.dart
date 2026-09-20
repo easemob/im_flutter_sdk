@@ -30,7 +30,7 @@ class ChatError {
     return ChatError(map['code'], map['description']);
   }
 
-  static hasErrorFromResult(Map map) {
+  static void hasErrorFromResult(Map map) {
     if (map['error'] == null) {
       return;
     } else {

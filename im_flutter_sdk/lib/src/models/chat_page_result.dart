@@ -42,14 +42,14 @@ class ChatPageResult<T> {
   /// ~chinese
   /// 当前页面上的数据条数。若 `PageCount` 小于传入的每页要获取的数量，表示当前是最后一页。
   /// ~end
-  get pageCount => _pageCount;
+  int? get pageCount => _pageCount;
 
   /// ~english
   /// The result data.
   /// ~end
   ///
   /// ~chinese
-  /// 获取 <T> 泛型数据。
+  /// 获取 `List<T>` 泛型数据。
   /// ~end
   List<T> get data => _data;
 }

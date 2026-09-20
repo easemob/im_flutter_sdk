@@ -17,7 +17,7 @@ Future<void> main() async {
 /// cannot find Overlay with its own context directly).
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
-/// Top status bar: not initialized / initialized, not logged in / logged in: <userId>; no hard gating.
+/// Top status bar: not initialized / initialized, not logged in / logged in: `<userId>`; no hard gating.
 class StatusBar extends StatelessWidget {
   const StatusBar({super.key});
 

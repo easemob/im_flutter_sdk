@@ -7,7 +7,7 @@ import '../log/log_store.dart';
 import '../registry/api_entry.dart';
 
 /// API call page: JSON params -> call real API -> result JSON display (scrollable, one-click copy),
-/// same result also written to log (source is api.<API fully qualified name>).
+/// same result also written to log (source is `api.<API fully qualified name>`).
 class ApiCallPage extends StatefulWidget {
   final ApiEntry entry;
   const ApiCallPage({super.key, required this.entry});
