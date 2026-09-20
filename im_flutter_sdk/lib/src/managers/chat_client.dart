@@ -182,9 +182,13 @@ class ChatClient {
   }
 
   Future<void> _onMultiDeviceGroupEvent(Map map) async {
-    ChatMultiDevicesEvent event = convertIntToChatMultiDevicesEvent(
-      map['event'],
-    )!;
+    // A native event value the Dart table does not know must not crash the
+    // handler: an unmapped value used to abort integration tests on iOS while
+    // they were still loading. ChatMultiDevicesEvent.UnKnow mirrors the native
+    // "unknown event" value (-1).
+    ChatMultiDevicesEvent event =
+        convertIntToChatMultiDevicesEvent(map['event']) ??
+            ChatMultiDevicesEvent.UnKnow;
     String target = map['target'];
     List<String>? users = map.getList("userIds");
 
@@ -194,9 +198,9 @@ class ChatClient {
   }
 
   Future<void> _onMultiDeviceContactEvent(Map map) async {
-    ChatMultiDevicesEvent event = convertIntToChatMultiDevicesEvent(
-      map['event'],
-    )!;
+    ChatMultiDevicesEvent event =
+        convertIntToChatMultiDevicesEvent(map['event']) ??
+            ChatMultiDevicesEvent.UnKnow;
     String target = map['target'];
     String? ext = map['ext'];
 
@@ -206,9 +210,9 @@ class ChatClient {
   }
 
   Future<void> _onMultiDeviceThreadEvent(Map map) async {
-    ChatMultiDevicesEvent event = convertIntToChatMultiDevicesEvent(
-      map['event'],
-    )!;
+    ChatMultiDevicesEvent event =
+        convertIntToChatMultiDevicesEvent(map['event']) ??
+            ChatMultiDevicesEvent.UnKnow;
     String target = map['target'] ?? '';
     List<String> users = map.getList("userIds") ?? [];
 
@@ -226,9 +230,9 @@ class ChatClient {
   }
 
   Future<void> _onMultiDevicesConversationEvent(Map map) async {
-    ChatMultiDevicesEvent event = convertIntToChatMultiDevicesEvent(
-      map['event'],
-    )!;
+    ChatMultiDevicesEvent event =
+        convertIntToChatMultiDevicesEvent(map['event']) ??
+            ChatMultiDevicesEvent.UnKnow;
     String convId = map['convId'];
     ChatConversationType type = ChatConversationType.values[map['convType']];
     for (var handler in _multiDeviceHandlers.values) {

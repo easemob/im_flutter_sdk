@@ -1,3 +1,4 @@
+import '../tools/chat_log.dart';
 import 'inner_headers.dart';
 
 ChatMultiDevicesEvent? convertIntToChatMultiDevicesEvent(int? i) {
@@ -54,6 +55,16 @@ ChatMultiDevicesEvent? convertIntToChatMultiDevicesEvent(int? i) {
       return ChatMultiDevicesEvent.GROUP_ADD_MUTE;
     case 29:
       return ChatMultiDevicesEvent.GROUP_REMOVE_MUTE;
+    case 30:
+      return ChatMultiDevicesEvent.GROUP_ADD_USER_ALLOW_LIST;
+    case 31:
+      return ChatMultiDevicesEvent.GROUP_REMOVE_USER_ALLOW_LIST;
+    case 32:
+      return ChatMultiDevicesEvent.GROUP_ALL_BAN;
+    case 33:
+      return ChatMultiDevicesEvent.GROUP_REMOVE_ALL_BAN;
+    case 34:
+      return ChatMultiDevicesEvent.GROUP_UPDATE;
     case 40:
       return ChatMultiDevicesEvent.CHAT_THREAD_CREATE;
     case 41:
@@ -63,9 +74,9 @@ ChatMultiDevicesEvent? convertIntToChatMultiDevicesEvent(int? i) {
     case 43:
       return ChatMultiDevicesEvent.CHAT_THREAD_LEAVE;
     case 44:
-      return ChatMultiDevicesEvent.CHAT_THREAD_KICK;
-    case 45:
       return ChatMultiDevicesEvent.CHAT_THREAD_UPDATE;
+    case 45:
+      return ChatMultiDevicesEvent.CHAT_THREAD_KICK;
     case 52:
       return ChatMultiDevicesEvent.GROUP_MEMBER_ATTRIBUTES_CHANGED;
     case 60:
@@ -84,5 +95,9 @@ ChatMultiDevicesEvent? convertIntToChatMultiDevicesEvent(int? i) {
       return ChatMultiDevicesEvent
           .ALL_CONVERSATION_UNREAD_MESSAGE_COUNT_CLEARED;
   }
+  // Native values without a Dart member land here. Callers fall back to
+  // ChatMultiDevicesEvent.UnKnow; logging keeps the next unknown value
+  // diagnosable instead of silent.
+  ChatLog.e('convertIntToChatMultiDevicesEvent: unsupported value: $i');
   return null;
 }

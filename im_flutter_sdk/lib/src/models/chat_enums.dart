@@ -679,6 +679,19 @@ enum ChatMultiDevicesEvent {
   GROUP_REMOVE_ALL_BAN,
 
   /// ~english
+  /// If user A updates the chat group information on Device A1, this event is triggered on Device A2.
+  ///
+  /// Only the iOS SDK reports this event (native value 34, `EMMultiDevicesEventGroupUpdate`); the Android SDK reports group metadata changes with native value 52 instead, which is named `GROUP_METADATA_CHANGED` there.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 用户 A 在设备 A1 上更新了群组信息，则设备 A2 上会收到该事件。
+  ///
+  /// 仅 iOS SDK 上报该事件（native 值 34，`EMMultiDevicesEventGroupUpdate`）；Android SDK 的群组信息变更使用 native 值 52，在 Android 侧命名为 `GROUP_METADATA_CHANGED`。
+  /// ~end
+  GROUP_UPDATE,
+
+  /// ~english
   /// If the group function is disabled for user A on Device A1, this event is triggered on Device A2.
   /// ~end
   ///

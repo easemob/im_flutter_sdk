@@ -4,6 +4,8 @@
 - 新增登录后数据同步配置、数据同步事件和数据库打开事件；
 - 重构消息已读回执：新增批量发送/查询回执与清除会话未读数 API，统一单聊和群聊回执模型；
 - `ChatCursorResult` 新增可空 `totalCount`，用于承接 iOS 返回的群消息已读回执总数；
+- `ChatMultiDevicesEvent` 新增 `GROUP_UPDATE`（iOS 群组信息更新事件）；
+- 修复多设备事件映射：补齐群组白名单与全员禁言事件（native 30-33），修正子区 update/kick 颠倒（native 44/45），未知事件值不再导致事件处理抛异常；
 - 重构群组配置模型，新增 `ChatGroupConfigs` 和 `updateGroupConfigs`；
 - 移除会话、好友、已加入群组和公开群组的旧服务端拉取 API，改用自动同步后的本地数据；
 - 移除客户端举报消息及创建、解散聊天室 API；
