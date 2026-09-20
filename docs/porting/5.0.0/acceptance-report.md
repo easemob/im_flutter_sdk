@@ -208,6 +208,7 @@
 8. ⚠️ API 脚本真实模拟器回归仍有 native 待修项：Android native 在不存在消息的 `fetchGroupMessageReadReceipts` 路径触发 NPE（该用例已在反向脚本中屏蔽，报告固定记录 `fetch-group-receipt-missing-disabled` 候选项）。两个批量回执 API 的缺失消息错误码已按第五批裁决交回 native 决定，双端一致为 110；Android 临时 wrapper 判空已验证 21/21，该 Java 修改已按用户决定还原。
 9. ✅ Android `fetchMembers` 重载差异已关闭：RN 5.0.0 同样保留上层参数、Android wrapper 忽略不下传；Flutter 当前行为一致。
 10. ✅ 设备控制台长日志截断缺陷已修复：超过 512 字节的事件改为 `[APITEST+<index>/<total>]` 有序分片输出并在运行器重组，`summary.md` 增加 `Malformed APITEST lines` 计数；修复后双端运行均为 0 malformed。
+11. ⚠️ `currentUserId` 跨端语义差异待 native 统一（先记录，Flutter 不修改）：Android `EMClient.getCurrentUser()` 返回本地持久化的上次登录用户（SharedPreferences `easemob.chat.loginuser`，per-App 且不区分 appkey），未登录时也可能非空；iOS `currentUsername` 未登录时为 nil。调用方不能用它判断「是否已登录」。同轮修复了本地 smoke 的稳定性（跑前清理 App 数据）与 Android auto 脚本下发（改用 `run-as` 写入内部目录），详见 `04-verification.md` 第 10 节。
 
 ## 4. 验证结论
 
@@ -267,6 +268,12 @@
 4. ✅ 上游依据已 grep 实证：Android native（`EMChatManager.java:987`、`:2893`）与 iOS native（`EMChatManager.mm:2123`、`:2180`）都只把可解析消息交给同一套 core，空集合由 core 判为 110。
 5. ✅ Android wrapper 文件换行符已恢复 HEAD 的混合结尾（CRLF 为主 + 118 行裸 LF），`git diff` 仅保留语义改动。
 6. ⏭️ `fetchGroupMessageReadReceipts` 的 Android native NPE 仍按用户决定由 native 修复，反向脚本继续屏蔽并记录候选项。
+
+复验处理结果（2026-09-20，第七批：本地 smoke 稳定性与 auto 脚本下发）：
+
+1. ✅ 本地 no-login smoke 失败定位为设备残留登录态：`flutter test` 对已安装 App 覆盖安装（保留 `/data/data`）且只在跑完后卸载，故任何一次「登录后未登出」的运行都会污染下一次本地 smoke；CI 全新设备不受影响。两个 wrapper 增加跑前清理（`adb uninstall` / `simctl uninstall`，用 `|| true` 兜底），并实测「故意留登录态 → 稳定失败 → 加清理后在脏设备上通过」以及「App 不存在时 wrapper 不中断」。
+2. ✅ Android auto 脚本下发由 `/sdcard/Android/data/...`（目录由 adb 创建时属 `shell:ext_data_rw`、0770，App 读不到）改为 `run-as` 写入 App 内部目录，并校验写入字节数；`flutter run` 重装后脚本仍可用，`example/README.md` 的手工示例同步更新。
+3. ⚠️ `currentUserId` 跨端语义差异按用户决定先记录、不在 Flutter 侧修改，待 iOS/Android native 统一；`ChatClient.currentUserId` 缺公开 API 双语注释列为后续待办。
 
 ## 6. 流程说明
 

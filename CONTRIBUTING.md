@@ -33,7 +33,7 @@ Federated Plugin 架构，四个包通过本地 `path:` 依赖关联：
 | `make env-use CLUSTER=<name>` | 把已生成的某个集群环境激活为 `example/lib/env.dart`，不重新取 token |
 | `make deps` | 在 example 目录执行 `flutter pub get`，解析 4 个子包的 path 依赖 |
 | `make pods` | 先 `deps`，再按 mtime 判断 Podfile/podspec 是否比 Podfile.lock 新，需要时才在 `example/ios` 执行 `pod install` |
-| `make auto-report PLATFORM=<android\|ios> [DEVICE=<id>] [SCRIPT=<json>]` | 跑 5.0.0 auto 脚本，并把可追溯报告写到 `reports/5.0.0/<run-id>/` |
+| `make auto-report PLATFORM=<android\|ios> [DEVICE=<id>] [SCRIPT=<json>]` | 跑 5.0.0 auto 脚本，并把可追溯报告写到 `reports/5.0.0/<run-id>/`（Android 会先确保 debug 包已安装，再以 App uid 把脚本写入 App 内部目录） |
 | `make auto-compare ANDROID=<run-dir> IOS=<run-dir>` | 对比同一条路径的 Android/iOS 两次运行，步骤不一致时退出码非 0 |
 | `make clean` | 清理 example 的 build 产物与 iOS Pods、Podfile.lock |
 | `make help` | 查看所有命令 |
@@ -105,6 +105,8 @@ CI 上的设备任务都有等价的本地脚本，脚本会先比对本地 Flut
 | `.github/workflows/single-account-nightly.yml` | 仅手工 | Android / iOS 单账号登录 + 本地数据库（`integration_test/single_account_local_test.dart`），需要 `E2E_APP_KEY`、`E2E_USER_ID`、`E2E_USER_PASSWORD` | `E2E_APP_KEY=... E2E_USER_ID=... E2E_USER_PASSWORD=... bash tool/ci/nightly_local.sh android\|ios` |
 
 Android 侧需要已启动的模拟器（脚本固定连 `emulator-5554`）；iOS 侧由 `run_ios_simulator_test.sh` 自行拉起模拟器，日志写到 `artifacts/*.log`（已 gitignore）。
+
+两个 `run_*_test.sh` 会在运行前清除设备上该 App 的数据（`adb uninstall` / `xcrun simctl uninstall`，App 不存在时忽略）。原因：`flutter test` 对已安装 App 是覆盖安装、且只在运行结束后卸载，本地设备上残留的登录态会让依赖冷启动的用例（如 `FL-APP-001`）失败；CI 每次都是全新设备，不受影响。
 
 ## 编码规范
 

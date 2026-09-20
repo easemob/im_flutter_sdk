@@ -89,7 +89,7 @@ gate_exit=0
 
 - 入口：`make auto-report PLATFORM=<android|ios> [DEVICE=<id>] [SCRIPT=<json>]`（默认执行正向脚本）与 `make auto-compare ANDROID=<run-dir> IOS=<run-dir>`。
 - 运行器显式激活 iOS Simulator；Android 通过 adb 唤醒并尽力将非 headless qemu 窗口置前；若 AVD 以 `-no-window` 启动，会明确提示其没有可激活窗口。
-- Android 自动把脚本推送到 `/sdcard/Android/data/com.example.example/files/`；iOS 使用宿主机绝对路径。
+- Android 通过 `adb shell run-as` 把脚本写入 App 内部目录 `/data/data/com.example.example/files/`（`/sdcard/Android/data/...` 在目录由 adb 创建时属 `shell:ext_data_rw`、权限 0770，App 读不到，见第 10.3 节）；iOS 使用宿主机绝对路径。
 - 只保存 `[APITEST]` 结构化事件与崩溃关键行，写入 Git 忽略的 `reports/5.0.0/<run-id>/`；不保存完整 native stdout，避免密钥/Token/原始网络日志进入报告。
 - 每次运行生成 `run.json`、`events.jsonl`、`crash.log`、`steps.json`、`summary.md`、`issues.md`；逐步结果按 `expect` 分类为 `passed/failed/blocked/crashed/not-run`。
 - app 端从参数中的 `$step.<id>` 自动识别依赖；生产步骤失败后，依赖步骤输出 `skipped=true/blockedBy=<id>`，不调用 SDK，报告将其归类为 `blocked` 而不是新问题。
@@ -151,3 +151,39 @@ gate_exit=0
 - 仍未处理：`fetchGroupMessageReadReceipts` 缺失消息在 Android native 触发 NPE，继续按用户决定屏蔽并记录 `fetch-group-receipt-missing-disabled`。
 - 顺带修复 Android wrapper 文件的换行符回退：该文件在 HEAD 中为 CRLF 为主 + 118 行裸 LF 的混合结尾，手工编辑时被整体转成 CRLF，已按字节恢复原始结尾，使 `git diff` 只保留上述语义改动。
 - 文档更新：`acceptance-report.md` 中「Android 1 / iOS 500、由 native 统一」的旧结论已由本节结论取代；第 6 节 003/004 与第 8 节仍保留当时的事实记录。
+
+## 10. 第七轮：本地 smoke 稳定性、currentUserId 跨端差异、auto 脚本下发（2026-09-20）
+
+### 10.1 本地 no-login smoke 失败原因与修复
+
+现象：`bash tool/ci/smoke_local.sh android` 在 `FL-APP-001 initializes the native SDK while logged out` 失败（`Expected: null` / `Actual: 'zuoyu01'`，退出码 1），同一命令的 iOS 分支通过。
+
+链路与证据（`chat_client.dart:566` 的 `init()` 会调用 `getCurrentUserId()` → native `getCurrentUser`）：
+
+- Android：`ClientWrapper.java:216` → `EMClient.getInstance().getCurrentUser()`，读本地持久化的上次登录用户（SharedPreferences `easemob.chat.loginuser`，per-App，**不区分 appkey**）。受控实验里登录用的是 env 的 `easemob-demo#zuoyu`、smoke 用的是 `easemob#easeim`，仍读到 `zuoyu01`。
+- iOS：`ClientWrapper.m:379` → `EMClient.sharedClient.currentUsername`，未恢复该值。受控实验（用 env 账号真实登录 `zuoyu01` 后强杀进程再跑 smoke）仍通过；同 appkey 场景未验证，故记为「已观察到的差异」而非「iOS 免疫保证」。
+- 未登录的判据：同一次失败运行中其余 5 个 presence 用例全部以 `201` 通过，说明没有会话，只是残留了身份记录。
+- 数据为何还在：`flutter test` 对已安装 App 是覆盖安装（保留 `/data/data`），且只在运行结束后卸载（`--uninstall` 默认 true）。因此任何一次「登录后未登出」的运行（auto-report / nightly / 手工 `flutter run`）都会污染下一次本地 smoke；CI 每次都是全新设备，不受影响。
+
+修复（用户裁决：跑任务前清理，保证测试稳定性）：
+
+- `tool/ci/run_android_emulator_test.sh`：`flutter test` 之前 `adb -s emulator-5554 uninstall com.example.example`（失败忽略）。
+- `tool/ci/run_ios_simulator_test.sh`：每次 attempt 之前 `xcrun simctl uninstall <udid> com.example.example`（失败忽略）；重试会重启模拟器但保留 App 数据，故每次都要清。
+- 两个脚本都把包名提为顶部常量并注明来源（`build.gradle.kts` 的 `applicationId` / `project.pbxproj` 的 `PRODUCT_BUNDLE_IDENTIFIER`）。App 不存在时 `adb uninstall` 返回非 0、`xcrun simctl uninstall` 返回 0，两者都用 `|| true` 兜底，因此 `device-smoke.yml` 与 `single-account-nightly.yml` 在新设备上的现有调用不受影响（已按 App 不存在的场景本地实测）。
+- `no_login_presence_test.dart` 的 `FL-APP-001` 增加注释，说明该断言依赖冷启动前提。
+
+复验：故意用 auto 模式登录 `zuoyu01` 后强杀 App → smoke 稳定失败（`Actual: 'zuoyu01'`）；紧随其后重跑 → 全绿（上一次结束时的卸载已清数据）。加入清理后双端 smoke 均通过（Android `exit 0`、iOS `All tests passed`）。
+
+### 10.2 currentUserId 跨端语义差异（先记录，不在 Flutter 侧修改）
+
+- Android 返回本地持久化的上次登录用户，未登录（无会话）时也可能非空；iOS 未登录时为 nil。同一 Dart API 两端语义不同。
+- 影响：调用方不能用 `currentUserId == null` 判断「是否已登录」（当前公开 API 里可用的会话态查询只有 `isConnected()`）；`FL-APP-001` 之所以依赖冷启动，根源即此。
+- 用户裁决：先记录，待 iOS/Android native 明确并统一语义后再跟随，处理方式与第 6、9 节的跨端差异一致；Flutter wrapper 保持原样转发。
+- 附带待办：`ChatClient.currentUserId`（`chat_client.dart:266`）缺少公开 API 要求的中英双语注释，后续修改该 API 时补齐。
+
+### 10.3 Android auto 脚本下发改用内部目录
+
+- 现象：`make auto-report PLATFORM=android` 在 App 数据被清后失败，App 报 `PathAccessException: Cannot open file, path = '/sdcard/Android/data/com.example.example/files/script_<runId>.json' (OS Error: Permission denied, errno = 13)`。
+- 原因：运行器先 `adb shell mkdir -p` 建外部目录再 `adb push`；目录由 shell 创建时属 `shell:ext_data_rw`、权限 `drwxrws---`（实测），App 无法遍历，脚本读不到。此前能成功只是因为该目录已由 App 自己创建过（例如先跑过 `flutter run`）。
+- 修复：`tool/auto_report.dart` 改为先确保 debug 包已安装（未安装时 `flutter build apk --debug` + `adb install -r -t`），再用 `adb shell run-as com.example.example sh -c 'cat > /data/data/com.example.example/files/script_<runId>.json'` 以 App uid 写入内部目录，并校验写入字节数（避免半截写入在 App 内表现为难以定位的 `script.error`）；`--dart-define=API_SCRIPT` 相应指向内部路径。`flutter run` 后续的重装会保留内部目录，脚本仍然可用。
+- 文档同步：`im_flutter_sdk/example/README.md` 的 Android 手工下发示例改为同一套 `run-as` 写法，并说明 `run-as` 需要 debug 包已安装。
