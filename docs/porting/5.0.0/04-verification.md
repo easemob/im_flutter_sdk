@@ -341,3 +341,43 @@ PR #629（fork `AsteriskZuo:5.0.0` → `easemob:5.0.0`，head `ce9f09a8`）三�
 集群选择未被干扰：上述复刻全程 `example/config.local.json` 都不存在（脚本不创建它），`flutter analyze --fatal-infos` 与两个 `flutter build` 均通过，说明「有没有 config.local.json」与编译无关；`ensure` 的幂等/保护性也复测过——冷启动输出 `Created: .../lib/env.dart`（模板里的空 map，mode 0600），再跑输出 `Skip: ... already exists`，换成含真实内容的版本后再跑内容原样保留。
 
 未验证边界：本地为 Xcode 26.2 / macOS 15，CI 是 macos-26 + Xcode 26.3 的 runner 镜像；镜像差异不在本轮范围，三个 job 的最终结论以推送后的 CI 为准。
+
+> 注：本轮之后用户裁决「项目侧不做多集群」，`clusters` / `defaultCluster` / `make env-use` 已全部移除，`config.local.json` 只剩「当前这一个环境」的语义——上面提到的 `use`、集群选择相关内容以第 14 节为准。
+
+## 14. 第十一轮：项目侧不再支持多集群，配置只描述一个环境（2026-09-20）
+
+### 14.1 用户裁决
+
+第 13 轮的修复里，`tool/ci/ensure_example_env.sh` 一度复用 `make config`（`env_tool.dart ensure`），于是 CI 会顺带生成一份模板 `example/config.local.json`（内含 `clusters.ebs` / `clusters.ngi` 与 `defaultCluster: "ebs"`）。用户评审指出：**这个产品支持多种集群，但项目实现侧不做「多选」**——要换集群就把对应的值直接填进配置文件；项目本身不支持多集群；便利性（比如自己留几份 `config.ngi.json` / `config.ebs.json` 副本）由使用者在 Git 外自行维护；不要为此给项目增加复杂度；**现有实现里的 ngi / ebs 内容建议移除**。
+
+据此确立的边界：项目侧只认「当前配置的那一个环境」，`config.local.json` 描述的就是它；跑哪个环境是使用者的本地动作，工具不做抽象、不做缓存、不做激活。私有化部署保留——它不是「选哪个集群」，而是「这一个环境是不是私有化」。
+
+### 14.2 移除清单
+
+| 位置 | 移除内容 |
+|---|---|
+| `example/templates/config.local.example.json` | `clusters` 映射、`defaultCluster`、`accounts/groups/rooms` 每条的 `cluster` 字段；`restApi` / `appKey` / `clientId` / `clientSecret` 提到顶层 |
+| `example/tool/env_tool.dart`（549 → 356 行） | `use` 子命令、`.env/env.<cluster>.dart` 缓存与 `activateCluster`、`cacheDir` / `cachedEnv`、集群名校验、`defaultCluster` 解析（`_resolveDefaultCluster`）、`_validateClusterAssignments`、`_itemCluster`、`_resourcesForCluster`、多集群的「跳过并累计失败」逻辑；`gettoken` 现在直接写 `lib/env.dart`，必填字段缺失即 fail fast（退出码 1） |
+| `Makefile` | `env-use` target；`env-gettoken` 的描述改为单环境 |
+| `im_flutter_sdk/.gitignore` | `/example/.env/` |
+| 生成的 `env.dart` | `"cluster"` 键；`example/lib/auto/auto_mode.dart` 的 `config.load` 日志字段 |
+| `tool/auto_report.dart` | `run.json` 元数据里的 `cluster`（原先从 env.dart 正则提取，已无来源）、报告里一处 "for this cluster" 文案 |
+| `example/scripts/script_500_apis_positive.json` | 文案里的 "ngi 集群" → "测试环境" |
+| `example/test/env_tool_test.dart` | 4 个多集群用例换成 10 个单环境用例（含旧格式报错、私有化字段映射、账号 id 缺失、模板幂等拷贝） |
+| 文档与 CI 注释 | `CONTRIBUTING.md`、worktree `AGENTS.md`、`example/README.md`、`im_flutter_sdk/docs/ci/flutter-only-ci.md`、`tool/ci/ensure_example_env.sh`、`tool/ci/fetch_e2e_user_token.sh` |
+
+### 14.3 保留与迁移
+
+- **保留私有化部署**（用户裁决）：`enablePrivateConfig` + `webSocketServer` / `restServer` / `msyncServer`（映射为 Dart 的 `imServer`）+ 可选 `imPort` / `webSocketPort`，开启后 `enableDNSConfig=false`。
+- **旧格式有一句明确报错**：`config.local.json` 仍带 `clusters` 或 `defaultCluster` 时，`generateEnvironment` 抛 `config.local.json still uses the removed multi-cluster shape; put restApi, appKey, clientId and clientSecret at the top level ...` 并以退出码 1 结束。
+- **资源项里遗留的 `cluster` 字段会被丢弃**（不报错），避免从旧文件粘贴 `accounts` / `groups` / `rooms` 时被卡住。
+- 本地 `example/config.local.json` 已按新格式拍平（ngi 的值提到顶层，原文件备份在仓库外 `/tmp/config.local.json.pre-single-cluster`），旧的 `.env/` 缓存目录已删除。
+
+### 14.4 复验
+
+- `flutter analyze --fatal-infos`（example）与 `dart analyze tool/auto_report.dart`：均 `No issues found!`。
+- `flutter test test/env_tool_test.dart`：10/10；`flutter test`（example 全量）：15/15；`dart run tool/auto_report.dart --self-test`：`auto_report self-test passed`。
+- 真实链路：`make env-gettoken`（ngi 凭据）exit 0，`zuoyu01` / `zuoyu02` 各取到 user token，`lib/env.dart` 重新生成（969 字节、mode 0600、无 `cluster` 键、无 `clientSecret`）。
+- `tool/ci/run_quality.sh`：exit 0（5 个包 `No issues found!`、34 个测试、3 项一致性检查通过）。
+- 设备链路：`smoke_local.sh android` 6/6、exit 0；`smoke_local.sh ios` 6/6、exit 0（真实模拟器上跑，确认重构没有影响 wrapper 与 App 编译）。
+- 未验证边界：没有真实跑 `make auto-report`（会依赖已安装 App 与 auto 脚本，本轮只跑 `--self-test` 覆盖报告工具的解析/汇总路径）。
