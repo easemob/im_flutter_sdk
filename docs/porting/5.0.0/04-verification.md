@@ -187,3 +187,107 @@ gate_exit=0
 - 原因：运行器先 `adb shell mkdir -p` 建外部目录再 `adb push`；目录由 shell 创建时属 `shell:ext_data_rw`、权限 `drwxrws---`（实测），App 无法遍历，脚本读不到。此前能成功只是因为该目录已由 App 自己创建过（例如先跑过 `flutter run`）。
 - 修复：`tool/auto_report.dart` 改为先确保 debug 包已安装（未安装时 `flutter build apk --debug` + `adb install -r -t`），再用 `adb shell run-as com.example.example sh -c 'cat > /data/data/com.example.example/files/script_<runId>.json'` 以 App uid 写入内部目录，并校验写入字节数（避免半截写入在 App 内表现为难以定位的 `script.error`）；`--dart-define=API_SCRIPT` 相应指向内部路径。`flutter run` 后续的重装会保留内部目录，脚本仍然可用。
 - 文档同步：`im_flutter_sdk/example/README.md` 的 Android 手工下发示例改为同一套 `run-as` 写法，并说明 `run-as` 需要 debug 包已安装。
+
+## 11. 第八轮：single-account nightly 凭据链路从密码切到 token（2026-09-20）
+
+### 11.1 根因：测试早已是 token 登录，CI 管线还停在密码
+
+`single-account-nightly.yml` 与 `tool/ci/nightly_local.sh` 都过不去，因为两边的键名对不上，测试在 `setUpAll` 阶段就失败，一条断言都跑不到：
+
+- `integration_test/single_account_local_test.dart:5-7` 读 `E2E_APP_KEY` / `E2E_USER_ID` / `E2E_USER_TOKEN`，`setUpAll` 调 `loginWithToken`；`chat_client.dart:579` 是 5.0.0 唯一的登录入口（`loginWithPassword` 已随 5.0.0 移除，全包只剩改密回调带 password 字样）。
+- `tool/ci/write_e2e_dart_defines.sh` 的必填项与输出 JSON 只有 `E2E_USER_PASSWORD`，**从不产出** `E2E_USER_TOKEN` → `requireConfiguration()` 抛 `StateError: Missing dart-defines: E2E_USER_TOKEN`。
+- `tool/ci/nightly_local.sh` 同样硬性要求 `E2E_USER_PASSWORD`，本地没有任何地方能产出 token。
+- 时间线（`git log -S`）：密码链路来自 4.x 的 `b77bfeff` / `85a9805e`；`dbab80b3`（5.0.0 平版）把测试改成 token 登录却漏改了 CI 管线。该 workflow 只有 `workflow_dispatch`，5.0.0 分支从未被触发，所以一直没暴露；默认分支（4.x）的密码链路在 2026-08-23/24 曾正常跑通。
+
+### 11.2 修复：每个 job 现换一次 user token（对齐 RN 5.0.0）
+
+user token 服务端 TTL 约 24h（本地模板 `tokenTtl: 86400`），不能存成 secret，只能在运行时换取：
+
+- 新增 `tool/ci/fetch_e2e_user_token.sh`：`client_credentials` 换 app token，再带 `Bearer` 用 `grant_type=inherit` + `autoCreateUser=true` 换 user token；流程与 `example/tool/env_tool.dart` 的 `TokenClient` 一致，脚本结构、重试预算（3 次）、间隔（1s）、超时（15s）与输出契约（**stdout 只输出 token**，诊断走 stderr）与 RN 仓库的 `scripts/ci/fetch_e2e_user_token.js` 一一对应，appKey `orgName#appName` 校验、REST 末尾斜杠剥离同样对齐。
+- `write_e2e_dart_defines.sh` 的必填项与 JSON 键改为 `E2E_USER_TOKEN`，保持「只做 env→JSON、不联网」的单一职责。
+- `nightly_local.sh` 改为要求 `E2E_APP_KEY` / `E2E_USER_ID` / `E2E_REST_API` / `E2E_CLIENT_ID` / `E2E_CLIENT_SECRET`；运行时先换 token 再渲染 dart-define 文件。本地不打 `::add-mask::`——那行命令本身带 token，会把它打到终端。
+- `single-account-nightly.yml` 两个 job 的 prepare 步骤改为 5 个 secret + 现换 token + `::add-mask::`，位置仍在模拟器启动之前（认证问题 fail fast）；新增每日 cron `37 18 * * *`，比 RN 的 nightly（`37 19 * * *`）早一小时，与 device-smoke 的 `0 18 * * *` 各自使用独立 runner、且后者不需要凭据，重叠无影响。
+- 安全边界：`clientId` / `clientSecret` 只在 runner 上换 token，绝不进 dart-define（因而不进 App 包）；换来的一次性 user token 仍会进 dart-define 文件，该文件 mode 0600、不上传、运行后删除。
+- cron 限制：GitHub 的定时任务跑的是**默认分支**最新提交、取默认分支的工作流文件，所以在该文件落地 `flutter2_stable` 之前，5.0.0 分支上的 cron 不会触发，只能手工 dispatch。
+- GitHub environment `flutter-single-account`（`easemob/im_flutter_sdk`）新增 `E2E_REST_API` / `E2E_CLIENT_ID` / `E2E_CLIENT_SECRET`；**`E2E_USER_PASSWORD` 保留不动**，默认分支（4.x）的 nightly 仍在用它。
+
+### 11.3 顺带发现的第二个问题：FL-CONV-002 的未读断言没有依据
+
+凭据打通后第一次真正执行断言，`FL-CONV-002 maintains latest and clears unread state` 在 `unreadCount()` 上以 `Expected: <2> / Actual: <0>` 失败，**Android 与 iOS 表现一致**，所以不是跨端差异：
+
+- `ChatConversation.insertMessage` 的公开契约（`chat_conversation.dart:306-322`）只承诺写入本地库并更新 `latestMessage` 等属性，未提及未读数。
+- Dart 侧 `ChatMessage.createReceiveMessage` 虽把 `isRead` 置为 false 并随 `toJson` 下发，但两个 wrapper 都没有把它应用到 native 消息上（Android native 的 `setRead` 是包私有，见 `01-api-diff-android.md:117`，wrapper 无法调用），native 按已读落库。
+- 追加实验（负结果）：改用 `updateRegradeMessagesAsReadSetting(false)` + `importMessages` 也不行——`messagesCount()` 为 2（导入成功）而 `unreadCount()` 仍为 0，双端一致。即本地产生的消息（insert 或 import）都不涨未读数，只有从另一个客户端真实收到的消息才会。
+- 处理：断言改为钉住实测值 `0`，并加注释说明「真实未读需要第二个客户端，属 im-test-hub 阶段」；`clearConversationUnreadMessageCount` 之后仍断言 `0`，覆盖该 API 的调用路径。
+
+### 11.4 复验结果（本地 ngi 集群凭据，走 CI 等价脚本）
+
+- `bash tool/ci/nightly_local.sh android` → `exit 0`，7/7 通过。
+- `bash tool/ci/nightly_local.sh ios` → `exit 0`，7/7 通过。
+- `FL-AUTH-001` 的四条断言在 token 登录下全部成立：`getCurrentUserId()` 与 `currentUserId` 均等于 `E2E_USER_ID`、`isConnected()` 为 true、`getAccessToken()` 非空。
+- `tool/ci/fetch_e2e_user_token.sh` 单独验证：正向取到 token；`clientSecret` 错误 → 退出码 1、stdout 为空、服务端返回 `invalid_grant client_secret does not match`（说明 appKey 与 clientId 的配对由服务端兜底校验，配错会在 prepare 步骤 fail fast，不会拖到设备上才炸）；缺环境变量、appKey 不含 `#` → 退出码 2。
+- `bash tool/ci/run_quality.sh` → `exit 0`（format 0 changed、5 个包 analyze 无问题、30 个测试、3 项一致性检查）。
+- 未验证边界：CI 的 `E2E_APP_KEY` / `E2E_USER_ID` 是 secret，本地无法比对，因此「CI 那套凭据与本轮本地使用的 ngi 凭据属于同一个 app/账号」只能由第一次 `workflow_dispatch` 确认；若不属同一 app，失败会出现在 prepare 步骤并给出可读错误。
+
+### 11.5 「跑前清空上一次数据」的确认（用户追加要求）
+
+两条链路都会在跑前清理，且实测有效：
+
+- `run_android_emulator_test.sh:29`：`flutter test` 之前 `adb -s emulator-5554 uninstall com.example.example`（原因见该脚本 `:21-28`）；`nightly_local.sh:76` 与 `single-account-nightly.yml` 都经由它。
+- `run_ios_simulator_test.sh:111`：在 attempt 循环内、每次 attempt 之前 `xcrun simctl uninstall <udid> com.example.example`（原因见 `:106-110`），因此重试也不会继承上一次的数据。
+- 清理效果实测：向 App 内部目录写入 marker → `adb uninstall` → 重新安装后 marker 及其所在目录均不存在；一次 nightly 结束后设备上 App 未安装（Android `pm path` 为空、iOS `get_app_container` 报 no such file），下一次运行天然是干净起点。
+- nightly 额外稳健性实测：用 `make auto-report PLATFORM=android` 制造真实残留登录态（`com.example.example_preferences.xml` 中存在 `easemob.chat.loginuser` / `login_with_token` / `login.token`），再**绕过清数据**直接执行 `flutter test integration_test/single_account_local_test.dart -d emulator-5554 --dart-define-from-file=...` → 仍然 7/7 通过。原因是用例每次使用微秒级唯一 conversation ID、`tearDownAll` 会 `logout`，且同一账号重复 `loginWithToken` 不被 native 拒绝。
+- 结论：对 nightly 而言「跑前清数据」是兜底而非必需，对 smoke 的 `FL-APP-001` 则是必需（见第 10.1 节）；两条链路共用同一对 wrapper，清理保持在跑前执行即可同时覆盖。
+
+## 12. 第九轮：多设备事件映射缺口导致 iOS 集成测试加载即崩（2026-09-20）
+
+### 12.1 现象
+
+iOS 上手工跑 nightly 时，测试尚未开始就失败：
+
+```
+Failed to load ".../integration_test/single_account_local_test.dart": Null check operator used on a null value
+  package:im_flutter_sdk/src/managers/chat_client.dart 187:6  ChatClient._onMultiDeviceGroupEvent
+```
+
+即 native 在登录后立刻下发了 `onMultiDeviceGroupEvent`，Dart 事件处理器抛异常，异常冒泡到测试框架，导致整套用例在 loading 阶段被判失败。
+
+### 12.2 根因：`convertIntToChatMultiDevicesEvent` 表缺值 + 调用点用 `!` 解包
+
+`chat_client.dart` 的四个多设备处理器都用 `convertIntToChatMultiDevicesEvent(map['event'])!` 解包；而 `chat_transform_tools.dart` 的映射表只覆盖 `-1`、`2-6`、`10-29`、`40-45`、`52`、`60-66`，**缺 30、31、32、33、34**，函数对未知值返回 `null` → `!` 抛 "Null check operator used on a null value"。
+
+native 侧（三份权威来源一致）：
+
+| 值 | iOS HyphenateChat 5.0.0 `EMMultiDevicesEvent` | Android 5.0.0 `EMMultiDeviceListener` | RN 5.0.0 `ChatMultiDeviceEvent` |
+|---|---|---|---|
+| 30 | `GroupAddWhiteList` | `GROUP_ADD_USER_WHITE_LIST` | `GROUP_ADD_USER_ALLOW_LIST` |
+| 31 | `GroupRemoveWhiteList` | `GROUP_REMOVE_USER_WHITE_LIST` | `GROUP_REMOVE_USER_ALLOW_LIST` |
+| 32 | `GroupAllBan` | `GROUP_ALL_BAN` | `GROUP_ALL_BAN` |
+| 33 | `GroupRemoveAllBan` | `GROUP_REMOVE_ALL_BAN` | `GROUP_REMOVE_ALL_BAN` |
+| 34 | `GroupUpdate`（**iOS 独有**） | 无 | 无 |
+| 44 / 45 | `ChatThreadUpdate` / `ChatThreadKick` | `THREAD_UPDATE` / `THREAD_KICK` | `THREAD_UPDATE` / `THREAD_KICK` |
+
+- 崩溃值必为 {30, 31, 32, 33, 34} 之一：这是 iOS 5.0.0 枚举与 Dart 表的差集（未逐值抓取，但五者缺失已足以解释，且修复覆盖全部五种）。
+- 缺口**不是 5.0.0 引入的**：iOS 4.17.1 / 4.19.1 / 4.24.1 的枚举同样有 30-34 且 34 一直是 `GroupUpdate`，Android 4.22.1 的常量同样有 30-33 —— 自 4.x 起就存在，只是此前没人跑到会触发这些事件的多设备场景。
+- 上表 7 个取值（30/31/32/33/34/44/45）在 Dart 枚举中的现状：**6 个成员本已存在**且命名与顺序正确（`GROUP_ADD_USER_ALLOW_LIST`、`GROUP_REMOVE_USER_ALLOW_LIST`、`GROUP_ALL_BAN`、`GROUP_REMOVE_ALL_BAN`、`CHAT_THREAD_UPDATE`、`CHAT_THREAD_KICK`，见 `chat_enums.dart:652-760`），**只有 34 没有成员**。因此 30-33 属纯 switch 漏项，34 需要新增成员（用户裁决：加入枚举）。枚举里另有 `GROUP_DISABLED` / `GROUP_ABLE` 两个成员在上述四版 native 枚举中都不存在（历史遗留，本次不动）。
+- 附带发现：**44/45 映射颠倒**（Dart 原为 44→`CHAT_THREAD_KICK`、45→`CHAT_THREAD_UPDATE`），与 iOS/Android/RN 三份来源都相反。它不会崩，只会静默投递错误事件，因此更难发现。
+- 另一处跨端差异（交回 native/记录，不在 Flutter 侧裁决）：iOS 用 34 表示「群信息更新」、52 表示「群成员自定义属性变更」；Android 只有 52 且命名为 `GROUP_METADATA_CHANGED`。Dart 按整数映射，只能取一个名字，目前 52 → `GROUP_MEMBER_ATTRIBUTES_CHANGED`（取 iOS 语义），Android 的「群信息更新」因而会以该名字投递；该差异已写进 `GROUP_UPDATE` 的双语注释。
+- 同类隐患（用户裁决：先记录不动）：`chat_client.dart` 的 `_onMultiDevicesConversationEvent` 里 `ChatConversationType.values[map['convType']]` 同样是「native 原值直接索引 Dart 枚举」，未知值会抛 `RangeError` 并同样冒泡出处理器。本次不改，留待与 native 确认 `convType` 取值域后再处理。
+
+### 12.3 修复
+
+- `chat_enums.dart`：`ChatMultiDevicesEvent` 新增 `GROUP_UPDATE`（native 34，iOS 群组信息更新），位于 `GROUP_REMOVE_ALL_BAN` 之后以保持 native 数值顺序，带中英双语注释并说明「仅 iOS 上报、Android 用 52」。
+- `chat_transform_tools.dart`：补齐 `case 30/31/32/33`、新增 `case 34`；把 44/45 改为 `CHAT_THREAD_UPDATE` / `CHAT_THREAD_KICK`；未知值分支改为写 `ChatLog.d` 诊断日志后返回 `null`（保持该函数**公开签名不变**——它经 `inner_headers.dart` 属于公开 API）。
+- `chat_client.dart`：四个处理器（group/contact/thread/conversation）去掉 `!`，改为 `?? ChatMultiDevicesEvent.UnKnow`，与原生「未知事件 = -1」的语义对齐；未知值不再能让 MethodChannel 处理器抛异常。RN 的同类函数在 default 分支同样不抛异常（上报后原值透传）。
+- `im_flutter_sdk/CHANGELOG.md`：5.0.0 段补记新增枚举成员与映射修复。
+- 新增回归测试 `im_flutter_sdk/test/handlers/multi_device_event_test.dart`：用 `_CapturingClient` 截获 `ChatClient` 注册的 native 事件处理器，按真实 payload 回放
+  ① 覆盖 native 声明的全部取值（任一值无映射即失败）；
+  ② 钉住 30-34 与 44/45 的语义；
+  ③ 99/缺失事件键 → 投递 `UnKnow` 且不抛异常。
+
+### 12.4 复验
+
+- 回归测试在修复前失败、修复后通过，且失败信息与线上一致（`Null check operator used on a null value`、`native value 30`）——已用 `git stash` 临时回退两个源文件实测。
+- `run_quality.sh` → `exit 0`（34 个测试，比此前多 4 个；5 个包 analyze 无问题；3 项一致性检查通过）。
+- `nightly_local.sh ios` → `exit 0`，7/7 通过；`nightly_local.sh android` → `exit 0`，7/7 通过。
+- 未验证边界：本轮没有在线复现「另一台设备触发 30/31/32/33/34 事件」的真实推送（需要同账号第二台在线设备），该路径由单元测试按 native payload 回放覆盖。

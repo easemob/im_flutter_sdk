@@ -209,6 +209,8 @@
 9. ✅ Android `fetchMembers` 重载差异已关闭：RN 5.0.0 同样保留上层参数、Android wrapper 忽略不下传；Flutter 当前行为一致。
 10. ✅ 设备控制台长日志截断缺陷已修复：超过 512 字节的事件改为 `[APITEST+<index>/<total>]` 有序分片输出并在运行器重组，`summary.md` 增加 `Malformed APITEST lines` 计数；修复后双端运行均为 0 malformed。
 11. ⚠️ `currentUserId` 跨端语义差异待 native 统一（先记录，Flutter 不修改）：Android `EMClient.getCurrentUser()` 返回本地持久化的上次登录用户（SharedPreferences `easemob.chat.loginuser`，per-App 且不区分 appkey），未登录时也可能非空；iOS `currentUsername` 未登录时为 nil。调用方不能用它判断「是否已登录」。同轮修复了本地 smoke 的稳定性（跑前清理 App 数据）与 Android auto 脚本下发（改用 `run-as` 写入内部目录），详见 `04-verification.md` 第 10 节。
+12. ✅ single-account nightly 凭据链路已从密码切到 token：5.0.0 测试读 `E2E_USER_TOKEN`、CI 只提供 `E2E_USER_PASSWORD`，两边键名不匹配导致套件在 `setUpAll` 就失败、断言从未真正执行过。按 RN 5.0.0 方案改为每个 job 现换 user token（新增 `tool/ci/fetch_e2e_user_token.sh`，secret 增加 `E2E_REST_API` / `E2E_CLIENT_ID` / `E2E_CLIENT_SECRET`，`E2E_USER_PASSWORD` 保留给 4.x），并修正 `FL-CONV-002` 无 API 依据的未读断言（双端实测均为 0，`insertMessage` 与 `importMessages` 都不涨未读）。本地双端 nightly 各 7/7 通过；「跑前清空上一次数据」已确认生效——uninstall 确实清除 App 数据、运行结束后设备上不留 App，且在真实残留登录态设备上绕过清理仍 7/7（对 nightly 是兜底，对 smoke 的 `FL-APP-001` 是必需）。详见 `04-verification.md` 第 11 节。
+13. ✅ 多设备事件枚举映射缺口已修复（iOS 集成测试加载即崩的直接原因）：`convertIntToChatMultiDevicesEvent` 缺 native 值 30/31/32/33/34，函数返回 null 而四个调用点用 `!` 解包，任何这类事件都会让 MethodChannel 处理器抛 `Null check operator used on a null value`。已补齐 30-33、新增 `ChatMultiDevicesEvent.GROUP_UPDATE`（iOS 独有值 34）、修正 44/45 颠倒（native 44=子区 update、45=kick）、调用点改为 `?? UnKnow`，并新增回归测试覆盖全部 native 取值。缺口自 4.x 即存在（iOS 4.17.1/4.19.1/4.24.1 与 Android 4.22.1 的枚举同样有 30-34）。遗留待 native 统一：iOS 34/52 与 Android 52 的语义差异（群信息更新 vs 群成员属性变更）；`_onMultiDevicesConversationEvent` 里 `ChatConversationType.values[map['convType']]` 的同类索引隐患按裁决只记录不改。详见 `04-verification.md` 第 12 节。
 
 ## 4. 验证结论
 
