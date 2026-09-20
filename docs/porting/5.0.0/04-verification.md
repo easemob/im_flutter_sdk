@@ -291,3 +291,53 @@ native 侧（三份权威来源一致）：
 - `run_quality.sh` → `exit 0`（34 个测试，比此前多 4 个；5 个包 analyze 无问题；3 项一致性检查通过）。
 - `nightly_local.sh ios` → `exit 0`，7/7 通过；`nightly_local.sh android` → `exit 0`，7/7 通过。
 - 未验证边界：本轮没有在线复现「另一台设备触发 30/31/32/33/34 事件」的真实推送（需要同账号第二台在线设备），该路径由单元测试按 native payload 回放覆盖。
+
+## 13. 第十轮：PR #629 三个 CI 全红，根因是 gitignore 掉的 example `env.dart`（2026-09-20）
+
+### 13.1 现象
+
+PR #629（fork `AsteriskZuo:5.0.0` → `easemob:5.0.0`，head `ce9f09a8`）三个 job 全红，且指向同一条报错：
+
+| job | 失败步骤 | 关键日志 |
+|---|---|---|
+| Quality and contracts | `run_quality.sh` 的 `flutter analyze --fatal-infos`（第 5 个包 `im_flutter_sdk/example`） | 6 条 error：`Target of URI doesn't exist: '../env.dart'`（`auto/auto_mode.dart:7`、`pages/init_page.dart:6`、`pages/login_page.dart:6`）与 `Undefined name 'environment'` |
+| Android debug build | `:app:compileFlutterBuildDebug` | `Error: Error when reading 'lib/env.dart': No such file or directory` → `BUILD FAILED in 2m 14s` |
+| iOS simulator build | Xcode build 的 Dart 编译阶段 | 同上 |
+
+**不是本轮改动引入的**：同为失败的 09-18 推送 run（`35339785929`）里 Android/iOS 编译已经是同一报错；当时 quality job 先死在 `dart format`（`tool/auto_report.dart` 未格式化，已由 `1100ae41` 修掉），把后面的 analyze 挡住，所以这个缺口被掩盖到本轮才暴露。
+
+### 13.2 根因
+
+`im_flutter_sdk/example/lib/env.dart` 被 `im_flutter_sdk/.gitignore:36` 忽略，因为 `make env-gettoken` 会把真实集群凭据写进它；而 example 的三个文件 `import '../env.dart'`（`auto/auto_mode.dart`、`pages/init_page.dart`、`pages/login_page.dart`，`environment` 只作为初始化/登录的默认值与 `$config.*` 兜底）。本地由 `make config` 生成占位（`env_tool.dart ensure`：从 `example/templates/env.example.dart` 拷一份空 `const Map<String, Object?> environment = {}`，已存在则跳过），CI 里没有任何等价步骤，于是全新检出永远编译不过 example。
+
+即 **CI 缺一步，而不是 example 写错**：把带凭据的文件提交进公开仓库不可接受，正确做法是让 CI 生成占位。这一步必须是「只补编译所需的那一个文件」，不能顺带替使用者选集群：
+
+- `environment` 的运行期消费者只有 example 自己的页面与 auto 模式（`lib/options_codec.dart`、`lib/pages/init_page.dart`、`lib/pages/login_page.dart`、`lib/auto/auto_mode.dart` 的 `$config.*` 与 `cluster` 记录）；两个集成测试都不读它——`single_account_local_test.dart` 只读 `String.fromEnvironment` 的 `E2E_APP_KEY/E2E_USER_ID/E2E_USER_TOKEN`，`no_login_presence_test.dart` 用内置公开 appKey。
+- 本地 ngi 的 `env.dart` 键集合为 `cluster/appKey/accounts/groups/rooms` + `chatOptions`(`dataSyncType`/`debugMode`/`enableUserInfo`)，**没有任何 server 字段**（`imServer`/`restServer`/`webSocketServer`/`enableDNSConfig`）：集群在生成时由 appKey 决定，运行期不再携带服务器信息。因此空占位不改变连的是哪个集群——CI 的集群由 `E2E_*` 凭据决定。
+- `example/config.local.json` 只有 `env_tool.dart` 的 `gettoken` / `use` 会读，CI 里没有任何步骤读它；而它正是 ebs/ngi/私有化集群选择与凭据的载体（模板里写着 `defaultCluster: "ebs"`）。一旦 CI 造出这份文件，就等于替使用者做了一个没人做过的集群选择。
+
+### 13.3 修复
+
+- 新增 `tool/ci/ensure_example_env.sh`：仅在 `im_flutter_sdk/example/lib/env.dart` 不存在时，从 `example/templates/env.example.dart` 拷一份空 `const Map<String, Object?> environment = {}` 占位并设为 mode 0600；已存在则原样保留，绝不覆盖本地真实环境。
+  - 刻意**不调用** `env_tool.dart ensure` / `make config`：那两步会连带生成 `example/config.local.json`（见 13.2 最后一条），把 ebs/ngi 的选择带进 CI 工作区。集群选择继续只属于本地 `make env-gettoken` / `make env-use`。
+  - 也因此不再依赖 Dart 工具链跑脚本（只需 `cp` / `chmod`），对 `pub get` 无要求。
+- `tool/ci/run_quality.sh`：在 5 个 `pub get` 之前调用它，quality job 自身成为自足门禁。
+- `tool/ci/run_android_emulator_test.sh` / `tool/ci/run_ios_simulator_test.sh`：在 `flutter pub get` 之前调用它；device-smoke 与 single-account-nightly 都只经过这两个 wrapper（`smoke_local.sh`、`nightly_local.sh` 亦然），因此 5.0.0 新增的两个设备工作流在 CI 上同样被覆盖。
+- `.github/workflows/ci.yml`：`android-build` / `ios-build` 各加一步 `./tool/ci/ensure_example_env.sh`（这两个 job 直接调 `flutter build`，不经过任何脚本）。
+- 文档：`CONTRIBUTING.md`（质量门禁、设备集成测试两处）与 `im_flutter_sdk/docs/ci/flutter-only-ci.md` 记录该前置步骤、以及「只补 env.dart、不生成 config.local.json」的原因。
+
+### 13.4 复验
+
+用 `git ls-files` 从工作区导出「全新检出等价目录」（无 `.git`、`.dart_tool`、`config.local.json`、`lib/env.dart`），在其中逐个复刻三个 job：
+
+| job | 复刻命令 | 结果 |
+|---|---|---|
+| Quality and contracts | `./tool/ci/run_quality.sh` | exit 0：5 个包 `No issues found!`、34 个测试 `All tests passed!`、3 项一致性检查通过 |
+| Android debug build | `./tool/ci/ensure_example_env.sh` + `flutter pub get` + `flutter build apk --debug` | exit 0：`✓ Built build/app/outputs/flutter-apk/app-debug.apk` |
+| iOS simulator build | 同上换 `flutter build ios --simulator --debug --no-codesign` | exit 0：`✓ Built build/ios/iphonesimulator/Runner.app` |
+
+因果复现（同一目录内）：删掉 `lib/env.dart` 后 `flutter analyze --fatal-infos` 报出与 CI 完全一致的 6 条 error（exit 1）；执行 `tool/ci/ensure_example_env.sh` 后同一命令 `No issues found!`（exit 0）。
+
+集群选择未被干扰：上述复刻全程 `example/config.local.json` 都不存在（脚本不创建它），`flutter analyze --fatal-infos` 与两个 `flutter build` 均通过，说明「有没有 config.local.json」与编译无关；`ensure` 的幂等/保护性也复测过——冷启动输出 `Created: .../lib/env.dart`（模板里的空 map，mode 0600），再跑输出 `Skip: ... already exists`，换成含真实内容的版本后再跑内容原样保留。
+
+未验证边界：本地为 Xcode 26.2 / macOS 15，CI 是 macos-26 + Xcode 26.3 的 runner 镜像；镜像差异不在本轮范围，三个 job 的最终结论以推送后的 CI 为准。
