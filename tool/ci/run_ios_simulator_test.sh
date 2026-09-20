@@ -30,6 +30,9 @@ test_target="${1:?usage: run_ios_simulator_test.sh TEST_TARGET LOG_NAME}"
 log_name="${2:?usage: run_ios_simulator_test.sh TEST_TARGET LOG_NAME}"
 watchdog_seconds="${WATCHDOG_SECONDS:-720}"
 max_attempts="${MAX_ATTEMPTS:-2}"
+# Keep in sync with PRODUCT_BUNDLE_IDENTIFIER in
+# im_flutter_sdk/example/ios/Runner.xcodeproj/project.pbxproj.
+app_id="com.example.example"
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 mkdir -p "$repo_root/artifacts"
@@ -100,6 +103,12 @@ while (( attempt <= max_attempts )); do
     xcrun simctl bootstatus "$simulator_udid" -b >&2
   fi
   echo "Attempt $attempt of $max_attempts"
+  # Cold-start precondition, same rationale as in run_android_emulator_test.sh:
+  # a simulator keeps app data across installs, so a login left behind by an
+  # earlier local run would survive into this attempt. Retries reboot the
+  # simulator (which keeps app data), so clear it before every attempt. CI
+  # starts from a fresh simulator, where the uninstall fails and is ignored.
+  xcrun simctl uninstall "$simulator_udid" "$app_id" >/dev/null 2>&1 || true
   status=0
   run_attempt "$attempt_log" || status=$?
   if [[ "$status" -eq 0 ]]; then
