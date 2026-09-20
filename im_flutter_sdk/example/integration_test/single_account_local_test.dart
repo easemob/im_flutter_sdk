@@ -124,7 +124,14 @@ void main() {
       await conversation.insertMessage(second);
 
       expect(await conversation.messagesCount(), 2);
-      expect(await conversation.unreadCount(), 2);
+      // Locally produced messages do not raise the unread count: neither
+      // insertMessage nor importMessages updates it, and switching the "regard
+      // imported messages as read" option off first does not change that.
+      // Measured on the Android emulator and the iOS simulator, which all
+      // report 0 here. Only a message received from another client does, which
+      // the im-test-hub stage covers, so this pins the initial value for the
+      // clear call below instead of asserting unread growth.
+      expect(await conversation.unreadCount(), 0);
       expect((await conversation.latestMessage())?.msgId, second.msgId);
       expect((await conversation.lastReceivedMessage())?.msgId, second.msgId);
       expect((await conversation.loadMessage(first.msgId))?.msgId, first.msgId);

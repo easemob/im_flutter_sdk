@@ -3,13 +3,15 @@
 # of .github/workflows/single-account-nightly.yml so a local run exercises
 # exactly what CI runs.
 #
-# Required environment (same names as the GitHub secrets):
-#   E2E_APP_KEY  E2E_USER_ID  E2E_USER_PASSWORD
+# Required environment (same names as the GitHub secrets; the user token is
+# fetched fresh by tool/ci/fetch_e2e_user_token.sh, not passed in):
+#   E2E_APP_KEY  E2E_USER_ID  E2E_REST_API  E2E_CLIENT_ID  E2E_CLIENT_SECRET
 #
 # Usage:
-#   E2E_APP_KEY=... E2E_USER_ID=... E2E_USER_PASSWORD=... \
+#   E2E_APP_KEY=... E2E_USER_ID=... E2E_REST_API=... \
+#   E2E_CLIENT_ID=... E2E_CLIENT_SECRET=... \
 #     bash tool/ci/nightly_local.sh android   # needs a booted emulator (emulator-5554)
-#     ... ios                               # boots a simulator if none is booted
+#     ... ios                                 # boots a simulator if none is booted
 #
 # The generated config contains real credentials; it is written with mode 0600
 # into a mktemp file outside the repo and deleted on exit (trap).
@@ -30,7 +32,7 @@ case "$PLATFORM" in
     ;;
 esac
 
-for var in E2E_APP_KEY E2E_USER_ID E2E_USER_PASSWORD; do
+for var in E2E_APP_KEY E2E_USER_ID E2E_REST_API E2E_CLIENT_ID E2E_CLIENT_SECRET; do
   if [ -z "${!var:-}" ]; then
     echo "error: environment variable $var is not set" >&2
     exit 2
@@ -45,10 +47,20 @@ command -v jq >/dev/null 2>&1 || {
   echo "error: jq not found (needed by write_e2e_dart_defines.sh)" >&2
   exit 2
 }
+command -v curl >/dev/null 2>&1 || {
+  echo "error: curl not found (needed by fetch_e2e_user_token.sh)" >&2
+  exit 2
+}
 flutter_version="$(flutter --version 2>/dev/null | sed -n 's/^Flutter \([^ ]*\).*/\1/p' | head -1)"
 if [ "$flutter_version" != "$EXPECTED_FLUTTER_VERSION" ]; then
   echo "warning: local Flutter is '$flutter_version', CI pins $EXPECTED_FLUTTER_VERSION" >&2
 fi
+
+# User tokens expire in ~24h, so fetch a fresh one for every run (same as CI).
+# Nothing here echoes it; locally there is deliberately no equivalent of CI's
+# ::add-mask::, because that command line carries the token itself.
+E2E_USER_TOKEN="$(bash "$REPO_ROOT/tool/ci/fetch_e2e_user_token.sh")"
+export E2E_USER_TOKEN
 
 CONFIG="$(mktemp "${TMPDIR:-/tmp}/flutter-e2e-config.XXXXXX.json")"
 trap 'rm -f "$CONFIG"' EXIT

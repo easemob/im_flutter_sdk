@@ -2,6 +2,11 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+# im_flutter_sdk/example imports the gitignored lib/env.dart; without it the
+# example analysis below fails to resolve the file (see the script's header).
+bash "$repo_root/tool/ci/ensure_example_env.sh"
+
 packages=(
   im_flutter_sdk_interface
   im_flutter_sdk_android

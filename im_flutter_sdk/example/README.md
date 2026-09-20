@@ -14,36 +14,26 @@ make setup
 
 This creates the ignored local files `config.local.json` and `lib/env.dart`
 from templates, runs `flutter pub get`, and runs `pod install` if the Podfile or
-podspec changed. Fill `config.local.json`, then fetch user tokens and generate
-the environment:
+podspec changed. Fill `config.local.json` with the environment you test against,
+then fetch user tokens and generate the environment:
 
 ```bash
 make env-gettoken
 ```
 
-In public mode, all configured clusters are generated under `.env/`. When
-multiple clusters are configured, `defaultCluster` selects the environment
-activated as `lib/env.dart`. With one configured cluster, that cluster is
-selected automatically, so `ebs` is optional; stale resource assignments that
-match the missing old `defaultCluster` follow the only configured cluster.
-Switch to another generated environment without fetching new tokens with:
-
-```bash
-make env-use CLUSTER=ngi
-```
+The project configures a single environment: `config.local.json` holds that
+environment's `restApi`, `appKey`, `clientId`, `clientSecret`, accounts, groups,
+rooms, and chat options, and `make env-gettoken` writes them into `lib/env.dart`.
+To switch environments, edit or replace that file — keep your own copies (for
+example `config.ngi.json` / `config.ebs.json`) outside Git; the tool does not
+choose between environments.
 
 Token acquisition happens on the host: the tool gets an app token with
 `clientId` / `clientSecret`, uses it to get each account's user token, and never
-writes the app token or client secret to `env.dart`. ebs, ngi, and private
-deployment are mutually exclusive environment modes. `clusters` contains only
-public-cluster REST/app credentials; enable private deployment with the
-top-level `enablePrivateConfig` and server fields. In private mode,
-`msyncServer` is mapped to Flutter's `imServer` and `enableDNSConfig` is forced
-to `false`. Do not put private configuration inside a cluster entry.
-Public mode generates every configured public cluster and activates
-`defaultCluster`. Private mode uses the `defaultCluster` credentials/accounts
-to fetch tokens, but generates and activates only `.env/env.private.dart`; switch
-back to a cached private environment with `make env-use CLUSTER=private`.
+writes the app token or client secret to `env.dart`. Private deployment is not a
+separate mode: set the top-level `enablePrivateConfig` to `true` and fill
+`webSocketServer` / `restServer` / `msyncServer`; `msyncServer` is then mapped to
+Flutter's `imServer` and `enableDNSConfig` is forced to `false`.
 
 ## Page flow
 
@@ -127,13 +117,21 @@ from the environment's ChatOptions keys and `login` from the first account's
 - Without `API_SCRIPT`, the app behaves as the manual tester above.
 
 **Android note**: the emulator/device has its own filesystem — host paths do not
-exist there (the iOS simulator shares the host fs, Android does not). Push the
-files into the app-specific external dir first and reference the device paths:
+exist there (the iOS simulator shares the host fs, Android does not). The app can
+only read its own internal files dir, and `adb push` into
+`/sdcard/Android/data/com.example.example/files/` only works when the app created
+that directory itself (an adb-created one belongs to `shell:ext_data_rw` with
+mode 0770 and the app cannot even traverse it). Write the script as the app uid
+instead:
 
 ```
-adb push scripts/script_422_apis.json /sdcard/Android/data/com.example.example/files/
-flutter run --dart-define=API_SCRIPT=/sdcard/Android/data/com.example.example/files/script_422_apis.json
+adb shell "run-as com.example.example sh -c 'cat > /data/data/com.example.example/files/script_422_apis.json'" < scripts/script_422_apis.json
+flutter run --dart-define=API_SCRIPT=/data/data/com.example.example/files/script_422_apis.json
 ```
+
+`run-as` needs the debug build installed and the app's internal files dir to
+exist, so run the app once (or `adb install -r` a debug APK) before pushing.
+`make auto-report PLATFORM=android` does all of this by itself.
 
 A full example covering the 4.22 additions lives at `scripts/script_422_apis.json`
 (expects at least two accounts and one group in the generated environment).

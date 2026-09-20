@@ -1,6 +1,13 @@
 name: Flutter Single Account Nightly
 
 on:
+  schedule:
+    # NOTE: scheduled workflows run the latest commit on the default branch
+    # (flutter2_stable) and take the workflow file from there, so this cron only
+    # takes effect once this file lands on that branch. Runs one hour before the
+    # React Native nightly (19:37 UTC); the device-smoke cron (18:00 UTC) uses
+    # its own runners and needs no credentials, so the overlap is harmless.
+    - cron: '37 18 * * *'
   workflow_dispatch:
 
 permissions:
@@ -38,11 +45,20 @@ jobs:
           cache: true
 
       - name: Prepare protected test configuration
+        # 5.0.0 has no password login, and user tokens expire in ~24h so they
+        # cannot be stored as secrets: exchange the app credentials for a fresh
+        # token here, before the emulator/simulator boots (fail fast on auth
+        # problems).
         env:
           E2E_APP_KEY: ${{ secrets.E2E_APP_KEY }}
           E2E_USER_ID: ${{ secrets.E2E_USER_ID }}
-          E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+          E2E_REST_API: ${{ secrets.E2E_REST_API }}
+          E2E_CLIENT_ID: ${{ secrets.E2E_CLIENT_ID }}
+          E2E_CLIENT_SECRET: ${{ secrets.E2E_CLIENT_SECRET }}
         run: |
+          E2E_USER_TOKEN="$(bash tool/ci/fetch_e2e_user_token.sh)"
+          echo "::add-mask::$E2E_USER_TOKEN"
+          export E2E_USER_TOKEN
           ./tool/ci/write_e2e_dart_defines.sh "$RUNNER_TEMP/flutter-single-account.json"
           echo "E2E_CONFIG_PATH=$RUNNER_TEMP/flutter-single-account.json" >> "$GITHUB_ENV"
 
@@ -101,11 +117,20 @@ jobs:
           cache: true
 
       - name: Prepare protected test configuration
+        # 5.0.0 has no password login, and user tokens expire in ~24h so they
+        # cannot be stored as secrets: exchange the app credentials for a fresh
+        # token here, before the emulator/simulator boots (fail fast on auth
+        # problems).
         env:
           E2E_APP_KEY: ${{ secrets.E2E_APP_KEY }}
           E2E_USER_ID: ${{ secrets.E2E_USER_ID }}
-          E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+          E2E_REST_API: ${{ secrets.E2E_REST_API }}
+          E2E_CLIENT_ID: ${{ secrets.E2E_CLIENT_ID }}
+          E2E_CLIENT_SECRET: ${{ secrets.E2E_CLIENT_SECRET }}
         run: |
+          E2E_USER_TOKEN="$(bash tool/ci/fetch_e2e_user_token.sh)"
+          echo "::add-mask::$E2E_USER_TOKEN"
+          export E2E_USER_TOKEN
           ./tool/ci/write_e2e_dart_defines.sh "$RUNNER_TEMP/flutter-single-account.json"
           echo "E2E_CONFIG_PATH=$RUNNER_TEMP/flutter-single-account.json" >> "$GITHUB_ENV"
 

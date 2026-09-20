@@ -89,7 +89,7 @@ gate_exit=0
 
 - 入口：`make auto-report PLATFORM=<android|ios> [DEVICE=<id>] [SCRIPT=<json>]`（默认执行正向脚本）与 `make auto-compare ANDROID=<run-dir> IOS=<run-dir>`。
 - 运行器显式激活 iOS Simulator；Android 通过 adb 唤醒并尽力将非 headless qemu 窗口置前；若 AVD 以 `-no-window` 启动，会明确提示其没有可激活窗口。
-- Android 自动把脚本推送到 `/sdcard/Android/data/com.example.example/files/`；iOS 使用宿主机绝对路径。
+- Android 通过 `adb shell run-as` 把脚本写入 App 内部目录 `/data/data/com.example.example/files/`（`/sdcard/Android/data/...` 在目录由 adb 创建时属 `shell:ext_data_rw`、权限 0770，App 读不到，见第 10.3 节）；iOS 使用宿主机绝对路径。
 - 只保存 `[APITEST]` 结构化事件与崩溃关键行，写入 Git 忽略的 `reports/5.0.0/<run-id>/`；不保存完整 native stdout，避免密钥/Token/原始网络日志进入报告。
 - 每次运行生成 `run.json`、`events.jsonl`、`crash.log`、`steps.json`、`summary.md`、`issues.md`；逐步结果按 `expect` 分类为 `passed/failed/blocked/crashed/not-run`。
 - app 端从参数中的 `$step.<id>` 自动识别依赖；生产步骤失败后，依赖步骤输出 `skipped=true/blockedBy=<id>`，不调用 SDK，报告将其归类为 `blocked` 而不是新问题。
@@ -151,3 +151,233 @@ gate_exit=0
 - 仍未处理：`fetchGroupMessageReadReceipts` 缺失消息在 Android native 触发 NPE，继续按用户决定屏蔽并记录 `fetch-group-receipt-missing-disabled`。
 - 顺带修复 Android wrapper 文件的换行符回退：该文件在 HEAD 中为 CRLF 为主 + 118 行裸 LF 的混合结尾，手工编辑时被整体转成 CRLF，已按字节恢复原始结尾，使 `git diff` 只保留上述语义改动。
 - 文档更新：`acceptance-report.md` 中「Android 1 / iOS 500、由 native 统一」的旧结论已由本节结论取代；第 6 节 003/004 与第 8 节仍保留当时的事实记录。
+
+## 10. 第七轮：本地 smoke 稳定性、currentUserId 跨端差异、auto 脚本下发（2026-09-20）
+
+### 10.1 本地 no-login smoke 失败原因与修复
+
+现象：`bash tool/ci/smoke_local.sh android` 在 `FL-APP-001 initializes the native SDK while logged out` 失败（`Expected: null` / `Actual: 'zuoyu01'`，退出码 1），同一命令的 iOS 分支通过。
+
+链路与证据（`chat_client.dart:566` 的 `init()` 会调用 `getCurrentUserId()` → native `getCurrentUser`）：
+
+- Android：`ClientWrapper.java:216` → `EMClient.getInstance().getCurrentUser()`，读本地持久化的上次登录用户（SharedPreferences `easemob.chat.loginuser`，per-App，**不区分 appkey**）。受控实验里登录用的是 env 的 `easemob-demo#zuoyu`、smoke 用的是 `easemob#easeim`，仍读到 `zuoyu01`。
+- iOS：`ClientWrapper.m:379` → `EMClient.sharedClient.currentUsername`，未恢复该值。受控实验（用 env 账号真实登录 `zuoyu01` 后强杀进程再跑 smoke）仍通过；同 appkey 场景未验证，故记为「已观察到的差异」而非「iOS 免疫保证」。
+- 未登录的判据：同一次失败运行中其余 5 个 presence 用例全部以 `201` 通过，说明没有会话，只是残留了身份记录。
+- 数据为何还在：`flutter test` 对已安装 App 是覆盖安装（保留 `/data/data`），且只在运行结束后卸载（`--uninstall` 默认 true）。因此任何一次「登录后未登出」的运行（auto-report / nightly / 手工 `flutter run`）都会污染下一次本地 smoke；CI 每次都是全新设备，不受影响。
+
+修复（用户裁决：跑任务前清理，保证测试稳定性）：
+
+- `tool/ci/run_android_emulator_test.sh`：`flutter test` 之前 `adb -s emulator-5554 uninstall com.example.example`（失败忽略）。
+- `tool/ci/run_ios_simulator_test.sh`：每次 attempt 之前 `xcrun simctl uninstall <udid> com.example.example`（失败忽略）；重试会重启模拟器但保留 App 数据，故每次都要清。
+- 两个脚本都把包名提为顶部常量并注明来源（`build.gradle.kts` 的 `applicationId` / `project.pbxproj` 的 `PRODUCT_BUNDLE_IDENTIFIER`）。App 不存在时 `adb uninstall` 返回非 0、`xcrun simctl uninstall` 返回 0，两者都用 `|| true` 兜底，因此 `device-smoke.yml` 与 `single-account-nightly.yml` 在新设备上的现有调用不受影响（已按 App 不存在的场景本地实测）。
+- `no_login_presence_test.dart` 的 `FL-APP-001` 增加注释，说明该断言依赖冷启动前提。
+
+复验：故意用 auto 模式登录 `zuoyu01` 后强杀 App → smoke 稳定失败（`Actual: 'zuoyu01'`）；紧随其后重跑 → 全绿（上一次结束时的卸载已清数据）。加入清理后双端 smoke 均通过（Android `exit 0`、iOS `All tests passed`）。
+
+### 10.2 currentUserId 跨端语义差异（先记录，不在 Flutter 侧修改）
+
+- Android 返回本地持久化的上次登录用户，未登录（无会话）时也可能非空；iOS 未登录时为 nil。同一 Dart API 两端语义不同。
+- 影响：调用方不能用 `currentUserId == null` 判断「是否已登录」（当前公开 API 里可用的会话态查询只有 `isConnected()`）；`FL-APP-001` 之所以依赖冷启动，根源即此。
+- 用户裁决：先记录，待 iOS/Android native 明确并统一语义后再跟随，处理方式与第 6、9 节的跨端差异一致；Flutter wrapper 保持原样转发。
+- 附带待办：`ChatClient.currentUserId`（`chat_client.dart:266`）缺少公开 API 要求的中英双语注释，后续修改该 API 时补齐。
+
+### 10.3 Android auto 脚本下发改用内部目录
+
+- 现象：`make auto-report PLATFORM=android` 在 App 数据被清后失败，App 报 `PathAccessException: Cannot open file, path = '/sdcard/Android/data/com.example.example/files/script_<runId>.json' (OS Error: Permission denied, errno = 13)`。
+- 原因：运行器先 `adb shell mkdir -p` 建外部目录再 `adb push`；目录由 shell 创建时属 `shell:ext_data_rw`、权限 `drwxrws---`（实测），App 无法遍历，脚本读不到。此前能成功只是因为该目录已由 App 自己创建过（例如先跑过 `flutter run`）。
+- 修复：`tool/auto_report.dart` 改为先确保 debug 包已安装（未安装时 `flutter build apk --debug` + `adb install -r -t`），再用 `adb shell run-as com.example.example sh -c 'cat > /data/data/com.example.example/files/script_<runId>.json'` 以 App uid 写入内部目录，并校验写入字节数（避免半截写入在 App 内表现为难以定位的 `script.error`）；`--dart-define=API_SCRIPT` 相应指向内部路径。`flutter run` 后续的重装会保留内部目录，脚本仍然可用。
+- 文档同步：`im_flutter_sdk/example/README.md` 的 Android 手工下发示例改为同一套 `run-as` 写法，并说明 `run-as` 需要 debug 包已安装。
+
+## 11. 第八轮：single-account nightly 凭据链路从密码切到 token（2026-09-20）
+
+### 11.1 根因：测试早已是 token 登录，CI 管线还停在密码
+
+`single-account-nightly.yml` 与 `tool/ci/nightly_local.sh` 都过不去，因为两边的键名对不上，测试在 `setUpAll` 阶段就失败，一条断言都跑不到：
+
+- `integration_test/single_account_local_test.dart:5-7` 读 `E2E_APP_KEY` / `E2E_USER_ID` / `E2E_USER_TOKEN`，`setUpAll` 调 `loginWithToken`；`chat_client.dart:579` 是 5.0.0 唯一的登录入口（`loginWithPassword` 已随 5.0.0 移除，全包只剩改密回调带 password 字样）。
+- `tool/ci/write_e2e_dart_defines.sh` 的必填项与输出 JSON 只有 `E2E_USER_PASSWORD`，**从不产出** `E2E_USER_TOKEN` → `requireConfiguration()` 抛 `StateError: Missing dart-defines: E2E_USER_TOKEN`。
+- `tool/ci/nightly_local.sh` 同样硬性要求 `E2E_USER_PASSWORD`，本地没有任何地方能产出 token。
+- 时间线（`git log -S`）：密码链路来自 4.x 的 `b77bfeff` / `85a9805e`；`dbab80b3`（5.0.0 平版）把测试改成 token 登录却漏改了 CI 管线。该 workflow 只有 `workflow_dispatch`，5.0.0 分支从未被触发，所以一直没暴露；默认分支（4.x）的密码链路在 2026-08-23/24 曾正常跑通。
+
+### 11.2 修复：每个 job 现换一次 user token（对齐 RN 5.0.0）
+
+user token 服务端 TTL 约 24h（本地模板 `tokenTtl: 86400`），不能存成 secret，只能在运行时换取：
+
+- 新增 `tool/ci/fetch_e2e_user_token.sh`：`client_credentials` 换 app token，再带 `Bearer` 用 `grant_type=inherit` + `autoCreateUser=true` 换 user token；流程与 `example/tool/env_tool.dart` 的 `TokenClient` 一致，脚本结构、重试预算（3 次）、间隔（1s）、超时（15s）与输出契约（**stdout 只输出 token**，诊断走 stderr）与 RN 仓库的 `scripts/ci/fetch_e2e_user_token.js` 一一对应，appKey `orgName#appName` 校验、REST 末尾斜杠剥离同样对齐。
+- `write_e2e_dart_defines.sh` 的必填项与 JSON 键改为 `E2E_USER_TOKEN`，保持「只做 env→JSON、不联网」的单一职责。
+- `nightly_local.sh` 改为要求 `E2E_APP_KEY` / `E2E_USER_ID` / `E2E_REST_API` / `E2E_CLIENT_ID` / `E2E_CLIENT_SECRET`；运行时先换 token 再渲染 dart-define 文件。本地不打 `::add-mask::`——那行命令本身带 token，会把它打到终端。
+- `single-account-nightly.yml` 两个 job 的 prepare 步骤改为 5 个 secret + 现换 token + `::add-mask::`，位置仍在模拟器启动之前（认证问题 fail fast）；新增每日 cron `37 18 * * *`，比 RN 的 nightly（`37 19 * * *`）早一小时，与 device-smoke 的 `0 18 * * *` 各自使用独立 runner、且后者不需要凭据，重叠无影响。
+- 安全边界：`clientId` / `clientSecret` 只在 runner 上换 token，绝不进 dart-define（因而不进 App 包）；换来的一次性 user token 仍会进 dart-define 文件，该文件 mode 0600、不上传、运行后删除。
+- cron 限制：GitHub 的定时任务跑的是**默认分支**最新提交、取默认分支的工作流文件，所以在该文件落地 `flutter2_stable` 之前，5.0.0 分支上的 cron 不会触发，只能手工 dispatch。
+- GitHub environment `flutter-single-account`（`easemob/im_flutter_sdk`）新增 `E2E_REST_API` / `E2E_CLIENT_ID` / `E2E_CLIENT_SECRET`；**`E2E_USER_PASSWORD` 保留不动**，默认分支（4.x）的 nightly 仍在用它。
+
+### 11.3 顺带发现的第二个问题：FL-CONV-002 的未读断言没有依据
+
+凭据打通后第一次真正执行断言，`FL-CONV-002 maintains latest and clears unread state` 在 `unreadCount()` 上以 `Expected: <2> / Actual: <0>` 失败，**Android 与 iOS 表现一致**，所以不是跨端差异：
+
+- `ChatConversation.insertMessage` 的公开契约（`chat_conversation.dart:306-322`）只承诺写入本地库并更新 `latestMessage` 等属性，未提及未读数。
+- Dart 侧 `ChatMessage.createReceiveMessage` 虽把 `isRead` 置为 false 并随 `toJson` 下发，但两个 wrapper 都没有把它应用到 native 消息上（Android native 的 `setRead` 是包私有，见 `01-api-diff-android.md:117`，wrapper 无法调用），native 按已读落库。
+- 追加实验（负结果）：改用 `updateRegradeMessagesAsReadSetting(false)` + `importMessages` 也不行——`messagesCount()` 为 2（导入成功）而 `unreadCount()` 仍为 0，双端一致。即本地产生的消息（insert 或 import）都不涨未读数，只有从另一个客户端真实收到的消息才会。
+- 处理：断言改为钉住实测值 `0`，并加注释说明「真实未读需要第二个客户端，属 im-test-hub 阶段」；`clearConversationUnreadMessageCount` 之后仍断言 `0`，覆盖该 API 的调用路径。
+
+### 11.4 复验结果（本地 ngi 集群凭据，走 CI 等价脚本）
+
+- `bash tool/ci/nightly_local.sh android` → `exit 0`，7/7 通过。
+- `bash tool/ci/nightly_local.sh ios` → `exit 0`，7/7 通过。
+- `FL-AUTH-001` 的四条断言在 token 登录下全部成立：`getCurrentUserId()` 与 `currentUserId` 均等于 `E2E_USER_ID`、`isConnected()` 为 true、`getAccessToken()` 非空。
+- `tool/ci/fetch_e2e_user_token.sh` 单独验证：正向取到 token；`clientSecret` 错误 → 退出码 1、stdout 为空、服务端返回 `invalid_grant client_secret does not match`（说明 appKey 与 clientId 的配对由服务端兜底校验，配错会在 prepare 步骤 fail fast，不会拖到设备上才炸）；缺环境变量、appKey 不含 `#` → 退出码 2。
+- `bash tool/ci/run_quality.sh` → `exit 0`（format 0 changed、5 个包 analyze 无问题、30 个测试、3 项一致性检查）。
+- 未验证边界：CI 的 `E2E_APP_KEY` / `E2E_USER_ID` 是 secret，本地无法比对，因此「CI 那套凭据与本轮本地使用的 ngi 凭据属于同一个 app/账号」只能由第一次 `workflow_dispatch` 确认；若不属同一 app，失败会出现在 prepare 步骤并给出可读错误。
+
+### 11.5 「跑前清空上一次数据」的确认（用户追加要求）
+
+两条链路都会在跑前清理，且实测有效：
+
+- `run_android_emulator_test.sh:29`：`flutter test` 之前 `adb -s emulator-5554 uninstall com.example.example`（原因见该脚本 `:21-28`）；`nightly_local.sh:76` 与 `single-account-nightly.yml` 都经由它。
+- `run_ios_simulator_test.sh:111`：在 attempt 循环内、每次 attempt 之前 `xcrun simctl uninstall <udid> com.example.example`（原因见 `:106-110`），因此重试也不会继承上一次的数据。
+- 清理效果实测：向 App 内部目录写入 marker → `adb uninstall` → 重新安装后 marker 及其所在目录均不存在；一次 nightly 结束后设备上 App 未安装（Android `pm path` 为空、iOS `get_app_container` 报 no such file），下一次运行天然是干净起点。
+- nightly 额外稳健性实测：用 `make auto-report PLATFORM=android` 制造真实残留登录态（`com.example.example_preferences.xml` 中存在 `easemob.chat.loginuser` / `login_with_token` / `login.token`），再**绕过清数据**直接执行 `flutter test integration_test/single_account_local_test.dart -d emulator-5554 --dart-define-from-file=...` → 仍然 7/7 通过。原因是用例每次使用微秒级唯一 conversation ID、`tearDownAll` 会 `logout`，且同一账号重复 `loginWithToken` 不被 native 拒绝。
+- 结论：对 nightly 而言「跑前清数据」是兜底而非必需，对 smoke 的 `FL-APP-001` 则是必需（见第 10.1 节）；两条链路共用同一对 wrapper，清理保持在跑前执行即可同时覆盖。
+
+## 12. 第九轮：多设备事件映射缺口导致 iOS 集成测试加载即崩（2026-09-20）
+
+### 12.1 现象
+
+iOS 上手工跑 nightly 时，测试尚未开始就失败：
+
+```
+Failed to load ".../integration_test/single_account_local_test.dart": Null check operator used on a null value
+  package:im_flutter_sdk/src/managers/chat_client.dart 187:6  ChatClient._onMultiDeviceGroupEvent
+```
+
+即 native 在登录后立刻下发了 `onMultiDeviceGroupEvent`，Dart 事件处理器抛异常，异常冒泡到测试框架，导致整套用例在 loading 阶段被判失败。
+
+### 12.2 根因：`convertIntToChatMultiDevicesEvent` 表缺值 + 调用点用 `!` 解包
+
+`chat_client.dart` 的四个多设备处理器都用 `convertIntToChatMultiDevicesEvent(map['event'])!` 解包；而 `chat_transform_tools.dart` 的映射表只覆盖 `-1`、`2-6`、`10-29`、`40-45`、`52`、`60-66`，**缺 30、31、32、33、34**，函数对未知值返回 `null` → `!` 抛 "Null check operator used on a null value"。
+
+native 侧（三份权威来源一致）：
+
+| 值 | iOS HyphenateChat 5.0.0 `EMMultiDevicesEvent` | Android 5.0.0 `EMMultiDeviceListener` | RN 5.0.0 `ChatMultiDeviceEvent` |
+|---|---|---|---|
+| 30 | `GroupAddWhiteList` | `GROUP_ADD_USER_WHITE_LIST` | `GROUP_ADD_USER_ALLOW_LIST` |
+| 31 | `GroupRemoveWhiteList` | `GROUP_REMOVE_USER_WHITE_LIST` | `GROUP_REMOVE_USER_ALLOW_LIST` |
+| 32 | `GroupAllBan` | `GROUP_ALL_BAN` | `GROUP_ALL_BAN` |
+| 33 | `GroupRemoveAllBan` | `GROUP_REMOVE_ALL_BAN` | `GROUP_REMOVE_ALL_BAN` |
+| 34 | `GroupUpdate`（**iOS 独有**） | 无 | 无 |
+| 44 / 45 | `ChatThreadUpdate` / `ChatThreadKick` | `THREAD_UPDATE` / `THREAD_KICK` | `THREAD_UPDATE` / `THREAD_KICK` |
+
+- 崩溃值必为 {30, 31, 32, 33, 34} 之一：这是 iOS 5.0.0 枚举与 Dart 表的差集（未逐值抓取，但五者缺失已足以解释，且修复覆盖全部五种）。
+- 缺口**不是 5.0.0 引入的**：iOS 4.17.1 / 4.19.1 / 4.24.1 的枚举同样有 30-34 且 34 一直是 `GroupUpdate`，Android 4.22.1 的常量同样有 30-33 —— 自 4.x 起就存在，只是此前没人跑到会触发这些事件的多设备场景。
+- 上表 7 个取值（30/31/32/33/34/44/45）在 Dart 枚举中的现状：**6 个成员本已存在**且命名与顺序正确（`GROUP_ADD_USER_ALLOW_LIST`、`GROUP_REMOVE_USER_ALLOW_LIST`、`GROUP_ALL_BAN`、`GROUP_REMOVE_ALL_BAN`、`CHAT_THREAD_UPDATE`、`CHAT_THREAD_KICK`，见 `chat_enums.dart:652-760`），**只有 34 没有成员**。因此 30-33 属纯 switch 漏项，34 需要新增成员（用户裁决：加入枚举）。枚举里另有 `GROUP_DISABLED` / `GROUP_ABLE` 两个成员在上述四版 native 枚举中都不存在（历史遗留，本次不动）。
+- 附带发现：**44/45 映射颠倒**（Dart 原为 44→`CHAT_THREAD_KICK`、45→`CHAT_THREAD_UPDATE`），与 iOS/Android/RN 三份来源都相反。它不会崩，只会静默投递错误事件，因此更难发现。
+- 另一处跨端差异（交回 native/记录，不在 Flutter 侧裁决）：iOS 用 34 表示「群信息更新」、52 表示「群成员自定义属性变更」；Android 只有 52 且命名为 `GROUP_METADATA_CHANGED`。Dart 按整数映射，只能取一个名字，目前 52 → `GROUP_MEMBER_ATTRIBUTES_CHANGED`（取 iOS 语义），Android 的「群信息更新」因而会以该名字投递；该差异已写进 `GROUP_UPDATE` 的双语注释。
+- 同类隐患（用户裁决：先记录不动）：`chat_client.dart` 的 `_onMultiDevicesConversationEvent` 里 `ChatConversationType.values[map['convType']]` 同样是「native 原值直接索引 Dart 枚举」，未知值会抛 `RangeError` 并同样冒泡出处理器。本次不改，留待与 native 确认 `convType` 取值域后再处理。
+
+### 12.3 修复
+
+- `chat_enums.dart`：`ChatMultiDevicesEvent` 新增 `GROUP_UPDATE`（native 34，iOS 群组信息更新），位于 `GROUP_REMOVE_ALL_BAN` 之后以保持 native 数值顺序，带中英双语注释并说明「仅 iOS 上报、Android 用 52」。
+- `chat_transform_tools.dart`：补齐 `case 30/31/32/33`、新增 `case 34`；把 44/45 改为 `CHAT_THREAD_UPDATE` / `CHAT_THREAD_KICK`；未知值分支改为写 `ChatLog.d` 诊断日志后返回 `null`（保持该函数**公开签名不变**——它经 `inner_headers.dart` 属于公开 API）。
+- `chat_client.dart`：四个处理器（group/contact/thread/conversation）去掉 `!`，改为 `?? ChatMultiDevicesEvent.UnKnow`，与原生「未知事件 = -1」的语义对齐；未知值不再能让 MethodChannel 处理器抛异常。RN 的同类函数在 default 分支同样不抛异常（上报后原值透传）。
+- `im_flutter_sdk/CHANGELOG.md`：5.0.0 段补记新增枚举成员与映射修复。
+- 新增回归测试 `im_flutter_sdk/test/handlers/multi_device_event_test.dart`：用 `_CapturingClient` 截获 `ChatClient` 注册的 native 事件处理器，按真实 payload 回放
+  ① 覆盖 native 声明的全部取值（任一值无映射即失败）；
+  ② 钉住 30-34 与 44/45 的语义；
+  ③ 99/缺失事件键 → 投递 `UnKnow` 且不抛异常。
+
+### 12.4 复验
+
+- 回归测试在修复前失败、修复后通过，且失败信息与线上一致（`Null check operator used on a null value`、`native value 30`）——已用 `git stash` 临时回退两个源文件实测。
+- `run_quality.sh` → `exit 0`（34 个测试，比此前多 4 个；5 个包 analyze 无问题；3 项一致性检查通过）。
+- `nightly_local.sh ios` → `exit 0`，7/7 通过；`nightly_local.sh android` → `exit 0`，7/7 通过。
+- 未验证边界：本轮没有在线复现「另一台设备触发 30/31/32/33/34 事件」的真实推送（需要同账号第二台在线设备），该路径由单元测试按 native payload 回放覆盖。
+
+## 13. 第十轮：PR #629 三个 CI 全红，根因是 gitignore 掉的 example `env.dart`（2026-09-20）
+
+### 13.1 现象
+
+PR #629（fork `AsteriskZuo:5.0.0` → `easemob:5.0.0`，head `ce9f09a8`）三个 job 全红，且指向同一条报错：
+
+| job | 失败步骤 | 关键日志 |
+|---|---|---|
+| Quality and contracts | `run_quality.sh` 的 `flutter analyze --fatal-infos`（第 5 个包 `im_flutter_sdk/example`） | 6 条 error：`Target of URI doesn't exist: '../env.dart'`（`auto/auto_mode.dart:7`、`pages/init_page.dart:6`、`pages/login_page.dart:6`）与 `Undefined name 'environment'` |
+| Android debug build | `:app:compileFlutterBuildDebug` | `Error: Error when reading 'lib/env.dart': No such file or directory` → `BUILD FAILED in 2m 14s` |
+| iOS simulator build | Xcode build 的 Dart 编译阶段 | 同上 |
+
+**不是本轮改动引入的**：同为失败的 09-18 推送 run（`35339785929`）里 Android/iOS 编译已经是同一报错；当时 quality job 先死在 `dart format`（`tool/auto_report.dart` 未格式化，已由 `1100ae41` 修掉），把后面的 analyze 挡住，所以这个缺口被掩盖到本轮才暴露。
+
+### 13.2 根因
+
+`im_flutter_sdk/example/lib/env.dart` 被 `im_flutter_sdk/.gitignore:36` 忽略，因为 `make env-gettoken` 会把真实集群凭据写进它；而 example 的三个文件 `import '../env.dart'`（`auto/auto_mode.dart`、`pages/init_page.dart`、`pages/login_page.dart`，`environment` 只作为初始化/登录的默认值与 `$config.*` 兜底）。本地由 `make config` 生成占位（`env_tool.dart ensure`：从 `example/templates/env.example.dart` 拷一份空 `const Map<String, Object?> environment = {}`，已存在则跳过），CI 里没有任何等价步骤，于是全新检出永远编译不过 example。
+
+即 **CI 缺一步，而不是 example 写错**：把带凭据的文件提交进公开仓库不可接受，正确做法是让 CI 生成占位。这一步必须是「只补编译所需的那一个文件」，不能顺带替使用者选集群：
+
+- `environment` 的运行期消费者只有 example 自己的页面与 auto 模式（`lib/options_codec.dart`、`lib/pages/init_page.dart`、`lib/pages/login_page.dart`、`lib/auto/auto_mode.dart` 的 `$config.*` 与 `cluster` 记录）；两个集成测试都不读它——`single_account_local_test.dart` 只读 `String.fromEnvironment` 的 `E2E_APP_KEY/E2E_USER_ID/E2E_USER_TOKEN`，`no_login_presence_test.dart` 用内置公开 appKey。
+- 本地 ngi 的 `env.dart` 键集合为 `cluster/appKey/accounts/groups/rooms` + `chatOptions`(`dataSyncType`/`debugMode`/`enableUserInfo`)，**没有任何 server 字段**（`imServer`/`restServer`/`webSocketServer`/`enableDNSConfig`）：集群在生成时由 appKey 决定，运行期不再携带服务器信息。因此空占位不改变连的是哪个集群——CI 的集群由 `E2E_*` 凭据决定。
+- `example/config.local.json` 只有 `env_tool.dart` 的 `gettoken` / `use` 会读，CI 里没有任何步骤读它；而它正是 ebs/ngi/私有化集群选择与凭据的载体（模板里写着 `defaultCluster: "ebs"`）。一旦 CI 造出这份文件，就等于替使用者做了一个没人做过的集群选择。
+
+### 13.3 修复
+
+- 新增 `tool/ci/ensure_example_env.sh`：仅在 `im_flutter_sdk/example/lib/env.dart` 不存在时，从 `example/templates/env.example.dart` 拷一份空 `const Map<String, Object?> environment = {}` 占位并设为 mode 0600；已存在则原样保留，绝不覆盖本地真实环境。
+  - 刻意**不调用** `env_tool.dart ensure` / `make config`：那两步会连带生成 `example/config.local.json`（见 13.2 最后一条），把 ebs/ngi 的选择带进 CI 工作区。集群选择继续只属于本地 `make env-gettoken` / `make env-use`。
+  - 也因此不再依赖 Dart 工具链跑脚本（只需 `cp` / `chmod`），对 `pub get` 无要求。
+- `tool/ci/run_quality.sh`：在 5 个 `pub get` 之前调用它，quality job 自身成为自足门禁。
+- `tool/ci/run_android_emulator_test.sh` / `tool/ci/run_ios_simulator_test.sh`：在 `flutter pub get` 之前调用它；device-smoke 与 single-account-nightly 都只经过这两个 wrapper（`smoke_local.sh`、`nightly_local.sh` 亦然），因此 5.0.0 新增的两个设备工作流在 CI 上同样被覆盖。
+- `.github/workflows/ci.yml`：`android-build` / `ios-build` 各加一步 `./tool/ci/ensure_example_env.sh`（这两个 job 直接调 `flutter build`，不经过任何脚本）。
+- 文档：`CONTRIBUTING.md`（质量门禁、设备集成测试两处）与 `im_flutter_sdk/docs/ci/flutter-only-ci.md` 记录该前置步骤、以及「只补 env.dart、不生成 config.local.json」的原因。
+
+### 13.4 复验
+
+用 `git ls-files` 从工作区导出「全新检出等价目录」（无 `.git`、`.dart_tool`、`config.local.json`、`lib/env.dart`），在其中逐个复刻三个 job：
+
+| job | 复刻命令 | 结果 |
+|---|---|---|
+| Quality and contracts | `./tool/ci/run_quality.sh` | exit 0：5 个包 `No issues found!`、34 个测试 `All tests passed!`、3 项一致性检查通过 |
+| Android debug build | `./tool/ci/ensure_example_env.sh` + `flutter pub get` + `flutter build apk --debug` | exit 0：`✓ Built build/app/outputs/flutter-apk/app-debug.apk` |
+| iOS simulator build | 同上换 `flutter build ios --simulator --debug --no-codesign` | exit 0：`✓ Built build/ios/iphonesimulator/Runner.app` |
+
+因果复现（同一目录内）：删掉 `lib/env.dart` 后 `flutter analyze --fatal-infos` 报出与 CI 完全一致的 6 条 error（exit 1）；执行 `tool/ci/ensure_example_env.sh` 后同一命令 `No issues found!`（exit 0）。
+
+集群选择未被干扰：上述复刻全程 `example/config.local.json` 都不存在（脚本不创建它），`flutter analyze --fatal-infos` 与两个 `flutter build` 均通过，说明「有没有 config.local.json」与编译无关；`ensure` 的幂等/保护性也复测过——冷启动输出 `Created: .../lib/env.dart`（模板里的空 map，mode 0600），再跑输出 `Skip: ... already exists`，换成含真实内容的版本后再跑内容原样保留。
+
+未验证边界：本地为 Xcode 26.2 / macOS 15，CI 是 macos-26 + Xcode 26.3 的 runner 镜像；镜像差异不在本轮范围，三个 job 的最终结论以推送后的 CI 为准。
+
+> 注：本轮之后用户裁决「项目侧不做多集群」，`clusters` / `defaultCluster` / `make env-use` 已全部移除，`config.local.json` 只剩「当前这一个环境」的语义——上面提到的 `use`、集群选择相关内容以第 14 节为准。
+
+## 14. 第十一轮：项目侧不再支持多集群，配置只描述一个环境（2026-09-20）
+
+### 14.1 用户裁决
+
+第 13 轮的修复里，`tool/ci/ensure_example_env.sh` 一度复用 `make config`（`env_tool.dart ensure`），于是 CI 会顺带生成一份模板 `example/config.local.json`（内含 `clusters.ebs` / `clusters.ngi` 与 `defaultCluster: "ebs"`）。用户评审指出：**这个产品支持多种集群，但项目实现侧不做「多选」**——要换集群就把对应的值直接填进配置文件；项目本身不支持多集群；便利性（比如自己留几份 `config.ngi.json` / `config.ebs.json` 副本）由使用者在 Git 外自行维护；不要为此给项目增加复杂度；**现有实现里的 ngi / ebs 内容建议移除**。
+
+据此确立的边界：项目侧只认「当前配置的那一个环境」，`config.local.json` 描述的就是它；跑哪个环境是使用者的本地动作，工具不做抽象、不做缓存、不做激活。私有化部署保留——它不是「选哪个集群」，而是「这一个环境是不是私有化」。
+
+### 14.2 移除清单
+
+| 位置 | 移除内容 |
+|---|---|
+| `example/templates/config.local.example.json` | `clusters` 映射、`defaultCluster`、`accounts/groups/rooms` 每条的 `cluster` 字段；`restApi` / `appKey` / `clientId` / `clientSecret` 提到顶层 |
+| `example/tool/env_tool.dart`（549 → 356 行） | `use` 子命令、`.env/env.<cluster>.dart` 缓存与 `activateCluster`、`cacheDir` / `cachedEnv`、集群名校验、`defaultCluster` 解析（`_resolveDefaultCluster`）、`_validateClusterAssignments`、`_itemCluster`、`_resourcesForCluster`、多集群的「跳过并累计失败」逻辑；`gettoken` 现在直接写 `lib/env.dart`，必填字段缺失即 fail fast（退出码 1） |
+| `Makefile` | `env-use` target；`env-gettoken` 的描述改为单环境 |
+| `im_flutter_sdk/.gitignore` | `/example/.env/` |
+| 生成的 `env.dart` | `"cluster"` 键；`example/lib/auto/auto_mode.dart` 的 `config.load` 日志字段 |
+| `tool/auto_report.dart` | `run.json` 元数据里的 `cluster`（原先从 env.dart 正则提取，已无来源）、报告里一处 "for this cluster" 文案 |
+| `example/scripts/script_500_apis_positive.json` | 文案里的 "ngi 集群" → "测试环境" |
+| `example/test/env_tool_test.dart` | 4 个多集群用例换成 10 个单环境用例（含旧格式报错、私有化字段映射、账号 id 缺失、模板幂等拷贝） |
+| 文档与 CI 注释 | `CONTRIBUTING.md`、worktree `AGENTS.md`、`example/README.md`、`im_flutter_sdk/docs/ci/flutter-only-ci.md`、`tool/ci/ensure_example_env.sh`、`tool/ci/fetch_e2e_user_token.sh` |
+
+### 14.3 保留与迁移
+
+- **保留私有化部署**（用户裁决）：`enablePrivateConfig` + `webSocketServer` / `restServer` / `msyncServer`（映射为 Dart 的 `imServer`）+ 可选 `imPort` / `webSocketPort`，开启后 `enableDNSConfig=false`。
+- **旧格式有一句明确报错**：`config.local.json` 仍带 `clusters` 或 `defaultCluster` 时，`generateEnvironment` 抛 `config.local.json still uses the removed multi-cluster shape; put restApi, appKey, clientId and clientSecret at the top level ...` 并以退出码 1 结束。
+- **资源项里遗留的 `cluster` 字段会被丢弃**（不报错），避免从旧文件粘贴 `accounts` / `groups` / `rooms` 时被卡住。
+- 本地 `example/config.local.json` 已按新格式拍平（ngi 的值提到顶层，原文件备份在仓库外 `/tmp/config.local.json.pre-single-cluster`），旧的 `.env/` 缓存目录已删除。
+
+### 14.4 复验
+
+- `flutter analyze --fatal-infos`（example）与 `dart analyze tool/auto_report.dart`：均 `No issues found!`。
+- `flutter test test/env_tool_test.dart`：10/10；`flutter test`（example 全量）：15/15；`dart run tool/auto_report.dart --self-test`：`auto_report self-test passed`。
+- 真实链路：`make env-gettoken`（ngi 凭据）exit 0，`zuoyu01` / `zuoyu02` 各取到 user token，`lib/env.dart` 重新生成（969 字节、mode 0600、无 `cluster` 键、无 `clientSecret`）。
+- `tool/ci/run_quality.sh`：exit 0（5 个包 `No issues found!`、34 个测试、3 项一致性检查通过）。
+- 设备链路：`smoke_local.sh android` 6/6、exit 0；`smoke_local.sh ios` 6/6、exit 0（真实模拟器上跑，确认重构没有影响 wrapper 与 App 编译）。
+- 未验证边界：没有真实跑 `make auto-report`（会依赖已安装 App 与 auto 脚本，本轮只跑 `--self-test` 覆盖报告工具的解析/汇总路径）。

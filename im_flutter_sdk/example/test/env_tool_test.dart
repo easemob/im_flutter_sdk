@@ -7,19 +7,14 @@ import '../tool/env_tool.dart';
 
 void main() {
   group('environment generation', () {
-    test('builds a public cluster without private server options', () {
+    test('builds the environment without private server options', () {
       final environment = buildEnvironment(
-        clusterName: 'ebs',
-        defaultCluster: 'ebs',
-        cluster: <String, dynamic>{
-          'appKey': 'org#app',
-          'chatOptions': <String, Object?>{'debugMode': true},
-        },
         config: <String, dynamic>{
+          'appKey': 'org#app',
           'enablePrivateConfig': false,
           'chatOptions': <String, Object?>{'dataSyncType': 7},
           'groups': <Object?>[
-            <String, Object?>{'id': 'g1', 'cluster': 'ebs'},
+            <String, Object?>{'id': 'g1'},
           ],
         },
         accounts: <Map<String, Object?>>[
@@ -28,9 +23,9 @@ void main() {
       );
 
       expect(environment['appKey'], 'org#app');
-      expect(environment['debugMode'], isTrue);
       expect(environment['dataSyncType'], 7);
       expect(environment, isNot(contains('restServer')));
+      expect(environment, isNot(contains('enableDNSConfig')));
       expect(environment['groups'], <Object?>[
         <String, Object?>{'id': 'g1'},
       ]);
@@ -38,13 +33,8 @@ void main() {
 
     test('maps private msyncServer to Flutter imServer', () {
       final environment = buildEnvironment(
-        clusterName: 'ebs',
-        environmentName: 'private',
-        defaultCluster: 'ebs',
-        cluster: <String, dynamic>{
-          'appKey': 'org#app',
-        },
         config: <String, dynamic>{
+          'appKey': 'org#app',
           'enablePrivateConfig': true,
           'webSocketServer': 'wss.example.test',
           'restServer': 'https://rest.example.test',
@@ -55,13 +45,32 @@ void main() {
       );
 
       expect(environment['enableDNSConfig'], isFalse);
-      expect(environment['cluster'], 'private');
       expect(environment['imServer'], 'im.example.test');
       expect(environment['imPort'], 6717);
+      expect(environment, isNot(contains('msyncServer')));
+    });
+
+    test('rejects private mode without the server fields', () {
+      expect(
+        () => buildEnvironment(
+          config: <String, dynamic>{
+            'appKey': 'org#app',
+            'enablePrivateConfig': true,
+          },
+          accounts: <Map<String, Object?>>[],
+        ),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            contains('webSocketServer, restServer, imServer'),
+          ),
+        ),
+      );
     });
 
     test('renders a Dart map without credential-source fields', () {
-      final output = renderEnvironmentDart('ebs', <String, Object?>{
+      final output = renderEnvironmentDart(<String, Object?>{
         'appKey': r'org$app',
         'accounts': <Object?>[
           <String, Object?>{'id': 'u1', 'token': 'token-1'},
@@ -70,6 +79,8 @@ void main() {
 
       expect(output, contains(r'org\$app'));
       expect(output, contains('token-1'));
+      expect(output, contains('config.local.json'));
+      expect(output, isNot(contains('cluster')));
       expect(output, isNot(contains('clientSecret')));
     });
 
@@ -97,18 +108,16 @@ void main() {
       });
       final client = TokenClient();
       try {
-        final cluster = <String, dynamic>{
+        final config = <String, dynamic>{
           'restApi': 'http://${server.address.host}:${server.port}',
           'appKey': 'org#app',
           'clientId': 'client-id',
           'clientSecret': 'client-secret',
         };
-        final appToken = await client.fetchAppToken(cluster);
+        final appToken = await client.fetchAppToken(config);
         final accounts = await client.fetchUserTokens(
-          clusterName: 'local',
-          defaultCluster: 'local',
-          cluster: cluster,
           config: <String, dynamic>{
+            ...config,
             'tokenTtl': 60,
             'accounts': <Object?>[
               <String, Object?>{'id': 'u1'},
@@ -137,8 +146,33 @@ void main() {
       }
     });
 
-    test('uses the only configured cluster when ebs is omitted', () async {
-      final temporary = await Directory.systemTemp.createTemp('env-tool-ngi-');
+    test('requires every account to have a user id', () async {
+      final client = TokenClient();
+      try {
+        await expectLater(
+          client.fetchUserTokens(
+            config: <String, dynamic>{
+              'accounts': <Object?>[
+                <String, Object?>{'id': 'TODO-user1'},
+              ],
+            },
+            appToken: 'app-token',
+          ),
+          throwsA(
+            isA<FormatException>().having(
+              (error) => error.message,
+              'message',
+              contains('accounts[0].id'),
+            ),
+          ),
+        );
+      } finally {
+        client.close();
+      }
+    });
+
+    test('generates lib/env.dart from a flat config', () async {
+      final temporary = await Directory.systemTemp.createTemp('env-tool-');
       final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
       var requestCount = 0;
       final serving = server.listen((request) async {
@@ -157,30 +191,26 @@ void main() {
       try {
         final paths = EnvPaths(temporary);
         await paths.localConfig.writeAsString(jsonEncode(<String, Object?>{
-          'defaultCluster': 'ebs',
-          'clusters': <String, Object?>{
-            'ngi': <String, Object?>{
-              'restApi': 'http://${server.address.host}:${server.port}',
-              'appKey': 'org#app',
-              'clientId': 'client-id',
-              'clientSecret': 'client-secret',
-            },
-          },
+          'restApi': 'http://${server.address.host}:${server.port}',
+          'appKey': 'org#app',
+          'clientId': 'client-id',
+          'clientSecret': 'client-secret',
           'accounts': <Object?>[
-            <String, Object?>{'id': 'u1', 'cluster': 'ebs'},
+            <String, Object?>{'id': 'u1'},
           ],
           'groups': <Object?>[
-            <String, Object?>{'id': 'g1', 'cluster': 'ebs'},
+            <String, Object?>{'id': 'g1', 'cluster': 'ngi'},
           ],
         }));
 
-        expect(await generateClusterEnvironments(paths), 0);
-        final generated = await paths.cachedEnv('ngi').readAsString();
-        expect(generated, contains('"cluster": "ngi"'));
+        await generateEnvironment(paths);
+
+        final generated = await paths.activeEnv.readAsString();
+        expect(generated, contains('"appKey": "org#app"'));
         expect(generated, contains('"id": "u1"'));
         expect(generated, contains('"id": "g1"'));
-        expect(await paths.activeEnv.readAsString(),
-            contains('Active cluster: ngi'));
+        expect(generated, isNot(contains('cluster')));
+        expect(generated, isNot(contains('client-secret')));
         expect(requestCount, 2);
       } finally {
         await server.close(force: true);
@@ -189,104 +219,84 @@ void main() {
       }
     });
 
-    test('requires a valid default when multiple clusters are configured',
-        () async {
+    test('rejects the removed multi-cluster shape', () async {
       final temporary =
-          await Directory.systemTemp.createTemp('env-tool-default-');
+          await Directory.systemTemp.createTemp('env-tool-legacy-');
       try {
         final paths = EnvPaths(temporary);
         await paths.localConfig.writeAsString(jsonEncode(<String, Object?>{
-          'defaultCluster': 'missing',
+          'defaultCluster': 'ebs',
           'clusters': <String, Object?>{
-            'ebs': <String, Object?>{},
-            'ngi': <String, Object?>{},
+            'ngi': <String, Object?>{'appKey': 'org#app'},
           },
         }));
 
         await expectLater(
-          generateClusterEnvironments(paths),
-          throwsA(isA<FormatException>()),
+          generateEnvironment(paths),
+          throwsA(
+            isA<FormatException>().having(
+              (error) => error.message,
+              'message',
+              contains('multi-cluster shape'),
+            ),
+          ),
         );
       } finally {
         await temporary.delete(recursive: true);
       }
     });
 
-    test('activates a previously generated cluster environment', () async {
-      final temporary = await Directory.systemTemp.createTemp('env-tool-test-');
-      try {
-        final paths = EnvPaths(temporary);
-        await paths.cacheDir.create(recursive: true);
-        await paths.cachedEnv('ngi').writeAsString(
-              'const Map<String, Object?> environment = '
-              '<String, Object?>{"cluster": "ngi"};\n',
-            );
-
-        await activateCluster(paths, 'ngi');
-
-        final active = await paths.activeEnv.readAsString();
-        expect(active, contains('Active cluster: ngi'));
-        expect(active, contains('"cluster": "ngi"'));
-      } finally {
-        await temporary.delete(recursive: true);
-      }
-    });
-
-    test('private mode generates and activates only env.private.dart',
-        () async {
+    test('requires the public credentials before fetching tokens', () async {
       final temporary =
-          await Directory.systemTemp.createTemp('env-tool-private-');
-      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-      var requestCount = 0;
-      final serving = server.listen((request) async {
-        requestCount++;
-        final body = Map<String, dynamic>.from(
-          jsonDecode(await utf8.decoder.bind(request).join()) as Map,
-        );
-        request.response.headers.contentType = ContentType.json;
-        request.response.write(jsonEncode(<String, Object?>{
-          'access_token': body['grant_type'] == 'client_credentials'
-              ? 'app-token'
-              : 'user-token',
-        }));
-        await request.response.close();
-      });
+          await Directory.systemTemp.createTemp('env-tool-missing-');
       try {
         final paths = EnvPaths(temporary);
         await paths.localConfig.writeAsString(jsonEncode(<String, Object?>{
-          'defaultCluster': 'ebs',
-          'enablePrivateConfig': true,
-          'webSocketServer': 'wss.private.test',
-          'restServer': 'https://rest.private.test',
-          'msyncServer': 'im.private.test',
-          'clusters': <String, Object?>{
-            'ebs': <String, Object?>{
-              'restApi': 'http://${server.address.host}:${server.port}',
-              'appKey': 'org#app',
-              'clientId': 'client-id',
-              'clientSecret': 'client-secret',
-            },
-            'ngi': <String, Object?>{
-              'restApi': 'http://unused.invalid',
-              'appKey': 'unused#app',
-              'clientId': 'unused',
-              'clientSecret': 'unused',
-            },
-          },
-          'accounts': <Object?>[
-            <String, Object?>{'id': 'u1', 'cluster': 'ebs'},
-          ],
+          'restApi': 'TODO',
+          'appKey': 'org#app',
         }));
 
-        expect(await generateClusterEnvironments(paths), 0);
-        expect(await paths.cachedEnv('private').exists(), isTrue);
-        expect(await paths.cachedEnv('ebs').exists(), isFalse);
-        expect(await paths.cachedEnv('ngi').exists(), isFalse);
-        expect(await paths.activeEnv.readAsString(), contains('"private"'));
-        expect(requestCount, 2);
+        await expectLater(
+          generateEnvironment(paths),
+          throwsA(
+            isA<FormatException>().having(
+              (error) => error.message,
+              'message',
+              contains('missing restApi, clientId, clientSecret'),
+            ),
+          ),
+        );
       } finally {
-        await server.close(force: true);
-        await serving.cancel();
+        await temporary.delete(recursive: true);
+      }
+    });
+
+    test('copies the local files only when they are missing', () async {
+      final temporary =
+          await Directory.systemTemp.createTemp('env-tool-files-');
+      try {
+        final paths = EnvPaths(temporary);
+        await Directory('${temporary.path}/templates').create(recursive: true);
+        await paths.configTemplate.writeAsString('{"restApi": "TODO"}');
+        await paths.envTemplate.writeAsString(
+          'const Map<String, Object?> environment = <String, Object?>{};\n',
+        );
+
+        await ensureLocalFiles(paths);
+        expect(await paths.localConfig.exists(), isTrue);
+        expect(await paths.activeEnv.exists(), isTrue);
+
+        await paths.activeEnv.writeAsString(
+          'const Map<String, Object?> environment = '
+          '<String, Object?>{"appKey": "mine"};\n',
+        );
+        await ensureLocalFiles(paths);
+
+        expect(
+          await paths.activeEnv.readAsString(),
+          contains('"appKey": "mine"'),
+        );
+      } finally {
         await temporary.delete(recursive: true);
       }
     });

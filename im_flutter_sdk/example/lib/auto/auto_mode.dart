@@ -136,7 +136,6 @@ class AutoMode {
     } else {
       store.log('config.load', {
         'source': 'env.dart',
-        'cluster': config['cluster'],
         'keys': config.keys.toList(),
       });
     }

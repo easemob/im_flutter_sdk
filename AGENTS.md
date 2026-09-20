@@ -23,6 +23,8 @@
 
 ## 开发环境初始化
 
+开发本仓库统一使用 Flutter 3.47.0（与 CI 的 `.github/workflows/ci.yml` 中 `FLUTTER_VERSION` 一致）。dev 依赖 `flutter_lints 6` 要求 Dart >= 3.8（Flutter >= 3.32），低于该版本无法解析本仓库的开发依赖；各包 `environment` 中声明的 Flutter >= 3.3.0 是给 SDK 使用者的支持下限，两者不要混淆。
+
 项目根目录有 `Makefile`，提供一键初始化：
 
 ```bash
@@ -32,8 +34,7 @@ make setup   # config + deps + pods
 | target | 作用 |
 |--------|------|
 | `make config` | 创建本地 `example/config.local.json` 与占位 `example/lib/env.dart`（均已 gitignore） |
-| `make env-gettoken` | 按 `config.local.json` 为全部集群自动获取 User Token、生成 `.env/env.<cluster>.dart`，并激活默认/唯一集群 |
-| `make env-use CLUSTER=<name>` | 将已生成的指定集群环境激活为 `example/lib/env.dart` |
+| `make env-gettoken` | 按 `config.local.json` 为各账号自动获取 User Token，并直接生成 `example/lib/env.dart`（项目只配置一个环境，切换环境＝改这份文件） |
 | `make auto-report PLATFORM=<android\|ios> [DEVICE=<id>] [SCRIPT=<json>]` | 运行 5.0.0 auto 脚本（默认正向 `script_500_apis_positive.json`，用 `SCRIPT=` 指定反向脚本），显式激活模拟器并在被 Git 忽略的 `reports/5.0.0/<run-id>/` 生成脱敏事件、崩溃证据和问题候选 |
 | `make auto-compare ANDROID=<run-dir> IOS=<run-dir>` | 对比同一路径的 Android/iOS 两次运行，输出 `reports/5.0.0/comparison-<路径>-<时间戳>.md`，步骤不一致时退出码非 0 |
 | `make deps` | `flutter pub get`（example 目录，自动解析 path 依赖） |

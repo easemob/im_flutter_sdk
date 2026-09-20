@@ -66,7 +66,7 @@ class AttachmentPicker {
 
   /// Pick an attachment of the specified kind; returns the record.
   static Future<AttachmentRecord?> pick(AttachmentKind kind) async {
-    final result = await FilePicker.platform.pickFiles(
+    final file = await FilePicker.pickFile(
       type: switch (kind) {
         AttachmentKind.image => FileType.image,
         AttachmentKind.video => FileType.video,
@@ -74,7 +74,6 @@ class AttachmentPicker {
         AttachmentKind.file => FileType.any,
       },
     );
-    final file = result?.files.single;
     final path = file?.path;
     if (file == null || path == null || path.isEmpty) return null;
 
@@ -92,7 +91,7 @@ class AttachmentPicker {
       kind: kind,
       name: file.name,
       path: path,
-      size: file.size,
+      size: (await file.length()) ?? 0,
       extension: file.extension,
       width: width,
       height: height,

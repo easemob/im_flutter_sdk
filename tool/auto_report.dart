@@ -12,6 +12,17 @@ const _negativeScriptRelativePath =
     'im_flutter_sdk/example/scripts/script_500_apis_negative.json';
 const _defaultScriptRelativePath = _positiveScriptRelativePath;
 
+/// Absolute path of the auto script inside the app's internal files dir.
+///
+/// Android only: `/sdcard/Android/data/<pkg>/files/` is readable by the app only
+/// when the app created that directory itself. A directory created by adb
+/// belongs to `shell:ext_data_rw` with mode 0770, so the app cannot even
+/// traverse it and the run dies with
+/// `PathAccessException: ... Permission denied, errno = 13`. The internal dir
+/// has no such dependency on who created it.
+String _androidScriptPath(String runId) =>
+    '/data/data/$_packageName/files/script_$runId.json';
+
 Future<void> main(List<String> args) async {
   final options = _parseArgs(args);
   if (options.containsKey('self-test')) {
@@ -106,7 +117,7 @@ writes $_reportsRelativePath/comparison-<timestamp>.md.
   );
 
   try {
-    await _prepareDevice(platform, device, script, runId);
+    await _prepareDevice(platform, device, example, script, runId);
     await _writeRunMetadata(reportDir, root, script, state, startedAt);
     await _runFlutter(state, example);
   } finally {
@@ -241,11 +252,7 @@ Future<void> _selfTest() async {
             'data': {'cursor': 'text', 'list': <dynamic>[]},
           }),
           _shapeOf(<String, dynamic>{
-            'data': {
-              'cursor': 'text',
-              'list': <dynamic>[],
-              'totalCount': 0,
-            },
+            'data': {'cursor': 'text', 'list': <dynamic>[], 'totalCount': 0},
           }),
         ).join(',') !=
         'data.totalCount') {
@@ -371,6 +378,7 @@ Future<String> _resolveDevice(String platform, String? requested) async {
 Future<void> _prepareDevice(
   String platform,
   String device,
+  Directory example,
   File script,
   String runId,
 ) async {
@@ -387,19 +395,111 @@ Future<void> _prepareDevice(
     return;
   }
 
+  await _ensureAndroidAppInstalled(device, example);
+  await _pushAndroidScript(device, script, runId);
+  await Process.run('adb', ['-s', device, 'shell', 'input', 'keyevent', '224']);
+  await _tryActivateAndroidWindow(device);
+}
+
+/// Makes sure the debug build is on the device before the run starts.
+///
+/// The script is written through `adb shell run-as`, which requires an
+/// installed, debuggable app. `flutter run` later reinstalls over it and keeps
+/// the app's internal files dir, so the script is still there when auto mode
+/// reads it.
+Future<void> _ensureAndroidAppInstalled(
+  String device,
+  Directory example,
+) async {
+  final probe = await Process.run('adb', [
+    '-s',
+    device,
+    'shell',
+    'pm',
+    'path',
+    _packageName,
+  ]);
+  if ((probe.stdout as String).contains('package:')) return;
+
+  final apk = File(
+    '${example.path}/build/app/outputs/flutter-apk/app-debug.apk',
+  );
+  if (!await apk.exists()) {
+    stdout.writeln('Building the debug APK to place the auto script...');
+    await _checkedProcess('flutter', [
+      'build',
+      'apk',
+      '--debug',
+    ], workingDirectory: example.path);
+  }
+  stdout.writeln('Installing $_packageName to place the auto script...');
+  await _checkedProcess('adb', ['-s', device, 'install', '-r', '-t', apk.path]);
+}
+
+/// Writes the script into the app's internal files dir as the app uid, so the
+/// app can read it regardless of how the device was provisioned. The script
+/// travels on stdin; a short or failed write is detected here instead of
+/// showing up as an opaque script.error inside the app.
+Future<void> _pushAndroidScript(
+  String device,
+  File script,
+  String runId,
+) async {
+  final remotePath = _androidScriptPath(runId);
+  // A freshly installed app has no files dir yet, and only the app uid may
+  // create it.
   await _checkedProcess('adb', [
     '-s',
     device,
     'shell',
+    'run-as',
+    _packageName,
     'mkdir',
     '-p',
-    '/sdcard/Android/data/$_packageName/files',
+    '/data/data/$_packageName/files',
   ]);
-  final remotePath =
-      '/sdcard/Android/data/$_packageName/files/script_$runId.json';
-  await _checkedProcess('adb', ['-s', device, 'push', script.path, remotePath]);
-  await Process.run('adb', ['-s', device, 'shell', 'input', 'keyevent', '224']);
-  await _tryActivateAndroidWindow(device);
+  final process = await Process.start('adb', [
+    '-s',
+    device,
+    'shell',
+    'run-as',
+    _packageName,
+    'sh',
+    '-c',
+    "'cat > $remotePath'",
+  ]);
+  final stderrDone = process.stderr.transform(utf8.decoder).join();
+  process.stdin.add(await script.readAsBytes());
+  await process.stdin.flush();
+  await process.stdin.close();
+  final stderrText = await stderrDone;
+  final exitCode = await process.exitCode;
+  if (exitCode != 0) {
+    throw StateError(
+      'Unable to write $remotePath (run-as needs the debuggable debug build, '
+      'so uninstall any release build and retry): $stderrText',
+    );
+  }
+
+  final expected = await script.length();
+  final sizeCheck = await Process.run('adb', [
+    '-s',
+    device,
+    'shell',
+    'run-as',
+    _packageName,
+    'sh',
+    '-c',
+    "'wc -c < $remotePath'",
+  ]);
+  final written = int.tryParse((sizeCheck.stdout as String).trim());
+  if (sizeCheck.exitCode != 0 || written != expected) {
+    throw StateError(
+      'Script $remotePath is incomplete ($written of $expected bytes): '
+      '${sizeCheck.stderr}',
+    );
+  }
+  stdout.writeln('Pushed $remotePath ($expected bytes).');
 }
 
 Future<void> _tryActivateAndroidWindow(String device) async {
@@ -446,7 +546,7 @@ Future<void> _tryActivateAndroidWindow(String device) async {
 
 Future<void> _runFlutter(_RunState state, Directory example) async {
   final scriptArgument = state.platform == 'android'
-      ? '/sdcard/Android/data/$_packageName/files/script_${state.runId}.json'
+      ? _androidScriptPath(state.runId)
       : state.scriptHostPath;
   final process = await Process.start(
     'flutter',
@@ -569,8 +669,16 @@ String _sanitize(String line) {
       );
 }
 
-Future<void> _checkedProcess(String executable, List<String> args) async {
-  final result = await Process.run(executable, args);
+Future<void> _checkedProcess(
+  String executable,
+  List<String> args, {
+  String? workingDirectory,
+}) async {
+  final result = await Process.run(
+    executable,
+    args,
+    workingDirectory: workingDirectory,
+  );
   if (result.exitCode != 0) {
     throw StateError('$executable ${args.join(' ')} failed: ${result.stderr}');
   }
@@ -591,18 +699,12 @@ Future<void> _writeRunMetadata(
     '256',
     Platform.script.toFilePath(),
   ]);
-  final env = File('${root.path}/im_flutter_sdk/example/lib/env.dart');
-  final envText = await env.exists() ? await env.readAsString() : '';
-  final cluster = RegExp(r'''["']cluster["']\s*:\s*["']([^"']+)''')
-      .firstMatch(envText)
-      ?.group(1);
   final metadata = <String, Object?>{
     'schemaVersion': 1,
     'runId': state.runId,
     'startedAt': startedAt.toIso8601String(),
     'platform': state.platform,
     'device': state.device,
-    'cluster': cluster,
     'script': state.scriptRelativePath,
     'scriptKind': state.scriptKind.name,
     'commit': (commit.stdout as String).trim(),
@@ -681,7 +783,9 @@ String _buildIssues(_RunState state) {
   if (state.scriptKind == _ScriptKind.negative) {
     issues
       ..writeln('## Candidate: `fetch-group-receipt-missing-disabled`')
-      ..writeln('- Step: `fetch_group_receipt_missing` (intentionally not executed)')
+      ..writeln(
+        '- Step: `fetch_group_receipt_missing` (intentionally not executed)',
+      )
       ..writeln(
         '- Actual: a missing message in `ChatManager.fetchGroupMessageReadReceipts` terminates the Android native process before it returns',
       )
@@ -784,7 +888,7 @@ String _candidateKey(_StepOutcome outcome) {
 
 String _candidateNote(_StepOutcome outcome) {
   if (outcome.step.id == 'modify_self') {
-    return '- Note: `305` `SERVICE_NOT_ENABLE` means the message-edit service is not enabled for this cluster; the positive path asserts the public contract, so this is an environment limitation.';
+    return '- Note: `305` `SERVICE_NOT_ENABLE` means the message-edit service is not enabled for the configured environment; the positive path asserts the public contract, so this is an environment limitation.';
   }
   if (outcome.step.id == 'receipt_missing' ||
       outcome.step.id == 'group_receipt_missing') {
@@ -855,9 +959,7 @@ Future<_RunReport> _loadRunReport(String path) async {
   return _RunReport(
     runId: metadata['runId']?.toString() ?? directory.path.split('/').last,
     script: metadata['script']?.toString() ?? '',
-    steps: [
-      for (final raw in rawSteps) Map<String, dynamic>.from(raw as Map),
-    ],
+    steps: [for (final raw in rawSteps) Map<String, dynamic>.from(raw as Map)],
   );
 }
 
@@ -923,11 +1025,10 @@ List<String> _differentShapePaths(
     return _differentShapePaths(first.first, second.first, '$prefix[]');
   }
   if (first is! Map || second is! Map) return [location];
-  final keys =
-      <String>{
-        ...first.keys.map((key) => key.toString()),
-        ...second.keys.map((key) => key.toString()),
-      }.toList()..sort();
+  final keys = <String>{
+    ...first.keys.map((key) => key.toString()),
+    ...second.keys.map((key) => key.toString()),
+  }.toList()..sort();
   return [
     for (final key in keys)
       ..._differentShapePaths(
@@ -948,7 +1049,9 @@ Future<_Comparison> _compareReports(
 ) async {
   final android = await _loadRunReport(androidPath);
   final ios = await _loadRunReport(iosPath);
-  final kind = _scriptKindOf(android.script.isNotEmpty ? android.script : ios.script);
+  final kind = _scriptKindOf(
+    android.script.isNotEmpty ? android.script : ios.script,
+  );
   final androidById = android.byId;
   final iosById = ios.byId;
   final ids = <String>{...androidById.keys, ...iosById.keys}.toList()..sort();
@@ -1166,15 +1269,13 @@ class _RunState {
 
   /// A successful group-receipt pagination that does not forward `totalCount`
   /// as a number; observed on Android 5.0.0 while iOS returns `0`.
-  bool get groupReceiptTotalCountMissing =>
-      outcomes.any((item) {
-        if (item.step.id != 'group_receipts_server' ||
-            item.status != 'passed') {
-          return false;
-        }
-        final data = item.result?['data'];
-        return data is Map && data['totalCount'] == null;
-      });
+  bool get groupReceiptTotalCountMissing => outcomes.any((item) {
+    if (item.step.id != 'group_receipts_server' || item.status != 'passed') {
+      return false;
+    }
+    final data = item.result?['data'];
+    return data is Map && data['totalCount'] == null;
+  });
 
   void observeEvent(Map<String, dynamic> event) {
     if (nextStepIndex >= scriptSteps.length) return;
