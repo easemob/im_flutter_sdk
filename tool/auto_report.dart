@@ -12,6 +12,17 @@ const _negativeScriptRelativePath =
     'im_flutter_sdk/example/scripts/script_500_apis_negative.json';
 const _defaultScriptRelativePath = _positiveScriptRelativePath;
 
+/// Absolute path of the auto script inside the app's internal files dir.
+///
+/// Android only: `/sdcard/Android/data/<pkg>/files/` is readable by the app only
+/// when the app created that directory itself. A directory created by adb
+/// belongs to `shell:ext_data_rw` with mode 0770, so the app cannot even
+/// traverse it and the run dies with
+/// `PathAccessException: ... Permission denied, errno = 13`. The internal dir
+/// has no such dependency on who created it.
+String _androidScriptPath(String runId) =>
+    '/data/data/$_packageName/files/script_$runId.json';
+
 Future<void> main(List<String> args) async {
   final options = _parseArgs(args);
   if (options.containsKey('self-test')) {
@@ -106,7 +117,7 @@ writes $_reportsRelativePath/comparison-<timestamp>.md.
   );
 
   try {
-    await _prepareDevice(platform, device, script, runId);
+    await _prepareDevice(platform, device, example, script, runId);
     await _writeRunMetadata(reportDir, root, script, state, startedAt);
     await _runFlutter(state, example);
   } finally {
@@ -367,6 +378,7 @@ Future<String> _resolveDevice(String platform, String? requested) async {
 Future<void> _prepareDevice(
   String platform,
   String device,
+  Directory example,
   File script,
   String runId,
 ) async {
@@ -383,19 +395,111 @@ Future<void> _prepareDevice(
     return;
   }
 
+  await _ensureAndroidAppInstalled(device, example);
+  await _pushAndroidScript(device, script, runId);
+  await Process.run('adb', ['-s', device, 'shell', 'input', 'keyevent', '224']);
+  await _tryActivateAndroidWindow(device);
+}
+
+/// Makes sure the debug build is on the device before the run starts.
+///
+/// The script is written through `adb shell run-as`, which requires an
+/// installed, debuggable app. `flutter run` later reinstalls over it and keeps
+/// the app's internal files dir, so the script is still there when auto mode
+/// reads it.
+Future<void> _ensureAndroidAppInstalled(
+  String device,
+  Directory example,
+) async {
+  final probe = await Process.run('adb', [
+    '-s',
+    device,
+    'shell',
+    'pm',
+    'path',
+    _packageName,
+  ]);
+  if ((probe.stdout as String).contains('package:')) return;
+
+  final apk = File(
+    '${example.path}/build/app/outputs/flutter-apk/app-debug.apk',
+  );
+  if (!await apk.exists()) {
+    stdout.writeln('Building the debug APK to place the auto script...');
+    await _checkedProcess('flutter', [
+      'build',
+      'apk',
+      '--debug',
+    ], workingDirectory: example.path);
+  }
+  stdout.writeln('Installing $_packageName to place the auto script...');
+  await _checkedProcess('adb', ['-s', device, 'install', '-r', '-t', apk.path]);
+}
+
+/// Writes the script into the app's internal files dir as the app uid, so the
+/// app can read it regardless of how the device was provisioned. The script
+/// travels on stdin; a short or failed write is detected here instead of
+/// showing up as an opaque script.error inside the app.
+Future<void> _pushAndroidScript(
+  String device,
+  File script,
+  String runId,
+) async {
+  final remotePath = _androidScriptPath(runId);
+  // A freshly installed app has no files dir yet, and only the app uid may
+  // create it.
   await _checkedProcess('adb', [
     '-s',
     device,
     'shell',
+    'run-as',
+    _packageName,
     'mkdir',
     '-p',
-    '/sdcard/Android/data/$_packageName/files',
+    '/data/data/$_packageName/files',
   ]);
-  final remotePath =
-      '/sdcard/Android/data/$_packageName/files/script_$runId.json';
-  await _checkedProcess('adb', ['-s', device, 'push', script.path, remotePath]);
-  await Process.run('adb', ['-s', device, 'shell', 'input', 'keyevent', '224']);
-  await _tryActivateAndroidWindow(device);
+  final process = await Process.start('adb', [
+    '-s',
+    device,
+    'shell',
+    'run-as',
+    _packageName,
+    'sh',
+    '-c',
+    "'cat > $remotePath'",
+  ]);
+  final stderrDone = process.stderr.transform(utf8.decoder).join();
+  process.stdin.add(await script.readAsBytes());
+  await process.stdin.flush();
+  await process.stdin.close();
+  final stderrText = await stderrDone;
+  final exitCode = await process.exitCode;
+  if (exitCode != 0) {
+    throw StateError(
+      'Unable to write $remotePath (run-as needs the debuggable debug build, '
+      'so uninstall any release build and retry): $stderrText',
+    );
+  }
+
+  final expected = await script.length();
+  final sizeCheck = await Process.run('adb', [
+    '-s',
+    device,
+    'shell',
+    'run-as',
+    _packageName,
+    'sh',
+    '-c',
+    "'wc -c < $remotePath'",
+  ]);
+  final written = int.tryParse((sizeCheck.stdout as String).trim());
+  if (sizeCheck.exitCode != 0 || written != expected) {
+    throw StateError(
+      'Script $remotePath is incomplete ($written of $expected bytes): '
+      '${sizeCheck.stderr}',
+    );
+  }
+  stdout.writeln('Pushed $remotePath ($expected bytes).');
 }
 
 Future<void> _tryActivateAndroidWindow(String device) async {
@@ -442,7 +546,7 @@ Future<void> _tryActivateAndroidWindow(String device) async {
 
 Future<void> _runFlutter(_RunState state, Directory example) async {
   final scriptArgument = state.platform == 'android'
-      ? '/sdcard/Android/data/$_packageName/files/script_${state.runId}.json'
+      ? _androidScriptPath(state.runId)
       : state.scriptHostPath;
   final process = await Process.start(
     'flutter',
@@ -565,8 +669,16 @@ String _sanitize(String line) {
       );
 }
 
-Future<void> _checkedProcess(String executable, List<String> args) async {
-  final result = await Process.run(executable, args);
+Future<void> _checkedProcess(
+  String executable,
+  List<String> args, {
+  String? workingDirectory,
+}) async {
+  final result = await Process.run(
+    executable,
+    args,
+    workingDirectory: workingDirectory,
+  );
   if (result.exitCode != 0) {
     throw StateError('$executable ${args.join(' ')} failed: ${result.stderr}');
   }

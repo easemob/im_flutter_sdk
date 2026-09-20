@@ -127,13 +127,21 @@ from the environment's ChatOptions keys and `login` from the first account's
 - Without `API_SCRIPT`, the app behaves as the manual tester above.
 
 **Android note**: the emulator/device has its own filesystem — host paths do not
-exist there (the iOS simulator shares the host fs, Android does not). Push the
-files into the app-specific external dir first and reference the device paths:
+exist there (the iOS simulator shares the host fs, Android does not). The app can
+only read its own internal files dir, and `adb push` into
+`/sdcard/Android/data/com.example.example/files/` only works when the app created
+that directory itself (an adb-created one belongs to `shell:ext_data_rw` with
+mode 0770 and the app cannot even traverse it). Write the script as the app uid
+instead:
 
 ```
-adb push scripts/script_422_apis.json /sdcard/Android/data/com.example.example/files/
-flutter run --dart-define=API_SCRIPT=/sdcard/Android/data/com.example.example/files/script_422_apis.json
+adb shell "run-as com.example.example sh -c 'cat > /data/data/com.example.example/files/script_422_apis.json'" < scripts/script_422_apis.json
+flutter run --dart-define=API_SCRIPT=/data/data/com.example.example/files/script_422_apis.json
 ```
+
+`run-as` needs the debug build installed and the app's internal files dir to
+exist, so run the app once (or `adb install -r` a debug APK) before pushing.
+`make auto-report PLATFORM=android` does all of this by itself.
 
 A full example covering the 4.22 additions lives at `scripts/script_422_apis.json`
 (expects at least two accounts and one group in the generated environment).
