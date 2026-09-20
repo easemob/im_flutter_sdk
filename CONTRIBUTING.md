@@ -84,7 +84,7 @@ make auto-compare ANDROID=reports/5.0.0/<android-run> IOS=reports/5.0.0/<ios-run
 
 ### 质量门禁
 
-`tool/ci/run_quality.sh` 就是 CI 的 quality job，本地与 CI 走同一套门禁，按顺序执行：
+`tool/ci/run_quality.sh` 就是 CI 的 quality job，本地与 CI 走同一套门禁。它先调用 `tool/ci/ensure_example_env.sh`：`im_flutter_sdk/example/lib/env.dart` 不存在时用 `example/templates/env.example.dart` 生成空占位，已存在则原样保留。该文件已 gitignore，全新检出没有它时 example 根本编译不过，`flutter analyze` 会直接报 `Target of URI doesn't exist: '../env.dart'`；脚本只补这一个文件，**不生成 `example/config.local.json`**——ebs / ngi / 私有化的集群选择与凭据只属于本地 `make env-gettoken` / `make env-use`，CI 不替谁做这个决定。随后按顺序执行：
 
 1. 5 个包依次 `flutter pub get`；
 2. `dart format --set-exit-if-changed`：只检查变更的 `.dart` 文件，基准由 `FORMAT_BASE_SHA` 指定（CI 传 PR base / push 前的 sha），本地未设置时回退到 `HEAD^`；
@@ -107,6 +107,8 @@ CI 上的设备任务都有等价的本地脚本，脚本会先比对本地 Flut
 > `single-account-nightly.yml` 里的 cron（`37 18 * * *`，比 RN 的 nightly 早一小时）只在**默认分支**（`flutter2_stable`）上生效——GitHub 的定时任务是"跑默认分支最新提交、用默认分支的工作流文件"，所以在该文件落地默认分支之前，5.0.0 分支上的定时触发不会发生，只能手工 dispatch。
 
 Android 侧需要已启动的模拟器（脚本固定连 `emulator-5554`）；iOS 侧由 `run_ios_simulator_test.sh` 自行拉起模拟器，日志写到 `artifacts/*.log`（已 gitignore）。
+
+`ci.yml` 的两个 example 编译 job 与两个 `run_*_test.sh` 都会先调用 `tool/ci/ensure_example_env.sh` 生成 `example/lib/env.dart` 占位（只补这一个文件，不碰 `config.local.json`），所以在全新检出（或 CI）上可以直接跑，不需要先 `make config`；本地已生成的真实环境不会被覆盖，集群选择仍由本地 `make env-gettoken` / `make env-use` 决定。
 
 两个 `run_*_test.sh` 会在运行前清除设备上该 App 的数据（`adb uninstall` / `xcrun simctl uninstall`，App 不存在时忽略）。原因：`flutter test` 对已安装 App 是覆盖安装、且只在运行结束后卸载，本地设备上残留的登录态会让依赖冷启动的用例（如 `FL-APP-001`）失败；CI 每次都是全新设备，不受影响。
 

@@ -38,6 +38,9 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 mkdir -p "$repo_root/artifacts"
 log_file="$repo_root/artifacts/$log_name"
 
+# The example app only compiles with the gitignored lib/env.dart in place.
+bash "$repo_root/tool/ci/ensure_example_env.sh"
+
 simulator_udid="$("$repo_root/tool/ci/boot_ios_simulator.sh")"
 echo "Using iOS simulator $simulator_udid"
 

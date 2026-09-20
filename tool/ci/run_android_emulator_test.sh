@@ -15,6 +15,9 @@ app_id="com.example.example"
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 mkdir -p "$repo_root/artifacts"
 
+# The example app only compiles with the gitignored lib/env.dart in place.
+bash "$repo_root/tool/ci/ensure_example_env.sh"
+
 cd "$repo_root/im_flutter_sdk/example"
 flutter pub get
 

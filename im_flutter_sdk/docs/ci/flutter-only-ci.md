@@ -29,3 +29,14 @@ Cross-device message delivery, ACK/callback correlation, offline replay,
 contacts, groups, chat rooms, reactions, threads, and push are excluded here.
 Those need multiple independently controlled clients and belong in the later
 `im-test-hub` stage.
+
+Every stage that compiles the example app first runs
+`tool/ci/ensure_example_env.sh`, which creates the gitignored
+`im_flutter_sdk/example/lib/env.dart` from `example/templates/env.example.dart`
+(the same empty placeholder `make config` copies locally) and leaves an existing
+file untouched. Without it a fresh checkout cannot resolve the `import
+'../env.dart'` in `auto_mode.dart`, `init_page.dart`, and `login_page.dart`, so
+analysis and the example builds fail before any test runs. The script
+deliberately creates only that file: `example/config.local.json`, which is where
+the ebs/ngi/private cluster selection and the credentials live, stays a local
+`make env-gettoken` / `make env-use` decision and is never fabricated by CI.

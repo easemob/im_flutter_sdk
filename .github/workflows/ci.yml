@@ -73,6 +73,12 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Create the example env placeholder
+        # im_flutter_sdk/example imports the gitignored lib/env.dart, and no
+        # earlier step creates it in a fresh checkout, so the example does not
+        # compile without this placeholder (see the script's header).
+        run: ./tool/ci/ensure_example_env.sh
+
       - name: Build Android example
         working-directory: im_flutter_sdk/example
         run: |
@@ -95,6 +101,10 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
+
+      - name: Create the example env placeholder
+        # Same reason as in the Android job: the placeholder is gitignored.
+        run: ./tool/ci/ensure_example_env.sh
 
       - name: Build iOS example
         working-directory: im_flutter_sdk/example
