@@ -14,36 +14,26 @@ make setup
 
 This creates the ignored local files `config.local.json` and `lib/env.dart`
 from templates, runs `flutter pub get`, and runs `pod install` if the Podfile or
-podspec changed. Fill `config.local.json`, then fetch user tokens and generate
-the environment:
+podspec changed. Fill `config.local.json` with the environment you test against,
+then fetch user tokens and generate the environment:
 
 ```bash
 make env-gettoken
 ```
 
-In public mode, all configured clusters are generated under `.env/`. When
-multiple clusters are configured, `defaultCluster` selects the environment
-activated as `lib/env.dart`. With one configured cluster, that cluster is
-selected automatically, so `ebs` is optional; stale resource assignments that
-match the missing old `defaultCluster` follow the only configured cluster.
-Switch to another generated environment without fetching new tokens with:
-
-```bash
-make env-use CLUSTER=ngi
-```
+The project configures a single environment: `config.local.json` holds that
+environment's `restApi`, `appKey`, `clientId`, `clientSecret`, accounts, groups,
+rooms, and chat options, and `make env-gettoken` writes them into `lib/env.dart`.
+To switch environments, edit or replace that file — keep your own copies (for
+example `config.ngi.json` / `config.ebs.json`) outside Git; the tool does not
+choose between environments.
 
 Token acquisition happens on the host: the tool gets an app token with
 `clientId` / `clientSecret`, uses it to get each account's user token, and never
-writes the app token or client secret to `env.dart`. ebs, ngi, and private
-deployment are mutually exclusive environment modes. `clusters` contains only
-public-cluster REST/app credentials; enable private deployment with the
-top-level `enablePrivateConfig` and server fields. In private mode,
-`msyncServer` is mapped to Flutter's `imServer` and `enableDNSConfig` is forced
-to `false`. Do not put private configuration inside a cluster entry.
-Public mode generates every configured public cluster and activates
-`defaultCluster`. Private mode uses the `defaultCluster` credentials/accounts
-to fetch tokens, but generates and activates only `.env/env.private.dart`; switch
-back to a cached private environment with `make env-use CLUSTER=private`.
+writes the app token or client secret to `env.dart`. Private deployment is not a
+separate mode: set the top-level `enablePrivateConfig` to `true` and fill
+`webSocketServer` / `restServer` / `msyncServer`; `msyncServer` is then mapped to
+Flutter's `imServer` and `enableDNSConfig` is forced to `false`.
 
 ## Page flow
 

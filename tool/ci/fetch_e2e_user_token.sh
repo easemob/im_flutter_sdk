@@ -11,7 +11,7 @@
 # repo, including the retry budget and the stdout contract.
 #
 # Required environment:
-#   E2E_REST_API      REST base URL of the cluster, e.g. http://host
+#   E2E_REST_API      REST base URL of the environment under test, e.g. http://host
 #   E2E_APP_KEY       app key in orgName#appName form
 #   E2E_CLIENT_ID     app client id
 #   E2E_CLIENT_SECRET app client secret

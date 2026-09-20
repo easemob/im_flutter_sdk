@@ -37,6 +37,6 @@ Every stage that compiles the example app first runs
 file untouched. Without it a fresh checkout cannot resolve the `import
 '../env.dart'` in `auto_mode.dart`, `init_page.dart`, and `login_page.dart`, so
 analysis and the example builds fail before any test runs. The script
-deliberately creates only that file: `example/config.local.json`, which is where
-the ebs/ngi/private cluster selection and the credentials live, stays a local
-`make env-gettoken` / `make env-use` decision and is never fabricated by CI.
+deliberately creates only that file: `example/config.local.json` describes the
+environment a developer tests against and holds its credentials, so it stays a
+local `make config` / `make env-gettoken` artifact and is never fabricated by CI.

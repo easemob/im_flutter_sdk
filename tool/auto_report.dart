@@ -699,18 +699,12 @@ Future<void> _writeRunMetadata(
     '256',
     Platform.script.toFilePath(),
   ]);
-  final env = File('${root.path}/im_flutter_sdk/example/lib/env.dart');
-  final envText = await env.exists() ? await env.readAsString() : '';
-  final cluster = RegExp(r'''["']cluster["']\s*:\s*["']([^"']+)''')
-      .firstMatch(envText)
-      ?.group(1);
   final metadata = <String, Object?>{
     'schemaVersion': 1,
     'runId': state.runId,
     'startedAt': startedAt.toIso8601String(),
     'platform': state.platform,
     'device': state.device,
-    'cluster': cluster,
     'script': state.scriptRelativePath,
     'scriptKind': state.scriptKind.name,
     'commit': (commit.stdout as String).trim(),
@@ -894,7 +888,7 @@ String _candidateKey(_StepOutcome outcome) {
 
 String _candidateNote(_StepOutcome outcome) {
   if (outcome.step.id == 'modify_self') {
-    return '- Note: `305` `SERVICE_NOT_ENABLE` means the message-edit service is not enabled for this cluster; the positive path asserts the public contract, so this is an environment limitation.';
+    return '- Note: `305` `SERVICE_NOT_ENABLE` means the message-edit service is not enabled for the configured environment; the positive path asserts the public contract, so this is an environment limitation.';
   }
   if (outcome.step.id == 'receipt_missing' ||
       outcome.step.id == 'group_receipt_missing') {

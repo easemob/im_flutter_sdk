@@ -3,6 +3,9 @@ import 'dart:io';
 
 const _placeholderPrefix = 'TODO';
 
+/// Local files the example reads. The project configures a single environment:
+/// `config.local.json` holds its credentials and test data, and
+/// `lib/env.dart` is the generated Dart view of it.
 class EnvPaths {
   EnvPaths(this.exampleDir);
 
@@ -16,9 +19,7 @@ class EnvPaths {
       File('${exampleDir.path}/templates/config.local.example.json');
   File get envTemplate => File('${exampleDir.path}/templates/env.example.dart');
   File get localConfig => File('${exampleDir.path}/config.local.json');
-  Directory get cacheDir => Directory('${exampleDir.path}/.env');
   File get activeEnv => File('${exampleDir.path}/lib/env.dart');
-  File cachedEnv(String cluster) => File('${cacheDir.path}/env.$cluster.dart');
 }
 
 Future<void> main(List<String> args) async {
@@ -31,15 +32,7 @@ Future<void> main(List<String> args) async {
         break;
       case 'gettoken':
         await ensureLocalFiles(paths);
-        final failures = await generateClusterEnvironments(paths);
-        if (failures > 0) exitCode = 1;
-        break;
-      case 'use':
-        if (args.length != 2) {
-          throw const FormatException('Usage: env_tool.dart use <cluster>');
-        }
-        await ensureLocalFiles(paths);
-        await activateCluster(paths, args[1]);
+        await generateEnvironment(paths);
         break;
       case 'help':
       case '--help':
@@ -48,7 +41,6 @@ Future<void> main(List<String> args) async {
 Usage:
   dart run tool/env_tool.dart ensure
   dart run tool/env_tool.dart gettoken
-  dart run tool/env_tool.dart use <cluster>
 ''');
         break;
       default:
@@ -61,7 +53,6 @@ Usage:
 }
 
 Future<void> ensureLocalFiles(EnvPaths paths) async {
-  await paths.cacheDir.create(recursive: true);
   await _copyIfMissing(paths.configTemplate, paths.localConfig);
   await _copyIfMissing(paths.envTemplate, paths.activeEnv);
 }
@@ -77,154 +68,50 @@ Future<void> _copyIfMissing(File source, File target) async {
   stdout.writeln('Created: ${target.path}');
 }
 
-Future<int> generateClusterEnvironments(EnvPaths paths) async {
+/// Fetches one user token per configured account and writes the result to
+/// `lib/env.dart`. Switching environments means editing `config.local.json`.
+Future<void> generateEnvironment(EnvPaths paths) async {
   final config = await _readJsonObject(paths.localConfig);
-  final clusters = _asMap(config['clusters'], 'clusters');
-  _validateConfigShape(config, clusters);
-  final configuredDefaultCluster = config['defaultCluster'] as String?;
-  final defaultCluster = _resolveDefaultCluster(
-    configuredDefaultCluster,
-    clusters,
-  );
-  _validateClusterAssignments(
-    config,
-    clusters,
-    configuredDefaultCluster: configuredDefaultCluster,
-    defaultCluster: defaultCluster,
-  );
-  final privateMode = config['enablePrivateConfig'] == true;
-  final clustersToGenerate = privateMode
-      ? <MapEntry<String, dynamic>>[
-          MapEntry<String, dynamic>(defaultCluster, clusters[defaultCluster]),
-        ]
-      : clusters.entries.toList();
-  final activeEnvironment = privateMode ? 'private' : defaultCluster;
+  _validateConfigShape(config);
+  _requireCredentials(config);
 
   final tokenClient = TokenClient();
-  var failures = 0;
-  var defaultGenerated = false;
   try {
-    for (final entry in clustersToGenerate) {
-      final clusterName = entry.key;
-      final environmentName = privateMode ? 'private' : clusterName;
-      _validateClusterName(clusterName);
-      final cluster = _asMap(entry.value, 'clusters.$clusterName');
-      final missing = <String>[
-        for (final key in const [
-          'restApi',
-          'appKey',
-          'clientId',
-          'clientSecret',
-        ])
-          if (_isPlaceholder(cluster[key])) key,
-      ];
-      if (missing.isNotEmpty) {
-        stdout.writeln(
-          '[$clusterName] skipped: missing ${missing.join(', ')}',
-        );
-        if (clusterName == defaultCluster) failures++;
-        continue;
-      }
-
-      try {
-        final appToken = await tokenClient.fetchAppToken(cluster);
-        final accounts = await tokenClient.fetchUserTokens(
-          clusterName: clusterName,
-          defaultCluster: defaultCluster,
-          configuredDefaultCluster: configuredDefaultCluster,
-          cluster: cluster,
-          config: config,
-          appToken: appToken,
-        );
-        final environment = buildEnvironment(
-          clusterName: clusterName,
-          environmentName: environmentName,
-          defaultCluster: defaultCluster,
-          configuredDefaultCluster: configuredDefaultCluster,
-          cluster: cluster,
-          config: config,
-          accounts: accounts,
-        );
-        final target = paths.cachedEnv(environmentName);
-        await _atomicWrite(
-          target,
-          renderEnvironmentDart(environmentName, environment),
-        );
-        stdout.writeln(
-          '[$environmentName] generated ${target.path} (${accounts.length} accounts)',
-        );
-        if (environmentName == activeEnvironment) defaultGenerated = true;
-      } catch (error) {
-        stderr.writeln('[$clusterName] failed: $error');
-        failures++;
-      }
-    }
+    final appToken = await tokenClient.fetchAppToken(config);
+    final accounts = await tokenClient.fetchUserTokens(
+      config: config,
+      appToken: appToken,
+    );
+    final environment = buildEnvironment(config: config, accounts: accounts);
+    await _atomicWrite(paths.activeEnv, renderEnvironmentDart(environment));
+    stdout.writeln(
+      'Generated ${paths.activeEnv.path} (${accounts.length} accounts)',
+    );
   } finally {
     tokenClient.close();
   }
-
-  if (defaultGenerated) {
-    await activateCluster(paths, activeEnvironment);
-  }
-  return failures;
 }
 
-Future<void> activateCluster(EnvPaths paths, String cluster) async {
-  _validateClusterName(cluster);
-  final source = paths.cachedEnv(cluster);
-  if (!await source.exists()) {
-    final available = await paths.cacheDir
-        .list()
-        .where((entity) => entity is File && entity.path.endsWith('.dart'))
-        .map((entity) => entity.uri.pathSegments.last)
-        .toList();
-    throw FileSystemException(
-      'No generated environment for "$cluster". Available: ${available.join(', ')}',
-      source.path,
-    );
-  }
-  final header =
-      '// Active cluster: $cluster (${DateTime.now().toUtc().toIso8601String()})\n';
-  await _atomicWrite(paths.activeEnv, '$header${await source.readAsString()}');
-  stdout.writeln('Activated: $cluster -> ${paths.activeEnv.path}');
-}
-
+/// The example environment handed to the app: chat options, the app key, the
+/// per-account user tokens, and the test resources referenced by the scripts.
 Map<String, Object?> buildEnvironment({
-  required String clusterName,
-  String? environmentName,
-  required String defaultCluster,
-  String? configuredDefaultCluster,
-  required Map<String, dynamic> cluster,
   required Map<String, dynamic> config,
   required List<Map<String, Object?>> accounts,
 }) {
   final environment = <String, Object?>{};
   environment.addAll(_optionalMap(config['chatOptions']));
-  environment.addAll(_optionalMap(cluster['chatOptions']));
   environment.addAll({
-    'cluster': environmentName ?? clusterName,
-    'appKey': cluster['appKey'],
+    'appKey': config['appKey'],
     'accounts': accounts,
-    'groups': _resourcesForCluster(
-      config['groups'],
-      clusterName,
-      defaultCluster,
-      configuredDefaultCluster,
-    ),
-    'rooms': _resourcesForCluster(
-      config['rooms'],
-      clusterName,
-      defaultCluster,
-      configuredDefaultCluster,
-    ),
+    'groups': _resources(config['groups']),
+    'rooms': _resources(config['rooms']),
   });
 
   if (config['enablePrivateConfig'] == true) {
-    final imServer = config['imServer'] ?? config['msyncServer'];
     final requiredServers = <String, Object?>{
       'webSocketServer': config['webSocketServer'],
       'restServer': config['restServer'],
-      'imServer': imServer,
+      'imServer': config['imServer'] ?? config['msyncServer'],
     };
     final missing = requiredServers.entries
         .where((entry) => _isPlaceholder(entry.value))
@@ -232,7 +119,7 @@ Map<String, Object?> buildEnvironment({
         .toList();
     if (missing.isNotEmpty) {
       throw FormatException(
-        'top-level private deployment configuration is missing ${missing.join(', ')}',
+        'enablePrivateConfig requires ${missing.join(', ')}',
       );
     }
     environment['enableDNSConfig'] = false;
@@ -245,36 +132,22 @@ Map<String, Object?> buildEnvironment({
   return environment;
 }
 
-List<Map<String, Object?>> _resourcesForCluster(
-  Object? raw,
-  String clusterName,
-  String defaultCluster,
-  String? configuredDefaultCluster,
-) {
-  final values = raw is List ? raw : const [];
+List<Map<String, Object?>> _resources(Object? raw) {
   return [
-    for (final value in values)
-      if (value is Map &&
-          _itemCluster(
-                value,
-                configuredDefaultCluster: configuredDefaultCluster,
-                defaultCluster: defaultCluster,
-              ) ==
-              clusterName)
+    for (final value in raw is List ? raw : const [])
+      if (value is Map)
         <String, Object?>{
           for (final entry in value.entries)
+            // A leftover `cluster` key from an older multi-cluster config is
+            // dropped: this tool generates one environment.
             if (entry.key != 'cluster') entry.key.toString(): entry.value,
         },
   ];
 }
 
-String renderEnvironmentDart(
-  String clusterName,
-  Map<String, Object?> environment,
-) {
+String renderEnvironmentDart(Map<String, Object?> environment) {
   return '''// Generated by tool/env_tool.dart from config.local.json.
-// Cluster: $clusterName
-// DO NOT EDIT. Run `make env-gettoken` or `make env-use CLUSTER=$clusterName`.
+// DO NOT EDIT. Edit config.local.json and run `make env-gettoken`.
 const Map<String, Object?> environment = ${_dartLiteral(environment)};
 ''';
 }
@@ -305,23 +178,19 @@ class TokenClient {
 
   final HttpClient _httpClient;
 
-  Future<String> fetchAppToken(Map<String, dynamic> cluster) async {
+  Future<String> fetchAppToken(Map<String, dynamic> config) async {
     final response = await _postToken(
-      cluster,
+      config,
       <String, Object?>{
         'grant_type': 'client_credentials',
-        'client_id': cluster['clientId'],
-        'client_secret': cluster['clientSecret'],
+        'client_id': config['clientId'],
+        'client_secret': config['clientSecret'],
       },
     );
     return _accessToken(response, 'app token');
   }
 
   Future<List<Map<String, Object?>>> fetchUserTokens({
-    required String clusterName,
-    required String defaultCluster,
-    String? configuredDefaultCluster,
-    required Map<String, dynamic> cluster,
     required Map<String, dynamic> config,
     required String appToken,
   }) async {
@@ -329,19 +198,17 @@ class TokenClient {
     final rawAccounts =
         config['accounts'] is List ? config['accounts'] as List : const [];
     final accounts = <Map<String, Object?>>[];
-    for (final rawAccount in rawAccounts) {
-      if (rawAccount is! Map ||
-          _itemCluster(
-                rawAccount,
-                configuredDefaultCluster: configuredDefaultCluster,
-                defaultCluster: defaultCluster,
-              ) !=
-              clusterName) {
-        continue;
+    for (var index = 0; index < rawAccounts.length; index++) {
+      final rawAccount = rawAccounts[index];
+      if (rawAccount is! Map) {
+        throw FormatException('accounts[$index] must be an object');
       }
       final userId = rawAccount['id'];
       if (_isPlaceholder(userId)) {
-        throw FormatException('invalid account id in cluster $clusterName');
+        throw FormatException(
+          'accounts[$index].id is missing or still a "$_placeholderPrefix" '
+          'placeholder',
+        );
       }
       final body = <String, Object?>{
         'username': userId,
@@ -349,29 +216,29 @@ class TokenClient {
         'autoCreateUser': true,
         if (ttl is int) 'ttl': ttl,
       };
-      final response = await _postToken(cluster, body, bearer: appToken);
+      final response = await _postToken(config, body, bearer: appToken);
       accounts.add({
         for (final entry in rawAccount.entries)
           if (entry.key != 'cluster') entry.key.toString(): entry.value,
         'token': _accessToken(response, 'user token for $userId'),
       });
-      stdout.writeln('[$clusterName] $userId token ok');
+      stdout.writeln('$userId token ok');
     }
     return accounts;
   }
 
   Future<Map<String, dynamic>> _postToken(
-    Map<String, dynamic> cluster,
+    Map<String, dynamic> config,
     Map<String, Object?> body, {
     String? bearer,
   }) async {
-    final appKey = cluster['appKey'].toString().split('#');
+    final appKey = config['appKey'].toString().split('#');
     if (appKey.length != 2 || appKey.any((part) => part.isEmpty)) {
       throw FormatException(
-        'invalid appKey, expected orgName#appName: ${cluster['appKey']}',
+        'invalid appKey, expected orgName#appName: ${config['appKey']}',
       );
     }
-    final base = cluster['restApi'].toString().replaceFirst(RegExp(r'/+$'), '');
+    final base = config['restApi'].toString().replaceFirst(RegExp(r'/+$'), '');
     final uri = Uri.parse('$base/${appKey[0]}/${appKey[1]}/token');
     final request = await _httpClient.postUrl(uri);
     request.headers.contentType = ContentType.json;
@@ -420,11 +287,6 @@ Future<Map<String, dynamic>> _readJsonObject(File file) async {
   return Map<String, dynamic>.from(decoded);
 }
 
-Map<String, dynamic> _asMap(Object? value, String label) {
-  if (value is! Map) throw FormatException('$label must be an object');
-  return Map<String, dynamic>.from(value);
-}
-
 Map<String, Object?> _optionalMap(Object? value) {
   if (value is! Map) return <String, Object?>{};
   return <String, Object?>{
@@ -432,106 +294,33 @@ Map<String, Object?> _optionalMap(Object? value) {
   };
 }
 
-void _validateConfigShape(
-  Map<String, dynamic> config,
-  Map<String, dynamic> clusters,
-) {
-  if (config.containsKey('privateConfig')) {
+void _validateConfigShape(Map<String, dynamic> config) {
+  if (config.containsKey('clusters') || config.containsKey('defaultCluster')) {
     throw const FormatException(
-      'privateConfig must not be nested; use top-level enablePrivateConfig and server fields',
+      'config.local.json still uses the removed multi-cluster shape; put '
+      'restApi, appKey, clientId and clientSecret at the top level and drop '
+      'defaultCluster and the per-entry cluster fields',
     );
   }
-  for (final entry in clusters.entries) {
-    final cluster = _asMap(entry.value, 'clusters.${entry.key}');
-    if (cluster.containsKey('privateConfig') ||
-        cluster.containsKey('enablePrivateConfig')) {
-      throw FormatException(
-        'clusters.${entry.key} must not contain private configuration; '
-        'use top-level enablePrivateConfig and server fields',
-      );
-    }
-  }
 }
 
-String _resolveDefaultCluster(
-  String? configuredDefaultCluster,
-  Map<String, dynamic> clusters,
-) {
-  if (configuredDefaultCluster != null &&
-      clusters.containsKey(configuredDefaultCluster)) {
-    return configuredDefaultCluster;
+void _requireCredentials(Map<String, dynamic> config) {
+  final missing = <String>[
+    for (final key in const ['restApi', 'appKey', 'clientId', 'clientSecret'])
+      if (_isPlaceholder(config[key])) key,
+  ];
+  if (missing.isNotEmpty) {
+    throw FormatException(
+      'config.local.json is missing ${missing.join(', ')}; fill in the '
+      'environment you test against and run `make env-gettoken` again',
+    );
   }
-  if (clusters.length == 1) {
-    final selected = clusters.keys.single;
-    final reason = configuredDefaultCluster == null
-        ? 'defaultCluster is not set'
-        : 'defaultCluster "$configuredDefaultCluster" is not configured';
-    stdout.writeln('[$selected] selected automatically: $reason');
-    return selected;
-  }
-  if (clusters.isEmpty) {
-    throw const FormatException('clusters must contain at least one entry');
-  }
-  throw const FormatException(
-    'defaultCluster must name an entry in clusters when multiple clusters are configured',
-  );
-}
-
-void _validateClusterAssignments(
-  Map<String, dynamic> config,
-  Map<String, dynamic> clusters, {
-  required String? configuredDefaultCluster,
-  required String defaultCluster,
-}) {
-  for (final field in const ['accounts', 'groups', 'rooms']) {
-    final values = config[field];
-    if (values is! List) continue;
-    for (var index = 0; index < values.length; index++) {
-      final value = values[index];
-      if (value is! Map) continue;
-      final cluster = _itemCluster(
-        value,
-        configuredDefaultCluster: configuredDefaultCluster,
-        defaultCluster: defaultCluster,
-      );
-      if (!clusters.containsKey(cluster)) {
-        throw FormatException(
-          '$field[$index].cluster must name an entry in clusters',
-        );
-      }
-    }
-  }
-}
-
-String _itemCluster(
-  Map value, {
-  required String? configuredDefaultCluster,
-  required String defaultCluster,
-}) {
-  final raw = value['cluster'];
-  if (raw == null) return defaultCluster;
-  if (raw is! String || raw.isEmpty) {
-    throw const FormatException(
-        'cluster assignment must be a non-empty string');
-  }
-  if (configuredDefaultCluster != null &&
-      configuredDefaultCluster != defaultCluster &&
-      raw == configuredDefaultCluster) {
-    return defaultCluster;
-  }
-  return raw;
 }
 
 bool _isPlaceholder(Object? value) {
   return value is! String ||
       value.isEmpty ||
       value.startsWith(_placeholderPrefix);
-}
-
-void _validateClusterName(String cluster) {
-  if (!RegExp(r'^[A-Za-z0-9_-]+$').hasMatch(cluster)) {
-    throw FormatException('Invalid cluster name: $cluster');
-  }
 }
 
 Future<void> _atomicWrite(File target, String content) async {

@@ -29,8 +29,7 @@ Federated Plugin 架构，四个包通过本地 `path:` 依赖关联：
 |--------|------|
 | `make setup` | 依次执行 `config` + `deps` + `pods` |
 | `make config` | 生成 `example/config.local.json`（来自 `example/templates/config.local.example.json`）与占位 `example/lib/env.dart`（来自 `example/templates/env.example.dart`），已存在则跳过 |
-| `make env-gettoken` | 按 `config.local.json` 在宿主机换取各账号 user token，为每个已配置集群生成 `example/.env/env.<cluster>.dart`，并把默认（多集群时看 `defaultCluster`）或唯一集群激活为 `example/lib/env.dart`；任一集群失败时退出码非 0 |
-| `make env-use CLUSTER=<name>` | 把已生成的某个集群环境激活为 `example/lib/env.dart`，不重新取 token |
+| `make env-gettoken` | 按 `config.local.json` 在宿主机换取各账号 user token，并直接生成 `example/lib/env.dart`；必填字段缺失或仍是 `TODO` 时退出码非 0 |
 | `make deps` | 在 example 目录执行 `flutter pub get`，解析 4 个子包的 path 依赖 |
 | `make pods` | 先 `deps`，再按 mtime 判断 Podfile/podspec 是否比 Podfile.lock 新，需要时才在 `example/ios` 执行 `pod install` |
 | `make auto-report PLATFORM=<android\|ios> [DEVICE=<id>] [SCRIPT=<json>]` | 跑 5.0.0 auto 脚本，并把可追溯报告写到 `reports/5.0.0/<run-id>/`（Android 会先确保 debug 包已安装，再以 App uid 把脚本写入 App 内部目录） |
@@ -44,12 +43,12 @@ Federated Plugin 架构，四个包通过本地 `path:` 依赖关联：
 
 example 的运行数据分两步准备，产物都是本地文件、都不入库：
 
-1. **凭据与测试数据**：`make config` 生成 `im_flutter_sdk/example/config.local.json`，按 `example/templates/config.local.example.json` 里的 `TODO` 占位符填写 appKey、`clientId` / `clientSecret`、REST 地址，以及测试账号 `accounts`、群组 `groups`、聊天室 `rooms`。
-   - ebs、ngi 与私有化部署三种模式互斥：`clusters` 只放公有集群的 REST/app 凭据，私有化由顶层 `enablePrivateConfig` 与 server 字段开启，不要写进 `clusters`；
-   - 配置了多个集群时由 `defaultCluster` 决定激活哪一个；只配一个集群时自动选中，`defaultCluster` 可省略。
-2. **环境与 token**：`make env-gettoken` 在宿主机用 app token 换取每个账号的 user token，生成 `example/.env/env.<cluster>.dart` 并激活默认集群。app token 与 `clientSecret` 不会写入 env 文件；已生成的环境可用 `make env-use CLUSTER=<name>` 切换。
+1. **凭据与测试数据**：`make config` 生成 `im_flutter_sdk/example/config.local.json`，按 `example/templates/config.local.example.json` 里的 `TODO` 占位符填写 `restApi`、`appKey`、`clientId` / `clientSecret`，以及测试账号 `accounts`、群组 `groups`、聊天室 `rooms`。
+   - 项目只配置**一个环境**：这份文件描述的就是当前要跑的那个环境。要切换环境就直接改这份文件的值，或在 Git 外自己保存多份副本（如 `config.ngi.json` / `config.ebs.json`）替换过来，工具不做多环境选择。
+   - 私有化部署不是另一种模式：把顶层 `enablePrivateConfig` 设为 `true` 并填 `webSocketServer` / `restServer` / `msyncServer`，生成的 `env.dart` 会带上这些 server 字段并强制 `enableDNSConfig=false`。
+2. **环境与 token**：`make env-gettoken` 在宿主机用 app token 换取每个账号的 user token，直接写入 `example/lib/env.dart`。app token 与 `clientSecret` 不会写入 env 文件。
 
-`example/config.local.json`、`example/.env/`、`example/lib/env.dart` 均已 gitignore（见 `im_flutter_sdk/.gitignore` 末尾三条），不要提交。
+`example/config.local.json`、`example/lib/env.dart` 均已 gitignore（见 `im_flutter_sdk/.gitignore` 末尾两条），不要提交。
 
 ## 运行与验证
 
@@ -84,7 +83,7 @@ make auto-compare ANDROID=reports/5.0.0/<android-run> IOS=reports/5.0.0/<ios-run
 
 ### 质量门禁
 
-`tool/ci/run_quality.sh` 就是 CI 的 quality job，本地与 CI 走同一套门禁。它先调用 `tool/ci/ensure_example_env.sh`：`im_flutter_sdk/example/lib/env.dart` 不存在时用 `example/templates/env.example.dart` 生成空占位，已存在则原样保留。该文件已 gitignore，全新检出没有它时 example 根本编译不过，`flutter analyze` 会直接报 `Target of URI doesn't exist: '../env.dart'`；脚本只补这一个文件，**不生成 `example/config.local.json`**——ebs / ngi / 私有化的集群选择与凭据只属于本地 `make env-gettoken` / `make env-use`，CI 不替谁做这个决定。随后按顺序执行：
+`tool/ci/run_quality.sh` 就是 CI 的 quality job，本地与 CI 走同一套门禁。它先调用 `tool/ci/ensure_example_env.sh`：`im_flutter_sdk/example/lib/env.dart` 不存在时用 `example/templates/env.example.dart` 生成空占位，已存在则原样保留。该文件已 gitignore，全新检出没有它时 example 根本编译不过，`flutter analyze` 会直接报 `Target of URI doesn't exist: '../env.dart'`；脚本只补这一个文件，**不生成 `example/config.local.json`**——那份文件里的凭据属于使用者自己的环境配置，只由本地 `make env-gettoken` 读取，CI 不替谁造一份。随后按顺序执行：
 
 1. 5 个包依次 `flutter pub get`；
 2. `dart format --set-exit-if-changed`：只检查变更的 `.dart` 文件，基准由 `FORMAT_BASE_SHA` 指定（CI 传 PR base / push 前的 sha），本地未设置时回退到 `HEAD^`；
@@ -108,7 +107,7 @@ CI 上的设备任务都有等价的本地脚本，脚本会先比对本地 Flut
 
 Android 侧需要已启动的模拟器（脚本固定连 `emulator-5554`）；iOS 侧由 `run_ios_simulator_test.sh` 自行拉起模拟器，日志写到 `artifacts/*.log`（已 gitignore）。
 
-`ci.yml` 的两个 example 编译 job 与两个 `run_*_test.sh` 都会先调用 `tool/ci/ensure_example_env.sh` 生成 `example/lib/env.dart` 占位（只补这一个文件，不碰 `config.local.json`），所以在全新检出（或 CI）上可以直接跑，不需要先 `make config`；本地已生成的真实环境不会被覆盖，集群选择仍由本地 `make env-gettoken` / `make env-use` 决定。
+`ci.yml` 的两个 example 编译 job 与两个 `run_*_test.sh` 都会先调用 `tool/ci/ensure_example_env.sh` 生成 `example/lib/env.dart` 占位（只补这一个文件，不碰 `config.local.json`），所以在全新检出（或 CI）上可以直接跑，不需要先 `make config`；本地已生成的真实环境不会被覆盖，跑哪个环境仍由本地 `config.local.json` + `make env-gettoken` 决定。
 
 两个 `run_*_test.sh` 会在运行前清除设备上该 App 的数据（`adb uninstall` / `xcrun simctl uninstall`，App 不存在时忽略）。原因：`flutter test` 对已安装 App 是覆盖安装、且只在运行结束后卸载，本地设备上残留的登录态会让依赖冷启动的用例（如 `FL-APP-001`）失败；CI 每次都是全新设备，不受影响。
 
