@@ -241,11 +241,7 @@ Future<void> _selfTest() async {
             'data': {'cursor': 'text', 'list': <dynamic>[]},
           }),
           _shapeOf(<String, dynamic>{
-            'data': {
-              'cursor': 'text',
-              'list': <dynamic>[],
-              'totalCount': 0,
-            },
+            'data': {'cursor': 'text', 'list': <dynamic>[], 'totalCount': 0},
           }),
         ).join(',') !=
         'data.totalCount') {
@@ -681,7 +677,9 @@ String _buildIssues(_RunState state) {
   if (state.scriptKind == _ScriptKind.negative) {
     issues
       ..writeln('## Candidate: `fetch-group-receipt-missing-disabled`')
-      ..writeln('- Step: `fetch_group_receipt_missing` (intentionally not executed)')
+      ..writeln(
+        '- Step: `fetch_group_receipt_missing` (intentionally not executed)',
+      )
       ..writeln(
         '- Actual: a missing message in `ChatManager.fetchGroupMessageReadReceipts` terminates the Android native process before it returns',
       )
@@ -855,9 +853,7 @@ Future<_RunReport> _loadRunReport(String path) async {
   return _RunReport(
     runId: metadata['runId']?.toString() ?? directory.path.split('/').last,
     script: metadata['script']?.toString() ?? '',
-    steps: [
-      for (final raw in rawSteps) Map<String, dynamic>.from(raw as Map),
-    ],
+    steps: [for (final raw in rawSteps) Map<String, dynamic>.from(raw as Map)],
   );
 }
 
@@ -923,11 +919,10 @@ List<String> _differentShapePaths(
     return _differentShapePaths(first.first, second.first, '$prefix[]');
   }
   if (first is! Map || second is! Map) return [location];
-  final keys =
-      <String>{
-        ...first.keys.map((key) => key.toString()),
-        ...second.keys.map((key) => key.toString()),
-      }.toList()..sort();
+  final keys = <String>{
+    ...first.keys.map((key) => key.toString()),
+    ...second.keys.map((key) => key.toString()),
+  }.toList()..sort();
   return [
     for (final key in keys)
       ..._differentShapePaths(
@@ -948,7 +943,9 @@ Future<_Comparison> _compareReports(
 ) async {
   final android = await _loadRunReport(androidPath);
   final ios = await _loadRunReport(iosPath);
-  final kind = _scriptKindOf(android.script.isNotEmpty ? android.script : ios.script);
+  final kind = _scriptKindOf(
+    android.script.isNotEmpty ? android.script : ios.script,
+  );
   final androidById = android.byId;
   final iosById = ios.byId;
   final ids = <String>{...androidById.keys, ...iosById.keys}.toList()..sort();
@@ -1166,15 +1163,13 @@ class _RunState {
 
   /// A successful group-receipt pagination that does not forward `totalCount`
   /// as a number; observed on Android 5.0.0 while iOS returns `0`.
-  bool get groupReceiptTotalCountMissing =>
-      outcomes.any((item) {
-        if (item.step.id != 'group_receipts_server' ||
-            item.status != 'passed') {
-          return false;
-        }
-        final data = item.result?['data'];
-        return data is Map && data['totalCount'] == null;
-      });
+  bool get groupReceiptTotalCountMissing => outcomes.any((item) {
+    if (item.step.id != 'group_receipts_server' || item.status != 'passed') {
+      return false;
+    }
+    final data = item.result?['data'];
+    return data is Map && data['totalCount'] == null;
+  });
 
   void observeEvent(Map<String, dynamic> event) {
     if (nextStepIndex >= scriptSteps.length) return;
