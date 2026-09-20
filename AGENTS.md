@@ -23,6 +23,8 @@
 
 ## 开发环境初始化
 
+开发本仓库统一使用 Flutter 3.47.0（与 CI 的 `.github/workflows/ci.yml` 中 `FLUTTER_VERSION` 一致）。dev 依赖 `flutter_lints 6` 要求 Dart >= 3.8（Flutter >= 3.32），低于该版本无法解析本仓库的开发依赖；各包 `environment` 中声明的 Flutter >= 3.3.0 是给 SDK 使用者的支持下限，两者不要混淆。
+
 项目根目录有 `Makefile`，提供一键初始化：
 
 ```bash
