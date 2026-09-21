@@ -438,37 +438,16 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
             @Override
             public void onDisconnected(int errorCode) {
-                if (errorCode == 206) {
-                    // 这部分实现放到onLogout中。
-//                    EMListenerHandle.getInstance().clearHandle();
-//                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidLoginFromOtherDevice, null));
-                }else if (errorCode == 207) {
-                    ListenerHandle.getInstance().clearHandle();
-                    post(() -> channel.invokeMethod(MethodKey.onUserDidRemoveFromServer, null));
-                }else if (errorCode == 305) {
-                    ListenerHandle.getInstance().clearHandle();
-                    post(() -> channel.invokeMethod(MethodKey.onUserDidForbidByServer, null));
-                }else if (errorCode == 216) {
-                    ListenerHandle.getInstance().clearHandle();
-                    post(() -> channel.invokeMethod(MethodKey.onUserDidChangePassword, null));
-                }else if (errorCode == 214) {
-                    ListenerHandle.getInstance().clearHandle();
-                    post(() -> channel.invokeMethod(MethodKey.onUserDidLoginTooManyDevice, null));
+                if (errorCode == EMError.USER_LOGIN_ANOTHER_DEVICE) {
+                    // 206 is emitted by onLogout(int, EMLoginExtensionInfo) below, which carries the device info.
+                    return;
                 }
-                else if (errorCode == 217) {
+                if (isLogoutErrorCode(errorCode)) {
                     ListenerHandle.getInstance().clearHandle();
-                    post(() -> channel.invokeMethod(MethodKey.onUserKickedByOtherDevice, null));
                 }
-                else if (errorCode == 202) {
-                    ListenerHandle.getInstance().clearHandle();
-                    post(() -> channel.invokeMethod(MethodKey.onUserAuthenticationFailed, null));
-                }
-                else if (errorCode == 8) {
-                    post(() -> channel.invokeMethod(MethodKey.onAppActiveNumberReachLimit, null));
-                }                
-                else {
-                    post(() -> channel.invokeMethod(MethodKey.onDisconnected, null));
-                }
+                Map<String, Object> data = new HashMap<>();
+                data.put("errorCode", Integer.valueOf(errorCode));
+                post(() -> channel.invokeMethod(MethodKey.onDisconnected, data));
             }
 
             @Override
@@ -483,10 +462,19 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
             @Override
             public void onLogout(int errorCode, EMLoginExtensionInfo info) {
-                if (errorCode == 206 || errorCode == 220) {
-                    ListenerHandle.getInstance().clearHandle();
-                    post(() -> channel.invokeMethod(MethodKey.onUserDidLoginFromOtherDevice, LoginExtensionInfoHelper.toJson(info)));
+                // The platform reports every forced logout through onDisconnected(int) as well,
+                // so only 206 is emitted here, to merge its device information into that event.
+                if (errorCode != EMError.USER_LOGIN_ANOTHER_DEVICE) {
+                    return;
                 }
+                ListenerHandle.getInstance().clearHandle();
+                Map<String, Object> data = new HashMap<>();
+                data.put("errorCode", Integer.valueOf(errorCode));
+                if (info != null) {
+                    data.put("deviceName", info.getDeviceInfo());
+                    data.put("ext", info.getDeviceExt());
+                }
+                post(() -> channel.invokeMethod(MethodKey.onDisconnected, data));
             }
             @Override
             public void onOfflineMessageSyncStart() {
@@ -602,6 +590,25 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
                 onError(result, e);
             }
         });
+    }
+
+    // 5.0.0
+    // The reasons that mean the user has been logged out, so the pending listener callbacks
+    // are dropped. See docs/spec/2026-09-21-connection-event-normalization-spec.md.
+    private static boolean isLogoutErrorCode(int errorCode) {
+        return errorCode == EMError.USER_LOGIN_ANOTHER_DEVICE
+                || errorCode == EMError.USER_REMOVED
+                || errorCode == EMError.USER_BIND_ANOTHER_DEVICE
+                || errorCode == EMError.USER_LOGIN_TOO_MANY_DEVICES
+                || errorCode == EMError.USER_KICKED_BY_CHANGE_PASSWORD
+                || errorCode == EMError.USER_KICKED_BY_OTHER_DEVICE
+                || errorCode == EMError.USER_DEVICE_CHANGED
+                || errorCode == EMError.APP_ACTIVE_NUMBER_REACH_LIMITATION
+                || errorCode == EMError.SERVER_SERVICE_RESTRICTED
+                || errorCode == EMError.INVALID_TOKEN
+                || errorCode == EMError.INVALID_PARAM
+                || errorCode == EMError.USER_NOT_FOUND
+                || errorCode == EMError.SERVER_GET_DNSLIST_FAILED;
     }
 }
 

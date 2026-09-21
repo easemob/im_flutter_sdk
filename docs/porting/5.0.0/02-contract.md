@@ -69,6 +69,12 @@ class ChatDataSyncType {
 | `onDataSyncFinish` | `onDataSyncFinish(int type, ChatError? error)` | `{type, error}`；Android errorCode 转 ChatError，iOS error 直接序列化 |
 | `onDatabaseOpened` | `onDatabaseOpened(String username, ChatError? error)` | `{username, error}`；Android成功时 error 缺省 |
 
+连接断开事件在 5.0.0 收敛为单一通道（breaking）：
+
+- 删除 8 个服务器强制下线回调（`onUserDidLoginFromOtherDevice`、`onUserDidRemoveFromServer`、`onUserDidForbidByServer`、`onUserDidChangePassword`、`onUserDidLoginTooManyDevice`、`onUserKickedByOtherDevice`、`onUserAuthenticationFailed`、`onAppActiveNumberReachLimit`）与三端对应的 8 个事件 key。
+- 统一为 `onDisconnected(int? errorCode, LoginExtensionInfo? info)`；`errorCode` 与平台 `EMError` 数值一致并原样透传，`info` 仅原因码 206 携带。
+- 「退出」（需重新登录）与「断开」（SDK 自动重连）的判定规则、退出码表与双通道说明见 [`docs/spec/2026-09-21-connection-event-normalization-spec.md`](../../spec/2026-09-21-connection-event-normalization-spec.md)。
+
 ### 3.2 已读回执与消息模型
 
 删除三端旧 API/路由/事件：

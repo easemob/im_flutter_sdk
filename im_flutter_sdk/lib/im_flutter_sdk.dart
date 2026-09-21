@@ -15,6 +15,7 @@ export 'src/models/chat_thread.dart';
 export 'src/models/chat_conversation.dart';
 export 'src/models/chat_cursor_result.dart';
 export 'src/models/chat_device_info.dart';
+export 'src/models/chat_disconnect_error_code.dart';
 export 'src/models/chat_download_callback.dart';
 export 'src/models/chat_error.dart';
 export 'src/models/chat_group_read_receipt.dart';

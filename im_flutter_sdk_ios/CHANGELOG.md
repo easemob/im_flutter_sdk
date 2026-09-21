@@ -3,6 +3,8 @@
 - 适配 Token 登录、数据同步、批量已读回执和群组配置重构；
 - 适配会话独立 delegate 及 native 5.0.0 删除项；
 - 修复分页获取群回执时未返回 `totalCount` 的问题；
+- 断开事件统一为 `onDisconnected`：各断开 delegate 折算为平台原因码后统一派发，强制退出回调改为原样透传原因码（补上活跃数达到上限）；
+- 删除 5.0.0 已不存在的 `activeNumbersReachLimitation` 与不再使用的 `LoginExtensionInfoHelper`；
 
 ## 4.24.0
 - iOS依赖 SDK 升级到 4.24.1；
