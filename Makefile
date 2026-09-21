@@ -10,7 +10,7 @@ PODLOCK     := $(IOS_DIR)/Podfile.lock
 
 .DEFAULT_GOAL := help
 
-.PHONY: help setup config env-gettoken auto-report auto-compare deps pods clean
+.PHONY: help setup config env-gettoken auto-report auto-compare scan-deprecated deps pods clean
 
 help: ## Show this help
 	@echo "im_flutter_sdk - project setup"
@@ -34,6 +34,10 @@ auto-report: ## Run 5.0.0 auto mode and write a local report: make auto-report P
 auto-compare: ## Compare two finished runs: make auto-compare ANDROID=<run-dir> IOS=<run-dir>
 	@test -n "$(ANDROID)" -a -n "$(IOS)" || (echo "Usage: make auto-compare ANDROID=<run-dir> IOS=<run-dir>" && exit 2)
 	dart run tool/auto_report.dart --android-report "$(ANDROID)" --ios-report "$(IOS)"
+
+scan-deprecated: ## Scan wrapper code for deprecated native APIs: make scan-deprecated [PLATFORM=android|ios]
+	@test -z "$(PLATFORM)" || test "$(PLATFORM)" = "android" || test "$(PLATFORM)" = "ios" || (echo "Usage: make scan-deprecated [PLATFORM=<android|ios>]" && exit 2)
+	bash tool/ci/scan_deprecated.sh $(PLATFORM)
 
 deps: ## flutter pub get
 	@echo "Running flutter pub get..."
