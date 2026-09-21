@@ -221,8 +221,8 @@ iOS 的 `muteList`、`from` 与 RN 侧首扫命中的是同一批 native 变更�
 | --- | --- | --- |
 | Android `downloadAttachment` / `downloadThumbnail`（4 条） | 已修 | commit `5d49428e`，改用带 `EMCallBack` 的重载 |
 | iOS `ChatroomHelper.m` `muteList` | 已修 | 改用 `muteMembers.allKeys`（native 5.0.0 的替代属性是 `NSDictionary<userId, 过期时间>`，只取 key，与 Android `getMuteList().keySet()` 同形；`muteList` 与 `muteMembers` 都是「仅聊天室所有者可取，否则 nil」），重跑后 iOS 由 2 条降为 1 条 |
-| Android `EMHelper.java` `setThumbnailSecret` / `getThumbnailSecret` | 未修 | 待确认 native 5.0.0 的替代属性 |
-| Android `EMHelper.java:1567` `setFrom`、iOS `FetchServerMessagesOptionHelper.m:18` `from` | 未修（保留） | Dart 侧已不再下发 `from`（见 `deprecated-apis.md`），该分支成为不可达分支；本轮明确保留 |
+| Android `EMHelper.java` `setThumbnailSecret` / `getThumbnailSecret` | 未修（本轮明确不改） | 替代 API 已确认（`getSecret` / `setSecret`），但会改变 Android 侧 `thumbnailSecret` 的取值，先保持现状，见 §9.3 |
+| Android `EMHelper.java:1567` `setFrom`、iOS `FetchServerMessagesOptionHelper.m:18` `from` | 已修（删除不可达分支） | Dart 侧已删除 `FetchMessageOptions.from`（见 `deprecated-apis.md`），native 替代分别是 `setFromIds` / `fromIds`，见 §9.3 |
 
 ## 9. 验收标准
 
@@ -264,6 +264,35 @@ iOS 的 `muteList`、`from` 与 RN 侧首扫命中的是同一批 native 变更�
 ### 9.2 输出目录调整（2026-09-21）
 
 初版把产物写在 `reports/deprecated/`，与 auto 报告的 `reports/5.0.0/` 并列在 `reports/` 顶层，缺了版本维度。现改为按**当前分支名**归档：`reports/<分支名>/deprecated/`（`5.0.0` 分支 → `reports/5.0.0/deprecated/`），与 auto 报告同处一层；HEAD 不在分支上时脚本报错退出（退出码 2），不猜测目录。§6.1 契约与 §6.4 退出码已同步；改动只涉及 `tool/ci/scan_deprecated.sh`、`CONTRIBUTING.md` 与本文件。2026-09-21 复跑 `bash tool/ci/scan_deprecated.sh` 验证：产物写入 `reports/5.0.0/deprecated/`，退出码 0。
+
+### 9.3 遗留废弃调用清理（2026-09-21）
+
+§8.1 的 4 条里，本轮只清理 `from` 的 2 条（Android 1 条 + iOS 1 条）；缩略图密钥的 2 条**明确保留不改**。
+
+| # | 位置 | native 废弃声明 | 替代 | 本轮处理 |
+| --- | --- | --- | --- | --- |
+| 1 | `EMHelper.java` 图片 body `fromJson` | `EMImageMessageBody.setThumbnailSecret(String)` | `setSecret(String)` | 保留不改（见下） |
+| 2 | `EMHelper.java` 图片 body `toJson` | `EMImageMessageBody.getThumbnailSecret()` | `getSecret()` | 保留不改（见下） |
+| 3 | `EMHelper.java` `FetchHistoryOptionsHelper` | `EMFetchMessageOption.setFrom(String)` | `setFromIds(List<String>)` | 删除分支（不可达） |
+| 4 | `FetchServerMessagesOptionHelper.m` | `EMFetchServerMessagesOption.from`（`__deprecated_msg("Use fromIds instead")`） | `fromIds` | 删除赋值（不可达） |
+
+保留 1/2 的原因：native 5.0.0 里图片的原图、大图、缩略图共用一个密钥，改成 `getSecret()` 会让 Android 侧 `thumbnailSecret` 的取值发生变化（对外 JSON 的取值变化），使用方影响待确认，本轮先维持现状；iOS 侧 `thumbnailSecretKey` 本就未废弃，无需改动。
+
+判定依据（均取自 wrapper 实际编译的产物）：
+
+- Android：`io.hyphenate:hyphenate-chat:5.0.0`（`im_flutter_sdk_android/android/build.gradle`）的 AAR 用 `javap -v` 确认 `EMImageMessageBody.setThumbnailSecret` / `getThumbnailSecret` 与 `EMFetchMessageOption.setFrom` 带 `Deprecated: true`；`EMFileMessageBody.getSecret()` 的 javadoc 写明「对于图片消息:原图、大图、缩略图共用一个密钥。对于视频消息：视频文件和缩略图共用一个密钥」——1/2 将来若要改，是等价替换。
+- iOS：`Pods/HyphenateChat/.../EMFetchServerMessagesOption.h` 的 `from` 带 `__deprecated_msg("Use fromIds instead")`，替代是 `fromIds`。
+- 3/4 的不可达性：Dart `FetchMessageOptions.toJson()` 只下发 `senders`（`im_flutter_sdk/lib/src/models/fetch_message_options.dart`），5.0.0 已删除 Dart 侧 `FetchMessageOptions.from`（见 `im_flutter_sdk/docs/deprecated-apis.md`），并由 `im_flutter_sdk/test/contracts/legacy_api_removal_contract_test.dart`（`sends senders only`、`containsKey('from') isFalse`）锁定。
+- 未一并处理：Android video body 的 `EMVideoMessageBody.setThumbnailSecret` / `getThumbnailSecret` 与 `EMMessage.setFrom` 在 5.0.0 AAR 中均未标废弃，保持不动。
+
+改动文件：`im_flutter_sdk_ios/.../FetchServerMessagesOptionHelper.m`、`im_flutter_sdk_android/.../EMHelper.java`（仅 `from` 分支），以及两个包的 `CHANGELOG.md`（5.0.0 条目）；Dart 公开 API 与两端 JSON key 均未变化。
+
+| 检查 | 命令 | 结果 |
+| --- | --- | --- |
+| 全新编译 + 扫描 | `bash tool/ci/scan_deprecated.sh` | ✅ 退出码 0，`skippedCompile: false`；Android 2 条（全部为保留项）、iOS 0 条 |
+| 编译正确性 | 同上（Android `compileDebugJavaWithJavac`、iOS xcodebuild `clean build`） | ✅ 两端编译通过 |
+
+保留项的后续验证：Android 上 `getSecret()` 与 `getThumbnailSecret()` 的运行时取值对比探针——example 的 auto registry 目前没有图片消息的步骤，需要先补 registry 与图片数据；在确认 `thumbnailSecret` 使用方影响之前不改动。
 
 ## 10. 明确不做
 

@@ -25,6 +25,7 @@
 - `fetchGroupInfoFromServer`/`fetchChatRoomInfoFromServer` 不再下发 `fetchMembers`，与 Android 端原有行为（本就忽略该参数）对齐。
 - `loadMessagesWithKeyword` 只下发 `senders`，不再下发 `from`；native 侧 `from`/`sender` 兜底分支保留未动，成为不可达分支。
 - `ChatOptions` 不再能配置厂商推送的 appId/appKey/证书名，也不再序列化 `pushConfig` 字段（native 侧读取分支保留未动，成为不可达分支）；承载这些配置的 `ChatPushConfig` 类连同 `lib/src/internal/chat_push_config.dart`、`inner_headers.dart` 的导出与 `em_compat.dart` 的 `EMPushConfig` typedef 一并删除。
+- 随本轮 wrapper 废弃调用清理，`FetchMessageOptions` 删除后遗留的 native 侧分支也已移除：Android `EMFetchMessageOption.setFrom`、iOS `EMFetchServerMessagesOption.from`（native 5.0.0 均标记废弃，替代分别是 `setFromIds` / `fromIds`）。Android 图片消息的缩略图密钥（`thumbnailSecret`）本轮**保持现状**：替代 `getSecret` / `setSecret` 会改变取值，待确认使用方影响。详见 `docs/spec/2026-09-21-deprecated-api-scan-spec.md` §9.3。
 
 本报告「附」中列的 3 类注解缺陷随 API 删除一并消失（`ChatGroup.name` 的替代写错、`onMemberExitedFromGroup` 自引用、两处 `fetchMembers` 空消息），无需再单独修正文案。
 
