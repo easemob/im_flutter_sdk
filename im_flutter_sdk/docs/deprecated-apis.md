@@ -5,6 +5,29 @@
 - 扫描方式：全量检索 `@Deprecated` / `@deprecated` 注解，共 11 个文件、97 处命中，逐条人工核对声明与替代 API
 - 生成日期：2026-09-21
 
+## 处理结果（5.0.0 分支，2026-09-21）
+
+按「5.0.0 为主版本，不保留 `@Deprecated` 残壳」的口径删除下列 Dart 公开 API。改动范围仅 `im_flutter_sdk/lib`（另含 CHANGELOG 与本文件）；`ChatMethodKeys`/`chat_event_keys` 常量与 native 三端（interface/android/ios）未改动。
+
+| 章节 | 处理 |
+|---|---|
+| 一、方法级作废（9 个） | 全部删除 |
+| 二、字段 / 属性作废（5 项） | 删除 `ChatEventHandler.onMessagesRecalled`、`ChatGroup.name`、`ChatGroup.description`、`FetchMessageOptions.from`（第 5 项为同一构造参数，随之删除） |
+| 三、构造函数 / 参数级作废 | 删除 `fetchMembers`（群组、聊天室）、`ChatGroup` 的 `name`/`description` 构造参数、`FetchMessageOptions` 的 `from` 构造参数、`ChatConversation.loadMessagesWithKeyword` 的 `sender` 参数、`ChatGroupEventHandler` 的 `onMemberExitedFromGroup`/`onMemberJoinedFromGroup` 参数 |
+| 四、`ChatOptions` 推送开关（8 个） | 全部删除，统一改用 `ChatPushManager.bindDeviceToken` |
+| 五、`em_compat.dart` 兼容层（66 个 typedef） | **保留 65 个**；`EMPushConfig` 随 `ChatPushConfig` 类删除而一并删除 |
+
+保留项：`ChatOptions({required String appKey, ...})` 默认构造函数与 `em_compat.dart` 的 66 个 `EM*` typedef 仍带 `@Deprecated`，留待后续大版本处理。
+
+行为变化提醒：
+
+- `ChatGroup` 反序列化仍从 native 的 `name`/`desc` 取值，只是不再写入已删除的 `name`/`description` 字段；`toJson` 输出 key 不变。
+- `fetchGroupInfoFromServer`/`fetchChatRoomInfoFromServer` 不再下发 `fetchMembers`，与 Android 端原有行为（本就忽略该参数）对齐。
+- `loadMessagesWithKeyword` 只下发 `senders`，不再下发 `from`；native 侧 `from`/`sender` 兜底分支保留未动，成为不可达分支。
+- `ChatOptions` 不再能配置厂商推送的 appId/appKey/证书名，也不再序列化 `pushConfig` 字段（native 侧读取分支保留未动，成为不可达分支）；承载这些配置的 `ChatPushConfig` 类连同 `lib/src/internal/chat_push_config.dart`、`inner_headers.dart` 的导出与 `em_compat.dart` 的 `EMPushConfig` typedef 一并删除。
+
+本报告「附」中列的 3 类注解缺陷随 API 删除一并消失（`ChatGroup.name` 的替代写错、`onMemberExitedFromGroup` 自引用、两处 `fetchMembers` 空消息），无需再单独修正文案。
+
 ## 概览
 
 | 分类 | 数量 | 位置 |
@@ -72,7 +95,7 @@
 | `enableAPNs(certName)` | 545 | APNs 推送 |
 | `enableHonorPush()` | 563 | 荣耀推送 |
 
-## 五、`em_compat.dart` 旧命名兼容层（66 个 typedef）
+## 五、`em_compat.dart` 旧命名兼容层（扫描时 66 个 typedef，现余 65 个）
 
 `lib/em_compat.dart` 是 4.22.0 改名（`EM*` → `Chat*`，对齐海外版 agora_chat_sdk）时聚拢的兼容层，全部为 `@Deprecated('Use [Chat*] instead') typedef EM* = Chat*`，仅为兼容存量用户代码，将在未来大版本移除。清单如下：
 
@@ -128,7 +151,7 @@
 | `EMPresenceEventHandler` | `ChatPresenceEventHandler` |
 | `EMPresenceManager` | `ChatPresenceManager` |
 | `EMPresenceStatusDetail` | `ChatPresenceStatusDetail` |
-| `EMPushConfig` | `ChatPushConfig` |
+| `EMPushConfig`（本次已删除） | `ChatPushConfig`（本次已删除） |
 | `EMPushConfigs` | `ChatPushConfigs` |
 | `EMPushManager` | `ChatPushManager` |
 | `EMSearchDirection` | `ChatSearchDirection` |

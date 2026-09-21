@@ -158,9 +158,6 @@ typedef EMPresenceManager = ChatPresenceManager;
 @Deprecated('Use [ChatPresenceStatusDetail] instead')
 typedef EMPresenceStatusDetail = ChatPresenceStatusDetail;
 
-@Deprecated('Use [ChatPushConfig] instead')
-typedef EMPushConfig = ChatPushConfig;
-
 @Deprecated('Use [ChatPushConfigs] instead')
 typedef EMPushConfigs = ChatPushConfigs;
 

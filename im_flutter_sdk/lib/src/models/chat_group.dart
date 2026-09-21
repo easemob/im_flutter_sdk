@@ -14,10 +14,8 @@ import 'package:im_flutter_sdk/src/tools/chat_extension.dart';
 class ChatGroup {
   ChatGroup({
     required this.groupId,
-    @Deprecated('Use [groupName] instead') this.name,
     this.groupName,
     this.avatarUrl,
-    @Deprecated('Use [desc] instead') this.description,
     this.desc,
     this.owner,
     this.announcement,
@@ -47,25 +45,6 @@ class ChatGroup {
   /// ~end
   final String groupId;
 
-  @Deprecated('Use [desc] instead')
-
-  /// ~english
-  /// Gets the group name.
-  ///
-  /// **Note**
-  /// To get the correct value, ensure that you call [ChatGroupManager.fetchGroupInfoFromServer] before calling this method.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 从内存中获取群组名称。
-  ///
-  /// **Note**
-  /// 如需最新数据，需先从服务器获取：[ChatGroupManager.fetchGroupInfoFromServer]。
-  ///
-  /// **Return** 群组名称。
-  /// ~end
-  final String? name;
-
   /// ~english
   /// Gets the group name.
   ///
@@ -91,25 +70,6 @@ class ChatGroup {
   /// 从内存中获取群组头像。
   /// ~end
   final String? avatarUrl;
-
-  @Deprecated('Use [desc] instead')
-
-  /// ~english
-  /// Gets the group description.
-  ///
-  /// **Note**
-  /// To get the correct value, ensure that you call [ChatGroupManager.fetchGroupInfoFromServer] before calling this method.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 从内存中获取群组描述。
-  ///
-  /// **Note**
-  /// 如需最新数据，需先从服务器获取：[ChatGroupManager.fetchGroupInfoFromServer]。
-  ///
-  /// **Return** 群组描述。
-  /// ~end
-  final String? description;
 
   /// ~english
   /// Gets the group description.
@@ -392,9 +352,9 @@ class ChatGroup {
 
   factory ChatGroup.fromJson(Map map) {
     String groupId = map['groupId'];
-    String? name = map["name"];
+    String? groupName = map["name"];
     String? avatarUrl = map["avatarUrl"];
-    String? description = map["desc"];
+    String? desc = map["desc"];
     String? owner = map["owner"];
     String? announcement = map["announcement"];
     int? memberCount = map["memberCount"];
@@ -419,12 +379,8 @@ class ChatGroup {
     return ChatGroup(
       groupId: groupId,
       avatarUrl: avatarUrl,
-      // ignore: deprecated_member_use_from_same_package
-      name: name,
-      groupName: name,
-      // ignore: deprecated_member_use_from_same_package
-      description: description,
-      desc: description,
+      groupName: groupName,
+      desc: desc,
       owner: owner,
       announcement: announcement,
       memberCount: memberCount,
@@ -448,11 +404,9 @@ class ChatGroup {
   Map toJson() {
     Map data = {};
     data.putIfNotNull("groupId", groupId);
-    // ignore: deprecated_member_use_from_same_package
-    data.putIfNotNull("name", groupName ?? name);
+    data.putIfNotNull("name", groupName);
     data.putIfNotNull("avatarUrl", avatarUrl);
-    // ignore: deprecated_member_use_from_same_package
-    data.putIfNotNull("desc", desc ?? description);
+    data.putIfNotNull("desc", desc);
     data.putIfNotNull("owner", owner);
     data.putIfNotNull("announcement", announcement);
     data.putIfNotNull("memberCount", memberCount);

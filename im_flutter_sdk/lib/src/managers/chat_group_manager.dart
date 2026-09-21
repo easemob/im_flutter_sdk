@@ -138,16 +138,6 @@ class ChatGroupManager {
           String oldOwner = map['oldOwner'];
           element.onOwnerChangedFromGroup?.call(groupId, newOwner, oldOwner);
           break;
-        case ChatGroupChangeEvent.ON_MEMBER_JOINED:
-          String groupId = map['groupId'];
-          String member = map['member'];
-          element.onMemberJoinedFromGroup?.call(groupId, member);
-          break;
-        case ChatGroupChangeEvent.ON_MEMBER_EXITED:
-          String groupId = map['groupId'];
-          String member = map['member'];
-          element.onMemberExitedFromGroup?.call(groupId, member);
-          break;
         case ChatGroupChangeEvent.ON_ANNOUNCEMENT_CHANGED:
           String groupId = map['groupId'];
           String? announcement = map['announcement'];
@@ -454,12 +444,8 @@ class ChatGroupManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError].
   /// ~end
-  Future<ChatGroup> fetchGroupInfoFromServer(
-    String groupId, {
-    @Deprecated('') bool? fetchMembers,
-  }) async {
+  Future<ChatGroup> fetchGroupInfoFromServer(String groupId) async {
     Map req = {"groupId": groupId};
-    req.putIfNotNull("fetchMembers", fetchMembers);
     Map result = await platform_interface.Client.instance.groupManager
         .callNativeMethod(ChatMethodKeys.getGroupSpecificationFromServer, req);
     try {
@@ -932,18 +918,6 @@ class ChatGroupManager {
     }
   }
 
-  @Deprecated('Use [updateGroupName] instead')
-  Future<void> changeGroupName(String groupId, String name) async {
-    try {
-      Map req = {'name': name, 'groupId': groupId};
-      Map result = await platform_interface.Client.instance.groupManager
-          .callNativeMethod(ChatMethodKeys.updateGroupSubject, req);
-      ChatError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
   /// ~english
   /// Changes the group name.
   /// Only the group owner can call this method.
@@ -972,18 +946,6 @@ class ChatGroupManager {
     Map result = await platform_interface.Client.instance.groupManager
         .callNativeMethod(ChatMethodKeys.updateGroupSubject, req);
     try {
-      ChatError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  @Deprecated('Use [updateGroupDesc] instead')
-  Future<void> changeGroupDescription(String groupId, String desc) async {
-    try {
-      Map req = {'desc': desc, 'groupId': groupId};
-      Map result = await platform_interface.Client.instance.groupManager
-          .callNativeMethod(ChatMethodKeys.updateDescription, req);
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;

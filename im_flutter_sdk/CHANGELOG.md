@@ -9,6 +9,14 @@
 - 重构群组配置模型，新增 `ChatGroupConfigs` 和 `updateGroupConfigs`；
 - 移除会话、好友、已加入群组和公开群组的旧服务端拉取 API，改用自动同步后的本地数据；
 - 移除客户端举报消息及创建、解散聊天室 API；
+- 移除已作废（`@Deprecated`）的公开 Dart API（breaking），清单见 `docs/deprecated-apis.md`：
+  - 方法：`ChatManager.searchMsgFromDB`、`ChatContactManager.getAllContactsFromDB`、`ChatContactManager.getBlockListFromServer`、`ChatContactManager.getBlockListFromDB`、`ChatGroupManager.changeGroupName`、`ChatGroupManager.changeGroupDescription`、`ChatPushManager.updateHMSPushToken`、`ChatPushManager.updateFCMPushToken`、`ChatPushManager.updateAPNsDeviceToken`；
+  - 字段与参数：`ChatGroup.name`、`ChatGroup.description`（含构造参数）、`FetchMessageOptions.from`（含构造参数）、`ChatConversation.loadMessagesWithKeyword` 的 `sender` 参数、`ChatGroupManager.fetchGroupInfoFromServer` 与 `ChatRoomManager.fetchChatRoomInfoFromServer` 的 `fetchMembers` 参数；
+  - 回调：`ChatEventHandler.onMessagesRecalled` 改用 `onMessagesRecalledInfo`，`ChatGroupEventHandler` 的 `onMemberExitedFromGroup`/`onMemberJoinedFromGroup` 改用 `onMembersExitedFromGroup`/`onMembersJoinedFromGroup`；
+  - `ChatOptions` 的 8 个厂商推送开关（`enableOppoPush`、`enableMiPush`、`enableMeiZuPush`、`enableFCM`、`enableVivoPush`、`enableHWPush`、`enableAPNs`、`enableHonorPush`）改用 `ChatPushManager.bindDeviceToken`；
+  - `ChatOptions` 不再序列化 `pushConfig` 字段（native 侧读取分支未改动）；
+  - 删除 `ChatPushConfig` 类及其所在的 `lib/src/internal/chat_push_config.dart`：它只服务于上述推送开关，随开关一并移除，`em_compat.dart` 中指向它的 `EMPushConfig` typedef 同步删除；
+  - `em_compat.dart` 的其余 `EM*` 兼容 typedef 与 `ChatOptions` 默认构造函数本次保留；
 - 重构连接断开事件为单一 `onDisconnected(int? errorCode, LoginExtensionInfo? info)`：
   - 删除 `onUserDidLoginFromOtherDevice`、`onUserDidRemoveFromServer`、`onUserDidForbidByServer`、`onUserDidChangePassword`、`onUserDidLoginTooManyDevice`、`onUserKickedByOtherDevice`、`onUserAuthenticationFailed`、`onAppActiveNumberReachLimit` 8 个回调（breaking）；
   - 原因码数值与平台 `EMError` 一致并原样透传，未列出的原因码同样会送达；

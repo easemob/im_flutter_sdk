@@ -360,15 +360,11 @@ class ChatRoomManager {
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
   /// ~end
 
-  Future<ChatRoom> fetchChatRoomInfoFromServer(
-    String roomId, {
-    @Deprecated('') bool? fetchMembers,
-  }) async {
+  Future<ChatRoom> fetchChatRoomInfoFromServer(String roomId) async {
     try {
       Map result = await platform_interface.Client.instance.chatRoomManager
           .callNativeMethod(ChatMethodKeys.fetchChatRoomInfoFromServer, {
         "roomId": roomId,
-        "fetchMembers": fetchMembers,
       });
       ChatError.hasErrorFromResult(result);
       return ChatRoom.fromJson(

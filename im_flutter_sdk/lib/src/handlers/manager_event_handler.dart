@@ -414,17 +414,6 @@ class ChatEventHandler {
   /// ~end
   final void Function(List<ChatMessage> messages)? onMessagesDelivered;
 
-  @Deprecated('Use [onMessagesRecalledInfo] instead')
-
-  /// ~english
-  /// Occurs when a received message is recalled.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 已收到的消息被撤回的回调。
-  /// ~end
-  final void Function(List<ChatMessage> messages)? onMessagesRecalled;
-
   /// ~english
   /// Occurs when a received message is recalled.
   /// ~end
@@ -497,8 +486,6 @@ class ChatEventHandler {
   ///
   /// Param [onMessagesDelivered] Occurs when a delivery receipt is received.
   ///
-  /// Param [onMessagesRecalled] Occurs when a received message is recalled.
-  ///
   /// Param [onConversationsUpdate] Occurs when a conversation is updated.
   ///
   /// Param [onMessageReactionDidChange] Occurs when the Reaction data changes.
@@ -523,8 +510,6 @@ class ChatEventHandler {
   ///
   /// Param [onMessagesDelivered] 收到消息已送达回执的回调。
   ///
-  /// Param [onMessagesRecalled] 已收到的消息被撤回的回调。
-  ///
   /// Param [onConversationsUpdate] 会话更新事件回调。
   ///
   /// Param [onMessageReactionDidChange] 消息表情回复（Reaction）变化监听器。
@@ -541,7 +526,6 @@ class ChatEventHandler {
     this.onCmdMessagesReceived,
     this.onMessageReadReceipts,
     this.onMessagesDelivered,
-    this.onMessagesRecalled,
     this.onConversationsUpdate,
     this.onMessageReactionDidChange,
     this.onMessageContentChanged,
@@ -1212,24 +1196,6 @@ class ChatGroupEventHandler {
   )? onInvitationReceivedFromGroup;
 
   /// ~english
-  /// Occurs when a member proactively leaves the group.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 群组成员主动退出回调。
-  /// ~end
-  final void Function(String groupId, String member)? onMemberExitedFromGroup;
-
-  /// ~english
-  /// Occurs when a user joins a group.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 新成员加入群组的回调。
-  /// ~end
-  final void Function(String groupId, String member)? onMemberJoinedFromGroup;
-
-  /// ~english
   /// Occurs when one or more group members are muted.
   ///
   /// Note: The mute function is different from a block list.
@@ -1450,10 +1416,6 @@ class ChatGroupEventHandler {
   ///
   /// Param [onInvitationReceivedFromGroup] The user receives a group invitation.
   ///
-  /// Param [onMemberExitedFromGroup] A member proactively leaves the group.
-  ///
-  /// Param [onMemberJoinedFromGroup] A user joins a group.
-  ///
   /// Param [onMuteListAddedFromGroup] One or more group members are muted.
   ///
   /// Param [onMuteListRemovedFromGroup] One or more group members are unmuted.
@@ -1511,10 +1473,6 @@ class ChatGroupEventHandler {
   ///
   /// Param [onInvitationReceivedFromGroup] 当前用户收到入群邀请的回调。
   ///
-  /// Param [onMemberExitedFromGroup] 群组成员主动退出回调。
-  ///
-  /// Param [onMemberJoinedFromGroup] 新成员加入群组的回调。
-  ///
   /// Param [onMuteListAddedFromGroup] 有成员被禁言回调, 用户禁言后，将无法在群中发送消息，但可查看群组中的消息，而黑名单中的用户无法查看和发送群组消息。
   ///
   /// Param [onMuteListRemovedFromGroup] 有成员被解除禁言的回调。
@@ -1557,10 +1515,6 @@ class ChatGroupEventHandler {
     this.onInvitationAcceptedFromGroup,
     this.onInvitationDeclinedFromGroup,
     this.onInvitationReceivedFromGroup,
-    @Deprecated('Use onMemberExitedFromGroup instead')
-    this.onMemberExitedFromGroup,
-    @Deprecated('Use onMembersJoinedFromGroup instead')
-    this.onMemberJoinedFromGroup,
     this.onMuteListAddedFromGroup,
     this.onMuteListRemovedFromGroup,
     this.onOwnerChangedFromGroup,

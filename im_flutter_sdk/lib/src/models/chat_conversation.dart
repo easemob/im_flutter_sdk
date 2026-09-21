@@ -649,7 +649,7 @@ class ChatConversation {
   }
 
   /// ~english
-  /// Loads messages from the local database by the following parameters: keywords, timestamp, the number of messages to retrieve, sender, search scope, and search direction.
+  /// Loads messages from the local database by the following parameters: keywords, timestamp, the number of messages to retrieve, senders, search scope, and search direction.
   ///
   /// **Note** Pay attention to the memory usage when you retrieve a great number of messages.
   ///
@@ -696,8 +696,6 @@ class ChatConversation {
   /// ~end
   Future<List<ChatMessage>> loadMessagesWithKeyword(
     String keywords, {
-    @Deprecated('The `sender` parameter is deprecated, use `senders` instead.')
-    String? sender,
     List<String>? senders,
     int timestamp = -1,
     int count = 20,
@@ -712,7 +710,6 @@ class ChatConversation {
       req['searchScope'] = MessageSearchScope.values.indexOf(searchScope);
       req['direction'] = direction.index;
       req.putIfNotNull("senders", senders);
-      req.putIfNotNull("from", sender);
 
       Map<String, dynamic> result = await platform_interface
           .Client.instance.conversationManager

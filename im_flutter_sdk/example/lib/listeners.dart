@@ -24,7 +24,6 @@ const Set<int> kDisconnectLogoutCodes = <int>{
 };
 
 /// Register all event listeners after init succeeds; all callbacks are written to logs (floating + stdout + file).
-/// Deprecated callbacks (onMessagesRecalled, singular onMemberExited/JoinedFromGroup) are not registered.
 void registerAllListeners() {
   const id = 'api_tester';
   void log(String source, [Map<String, Object?>? args]) =>

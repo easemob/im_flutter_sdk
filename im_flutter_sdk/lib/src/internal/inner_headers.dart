@@ -1,6 +1,5 @@
 export 'chat_method_keys.dart';
 export 'chat_event_keys.dart';
-export 'chat_push_config.dart';
 export 'chat_transform_tools.dart';
 
 export '../models/chat_enums.dart';
