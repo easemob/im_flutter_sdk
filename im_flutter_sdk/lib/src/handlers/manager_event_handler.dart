@@ -51,76 +51,39 @@ class ConnectionEventHandler {
   /// ~english
   /// Occurs when the SDK disconnects from the chat server.
   ///
-  /// Note that the logout may not be performed at the bottom level when the SDK is disconnected.
+  /// Param [errorCode] The reason code, whose value is identical to the platform SDK
+  /// error code. See [ChatDisconnectErrorCode] for the codes this version can receive.
+  /// It is `null` when the platform reports no reason, which currently happens on iOS.
+  ///
+  /// Param [info] Present only when [errorCode] is
+  /// [ChatDisconnectErrorCode.USER_LOGIN_ANOTHER_DEVICE]: it carries the name and the
+  /// extension information of the device that logged in.
+  ///
+  /// There are two kinds of reasons:
+  /// - A reason listed in [ChatDisconnectErrorCode] as a logout reason means the user has
+  ///   been logged out and has to log in again.
+  /// - Any other reason, including `null`, only means the connection broke. The user stays
+  ///   logged in and the SDK reconnects automatically.
+  ///
+  /// Note: an expired token does not trigger this callback, see [onTokenDidExpire].
   /// ~end
   ///
   /// ~chinese
   /// 与 chat 服务器断开连接时触发的回调。
-  /// ~end
-  final VoidCallback? onDisconnected;
-
-  /// ~english
-  /// Occurs when the current user account is logged in to another device.
-  /// ~end
   ///
-  /// ~chinese
-  /// 其他设备登录回调。
-  /// ~end
-  final void Function(LoginExtensionInfo info)? onUserDidLoginFromOtherDevice;
-
-  /// ~english
-  /// Occurs when the current chat user is removed from the server.
-  /// ~end
+  /// Param [errorCode] 断开原因码，数值与平台 SDK 错误码一致。本版本可能收到的原因码见
+  /// [ChatDisconnectErrorCode]。平台未给出原因时为 `null`，当前仅 iOS 会出现。
   ///
-  /// ~chinese
-  /// 当前用户被服务器移除回调。
-  /// ~end
-  final VoidCallback? onUserDidRemoveFromServer;
-
-  /// ~english
-  /// Occurs when the current chat user is banned from accessing the server.
-  /// ~end
+  /// Param [info] 仅当 [errorCode] 为 [ChatDisconnectErrorCode.USER_LOGIN_ANOTHER_DEVICE]
+  /// 时携带，包含登录设备的名称与扩展信息。
   ///
-  /// ~chinese
-  /// 被服务器禁止连接回调。
-  /// ~end
-  final VoidCallback? onUserDidForbidByServer;
-
-  /// ~english
-  /// Occurs when the current chat user changed the password.
-  /// ~end
+  /// 原因分两类：
+  /// - [ChatDisconnectErrorCode] 中列为「退出原因」的原因码表示用户已被登出，需要重新登录；
+  /// - 其它原因（含 `null`）只表示连接中断，用户仍处于登录态，SDK 会自动重连。
   ///
-  /// ~chinese
-  /// 用户密码变更回调。
+  /// 注意：token 过期不会触发该回调，请见 [onTokenDidExpire]。
   /// ~end
-  final VoidCallback? onUserDidChangePassword;
-
-  /// ~english
-  /// Occurs when the current chat user logged to many devices.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 登录设备过多回调。
-  /// ~end
-  final VoidCallback? onUserDidLoginTooManyDevice;
-
-  /// ~english
-  /// Occurs when the current chat user is kicked out of the app by another device.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 被其他设备踢掉回调。
-  /// ~end
-  final VoidCallback? onUserKickedByOtherDevice;
-
-  /// ~english
-  /// Occurs when the current chat user authentication failed.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 鉴权失败回调。
-  /// ~end
-  final VoidCallback? onUserAuthenticationFailed;
+  final void Function(int? errorCode, LoginExtensionInfo? info)? onDisconnected;
 
   /// ~english
   /// Occurs when the token is about to expire.
@@ -133,21 +96,16 @@ class ConnectionEventHandler {
 
   /// ~english
   /// Occurs when the token has expired.
+  ///
+  /// The user has been logged out and has to log in again.
   /// ~end
   ///
   /// ~chinese
   /// Agora token 已过期时触发。
+  ///
+  /// 用户已被登出，需要重新登录。
   /// ~end
   final VoidCallback? onTokenDidExpire;
-
-  /// ~english
-  ///  The number of daily active users (DAU) or monthly active users (MAU) for the app has reached the upper limit.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 应用程序的日活跃用户数量（DAU）或月活跃用户数量（MAU）达到上限。
-  /// ~end
-  final VoidCallback? onAppActiveNumberReachLimit;
 
   /// ~english
   /// Occurs when synchronization of a data type starts.
@@ -199,27 +157,11 @@ class ConnectionEventHandler {
   ///
   /// Param [onConnected] The SDK connects to the chat server successfully.
   ///
-  /// Param [onDisconnected] The SDK disconnects from the chat server.
-  ///
-  /// Param [onUserDidLoginFromOtherDevice] The current user account is logged in to another device.
-  ///
-  /// Param [onUserDidRemoveFromServer] The current chat user is removed from the server.
-  ///
-  /// Param [onUserDidForbidByServer] The current chat user is banned by the server.
-  ///
-  /// Param [onUserDidChangePassword] The current chat user is changed password.
-  ///
-  /// Param [onUserDidLoginTooManyDevice] The current chat user logged in to many devices.
-  ///
-  /// Param [onUserKickedByOtherDevice] The current chat user is kicked by another device.
-  ///
-  /// Param [onUserAuthenticationFailed] The authentication for the chat user failed.
+  /// Param [onDisconnected] The SDK disconnects from the chat server, with the reason code and, for a login on another device, the device information.
   ///
   /// Param [onTokenWillExpire] The token is about to expire.
   ///
-  /// Param [onTokenDidExpire] The token has expired.
-  ///
-  /// Param [onAppActiveNumberReachLimit] The number of daily active users (DAU) or monthly active users (MAU) for the app has reached the upper limit.
+  /// Param [onTokenDidExpire] The token has expired, and the user has been logged out.
   ///
   /// Param [onOfflineMessageSyncStart] Occurs when the SDK starts pulling offline messages from the server.
   ///
@@ -232,27 +174,11 @@ class ConnectionEventHandler {
   ///
   /// Param [onConnected] 成功连接到 chat 服务器时触发的回调。
   ///
-  /// Param [onDisconnected] 和 chat 服务器断开连接时触发的回调。
-  ///
-  /// Param [onUserDidLoginFromOtherDevice] 其他设备登录回调。
-  ///
-  /// Param [onUserDidRemoveFromServer] 被服务器移除回调。
-  ///
-  /// Param [onUserDidForbidByServer] 被服务器禁止连接回调。
-  ///
-  /// Param [onUserDidChangePassword] 用户密码变更回调。
-  ///
-  /// Param [onUserDidLoginTooManyDevice] 登录设备过多回调。
-  ///
-  /// Param [onUserKickedByOtherDevice] 被其他设备踢掉回调。
-  ///
-  /// Param [onUserAuthenticationFailed] 鉴权失败回调。
+  /// Param [onDisconnected] 和 chat 服务器断开连接时触发的回调，携带断开原因码，其他设备登录时还携带设备信息。
   ///
   /// Param [onTokenWillExpire] Agora token 即将过期时回调。
   ///
-  /// Param [onTokenDidExpire] Agora token 已过期时回调。
-  ///
-  /// Param [onAppActiveNumberReachLimit] 应用程序的日活跃用户数量（DAU）或月活跃用户数量（MAU）达到上限时回调。
+  /// Param [onTokenDidExpire] Agora token 已过期时回调，此时用户已被登出。
   ///
   /// Param [onOfflineMessageSyncStart] 开始从服务器拉取离线消息时触发。
   ///
@@ -262,16 +188,8 @@ class ConnectionEventHandler {
   ConnectionEventHandler({
     this.onConnected,
     this.onDisconnected,
-    this.onUserDidLoginFromOtherDevice,
-    this.onUserDidRemoveFromServer,
-    this.onUserDidForbidByServer,
-    this.onUserDidChangePassword,
-    this.onUserDidLoginTooManyDevice,
-    this.onUserKickedByOtherDevice,
-    this.onUserAuthenticationFailed,
     this.onTokenWillExpire,
     this.onTokenDidExpire,
-    this.onAppActiveNumberReachLimit,
     this.onDataSyncStart,
     this.onDataSyncFinish,
     this.onDatabaseOpened,

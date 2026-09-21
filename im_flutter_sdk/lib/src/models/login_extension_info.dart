@@ -1,10 +1,8 @@
 class LoginExtensionInfo {
   factory LoginExtensionInfo.fromJson(Map<String, dynamic> json) {
-    String? ext;
-    if (json['ext'] != null) {
-      ext = json['ext'] as String;
-    }
-    return LoginExtensionInfo(json['deviceName'] as String, ext: ext);
+    final String? deviceName = json['deviceName'] as String?;
+    final String? ext = json['ext'] as String?;
+    return LoginExtensionInfo(deviceName ?? '', ext: ext);
   }
 
   const LoginExtensionInfo(this.deviceName, {this.ext});

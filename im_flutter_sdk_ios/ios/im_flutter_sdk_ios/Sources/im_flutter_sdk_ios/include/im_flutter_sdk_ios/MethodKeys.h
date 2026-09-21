@@ -34,18 +34,10 @@ static NSString *const ChatOnMultiDevicesConversationEvent = @"onMultiDevicesCon
 #pragma mark - EMClientDelegate
 static NSString *const ChatOnConnected = @"onConnected";
 static NSString *const ChatOnDisconnected = @"onDisconnected";
-static NSString *const ChatOnUserDidLoginFromOtherDevice = @"onUserDidLoginFromOtherDevice";
-static NSString *const ChatOnUserDidRemoveFromServer = @"onUserDidRemoveFromServer";
-static NSString *const ChatOnUserDidForbidByServer = @"onUserDidForbidByServer";
-static NSString *const ChatOnUserDidChangePassword = @"onUserDidChangePassword";
-static NSString *const ChatOnUserDidLoginTooManyDevice = @"onUserDidLoginTooManyDevice";
-static NSString *const ChatOnUserKickedByOtherDevice = @"onUserKickedByOtherDevice";
-static NSString *const ChatOnUserAuthenticationFailed = @"onUserAuthenticationFailed";
 
 static NSString *const ChatSendDataToFlutter = @"onSendDataToFlutter";
 static NSString *const ChatOnTokenWillExpire = @"onTokenWillExpire";
 static NSString *const ChatOnTokenDidExpire = @"onTokenDidExpire";
-static NSString *const ChatOnAppActiveNumberReachLimit = @"onAppActiveNumberReachLimit";
 // 5.0.0
 static NSString *const ChatOnDataSyncStart = @"onDataSyncStart";
 static NSString *const ChatOnDataSyncFinish = @"onDataSyncFinish";

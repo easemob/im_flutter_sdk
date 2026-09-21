@@ -28,21 +28,10 @@ class ChatMethodKeys {
       "onMultiDevicesConversationEvent";
   static const String onConnected = "onConnected";
   static const String onDisconnected = "onDisconnected";
-  static const String onUserDidLoginFromOtherDevice =
-      "onUserDidLoginFromOtherDevice";
-  static const String onUserDidRemoveFromServer = "onUserDidRemoveFromServer";
-  static const String onUserDidForbidByServer = "onUserDidForbidByServer";
-  static const String onUserDidChangePassword = "onUserDidChangePassword";
-  static const String onUserDidLoginTooManyDevice =
-      "onUserDidLoginTooManyDevice";
-  static const String onUserKickedByOtherDevice = "onUserKickedByOtherDevice";
-  static const String onUserAuthenticationFailed = "onUserAuthenticationFailed";
 
   static const String onSendDataToFlutter = "onSendDataToFlutter";
   static const String onTokenWillExpire = "onTokenWillExpire";
   static const String onTokenDidExpire = "onTokenDidExpire";
-  static const String onAppActiveNumberReachLimit =
-      'onAppActiveNumberReachLimit';
 
   // 5.0.0
   static const String onDataSyncStart = 'onDataSyncStart';

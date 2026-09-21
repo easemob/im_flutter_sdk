@@ -3,6 +3,26 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'log/log_store.dart';
 import 'registry/api_entry.dart';
 
+/// The disconnection reasons that mean the user has been logged out and has to log in again.
+/// The other reasons only mean the connection broke, and the SDK reconnects automatically.
+///
+/// See `docs/spec/2026-09-21-connection-event-normalization-spec.md`.
+const Set<int> kDisconnectLogoutCodes = <int>{
+  ChatDisconnectErrorCode.APP_ACTIVE_NUMBER_REACH_LIMITATION,
+  ChatDisconnectErrorCode.INVALID_TOKEN,
+  ChatDisconnectErrorCode.INVALID_PARAM,
+  ChatDisconnectErrorCode.USER_NOT_FOUND,
+  ChatDisconnectErrorCode.USER_LOGIN_ANOTHER_DEVICE,
+  ChatDisconnectErrorCode.USER_REMOVED,
+  ChatDisconnectErrorCode.USER_BIND_ANOTHER_DEVICE,
+  ChatDisconnectErrorCode.USER_LOGIN_TOO_MANY_DEVICES,
+  ChatDisconnectErrorCode.USER_KICKED_BY_CHANGE_PASSWORD,
+  ChatDisconnectErrorCode.USER_KICKED_BY_OTHER_DEVICE,
+  ChatDisconnectErrorCode.USER_DEVICE_CHANGED,
+  ChatDisconnectErrorCode.SERVER_GET_DNSLIST_FAILED,
+  ChatDisconnectErrorCode.SERVER_SERVICE_RESTRICTED,
+};
+
 /// Register all event listeners after init succeeds; all callbacks are written to logs (floating + stdout + file).
 /// Deprecated callbacks (onMessagesRecalled, singular onMemberExited/JoinedFromGroup) are not registered.
 void registerAllListeners() {
@@ -14,27 +34,15 @@ void registerAllListeners() {
     id,
     ConnectionEventHandler(
       onConnected: () => log('ConnectionEventHandler.onConnected'),
-      onDisconnected: () => log('ConnectionEventHandler.onDisconnected'),
-      onUserDidLoginFromOtherDevice: (info) => log(
-        'ConnectionEventHandler.onUserDidLoginFromOtherDevice',
-        {'info': toJsonSafe(info)},
-      ),
-      onUserDidRemoveFromServer: () =>
-          log('ConnectionEventHandler.onUserDidRemoveFromServer'),
-      onUserDidForbidByServer: () =>
-          log('ConnectionEventHandler.onUserDidForbidByServer'),
-      onUserDidChangePassword: () =>
-          log('ConnectionEventHandler.onUserDidChangePassword'),
-      onUserDidLoginTooManyDevice: () =>
-          log('ConnectionEventHandler.onUserDidLoginTooManyDevice'),
-      onUserKickedByOtherDevice: () =>
-          log('ConnectionEventHandler.onUserKickedByOtherDevice'),
-      onUserAuthenticationFailed: () =>
-          log('ConnectionEventHandler.onUserAuthenticationFailed'),
+      onDisconnected: (errorCode, info) {
+        log('ConnectionEventHandler.onDisconnected', {
+          'errorCode': errorCode,
+          'info': info == null ? null : toJsonSafe(info),
+          'logout': kDisconnectLogoutCodes.contains(errorCode),
+        });
+      },
       onTokenWillExpire: () => log('ConnectionEventHandler.onTokenWillExpire'),
       onTokenDidExpire: () => log('ConnectionEventHandler.onTokenDidExpire'),
-      onAppActiveNumberReachLimit: () =>
-          log('ConnectionEventHandler.onAppActiveNumberReachLimit'),
       onDataSyncStart: (type) =>
           log('ConnectionEventHandler.onDataSyncStart', {'type': type}),
       onDataSyncFinish: (type, error) => log(

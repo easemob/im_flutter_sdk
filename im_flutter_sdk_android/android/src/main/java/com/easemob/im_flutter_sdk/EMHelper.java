@@ -22,7 +22,6 @@ import com.hyphenate.chat.EMGroupReadReceipt;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMLanguage;
 import com.hyphenate.chat.EMLocationMessageBody;
-import com.hyphenate.chat.EMLoginExtensionInfo;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMMessageReadReceipt;
 import com.hyphenate.chat.EMMessage.Type;
@@ -1660,16 +1659,4 @@ class ConversationFilterHelper {
         }
         return data;
     }
- }
-
-
- // 481
-class LoginExtensionInfoHelper {
-     static Map<String, Object> toJson(EMLoginExtensionInfo info) {
-         Map<String, Object> data = new HashMap<>();
-         data.put("deviceName", info.getDeviceInfo());
-         data.put("ext", info.getDeviceExt());
-
-         return data;
-     }
  }

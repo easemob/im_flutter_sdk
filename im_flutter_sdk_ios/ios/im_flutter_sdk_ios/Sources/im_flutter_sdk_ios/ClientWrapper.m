@@ -15,7 +15,6 @@
 #import "PushManagerWrapper.h"
 #import "DeviceConfigHelper.h"
 #import "ErrorHelper.h"
-#import "LoginExtensionInfoHelper.h"
 #import "OptionsHelper.h"
 #import "UserInfoManagerWrapper.h"
 #import "PresenceManagerWrapper.h"
@@ -523,13 +522,23 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
         [self.channel invokeMethod:ChatOnConnected
                          arguments:nil];
     }else {
-        [self.channel invokeMethod:ChatOnDisconnected
-                         arguments:nil];
+        // The platform reports this disconnection without a reason code.
+        [self emitDisconnectedWithCode:nil params:nil];
     }
 }
 
-- (void)activeNumbersReachLimitation {
-    [self.channel invokeMethod:ChatOnAppActiveNumberReachLimit arguments:nil];
+// 5.0.0
+// The single entry point of the disconnection event. The platform expresses the reason
+// through different callbacks, which are mapped back to the platform reason code here.
+- (void)emitDisconnectedWithCode:(NSNumber *_Nullable)code params:(NSDictionary *_Nullable)extra {
+    NSMutableDictionary *data = [NSMutableDictionary dictionary];
+    if (code) {
+        data[@"errorCode"] = code;
+    }
+    if (extra) {
+        [data addEntriesFromDictionary:extra];
+    }
+    [self.channel invokeMethod:ChatOnDisconnected arguments:data];
 }
 
 // 声网token即将过期
@@ -585,32 +594,23 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 
 - (void)userAccountDidRemoveFromServer {
     [ListenerHandle.sharedInstance clearHandle];
-    [self.channel invokeMethod:ChatOnUserDidRemoveFromServer
-                     arguments:nil];
+    [self emitDisconnectedWithCode:@(EMErrorUserRemoved) params:nil];
 }
 
 - (void)userDidForbidByServer {
     [ListenerHandle.sharedInstance clearHandle];
-    [self.channel invokeMethod:ChatOnUserDidForbidByServer
-                     arguments:nil];
+    [self emitDisconnectedWithCode:@(EMErrorServerServingForbidden) params:nil];
 }
 
 
 - (void)userAccountDidForcedToLogout:(EMError *)aError {
     [ListenerHandle.sharedInstance clearHandle];
-    if (aError.code == EMErrorUserKickedByChangePassword) {
-        [self.channel invokeMethod:ChatOnUserDidChangePassword
-                         arguments:nil];
-    } else if (aError.code == EMErrorUserLoginTooManyDevices) {
-        [self.channel invokeMethod:ChatOnUserDidLoginTooManyDevice
-                         arguments:nil];
-    } else if (aError.code == EMErrorUserKickedByOtherDevice) {
-        [self.channel invokeMethod:ChatOnUserKickedByOtherDevice
-                         arguments:nil];
-    } else if (aError.code == EMErrorUserAuthenticationFailed) {
-        [self.channel invokeMethod:ChatOnUserAuthenticationFailed
-                         arguments:nil];
+    if (!aError) {
+        // The reason is unknown, the event is still emitted so that the app is notified.
+        [self emitDisconnectedWithCode:nil params:nil];
+        return;
     }
+    [self emitDisconnectedWithCode:@(aError.code) params:nil];
 }
 
 #pragma mark - EMMultiDevicesDelegate
@@ -670,8 +670,14 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 # pragma mark - 481
 - (void)userAccountDidLoginFromOtherDeviceWithInfo:(EMLoginExtensionInfo *)info {
     [ListenerHandle.sharedInstance clearHandle];
-    [self.channel invokeMethod:ChatOnUserDidLoginFromOtherDevice
-                     arguments:[info toJson]];
+    NSMutableDictionary *extra = [NSMutableDictionary dictionary];
+    if (info.deviceName) {
+        extra[@"deviceName"] = info.deviceName;
+    }
+    if (info.extensionInfo) {
+        extra[@"ext"] = info.extensionInfo;
+    }
+    [self emitDisconnectedWithCode:@(EMErrorUserLoginOnAnotherDevice) params:extra];
 }
 
 

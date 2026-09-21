@@ -9,6 +9,14 @@
 - 重构群组配置模型，新增 `ChatGroupConfigs` 和 `updateGroupConfigs`；
 - 移除会话、好友、已加入群组和公开群组的旧服务端拉取 API，改用自动同步后的本地数据；
 - 移除客户端举报消息及创建、解散聊天室 API；
+- 重构连接断开事件为单一 `onDisconnected(int? errorCode, LoginExtensionInfo? info)`：
+  - 删除 `onUserDidLoginFromOtherDevice`、`onUserDidRemoveFromServer`、`onUserDidForbidByServer`、`onUserDidChangePassword`、`onUserDidLoginTooManyDevice`、`onUserKickedByOtherDevice`、`onUserAuthenticationFailed`、`onAppActiveNumberReachLimit` 8 个回调（breaking）；
+  - 原因码数值与平台 `EMError` 一致并原样透传，未列出的原因码同样会送达；
+  - 新增 `ChatDisconnectErrorCode` 常量表：其中 13 个为「退出原因」（用户已被登出，需要重新登录），5 个为「连接原因」（用户仍在线，SDK 自动重连）；
+  - 设备信息仅在他端登录时通过 `info` 携带；
+  - token 过期仍只通过 `onTokenDidExpire` 通知，不触发 `onDisconnected`；
+- 修复 `onUserAuthenticationFailed` 误转发为 `onDisconnected` 的问题；
+- 修复 iOS 未上报活跃数达到上限（原因码 8）的问题；
 - `getUnreadMessageCount` 不再统计聊天室、Thread 和免打扰会话；
 
 ## 4.24.0

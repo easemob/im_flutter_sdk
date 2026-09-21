@@ -23,22 +23,7 @@ class ChatClient {
       if (call.method == ChatMethodKeys.onConnected) {
         return _onConnected();
       } else if (call.method == ChatMethodKeys.onDisconnected) {
-        return _onDisconnected();
-      } else if (call.method == ChatMethodKeys.onUserDidLoginFromOtherDevice) {
-        LoginExtensionInfo info = LoginExtensionInfo.fromJson(argMap!);
-        _onUserDidLoginFromOtherDevice(info);
-      } else if (call.method == ChatMethodKeys.onUserDidRemoveFromServer) {
-        _onUserDidRemoveFromServer();
-      } else if (call.method == ChatMethodKeys.onUserDidForbidByServer) {
-        _onUserDidForbidByServer();
-      } else if (call.method == ChatMethodKeys.onUserDidChangePassword) {
-        _onUserDidChangePassword();
-      } else if (call.method == ChatMethodKeys.onUserDidLoginTooManyDevice) {
-        _onUserDidLoginTooManyDevice();
-      } else if (call.method == ChatMethodKeys.onUserKickedByOtherDevice) {
-        _onUserKickedByOtherDevice();
-      } else if (call.method == ChatMethodKeys.onUserAuthenticationFailed) {
-        _onUserAuthenticationFailed();
+        return _onDisconnected(argMap);
       } else if (call.method == ChatMethodKeys.onMultiDeviceGroupEvent) {
         _onMultiDeviceGroupEvent(argMap!);
       } else if (call.method == ChatMethodKeys.onMultiDeviceContactEvent) {
@@ -57,8 +42,6 @@ class ChatClient {
         _onTokenWillExpire(argMap);
       } else if (call.method == ChatMethodKeys.onTokenDidExpire) {
         _onTokenDidExpire(argMap);
-      } else if (call.method == ChatMethodKeys.onAppActiveNumberReachLimit) {
-        _onAppActiveNumberReachLimit(argMap);
       } else if (call.method == ChatMethodKeys.onDataSyncStart) {
         _onDataSyncStart(argMap!);
       } else if (call.method == ChatMethodKeys.onDataSyncFinish) {
@@ -79,51 +62,16 @@ class ChatClient {
     }
   }
 
-  Future<void> _onDisconnected() async {
+  Future<void> _onDisconnected(Map? map) async {
+    final Object? rawCode = map?['errorCode'];
+    final int? errorCode = rawCode is int ? rawCode : null;
+    final String? deviceName = map?['deviceName'] as String?;
+    final String? ext = map?['ext'] as String?;
+    final LoginExtensionInfo? info = (deviceName == null || deviceName.isEmpty)
+        ? null
+        : LoginExtensionInfo(deviceName, ext: ext);
     for (var handler in _connectionHandlers.values) {
-      handler.onDisconnected?.call();
-    }
-  }
-
-  Future<void> _onUserDidLoginFromOtherDevice(LoginExtensionInfo info) async {
-    for (var handler in _connectionHandlers.values) {
-      handler.onUserDidLoginFromOtherDevice?.call(info);
-    }
-  }
-
-  Future<void> _onUserDidRemoveFromServer() async {
-    for (var handler in _connectionHandlers.values) {
-      handler.onUserDidRemoveFromServer?.call();
-    }
-  }
-
-  Future<void> _onUserDidForbidByServer() async {
-    for (var handler in _connectionHandlers.values) {
-      handler.onUserDidForbidByServer?.call();
-    }
-  }
-
-  Future<void> _onUserDidChangePassword() async {
-    for (var handler in _connectionHandlers.values) {
-      handler.onUserDidChangePassword?.call();
-    }
-  }
-
-  Future<void> _onUserDidLoginTooManyDevice() async {
-    for (var handler in _connectionHandlers.values) {
-      handler.onUserDidLoginTooManyDevice?.call();
-    }
-  }
-
-  Future<void> _onUserKickedByOtherDevice() async {
-    for (var handler in _connectionHandlers.values) {
-      handler.onUserKickedByOtherDevice?.call();
-    }
-  }
-
-  Future<void> _onUserAuthenticationFailed() async {
-    for (var handler in _connectionHandlers.values) {
-      handler.onDisconnected?.call();
+      handler.onDisconnected?.call(errorCode, info);
     }
   }
 
@@ -136,12 +84,6 @@ class ChatClient {
   void _onTokenDidExpire(Map? map) {
     for (var item in _connectionHandlers.values) {
       item.onTokenDidExpire?.call();
-    }
-  }
-
-  void _onAppActiveNumberReachLimit(Map? map) {
-    for (var item in _connectionHandlers.values) {
-      item.onAppActiveNumberReachLimit?.call();
     }
   }
 
