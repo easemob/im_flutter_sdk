@@ -1,14 +1,23 @@
 ## 5.0.0
 - iOS/Android 依赖 SDK 升级到 5.0.0；
-- 登录仅支持 Token，移除注册、密码登录、自动登录和密码设备管理 API；
-- 新增登录后数据同步配置、数据同步事件和数据库打开事件；
-- 重构消息已读回执：新增批量发送/查询回执与清除会话未读数 API，统一单聊和群聊回执模型；
+- 登录仅支持 Token（breaking）：移除注册 `createAccount`、密码登录 `login`/`loginWithPassword`/`loginWithAgoraToken` 与 `isLoginBefore`，改用 `loginWithToken`；
+- 移除 `ChatOptions.autoLogin`/`requireAck`/`enableAutoSyncContacts` 与 `ChatClient.updateRequireAckSetting`；`renewAgoraToken` 改名 `renewToken`；
+- `fetchLoggedInDevices`/`kickDevice`/`kickAllDevices` 只接受 token（移除 `isPassword` 密码分支），并删除已废弃的 `getLoggedInDevicesFromServer` 别名；
+- 新增登录后数据同步配置、数据同步事件和数据库打开事件：`ChatDataSyncType`、`ChatOptions.dataSyncType` 与 `ConnectionEventHandler.onDataSyncStart`/`onDataSyncFinish`/`onDatabaseOpened`；
+- 重构消息已读回执（breaking）：
+  - 新增 `sendMessageReadReceipts`、`getGroupMessageReadReceipts`、`fetchGroupMessageReadReceipts`、`clearConversationUnreadMessageCount`、`clearAllConversationUnreadMessageCount` 及 `ChatMessageReadReceipt`、`ChatGroupReadReceipt`；
+  - 移除 `sendMessageReadAck`、`sendGroupMessageReadAck`、`sendConversationReadAck`、`markAllConversationsAsRead`、`ChatConversation.markMessageAsRead`/`markAllMessagesAsRead`、`fetchGroupAcks`、`ChatMessage.groupAckCount` 与 `ChatGroupMessageAck`；
+  - `ChatMessage.hasReadAck`/`hasRead`/`needGroupAck` 改为只读 `isPeerRead`/`isRead` 与可写的 `isNeedReadReceipt`，并新增只读 `groupReadReceiptCount`；
+- 批量已读回执不再由 wrapper 预校验：`sendMessageReadReceipts`/`getGroupMessageReadReceipts` 遇到无法解析为本地消息的 messageId 时跳过该条（此前 Android 整批返回 1 GENERAL_ERROR、iOS 整批返回 500 MESSAGE_INVALID），成功与否交由 native 判定，整批都无法解析时返回 native 的 110 INVALID_PARAM；
 - `ChatCursorResult` 新增可空 `totalCount`，用于承接 iOS 返回的群消息已读回执总数；
 - `ChatMultiDevicesEvent` 新增 `GROUP_UPDATE`（iOS 群组信息更新事件）；
 - 修复多设备事件映射：补齐群组白名单与全员禁言事件（native 30-33），修正子区 update/kick 颠倒（native 44/45），未知事件值不再导致事件处理抛异常；
-- 重构群组配置模型，新增 `ChatGroupConfigs` 和 `updateGroupConfigs`；
-- 移除会话、好友、已加入群组和公开群组的旧服务端拉取 API，改用自动同步后的本地数据；
-- 移除客户端举报消息及创建、解散聊天室 API；
+- 重构群组配置模型（breaking）：移除 `ChatGroupStyle`、`ChatGroupOptions`，`createGroup` 的 `options` 参数改为 `configs`；`ChatGroup.isMemberOnly` 改名 `isJoinApprovalRequired`；新增 `ChatGroupConfigs`、`ChatGroupConfigsType` 与 `updateGroupConfigs`；
+- 移除服务端旧拉取 API（breaking），改用登录后自动同步的本地数据：`ChatManager.getConversationsFromServer`、`fetchConversationListFromServer`、`fetchConversation`、`fetchConversationsByOptions`、`fetchPinnedConversations`，`ChatContactManager.getAllContactsFromServer`/`fetchAllContacts`/`fetchAllContactIds`/`fetchContacts`，`ChatGroupManager.fetchJoinedGroupsFromServer`/`fetchPublicGroupsFromServer`；
+- 移除旧 `fetchHistoryMessages`，保留 `fetchHistoryMessagesByOption`；
+- `ChatConversation` 新增只读 `name`、`avatar`；`modifyMessage` 新增可选 `attributes`；
+- 移除好友同步事件 `onContactSyncStart`/`onContactSyncFinish`，统一使用连接级数据同步事件；
+- 移除客户端举报消息 `reportMessage` 及创建、解散聊天室 `createChatRoom`/`destroyChatRoom`；
 - 移除已作废（`@Deprecated`）的公开 Dart API（breaking），清单见 `docs/deprecated-apis.md`：
   - 方法：`ChatManager.searchMsgFromDB`、`ChatContactManager.getAllContactsFromDB`、`ChatContactManager.getBlockListFromServer`、`ChatContactManager.getBlockListFromDB`、`ChatGroupManager.changeGroupName`、`ChatGroupManager.changeGroupDescription`、`ChatPushManager.updateHMSPushToken`、`ChatPushManager.updateFCMPushToken`、`ChatPushManager.updateAPNsDeviceToken`；
   - 字段与参数：`ChatGroup.name`、`ChatGroup.description`（含构造参数）、`FetchMessageOptions.from`（含构造参数）、`ChatConversation.loadMessagesWithKeyword` 的 `sender` 参数、`ChatGroupManager.fetchGroupInfoFromServer` 与 `ChatRoomManager.fetchChatRoomInfoFromServer` 的 `fetchMembers` 参数；
@@ -22,10 +31,12 @@
   - 原因码数值与平台 `EMError` 一致并原样透传，未列出的原因码同样会送达；
   - 新增 `ChatDisconnectErrorCode` 常量表：其中 13 个为「退出原因」（用户已被登出，需要重新登录），5 个为「连接原因」（用户仍在线，SDK 自动重连）；
   - 设备信息仅在他端登录时通过 `info` 携带；
+  - `LoginExtensionInfo.fromJson` 在 native 未携带 `deviceName` 时回退为空字符串，不再抛异常；
   - token 过期仍只通过 `onTokenDidExpire` 通知，不触发 `onDisconnected`；
 - 修复 `onUserAuthenticationFailed` 误转发为 `onDisconnected` 的问题；
 - 修复 iOS 未上报活跃数达到上限（原因码 8）的问题；
 - `getUnreadMessageCount` 不再统计聊天室、Thread 和免打扰会话；
+- 补齐两个此前由 dynamic 隐式推断的公开签名：`ChatError.hasErrorFromResult` 返回 `void`、`ChatPageResult.pageCount` 返回 `int?`（依赖 dynamic 调用的写法需相应调整）；
 
 ## 4.24.0
 - 新增服务端消息搜索 `searchMessagesFromServer` API；
