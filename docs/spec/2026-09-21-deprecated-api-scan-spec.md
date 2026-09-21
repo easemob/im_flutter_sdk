@@ -140,7 +140,7 @@ xcodebuild 在"没编译任何文件"时也会打印 `** BUILD SUCCEEDED **`，�
 
 ### 6.1 目录与文件
 
-`reports/deprecated/`（根仓库 `/reports/` 已 gitignore）：
+`reports/<版本>/deprecated/`（根仓库 `/reports/` 已 gitignore）：版本取**当前分支名**（见 AGENTS.md「Git 分支管理」，`5.0.0` 分支 → `reports/5.0.0/deprecated/`），与 auto 报告 `reports/5.0.0/` 同处一层；HEAD 不在分支上时脚本报错退出，不猜测目录（§6.4）。
 
 | 文件 | 内容 |
 | --- | --- |
@@ -154,7 +154,7 @@ xcodebuild 在"没编译任何文件"时也会打印 `** BUILD SUCCEEDED **`，�
 {
   "platform": "android",
   "generatedAt": "2026-09-21 15:30:13",
-  "rawLog": "reports/deprecated/android-raw.log",
+  "rawLog": "/<repo>/reports/5.0.0/deprecated/android-raw.log",
   "skippedCompile": false,
   "findings": [
     {
@@ -167,7 +167,7 @@ xcodebuild 在"没编译任何文件"时也会打印 `** BUILD SUCCEEDED **`，�
 }
 ```
 
-iOS 的条目用 `reason` 取代 `declaringClass`（`"reason": "Use muteMembers instead"`）；字段为空时省略。
+iOS 的条目用 `reason` 取代 `declaringClass`（`"reason": "Use muteMembers instead"`）；字段为空时省略。`rawLog` 原样记录命令行传入的日志路径，由脚本驱动时即绝对路径。
 
 ### 6.3 Markdown 报告
 
@@ -179,7 +179,7 @@ iOS 的条目用 `reason` 取代 `declaringClass`（`"reason": "Use muteMembers 
 | --- | --- |
 | 0 | 解析完成（有发现也算成功：只报告不拦截） |
 | 1 | 日志显示复用编译，结果不可信 |
-| 2 | 参数错误、日志缺失或为空 |
+| 2 | 参数错误、缺少 `dart` / `flutter` / `git`、HEAD 不在分支上、日志缺失或为空 |
 
 ## 7. 实现规格（文件清单）
 
@@ -261,6 +261,10 @@ iOS 的 `muteList`、`from` 与 RN 侧首扫命中的是同一批 native 变更�
 | 参数校验 | 日志缺失时跑 CLI | ✅ 退出码 2 |
 | 既有门禁脚本 | `check_case_mapping` / `check_contracts` / `check_versions` | ✅ 三者输出一致（5.0.0） |
 
+### 9.2 输出目录调整（2026-09-21）
+
+初版把产物写在 `reports/deprecated/`，与 auto 报告的 `reports/5.0.0/` 并列在 `reports/` 顶层，缺了版本维度。现改为按**当前分支名**归档：`reports/<分支名>/deprecated/`（`5.0.0` 分支 → `reports/5.0.0/deprecated/`），与 auto 报告同处一层；HEAD 不在分支上时脚本报错退出（退出码 2），不猜测目录。§6.1 契约与 §6.4 退出码已同步；改动只涉及 `tool/ci/scan_deprecated.sh`、`CONTRIBUTING.md` 与本文件。2026-09-21 复跑 `bash tool/ci/scan_deprecated.sh` 验证：产物写入 `reports/5.0.0/deprecated/`，退出码 0。
+
 ## 10. 明确不做
 
 | 项 | 原因 |
@@ -283,7 +287,7 @@ iOS 的 `muteList`、`from` 与 RN 侧首扫命中的是同一批 native 变更�
 | 日志来源 | CI 构建日志 `tee` + parse-only 步骤 | 本地 clean 编译（CI 复用方案见 §4.2，未落地） |
 | 复用编译检测 | 脚本注释里提醒 | 解析器判定并让 CLI 失败（§4.3） |
 | 扫描范围 | `modules/java/`、`modules/objc/`、`android/`、`ios/` | 只 wrapper（§5.1） |
-| 产物 | `build/reports/native-deprecated-api.md` + 两个 JSON | `reports/deprecated/` 下两个 JSON + 汇总 Markdown + 原始日志 |
+| 产物 | `build/reports/native-deprecated-api.md` + 两个 JSON | `reports/<版本>/deprecated/` 下两个 JSON + 汇总 Markdown + 原始日志 |
 | 首扫结果 | iOS 4 条、Android 16 条 | iOS 2 条、Android 7 条 |
 
 ## 附录 B：探针记录（2026-09-21，macOS / Flutter 3.47.0）

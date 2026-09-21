@@ -105,7 +105,7 @@ make scan-deprecated PLATFORM=ios   # 只扫 iOS
 - 必须**全新编译**：增量构建不会重发未变更文件的警告，所以脚本对每个平台先 `clean`；解析器若发现日志里是复用编译（`UP-TO-DATE` / `FROM-CACHE`），会直接判定扫描失败，而不是报"0 条"。
 - 只扫 wrapper 源码（`im_flutter_sdk_android/android/src/main/java`、`im_flutter_sdk_ios/ios`），example 与 Pods / pub cache 里的第三方告警不进报告。
 - Android 侧需要 `-Xlint:deprecation`（AGP 默认不开，只打 `Note: ...`、没有文件行号），由 `tool/ci/enable_deprecation_lint.gradle` 以 `-I` 注入，**不改插件自身的 build.gradle**，对使用者的构建没有影响。
-- 产物在 `reports/deprecated/`（已 gitignore）：`{android,ios}-raw.log` 原始构建日志、`{android,ios}-deprecated-api.json`、`native-deprecated-api.md` 汇总报告。
+- 产物按当前分支名归档到 `reports/<版本>/deprecated/`（已 gitignore，如 `5.0.0` 分支写 `reports/5.0.0/deprecated/`，与 auto 报告同处一层）：`{android,ios}-raw.log` 原始构建日志、`{android,ios}-deprecated-api.json`、`native-deprecated-api.md` 汇总报告。HEAD 不在分支上（detached）时脚本直接报错退出，不猜测目录。
 - 只报告不拦截：发现废弃调用不会让命令失败，构建失败或日志不可信才失败。解析契约与 CI 复用方案见 [docs/spec/2026-09-21-deprecated-api-scan-spec.md](docs/spec/2026-09-21-deprecated-api-scan-spec.md)。
 
 ### 设备集成测试
