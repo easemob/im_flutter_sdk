@@ -499,7 +499,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             }
         });
         asyncRunnable(() -> {
-            EMClient.getInstance().chatManager().downloadAttachment(msg);
+            EMClient.getInstance().chatManager().downloadAttachment(msg, null);
             onSuccess(result, channelName, updateDownloadStatus(EMFileMessageBody.EMDownloadStatus.DOWNLOADING, msg, false));
         });
     }
@@ -542,7 +542,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             }
         });
         asyncRunnable(() -> {
-            EMClient.getInstance().chatManager().downloadThumbnail(msg);
+            EMClient.getInstance().chatManager().downloadThumbnail(msg, null);
             onSuccess(result, channelName, updateDownloadStatus(EMFileMessageBody.EMDownloadStatus.DOWNLOADING, msg, true));
         });
     }
@@ -585,7 +585,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             }
         });
         asyncRunnable(() -> {
-            EMClient.getInstance().chatManager().downloadAttachment(msg);
+            EMClient.getInstance().chatManager().downloadAttachment(msg, null);
             onSuccess(result, channelName, updateDownloadStatus(EMFileMessageBody.EMDownloadStatus.DOWNLOADING, msg, false));
         });
     }
@@ -629,7 +629,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             }
         });
         asyncRunnable(() -> {
-            EMClient.getInstance().chatManager().downloadThumbnail(msg);
+            EMClient.getInstance().chatManager().downloadThumbnail(msg, null);
             onSuccess(result, channelName, updateDownloadStatus(EMFileMessageBody.EMDownloadStatus.DOWNLOADING, msg, true));
         });
     }
