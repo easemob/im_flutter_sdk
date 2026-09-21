@@ -20,7 +20,9 @@
     ret[@"adminList"] = self.adminList;
     ret[@"memberList"] = self.memberList;
     ret[@"blockList"] = self.blacklist;
-    ret[@"muteList"] = self.muteList;
+    // 5.0.0: muteList is deprecated, muteMembers carries the ids as keys. Send the
+    // keys only, matching the Android wrapper (getMuteList().keySet()).
+    ret[@"muteList"] = self.muteMembers.allKeys;
     ret[@"isAllMemberMuted"] = @(self.isMuteAllMembers);
     ret[@"announcement"] = self.announcement;
     ret[@"permissionType"] = [NSNumber numberWithInteger:[EnumTools chatRoomPermissionTypeToInt:self.permissionType]];

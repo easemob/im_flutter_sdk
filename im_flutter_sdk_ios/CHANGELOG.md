@@ -5,6 +5,7 @@
 - 修复分页获取群回执时未返回 `totalCount` 的问题；
 - 断开事件统一为 `onDisconnected`：各断开 delegate 折算为平台原因码后统一派发，强制退出回调改为原样透传原因码（补上活跃数达到上限）；
 - 删除 5.0.0 已不存在的 `activeNumbersReachLimitation` 与不再使用的 `LoginExtensionInfoHelper`；
+- 聊天室信息中的禁言列表改用 native 5.0.0 的 `muteMembers`（取用户 ID 列表）替换已废弃的 `muteList`，对外 JSON 结构不变；
 
 ## 4.24.0
 - iOS依赖 SDK 升级到 4.24.1；

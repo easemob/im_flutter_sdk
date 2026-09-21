@@ -213,6 +213,17 @@ iOS 的条目用 `reason` 取代 `declaringClass`（`"reason": "Use muteMembers 
 
 iOS 的 `muteList`、`from` 与 RN 侧首扫命中的是同一批 native 变更，说明两端平版对 native 废弃的敏感度一致。
 
+### 8.1 修复进展（2026-09-21 更新）
+
+§8 表格是扫描器交付时的快照，下面是随后的清理进度（每次以重跑 `bash tool/ci/scan_deprecated.sh <platform>` 为准）：
+
+| 项 | 状态 | 落点 |
+| --- | --- | --- |
+| Android `downloadAttachment` / `downloadThumbnail`（4 条） | 已修 | commit `5d49428e`，改用带 `EMCallBack` 的重载 |
+| iOS `ChatroomHelper.m` `muteList` | 已修 | 改用 `muteMembers.allKeys`（native 5.0.0 的替代属性是 `NSDictionary<userId, 过期时间>`，只取 key，与 Android `getMuteList().keySet()` 同形；`muteList` 与 `muteMembers` 都是「仅聊天室所有者可取，否则 nil」），重跑后 iOS 由 2 条降为 1 条 |
+| Android `EMHelper.java` `setThumbnailSecret` / `getThumbnailSecret` | 未修 | 待确认 native 5.0.0 的替代属性 |
+| Android `EMHelper.java:1567` `setFrom`、iOS `FetchServerMessagesOptionHelper.m:18` `from` | 未修（保留） | Dart 侧已不再下发 `from`（见 `deprecated-apis.md`），该分支成为不可达分支；本轮明确保留 |
+
 ## 9. 验收标准
 
 - [x] `make scan-deprecated` 一条命令跑通两端，产出 §6.1 的 5 个文件
