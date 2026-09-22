@@ -118,6 +118,7 @@ class ChatMethodKeys {
       'getGroupMessageReadReceipts';
   static const String fetchGroupMessageReadReceipts =
       'fetchGroupMessageReadReceipts';
+  static const String deleteConversations = 'deleteConversations';
   static const String onMessageReadReceipts = 'onMessageReadReceipts';
 
   static const String onMessageReactionDidChange = "messageReactionDidChange";

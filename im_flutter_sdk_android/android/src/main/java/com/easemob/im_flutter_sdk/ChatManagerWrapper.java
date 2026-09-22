@@ -89,6 +89,8 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                 loadAllConversations(params, call.method, result);
             } else if (MethodKey.deleteConversation.equals(call.method)) {
                 deleteConversation(params, call.method, result);
+            } else if (MethodKey.deleteConversations.equals(call.method)) {
+                deleteConversations(params, call.method, result);
             } else if (MethodKey.fetchHistoryMessagesByOptions.equals(call.method)) {
                 fetchHistoryMessagesByOptions(params, call.method, result);
             } else if (MethodKey.searchChatMsgFromDB.equals(call.method)) {
@@ -709,6 +711,17 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             boolean ret = EMClient.getInstance().chatManager().deleteConversation(conId, isDelete);
             onSuccess(result, channelName, ret);
         });
+    }
+
+    // 5.0.0
+    private void deleteConversations(JSONObject params, String channelName, Result result) throws JSONException {
+        JSONArray ids = params.getJSONArray("convIds");
+        List<String> conversationIds = new ArrayList<>();
+        for (int i = 0; i < ids.length(); i++) {
+            conversationIds.add(ids.getString(i));
+        }
+        boolean deleteMessages = params.optBoolean("deleteMessages", true);
+        EMClient.getInstance().chatManager().asyncDeleteConversations(conversationIds, deleteMessages, new EMWrapperCallBack(result, channelName, null));
     }
 
     private void fetchHistoryMessagesByOptions(JSONObject params, String channelName, Result result) throws JSONException {

@@ -1029,6 +1029,47 @@ class ChatManager {
   }
 
   /// ~english
+  /// Deletes multiple conversations from the local database.
+  ///
+  /// IDs of conversations that do not exist are ignored.
+  ///
+  /// Param [conversationIds] The list of conversation IDs to delete.
+  ///
+  /// Param [deleteMessages] Whether to delete the local historical messages in the conversations.
+  /// - `true`: (default) Yes.
+  /// - `false`: No.
+  ///
+  /// **Throws** A description of the exception. See [ChatError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 批量删除本地会话。
+  ///
+  /// 不存在的会话 ID 会被忽略。
+  ///
+  /// Param [conversationIds] 要删除的会话 ID 列表。
+  ///
+  /// Param [deleteMessages] 删除会话时是否同时删除本地的聊天记录。
+  /// - （默认）`true`：删除；
+  /// - `false`：不删除。
+  ///
+  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
+  /// ~end
+  Future<void> deleteConversations(
+    List<String> conversationIds, {
+    bool deleteMessages = true,
+  }) async {
+    try {
+      Map req = {"convIds": conversationIds, "deleteMessages": deleteMessages};
+      Map result = await platform_interface.Client.instance.chatManager
+          .callNativeMethod(ChatMethodKeys.deleteConversations, req);
+      ChatError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// ~english
   /// Gets historical messages of a conversation from the server according to [FetchMessageOptions].
   ///
   /// Param [conversationId] The conversation ID, which is the user ID of the peer user for one-to-one chat, but the group ID for group chat.

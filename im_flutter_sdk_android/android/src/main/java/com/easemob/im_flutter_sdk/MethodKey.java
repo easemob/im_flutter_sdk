@@ -71,6 +71,8 @@ public class MethodKey {
     static final String importMessages = "importMessages";
     static final String loadAllConversations = "loadAllConversations";
     static final String deleteConversation = "deleteConversation";
+    // 5.0.0
+    static final String deleteConversations = "deleteConversations";
     static final String fetchHistoryMessagesByOptions = "fetchHistoryMessagesByOptions";
     static final String searchChatMsgFromDB = "searchChatMsgFromDB";
     static final String getMessage = "getMessage";

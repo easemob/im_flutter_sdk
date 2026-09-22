@@ -125,6 +125,10 @@
         [self deleteConversation:call.arguments
                      channelName:call.method
                           result:result];
+    } else if ([ChatDeleteConversations isEqualToString:call.method]) {
+        [self deleteConversations:call.arguments
+                      channelName:call.method
+                           result:result];
     } else if ([ChatFetchHistoryMessagesByOptions isEqualToString:call.method]) {
         [self fetchHistoryMessagesByOptions:call.arguments
                                 channelName:call.method
@@ -774,6 +778,40 @@
     [EMClient.sharedClient.chatManager deleteConversation:conversationId
                                          isDeleteMessages:isDeleteMsgs
                                                completion:^(NSString *aConversationId, EMError *aError)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:@(!aError)];
+    }];
+}
+
+// 5.0.0
+- (void)deleteConversations:(NSDictionary *)param
+                channelName:(NSString *)aChannelName
+                     result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSArray *convIds = param[@"convIds"];
+    BOOL isDeleteMsgs = [param[@"deleteMessages"] boolValue];
+    NSMutableArray *conversations = [NSMutableArray array];
+    for (NSString *convId in convIds) {
+        EMConversation *conversation =
+            [EMClient.sharedClient.chatManager getConversationWithConvId:convId];
+        if (conversation) {
+            [conversations addObject:conversation];
+        }
+    }
+    if (convIds.count > 0 && conversations.count == 0) {
+        // Conversation IDs that do not exist are skipped, aligning with Android.
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:nil
+                           object:@(YES)];
+        return;
+    }
+    [EMClient.sharedClient.chatManager deleteConversations:conversations
+                                          isDeleteMessages:isDeleteMsgs
+                                                completion:^(EMError *aError)
      {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
