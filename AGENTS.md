@@ -1,71 +1,71 @@
 # AGENTS.md
 
-环信 IM Flutter SDK，采用 Federated Plugin 架构。本文档面向 AI Agent，说明项目结构、跨层链路与硬性约定；具体代码细节以仓库实际代码为准。
+Easemob IM Flutter SDK, built on the Federated Plugin architecture. This document is intended for AI Agents: it describes the project structure, cross-layer call chains, and hard conventions; for code-level details, the actual repository code prevails.
 
-文档分工：本文档是 AI 的唯一必读文档。环境搭建、数据准备、验证流程等过程性内容见 `CONTRIBUTING.md`（仅当任务涉及时按需阅读）；`im_flutter_sdk/README.md` 面向 SDK 使用者，AI 无需阅读。
+Document split: this document is the only must-read for AI. Procedural content such as environment setup, data preparation, and verification flows lives in `CONTRIBUTING.md` (read on demand only when the task involves it); `im_flutter_sdk/README.md` targets SDK users and AI does not need to read it.
 
-## 协作约定
+## Collaboration Conventions
 
-- 排查方向不确定、或同一问题卡住超过几分钟时，先把现象和自己的假设同步给用户，再决定排查方向，不闷头钻到底——用户可能掌握 AI 不知道的背景（环境、历史决策、服务端状态）。
+- When the investigation direction is unclear, or the same problem has been stuck for more than a few minutes, first sync the symptoms and your hypotheses with the user before deciding the next direction — do not drill down silently. The user may hold context the AI lacks (environment, historical decisions, server-side state).
 
-## 项目架构
+## Project Architecture
 
-| 包 | 职责 |
+| Package | Responsibility |
 |---|---|
-| `im_flutter_sdk/` | 主包：公开 API、Model、Manager |
-| `im_flutter_sdk_interface/` | 平台接口层：MethodChannel 抽象 |
-| `im_flutter_sdk_android/` | Android 平台实现 |
-| `im_flutter_sdk_ios/` | iOS 平台实现 |
+| `im_flutter_sdk/` | Main package: public API, Models, Managers |
+| `im_flutter_sdk_interface/` | Platform interface layer: MethodChannel abstraction |
+| `im_flutter_sdk_android/` | Android platform implementation |
+| `im_flutter_sdk_ios/` | iOS platform implementation |
 
-调用链：`Dart API → MethodChannel (interface) → Native Wrapper → HyphenateChat SDK`
+Call chain: `Dart API → MethodChannel (interface) → Native Wrapper → HyphenateChat SDK`
 
-依赖方向：`im_flutter_sdk` → `im_flutter_sdk_android` / `im_flutter_sdk_ios` → `im_flutter_sdk_interface`。interface 是各平台包共享的契约，改动它会波及所有上层包。包间依赖均为本地 `path:` 依赖，跨包改动无需发布即可生效。
+Dependency direction: `im_flutter_sdk` → `im_flutter_sdk_android` / `im_flutter_sdk_ios` → `im_flutter_sdk_interface`. The interface is the contract shared by all platform packages; changing it affects every upper-layer package. All inter-package dependencies are local `path:` dependencies, so cross-package changes take effect without publishing.
 
-## 开发环境初始化
+## Development Environment Setup
 
-开发本仓库统一使用 Flutter 3.47.0（与 CI 的 `.github/workflows/ci.yml` 中 `FLUTTER_VERSION` 一致）。dev 依赖 `flutter_lints 6` 要求 Dart >= 3.8（Flutter >= 3.32），低于该版本无法解析本仓库的开发依赖；各包 `environment` 中声明的 Flutter >= 3.3.0 是给 SDK 使用者的支持下限，两者不要混淆。
+Use Flutter 3.47.0 consistently for developing this repository (matching `FLUTTER_VERSION` in CI's `.github/workflows/ci.yml`). The dev dependency `flutter_lints 6` requires Dart >= 3.8 (Flutter >= 3.32); below that version the repository's dev dependencies cannot be resolved. The Flutter >= 3.3.0 declared in each package's `environment` is the minimum supported version for SDK users — do not confuse the two.
 
-项目根目录有 `Makefile`，提供一键初始化：
+The project root has a `Makefile` providing one-step initialization:
 
 ```bash
 make setup   # config + deps + pods
 ```
 
-| target | 作用 |
-|--------|------|
-| `make config` | 创建本地 `example/config.local.json` 与占位 `example/lib/env.dart`（均已 gitignore） |
-| `make env-gettoken` | 按 `config.local.json` 为各账号自动获取 User Token，并直接生成 `example/lib/env.dart`（项目只配置一个环境，切换环境＝改这份文件） |
-| `make auto-report PLATFORM=<android\|ios> [DEVICE=<id>] [SCRIPT=<json>]` | 运行 5.0.0 auto 脚本（默认正向 `script_500_apis_positive.json`，用 `SCRIPT=` 指定反向脚本），显式激活模拟器并在被 Git 忽略的 `reports/5.0.0/<run-id>/` 生成脱敏事件、崩溃证据和问题候选 |
-| `make auto-compare ANDROID=<run-dir> IOS=<run-dir>` | 对比同一路径的 Android/iOS 两次运行，输出 `reports/5.0.0/comparison-<路径>-<时间戳>.md`，步骤不一致时退出码非 0 |
-| `make deps` | `flutter pub get`（example 目录，自动解析 path 依赖） |
-| `make pods` | `pod install`（仅 Podfile/podspec 变更时执行，通过 mtime 检测） |
-| `make clean` | 清理 build 产物和 Pods |
+| target | Purpose |
+|--------|---------|
+| `make config` | Creates the local `example/config.local.json` and placeholder `example/lib/env.dart` (both gitignored) |
+| `make env-gettoken` | Fetches a User Token for each account per `config.local.json` and generates `example/lib/env.dart` directly (the project configures only one environment; switching environments = editing this file) |
+| `make auto-report PLATFORM=<android\|ios> [DEVICE=<id>] [SCRIPT=<json>]` | Runs the 5.0.0 auto script (defaults to the positive path `script_500_apis_positive.json`; use `SCRIPT=` to specify the negative script), explicitly boots the emulator, and produces sanitized events, crash evidence, and issue candidates under the Git-ignored `reports/5.0.0/<run-id>/` |
+| `make auto-compare ANDROID=<run-dir> IOS=<run-dir>` | Compares two Android/iOS runs of the same path, writes `reports/5.0.0/comparison-<path>-<timestamp>.md`, and exits non-zero when steps diverge |
+| `make deps` | `flutter pub get` (in the example directory; resolves path dependencies automatically) |
+| `make pods` | `pod install` (runs only when Podfile/podspec changed, detected via mtime) |
+| `make clean` | Cleans build artifacts and Pods |
 
-修改 podspec 中 native 依赖版本后必须执行 `make pods`，否则 iOS 侧会使用旧版本 native SDK 导致编译错误。这是 Flutter 的已知问题：`flutter run` 的 Fingerprinter 不追踪 podspec 文件，会跳过 `pod install`。
+After changing a native dependency version in a podspec, you must run `make pods`; otherwise the iOS side keeps using the old native SDK, causing compilation errors. This is a known Flutter issue: `flutter run`'s Fingerprinter does not track podspec files and skips `pod install`.
 
-## 命名约定
+## Naming Conventions
 
-- Dart 文件统一 snake_case；Manager 文件为业务名 + `_manager`：`chat_manager.dart`
-- 公开 Dart 类统一 `Chat` 前缀：`ChatClient`、`ChatMessage`、`ChatError`（与海外版 agora_chat_sdk 命名一致）
-- Manager 类：`Chat{业务}Manager`，如 `ChatGroupManager`；事件处理器：`Chat{业务}EventHandler`
-- 原生类统一 `*Wrapper` 后缀：`ChatManagerWrapper.java` / `ChatManagerWrapper.m`；iOS 数据转换类用 `*Helper` 后缀
-- Model 文件存在 `chat_` 前缀（`chat_message.dart`）与无前缀（如 `fetch_message_options.dart`）两种风格，新增时参考同类文件、保持类名 `Chat` 前缀即可
-- 旧 `EM*` 命名已由 `lib/em_compat.dart` 中的 `@Deprecated` typedef 统一兼容（4.22.0 改名时聚拢，仅为兼容存量用户代码），**新代码不得再使用 `EM*` 名称**，也不得向 em_compat.dart 新增条目
-- MethodChannel 统一前缀 `com.chat.im`，格式 `com.chat.im/{manager_name}`：`com.chat.im/chat_manager`
+- Dart files use snake_case; Manager files are business name + `_manager`: `chat_manager.dart`
+- Public Dart classes use the `Chat` prefix: `ChatClient`, `ChatMessage`, `ChatError` (consistent with the overseas agora_chat_sdk naming)
+- Manager classes: `Chat{Business}Manager`, e.g. `ChatGroupManager`; event handlers: `Chat{Business}EventHandler`
+- Native classes use the `*Wrapper` suffix: `ChatManagerWrapper.java` / `ChatManagerWrapper.m`; iOS data-conversion classes use the `*Helper` suffix
+- Model files exist in two styles — with the `chat_` prefix (`chat_message.dart`) and without (e.g. `fetch_message_options.dart`); for new files, follow similar existing files and keep the `Chat` prefix on class names
+- Legacy `EM*` names are uniformly shimmed by `@Deprecated` typedefs in `lib/em_compat.dart` (consolidated during the 4.22.0 rename, solely for compatibility with existing user code); **new code must not use `EM*` names**, and no new entries may be added to em_compat.dart
+- MethodChannels use the unified prefix `com.chat.im`, in the format `com.chat.im/{manager_name}`: `com.chat.im/chat_manager`
 
-## 代码风格要点
+## Code Style Essentials
 
-- import 顺序：dart 标准库 → flutter → `im_flutter_sdk` → `im_flutter_sdk_interface`
-- Manager 一律通过 `ChatClient.getInstance` 获取，禁止直接实例化
-- Model 必须实现 `fromJson` 工厂构造与 `toJson()`；MethodChannel 传输格式为 JSON Map
-- MethodChannel 方法名必须使用常量：Dart 侧 `ChatMethodKeys`、Android 侧 `MethodKey.java`、iOS 侧 `MethodKeys.h`，禁止在代码中硬编码字符串；原生回调事件名统一定义在 `chat_event_keys.dart`
-- 事件处理器以唯一 id 为 key 存于 `Map<String, Handler>`，通过 `addEventHandler(id, handler)` / `removeEventHandler(id)` 管理
+- Import order: dart standard library → flutter → `im_flutter_sdk` → `im_flutter_sdk_interface`
+- Managers must always be obtained via `ChatClient.getInstance`; direct instantiation is forbidden
+- Models must implement a `fromJson` factory constructor and `toJson()`; the MethodChannel transport format is a JSON Map
+- MethodChannel method names must use constants: `ChatMethodKeys` on the Dart side, `MethodKey.java` on Android, `MethodKeys.h` on iOS; hard-coding strings in code is forbidden. Native callback event names are uniformly defined in `chat_event_keys.dart`
+- Event handlers are stored in a `Map<String, Handler>` keyed by a unique id, managed via `addEventHandler(id, handler)` / `removeEventHandler(id)`
 
-## 文档注释规范
+## Documentation Comment Conventions
 
-代码内的普通注释（实现说明、版本标注等）一律使用英文；唯一的例外是公开 API 的文档注释，必须中英双语。
+Ordinary comments in code (implementation notes, version annotations, etc.) must be in English; the only exception is documentation comments on public APIs, which must be bilingual (Chinese + English).
 
-公开 API 必须使用中英双语注释，以 `~english` / `~chinese` / `~end` 标记分块，两语言块之间空一行：
+Public APIs must use bilingual comments split by `~english` / `~chinese` / `~end` markers, with one blank line between the two language blocks:
 
 ```dart
 /// ~english
@@ -77,60 +77,60 @@ make setup   # config + deps + pods
 /// ~end
 ```
 
-新增或修改公开 API 时，两种语言必须同步维护。
+When adding or modifying a public API, both languages must be maintained in sync.
 
-生成单语 API 文档：运行 `im_flutter_sdk/scripts/gen-apidoc.sh [cn|en]`（默认 `cn`），脚本会在临时副本中剥离另一语言块与标记行后用 `dart doc` 生成 HTML，输出到 `im_flutter_sdk/output/apidoc-<lang>/`（已 gitignore）。
+Generating single-language API docs: run `im_flutter_sdk/scripts/gen-apidoc.sh [cn|en]` (default `cn`). The script strips the other language block and the marker lines in a temporary copy, then generates HTML with `dart doc`, outputting to `im_flutter_sdk/output/apidoc-<lang>/` (gitignored).
 
-## 新增 API 的标准链路
+## Standard Chain for Adding an API
 
-参照已有 API（如 `loadConversationMessagesWithKeyword`）按以下链路逐层实现，不可跨层跳过：
+Follow an existing API (e.g. `loadConversationMessagesWithKeyword`) and implement layer by layer along the chain below; skipping layers is not allowed:
 
-| 层 | 文件 | 动作 |
+| Layer | File | Action |
 |---|---|---|
-| Dart 实现 | `im_flutter_sdk/lib/src/managers/{业务}_manager.dart` | 新增公开方法与双语注释；可空参数用 `putIfNotNull` 组装请求 Map；用 `ChatError.hasErrorFromResult(result)` 处理错误；返回值转为强类型对象 |
-| Dart 常量 | `im_flutter_sdk/lib/src/internal/chat_method_keys.dart` | 新增 `static const String` 方法名常量 |
-| Android 常量 | `im_flutter_sdk_android/android/src/main/java/com/easemob/im_flutter_sdk/MethodKey.java` | 新增同名同值常量 |
-| Android 实现 | 同目录下 `{业务}Wrapper.java` | `onMethodCall` 注册分支；参数校验与类型/枚举转换；调用 Hyphenate Android SDK 异步 API；回调中经 `updateObject` 返回可序列化结构 |
-| iOS 常量 | `im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/include/im_flutter_sdk_ios/MethodKeys.h` | 新增同名同值常量 |
-| iOS 实现 | `im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/{业务}Wrapper.m` | `handleMethodCall` 注册分支；参数校验与类型/枚举转换；调用 Hyphenate iOS SDK；completion 中经 `wrapperCallBack` 返回 |
+| Dart implementation | `im_flutter_sdk/lib/src/managers/{business}_manager.dart` | Add the public method with bilingual comments; assemble the request Map for nullable parameters with `putIfNotNull`; handle errors via `ChatError.hasErrorFromResult(result)`; convert return values to strongly-typed objects |
+| Dart constants | `im_flutter_sdk/lib/src/internal/chat_method_keys.dart` | Add a `static const String` method-name constant |
+| Android constants | `im_flutter_sdk_android/android/src/main/java/com/easemob/im_flutter_sdk/MethodKey.java` | Add a constant with the same name and value |
+| Android implementation | `{Business}Wrapper.java` in the same directory | Register a branch in `onMethodCall`; validate parameters and convert types/enums; call the Hyphenate Android SDK async API; return a serializable structure via `updateObject` in the callback |
+| iOS constants | `im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/include/im_flutter_sdk_ios/MethodKeys.h` | Add a constant with the same name and value |
+| iOS implementation | `im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/{Business}Wrapper.m` | Register a branch in `handleMethodCall`; validate parameters and convert types/enums; call the Hyphenate iOS SDK; return via `wrapperCallBack` in completion |
 
-同时还需：
+Also required:
 
-- 按现有风格在新代码附近标注版本注释（如 `// 4.15.2`、`#pragma mark 4.15.2`）
-- 更新 CHANGELOG（见下节）
+- Add version annotations near new code in the existing style (e.g. `// 4.15.2`, `#pragma mark 4.15.2`)
+- Update the CHANGELOG (see the next section)
 
-提交前自检：
+Pre-commit self-check:
 
-- [ ] 三端方法名常量的值完全一致
-- [ ] Dart 请求参数 key 与原生读取 key 完全一致
-- [ ] 枚举索引与原生枚举映射一致
-- [ ] 返回结构可被 Dart 正确反序列化（注意 `Map<String, List<String>>` 等泛型）
-- [ ] Android 与 iOS 的路由分支均已注册
+- [ ] Method-name constant values are identical across all three ends
+- [ ] Dart request parameter keys exactly match the keys read natively
+- [ ] Enum indexes match the native enum mapping
+- [ ] Return structures can be correctly deserialized by Dart (watch generics such as `Map<String, List<String>>`)
+- [ ] Routing branches are registered on both Android and iOS
 
-新增 Model：在 `im_flutter_sdk/lib/src/models/` 建文件，类名 `Chat` 前缀，实现 `fromJson`/`toJson`，在 `im_flutter_sdk/lib/im_flutter_sdk.dart` 导出，写双语注释。
+Adding a Model: create a file under `im_flutter_sdk/lib/src/models/`, use the `Chat` prefix for the class name, implement `fromJson`/`toJson`, export it from `im_flutter_sdk/lib/im_flutter_sdk.dart`, and write bilingual comments.
 
-新增事件处理器：在 `im_flutter_sdk/lib/src/handlers/manager_event_handler.dart` 定义 `Chat{业务}EventHandler`，在对应 Manager 实现 `addEventHandler`/`removeEventHandler`，原生事件名加入 `lib/src/internal/chat_event_keys.dart`。
+Adding an event handler: define `Chat{Business}EventHandler` in `im_flutter_sdk/lib/src/handlers/manager_event_handler.dart`, implement `addEventHandler`/`removeEventHandler` in the corresponding Manager, and add the native event names to `lib/src/internal/chat_event_keys.dart`.
 
-## 版本与 CHANGELOG
+## Versioning and CHANGELOG
 
-- 四个子包的版本号保持一致，禁止只修改其中某一个
-- CHANGELOG 使用中文，格式为 `## 版本号` 标题 + `- 新增…` / `- 修复…` / `- 优化…` 条目
-- 新增 API 时：主包 CHANGELOG 记录新 API 条目；interface / android / ios 的 CHANGELOG 按各自实际改动记录
+- The four sub-packages must keep identical version numbers; modifying only one of them is forbidden
+- The CHANGELOG is bilingual: each version keeps a `## <version>` heading with a `### 中文` section and an `### English` section; new entries must be added in both languages
+- When adding an API: the main package's CHANGELOG records the new API entry; the interface / android / ios CHANGELOGs record their respective actual changes
 
-## Git 分支管理
+## Git Branch Management
 
-- **4.x 起，每个发布版本对应一个同名分支**（如 `4.19.2`、`4.17.1`），不使用 tag；查看或对比某版本代码用 `git checkout 4.19.2`、`git diff 4.19.2..4.19.3` 等分支操作
-- 3.x 时代遗留的 tag（`3.8.x`/`3.9.x`）仅属历史，4.x 无 tag
-- 默认分支为 `flutter2_stable`；`alpha`、`dev`、`customMsg` 等为特性或历史分支，勿在其上做版本开发
-- 发布新版本：新建与版本号同名的分支
-- **切换分支前先确认工作区干净**（`git status` 无未提交改动）；不干净则停止操作并告知用户，由用户决定如何处理
-- **创建 worktree 时，统一放在仓库根目录的 `.worktree/` 文件夹下**（如 `git worktree add .worktree/agora-1.4.0 agora-1.4.0`），不要放在仓库外部
+- **Since 4.x, each release version corresponds to a branch with the same name** (e.g. `4.19.2`, `4.17.1`); tags are not used. To view or compare a version's code, use branch operations such as `git checkout 4.19.2` or `git diff 4.19.2..4.19.3`
+- Tags left over from the 3.x era (`3.8.x`/`3.9.x`) are history only; 4.x has no tags
+- The default branch is `flutter2_stable`; `alpha`, `dev`, `customMsg` etc. are feature or historical branches — do not do version development on them
+- Releasing a new version: create a branch named after the version number
+- **Before switching branches, confirm the working tree is clean** (`git status` shows no uncommitted changes); if it is not clean, stop and inform the user, letting the user decide how to proceed
+- **When creating a worktree, always place it under the `.worktree/` folder in the repository root** (e.g. `git worktree add .worktree/agora-1.4.0 agora-1.4.0`), not outside the repository
 
-## 平台支持
+## Platform Support
 
-iOS 同时支持 CocoaPods 与 Swift Package Manager 两种集成，共用同一份源码（`ios/im_flutter_sdk_ios/Sources/`），两条链路的原生 SDK 版本保持一致：CocoaPods 走 `im_flutter_sdk_ios.podspec`（HyphenateChat 4.22.1，部署目标 13.0），SPM 走 `ios/im_flutter_sdk_ios/Package.swift`（HyphenateChat_iOS 4.22.1，部署目标 13.0）。
+iOS supports both CocoaPods and Swift Package Manager integration, sharing the same source (`ios/im_flutter_sdk_ios/Sources/`). The two integration paths must keep the same native SDK version: CocoaPods goes through `im_flutter_sdk_ios.podspec` (HyphenateChat 4.22.1, deployment target 13.0); SPM goes through `ios/im_flutter_sdk_ios/Package.swift` (HyphenateChat_iOS 4.22.1, deployment target 13.0).
 
-| 平台 | 最低版本 |
+| Platform | Minimum version |
 |---|---|
 | Android | minSdk 21 |
 | iOS | 13.0 |

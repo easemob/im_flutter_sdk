@@ -1,19 +1,21 @@
 # 环信 IM Flutter SDK
 
-环信即时通讯 IM 的 Flutter 插件仓库，Federated Plugin 架构，支持 Android、iOS、鸿蒙（鸿蒙为独立仓库插件）。
+English | [中文](#中文)
 
-## 文档导航
+The Flutter plugin repository for EaseMob IM, built on the Federated Plugin architecture. Supports Android, iOS, and HarmonyOS (HarmonyOS is provided as a plugin in a separate repository).
 
-| 读者 | 文档 | 内容 |
+## Documentation
+
+| Audience | Document | Content |
 |---|---|---|
-| SDK 使用者 | [im_flutter_sdk/README.md](im_flutter_sdk/README.md) | 集成方式、平台配置、快速上手 |
-| 开发 / 维护者 | [CONTRIBUTING.md](CONTRIBUTING.md) | 环境准备、验证方式、分支与发布流程 |
-| AI Agent | [AGENTS.md](AGENTS.md) | 项目结构、硬性约定、编码规范 |
+| SDK users | [im_flutter_sdk/README.md](im_flutter_sdk/README.md) | Integration, platform configuration, quick start |
+| Developers / Maintainers | [CONTRIBUTING.md](CONTRIBUTING.md) | Environment setup, verification, branching and release process |
+| AI Agents | [AGENTS.md](AGENTS.md) | Project structure, hard conventions, coding standards |
 
-## 开发环境初始化
+## Development Environment Setup
 
 ```bash
 make setup
 ```
 
-详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
