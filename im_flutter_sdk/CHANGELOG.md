@@ -9,7 +9,7 @@
   - 移除 `sendMessageReadAck`、`sendGroupMessageReadAck`、`sendConversationReadAck`、`markAllConversationsAsRead`、`ChatConversation.markMessageAsRead`/`markAllMessagesAsRead`、`fetchGroupAcks`、`ChatMessage.groupAckCount` 与 `ChatGroupMessageAck`；
   - `ChatMessage.hasReadAck`/`hasRead`/`needGroupAck` 改为只读 `isPeerRead`/`isRead` 与可写的 `isNeedReadReceipt`，并新增只读 `groupReadReceiptCount`；
 - 批量已读回执不再由 wrapper 预校验：`sendMessageReadReceipts`/`getGroupMessageReadReceipts` 遇到无法解析为本地消息的 messageId 时跳过该条（此前 Android 整批返回 1 GENERAL_ERROR、iOS 整批返回 500 MESSAGE_INVALID），成功与否交由 native 判定，整批都无法解析时返回 native 的 110 INVALID_PARAM；
-- `ChatCursorResult` 新增可空 `totalCount`，用于承接 iOS 返回的群消息已读回执总数；
+- 群消息已读回执分页返回新增 `totalCount` 字段（iOS wrapper 此前未下发，已修复），Dart 侧 `ChatCursorResult` 新增可空 `totalCount` 承接；
 - `ChatMultiDevicesEvent` 新增 `GROUP_UPDATE`（iOS 群组信息更新事件）；
 - 修复多设备事件映射：补齐群组白名单与全员禁言事件（native 30-33），修正子区 update/kick 颠倒（native 44/45），未知事件值不再导致事件处理抛异常；
 - 重构群组配置模型（breaking）：移除 `ChatGroupStyle`、`ChatGroupOptions`，`createGroup` 的 `options` 参数改为 `configs`；`ChatGroup.isMemberOnly` 改名 `isJoinApprovalRequired`；新增 `ChatGroupConfigs`、`ChatGroupConfigsType` 与 `updateGroupConfigs`；
