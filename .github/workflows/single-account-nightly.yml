@@ -101,7 +101,7 @@ jobs:
     needs: android
     if: ${{ always() }}
     runs-on: macos-26
-    timeout-minutes: 25
+    timeout-minutes: 45
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     environment: flutter-single-account

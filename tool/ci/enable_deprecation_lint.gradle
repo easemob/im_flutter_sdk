@@ -1,0 +1,18 @@
+// Enable per-call-site javac deprecation warnings for every JavaCompile task.
+//
+// Without -Xlint:deprecation javac only prints
+//   Note: Some input files use or override a deprecated API.
+// with no file and no line number, so the deprecated API scan has nothing to
+// parse. The Android Gradle Plugin does not enable the flag on its own.
+//
+// Passed to Gradle with -I (init script) so no repository build file changes and
+// consumers of the plugin keep their own warning setup. Used by
+// tool/ci/scan_deprecated.sh; the same idea as the iOS side, where clang emits
+// -Wdeprecated-declarations by default.
+import org.gradle.api.tasks.compile.JavaCompile
+
+allprojects {
+    tasks.withType(JavaCompile).configureEach {
+        options.compilerArgs << '-Xlint:deprecation'
+    }
+}

@@ -193,41 +193,6 @@ class ChatContactManager {
     }
   }
 
-  @Deprecated('Use getAllContactIds instead.')
-
-  /// ~english
-  /// Gets the contact ids from the local database.
-  ///
-  /// **Return** The contact list ids.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 从数据库获取好友列表。
-  ///
-  /// **Return** 调用成功会返回好友列表。
-  ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [ChatError]。
-  /// ~end
-  Future<List<String>> getAllContactsFromDB() async {
-    try {
-      Map result = await platform_interface.Client.instance.contactManager
-          .callNativeMethod(ChatMethodKeys.getAllContactsFromDB);
-      ChatError.hasErrorFromResult(result);
-      List<String> list = [];
-      result[ChatMethodKeys.getAllContactsFromDB]?.forEach((element) {
-        if (element is String) {
-          list.add(element);
-        }
-      });
-
-      return list;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
   /// ~english
   /// Gets the contact ids from the local database.
   ///
@@ -318,40 +283,6 @@ class ChatContactManager {
     }
   }
 
-  @Deprecated('Use fetchBlockIds instead.')
-
-  /// ~english
-  /// Gets the block list from the server.
-  ///
-  /// **Return** The block list obtained from the server.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 从服务器获取黑名单列表。
-  ///
-  /// **Return** 该方法调用成功会返回黑名单列表。
-  ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [ChatError]。
-  /// ~end
-  Future<List<String>> getBlockListFromServer() async {
-    try {
-      Map result = await platform_interface.Client.instance.contactManager
-          .callNativeMethod(ChatMethodKeys.getBlockListFromServer);
-      ChatError.hasErrorFromResult(result);
-      List<String> list = [];
-      result[ChatMethodKeys.getBlockListFromServer]?.forEach((element) {
-        if (element is String) {
-          list.add(element);
-        }
-      });
-      return list;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
   /// ~english
   /// Gets the block ids from the server.
   ///
@@ -375,40 +306,6 @@ class ChatContactManager {
       ChatError.hasErrorFromResult(result);
       List<String> list = [];
       result[ChatMethodKeys.getBlockListFromServer]?.forEach((element) {
-        if (element is String) {
-          list.add(element);
-        }
-      });
-      return list;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  @Deprecated('Use getBlockIds instead.')
-
-  /// ~english
-  /// Gets the block list from the local database.
-  ///
-  /// **Return** The block list obtained from the local database.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 从本地数据库获取黑名单列表。
-  ///
-  /// **Return** 该方法调用成功会返回黑名单列表。
-  ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [ChatError]。
-  /// ~end
-  Future<List<String>> getBlockListFromDB() async {
-    try {
-      Map result = await platform_interface.Client.instance.contactManager
-          .callNativeMethod(ChatMethodKeys.getBlockListFromDB);
-      ChatError.hasErrorFromResult(result);
-      List<String> list = [];
-      result[ChatMethodKeys.getBlockListFromDB]?.forEach((element) {
         if (element is String) {
           list.add(element);
         }

@@ -2,7 +2,7 @@ name: Flutter Device Smoke
 
 on:
   schedule:
-    - cron: '0 18 * * *'
+    - cron: '37 18 * * *'
   workflow_dispatch:
 
 permissions:

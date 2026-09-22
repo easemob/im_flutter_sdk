@@ -1563,9 +1563,8 @@ class FetchHistoryOptionsHelper {
         options.setIsSave(json.getBoolean("needSave"));
         options.setStartTime(json.getLong("startTs"));
         options.setEndTime(json.getLong("endTs"));
-        if (json.has("from")){
-            options.setFrom(json.getString("from"));
-        }
+        // 5.0.0: the single sender key "from" was dropped from FetchMessageOptions
+        // in Dart, and the native setFrom is deprecated in favor of setFromIds.
         if(json.has("senders")) {
             List<String> list = new ArrayList<>();
             JSONArray array = json.getJSONArray("senders");

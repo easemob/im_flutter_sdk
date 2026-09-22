@@ -15,7 +15,8 @@
     options.direction = [EnumTools searchDirectionFromInt:[dict[@"direction"] integerValue]];
     options.startTime = [dict[@"startTs"] longValue];
     options.endTime = [dict[@"endTs"] longValue];
-    options.from = dict[@"from"];
+    // 5.0.0: the single sender key "from" was dropped from FetchMessageOptions in
+    // Dart, and the native from property is deprecated in favor of fromIds.
     options.fromIds = dict[@"senders"];
     options.isSave = [dict[@"needSave"] boolValue];
     NSArray *types = dict[@"msgTypes"];

@@ -47,8 +47,6 @@ class ChatManager {
         return _onMessageReadReceipts(call.arguments);
       } else if (call.method == ChatMethodKeys.onMessagesDelivered) {
         return _onMessagesDelivered(call.arguments);
-      } else if (call.method == ChatMethodKeys.onMessagesRecalled) {
-        return _onMessagesRecalled(call.arguments);
       } else if (call.method == ChatMethodKeys.onConversationUpdate) {
         return _onConversationsUpdate(call.arguments);
       } else if (call.method == ChatMethodKeys.onMessageReactionDidChange) {
@@ -113,18 +111,6 @@ class ChatManager {
 
     for (var item in _eventHandlesMap.values) {
       item.onMessagesDelivered?.call(list);
-    }
-  }
-
-  Future<void> _onMessagesRecalled(List messages) async {
-    List<ChatMessage> list = [];
-    for (var message in messages) {
-      list.add(ChatMessage.fromJson(message));
-    }
-
-    for (var item in _eventHandlesMap.values) {
-      // ignore: deprecated_member_use_from_same_package
-      item.onMessagesRecalled?.call(list);
     }
   }
 
@@ -1160,72 +1146,6 @@ class ChatManager {
       req['searchScope'] = MessageSearchScope.values.indexOf(searchScope);
       req['direction'] = direction.index;
       req.putIfNotNull("from", sender);
-
-      Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.searchChatMsgFromDB, req);
-      ChatError.hasErrorFromResult(result);
-      List<ChatMessage> list = [];
-      result[ChatMethodKeys.searchChatMsgFromDB]?.forEach((element) {
-        list.add(ChatMessage.fromJson(element));
-      });
-      return list;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  @Deprecated('Use [ChatManager.loadMessagesWithKeyword] instead.')
-
-  /// ~english
-  /// Retrieves messages from the database according to the parameters.
-  ///
-  /// **Note**
-  /// Pay attention to the memory usage when the maxCount is large. Currently, a maximum of 400 historical messages can be retrieved each time.
-  ///
-  /// Param [keywords] The keywords in message.
-  ///
-  /// Param [timestamp] The Unix timestamp for search, in milliseconds.
-  ///
-  /// Param [maxCount] The maximum number of messages to retrieve each time.
-  ///
-  /// Param [from] A user ID or group ID at which the retrieval is targeted. Usually, it is the conversation ID.
-  ///
-  /// **Return** The list of messages.
-  ///
-  /// **Throws** A description of the exception. See [ChatError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 根据传入的参数从本地存储中搜索指定数量的消息。
-  ///
-  /// 注意：当 maxCount 非常大时，需要考虑内存消耗，目前限制一次最多搜索 400 条数据。
-  ///
-  /// Param [keywords] 关键词。
-  ///
-  /// Param [timestamp] 搜索消息的时间点，Unix 时间戳。
-  ///
-  /// Param [maxCount] 搜索结果的最大条数。
-  ///
-  /// Param [from] 搜索来自某人或者某群的消息，一般是指会话 ID。
-  ///
-  /// **Return**  获取的消息列表。
-  ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
-  /// ~end
-  Future<List<ChatMessage>> searchMsgFromDB(
-    String keywords, {
-    int timestamp = -1,
-    int maxCount = 20,
-    String from = '',
-    ChatSearchDirection direction = ChatSearchDirection.Up,
-  }) async {
-    try {
-      Map req = {};
-      req['keywords'] = keywords;
-      req['timestamp'] = timestamp;
-      req['maxCount'] = maxCount;
-      req['from'] = from;
-      req['direction'] = direction.index;
 
       Map result = await platform_interface.Client.instance.chatManager
           .callNativeMethod(ChatMethodKeys.searchChatMsgFromDB, req);

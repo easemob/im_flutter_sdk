@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/chat_extension.dart';
 
@@ -15,8 +13,6 @@ class FetchMessageOptions {
   /// The parameter configuration class for pulling historical messages from the server.
   ///
   /// Param [direction] The message search direction. The default value is [ChatSearchDirection.Up]. See [ChatSearchDirection].
-  ///
-  /// Param [from] The user ID of the message sender in the group conversation.
   ///
   /// Param [senders] The user IDs of the message senders in the group conversation.
   ///
@@ -46,8 +42,6 @@ class FetchMessageOptions {
   ///
   /// Param [direction] 消息搜索方向。默认为 [ChatSearchDirection.Up] , 详见 [ChatSearchDirection]。
   ///
-  /// Param [from] 群组会话中的消息发送方的用户 ID。
-  ///
   /// Param [senders] 群组会话中的消息发送方的用户 ID 列表。
   ///
   /// Param [msgTypes] 要查询的消息类型数组。默认值为 `null`，表示返回所有类型的消息。
@@ -65,7 +59,6 @@ class FetchMessageOptions {
   /// - `false`（默认）：不保存到数据库。
   /// ~end
   const FetchMessageOptions({
-    @Deprecated('use [senders] instead') this.from,
     this.senders,
     this.msgTypes,
     this.startTs = -1,
@@ -73,17 +66,6 @@ class FetchMessageOptions {
     this.needSave = false,
     this.direction = ChatSearchDirection.Up,
   });
-
-  @Deprecated('Use [senders] instead')
-
-  /// ~english
-  /// The user ID of the message sender in the group conversation.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 群组会话中的消息发送方的用户 ID。
-  /// ~end
-  final String? from;
 
   /// ~english
   /// The user IDs of the message senders in the group conversation.
@@ -162,7 +144,6 @@ class FetchMessageOptions {
     data.putIfNotNull('direction', direction.index);
     data.putIfNotNull('startTs', startTs);
     data.putIfNotNull('endTs', endTs);
-    data.putIfNotNull('from', from);
     data.putIfNotNull('senders', senders);
     data.putIfNotNull('needSave', needSave);
     data.putIfNotNull(

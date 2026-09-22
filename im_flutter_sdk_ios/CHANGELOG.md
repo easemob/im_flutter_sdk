@@ -5,6 +5,9 @@
 - 修复分页获取群回执时未返回 `totalCount` 的问题；
 - 断开事件统一为 `onDisconnected`：各断开 delegate 折算为平台原因码后统一派发，强制退出回调改为原样透传原因码（补上活跃数达到上限）；
 - 删除 5.0.0 已不存在的 `activeNumbersReachLimitation` 与不再使用的 `LoginExtensionInfoHelper`；
+- 聊天室信息中的禁言列表改用 native 5.0.0 的 `muteMembers`（取用户 ID 列表）替换已废弃的 `muteList`，对外 JSON 结构不变；
+- 批量已读回执移除 wrapper 预校验：无法解析为本地消息的 messageId 跳过而不是整批返回 500，是否受理由 native 判定（整批不可解析时返回 110）；
+- 删除服务端拉取历史消息选项中不可达的 `from` 赋值：Dart 侧已只下发 `senders`，native `from` 已废弃且由 `fromIds` 取代；
 
 ## 4.24.0
 - iOS依赖 SDK 升级到 4.24.1；

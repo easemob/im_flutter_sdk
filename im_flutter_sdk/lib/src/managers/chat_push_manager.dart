@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/chat_log.dart';
@@ -98,98 +96,6 @@ class ChatPushManager {
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
-    }
-  }
-
-  @Deprecated("Use [bindDeviceToken] instead")
-
-  /// ~english
-  /// Updates the HMS push token.
-  ///
-  /// Param [token] The HMS push token.
-  ///
-  /// **Throws** A description of the issue that caused this exception. See [ChatError]
-  /// ~end
-  ///
-  /// ~chinese
-  /// 更新华为推送 token。
-  ///
-  /// Param [token] 要更新的华为推送 token。
-  ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
-  /// ~end
-  Future<void> updateHMSPushToken(String token) async {
-    if (Platform.isAndroid) {
-      try {
-        Map req = {'token': token};
-        Map result = await platform_interface.Client.instance.pushManager
-            .callNativeMethod(ChatMethodKeys.updateHMSPushToken, req);
-        ChatError.hasErrorFromResult(result);
-      } catch (e) {
-        rethrow;
-      }
-    } else {
-      return;
-    }
-  }
-
-  @Deprecated("Use [bindDeviceToken] instead")
-
-  /// ~english
-  /// Updates the FCM push token,
-  ///
-  /// Param [token] The FCM push token.
-  ///
-  /// **Throws** A description of the issue that caused this exception. See [ChatError]
-  /// ~end
-  ///
-  /// ~chinese
-  /// 更新谷歌 FCM 推送 token。
-  ///
-  /// Param [token] 要更新的谷歌 FCM 推送 token。
-  ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
-  /// ~end
-  Future<void> updateFCMPushToken(String token) async {
-    try {
-      Map req = {'token': token};
-      Map result = await platform_interface.Client.instance.pushManager
-          .callNativeMethod(ChatMethodKeys.updateFCMPushToken, req);
-      ChatError.hasErrorFromResult(result);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  @Deprecated("Use [bindDeviceToken] instead")
-
-  /// ~english
-  /// Updates the APNs push token.
-  ///
-  /// Param [token] The APNs push token.
-  ///
-  /// **Throws** A description of the issue that caused this exception. See [ChatError]
-  /// ~end
-  ///
-  /// ~chinese
-  /// 更新苹果推送（APNs）token。
-  ///
-  /// Param [token] 要更新的苹果推送（APNs）token。
-  ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
-  /// ~end
-  Future<void> updateAPNsDeviceToken(String token) async {
-    if (Platform.isIOS) {
-      try {
-        Map req = {'token': token};
-        Map result = await platform_interface.Client.instance.pushManager
-            .callNativeMethod(ChatMethodKeys.updateAPNsPushToken, req);
-        ChatError.hasErrorFromResult(result);
-      } catch (e) {
-        rethrow;
-      }
-    } else {
-      return;
     }
   }
 

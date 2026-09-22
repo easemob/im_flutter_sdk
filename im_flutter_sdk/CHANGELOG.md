@@ -1,700 +1,734 @@
 ## 5.0.0
-- iOS/Android 依赖 SDK 升级到 5.0.0；
-- 登录仅支持 Token，移除注册、密码登录、自动登录和密码设备管理 API；
-- 新增登录后数据同步配置、数据同步事件和数据库打开事件；
-- 重构消息已读回执：新增批量发送/查询回执与清除会话未读数 API，统一单聊和群聊回执模型；
-- `ChatCursorResult` 新增可空 `totalCount`，用于承接 iOS 返回的群消息已读回执总数；
-- `ChatMultiDevicesEvent` 新增 `GROUP_UPDATE`（iOS 群组信息更新事件）；
-- 修复多设备事件映射：补齐群组白名单与全员禁言事件（native 30-33），修正子区 update/kick 颠倒（native 44/45），未知事件值不再导致事件处理抛异常；
-- 重构群组配置模型，新增 `ChatGroupConfigs` 和 `updateGroupConfigs`；
-- 移除会话、好友、已加入群组和公开群组的旧服务端拉取 API，改用自动同步后的本地数据；
-- 移除客户端举报消息及创建、解散聊天室 API；
-- 重构连接断开事件为单一 `onDisconnected(int? errorCode, LoginExtensionInfo? info)`：
-  - 删除 `onUserDidLoginFromOtherDevice`、`onUserDidRemoveFromServer`、`onUserDidForbidByServer`、`onUserDidChangePassword`、`onUserDidLoginTooManyDevice`、`onUserKickedByOtherDevice`、`onUserAuthenticationFailed`、`onAppActiveNumberReachLimit` 8 个回调（breaking）；
-  - 原因码数值与平台 `EMError` 一致并原样透传，未列出的原因码同样会送达；
-  - 新增 `ChatDisconnectErrorCode` 常量表：其中 13 个为「退出原因」（用户已被登出，需要重新登录），5 个为「连接原因」（用户仍在线，SDK 自动重连）；
-  - 设备信息仅在他端登录时通过 `info` 携带；
-  - token 过期仍只通过 `onTokenDidExpire` 通知，不触发 `onDisconnected`；
-- 修复 `onUserAuthenticationFailed` 误转发为 `onDisconnected` 的问题；
-- 修复 iOS 未上报活跃数达到上限（原因码 8）的问题；
-- `getUnreadMessageCount` 不再统计聊天室、Thread 和免打扰会话；
+
+- Upgraded the iOS/Android native SDK dependencies to 5.0.0;
+
+### Breaking Changes
+
+#### Login and Disconnection
+
+- Login now supports Token only: removed registration `createAccount`, password login `login`/`loginWithPassword`/`loginWithAgoraToken`, and `isLoginBefore`; use `loginWithToken` instead;
+- `fetchLoggedInDevices`/`kickDevice`/`kickAllDevices` now accept only a token (the `isPassword` password branch was removed), and the deprecated `getLoggedInDevicesFromServer` alias was deleted;
+- Removed `ChatOptions.autoLogin`/`requireAck`/`enableAutoSyncContacts` and `ChatClient.updateRequireAckSetting`; renamed `renewAgoraToken` to `renewToken`;
+- Consolidated disconnection events into a single `onDisconnected(int? errorCode, LoginExtensionInfo? info)`:
+  - Removed the 8 callbacks `onUserDidLoginFromOtherDevice`, `onUserDidRemoveFromServer`, `onUserDidForbidByServer`, `onUserDidChangePassword`, `onUserDidLoginTooManyDevice`, `onUserKickedByOtherDevice`, `onUserAuthenticationFailed`, and `onAppActiveNumberReachLimit`;
+  - Reason codes match the platform `EMError` values and are passed through as-is; unlisted reason codes are delivered as well;
+  - Added the `ChatDisconnectErrorCode` constant table: 13 of them are "logout reasons" (the user has been logged out and must log in again) and 5 are "connection reasons" (the user remains online and the SDK reconnects automatically);
+  - Device information is carried via `info` only when logging in on another device;
+  - `LoginExtensionInfo.fromJson` falls back to an empty string instead of throwing when the native side does not carry `deviceName`;
+  - Token expiry is still only reported via `onTokenDidExpire` and does not trigger `onDisconnected`;
+
+#### Message Read Receipts
+
+- Reworked message read receipts:
+  - Added `sendMessageReadReceipts`, `getGroupMessageReadReceipts`, `fetchGroupMessageReadReceipts`, `clearConversationUnreadMessageCount`, `clearAllConversationUnreadMessageCount`, plus `ChatMessageReadReceipt` and `ChatGroupReadReceipt`;
+  - Removed `sendMessageReadAck`, `sendGroupMessageReadAck`, `sendConversationReadAck`, `markAllConversationsAsRead`, `ChatConversation.markMessageAsRead`/`markAllMessagesAsRead`, `fetchGroupAcks`, `ChatMessage.groupAckCount`, and `ChatGroupMessageAck`;
+  - `ChatMessage.hasReadAck`/`hasRead`/`needGroupAck` became the read-only `isPeerRead`/`isRead` and the writable `isNeedReadReceipt`, and a read-only `groupReadReceiptCount` was added;
+
+#### Group Configuration
+
+- Reworked the group configuration model: removed `ChatGroupStyle` and `ChatGroupOptions`; the `options` parameter of `createGroup` became `configs`; renamed `ChatGroup.isMemberOnly` to `isJoinApprovalRequired`; added `ChatGroupConfigs`, `ChatGroupConfigsType`, and `updateGroupConfigs`;
+
+#### Removed Legacy APIs
+
+- Removed legacy server-side fetch APIs in favor of local data automatically synced after login: `ChatManager.getConversationsFromServer`, `fetchConversationListFromServer`, `fetchConversation`, `fetchConversationsByOptions`, `fetchPinnedConversations`, `ChatContactManager.getAllContactsFromServer`/`fetchAllContacts`/`fetchAllContactIds`/`fetchContacts`, `ChatGroupManager.fetchJoinedGroupsFromServer`/`fetchPublicGroupsFromServer`;
+- Removed the legacy `fetchHistoryMessages`; `fetchHistoryMessagesByOption` is kept;
+- Removed client-side message reporting `reportMessage` and chat room creation/destruction `createChatRoom`/`destroyChatRoom`;
+- Removed the contact sync events `onContactSyncStart`/`onContactSyncFinish`; use the connection-level data sync events uniformly instead;
+- Removed deprecated (`@Deprecated`) public Dart APIs; see `docs/deprecated-apis.md` for the full list:
+  - Methods: `ChatManager.searchMsgFromDB`, `ChatContactManager.getAllContactsFromDB`, `ChatContactManager.getBlockListFromServer`, `ChatContactManager.getBlockListFromDB`, `ChatGroupManager.changeGroupName`, `ChatGroupManager.changeGroupDescription`, `ChatPushManager.updateHMSPushToken`, `ChatPushManager.updateFCMPushToken`, `ChatPushManager.updateAPNsDeviceToken`;
+  - Fields and parameters: `ChatGroup.name`, `ChatGroup.description` (including constructor parameters), `FetchMessageOptions.from` (including constructor parameters), the `sender` parameter of `ChatConversation.loadMessagesWithKeyword`, and the `fetchMembers` parameter of `ChatGroupManager.fetchGroupInfoFromServer` and `ChatRoomManager.fetchChatRoomInfoFromServer`;
+  - Callbacks: `ChatEventHandler.onMessagesRecalled` is replaced by `onMessagesRecalledInfo`; `onMemberExitedFromGroup`/`onMemberJoinedFromGroup` of `ChatGroupEventHandler` are replaced by `onMembersExitedFromGroup`/`onMembersJoinedFromGroup`;
+  - The 8 vendor push switches of `ChatOptions` (`enableOppoPush`, `enableMiPush`, `enableMeiZuPush`, `enableFCM`, `enableVivoPush`, `enableHWPush`, `enableAPNs`, `enableHonorPush`) are replaced by `ChatPushManager.bindDeviceToken`;
+  - `ChatOptions` no longer serializes the `pushConfig` field (the native reading branch is unchanged);
+  - Deleted the `ChatPushConfig` class and its file `lib/src/internal/chat_push_config.dart`: it only served the push switches above and was removed together with them; the `EMPushConfig` typedef pointing to it in `em_compat.dart` was deleted accordingly;
+  - The remaining `EM*` compatibility typedefs in `em_compat.dart` and the default `ChatOptions` constructor are kept this time;
+
+#### Other Signature Changes
+
+- Completed two public signatures previously inferred implicitly as dynamic: `ChatError.hasErrorFromResult` returns `void` and `ChatPageResult.pageCount` returns `int?` (code relying on dynamic invocation needs to be adjusted accordingly);
+
+### New Features
+
+- Added post-login data sync configuration, data sync events, and the database-opened event: `ChatDataSyncType`, `ChatOptions.dataSyncType`, and `ConnectionEventHandler.onDataSyncStart`/`onDataSyncFinish`/`onDatabaseOpened`;
+- `ChatMultiDevicesEvent` added `GROUP_UPDATE` (the iOS group info update event);
+- `ChatConversation` added read-only `name` and `avatar`; `modifyMessage` added an optional `attributes`;
+
+### Improvements
+
+- Batch read receipts are no longer pre-validated by the wrapper: when `sendMessageReadReceipts`/`getGroupMessageReadReceipts` encounter a messageId that cannot be resolved to a local message, that entry is skipped (previously Android returned 1 GENERAL_ERROR for the whole batch and iOS returned 500 MESSAGE_INVALID); success is now determined by the native SDK, and when the whole batch cannot be resolved, the native 110 INVALID_PARAM is returned;
+- Paged group message read receipt results now include a `totalCount` field (the iOS wrapper previously did not pass it down; fixed), and the Dart-side `ChatCursorResult` gained a nullable `totalCount` to carry it;
+- `getUnreadMessageCount` no longer counts chat rooms, threads, and do-not-disturb conversations;
+
+### Bug Fixes
+
+- Fixed multi-device event mapping: filled in the missing group allowlist and muting-all-members events (native 30-33), corrected the swapped thread update/kick events (native 44/45), and unknown event values no longer throw during event handling;
+- Fixed an issue where `onUserAuthenticationFailed` was incorrectly forwarded as `onDisconnected`;
+- Fixed an issue where iOS did not report reaching the active-count limit (reason code 8);
 
 ## 4.24.0
-- 新增服务端消息搜索 `searchMessagesFromServer` API；
-- `ChatMessage` 新增 `webhookEnv` 属性，支持消息回调路由环境标识；
-- `ChatOptions` 新增 `ntpServers` 配置项，支持自定义 NTP 服务器；
-- iOS/Android 依赖 SDK 升级到 4.24.1；
+
+- Added the server-side message search `searchMessagesFromServer` API;
+- `ChatMessage` added the `webhookEnv` property, supporting environment identifiers for message callback routing;
+- `ChatOptions` added the `ntpServers` option, supporting custom NTP servers;
+- Upgraded the iOS/Android native SDK dependencies to 4.24.1;
 
 ## 4.22.0
-- 安卓依赖 SDK 升级到 4.22.1；
-- iOS依赖 SDK 升级到 4.22.2；
-- 公开 API 命名统一为 `Chat` 前缀，与海外版 agora_chat_sdk 对齐：
-  - 原 `EM` 前缀的类、枚举等公开名字统一改名，如 `EMClient` → `ChatClient`、`EMOptions` → `ChatOptions`、`EMMessage` → `ChatMessage`；
-  - 旧名字通过 `em_compat.dart` 中以 `@Deprecated` 标记的 typedef 保留，现有代码无需修改即可继续编译运行，建议逐步迁移到新名字，旧名字将在未来大版本移除；
-  - 少量无法 typedef 的名字直接改名、不兼容：`EMLog` → `ChatLog`、`EMTools` → `ChatTools`、`EMGroupPermissionTypeExtension` → `ChatGroupPermissionTypeExtension`；
-  - 深路径导入（如 `package:im_flutter_sdk/src/models/em_options.dart`）不再兼容，请统一从包入口 `package:im_flutter_sdk/im_flutter_sdk.dart` 导入；
-- iOS 支持 Swift Package Manager 集成，与 CocoaPods 方式并存：
-  - iOS 插件源码迁移至 `Sources/im_flutter_sdk_ios` 目录，CocoaPods 与 SPM 共用同一份源码；
-  - SPM 方式集成时，原生 SDK 通过 Swift 包 `HyphenateChat_iOS`（4.22.2）依赖；
-  - iOS 最低支持版本提升至 13.0；
-- 新增图片消息原图（大图）下载 `downloadBigImage` API；
-- 新增语音转文字 `voiceMessageToText` 和 `voiceFileToText` API；
-- `ChatMessage` 新增消息发送者信息 `senderInfo`；
-- `ChatImageMessageBody` 新增原图（大图）字段 `bigImageLocalPath`、`bigImageRemotePath` 和 `bigImageDownloadStatus`；
-- `ChatVoiceMessageBody` 新增语音转换文本 `text` 字段；
-- 新增群名片 `updateGroupNamecard`、`getGroupNamecard` API 及群名片变更事件 `onUserGroupNamecardChanged`；
-- `GroupMemberInfo` 新增群成员名片 `namecard`、昵称 `nickname` 和头像 `avatarUrl` 字段；
-- `ChatContact` 新增用户属性 `userInfo` 和添加时间 `addTimestamp` 字段；
-- 新增联系人同步事件 `onContactSyncStart`、`onContactSyncFinish` 和联系人信息更新事件 `onContactInfoUpdate`；
-- 新增用户属性订阅 `subscribeUsersInfo`、`unsubscribeUsersInfo`、`fetchSubscribedUsers` 和 `getLocalUserInfoByIds` API；
-- 新增用户属性更新事件 `onSelfUserInfoUpdate` 和 `onUserInfoUpdate`；
-- `ChatOptions` 新增 `enableUserInfo` 和 `enableAutoSyncContacts` 配置项；
+
+- Upgraded the Android native SDK dependency to 4.22.1;
+- Upgraded the iOS native SDK dependency to 4.22.2;
+- Unified public API naming with the `Chat` prefix, aligned with the overseas agora_chat_sdk:
+  - Public names with the old `EM` prefix (classes, enums, etc.) were renamed uniformly, e.g. `EMClient` → `ChatClient`, `EMOptions` → `ChatOptions`, `EMMessage` → `ChatMessage`;
+  - Old names are kept as `@Deprecated`-marked typedefs in `em_compat.dart`; existing code continues to compile and run unchanged, but gradual migration to the new names is recommended, as the old names will be removed in a future major version;
+  - A few names that cannot be typedef'd were renamed directly in an incompatible way: `EMLog` → `ChatLog`, `EMTools` → `ChatTools`, `EMGroupPermissionTypeExtension` → `ChatGroupPermissionTypeExtension`;
+  - Deep-path imports (e.g. `package:im_flutter_sdk/src/models/em_options.dart`) are no longer compatible; import everything from the package entry `package:im_flutter_sdk/im_flutter_sdk.dart`;
+- iOS supports Swift Package Manager integration, coexisting with CocoaPods:
+  - The iOS plugin sources were migrated to the `Sources/im_flutter_sdk_ios` directory, with CocoaPods and SPM sharing the same sources;
+  - With SPM integration, the native SDK is depended on via the Swift package `HyphenateChat_iOS` (4.22.2);
+  - The minimum supported iOS version was raised to 13.0;
+- Added the `downloadBigImage` API for downloading the original (big) image of an image message;
+- Added the voice-to-text APIs `voiceMessageToText` and `voiceFileToText`;
+- `ChatMessage` added message sender information `senderInfo`;
+- `ChatImageMessageBody` added the original (big) image fields `bigImageLocalPath`, `bigImageRemotePath`, and `bigImageDownloadStatus`;
+- `ChatVoiceMessageBody` added the voice transcription `text` field;
+- Added the group namecard APIs `updateGroupNamecard`, `getGroupNamecard` and the group namecard change event `onUserGroupNamecardChanged`;
+- `GroupMemberInfo` added the group member namecard `namecard`, nickname `nickname`, and avatar `avatarUrl` fields;
+- `ChatContact` added the user attributes `userInfo` and add-time `addTimestamp` fields;
+- Added the contact sync events `onContactSyncStart`, `onContactSyncFinish` and the contact info update event `onContactInfoUpdate`;
+- Added the user attributes subscription APIs `subscribeUsersInfo`, `unsubscribeUsersInfo`, `fetchSubscribedUsers`, and `getLocalUserInfoByIds`;
+- Added the user attributes update events `onSelfUserInfoUpdate` and `onUserInfoUpdate`;
+- `ChatOptions` added the `enableUserInfo` and `enableAutoSyncContacts` options;
 
 ## 4.19.3
-- 修复 Flutter iOS 上调用 `getUnreadMessageCount` 时将聊天室未读消息一并计算的问题；
+
+- Fixed an issue where calling `getUnreadMessageCount` on Flutter iOS also counted unread chat room messages;
 
 ## 4.19.2
-- 安卓依赖 SDK 升级到 4.19.3.1；
-- 修复 Flutter Android 上发送视频没有设置首帧缩略图时无法发送的问题；
-- 新增 iOS Swift Package Manager 集成支持；
+
+- Upgraded the Android native SDK dependency to 4.19.3.1;
+- Fixed an issue where videos could not be sent on Flutter Android when no first-frame thumbnail was set;
+- Added iOS Swift Package Manager integration support;
 
 ## 4.19.1
-- 安卓依赖 SDK 升级到 4.19.2；
-- 修复 Flutter Android 上大文件无法进行分片上传的问题；
+
+- Upgraded the Android native SDK dependency to 4.19.2;
+- Fixed an issue where large files could not be uploaded in chunks on Flutter Android;
 
 ## 4.19.0
-- 安卓依赖 SDK 升级到 4.19.1；
-- iOS依赖 SDK 升级到 4.19.1；
-- 支持接收流式消息；
-- 修复 `loadConversationMessagesWithKeyword` 和 `getAllMessageCount` 没有被包含在EMChatManager中的问题；
+
+- Upgraded the Android native SDK dependency to 4.19.1;
+- Upgraded the iOS native SDK dependency to 4.19.1;
+- Support receiving streaming messages;
+- Fixed an issue where `loadConversationMessagesWithKeyword` and `getAllMessageCount` were not included in EMChatManager;
 
 ## 4.18.1
-- 修复群组事件 `onGroupMembersJoined和onGroupMembersExited` 触发了错误的回调；
+
+- Fixed the group events `onGroupMembersJoined和onGroupMembersExited` triggering the wrong callbacks;
 
 ## 4.18.0
-- 安卓依赖 SDK 升级到 4.18.1；
-- iOS依赖 SDK 升级到 4.18.1；
-- 底层支持安全 DNS 解析 DoH，提高连通性；
+
+- Upgraded the Android native SDK dependency to 4.18.1;
+- Upgraded the iOS native SDK dependency to 4.18.1;
+- The underlying layer supports secure DNS resolution (DoH), improving connectivity;
 
 ## 4.17.0
-- 安卓依赖 SDK 升级到 4.17.1；
-- iOS依赖 SDK 升级到 4.17.1；
-- 长连接支持 WebSocket 协议；
-- 私有化部署底层链路支持 TCP 和 WebSocket 之间切换；
+
+- Upgraded the Android native SDK dependency to 4.17.1;
+- Upgraded the iOS native SDK dependency to 4.17.1;
+- The persistent connection supports the WebSocket protocol;
+- The underlying link of private deployment supports switching between TCP and WebSocket;
 
 ## 4.16.0
-- 安卓依赖 SDK 升级到 4.16.1；
-- iOS依赖 SDK 升级到 4.16.2；
-- 新增 `loadMessagesWithIds` API；
-- 修复 `Thread` 子区会被加入到 `conversation` 列表中；
-- 修复 当修改文本和自定义消息之外的消息时，`EEMChatEventHandler#onMessageContentChanged` 回调中不返回修改的信息的问题；
-- 修复 拉取漫游消息时，设置为不保存消息 `FetchMessageOptions#needSave 设置为 false`，也会生成新的本地会话的问题；
-- 修复 群组或聊天室解散后，成员收到回调后，仍然会从服务器获取群组或聊天室详情的问题；
-- 修复 更新群组属性时影响群组头像问题；
-- 更新 `AOSL` 库版本为 1.3.0；
-- 支持私有部署时设置 `IPv6` 格式的 REST 地址；
+
+- Upgraded the Android native SDK dependency to 4.16.1;
+- Upgraded the iOS native SDK dependency to 4.16.2;
+- Added the `loadMessagesWithIds` API;
+- Fixed `Thread` threads being added to the `conversation` list;
+- Fixed an issue where, when modifying messages other than text and custom messages, the modified information was not returned in the `EEMChatEventHandler#onMessageContentChanged` callback;
+- Fixed an issue where pulling roaming messages with saving disabled (`FetchMessageOptions#needSave set to false`) still generated a new local conversation;
+- Fixed an issue where, after a group or chat room was dissolved, members still fetched the group or chat room details from the server after receiving the callback;
+- Fixed an issue where updating group attributes affected the group avatar;
+- Updated the `AOSL` library version to 1.3.0;
+- Support setting REST addresses in `IPv6` format for private deployment;
 
 ## 4.15.2
-- 修复被登出时,返回220的错误码无法触发回调的问题；
-- 修复 `fetchReactionDetail` 获取不存在的Reaction时崩溃的问题；
-- 新增 `getCurrentDeviceId` API；
-- 新增 `loadConversationMessagesWithKeyword` API；
-- 修复安卓上频繁调用 `EMConversation` 中的 API 时, 导致的ANR问题；
 
+- Fixed an issue where the 220 error code returned when logged out could not trigger the callback;
+- Fixed a crash when `fetchReactionDetail` fetched a nonexistent Reaction;
+- Added the `getCurrentDeviceId` API;
+- Added the `loadConversationMessagesWithKeyword` API;
+- Fixed an ANR issue on Android caused by frequently calling the APIs in `EMConversation`;
 
 ## 4.15.1
 
-- 修复 `updatePushNickname` 在未登录和参数异常时导致的崩溃问题；
-- 修复 `fetchChatroomInfoFromServer` 在取消`fetchMembers`参数后导致的崩溃问题；
-- 修复 `modifyMessage` 在传入消息体为空时导致的崩溃问题；
+- Fixed a crash caused by `updatePushNickname` when not logged in or when parameters were invalid;
+- Fixed a crash caused by `fetchChatroomInfoFromServer` after the `fetchMembers` parameter was removed;
+- Fixed a crash caused by `modifyMessage` when an empty message body was passed;
 
 ## 4.15.0
 
-- 安卓依赖 SDK 升级到 4.15.0；
-- iOS以来 SDK 升级到 4.15.0；
-- 支持 Gif 图片消息；
-- 支持 群头像功能；
-- 支持 消息附件鉴权，该功能需要联系商务开通，开通后必须调用 SDK 的 API 才能下载消息附件。
-- 支持 拉取漫游消息时，只拉取指定的群成员发送的消息；
-- 支持 加载本地会话消息时，只加载指定群成员发送的消息；
-- 支持 获取群成员信息 时包括成员加群时间；
-- 修复 安卓获取自己的群成员属性时解释失败的问题；
-- 修复 `ChatRoomEventHandler#onRemovedFromChatRoom` 不执行；
-- 新增 `onMembersJoinedFromGroup` 和 `onMembersExitedFromGroup` 回调，`onMemberJoinedFromGroup` 和 `onMemberExitedFromGroup` 标记过期；
-- 新增 `EMGroupManager#updateGroupName` 和 `EMGroupManager#updateGroupDesc`方法，标记 `EMGroupManager#changeGroupName` 和 `EMGroupManager#changeGroupDescription` 方法过期;
+- Upgraded the Android native SDK dependency to 4.15.0;
+- Upgraded the iOS native SDK dependency to 4.15.0;
+- Support GIF image messages;
+- Support the group avatar feature;
+- Support message attachment authentication. This feature requires contacting business to enable; once enabled, message attachments can only be downloaded by calling the SDK API.
+- Support pulling only messages sent by specified group members when pulling roaming messages;
+- Support loading only messages sent by specified group members when loading local conversation messages;
+- Support including the member's join time when getting group member information;
+- Fixed a parsing failure when getting one's own group member attributes on Android;
+- Fixed `ChatRoomEventHandler#onRemovedFromChatRoom` not being invoked;
+- Added the `onMembersJoinedFromGroup` and `onMembersExitedFromGroup` callbacks; `onMemberJoinedFromGroup` and `onMemberExitedFromGroup` are marked as deprecated;
+- Added the `EMGroupManager#updateGroupName` and `EMGroupManager#updateGroupDesc` methods; the `EMGroupManager#changeGroupName` and `EMGroupManager#changeGroupDescription` methods are marked as deprecated;
 
 ## 4.13.0+1
 
-- 修复收到 `onAnnouncementChangedFromChatRoom` 回调时，`announcement` 为空导致的崩溃问题。
-- 修复收到 `onAnnouncementChangedFromGroup` 回调时，`announcement` 为空导致的崩溃问题。
-- 增加 `EMMultiDevicesEvent.UnKnow` 类型，防止新增多设备事件时无法解析；
+- Fixed a crash caused by an empty `announcement` when receiving the `onAnnouncementChangedFromChatRoom` callback.
+- Fixed a crash caused by an empty `announcement` when receiving the `onAnnouncementChangedFromGroup` callback.
+- Added the `EMMultiDevicesEvent.UnKnow` type to prevent failures to parse newly added multi-device events;
 
 ## 4.13.0
 
-### 新增特性
+### New Features
 
-- 发送后修改消息接口 `EMChatManager#modifyMessage` 支持修改各类消息:
-  - 文本/自定义消息：支持修改消息内容（body）和扩展 `attributes`;
-  - 文件/视频/音频/图片/位置/合并转发消息：只支持修改消息扩展 `attributes`。
-  - 命令消息：不支持修改。
-- 新增 `ExtSettings.kDisableIosEnterBackground` 控制项，可控制 iOS 后台的行为和使用方式，详见[初始化文档]([initialization.html](https://doc.easemob.com/document/flutter/initialization.html))。
+- The send-then-modify message API `EMChatManager#modifyMessage` supports modifying various message types:
+  - Text/custom messages: support modifying the message content (body) and the extension `attributes`;
+  - File/video/audio/image/location/combined-forward messages: only support modifying the message extension `attributes`.
+  - Command messages: modification not supported.
+- Added the `ExtSettings.kDisableIosEnterBackground` control, which controls the behavior and usage of iOS in the background; see the [initialization document]([initialization.html](https://doc.easemob.com/document/flutter/initialization.html)) for details.
 
-#### 优化
+#### Optimizations
 
-- 优化重连逻辑，默认切换重连的地址。
-- 使用联合插件的形式重写 SDK；
-- 升级 iOS 依赖库为 4.13.0 版本;
-- 升级 Android 依赖库为 4.13.0 版本;
+- Optimized the reconnection logic, switching reconnection addresses by default.
+- Rewrote the SDK in a federated plugin form;
+- Upgraded the iOS dependency library to 4.13.0;
+- Upgraded the Android dependency library to 4.13.0;
 
-### 问题修复
+### Bug Fixes
 
-- 修复 `EMChatManager#fetchConversation` 方法拉取到的会话最新一条消息不包含表情回复（Reaction）和翻译信息的问题。
-
+- Fixed an issue where the latest message of a conversation fetched by the `EMChatManager#fetchConversation` method did not include reactions (Reaction) or translation information.
 
 ## 4.12.1
 
-- 修复 安卓 `EMConversation.marks` 获取不到的问题；
-- 修复 安卓 `EMGroupManager.fetchMemberAttributes` 获取不准的问题；
-- 修复 聊天室/群组 收到的 announcement 回调为空时的崩溃问题；
-- 修复 图片/视频 消息的缩略图状态；
-- 添加 更新消息 `updateMessage` 时如消息不存在的异常抛出；
-- 添加 获取自己是否在聊天室禁言列表中的api `EMChatRoomManager.isMemberInChatRoomMuteList`;
+- Fixed `EMConversation.marks` being unavailable on Android;
+- Fixed inaccurate results of `EMGroupManager.fetchMemberAttributes` on Android;
+- Fixed a crash when the announcement callback received in chat rooms/groups was empty;
+- Fixed the thumbnail status of image/video messages;
+- Added exception throwing when `updateMessage` is called with a nonexistent message;
+- Added the API `EMChatRoomManager.isMemberInChatRoomMuteList` to check whether the current user is in the chat room mute list;
 
 ## 4.12.0
 
-#### 新增特性
+#### New Features
 
-- [IM SDK] 用户加入聊天室后会收到如下信息，即调用 joinChatroom 方法后的成功回调中会包含如下信息：
-  1. 聊天室当前人数 EMChatRoom#memberCount
-  2. 聊天室全体禁言状态 EMChatRoom#isAllMemberMuted
-  3. 聊天室创建时间戳 EMChatRoom#createTimestamp，新增属性。
-  4. 当前用户是否在聊天室白名单中 EMChatRoom#isInWhitelist。该属性为新增属性，成员收到白名单变更回调时更新。
-  5. 当前用户被禁言截止时间戳 EMChatRoom#muteExpireTimestamp。该属性为新增属性，成员收到禁言变更回调时更新。
-
+- [IM SDK] After joining a chat room, the user receives the following information, i.e. the success callback after calling the joinChatroom method contains:
+  1. Current chat room member count EMChatRoom#memberCount
+  2. Chat room all-member mute status EMChatRoom#isAllMemberMuted
+  3. Chat room creation timestamp EMChatRoom#createTimestamp, a new property.
+  4. Whether the current user is in the chat room allowlist EMChatRoom#isInWhitelist. This is a new property, updated when the member receives an allowlist change callback.
+  5. The timestamp when the current user's mute expires EMChatRoom#muteExpireTimestamp. This is a new property, updated when the member receives a mute change callback.
 
 ## 4.11.0
 
-- 修改 `EMChatRoomEventHandler#onMuteListAddedFromChatRoom` 参数；
+- Modified the parameters of `EMChatRoomEventHandler#onMuteListAddedFromChatRoom`;
 
 ## 4.10.1
 
-- 修复 安卓安装环境下 `fetchHistoryMessagesByOption` 方向不准确的问题；
-
+- Fixed inaccurate direction of `fetchHistoryMessagesByOption` in Android installation environments;
 
 ## 4.10.0
 
-- 修复 `fetchSilentModeForConversations` 方法获取会话的免打扰状态失败的问题。
-- 修复 ios `applicationDidEnterBackground` 和 `applicationWillEnterForeground` 不执行的问题。
+- Fixed a failure of the `fetchSilentModeForConversations` method to get the do-not-disturb status of conversations.
+- Fixed `applicationDidEnterBackground` and `applicationWillEnterForeground` not being invoked on iOS.
 
 ## 4.8.2+1
 
-- 修复安卓端可能出现的消息格式转换失败;
+- Fixed possible message format conversion failures on Android;
 
 ## 4.8.2
 
-#### 修复
+#### Fixed
 
-- 修复 ios `EMChatManager.searchMsgsByOptions`, `EMConversation.searchMsgsByOptions` 方法类型不准的问题；
+- Fixed inaccurate types of the iOS `EMChatManager.searchMsgsByOptions` and `EMConversation.searchMsgsByOptions` methods;
 
 ## 4.8.1+1
 
-#### 新增特性
+#### New Features
 
-- 新增 `EMChatRoomManager.joinChatRoom(String roomId, {bool leaveOther = true,String? ext,})` 方法，支持设置加入聊天室时携带的扩展信息，并指定是否退出所有其他聊天室。
-- 新增 `EMChatRoomEventHandler.onMemberJoinedFromChatRoom(String roomId, String participant, String? ext)` 回调，当用户加入聊天室携带了扩展信息时，聊天室内其他人可以在用户加入聊天室的回调中，获取到扩展信息。
-- 新增 `EMPushManager.syncConversationsSilentMode()` 方法，支持从服务器获取所有会话的推送通知方式的设置。
-- 新增 `EMPushManager.bindDeviceToken(String notifierName, String deviceToken)` 方法。
-- 新增 `EMConversation.remindType()` 方法，用于本地存储会话的推送通知方式。
-- 新增 `EMConversation.getLocalMessageCount()` 方法，获取指定时间范围内本地数据库中的消息数量。
-- 新增 `LoginExtensionInfo` 用户设备扩展信息。
-- 新增 `EMOptions.loginExtension` 设置登录时携带的扩展信息。
-- 新增 `EMChatManager.searchMsgsByOptions` 根据单个或多个消息类型，搜索本地数据库中所有会话的消息。
-- 新增 `EMConversation.searchMsgsByOptions` 根据单个或多个消息类型，搜索本地数据库中所有会话的消息。
+- Added the `EMChatRoomManager.joinChatRoom(String roomId, {bool leaveOther = true,String? ext,})` method, supporting carrying extension information when joining a chat room and specifying whether to leave all other chat rooms.
+- Added the `EMChatRoomEventHandler.onMemberJoinedFromChatRoom(String roomId, String participant, String? ext)` callback. When a user joins a chat room with extension information, other members in the chat room can get the extension information in the user-joined callback.
+- Added the `EMPushManager.syncConversationsSilentMode()` method, supporting fetching the push notification settings of all conversations from the server.
+- Added the `EMPushManager.bindDeviceToken(String notifierName, String deviceToken)` method.
+- Added the `EMConversation.remindType()` method for locally storing the push notification mode of a conversation.
+- Added the `EMConversation.getLocalMessageCount()` method, which gets the number of messages in the local database within a specified time range.
+- Added the `LoginExtensionInfo` user device extension information.
+- Added `EMOptions.loginExtension` to set the extension information carried at login.
+- Added `EMChatManager.searchMsgsByOptions` to search messages of all conversations in the local database by one or more message types.
+- Added `EMConversation.searchMsgsByOptions` to search messages of all conversations in the local database by one or more message types.
 
 
 
-#### 优化
+#### Optimizations
 
-- 支持 AUT 协议， 优化弱网环境下的服务连接成功率;
-- `updateHMSPushToken`、`updateFCMPushToken`、`updateAPNsDeviceToken` 方法过期，`EMOptions` 中的 `enableOppoPush`、`enableMiPush`、`enableMeiZuPush`、`enableFCM`、`enableVivoPush`、`enableHWPush`、`enableAPNs`、`enableHonorPush` 过期， 使用 `EMPushManager.bindDeviceToken` 代替；
-- 修改 `EMConnectionEventHandler.onUserDidLoginFromOtherDevice(String deviceName)` 方法为 `EMConnectionEventHandler.onUserDidLoginFromOtherDevice(LoginExtensionInfo info)`
+- Support the AUT protocol, improving the service connection success rate under weak network conditions;
+- The `updateHMSPushToken`, `updateFCMPushToken`, and `updateAPNsDeviceToken` methods are deprecated; `enableOppoPush`, `enableMiPush`, `enableMeiZuPush`, `enableFCM`, `enableVivoPush`, `enableHWPush`, `enableAPNs`, and `enableHonorPush` in `EMOptions` are deprecated; use `EMPushManager.bindDeviceToken` instead;
+- Changed the `EMConnectionEventHandler.onUserDidLoginFromOtherDevice(String deviceName)` method to `EMConnectionEventHandler.onUserDidLoginFromOtherDevice(LoginExtensionInfo info)`
 
-#### 修复
+#### Fixed
 
-- 修复 `fetchConversationsByOptions` 偶尔引起的崩溃；
-- 修复拉黑联系人时缓存未及时更新的问题。
-- 修复退出登录再登录后推送可能不工作的问题。
-
+- Fixed occasional crashes caused by `fetchConversationsByOptions`;
+- Fixed an issue where the cache was not updated in time when blocking a contact.
+- Fixed an issue where push might not work after logging out and logging back in.
 
 ## 4.6.1+3
 
-#### 修复
-
-- 修复安卓线程池导致的oom问题。
+- Fixed an OOM issue caused by the Android thread pool.
 
 ## 4.6.1+2
 
-#### 优化
-
-- 安卓平台下 OPPO 推送更新至 oppo_push_3.5.2.aar。 OPPO 推送支持 REALME 类型设备。
-- 安卓平台下 vivo 推送更新至 vivo_push_v4.0.4.0_504.aar。
-- 安卓平台下 小米推送更新至 MiPush_SDK_Client_6_0_1-C_3rd.aar。
-- 安卓平台下 魅族推送更新至 com.meizu.flyme.internet:push-internal:4.3.0。
-
+- On Android, updated OPPO push to oppo_push_3.5.2.aar. OPPO push supports REALME devices.
+- On Android, updated vivo push to vivo_push_v4.0.4.0_504.aar.
+- On Android, updated Mi push to MiPush_SDK_Client_6_0_1-C_3rd.aar.
+- On Android, updated Meizu push to com.meizu.flyme.internet:push-internal:4.3.0.
 
 ## 4.6.1+1
 
-#### 优化
-
-- 优化链接问题
+- Optimized connection issues
 
 ## 4.6.1
 
-#### 优化
+#### Optimizations
 
-- recallMessage 方法增加 ext参数，支持消息撤回时携带自定义信息，类型为String；
-- 新增消息撤回事件 EMChatEventHandler#onMessagesRecalledInfo, 支持离线期间撤回的消息通知给接收方。
+- The recallMessage method added an ext parameter, supporting carrying custom information of type String when recalling a message;
+- Added the message recall event EMChatEventHandler#onMessagesRecalledInfo, supporting notifying the receiver of messages recalled while they were offline.
 
-#### 修复
+#### Fixed
 
-- 修复服务端获取好友列表（包含好友备注）时，在好友列表无变化时，第二次请求获取不到数据的问题。
-- 修复特殊情况下附件发送失败，消息仍然成功发送的问题。
-- 修复拉取漫游消息时 nextkey 错误的问题。
-- 修复安卓部分场景下，用户升级数据库后，在同一个进程下登录新的用户，构建数据库表失败的问题。
+- Fixed an issue where, when fetching the contact list (including contact remarks) from the server, the second request returned no data if the contact list had not changed.
+- Fixed an issue where, in special cases, attachment sending failed but the message was still sent successfully.
+- Fixed an incorrect nextkey when pulling roaming messages.
+- Fixed an issue on Android where, in some scenarios, after the user upgraded the database and then logged in a new user in the same process, building the database tables failed.
 
 ## 4.5.0
 
-#### 新增特性
+#### New Features
 
-- 新增 `EMChatManager#deleteAllMessageAndConversation` 方法，用于[清空当前用户的聊天记录](message_delete.html#清空聊天记录)，包括消息和会话，同时可以选择是否清除服务端的聊天记录。
-- 新增[根据搜索范围搜索消息](message.search.html#根据搜索范围搜索所有会话中的消息)：根据关键字搜索消息时，可以选择 `MessageSearchScope` 中的搜索范围。
-  - `MessageSearchScope`：包含三个消息搜索范围，即搜索消息内容、只搜索消息扩展信息以及同时搜索消息内容以及扩展信息。
-  - `EMChatManager#loadMessagesWithKeyword`：根据搜索范围搜索所有会话中的消息。
-  - `EMConversation#loadMessagesWithKeyword`：根据搜索范围搜索当前会话中的消息。
-- 支持[会话标记](conversation_mark.html)功能。
-  - `ConversationFetchOptions` 从服务器获取会话的选项，可以用来回去置顶会话或者是标记后的会话。
-  - `EMChatManager#addRemoteAndLocalConversationsMark`：标记会话。
-  - `EMChatManager#deleteRemoteAndLocalConversationsMark`：取消标记会话。
-  - `EMChatManager#fetchConversationsByOptions`：根据 `ConversationFetchOptions` 选项从服务器分页查询会话列表。
-  - `EMConversation#marks`：获取本地单个会话的所有标记。
-  - `EMChatMultiDevicesEvent#CONVERSATION_UPDATE_MARK`：多设备场景下的会话标记事件。当前用户在一台登录设备上更新了会话标记，包括添加和移除会话标记，其他登录设备会收到该事件。
-- 支持[聊天室漫游消息](message_retrieve.html#从服务器获取指定会话的历史消息)。
-- 新增 `EMChatOptions#useReplacedMessageContents` 开关。开启后，发送消息时如果被内容审核进行了内容替换，发送方可以收到替换后的内容。
-- 新增[置顶消息](message_pin.html)功能。
-  - 新增 `EMChatManager#pinMessage` 方法，用于置顶消息。
-  - 新增 `EMChatManager#unpinMessage` 方法，用于取消置顶消息。
-  - 新增 `EMChatManager#fetchPinnedMessages` 方法，从服务器获取指定会话的置顶消息。
-  - 新增 `EMConversation#loadPinnedMessages` 方法，返回会话下的所有置顶消息。
-  - 新增 `MessagePinInfo` 类，包含置顶以及取消置顶的操作者以及操作时间。
-  - 新增 `EMChatMessage#pinInfo` 方法，展示消息的置顶详情。
-  - 新增 `EMChatEventHandler#onMessagePinChanged` 事件。当用户在群组或聊天室会话进行置顶操作时，群组或聊天室中的其他成员会收到该回调。
-- 新增 `EMOptions#messagesReceiveCallbackIncludeSend` 开关。开启后，在 `EMChatEventHandler#onMessagesReceived` 回调里增加发送成功的消息。
-- 消息修改回调 `EMChatEventHandler#onMessageContentChanged` 中支持返回通过 RESTful API 修改的自定义消息。
+- Added the `EMChatManager#deleteAllMessageAndConversation` method for [clearing the current user's chat history](message_delete.html#清空聊天记录), including messages and conversations, with an option to also clear the server-side chat history.
+- Added [searching messages by search scope](message.search.html#根据搜索范围搜索所有会话中的消息): when searching messages by keyword, you can choose a search scope from `MessageSearchScope`.
+  - `MessageSearchScope`: contains three message search scopes — searching message content, searching only message extension information, and searching both message content and extension information.
+  - `EMChatManager#loadMessagesWithKeyword`: searches messages of all conversations by search scope.
+  - `EMConversation#loadMessagesWithKeyword`: searches messages of the current conversation by search scope.
+- Support the [conversation mark](conversation_mark.html) feature.
+  - `ConversationFetchOptions`: options for fetching conversations from the server, which can be used to get pinned conversations or marked conversations.
+  - `EMChatManager#addRemoteAndLocalConversationsMark`: marks conversations.
+  - `EMChatManager#deleteRemoteAndLocalConversationsMark`: unmarks conversations.
+  - `EMChatManager#fetchConversationsByOptions`: pages through the conversation list from the server according to the `ConversationFetchOptions` options.
+  - `EMConversation#marks`: gets all marks of a single local conversation.
+  - `EMChatMultiDevicesEvent#CONVERSATION_UPDATE_MARK`: the conversation mark event in multi-device scenarios. When the current user updates conversation marks, including adding and removing marks, on one logged-in device, other logged-in devices receive this event.
+- Support [chat room roaming messages](message_retrieve.html#从服务器获取指定会话的历史消息).
+- Added the `EMChatOptions#useReplacedMessageContents` switch. When enabled, if the content is replaced by content moderation when sending a message, the sender can receive the replaced content.
+- Added the [pinned messages](message_pin.html) feature.
+  - Added the `EMChatManager#pinMessage` method for pinning messages.
+  - Added the `EMChatManager#unpinMessage` method for unpinning messages.
+  - Added the `EMChatManager#fetchPinnedMessages` method to fetch the pinned messages of a specified conversation from the server.
+  - Added the `EMConversation#loadPinnedMessages` method, returning all pinned messages of the conversation.
+  - Added the `MessagePinInfo` class, containing the operator and time of pinning and unpinning.
+  - Added the `EMChatMessage#pinInfo` method, showing the pin details of a message.
+  - Added the `EMChatEventHandler#onMessagePinChanged` event. When a user performs a pin operation in a group or chat room conversation, other members of the group or chat room receive this callback.
+- Added the `EMOptions#messagesReceiveCallbackIncludeSend` switch. When enabled, successfully sent messages are also included in the `EMChatEventHandler#onMessagesReceived` callback.
+- The message modification callback `EMChatEventHandler#onMessageContentChanged` supports returning custom messages modified via the RESTful API.
 
-#### 优化
+#### Optimizations
 
-- 不再提供`EMChatManager#fetchConversation` 和 `EMChatManager#fetchPinnedConversations` 方法，使用 `EMChatManager#fetchConversationsByOptions` 方法替代。
-- 支持使用消息 body 完成[单条转发](message_forward.html)，无需重新上传附件。
-- 在部分场景下，降低接收到大量群成员事件通知时获取群组详情的次数。
-- 在[聊天室成员进出时更新聊天室成员人数](room_manage.html#实时更新聊天室成员人数)，使人数更新更及时准确。   
-- 优化 token 登录时的错误提示信息，使错误提示更精细。   
-- 优化将所有会话置为已读的时间。    
-- 优化 SDK 内部随机取服务器地址的逻辑，提升请求成功率。   
-- 优化进出聊天室超时时间。   
-- 优化部分场景下连接失败后重连的逻辑。  
-- 优化附件类型消息发送时中的附件上传，支持分片上传。    
-- 优化发消息时重试的逻辑。
-- Android/iOS SDK 移除网络请求时对 `NetworkOnMainThreadException` 异常的捕获。
-- 数据库升级逻辑优化。  
-- 单个日志文件大小由 2 MB 提升到 5 MB。
-- iOS 平台增加了隐私协议 `PrivacyInfo.xcprivacy`。
-- Android 平台适配 Android 14 Beta：适配以 Android 14 为目标平台时动态注册广播接收者必须设置 `RECEIVER_EXPORTED` 或者 `RECEIVER_NOT_EXPORTED` 的规定。
+- `EMChatManager#fetchConversation` and `EMChatManager#fetchPinnedConversations` are no longer provided; use the `EMChatManager#fetchConversationsByOptions` method instead.
+- Support [single-message forwarding](message_forward.html) using the message body, without re-uploading the attachment.
+- In some scenarios, reduced the number of group detail fetches when receiving large numbers of group member event notifications.
+- [Update the chat room member count when members join or leave](room_manage.html#实时更新聊天室成员人数), making the count updates more timely and accurate.
+- Optimized the error messages for token login, making them more precise.
+- Optimized the time taken to mark all conversations as read.
+- Optimized the SDK's internal logic for randomly picking server addresses, improving the request success rate.
+- Optimized the timeout for joining and leaving chat rooms.
+- Optimized the reconnection logic after connection failures in some scenarios.
+- Optimized attachment upload when sending attachment messages, supporting chunked upload.
+- Optimized the retry logic when sending messages.
+- The Android/iOS SDK removed the catch of the `NetworkOnMainThreadException` during network requests.
+- Optimized the database upgrade logic.
+- Increased the single log file size from 2 MB to 5 MB.
+- Added the privacy manifest `PrivacyInfo.xcprivacy` on the iOS platform.
+- Adapted to Android 14 Beta on the Android platform: adapted to the requirement that dynamically registered broadcast receivers must set `RECEIVER_EXPORTED` or `RECEIVER_NOT_EXPORTED` when targeting Android 14.
 
-#### 修复
+#### Fixed
 
-- 特殊场景下，SDK 退出后再登录会丢失聊天室监听事件问题。
-- 部分场景下群成员人数计算重复问题。
-- 修复数据上报模块偶现的崩溃问题。
-- 修复部分场景下调用 `EMChatManager#updateMessage` 方法更新消息时导致的崩溃问题。
+- Fixed an issue where, in special scenarios, chat room listener events were lost after the SDK exited and logged in again.
+- Fixed duplicate group member count calculation in some scenarios.
+- Fixed occasional crashes in the data reporting module.
+- Fixed crashes caused by calling the `EMChatManager#updateMessage` method to update messages in some scenarios.
 
 ## 4.2.1
 
-#### 新增
+#### Added
 
-- ios SDK 中增加了隐私协议 PrivacyInfo.xcprivacy;
+- Added the privacy manifest PrivacyInfo.xcprivacy to the iOS SDK;
 
-#### 修复
+#### Fixed
 
-- 修复偶现db问题；
-- 部分场景下群成员人数计算重复问题。
-- 修复合并转发附件可能重复上传问题；
-- 修复附件消息转发失败的问题；
-- 修复部分场景下 `EMChatManager#updateMessage` 消息更新导致的崩溃;
+- Fixed occasional db issues;
+- Fixed duplicate group member count calculation in some scenarios.
+- Fixed possible duplicate upload of combined-forward attachments;
+- Fixed attachment message forwarding failures;
+- Fixed crashes caused by `EMChatManager#updateMessage` message updates in some scenarios;
 
-#### 优化
+#### Optimizations
 
-- `login` 方法过期，使用 `loginWithToken` 方法和 `loginWithPassword` 方法代替；
-- 优化附件上传；
-- 减小安卓包体积；
-- 在部分场景下，降低接收到大量群成员事件通知时获取群组详情的次数;
-- 在聊天室成员进出时更新聊天室成员人数，使人数更新更及时准确;
-- 优化 token 登录时的错误提示信息，使错误提示更精细;
-- 优化 SDK 内部随机取服务器地址的逻辑，提升请求成功率;
-- 优化 SDK 内部随机取服务器地址的逻辑，提升请求成功率;
-- 加入聊天室时，若传入的聊天室 ID 不存在，可实现自动创建聊天室;
-- 支持获取聊天室漫游消息;
-- 优化聊天室进出的超时时间;
-- 部分场景下连接失败重连的优化;
-
+- The `login` method is deprecated; use the `loginWithToken` and `loginWithPassword` methods instead;
+- Optimized attachment upload;
+- Reduced the Android package size;
+- In some scenarios, reduced the number of group detail fetches when receiving large numbers of group member event notifications;
+- Update the chat room member count when members join or leave, making the count updates more timely and accurate;
+- Optimized the error messages for token login, making them more precise;
+- Optimized the SDK's internal logic for randomly picking server addresses, improving the request success rate;
+- Optimized the SDK's internal logic for randomly picking server addresses, improving the request success rate;
+- When joining a chat room, if the passed chat room ID does not exist, the chat room can be created automatically;
+- Support fetching chat room roaming messages;
+- Optimized the timeout for joining and leaving chat rooms;
+- Optimized reconnection after connection failures in some scenarios;
 
 ## 4.2.0
 
-#### 新增
+#### Added
 
-- 增加 设置好友备注功能。
-- 增加 `EMContactManager#fetchContacts` 和 `EMContactManager#fetchAllContacts` 方法分别从服务器一次性和分页获取好友列表，每个好友对象包含好友的用户 ID 和好友备注。
-- 增加 `EMContactManager#getContact` 方法从本地获取单个好友的用户 ID 和好友备注。
-- 增加 `EMContactManager#getAllContacts` 方法从本地分页获取好友列表，每个好友对象包含好友的用户 ID 和好友备注。
-- 增加 `EMMessage#isBroadcast` 属性用于判断通过该消息是否为聊天室全局广播消息。可通过调用 REST API 发送聊天室全局广播消息。
-- 增加 `EMGroupManager#fetchJoinedGroupCount` 方法用于从服务器获取当前用户已加入的群组数量。
-- 增加 错误码 `706` 表示聊天室所有者不允许离开聊天室。若初始化时，`EMOptions#isChatRoomOwnerLeaveAllowed` 参数设置为 false，聊天室所有者调用 `EMChatRoomManager#leaveChatroom` 方法离开聊天室时会提示该错误。
-- 增加 `EMOptions#enableEmptyConversation` 属性用于在初始化时配置获取会话列表时是否允许返回空会话。
-- 增加 申请入群被拒绝的回调 `EMGroupEventHandler#onRequestToJoinDeclinedFromGroup` 中新增 decliner 和 applicant 参数表示申请者和拒绝者的用户 ID。
+- Added the contact remark feature.
+- Added the `EMContactManager#fetchContacts` and `EMContactManager#fetchAllContacts` methods to fetch the contact list from the server all at once or paged; each contact object contains the contact's user ID and remark.
+- Added the `EMContactManager#getContact` method to get a single contact's user ID and remark locally.
+- Added the `EMContactManager#getAllContacts` method to page through the contact list locally; each contact object contains the contact's user ID and remark.
+- Added the `EMMessage#isBroadcast` property to determine whether the message is a chat room global broadcast message. Chat room global broadcast messages can be sent by calling the REST API.
+- Added the `EMGroupManager#fetchJoinedGroupCount` method to fetch the number of groups the current user has joined from the server.
+- Added error code `706` indicating that the chat room owner is not allowed to leave the chat room. If `EMOptions#isChatRoomOwnerLeaveAllowed` is set to false at initialization, the chat room owner gets this error when calling the `EMChatRoomManager#leaveChatroom` method to leave the chat room.
+- Added the `EMOptions#enableEmptyConversation` property to configure at initialization whether empty conversations may be returned when fetching the conversation list.
+- Added the decliner and applicant parameters to the join-request-declined callback `EMGroupEventHandler#onRequestToJoinDeclinedFromGroup`, representing the user IDs of the decliner and the applicant.
 
-#### 优化
+#### Optimizations
 
-- 统一 Agora Token 和 EaseMob Token 登录方式，原 `EMClient#login` 方法废弃，使用 `EMClient#loginWithToken` 和 `EMClient#loginWithPassword` 方法代替。此外，新增 EaseMob Token 即将过期及已过期的回调，即 EaseMob Token 已过期或有效期过半时也返回 `EMConnectionEventHandler#onTokenDidExpire` 和 `EMClientDelegate#onTokenWillExpire` 回调。
+- Unified the Agora Token and EaseMob Token login methods; the original `EMClient#login` method is deprecated, replaced by the `EMClient#loginWithToken` and `EMClient#loginWithPassword` methods. In addition, callbacks for the EaseMob Token being about to expire and already expired were added: the `EMConnectionEventHandler#onTokenDidExpire` and `EMClientDelegate#onTokenWillExpire` callbacks are also returned when the EaseMob Token has expired or half of its validity has passed.
 
-#### 修复
+#### Fixed
 
-- 修复网络恢复时重连 2 次的问题。
-- 修复未登录时调用 leaveChatroom 方法返回的错误提示不准确。
+- Fixed reconnecting twice when the network recovered.
+- Fixed inaccurate error messages returned when calling the leaveChatroom method while not logged in.
 
 ## 4.1.3
 
-#### 新增
+#### Added
 
-- 支持 安卓 14;
-- 新增 开启 荣耀推送开关 `EMOptions#enableHonorPush` 方法；
+- Support Android 14;
+- Added the method `EMOptions#enableHonorPush` to enable the Honor push switch;
 
-#### 修复
+#### Fixed
 
-- 修复调用 `EMChatManager#getThreadConversation` 报错；
-- 修复 `EMMessage#chatThread` 方法报错;
-- 修复 `EMChatRoomEventHandler#onSpecificationChanged` 回调不执行。
-- 修复 `EMChatThreadManager#fetchChatThreadMembers` 崩溃。
-- 修复特殊场景下，安卓平台退出后再登录会丢失聊天室监听事件问题。
-- 修复修改消息后，离线用户上线后拉取历史消息，消息体中缺乏 from 属性的问题。
+- Fixed an error when calling `EMChatManager#getThreadConversation`;
+- Fixed an error in the `EMMessage#chatThread` method;
+- Fixed the `EMChatRoomEventHandler#onSpecificationChanged` callback not being invoked.
+- Fixed a crash in `EMChatThreadManager#fetchChatThreadMembers`.
+- Fixed an issue where, in special scenarios, chat room listener events were lost on the Android platform after exiting and logging in again.
+- Fixed an issue where, after a message was modified, the message body lacked the from attribute when offline users came online and pulled history messages.
 
 ## 4.1.0
 
-#### 新增：
-- 增加 `EMOptions#osType`属性和`EMOptions#deviceName`属性，用户设置设备类型和设备名称；
-- 增加 `Combine` 消息类型，用于合并转发消息；
-- 增加 `EMChatManager#fetchCombineMessageDetail` 方法;
-- 增加 `EMChatManager#modifyMessage` 方法用户修改已发送的消息，目前只支持文本消息消息;
-- 增加 `EMChatEventHandler#onMessageContentChanged` 回调，用户监听消息编辑实现；
-- 增加 `EMClient#fetchLoggedInDevices` 方法，可是使用token获取已登录的设备列表；
-- 增加 `EMClient#kickDevice` 方法，可以使用 token 踢掉指定设备；
-- 增加 `EMClient#kickAllDevices` 方法，可以使用 token 踢掉所有已登录设备；
-- 增加 `EMChatManager#fetchConversation` 方法，获取服务器会话列表，原方法 `EMChatManager#getConversationsFromServer` 作废；
-- 增加 `EMChatManager#pinConversation` 方法，实现在服务器会话列表中 置顶/取消置顶 会话；
-- 增加 `hatManager#fetchPinnedConversations` 方法，从服务器获取已置顶会话；
-- 增加 `EMMessage#receiverList` 属性，用于在群组/聊天室中发送定向消息；
+#### Added:
+- Added the `EMOptions#osType` and `EMOptions#deviceName` properties for users to set the device type and device name;
+- Added the `Combine` message type for combined-forward messages;
+- Added the `EMChatManager#fetchCombineMessageDetail` method;
+- Added the `EMChatManager#modifyMessage` method for users to modify sent messages; currently only text messages are supported;
+- Added the `EMChatEventHandler#onMessageContentChanged` callback for users to listen for message edit implementations;
+- Added the `EMClient#fetchLoggedInDevices` method, which can use a token to get the list of logged-in devices;
+- Added the `EMClient#kickDevice` method, which can use a token to kick a specified device;
+- Added the `EMClient#kickAllDevices` method, which can use a token to kick all logged-in devices;
+- Added the `EMChatManager#fetchConversation` method to get the server conversation list; the original method `EMChatManager#getConversationsFromServer` is deprecated;
+- Added the `EMChatManager#pinConversation` method to pin/unpin conversations in the server conversation list;
+- Added the `hatManager#fetchPinnedConversations` method to fetch pinned conversations from the server;
+- Added the `EMMessage#receiverList` property for sending targeted messages in groups/chat rooms;
 
-#### 修复：
-- 修复 ios 中无法收到 `EMConnectionEventHandler#onConnected` 和 `EMConnectionEventHandler#onDisconnected` 的问题；
-- 修复 安卓消息中，发送方`attributes` 中包含string类型，接收方变为int类型的问题；
+#### Fixed:
+- Fixed an issue where `EMConnectionEventHandler#onConnected` and `EMConnectionEventHandler#onDisconnected` could not be received on iOS;
+- Fixed an issue where, in Android messages, a string type in the sender's `attributes` became an int type on the receiver side;
 
-#### 优化：
-- 离开聊天室 `EMChatRoomEventHandler#onRemovedFromChatRoom` 回调中增加离开原因;
-- 被其他设备踢下线 `EMConnectionEventHandler#onUserDidLoginFromOtherDevice` 回调中增加操作人deviceName;
-
+#### Optimizations:
+- Added the leave reason to the `EMChatRoomEventHandler#onRemovedFromChatRoom` callback;
+- Added the operator's deviceName to the `EMConnectionEventHandler#onUserDidLoginFromOtherDevice` callback for being kicked offline by another device;
 
 ## 4.0.2
 
-#### 新增：
-- 增加 `EMGroupManager#setMemberAttributes` 方法，用于设置群成员属性；
-- 增加 `EMGroupManager#fetchMemberAttributes` 和 `GroupManager#fetchMembersAttributes` 方法用户获取群成员属性；
-- 增加 `EMGroupEventHandler#onAttributesChangedOfGroupMember` 群成员属性变更回调;
-- 增加 `EMChatManager#fetchHistoryMessagesByOption` 方法；
-- 增加 `EMConversation#deleteMessagesWithTs` 方法；
-- 增加 `EMMessage#deliverOnlineOnly` 属性用于设置只向在线用户投递消息；
+#### Added:
+- Added the `EMGroupManager#setMemberAttributes` method for setting group member attributes;
+- Added the `EMGroupManager#fetchMemberAttributes` and `GroupManager#fetchMembersAttributes` methods for getting group member attributes;
+- Added the `EMGroupEventHandler#onAttributesChangedOfGroupMember` group member attribute change callback;
+- Added the `EMChatManager#fetchHistoryMessagesByOption` method;
+- Added the `EMConversation#deleteMessagesWithTs` method;
+- Added the `EMMessage#deliverOnlineOnly` property for delivering messages only to online users;
 
-#### 修复：
-- 修复安卓 hot reload 后回调多次的问题；
-- 修复iOS 获取聊天室属性key传null导致的崩溃问题；
+#### Fixed:
+- Fixed multiple callbacks after Android hot reload;
+- Fixed a crash caused by passing null as the key when getting chat room attributes on iOS;
 
-#### 优化：
-- 为`ChatManager#fetchHistoryMessages` 方法增加获取方向；
+#### Optimizations:
+- Added a fetch direction to the `ChatManager#fetchHistoryMessages` method;
 
 ## 4.0.0+7
 
-#### 修复
-- 修复初始化无返回的问题。
+- Fixed the issue of initialization returning no result.
 
 ## 4.0.0+6
 
-#### 修复
-- 修复下载附件结束后状态不准确的问题。
+- Fixed inaccurate status after attachment download finished.
 
 ## 4.0.0+7
-- 修复初始化问题。
+
+- Fixed initialization issues.
 
 ## 4.0.0+6
-- 修复下载附件结束后状态不准确的问题。
+
+- Fixed inaccurate status after attachment download finished.
 
 ## 4.0.0+5
 
-#### 修复
-- 修复下载附件回调不执行。
+- Fixed the download attachment callback not being invoked.
 
 ## 4.0.0+4
 
-#### 修复
-- 安卓构建视频消息崩溃的问题。
+- Crash when building video messages on Android.
 
 ## 4.0.0+3
 
-#### 修复
-- 安卓 `onRemovedFromChatRoom` 不回调。
+- `onRemovedFromChatRoom` not called back on Android.
 
 ## 4.0.0+2
 
-#### 修复
-
-- 修复List<String>? 转换失败；
-- 修复图片消息和视频消息转换失败；
+- Fixed List<String>? conversion failure;
+- Fixed image message and video message conversion failure;
 
 ## 4.0.0
 
-#### 新增特性
+#### New Features
 
-- 依赖的原生平台 `iOS` 和 `Android` 的 SDK 升级为 v4.0.0 版本。
-- 新增 `EMChatManager#fetchConversationListFromServer` 方法实现从服务器分页获取会话列表。
-- 新增 `EMMessage#chatroomMessagePriority` 属性实现聊天室消息优先级功能，确保高优先级消息优先处理。
+- Upgraded the dependent native `iOS` and `Android` SDKs to v4.0.0.
+- Added the `EMChatManager#fetchConversationListFromServer` method to page through the conversation list from the server.
+- Added the `EMMessage#chatroomMessagePriority` property implementing the chat room message priority feature, ensuring high-priority messages are processed first.
 
-#### 优化
+#### Optimizations
 
-修改发送消息结果的回调由 `EMMessage#setMessageStatusCallBack` 修改为 `EMChatManager#addMessageEvent`。
+Changed the send-message result callback from `EMMessage#setMessageStatusCallBack` to `EMChatManager#addMessageEvent`.
 
-#### 修复
+#### Fixed
 
-修复 `EMChatManager#deleteMessagesBeforeTimestamp` 执行失败的问题。
+Fixed the failure of `EMChatManager#deleteMessagesBeforeTimestamp` to execute.
 
 # 3.9.9+1
-修复：
-1. 修复ios群已读回执不执行；
 
-新增：
-1. 增加会话根据时间删除服务器漫游消息api `EMConversation#removeServerMessageBeforeTimeStamp(timestamp)`。
+1. Fixed iOS group read receipts not being executed;
+2. Added the API `EMConversation#removeServerMessageBeforeTimeStamp(timestamp)` to delete server roaming messages of a conversation by time.
 
 # 3.9.9
-修复：
-1.修复极端情况下 SDK 崩溃的问题。
+
+Fixed:
+1. Fixed SDK crashes in extreme cases.
 
 ## 3.9.7+4
-修复：
-1. 安卓不执行onGroupDestroyed回调；
-2. 构造位置消息时无法设置buildingName；
+
+Fixed:
+1. The onGroupDestroyed callback not invoked on Android;
+2. Unable to set buildingName when constructing location messages;
 
 ## 3.9.7+3
-修复：
-1. 安卓不会执行 onAutoAcceptInvitationFromGroup 回调；
+
+Fixed:
+1. The onAutoAcceptInvitationFromGroup callback not invoked on Android;
 
 ## 3.9.7+2
 
-修复：
-1. 修复 StartCallback() 不会回调的问题；
-2. 修复 iOS 根据时间获取消息失败的问题；
+Fixed:
+1. Fixed StartCallback() not being called back;
+2. Fixed the failure to fetch messages by time on iOS;
 
 ## 3.9.7+1
 
-修复:
-  1. 修复 安卓 fcm send id偶现为空的问题；
-  2. 修复 安卓 `SilentModeResult` expireTs 为空的问题；
+Fixed:
+  1. Fixed the Android FCM send id occasionally being empty;
+  2. Fixed the Android `SilentModeResult` expireTs being empty;
 
 ## 3.9.7
 
-新增特性:
-  1. 新增聊天室自定义属性功能。
-  2. 新增 `areaCode` 方法限制连接边缘节点的范围。
-  3. `EMGroup` 中增加 `isDisabled` 属性显示群组禁用状态，需要开发者在服务端设置。该属性在调用 `EMGroupManager` 中的 `fetchGroupInfoFromServer` 方法获取群组详情时返回。
+New Features:
+  1. Added the chat room custom attributes feature.
+  2. Added the `areaCode` method to limit the range of edge nodes to connect to.
+  3. Added the `isDisabled` property to `EMGroup` to show the group's disabled status, which needs to be set by the developer on the server side. This property is returned when fetching group details via the `fetchGroupInfoFromServer` method in `EMGroupManager`.
 
-优化：
-  1. 移除 SDK 一部分冗余日志。
+Optimizations:
+  1. Removed some redundant SDK logs.
 
-修复
-  1. 修复极少数场景下，从服务器获取较大数量的消息时失败的问题。
-  2. 修复数据统计不正确的问题。
-  3. 修复极少数场景下打印日志导致的崩溃。
+Fixed:
+  1. Fixed failures when fetching a large number of messages from the server in very rare scenarios.
+  2. Fixed incorrect data statistics.
+  3. Fixed crashes caused by printing logs in very rare scenarios.
 
 ## 3.9.5
 
-- 将 AddManagerListener 方法标为过期；
-- 增加 customEventHandler；
-- 添加 EventHandler；
-- 增加 PushTemplate 方法；
-- 增加 Group isDisabled 属性；
-- 增加 PushConfigs displayName 属性；
-- 修改 Api referances;
-- 升级原生依赖为 3.9.5
+- Marked the AddManagerListener method as deprecated;
+- Added customEventHandler;
+- Added EventHandler;
+- Added the PushTemplate method;
+- Added the Group isDisabled property;
+- Added the PushConfigs displayName property;
+- Updated API references;
+- Upgraded native dependencies to 3.9.5
 
 ## 3.9.4+3
 
-- 修复 安卓端 `loadAllConversations` crash.
+- Fixed `loadAllConversations` crash on Android.
 
 ## 3.9.4+2
 
-- 修复 `EMClient.getInstance.startCallback()` 执行时安卓偶现崩溃；
+- Fixed occasional Android crashes when executing `EMClient.getInstance.startCallback()`;
 
 ## 3.9.4+1
-- 增加ChatSilentMode;
+
+- Added ChatSilentMode;
 
 ## 3.9.4
-- 移除过期Api；
+
+- Removed deprecated APIs;
 
 ## 3.9.3
-- 新增thread实现；
-- 修复部分bug；
-- 依赖原生sdk版本为3.9.3
+
+- Added the thread implementation;
+- Fixed some bugs;
+- The native SDK dependency version is 3.9.3
 
 ## 3.9.2
-- 增加Reaction实现；
-- 增加举报功能；
-- 增加获取群组已读api；
-- 添加下载群文件进度回调；
-- 修复下载视频偶现失败；
-- 修复获取群免打扰详情失败；
-- 修复 startCallback是 ios 偶现 crash;
 
-
+- Added the Reaction implementation;
+- Added the reporting feature;
+- Added the API for getting group read receipts;
+- Added a download progress callback for group files;
+- Fixed occasional video download failures;
+- Fixed failures to get group do-not-disturb details;
+- Fixed occasional iOS crash in startCallback;
 
 ## 3.9.1
-- 增加 用户在线状态 (Presence) 订阅功能；
-- 增加 翻译 功能更新，增加自动翻译接口。用户可以按需翻译，和发消息自动翻译。
+
+- Added the user online presence (Presence) subscription feature;
+- Added translation feature updates, including an auto-translation API. Users can translate on demand, and translate automatically when sending messages.
 
 ## 3.9.0+2
 
-- 修改用户退出/离线回调;
-  - EMConnectionListener#onConnected: 长连接恢复;
-  - EMConnectionListener#onDisconnected: 长连接断开;
-  - EMConnectionListener#onUserDidLoginFromOtherDevice: 当前账号在其他设备登录;
-  - EMConnectionListener#onUserDidRemoveFromServer: 当前账号被服务器删除;
-  - EMConnectionListener#onUserDidForbidByServer: 当前账号登录被服务器拒绝;
-  - EMConnectionListener#onUserDidChangePassword: 当前账号密码变更;
-  - EMConnectionListener#onUserDidLoginTooManyDevice: 当前账号登录太多设备;
-  - EMConnectionListener#onUserKickedByOtherDevice: 当前账号被登录的其他设备设置下线;
-  - EMConnectionListener#onUserAuthenticationFailed: 当前账号鉴权失败;
-- 依赖原生sdk版本为3.9.2.1；
-- 修复ios group ack 问题；
+- Modified the user logout/offline callbacks;
+  - EMConnectionListener#onConnected: the persistent connection recovered;
+  - EMConnectionListener#onDisconnected: the persistent connection disconnected;
+  - EMConnectionListener#onUserDidLoginFromOtherDevice: the current account logged in on another device;
+  - EMConnectionListener#onUserDidRemoveFromServer: the current account was deleted by the server;
+  - EMConnectionListener#onUserDidForbidByServer: the current account's login was rejected by the server;
+  - EMConnectionListener#onUserDidChangePassword: the current account's password changed;
+  - EMConnectionListener#onUserDidLoginTooManyDevice: the current account logged in on too many devices;
+  - EMConnectionListener#onUserKickedByOtherDevice: the current account was forced offline by another logged-in device;
+  - EMConnectionListener#onUserAuthenticationFailed: the current account's authentication failed;
+- The native SDK dependency version is 3.9.2.1;
+- Fixed iOS group ack issues;
 
 ## 3.9.0+1
 
-- 修复message.attribute不准;
-
-- 增加 EMClient.getInstance.startCallback() 方法
-  
+- Fixed inaccurate message.attribute;
+- Added the EMClient.getInstance.startCallback() method
   ```dart
   EMClient.getInstance.startCallback();
   ```
-  
-  只有调用该方法后，`EMContactManagerListener`、 `EMGroupEventListener` 、 `EMChatRoomEventListener` 回调才会开始执行;
-
-- 修复删除聊天室白名单成员失败;
+  The `EMContactManagerListener`, `EMGroupEventListener`, and `EMChatRoomEventListener` callbacks only start executing after this method is called;
+- Fixed the failure to remove chat room allowlist members;
 
 ## 3.9.0
 
-- 增加单人推送免打扰接口；
-
-- 增加api referance;
-
-- 增加renewToken api;
-
-- 修改消息callback方式；
-
-- iOS移除自动绑定deviceToken，如需使用，需要在iOS端单独增加；
-
-- android移除多余权限；
-
-- 修改已知bug；
+- Added the single-user push do-not-disturb API;
+- Added API reference;
+- Added the renewToken API;
+- Modified the message callback approach;
+- iOS removed automatic deviceToken binding; if needed, it must be added separately on the iOS side;
+- Android removed redundant permissions;
+- Fixed known bugs;
 
 ## 3.8.9
 
-- 增加单聊消息免打扰；
-- 去除不必要的信息收集；
-- 修复安卓某些场景下数据库损坏导致崩溃；
-- 移除对FCM11.4.0的依赖；
-- 修复安卓WAKE_LOCK权限导致的崩溃；
-- 增加用户被全局禁言时发消息错误码；
-- 增强数据传输安全性；
-- 增强本地数据存储安全性；
-- 新增使用Token登录时，Token过期的回调；
-- 修复拉取历史漫游消息不全的bug；
-- 默认使用https；
-- 优化登录速度；
+- Added do-not-disturb for one-to-one chat messages;
+- Removed unnecessary information collection;
+- Fixed crashes caused by database corruption in some Android scenarios;
+- Removed the dependency on FCM11.4.0;
+- Fixed crashes caused by the Android WAKE_LOCK permission;
+- Added an error code for sending messages while the user is globally muted;
+- Enhanced data transmission security;
+- Enhanced local data storage security;
+- Added a callback for token expiry when logging in with a token;
+- Fixed the bug of incomplete history roaming message pulls;
+- Use https by default;
+- Optimized login speed;
 
 ## 3.8.3+9
 
-- 将设置推送相关操作从EMPushConfigs中移到EMPushManager中；
-- 修复已知bug；
+- Moved push-related setting operations from EMPushConfigs to EMPushManager;
+- Fixed known bugs;
 
 ## 3.8.3+8
 
-- 修复ios使用token登录失败；
-- 修改Login方法和Logout方法返回值；
+- Fixed iOS token login failure;
+- Modified the return values of the Login and Logout methods;
 
 ## 3.8.3+6
 
-- 修改EMImPushConfig为EMPushConfigs;
-- 删除EMOptions中的EMPushConfig.设置推送证书时直接调用EMOptions即可;
-- EMGroup中移除ShareFiles，如果需要获取共享文件，请调用Api:
-  `EMClient.getInstance.groupManager.getGroupFileListFromServer(groupId)` 
-- 将isConnected和isLoginBefore、Token改为从原生获取；
-- 修复安卓设置群组免打扰失效的问题；
-- 修复获取公开群crash的问题；
-- 修改throw error的逻辑；
-- 修改构造文本消息时的方法，需要传入参数名；
-- 修改部分原生方法逻辑；
-- 调整项目目录结构；
-- 将`onConversationRead`回调方法参数改为必选；
-- 
+- Renamed EMImPushConfig to EMPushConfigs;
+- Removed EMPushConfig from EMOptions. To set the push certificate, call EMOptions directly;
+- Removed ShareFiles from EMGroup; to get shared files, call the API:
+  `EMClient.getInstance.groupManager.getGroupFileListFromServer(groupId)`
+- Changed isConnected, isLoginBefore, and Token to be fetched from native;
+- Fixed group do-not-disturb settings not taking effect on Android;
+- Fixed a crash when getting public groups;
+- Modified the throw error logic;
+- Modified the text message construction method to require parameter names;
+- Modified some native method logic;
+- Adjusted the project directory structure;
+- Made the `onConversationRead` callback parameters required;
+-
 
 ## 3.8.3+5
 
-- 更新安卓依赖原生sdk版本；
-- 修复获取本地群组crash；
+- Updated the Android native SDK dependency version;
+- Fixed a crash when getting local groups;
 
 ## 3.8.3+4
 
-* 修复消息attribute类型变为bool类型；
-* 修复群组免打扰属性不准；
-* 修复ios importMessages方法bug；
-* 修复群、聊天室禁言时不执行回调的bug；
-* 修复下载方法不执行callback；
-* 构造文件消息提供设置文件大小属性；
-* 修改`EMGroupChangeListener` 为 `EMGroupEventListener`
+* Fixed the message attribute type becoming a bool type;
+* Fixed inaccurate group do-not-disturb attribute;
+* Fixed the iOS importMessages method bug;
+* Fixed the bug where callbacks were not invoked when groups/chat rooms were muted;
+* Fixed the download method not invoking the callback;
+* File message construction now provides a property for setting the file size;
+* Renamed `EMGroupChangeListener` to `EMGroupEventListener`
 
 ## 3.8.3+3
 
-* 修复安卓下resendMessage方法发送失败时不回调onError；
-* 修复fetchChatRoomMembers返回类型错误；
+* Fixed resendMessage not calling back onError when sending fails on Android;
+* Fixed the wrong return type of fetchChatRoomMembers;
 
 ## 3.8.3+2
 
-* 增加群组已读回执；
-* 不在提供EMContact类，直接返回String类型username;
+* Added group read receipts;
+* The EMContact class is no longer provided; the username is returned directly as a String;
 
 ## 3.8.3
 
-* 增加用户属性；
-* 修复已知bug；
+### English
+
+* Added user attributes;
+* Fixed known bugs;
 
 ## 1.0.0
 
-* 用户管理；
-* 群组管理；
-* 聊天室管理；
-* 会话管理；
-* 通讯录管理；
-* 推送管理；
+* User management;
+* Group management;
+* Chat room management;
+* Conversation management;
+* Contact management;
+* Push management;

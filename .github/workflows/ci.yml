@@ -106,6 +106,20 @@ jobs:
         # Same reason as in the Android job: the placeholder is gitignored.
         run: ./tool/ci/ensure_example_env.sh
 
+      - name: Cache Swift Package Manager dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        # iOS dependencies resolve via SPM (no CocoaPods in this repo). Their
+        # binary targets download from download.shengwang.cn, which has timed
+        # out from GitHub runners and failed the job before any test ran.
+        # Caching the SPM stores removes that network dependency once fetched.
+        with:
+          path: |
+            ~/Library/Caches/org.swift.swiftpm
+            ~/Library/Developer/Xcode/DerivedData/*/SourcePackages
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.swift', 'im_flutter_sdk/example/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
       - name: Build iOS example
         working-directory: im_flutter_sdk/example
         run: |
