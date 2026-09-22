@@ -114,7 +114,6 @@ static NSString *const ChatOnCmdMessagesReceived = @"onCmdMessagesReceived";
 // 5.0.0
 static NSString *const ChatOnMessageReadReceipts = @"onMessageReadReceipts";
 static NSString *const ChatOnMessagesDelivered = @"onMessagesDelivered";
-static NSString *const ChatOnMessagesRecalled = @"onMessagesRecalled";
 
 static NSString *const ChatOnConversationUpdate = @"onConversationUpdate";
 
@@ -128,7 +127,6 @@ static NSString *const onMessageContentChanged = @"onMessageContentChanged";
 static NSString *const ChatOnMessageProgressUpdate = @"onMessageProgressUpdate";
 static NSString *const ChatOnMessageSuccess = @"onMessageSuccess";
 static NSString *const ChatOnMessageError = @"onMessageError";
-static NSString *const ChatOnMessageDeliveryAck = @"onMessageDeliveryAck";
 
 
 #pragma mark - EMConversationWrapper

@@ -9,6 +9,10 @@
 - 批量已读回执移除 wrapper 预校验：无法解析为本地消息的 messageId 跳过而不是整批返回 500，是否受理由 native 判定（整批不可解析时返回 110）；
 - 删除服务端拉取历史消息选项中不可达的 `from` 赋值：Dart 侧已只下发 `senders`，native `from` 已废弃且由 `fromIds` 取代；
 - 新增 `deleteConversations` 批量删除本地会话的原生实现：经 `getConversationWithConvId` 逐个解析会话、跳过不存在的 ID 后调用 `deleteConversations:isDeleteMessages:completion:`；
+- 修复 `onRequestToJoinDeclined` 事件在 `reason`/`decliner` 为 nil 时构造事件字典直接崩溃的问题，事件现在始终携带 `decliner`（nil 时为空字符串）；
+- 删除无监听方的 `onMessageDeliveryAck` 逐条下发、`messagesDidRecall:` 死 delegate 方法与相关常量；
+- 删除会话内关键词搜索（`loadMsgWithKeywords`）中不可达的 `sender` 兜底分支：Dart 侧已只下发 `senders`；
+- 移除图片消息 body 的 `thumbnailSecret` 透传（与 RN 对齐删除，视频 body 保留）；
 
 ## 4.24.0
 - iOS依赖 SDK 升级到 4.24.1；

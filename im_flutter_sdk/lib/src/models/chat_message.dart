@@ -1539,7 +1539,6 @@ class ChatImageMessageBody extends ChatFileMessageBody {
       : super.fromJson(map: map, type: MessageType.IMAGE) {
     thumbnailLocalPath = map["thumbnailLocalPath"];
     thumbnailRemotePath = map["thumbnailRemotePath"];
-    thumbnailSecret = map["thumbnailSecret"];
     sendOriginalImage = map["sendOriginalImage"] ?? false;
     height = (map["height"] ?? 0).toDouble();
     width = (map["width"] ?? 0).toDouble();
@@ -1558,7 +1557,6 @@ class ChatImageMessageBody extends ChatFileMessageBody {
     final Map<String, dynamic> data = super.toJson();
     data.putIfNotNull("thumbnailLocalPath", thumbnailLocalPath);
     data.putIfNotNull("thumbnailRemotePath", thumbnailRemotePath);
-    data.putIfNotNull("thumbnailSecret", thumbnailSecret);
     data.putIfNotNull("sendOriginalImage", isGif ? true : sendOriginalImage);
     data.putIfNotNull("height", height ?? 0.0);
     data.putIfNotNull("width", width ?? 0.0);
@@ -1599,15 +1597,6 @@ class ChatImageMessageBody extends ChatFileMessageBody {
   /// 缩略图的服务器路径。
   /// ~end
   String? thumbnailRemotePath;
-
-  /// ~english
-  /// The secret to access the thumbnail. A secret is required for verification for thumbnail download.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 设置访问缩略图的密钥。下载缩略图时用户需要提供密钥进行校验。
-  /// ~end
-  String? thumbnailSecret;
 
   /// ~english
   /// The download status of the thumbnail.

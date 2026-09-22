@@ -1168,8 +1168,8 @@
         NSDictionary *map = @{
             @"type":@"onGroupRequestToJoinDeclined",
             @"groupId":aGroupId,
-            @"reason":aReason,
-            @"decliner": aDecliner,
+            @"reason":aReason ?: @"",
+            @"decliner": aDecliner ?: @"",
             @"applicant": aApplicant
         };
         [weakSelf.channel invokeMethod:ChatOnGroupChanged

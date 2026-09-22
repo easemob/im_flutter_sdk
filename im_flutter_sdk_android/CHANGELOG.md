@@ -8,6 +8,9 @@
 - 消息附件与缩略图下载改用带 `EMCallBack` 的重载，替换 native 5.0.0 已废弃的单参重载；
 - 删除服务端拉取历史消息选项中不可达的 `from` 兜底分支：Dart 侧已只下发 `senders`，native `setFrom` 已废弃且由 `setFromIds` 取代；
 - 新增 `deleteConversations` 批量删除本地会话的原生实现（`asyncDeleteConversations`）；
+- 删除无监听方的 `onMessageDeliveryAck` 逐条下发与 `onMessagesRecalled` 残留常量；
+- 删除会话内关键词搜索（`loadMsgWithKeywords`）中不可达的 `from` 兜底分支：Dart 侧已只下发 `senders`；
+- 移除图片消息 body 的 `thumbnailSecret` 透传（native 5.0.0 已废弃且 RN 已对齐删除，视频 body 保留）；
 
 ## 4.24.0
 - 安卓依赖 SDK 升级到 4.24.1；

@@ -305,17 +305,11 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
         ConversationParams conversationParams = new ConversationParams(params);
         String keywords = params.getString("keywords");
         List<String> senders = new ArrayList<>();
-        String sender = null;
         if (params.has("senders")) {
 
             JSONArray jsonArray = params.getJSONArray("senders");
             for (int i = 0; i < jsonArray.length(); i++) {
                 senders.add(jsonArray.getString(i));
-            }
-        } else {
-            if (params.has("from")) {
-                sender = params.getString("from");
-                senders.add(sender);
             }
         }
 

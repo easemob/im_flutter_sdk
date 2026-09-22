@@ -874,9 +874,6 @@ class MessageReadReceiptHelper {
         if (json.has("thumbnailRemotePath")){
             body.setThumbnailUrl(json.getString("thumbnailRemotePath"));
         }
-        if (json.has("thumbnailSecret")){
-            body.setThumbnailSecret(json.getString("thumbnailSecret"));
-        }
         if(json.has("thumbnailStatus")) {
             body.setThumbnailDownloadStatus(EnumTools.downloadStatusFromInt(json.getInt("thumbnailStatus")));
         }
@@ -912,7 +909,6 @@ class MessageReadReceiptHelper {
         data.put("fileStatus", EnumTools.downloadStatusToInt(body.downloadStatus()));
         data.put("thumbnailLocalPath", body.thumbnailLocalPath());
         data.put("thumbnailRemotePath", body.getThumbnailUrl());
-        data.put("thumbnailSecret", body.getThumbnailSecret());
         data.put("thumbnailStatus", EnumTools.downloadStatusToInt(body.thumbnailDownloadStatus()));
         data.put("height", body.getHeight());
         data.put("width", body.getWidth());

@@ -36,8 +36,8 @@
 - Removed the contact sync events `onContactSyncStart`/`onContactSyncFinish`; use the connection-level data sync events uniformly instead;
 - Removed deprecated (`@Deprecated`) public Dart APIs; see `docs/deprecated-apis.md` for the full list:
   - Methods: `ChatManager.searchMsgFromDB`, `ChatContactManager.getAllContactsFromDB`, `ChatContactManager.getBlockListFromServer`, `ChatContactManager.getBlockListFromDB`, `ChatGroupManager.changeGroupName`, `ChatGroupManager.changeGroupDescription`, `ChatPushManager.updateHMSPushToken`, `ChatPushManager.updateFCMPushToken`, `ChatPushManager.updateAPNsDeviceToken`;
-  - Fields and parameters: `ChatGroup.name`, `ChatGroup.description` (including constructor parameters), `FetchMessageOptions.from` (including constructor parameters), the `sender` parameter of `ChatConversation.loadMessagesWithKeyword`, and the `fetchMembers` parameter of `ChatGroupManager.fetchGroupInfoFromServer` and `ChatRoomManager.fetchChatRoomInfoFromServer`;
-  - Callbacks: `ChatEventHandler.onMessagesRecalled` is replaced by `onMessagesRecalledInfo`; `onMemberExitedFromGroup`/`onMemberJoinedFromGroup` of `ChatGroupEventHandler` are replaced by `onMembersExitedFromGroup`/`onMembersJoinedFromGroup`;
+  - Fields and parameters: `ChatGroup.name`, `ChatGroup.description` (including constructor parameters), `FetchMessageOptions.from` (including constructor parameters), the `sender` parameter of `ChatConversation.loadMessagesWithKeyword`, the `fetchMembers` parameter of `ChatGroupManager.fetchGroupInfoFromServer` and `ChatRoomManager.fetchChatRoomInfoFromServer`, and `ChatImageMessageBody.thumbnailSecret` (use `secret`; the image and its thumbnail share one secret key, and the native pass-through was removed as well);
+  - Callbacks: `ChatEventHandler.onMessagesRecalled` is replaced by `onMessagesRecalledInfo`; `onMemberExitedFromGroup`/`onMemberJoinedFromGroup` of `ChatGroupEventHandler` are replaced by `onMembersExitedFromGroup`/`onMembersJoinedFromGroup`; the leftover `onMessagesRecalled`/`onMessageDeliveryAck` method-key constants and the dead native emissions (`messagesDidRecall` on iOS, the per-message delivery ack on the message channel) are removed;
   - The 8 vendor push switches of `ChatOptions` (`enableOppoPush`, `enableMiPush`, `enableMeiZuPush`, `enableFCM`, `enableVivoPush`, `enableHWPush`, `enableAPNs`, `enableHonorPush`) are replaced by `ChatPushManager.bindDeviceToken`;
   - `ChatOptions` no longer serializes the `pushConfig` field (the native reading branch is unchanged);
   - Deleted the `ChatPushConfig` class and its file `lib/src/internal/chat_push_config.dart`: it only served the push switches above and was removed together with them; the `EMPushConfig` typedef pointing to it in `em_compat.dart` was deleted accordingly;
@@ -62,6 +62,7 @@
 
 ### Bug Fixes
 
+- Fixed a crash on iOS where the `onRequestToJoinDeclinedFromGroup` event could carry a nil `reason` or `decliner` and crash while building the event payload; the event now always carries `decliner` (an empty string when nil);
 - Fixed multi-device event mapping: filled in the missing group allowlist and muting-all-members events (native 30-33), corrected the swapped thread update/kick events (native 44/45), and unknown event values no longer throw during event handling;
 - Fixed an issue where `onUserAuthenticationFailed` was incorrectly forwarded as `onDisconnected`;
 - Fixed an issue where iOS did not report reaching the active-count limit (reason code 8);

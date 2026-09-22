@@ -104,7 +104,6 @@ class ChatMethodKeys {
   static const String onStreamMessagesReceived = "onStreamMessagesReceived";
   static const String onCmdMessagesReceived = "onCmdMessagesReceived";
   static const String onMessagesDelivered = "onMessagesDelivered";
-  static const String onMessagesRecalled = "onMessagesRecalled";
   static const String onMessageChanged = "onMessageChanged";
 
   static const String onConversationUpdate = "onConversationUpdate";
@@ -128,7 +127,6 @@ class ChatMethodKeys {
   static const String onMessageProgressUpdate = "onMessageProgressUpdate";
   static const String onMessageError = "onMessageError";
   static const String onMessageSuccess = "onMessageSuccess";
-  static const String onMessageDeliveryAck = "onMessageDeliveryAck";
 
   /// ChatPresenceManagerDelegate
   static const String onPresenceStatusChanged = "onPresenceStatusChanged";

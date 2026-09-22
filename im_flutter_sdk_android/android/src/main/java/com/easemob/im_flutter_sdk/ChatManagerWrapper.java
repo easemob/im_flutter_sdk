@@ -1049,8 +1049,6 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                 ArrayList<Map<String, Object>> msgList = new ArrayList<>();
                 for (EMMessage message : messages) {
                     msgList.add(MessageHelper.toJson(message));
-                    post(() -> messageChannel.invokeMethod(MethodKey.onMessageDeliveryAck,
-                            MessageHelper.toJson(message)));
                 }
                 post(() -> channel.invokeMethod(MethodKey.onMessagesDelivered, msgList));
             }

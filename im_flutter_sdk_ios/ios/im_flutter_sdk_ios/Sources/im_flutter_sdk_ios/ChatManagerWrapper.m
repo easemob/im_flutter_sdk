@@ -1275,23 +1275,9 @@
     for (EMChatMessage *msg in aMessages) {
         NSDictionary *json = [msg toJson];
         [list addObject:json];
-        [self.messageChannel invokeMethod:ChatOnMessageDeliveryAck
-                                arguments:@{@"message":json}];
     }
     
     [self.channel invokeMethod:ChatOnMessagesDelivered
-                     arguments:list];
-}
-
-
-
-- (void)messagesDidRecall:(NSArray *)aMessages {
-    NSMutableArray *list = [NSMutableArray array];
-    for (EMChatMessage *msg in aMessages) {
-        [list addObject:[msg toJson]];
-    }
-    
-    [self.channel invokeMethod:ChatOnMessagesRecalled
                      arguments:list];
 }
 

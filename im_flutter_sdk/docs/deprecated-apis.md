@@ -23,9 +23,10 @@
 
 - `ChatGroup` 反序列化仍从 native 的 `name`/`desc` 取值，只是不再写入已删除的 `name`/`description` 字段；`toJson` 输出 key 不变。
 - `fetchGroupInfoFromServer`/`fetchChatRoomInfoFromServer` 不再下发 `fetchMembers`，与 Android 端原有行为（本就忽略该参数）对齐。
-- `loadMessagesWithKeyword` 只下发 `senders`，不再下发 `from`；native 侧 `from`/`sender` 兜底分支保留未动，成为不可达分支。
+- `loadMessagesWithKeyword` 只下发 `senders`，不再下发 `from`；native 侧不可达的 `from`/`sender` 兜底分支（Android `ConversationWrapper.java`、iOS `ConversationWrapper.m`）已随之删除。
 - `ChatOptions` 不再能配置厂商推送的 appId/appKey/证书名，也不再序列化 `pushConfig` 字段（native 侧读取分支保留未动，成为不可达分支）；承载这些配置的 `ChatPushConfig` 类连同 `lib/src/internal/chat_push_config.dart`、`inner_headers.dart` 的导出与 `em_compat.dart` 的 `EMPushConfig` typedef 一并删除。
-- 随本轮 wrapper 废弃调用清理，`FetchMessageOptions` 删除后遗留的 native 侧分支也已移除：Android `EMFetchMessageOption.setFrom`、iOS `EMFetchServerMessagesOption.from`（native 5.0.0 均标记废弃，替代分别是 `setFromIds` / `fromIds`）。Android 图片消息的缩略图密钥（`thumbnailSecret`）本轮**保持现状**：替代 `getSecret` / `setSecret` 会改变取值，待确认使用方影响。详见 `docs/spec/2026-09-21-deprecated-api-scan-spec.md` §9.3。
+- 随本轮 wrapper 废弃调用清理，`FetchMessageOptions` 删除后遗留的 native 侧分支也已移除：Android `EMFetchMessageOption.setFrom`、iOS `EMFetchServerMessagesOption.from`（native 5.0.0 均标记废弃，替代分别是 `setFromIds` / `fromIds`）。
+- 图片消息的缩略图密钥 `ChatImageMessageBody.thumbnailSecret` 已删除（替代为 `secret`，native 5.0.0 中图片的原图、大图、缩略图共用一个密钥），native 侧图片 body 的 `thumbnailSecret` 透传（Android `EMHelper.java`、iOS `MessageHelper.m`）一并移除，与 React Native SDK 的处理范围对齐；视频消息的 `thumbnailSecret` 字段与透传保留（native 未废弃）。详见 `docs/spec/2026-09-21-deprecated-api-scan-spec.md` §9.3。
 
 本报告「附」中列的 3 类注解缺陷随 API 删除一并消失（`ChatGroup.name` 的替代写错、`onMemberExitedFromGroup` 自引用、两处 `fetchMembers` 空消息），无需再单独修正文案。
 

@@ -99,7 +99,6 @@ public class MethodKey {
     // 5.0.0
     static final String onMessageReadReceipts = "onMessageReadReceipts";
     static final String onMessagesDelivered = "onMessagesDelivered";
-    static final String onMessagesRecalled = "onMessagesRecalled";
 
     static final String onConversationUpdate = "onConversationUpdate";
 
@@ -111,7 +110,6 @@ public class MethodKey {
     static final String onMessageProgressUpdate = "onMessageProgressUpdate";
     static final String onMessageError = "onMessageError";
     static final String onMessageSuccess = "onMessageSuccess";
-    static final String onMessageDeliveryAck = "onMessageDeliveryAck";
 
     /// EMConversation
     static final String getUnreadMsgCount = "getUnreadMsgCount";
