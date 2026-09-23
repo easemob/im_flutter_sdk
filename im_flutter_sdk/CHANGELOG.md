@@ -59,7 +59,7 @@
 
 - Batch read receipts are no longer pre-validated by the wrapper: when `sendMessageReadReceipts`/`getGroupMessageReadReceipts` encounter a messageId that cannot be resolved to a local message, that entry is skipped (previously Android returned 1 GENERAL_ERROR for the whole batch and iOS returned 500 MESSAGE_INVALID); success is now determined by the native SDK, and when the whole batch cannot be resolved, the native 110 INVALID_PARAM is returned;
 - Paged group message read receipt results now include a `totalCount` field (the iOS wrapper previously did not pass it down; fixed), and the Dart-side `ChatCursorResult` gained a nullable `totalCount` to carry it;
-- `getUnreadMessageCount` no longer counts chat rooms, threads, and do-not-disturb conversations;
+- `getUnreadMessageCount` no longer counts chat rooms and do-not-disturb conversations;
 
 ### Bug Fixes
 
