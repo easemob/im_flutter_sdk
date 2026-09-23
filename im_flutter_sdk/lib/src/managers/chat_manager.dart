@@ -660,7 +660,7 @@ class ChatManager {
   /// ~english
   /// Gets the count of the unread messages.
   ///
-  /// Chat rooms, threads, and conversations with do-not-disturb enabled are excluded from the statistics.
+  /// Chat rooms and conversations with do-not-disturb enabled are excluded from the statistics.
   ///
   /// **Return** The count of the unread messages.
   ///
@@ -670,7 +670,7 @@ class ChatManager {
   /// ~chinese
   /// 获取未读消息数。
   ///
-  /// 该统计不包含聊天室、子区（thread）和已设置免打扰的会话。
+  /// 该统计不包含聊天室和已设置免打扰的会话。
   ///
   /// **Return** 未读消息数。
   ///
