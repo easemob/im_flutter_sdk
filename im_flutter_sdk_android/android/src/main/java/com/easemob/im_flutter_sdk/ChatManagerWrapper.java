@@ -271,8 +271,6 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
         });
         EMClient.getInstance().chatManager().sendMessage(finalMsg);
         asyncRunnable(() -> onSuccess(result, channelName, MessageHelper.toJson(finalMsg)));
-        EMClient.getInstance().chatManager().sendMessage(msg);
-        asyncRunnable(() -> onSuccess(result, channelName, MessageHelper.toJson(finalMsg)));
     }
 
     // 5.0.0
