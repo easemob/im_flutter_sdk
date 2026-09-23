@@ -38,7 +38,7 @@
   - Methods: `ChatManager.searchMsgFromDB`, `ChatContactManager.getAllContactsFromDB`, `ChatContactManager.getBlockListFromServer`, `ChatContactManager.getBlockListFromDB`, `ChatGroupManager.changeGroupName`, `ChatGroupManager.changeGroupDescription`, `ChatPushManager.updateHMSPushToken`, `ChatPushManager.updateFCMPushToken`, `ChatPushManager.updateAPNsDeviceToken`;
   - Fields and parameters: `ChatGroup.name`, `ChatGroup.description` (including constructor parameters), `FetchMessageOptions.from` (including constructor parameters), the `sender` parameter of `ChatConversation.loadMessagesWithKeyword`, the `fetchMembers` parameter of `ChatGroupManager.fetchGroupInfoFromServer` and `ChatRoomManager.fetchChatRoomInfoFromServer`, and `ChatImageMessageBody.thumbnailSecret` (use `secret`; the image and its thumbnail share one secret key, and the native pass-through was removed as well);
   - Callbacks: `ChatEventHandler.onMessagesRecalled` is replaced by `onMessagesRecalledInfo`; `onMemberExitedFromGroup`/`onMemberJoinedFromGroup` of `ChatGroupEventHandler` are replaced by `onMembersExitedFromGroup`/`onMembersJoinedFromGroup`; the leftover `onMessagesRecalled`/`onMessageDeliveryAck` method-key constants and the dead native emissions (`messagesDidRecall` on iOS, the per-message delivery ack on the message channel) are removed;
-  - The 8 vendor push switches of `ChatOptions` (`enableOppoPush`, `enableMiPush`, `enableMeiZuPush`, `enableFCM`, `enableVivoPush`, `enableHWPush`, `enableAPNs`, `enableHonorPush`) are replaced by `ChatPushManager.bindDeviceToken`;
+  - The 8 vendor push switches of `ChatOptions` (`enableOppoPush`, `enableMiPush`, `enableMeiZuPush`, `enableFCM`, `enableVivoPush`, `enableHWPush`, `enableAPNs`, `enableHonorPush`) are replaced by `ChatPushManager.bindDeviceToken`; on iOS the APNs certificate name that `enableAPNs(certName)` used to carry is now set with `ChatOptions.apnsCertName`;
   - `ChatOptions` no longer serializes the `pushConfig` field, and the unreachable native `pushConfig` reading branches (Android `EMHelper`, iOS `OptionsHelper`) were removed as well;
   - Deleted the `ChatPushConfig` class and its file `lib/src/internal/chat_push_config.dart`: it only served the push switches above and was removed together with them; the `EMPushConfig` typedef pointing to it in `em_compat.dart` was deleted accordingly;
   - The remaining `EM*` compatibility typedefs in `em_compat.dart` and the default `ChatOptions` constructor are kept this time;
@@ -48,18 +48,26 @@
 
 - Completed two public signatures previously inferred implicitly as dynamic: `ChatError.hasErrorFromResult` returns `void` and `ChatPageResult.pageCount` returns `int?` (code relying on dynamic invocation needs to be adjusted accordingly);
 
+#### Push Credentials
+
+- The iOS certificate names are initialization options now: `ChatOptions.apnsCertName` (APNs) and `ChatOptions.pushKitCertName` (PushKit) are read by the native SDK when the SDK is initialized and must not change while the app is running;
+- `ChatPushManager.bindDeviceToken` no longer takes a required `notifierName`: the parameter is ignored on iOS (the APNs certificate name comes from `ChatOptions.apnsCertName`) and stays required on Android, where it is the vendor push credential (FCM Sender ID, HUAWEI/Honor app ID, Xiaomi/Meizu app ID, OPPO app key, vivo `appId#appKey`);
+- The iOS wrapper no longer writes `options.apnsCertName` when a device token is bound; `ChatOptions.apnsCertName` must be set by applications that previously only passed the certificate name to `bindDeviceToken`;
+
 ### New Features
 
 - Added `ChatManager.deleteConversations` to delete multiple local conversations at once, with an option to also delete the local messages in them; IDs of conversations that do not exist are ignored;
 - Added post-login data sync configuration, data sync events, and the database-opened event: `ChatDataSyncType`, `ChatOptions.dataSyncType`, and `ConnectionEventHandler.onDataSyncStart`/`onDataSyncFinish`/`onDatabaseOpened`;
 - `ChatMultiDevicesEvent` added `GROUP_UPDATE` (the iOS group info update event);
-- `ChatConversation` added read-only `name` and `avatar`; `modifyMessage` added an optional `attributes`;
+- `ChatConversation` added read-only `name` and `avatar`;
+- Added `ChatOptions.apnsCertName` and `ChatOptions.pushKitCertName` to configure the iOS APNs and PushKit certificate names at initialization; both are iOS-only and are ignored on other platforms;
+- Added the iOS-only `ChatPushManager.bindPushKitToken({deviceToken})`/`unbindPushKitToken()` to bind and unbind the Apple PushKit (VoIP push) token; on other platforms both methods do nothing;
 
 ### Improvements
 
 - Batch read receipts are no longer pre-validated by the wrapper: when `sendMessageReadReceipts`/`getGroupMessageReadReceipts` encounter a messageId that cannot be resolved to a local message, that entry is skipped (previously Android returned 1 GENERAL_ERROR for the whole batch and iOS returned 500 MESSAGE_INVALID); success is now determined by the native SDK, and when the whole batch cannot be resolved, the native 110 INVALID_PARAM is returned;
 - Paged group message read receipt results now include a `totalCount` field (the iOS wrapper previously did not pass it down; fixed), and the Dart-side `ChatCursorResult` gained a nullable `totalCount` to carry it;
-- `getUnreadMessageCount` no longer counts chat rooms, threads, and do-not-disturb conversations;
+- `getUnreadMessageCount` no longer counts chat rooms and do-not-disturb conversations;
 
 ### Bug Fixes
 
@@ -67,6 +75,7 @@
 - Fixed multi-device event mapping: filled in the missing group allowlist and muting-all-members events (native 30-33), corrected the swapped thread update/kick events (native 44/45), and unknown event values no longer throw during event handling;
 - Fixed an issue where `onUserAuthenticationFailed` was incorrectly forwarded as `onDisconnected`;
 - Fixed an issue where iOS did not report reaching the active-count limit (reason code 8);
+- Fixed `modifyMessage` clearing the message extension on Android when `attributes` was omitted: the wrapper passed an empty map (which overwrites the extension) instead of null (which leaves it unchanged), while iOS already passed nil; both platforms now keep the existing extension;
 
 ## 4.24.0
 

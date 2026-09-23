@@ -40,6 +40,9 @@
     data[@"messagesReceiveCallbackIncludeSend"] = @(self.includeSendMessageInMessageListener);
     data[@"regardImportMessagesAsRead"] = @(self.regardImportMessagesAsRead);
     data[@"dataSyncType"] = @(self.dataSyncType);
+    // 5.0.0
+    data[@"apnsCertName"] = self.apnsCertName;
+    data[@"pushKitCertName"] = self.pushKitCertName;
     // 481
     data[@"loginExtensionInfo"] = self.loginExtensionInfo;
     
@@ -103,6 +106,14 @@
     // 5.0.0
     if (aJson[@"dataSyncType"] && ![aJson[@"dataSyncType"] isKindOfClass:[NSNull class]]) {
         options.dataSyncType = (EMDataSyncType)[aJson[@"dataSyncType"] integerValue];
+    }
+    // The certificate names can only be set here, at initialization time: both are read by the
+    // native SDK when a device token is bound, and must not be modified while the app is running.
+    if (aJson[@"apnsCertName"] && ![aJson[@"apnsCertName"] isKindOfClass:[NSNull class]]) {
+        options.apnsCertName = aJson[@"apnsCertName"];
+    }
+    if (aJson[@"pushKitCertName"] && ![aJson[@"pushKitCertName"] isKindOfClass:[NSNull class]]) {
+        options.pushKitCertName = aJson[@"pushKitCertName"];
     }
     return options;
 }

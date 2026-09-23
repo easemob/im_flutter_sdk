@@ -189,7 +189,7 @@
 5. **迁移文档未提及的删除：`EMConversation#searchMsgFromDB(..., EMMessageSearchScope)` 同步重载**（异步版保留）。文档仅笼统说「部分旧版 searchMsgFromDB 调用方式」调整，未指明是哪个重载，此处给出精确签名。
 6. **迁移文档未提及的新增 public API：`EMGroupManager#createGroup` 无 avatar 重载删除**。文档只说旧 `EMGroupOptions` 重载删除，未明确 5.0.0 只保留带 `avatar` 参数的 createGroup/asyncCreateGroup 形式（4.24.1 有带/不带 avatar 各一对）。
 7. **行为变化（无签名变化，Flutter 侧需注意）**：
-   - `EMChatManager#getUnreadMessageCount` 统计范围收窄：不含聊天室、不含 Thread、仅统计 `EMPushRemindType.ALL` 的单聊群聊会话（迁移文档「行为变化 1」）。
+   - `EMChatManager#getUnreadMessageCount` 统计范围收窄：不含聊天室、不含 Thread、仅统计 `EMPushRemindType.ALL` 的单聊群聊会话（迁移文档「行为变化 1」）。**注：其中「不含 Thread」是原生迁移文档的说法，与实现不一致** —— Android 5.0.0 实现只排除 `CHATROOM` 类型与非 `ALL` 提醒类型的会话，Thread 并未排除；Flutter 侧已按此更正 `ChatManager.getUnreadMessageCount` 的双语注释（commit `89e5d1b7`），引用本行时不要再沿用「不含 Thread」。
    - `EMConversation#getMessage(String)` 不再自动标记已读（行为变化 4）。
    - `EMClient#init` 自动登录逻辑与 `EMChatService` 旧保活逻辑移除（行为变化，不计入公开 API 表）；`EMPushManager` Token 上传判断不再依赖 `isLoggedInBefore()`/`getAutoLogin()`。
    - 前后台检测改用 AndroidX `ProcessLifecycleOwner`（行为变化 5），SDK 全面迁移 AndroidX——对 Flutter 封装层无 API 影响，但影响 example 工程依赖。

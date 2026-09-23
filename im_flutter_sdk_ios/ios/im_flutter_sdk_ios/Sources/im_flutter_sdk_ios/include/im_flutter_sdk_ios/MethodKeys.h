@@ -348,6 +348,10 @@ static NSString *const ChatUpdateRegradeMessagesSetting =
     @"updateRegradeMessagesSetting";
 static NSString *const bindDeviceToken = @"bindDeviceToken";
 
+// 5.0.0
+static NSString *const bindPushKitToken = @"bindPushKitToken";
+static NSString *const unbindPushKitToken = @"unbindPushKitToken";
+
 
 // 4.10
 static NSString *const onOfflineMessageSyncStart = @"onOfflineMessageSyncStart";

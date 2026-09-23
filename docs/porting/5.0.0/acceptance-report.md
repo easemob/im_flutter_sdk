@@ -7,6 +7,7 @@
 - 完整源签名与 decision：[`01-api-diff.md`](./01-api-diff.md)
 - 契约：[`02-contract.md`](./02-contract.md)
 - 实现与验证：[`03-implementation.md`](./03-implementation.md)、[`04-verification.md`](./04-verification.md)
+- 版本平版之后的补充变更（iOS PushKit / VoIP 推送补齐）：[`05-pushkit.md`](./05-pushkit.md)（其代码与文档尚未提交，待审）
 - 代码状态：5.0.0 基线平版、RN 对照修订、token/env 自动化、运行报告工具已分别提交为 `dbab80b3`、`a2f27eff`、`6d16ce85`、`4c555667`；本轮复验修订与本文档一并提交，均未 push。
 
 ## 1. 二维对照
