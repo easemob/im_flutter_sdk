@@ -13,6 +13,7 @@
 - 删除无监听方的 `onMessageDeliveryAck` 逐条下发、`messagesDidRecall:` 死 delegate 方法与相关常量；
 - 删除会话内关键词搜索（`loadMsgWithKeywords`）中不可达的 `sender` 兜底分支：Dart 侧已只下发 `senders`；
 - 移除图片消息 body 的 `thumbnailSecret` 透传（与 RN 对齐删除，视频 body 保留）；
+- 修复视频消息 body 的 toJson 输出 key 误写为 `thumbnailSecretKey` 的问题，改为 `thumbnailSecret` 与 Dart/Android 对齐（native 属性名不变）；
 
 ## 4.24.0
 - iOS依赖 SDK 升级到 4.24.1；
