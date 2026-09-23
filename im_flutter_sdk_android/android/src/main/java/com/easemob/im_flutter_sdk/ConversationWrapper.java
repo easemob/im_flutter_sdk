@@ -106,9 +106,6 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
             else if(MethodKey.messageCount.equals(call.method)) {
                 messageCount(param, call.method, result);
             }
-            else if (MethodKey.removeMsgFromServerWithTimeStamp.equals(call.method)) {
-                removeMsgFromServerWithTimeStamp(param, call.method, result);
-            }
             else if (MethodKey.pinnedMessages.equals(call.method)){
                 pinnedMessages(param, call.method, result);
             }
@@ -385,15 +382,6 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
             onSuccess(result, channelName,  conversation.getAllMsgCount());
         });
     } 
-
-    private void removeMsgFromServerWithTimeStamp(JSONObject params, String channelName, Result result) throws JSONException {
-        ConversationParams conversationParams = new ConversationParams(params);
-        long timestamp = params.getLong("timestamp");
-        asyncRunnable(()->{
-            EMConversation conversation = conversationParams.getConversation();
-            conversation.removeMessagesFromServer(timestamp, new EMWrapperCallBack(result, channelName, null));
-        });
-    }
 
     private void pinnedMessages(JSONObject params, String channelName, Result result) throws JSONException {
         ConversationParams conversationParams = new ConversationParams(params);

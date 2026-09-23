@@ -39,9 +39,10 @@
   - Fields and parameters: `ChatGroup.name`, `ChatGroup.description` (including constructor parameters), `FetchMessageOptions.from` (including constructor parameters), the `sender` parameter of `ChatConversation.loadMessagesWithKeyword`, the `fetchMembers` parameter of `ChatGroupManager.fetchGroupInfoFromServer` and `ChatRoomManager.fetchChatRoomInfoFromServer`, and `ChatImageMessageBody.thumbnailSecret` (use `secret`; the image and its thumbnail share one secret key, and the native pass-through was removed as well);
   - Callbacks: `ChatEventHandler.onMessagesRecalled` is replaced by `onMessagesRecalledInfo`; `onMemberExitedFromGroup`/`onMemberJoinedFromGroup` of `ChatGroupEventHandler` are replaced by `onMembersExitedFromGroup`/`onMembersJoinedFromGroup`; the leftover `onMessagesRecalled`/`onMessageDeliveryAck` method-key constants and the dead native emissions (`messagesDidRecall` on iOS, the per-message delivery ack on the message channel) are removed;
   - The 8 vendor push switches of `ChatOptions` (`enableOppoPush`, `enableMiPush`, `enableMeiZuPush`, `enableFCM`, `enableVivoPush`, `enableHWPush`, `enableAPNs`, `enableHonorPush`) are replaced by `ChatPushManager.bindDeviceToken`;
-  - `ChatOptions` no longer serializes the `pushConfig` field (the native reading branch is unchanged);
+  - `ChatOptions` no longer serializes the `pushConfig` field, and the unreachable native `pushConfig` reading branches (Android `EMHelper`, iOS `OptionsHelper`) were removed as well;
   - Deleted the `ChatPushConfig` class and its file `lib/src/internal/chat_push_config.dart`: it only served the push switches above and was removed together with them; the `EMPushConfig` typedef pointing to it in `em_compat.dart` was deleted accordingly;
   - The remaining `EM*` compatibility typedefs in `em_compat.dart` and the default `ChatOptions` constructor are kept this time;
+- Removed the dead internal method-key constants and the native wrapper routes that no Dart code can reach: `uploadLog`, `onMessageChanged`, `removeMsgFromServerWithTimeStamp`, `fetchConversationsByOptions`, `getImPushConfig`, `updateHMSPushToken`/`updateFCMPushToken`/`updateAPNsPushToken`, `reportPushAction`, `updateOwnUserInfoWithType`/`fetchUserInfoByIdWithType`, and the iOS-only `getAllChatRooms` route (no public API change);
 
 #### Other Signature Changes
 

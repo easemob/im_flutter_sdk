@@ -11,6 +11,7 @@
 - Removed the listenerless per-message `onMessageDeliveryAck` emission and the leftover `onMessagesRecalled` constant;
 - Removed the unreachable `from` fallback in conversation keyword search (`loadMsgWithKeywords`): Dart now only sends `senders`;
 - Removed the image message body `thumbnailSecret` pass-through (deprecated in native 5.0.0 and already removed in RN; the video body keeps it);
+- Removed the dead wrapper routes that no Dart code can reach: `uploadLog`, `removeMsgFromServerWithTimeStamp`, `getImPushConfig`, `updateHMSPushToken`, `updateFCMPushToken`, `reportPushAction`, `updateOwnUserInfoWithType`, and `fetchUserInfoByIdWithType`, together with the unreachable `pushConfig` parsing in `EMHelper`;
 
 ## 4.24.0
 - Upgraded the Android native SDK dependency to 4.24.1;

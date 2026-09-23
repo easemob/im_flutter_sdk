@@ -28,11 +28,7 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call
                   result:(FlutterResult)result {
-    if ([ChatGetImPushConfig isEqualToString:call.method]) {
-        [self getImPushConfig:call.arguments
-                  channelName:call.method
-                       result:result];
-    } else if ([ChatGetImPushConfigFromServer isEqualToString:call.method]) {
+    if ([ChatGetImPushConfigFromServer isEqualToString:call.method]) {
         [self getImPushConfigFromServer:call.arguments
                             channelName:call.method
                                  result:result];
@@ -44,18 +40,6 @@
         [self updateImPushStyle:call.arguments
                     channelName:call.method
                          result:result];
-    } else if ([ChatBindDeviceToken isEqualToString:call.method]) {
-        [self  bindAPNsDeviceToken:call.arguments
-                       channelName:call.method
-                            result:result];
-    } else if ([ChatUpdateFCMPushToken isEqualToString:call.method]) {
-        [self  bindFCMToken:call.arguments
-                   channelName:call.method
-                        result:result];
-    } else if ([ChatReportPushAction isEqualToString:call.method]){
-        [self reportPushAction:call.arguments
-                   channelName:call.method
-                        result:result];
     } else if ([ChatSetConversationSilentMode isEqualToString:call.method]){
         [self setConversationSilentMode:call.arguments
                             channelName:call.method
@@ -105,17 +89,6 @@
     else{
         [super handleMethodCall:call result:result];
     }
-}
-
-- (void)getImPushConfig:(NSDictionary *)param
-            channelName:(NSString *)aChannelName
-                 result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    EMPushOptions *options = EMClient.sharedClient.pushManager.pushOptions;
-    [weakSelf wrapperCallBack:result
-                  channelName:aChannelName
-                        error:nil
-                       object:[options toJson]];
 }
 
 - (void)getImPushConfigFromServer:(NSDictionary *)param
@@ -182,44 +155,6 @@
                             error:aError
                            object:@(!aError)];
     }];
-}
-
-- (void)bindAPNsDeviceToken:(NSDictionary *)param
-            channelName:(NSString *)aChannelName
-                 result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    NSString *deviceToken = param[@"token"];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        EMError *error = [EMClient.sharedClient bindDeviceToken:deviceToken];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:error
-                               object:nil];
-        });
-    });
-}
-
-- (void)bindFCMToken:(NSDictionary *)param
-         channelName:(NSString *)aChannelName
-              result:(FlutterResult)result {
- __weak typeof(self) weakSelf = self;
- NSString *deviceToken = param[@"token"];
- dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-     [EMClient.sharedClient bindFCMToken:deviceToken completion:^(EMError * _Nullable aError) {
-         [weakSelf wrapperCallBack:result
-                       channelName:aChannelName
-                             error:aError
-                            object:nil];
-     }];
- });
-}
-
-
-- (void)reportPushAction:(NSDictionary *)param
-             channelName:(NSString *)aChannelName
-                  result:(FlutterResult)result {
-    
 }
 
 - (void)setConversationSilentMode:(NSDictionary *)param

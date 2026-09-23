@@ -24,7 +24,6 @@
     data[@"serverTransfer"] = @(self.isAutoTransferMessageAttachments);
     data[@"loadEmptyConversations"] = @(self.loadEmptyConversations);
     data[@"usingHttpsOnly"] = @(self.usingHttpsOnly);
-    data[@"pushConfig"] = @{@"pushConfig": @{@"apnsCertName": self.apnsCertName}};
     data[@"enableDNSConfig"] = @(self.enableDnsConfig);
     data[@"imPort"] = @(self.chatPort);
     data[@"imServer"] = self.chatServer;
@@ -71,7 +70,6 @@
     options.isAutoTransferMessageAttachments = [aJson[@"serverTransfer"] boolValue];
     options.loadEmptyConversations = [aJson[@"loadEmptyConversations"] boolValue];
     options.usingHttpsOnly = [aJson[@"usingHttpsOnly"] boolValue];
-    options.apnsCertName = aJson[@"pushConfig"][@"apnsCertName"];
     options.enableDnsConfig = [aJson[@"enableDNSConfig"] boolValue];
     options.chatPort = [aJson[@"imPort"] intValue];
     options.chatServer = aJson[@"imServer"];

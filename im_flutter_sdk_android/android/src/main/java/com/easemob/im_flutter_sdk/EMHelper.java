@@ -48,7 +48,6 @@ import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
 import com.hyphenate.exceptions.HyphenateException;
-import com.hyphenate.push.EMPushConfig;
 import com.hyphenate.chat.EMUserInfo;
 
 import org.json.JSONArray;
@@ -112,34 +111,6 @@ class OptionsHelper {
             if (json.has("dnsUrl")){
                 options.setDnsUrl(json.getString("dnsUrl"));
             }
-        }
-
-        if (json.has("pushConfig")) {
-            EMPushConfig.Builder builder = new EMPushConfig.Builder(context);
-            JSONObject pushConfig = json.getJSONObject("pushConfig");
-            if (pushConfig.getBoolean("enableMiPush")) {
-                builder.enableMiPush(pushConfig.getString("miAppId"), pushConfig.getString("miAppKey"));
-            }
-            if (pushConfig.getBoolean("enableFCM")) {
-                builder.enableFCM(pushConfig.getString("fcmId"));
-            }
-            if (pushConfig.getBoolean("enableOppoPush")) {
-                builder.enableOppoPush(pushConfig.getString("oppoAppKey"), pushConfig.getString("oppoAppSecret"));
-            }
-            if (pushConfig.getBoolean("enableHWPush")) {
-                builder.enableHWPush();
-            }
-            if (pushConfig.getBoolean("enableMeiZuPush")) {
-                builder.enableMeiZuPush(pushConfig.getString("mzAppId"), pushConfig.getString("mzAppKey"));
-            }
-            if (pushConfig.getBoolean("enableVivoPush")) {
-                boolean agreePrivacyStatement = pushConfig.getBoolean("agreePrivacyStatement");
-                builder.enableVivoPush(agreePrivacyStatement);
-            }
-            if(pushConfig.getBoolean("enableHonorPush")) {
-                builder.enableHonorPush();
-            }
-            options.setPushConfig(builder.build());
         }
 
         // 450

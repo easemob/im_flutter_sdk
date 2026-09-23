@@ -6,7 +6,6 @@ class ChatMethodKeys {
   static const String logout = "logout";
   static const String changeAppKey = "changeAppKey";
 
-  static const String uploadLog = "uploadLog";
   static const String compressLogs = "compressLogs";
   static const String kickDevice = "kickDevice";
   static const String kickAllDevices = "kickAllDevices";
@@ -104,7 +103,6 @@ class ChatMethodKeys {
   static const String onStreamMessagesReceived = "onStreamMessagesReceived";
   static const String onCmdMessagesReceived = "onCmdMessagesReceived";
   static const String onMessagesDelivered = "onMessagesDelivered";
-  static const String onMessageChanged = "onMessageChanged";
 
   static const String onConversationUpdate = "onConversationUpdate";
   // 5.0.0
@@ -149,9 +147,6 @@ class ChatMethodKeys {
   static const String loadMsgWithMsgType = "loadMsgWithMsgType";
   static const String loadMsgWithTime = "loadMsgWithTime";
   static const String messageCount = "messageCount";
-
-  static const String removeMsgFromServerWithTimeStamp =
-      "removeMsgFromServerWithTimeStamp";
 
   /// ChatMessage method
   static const String getReactionList = "getReactionList";
@@ -264,16 +259,10 @@ class ChatMethodKeys {
   static const String onGroupChanged = "onGroupChanged";
 
   /// ChatPushManager
-  static const String getImPushConfig = "getImPushConfig";
   static const String getImPushConfigFromServer = "getImPushConfigFromServer";
   static const String updateImPushStyle = "updateImPushStyle";
   static const String updatePushNickname = "updatePushNickname";
 
-  static const String updateHMSPushToken = "updateHMSPushToken";
-  static const String updateFCMPushToken = "updateFCMPushToken";
-  static const String updateAPNsPushToken = "updateAPNsPushToken";
-
-  static const String reportPushAction = "reportPushAction";
   static const String setConversationSilentMode = "setConversationSilentMode";
   static const String removeConversationSilentMode =
       "removeConversationSilentMode";
@@ -293,9 +282,7 @@ class ChatMethodKeys {
 
   /// ChatUserInfoManager methods
   static const String updateOwnUserInfo = "updateOwnUserInfo";
-  static const String updateOwnUserInfoWithType = "updateOwnUserInfoWithType";
   static const String fetchUserInfoById = "fetchUserInfoById";
-  static const String fetchUserInfoByIdWithType = "fetchUserInfoByIdWithType";
 
   /// ChatPresenceManager methods
   static const String presenceWithDescription =
@@ -340,8 +327,6 @@ class ChatMethodKeys {
       'addRemoteAndLocalConversationsMark';
   static const String deleteRemoteAndLocalConversationsMark =
       'deleteRemoteAndLocalConversationsMark';
-  static const String fetchConversationsByOptions =
-      'fetchConversationsByOptions';
   static const String deleteAllMessageAndConversation =
       'deleteAllMessageAndConversation';
   static const String pinMessage = 'pinMessage';

@@ -14,6 +14,7 @@
 - Removed the unreachable `sender` fallback in conversation keyword search (`loadMsgWithKeywords`): Dart now only sends `senders`;
 - Removed the image message body `thumbnailSecret` pass-through (removed in RN as well; the video body keeps it);
 - Fixed the video message body toJson key mistakenly written as `thumbnailSecretKey`; it is now `thumbnailSecret` to align with Dart/Android (the native property name is unchanged);
+- Removed the dead wrapper routes that no Dart code can reach: `uploadLog`, `removeMsgFromServerWithTimeStamp`, `getAllChatRooms`, `getImPushConfig`, the legacy `updateAPNsPushToken`/`updateFCMPushToken`/`reportPushAction` push routes, `updateOwnUserInfoWithType`, and `fetchUserInfoByIdWithType`, together with the unreachable `pushConfig` read/write in `OptionsHelper`;
 
 ## 4.24.0
 - Upgraded the iOS native SDK dependency to 4.24.1;

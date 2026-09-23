@@ -93,12 +93,6 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
                channelName:call.method
                     result:result];
     }
-    else if ([ChatUploadLog isEqualToString:call.method])
-    {
-        [self uploadLog:call.arguments
-            channelName:call.method
-                 result:result];
-    }
     else if ([ChatCompressLogs isEqualToString:call.method])
     {
         [self compressLogs:call.arguments
@@ -383,16 +377,6 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
                         error:nil
                        object:username];
     
-}
-
-- (void)uploadLog:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self)weakSelf = self;
-    [EMClient.sharedClient uploadDebugLogToServerWithCompletion:^(EMError *aError) {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:nil];
-    }];
 }
 
 - (void)compressLogs:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {

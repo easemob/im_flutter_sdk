@@ -102,10 +102,6 @@
         [self messageCount:call.arguments
                channelName:call.method
                     result:result];
-    } else if ([ChatRemoveMsgFromServerWithTimeStamp isEqualToString:call.method]) {
-        [self removeMsgFromServerWithTimeStamp:call.arguments
-                                   channelName:call.method
-                                        result:result];
     }
     // 450
     else if ([pinnedMessages isEqualToString:call.method]) {
@@ -392,21 +388,6 @@
                       channelName:aChannelName
                             error:error
                            object:@(!error)];
-    }];
-}
-
-- (void)removeMsgFromServerWithTimeStamp:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
-{
-    __weak typeof(self) weakSelf = self;
-    [self getConversationWithParam:param
-                        completion:^(EMConversation *conversation){
-        long timestamp = [param[@"timestamp"] longValue];
-        [conversation removeMessagesFromServerWithTimeStamp:timestamp completion:^(EMError * _Nullable aError) {
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:aError
-                               object:nil];
-        }];
     }];
 }
 
