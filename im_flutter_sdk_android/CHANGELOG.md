@@ -1,5 +1,6 @@
 ## 5.0.0
 - Upgraded the Android native SDK dependency to 5.0.0;
+- Registered the iOS-only PushKit method keys (`bindPushKitToken`, `unbindPushKitToken`) to keep the cross-end contract aligned; Android has no PushKit API, so both routes answer with `EMError.OPERATION_UNSUPPORTED` and the Dart API never dispatches them on Android;
 - Adapted to Token login, data sync, batch read receipts, and the group configuration rework;
 - Removed the legacy wrapper routes and listener callbacks deleted in native 5.0.0;
 - Consolidated disconnection events into `onDisconnected` with platform reason codes passed through: `onDisconnected(int)` no longer splits events by reason code, and the device info for code 206 is merged into `onLogout` and delivered with the same event;

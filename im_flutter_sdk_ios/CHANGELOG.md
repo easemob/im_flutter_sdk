@@ -1,5 +1,8 @@
 ## 5.0.0
 - Upgraded the iOS native SDK dependency to 5.0.0, keeping CocoaPods and SPM consistent;
+- Added the PushKit (VoIP push) route: `bindPushKitToken` calls `registerPushKitToken:completion:` and `unbindPushKitToken` calls `unRegisterPushKitTokenWithCompletion:`;
+- `OptionsHelper` maps the certificate names as initialization options again: `apnsCertName` and `pushKitCertName` are read from the init payload and written to `EMOptions` (and returned by `toJson`), instead of being assigned while binding a token;
+- `bindDeviceToken` no longer writes `options.apnsCertName` at runtime, and it ignores the `notifierName` sent by Dart;
 - Adapted to Token login, data sync, batch read receipts, and the group configuration rework;
 - Adapted to per-conversation delegates and the removals in native 5.0.0;
 - Fixed an issue where paged group read receipt fetches did not return `totalCount`;

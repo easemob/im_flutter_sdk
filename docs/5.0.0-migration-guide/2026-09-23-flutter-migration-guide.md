@@ -522,50 +522,96 @@ ChatClient.getInstance.addConnectionEventHandler(
 
 ## 推送与设备 Token
 
-`ChatOptions` 中 8 个厂商推送开关全部删除，统一改用 `ChatPushManager.bindDeviceToken`：
+`ChatOptions` 中 8 个厂商推送开关全部删除，推送配置改为「初始化时配置证书名（仅 iOS）+ 运行时绑定设备 Token」：
 
 | 4.x API | 5.0.0 替代方式 |
 | :--- | :--- |
-| `ChatOptions.enableOppoPush(appKey, secret)`、`enableMiPush(appId, appKey)`、`enableMeiZuPush(appId, appKey)`、`enableFCM(appId)`、`enableVivoPush(agreePrivacyStatement)`、`enableHWPush()`、`enableAPNs(certName)`、`enableHonorPush()` | `ChatPushManager.bindDeviceToken({required String notifierName, required String deviceToken})` |
-| `ChatPushManager.updateHMSPushToken(...)`、`updateFCMPushToken(...)`、`updateAPNsDeviceToken(...)` | `ChatPushManager.bindDeviceToken({notifierName, deviceToken})` |
+| `ChatOptions.enableAPNs(certName)` | `ChatOptions.apnsCertName`（初始化时配置，仅 iOS） |
+| `ChatOptions.enableOppoPush(appKey, secret)`、`enableMiPush(appId, appKey)`、`enableMeiZuPush(appId, appKey)`、`enableFCM(appId)`、`enableVivoPush(agreePrivacyStatement)`、`enableHWPush()`、`enableHonorPush()` | `ChatPushManager.bindDeviceToken({required String deviceToken, String? notifierName})`，其中 `notifierName` 传厂商推送凭据（仅 Android 需要） |
+| `ChatPushManager.updateHMSPushToken(...)`、`updateFCMPushToken(...)`、`updateAPNsDeviceToken(...)` | `ChatPushManager.bindDeviceToken({deviceToken, notifierName})` |
 
-同时 `ChatOptions` 不再序列化 `pushConfig` 字段，承载厂商推送 appId / appKey / 证书名的 `ChatPushConfig` 类已删除（注意：与之名称相近的 `ChatPushConfigs`（推送通知设置）仍存在，两者无关）。推送配置改为「初始化时不配置厂商参数，运行时绑定设备 Token」。
+`ChatOptions` 不再序列化 `pushConfig` 字段，承载厂商推送 appId / appKey 的 `ChatPushConfig` 类已删除（注意：与之名称相近的 `ChatPushConfigs`（推送通知设置）仍存在，两者无关）。iOS 的两个证书名以**独立字段**回到 `ChatOptions`（`apnsCertName`、`pushKitCertName`），与原生 `EMOptions` 的同名属性一一对应，`pushConfig` 不恢复。
 
 :::warning
-`notifierName` **不是厂商标识串**，两端取值语义不同，传错会直接导致推送不可用：
+**iOS 的证书名只能在初始化时设置，运行时不可修改**：`ChatOptions.apnsCertName` 与 `ChatOptions.pushKitCertName` 在调用 `ChatClient.init` 时下发给原生，绑定 token 时由原生直接读取该属性。因此：
 
-- **iOS**：插件把它写入原生的 `apnsCertName`，因此必须传环信控制台配置的 **APNs 证书名**，即 4.x `enableAPNs(certName)` 里的 `certName`（**不是** `'APNs'`）。
-- **Android**：原生要求传**厂商推送凭据**，对应 4.x 各 `enable*Push` 中配置的值。
+- `bindDeviceToken` 的 `notifierName` 在 **iOS 上被忽略**（不再写入证书名）。升级后必须在 `ChatOptions` 中配置 `apnsCertName`，否则绑定失败（原生返回 `EMErrorUserIllegalArgument`，提示证书名为空）；
+- 两个字段都是 `ChatClient.init` 的初始化配置，不可通过 `copyWith` 等方法在运行中修改，需要变更只能重新初始化 SDK。
+:::
+
+:::warning
+`notifierName` 在 **Android 上是必填的厂商推送凭据**，既不是证书名也不是厂商标识串，传空或传错会直接导致推送不可用（原生返回参数非法错误）：
 
 | 平台 / 厂商 | `notifierName` 取值 | 4.x 对应来源 |
 | :--- | :--- | :--- |
-| iOS（APNs） | 控制台证书名 | `enableAPNs(certName)` 的 `certName` |
+| iOS | 忽略该参数，证书名见 `ChatOptions.apnsCertName` | `enableAPNs(certName)` 的 `certName` |
 | Android FCM | Sender ID | `enableFCM(appId)` 的 `appId` |
 | Android 小米 | App ID | `enableMiPush(appId, appKey)` 的 `appId` |
 | Android 魅族 | App ID | `enableMeiZuPush(appId, appKey)` 的 `appId` |
 | Android OPPO | App Key | `enableOppoPush(appKey, secret)` 的 `appKey` |
 | Android 华为 HMS | App ID | 原生工程配置（`enableHWPush()` 无参） |
+| Android 荣耀 | App ID | 原生工程配置（`enableHonorPush()` 无参） |
 | Android VIVO | `App ID` + `#` + `App Key` | 原生工程配置（`enableVivoPush(agreePrivacyStatement)`） |
 
-荣耀推送未列在原生接口说明中，取值以原生 SDK 文档为准；`deviceToken` 由厂商推送 SDK 在运行时返回，需业务自行接入厂商推送插件获取。
+`deviceToken` 由厂商推送 SDK 或 APNs 在运行时返回，需业务自行接入对应推送插件获取。
 :::
 
 :::warning
-厂商推送的**工程侧配置责任转移到业务侧**：4.x 通过 `ChatOptions` 在初始化时下发 appId / appKey / 证书名，5.0.0 删除后，Android 的厂商推送依赖与 manifest 配置、iOS 的推送证书与控制台配置都需先在原生工程侧完成，Flutter 侧只负责在拿到 `deviceToken` 后调用 `bindDeviceToken`。`enableVivoPush(agreePrivacyStatement)` 这类「隐私声明同意」参数在 5.0.0 没有对应入口，需在原生工程配置中处理。
+厂商推送的**工程侧配置责任转移到业务侧**：Android 的厂商推送依赖与 manifest 配置、iOS 的推送证书与控制台配置都需先在原生工程侧完成，Flutter 侧只负责在 `ChatOptions` 里配置 iOS 证书名、以及在拿到 `deviceToken` 后调用 `bindDeviceToken`。`enableVivoPush(agreePrivacyStatement)` 这类「隐私声明同意」参数在 5.0.0 没有对应入口，需在原生工程配置中处理。
 :::
 
 ```dart
-// iOS：notifierName 传 APNs 证书名
+// iOS：证书名在初始化时配置，绑定时不传 notifierName
+final options = ChatOptions.withAppKey(
+  appKey,
+  apnsCertName: 'your_apns_cert_name', // 控制台配置的 APNs 证书名
+);
+await ChatClient.getInstance.init(options);
+// ...
 await ChatClient.getInstance.pushManager.bindDeviceToken(
-  notifierName: apnsCertName,
   deviceToken: apnsDeviceToken,
 );
 
 // Android：notifierName 传厂商凭据（下例为 FCM Sender ID）
 await ChatClient.getInstance.pushManager.bindDeviceToken(
-  notifierName: fcmSenderId,
   deviceToken: fcmToken,
+  notifierName: fcmSenderId,
 );
+```
+
+### PushKit（VoIP 推送）
+
+VoIP 推送使用独立的 PushKit 证书与 PushKit token，与上面的普通推送（APNs / 厂商推送）不是同一套配置：`bindDeviceToken` 只处理普通推送 token，VoIP 推送需要下面这几个 **iOS 专用**入口。
+
+4.x 的 Flutter SDK 未暴露 PushKit 能力（`ChatOptions` 与 `ChatPushManager` 都没有对应入口），5.0.0 新增：
+
+| 新增 API | 接口说明 |
+| :--- | :--- |
+| `ChatOptions.pushKitCertName` | 控制台配置的 **PushKit 证书名**（不是 APNs 证书名）。与 `apnsCertName` 一样，仅初始化时生效、运行时不可修改。 |
+| `ChatPushManager.bindPushKitToken({required String deviceToken})` | 绑定 PushKit token。`deviceToken` 传 `PKPushRegistry` 回调返回的 token（十六进制字符串）。 |
+| `ChatPushManager.unbindPushKitToken()` | 解绑 PushKit token。`ChatClient.logout(unbindDeviceToken: true)` 已经会同时解绑，仅在用户保持登录状态、需要单独解绑时才调用。 |
+
+使用要点：
+
+- **仅 iOS 有效**：Dart 接口在其他平台直接返回、不做任何处理，跨平台代码无需自行判断平台；Android 侧的原生 SDK 没有 PushKit API，对应通道路由只会返回「不支持」错误（正常调用路径不可达）。
+- PushKit token 需要业务在 iOS 工程侧自行实现 `PKPushRegistry`（`pushRegistry(_:didUpdate:for:)` 回调）拿到，再传入 Flutter 调用；Flutter SDK 不负责申请 VoIP 推送权限，证书也需在控制台与原生工程侧配置完成。
+- 原生 SDK 会先缓存 token 再执行绑定：未登录时调用会抛错（用户未登录），但 token 已缓存，登录成功后 SDK 会自动完成绑定并带退避重试。
+- 绑定失败最常见的原因是 `ChatOptions.pushKitCertName` 未配置或为空（原生返回 `EMErrorUserIllegalArgument`），其次是未登录（`EMErrorUserNotLogin`）。
+
+```dart
+// iOS：初始化时配置 PushKit 证书名
+final options = ChatOptions.withAppKey(
+  appKey,
+  apnsCertName: 'your_apns_cert_name',
+  pushKitCertName: 'your_pushkit_cert_name',
+);
+await ChatClient.getInstance.init(options);
+// ...
+// 拿到 PKPushRegistry 回调的 token 后绑定；保持登录状态下可单独解绑
+await ChatClient.getInstance.pushManager.bindPushKitToken(
+  deviceToken: voipPushToken,
+);
+await ChatClient.getInstance.pushManager.unbindPushKitToken();
 ```
 
 ## 其他删除的 API
@@ -579,7 +625,7 @@ await ChatClient.getInstance.pushManager.bindDeviceToken(
 | `ChatRoomManager` | `createChatRoom({...})` | 创建聊天室。 | 通过服务端 REST API 创建聊天室。 |
 | `ChatRoomManager` | `destroyChatRoom(roomId)` | 解散聊天室。 | 通过服务端 REST API 解散聊天室。 |
 | `ChatGroupManager` | `fetchPublicGroupsFromServer({pageSize, cursor})` | 分页获取服务端公开群组列表。 | 由业务服务维护可发现的群组目录。 |
-| `ChatPushConfig` | `ChatOptions.pushConfig` 不再序列化，承载厂商推送 appId / appKey / 证书名的 `ChatPushConfig` 类（及 `EMPushConfig` 兼容 typedef）已删除。 | 初始化时配置厂商推送参数。 | 厂商推送配置改由控制台与 `ChatPushManager.bindDeviceToken` 承担。 |
+| `ChatPushConfig` | `ChatOptions.pushConfig` 不再序列化，承载厂商推送 appId / appKey / 证书名的 `ChatPushConfig` 类（及 `EMPushConfig` 兼容 typedef）已删除。 | 初始化时配置厂商推送参数。 | iOS 证书名改由 `ChatOptions.apnsCertName` / `pushKitCertName` 承担，Android 厂商凭据改由 `ChatPushManager.bindDeviceToken` 承担。 |
 
 ### 有替代方式
 
@@ -600,7 +646,7 @@ await ChatClient.getInstance.pushManager.bindDeviceToken(
 | `ChatImageMessageBody.thumbnailSecret` | `ChatImageMessageBody.secret` | 图片消息的附件密钥。 | 图片原图、大图、缩略图共用一个密钥，改用 `secret`；视频消息的 `thumbnailSecret` 未废弃，保持不变。 |
 | `ChatMessage.groupAckCount()` | `ChatMessage.groupReadReceiptCount` | 群消息已读人数。 | 由异步方法改为同步只读属性。 |
 | `ChatGroupManager.fetchJoinedGroupsFromServer({pageSize, pageNum, needMemberCount, needRole})` | `ChatGroupManager.getJoinedGroups()` | 获取已加入的群组列表。 | 分页服务端拉取接口删除，改用本地接口配合数据同步事件。 |
-| 全部厂商推送 Token 接口：`updateHMSPushToken(...)`、`updateFCMPushToken(...)`、`updateAPNsDeviceToken(...)`（均已废弃） | `ChatPushManager.bindDeviceToken({notifierName, deviceToken})` | 上报推送设备 Token。 | 统一为一个入口；`notifierName` 在 iOS 上是 APNs 证书名、在 Android 上是厂商推送凭据，**不是厂商标识串**，取值见「推送与设备 Token」一节。 |
+| 全部厂商推送 Token 接口：`updateHMSPushToken(...)`、`updateFCMPushToken(...)`、`updateAPNsDeviceToken(...)`（均已废弃） | `ChatPushManager.bindDeviceToken({deviceToken, notifierName})` | 上报推送设备 Token。 | 统一为一个入口；`notifierName` 仅 Android 需要（厂商推送凭据，**不是厂商标识串**），iOS 忽略该参数并在初始化时用 `ChatOptions.apnsCertName` 配置证书名，取值见「推送与设备 Token」一节。 |
 
 ## 主要新增 API
 
@@ -621,7 +667,9 @@ await ChatClient.getInstance.pushManager.bindDeviceToken(
 | `ChatMessageReadReceipt`、`ChatGroupReadReceipt` | — | 统一的消息已读回执与群消息已读详情模型。 |
 | `ChatCursorResult` | `totalCount` | 新增可空的分页结果总数；仅 `fetchGroupMessageReadReceipts` 的 iOS 实现返回，Android 为 `null`。 |
 | `ChatMultiDevicesEvent` | `GROUP_UPDATE`、`CONVERSATION_UNREAD_MESSAGE_COUNT_CLEARED`、`ALL_CONVERSATION_UNREAD_MESSAGE_COUNT_CLEARED` | 群组更新与多设备未读数清理事件。 |
-| `ChatPushManager` | `bindDeviceToken({notifierName, deviceToken})` | 4.x 已存在的统一入口；5.0.0 起删除厂商推送开关后成为唯一入口，并非新增 API。 |
+| `ChatOptions` | `apnsCertName`、`pushKitCertName` | iOS 专用：APNs 与 PushKit 推送证书名，仅初始化时生效、运行时不可修改；承接 4.x `enableAPNs(certName)` 与推送配置里的证书名。 |
+| `ChatPushManager` | `bindDeviceToken({deviceToken, notifierName})` | 4.x 已存在的统一入口；5.0.0 起删除厂商推送开关后成为唯一入口，`notifierName` 改为可选且仅 Android 使用，并非新增 API。 |
+| `ChatPushManager` | `bindPushKitToken({deviceToken})`、`unbindPushKitToken()` | iOS 专用：绑定与解绑苹果 PushKit（VoIP 推送）token，与普通推送 token 相互独立，详见「推送与设备 Token」一节。 |
 
 ## 监听器回调变化汇总
 
@@ -715,6 +763,8 @@ ChatClient.getInstance.removeConnectionEventHandler('app');
 
 - **不要用回执 / 已读详情接口探测消息是否存在**。传入本地不存在的 `messageId` 时两端行为不一致：`sendMessageReadReceipts` / `getGroupMessageReadReceipts` 会跳过无法解析的条目（整批都无法解析时返回 `110`）；`fetchGroupMessageReadReceipts` 在 iOS 上返回成功且结果集为空，在 Android 上由原生根据本地消息推导群 ID，消息不存在时可能直接崩溃（原生层空指针，Dart 侧 `try/catch` 无法拦住；该问题属原生侧，Flutter 层未做兜底）。请先用 `loadMessagesWithIds` 或会话消息列表确认消息在本地存在。
 - **`ChatCursorResult.totalCount` 仅 iOS 有值**，Android 恒为 `null`，展示总已读数时需兜底。
+- **PushKit 接口仅 iOS 有效**：`bindPushKitToken` / `unbindPushKitToken` 在 Dart 层对非 iOS 平台是空实现（Android 原生 SDK 没有对应的 PushKit 能力，其通道路由返回「不支持」错误）；VoIP 推送的证书申请、`PKPushRegistry` 注册与 token 获取都由业务侧 iOS 工程承担，Flutter SDK 只负责在初始化时下发证书名（`ChatOptions.pushKitCertName`），并把运行时拿到的 token 交给原生 SDK 绑定。
+- **iOS 推送证书名不支持运行时修改**：`ChatOptions.apnsCertName` / `pushKitCertName` 只在 `ChatClient.init` 时下发给原生，`copyWith` 等运行期入口不会更新它们；`bindDeviceToken` 的 `notifierName` 在 iOS 上也不生效。
 - **群字段读取存在平台差异**：iOS 上 `ChatGroup.maxUserCount` / `extension` 不下发（改读 `configs?.maxCount` / `configs?.ext`），`configs` 本身也可能为 `null`；Android 上 `configs.inviteNeedConfirm` 固定回传 `false`。详见「群组配置模型重构」一节的 warning。
 - **`onMessageReadReceipts` 需要双账号场景才能观察到**：自己发、自己读不会产生已读回执事件，联调时请用另一个账号读取消息。
 - **退出事件与登出存在时序竞态**：平台先派发事件、后完成登出，不要在 `onDisconnected` / `onTokenDidExpire` 里发起依赖登录态的调用（包括用 `isConnected()` / `getCurrentUserId()` 反推是否已退出）。
@@ -731,6 +781,8 @@ ChatClient.getInstance.removeConnectionEventHandler('app');
 - [ ] 已读回执改用 `sendMessageReadReceipts`，未读数清理改用 `clearConversationUnreadMessageCount` / `clearAllConversationUnreadMessageCount`；按 ID 加载消息时已注意 `loadMessagesWithIds` 单次 20 条上限
 - [ ] 群组创建与配置更新改用 `ChatGroupConfigs` 与 `updateGroupConfigs`，`ChatGroupStyle` / `ChatGroupOptions` / `ChatGroup.isMemberOnly` 引用已清理，并已处理群字段的可空与平台差异
 - [ ] 设备管理与踢下线接口改为 Token 参数形式
-- [ ] 推送配置改为 `ChatPushManager.bindDeviceToken`，已删除厂商推送开关引用，并确认 `notifierName` 取值（iOS 为 APNs 证书名、Android 为厂商凭据）
+- [ ] 推送配置改为 `ChatPushManager.bindDeviceToken`，已删除厂商推送开关引用；确认 `notifierName` 仅在 Android 使用、值为厂商凭据
+- [ ] iOS 已在 `ChatOptions` 初始化时配置 `apnsCertName`（需要 VoIP 推送时还有 `pushKitCertName`），且未依赖运行期修改证书名
+- [ ] 需要 VoIP 推送时，iOS 侧已实现 `PKPushRegistry` 并改用 `ChatPushManager.bindPushKitToken({deviceToken})`（与普通推送 token 相互独立，其他平台调用为空实现）
 - [ ] Android 应用模块 `compileSdk` ≥ 34（原生 5.0.0 新增 androidx 传递依赖）
 - [ ] 清理全部 `@Deprecated` 公开 API 的调用（推荐全局搜索 `EM` 前缀类型名与废弃方法名；`em_compat.dart` 中的 65 个 `EM*` typedef 本次仍保留，只有 `EMPushConfig` 随 `ChatPushConfig` 删除，改用 `Chat*` 名称属于长期建议而非本次强制项）
