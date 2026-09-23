@@ -8,7 +8,6 @@ public class MethodKey {
     static final String logout = "logout";
     static final String changeAppKey = "changeAppKey";
 
-    static final String uploadLog = "uploadLog";
     static final String compressLogs = "compressLogs";
     static final String kickDevice = "kickDevice";
     static final String kickAllDevices = "kickAllDevices";
@@ -71,6 +70,8 @@ public class MethodKey {
     static final String importMessages = "importMessages";
     static final String loadAllConversations = "loadAllConversations";
     static final String deleteConversation = "deleteConversation";
+    // 5.0.0
+    static final String deleteConversations = "deleteConversations";
     static final String fetchHistoryMessagesByOptions = "fetchHistoryMessagesByOptions";
     static final String searchChatMsgFromDB = "searchChatMsgFromDB";
     static final String getMessage = "getMessage";
@@ -97,7 +98,6 @@ public class MethodKey {
     // 5.0.0
     static final String onMessageReadReceipts = "onMessageReadReceipts";
     static final String onMessagesDelivered = "onMessagesDelivered";
-    static final String onMessagesRecalled = "onMessagesRecalled";
 
     static final String onConversationUpdate = "onConversationUpdate";
 
@@ -109,7 +109,6 @@ public class MethodKey {
     static final String onMessageProgressUpdate = "onMessageProgressUpdate";
     static final String onMessageError = "onMessageError";
     static final String onMessageSuccess = "onMessageSuccess";
-    static final String onMessageDeliveryAck = "onMessageDeliveryAck";
 
     /// EMConversation
     static final String getUnreadMsgCount = "getUnreadMsgCount";
@@ -130,7 +129,6 @@ public class MethodKey {
     static final String loadMsgWithMsgType = "loadMsgWithMsgType";
     static final String loadMsgWithTime = "loadMsgWithTime";
     static final String messageCount = "messageCount";
-    static final String removeMsgFromServerWithTimeStamp = "removeMsgFromServerWithTimeStamp";
 
     // EMMessage method
     static final String getReactionList = "getReactionList";
@@ -227,13 +225,9 @@ public class MethodKey {
     static final String onGroupChanged = "onGroupChanged";
 
     /// EMPushManager
-    static final String getImPushConfig = "getImPushConfig";
     static final String getImPushConfigFromServer = "getImPushConfigFromServer";
     static final String updateImPushStyle = "updateImPushStyle";
     static final String updatePushNickname = "updatePushNickname";
-    static final String updateHMSPushToken = "updateHMSPushToken";
-    static final String updateFCMPushToken = "updateFCMPushToken";
-    static final String reportPushAction = "reportPushAction";
     static final String setConversationSilentMode = "setConversationSilentMode";
     static final String removeConversationSilentMode = "removeConversationSilentMode";
     static final String fetchConversationSilentMode = "fetchConversationSilentMode";
@@ -247,9 +241,7 @@ public class MethodKey {
 
     /// EMUserInfoManager 
     static final String updateOwnUserInfo = "updateOwnUserInfo";
-    static final String updateOwnUserInfoWithType = "updateOwnUserInfoWithType";
     static final String fetchUserInfoById = "fetchUserInfoById";
-    static final String fetchUserInfoByIdWithType = "fetchUserInfoByIdWithType";
 
     /// EMPresenceManager methods
     static final String presenceWithDescription = "publishPresenceWithDescription";

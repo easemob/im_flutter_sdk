@@ -89,6 +89,8 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                 loadAllConversations(params, call.method, result);
             } else if (MethodKey.deleteConversation.equals(call.method)) {
                 deleteConversation(params, call.method, result);
+            } else if (MethodKey.deleteConversations.equals(call.method)) {
+                deleteConversations(params, call.method, result);
             } else if (MethodKey.fetchHistoryMessagesByOptions.equals(call.method)) {
                 fetchHistoryMessagesByOptions(params, call.method, result);
             } else if (MethodKey.searchChatMsgFromDB.equals(call.method)) {
@@ -268,8 +270,6 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             }
         });
         EMClient.getInstance().chatManager().sendMessage(finalMsg);
-        asyncRunnable(() -> onSuccess(result, channelName, MessageHelper.toJson(finalMsg)));
-        EMClient.getInstance().chatManager().sendMessage(msg);
         asyncRunnable(() -> onSuccess(result, channelName, MessageHelper.toJson(finalMsg)));
     }
 
@@ -711,6 +711,17 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
         });
     }
 
+    // 5.0.0
+    private void deleteConversations(JSONObject params, String channelName, Result result) throws JSONException {
+        JSONArray ids = params.getJSONArray("convIds");
+        List<String> conversationIds = new ArrayList<>();
+        for (int i = 0; i < ids.length(); i++) {
+            conversationIds.add(ids.getString(i));
+        }
+        boolean deleteMessages = params.optBoolean("deleteMessages", true);
+        EMClient.getInstance().chatManager().asyncDeleteConversations(conversationIds, deleteMessages, new EMWrapperCallBack(result, channelName, null));
+    }
+
     private void fetchHistoryMessagesByOptions(JSONObject params, String channelName, Result result) throws JSONException {
         String conId = params.getString("convId");
         EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("type"));
@@ -1036,8 +1047,6 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                 ArrayList<Map<String, Object>> msgList = new ArrayList<>();
                 for (EMMessage message : messages) {
                     msgList.add(MessageHelper.toJson(message));
-                    post(() -> messageChannel.invokeMethod(MethodKey.onMessageDeliveryAck,
-                            MessageHelper.toJson(message)));
                 }
                 post(() -> channel.invokeMethod(MethodKey.onMessagesDelivered, msgList));
             }

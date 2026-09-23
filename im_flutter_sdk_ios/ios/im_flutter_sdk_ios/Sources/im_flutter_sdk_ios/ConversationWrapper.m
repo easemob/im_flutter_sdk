@@ -102,10 +102,6 @@
         [self messageCount:call.arguments
                channelName:call.method
                     result:result];
-    } else if ([ChatRemoveMsgFromServerWithTimeStamp isEqualToString:call.method]) {
-        [self removeMsgFromServerWithTimeStamp:call.arguments
-                                   channelName:call.method
-                                        result:result];
     }
     // 450
     else if ([pinnedMessages isEqualToString:call.method]) {
@@ -395,21 +391,6 @@
     }];
 }
 
-- (void)removeMsgFromServerWithTimeStamp:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
-{
-    __weak typeof(self) weakSelf = self;
-    [self getConversationWithParam:param
-                        completion:^(EMConversation *conversation){
-        long timestamp = [param[@"timestamp"] longValue];
-        [conversation removeMessagesFromServerWithTimeStamp:timestamp completion:^(EMError * _Nullable aError) {
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:aError
-                               object:nil];
-        }];
-    }];
-}
-
 #pragma mark - load messages
 - (void)loadMsgWithId:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
 {
@@ -495,10 +476,6 @@
     long long timestamp = [param[@"timestamp"] longLongValue];
     int count = [param[@"count"] intValue];
     NSArray *senders = param[@"senders"];
-    NSString *sender = param[@"sender"];
-    if(senders == nil && sender != nil) {
-        senders = @[sender];
-    }
     EMMessageSearchScope scope = (EMMessageSearchScope)[param[@"searchScope"] intValue];
     EMMessageSearchDirection direction = [EnumTools searchDirectionFromInt:[param[@"direction"] integerValue]];
     [self getConversationWithParam:param

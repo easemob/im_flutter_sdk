@@ -33,10 +33,7 @@ public class PushManagerWrapper extends Wrapper implements MethodCallHandler {
     public void onMethodCall(MethodCall call, Result result) {
         JSONObject param = (JSONObject)call.arguments;
         try {
-            if (MethodKey.getImPushConfig.equals(call.method)) {
-                getImPushConfig(param, call.method, result);
-            }
-            else if(MethodKey.getImPushConfigFromServer.equals(call.method)){
+            if(MethodKey.getImPushConfigFromServer.equals(call.method)){
                 getImPushConfigFromServer(param, call.method, result);
             }
             else if(MethodKey.updatePushNickname.equals(call.method)){
@@ -44,15 +41,6 @@ public class PushManagerWrapper extends Wrapper implements MethodCallHandler {
             }
             else if(MethodKey.updateImPushStyle.equals(call.method)){
                 updateImPushStyle(param, call.method, result);
-            }
-            else if(MethodKey.updateHMSPushToken.equals(call.method)){
-                updateHMSPushToken(param, call.method, result);
-            }
-            else if(MethodKey.updateFCMPushToken.equals(call.method)){
-                updateFCMPushToken(param, call.method, result);
-            }
-            else if (MethodKey.reportPushAction.equals(call.method)) {
-                reportPushAction(param, call.method, result);
             }
             else if (MethodKey.setConversationSilentMode.equals(call.method)) {
                 setConversationSilentMode(param, call.method, result);
@@ -99,14 +87,6 @@ public class PushManagerWrapper extends Wrapper implements MethodCallHandler {
         }
     }
 
-    private void getImPushConfig(JSONObject params, String channelName,  Result result) throws JSONException {
-        asyncRunnable(()->{
-            EMPushConfigs configs = EMClient.getInstance().pushManager().getPushConfigs();
-            onSuccess(result, channelName, PushConfigsHelper.toJson(configs));
-        });
-
-    }
-
     private void getImPushConfigFromServer(JSONObject params, String channelName,  Result result) throws JSONException {
         // 4.24.0: migrate to the async native API added in SDK 4.24.0
         EMValueWrapperCallBack<EMPushConfigs> callBack = new EMValueWrapperCallBack<EMPushConfigs>(result, channelName) {
@@ -136,24 +116,6 @@ public class PushManagerWrapper extends Wrapper implements MethodCallHandler {
         EMClient.getInstance().pushManager().asyncUpdatePushDisplayStyle(style, new EMWrapperCallBack(result, channelName, true));
     }
 
-
-    private void updateHMSPushToken(JSONObject params, String channelName,  Result result) throws JSONException {
-        String token = params.getString("token");
-        asyncRunnable(()->{
-            EMClient.getInstance().sendHMSPushTokenToServer(token);
-            onSuccess(result, channelName, token);
-        });
-    }
-
-    private void updateFCMPushToken(JSONObject params, String channelName,  Result result) throws JSONException {
-        String token = params.getString("token");
-        String fcmKey = EMClient.getInstance().getOptions().getPushConfig().getFcmSenderId();
-        EMClient.getInstance().pushManager().bindDeviceToken(fcmKey, token, new EMWrapperCallBack(result, channelName, null));
-    }
-
-    private void reportPushAction(JSONObject params, String channelName, Result result) throws JSONException {
-
-    }
 
     private void setConversationSilentMode(JSONObject params, String channelName, Result result) throws JSONException {
         String conversationId = params.getString("convId");

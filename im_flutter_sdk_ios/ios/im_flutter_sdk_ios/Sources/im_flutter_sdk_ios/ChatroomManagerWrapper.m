@@ -62,11 +62,6 @@
               channelName:call.method
                    result:result];
     }
-    else if ([ChatGetAllChatRooms isEqualToString:call.method]) {
-        [self getAllChatrooms:call.arguments
-                  channelName:call.method
-                       result:result];
-    }
     else if ([ChatGetChatroomMemberListFromServer isEqualToString:call.method]) {
         [self getChatroomMemberListFromServer:call.arguments
                                   channelName:call.method
@@ -265,25 +260,6 @@
                   channelName:aChannelName
                         error:nil
                        object:[chatroom toJson]];
-}
-
-- (void)getAllChatrooms:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    
-    __weak typeof(self) weakSelf = self;
-    [EMClient.sharedClient.roomManager getChatroomsFromServerWithPage:0
-                                                             pageSize:-1
-                                                           completion:^(EMPageResult *aResult, EMError *aError)
-     {
-        NSMutableArray *list = [NSMutableArray array];
-        for (EMChatroom *room in aResult.list) {
-            [list addObject:[room toJson]];
-        }
-        
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:list];
-    }];
 }
 
 - (void)getChatroomMemberListFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {

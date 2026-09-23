@@ -1,5 +1,5 @@
 ## 5.0.0
-- 同步 Flutter SDK 5.0.0 联邦插件版本；
+- Bumped the federated plugin version in sync with Flutter SDK 5.0.0;
 
 ## 4.24.0
 
@@ -16,11 +16,11 @@
 ## 4.17.0
 
 ## 4.16.0
-- 新增 `loadMessagesWithIds` API；
+- Added the `loadMessagesWithIds` API;
 
 ## 4.15.2
-- 新增 `getCurrentDeviceId` API ;
-- 新增 `loadConversationMessagesWithKeyword` API ;
+- Added the `getCurrentDeviceId` API;
+- Added the `loadConversationMessagesWithKeyword` API;
 
 ## 4.15.1
 
@@ -28,8 +28,8 @@
 
 ## 4.13.0+1
 
-- 增加 `EMMultiDevicesEvent.UnKnow` 类型，防止新增多设备事件时无法解析；
+- Added the `EMMultiDevicesEvent.UnKnow` type to prevent parsing failures when new multi-device events are introduced;
 
 ## 4.13.0
 
-* 首次修改为联合插件模式
+* Migrated to the federated plugin architecture for the first time

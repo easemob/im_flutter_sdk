@@ -14,7 +14,6 @@ static NSString *const ChatRenewToken = @"renewToken";
 static NSString *const ChatLogout = @"logout";
 static NSString *const ChatChangeAppKey = @"changeAppKey";
 
-static NSString *const ChatUploadLog = @"uploadLog";
 static NSString *const ChatCompressLogs = @"compressLogs";
 static NSString *const ChatKickDevice = @"kickDevice";
 static NSString *const ChatKickAllDevices = @"kickAllDevices";
@@ -84,6 +83,8 @@ static NSString *const ChatImportMessages = @"importMessages";
 static NSString *const ChatLoadAllConversations = @"loadAllConversations";
 
 static NSString *const ChatDeleteConversation = @"deleteConversation";
+// 5.0.0
+static NSString *const ChatDeleteConversations = @"deleteConversations";
 static NSString *const ChatFetchHistoryMessagesByOptions = @"fetchHistoryMessagesByOptions";
 static NSString *const ChatSearchChatMsgFromDB = @"searchChatMsgFromDB";
 static NSString *const ChatGetMessage = @"getMessage";
@@ -112,7 +113,6 @@ static NSString *const ChatOnCmdMessagesReceived = @"onCmdMessagesReceived";
 // 5.0.0
 static NSString *const ChatOnMessageReadReceipts = @"onMessageReadReceipts";
 static NSString *const ChatOnMessagesDelivered = @"onMessagesDelivered";
-static NSString *const ChatOnMessagesRecalled = @"onMessagesRecalled";
 
 static NSString *const ChatOnConversationUpdate = @"onConversationUpdate";
 
@@ -126,7 +126,6 @@ static NSString *const onMessageContentChanged = @"onMessageContentChanged";
 static NSString *const ChatOnMessageProgressUpdate = @"onMessageProgressUpdate";
 static NSString *const ChatOnMessageSuccess = @"onMessageSuccess";
 static NSString *const ChatOnMessageError = @"onMessageError";
-static NSString *const ChatOnMessageDeliveryAck = @"onMessageDeliveryAck";
 
 
 #pragma mark - EMConversationWrapper
@@ -149,7 +148,6 @@ static NSString *const ChatLoadMsgWithKeywords = @"loadMsgWithKeywords";
 static NSString *const ChatLoadMsgWithMsgType = @"loadMsgWithMsgType";
 static NSString *const ChatLoadMsgWithTime = @"loadMsgWithTime";
 static NSString *const ChatConversationMessageCount = @"messageCount";
-static NSString *const ChatRemoveMsgFromServerWithTimeStamp = @"removeMsgFromServerWithTimeStamp";
 
 #pragma mark - EMChatMessageWrapper
 static NSString *const ChatGetReactionList = @"getReactionList";
@@ -164,7 +162,6 @@ static NSString *const ChatLeaveChatRoom = @"leaveChatRoom";
 static NSString *const ChatGetChatroomsFromServer = @"fetchPublicChatRoomsFromServer";
 static NSString *const ChatFetchChatRoomFromServer = @"fetchChatRoomInfoFromServer";
 static NSString *const ChatGetChatRoom = @"getChatRoom";
-static NSString *const ChatGetAllChatRooms = @"getAllChatRooms";
 static NSString *const ChatChatRoomUpdateSubject = @"changeChatRoomSubject";
 static NSString *const ChatChatRoomUpdateDescription = @"changeChatRoomDescription";
 static NSString *const ChatGetChatroomMemberListFromServer = @"fetchChatRoomMembers";
@@ -249,16 +246,10 @@ static NSString *const ChatFetchJoinedGroupCount = @"fetchJoinedGroupCount";
 static NSString *const ChatOnGroupChanged = @"onGroupChanged";
 
 #pragma mark - EMPushManagerWrapper
-static NSString *const ChatGetImPushConfig = @"getImPushConfig";
 static NSString *const ChatGetImPushConfigFromServer = @"getImPushConfigFromServer";
 static NSString *const ChatUpdateImPushStyle = @"updateImPushStyle";
 static NSString *const ChatUpdatePushNickname = @"updatePushNickname";
 
-static NSString *const ChatBindDeviceToken = @"updateAPNsPushToken";
-static NSString *const ChatUpdateFCMPushToken = @"updateFCMPushToken";
-
-
-static NSString *const ChatReportPushAction = @"reportPushAction";
 static NSString *const ChatSetConversationSilentMode = @"setConversationSilentMode";
 static NSString *const ChatRemoveConversationSilentMode = @"removeConversationSilentMode";
 static NSString *const ChatFetchConversationSilentMode = @"fetchConversationSilentMode";
@@ -272,9 +263,7 @@ static NSString *const ChatGetPushTemplate = @"getPushTemplate";
 
 #pragma mark - EMUserInfoManagerWrapper
 static NSString *const ChatUpdateOwnUserInfo = @"updateOwnUserInfo";
-static NSString *const ChatUpdateOwnUserInfoWithType = @"updateOwnUserInfoWithType";
 static NSString *const ChatFetchUserInfoById = @"fetchUserInfoById";
-static NSString *const ChatFetchUserInfoByIdWithType = @"fetchUserInfoByIdWithType";
 
 
 #pragma make - EMPresenceManagerWrapper

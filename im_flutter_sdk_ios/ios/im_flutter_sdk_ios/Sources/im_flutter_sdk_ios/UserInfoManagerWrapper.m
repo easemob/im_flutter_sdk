@@ -36,22 +36,10 @@
         [self updateOwnUserInfo:call.arguments channelName:call.method result:result];
     }
     
-    if ([call.method isEqualToString:ChatUpdateOwnUserInfoWithType]) {
-        [self updateOwnUserInfoWithType:call.arguments
-                            channelName:call.method
-                                 result:result];
-    }
-    
     if ([call.method isEqualToString:ChatFetchUserInfoById]) {
         [self fetchUserInfoById:call.arguments
                     channelName:call.method
                          result:result];
-    }
-    
-    if ([call.method isEqualToString:ChatFetchUserInfoByIdWithType]) {
-        [self fetchUserInfoByIdWithType:call.arguments
-                            channelName:call.method
-                                 result:result];
     }
     
     // 4.22.0
@@ -104,26 +92,6 @@
 }
 
 
-- (void)updateOwnUserInfoWithType:(NSDictionary *)param channelName:(NSString *)aChannelName  result:(FlutterResult)result {
-    __weak typeof(self)weakSelf = self;
-    
-    int typeValue = [param[@"userInfoType"] intValue];
-    EMUserInfoType userInfoType = [self userInfoTypeFromInt:typeValue];
-    NSString *userInfoValue = param[@"userInfoValue"];
-
-    
-    [EMClient.sharedClient.userInfoManager updateOwnUserInfo:userInfoValue withType:userInfoType completion:^(EMUserInfo *aUserInfo, EMError *aError) {
-        __strong typeof (self)strongSelf = weakSelf;
-        NSDictionary *objDic = [aUserInfo toJson];
-        [strongSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:objDic];
-    }];
-   
-}
-
-
 - (void)fetchUserInfoById:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSArray *userIds = param[@"userIds"];
@@ -143,28 +111,6 @@
         
 }
 
-
-
-- (void)fetchUserInfoByIdWithType:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self)weakSelf = self;
-    NSArray *userIds = param[@"userIds"];
-    NSArray<NSNumber *> *userInfoTypes = param[@"userInfoTypes"];
-
-    [EMClient.sharedClient.userInfoManager fetchUserInfoById:userIds type:userInfoTypes completion:^(NSDictionary *aUserDatas, EMError *aError) {
-            
-        NSMutableDictionary *dic = NSMutableDictionary.new;
-        [aUserDatas enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-            dic[key] = [(EMUserInfo *)obj toJson];
-        }];
-        
-        
-            [weakSelf wrapperCallBack:result
-                          channelName:ChatFetchUserInfoByIdWithType
-                                error:aError
-                               object:dic];
-    }];
-
-}
 
 
 #pragma mark - 4.22.0
@@ -246,42 +192,6 @@
         };
         [weakSelf.channel invokeMethod:ChatOnUserInfoChanged arguments:map];
     }];
-}
-
-- (EMUserInfoType)userInfoTypeFromInt:(int)typeValue {
-    EMUserInfoType userInfoType;
-    
-    switch (typeValue) {
-        case 0:
-            userInfoType = EMUserInfoTypeNickName;
-            break;
-        case 1:
-            userInfoType = EMUserInfoTypeAvatarURL;
-            break;
-        case 2:
-            userInfoType = EMUserInfoTypePhone;
-            break;
-        case 3:
-            userInfoType = EMUserInfoTypeMail;
-            break;
-        case 4:
-            userInfoType = EMUserInfoTypeGender;
-            break;
-        case 5:
-            userInfoType = EMUserInfoTypeSign;
-            break;
-        case 6:
-            userInfoType = EMUserInfoTypeBirth;
-            break;
-        case 7:
-            userInfoType = EMUserInfoTypeExt;
-            break;
-        default:
-            userInfoType = EMUserInfoTypeNickName;
-            break;
-    }
-    
-    return userInfoType;
 }
 
 @end

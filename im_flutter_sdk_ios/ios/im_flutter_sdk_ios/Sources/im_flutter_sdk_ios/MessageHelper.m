@@ -405,7 +405,6 @@
     ret.downloadStatus = [EnumTools downloadStatusFromInt:[aJson[@"fileStatus"] integerValue]];
     ret.thumbnailLocalPath = aJson[@"thumbnailLocalPath"];
     ret.thumbnailRemotePath = aJson[@"thumbnailRemotePath"];
-    ret.thumbnailSecretKey = aJson[@"thumbnailSecret"];
     ret.size = CGSizeMake([aJson[@"width"] floatValue], [aJson[@"height"] floatValue]);
     ret.thumbnailDownloadStatus = [EnumTools downloadStatusFromInt:[aJson[@"thumbnailStatus"] integerValue]];
     ret.compressionRatio = [aJson[@"sendOriginalImage"] boolValue] ? 1.0 : 0.6;
@@ -417,7 +416,6 @@
     NSMutableDictionary *ret = [[super toJson] mutableCopy];
     ret[@"thumbnailLocalPath"] = self.thumbnailLocalPath;
     ret[@"thumbnailRemotePath"] = self.thumbnailRemotePath;
-    ret[@"thumbnailSecret"] = self.thumbnailSecretKey;
     ret[@"thumbnailStatus"] = [NSNumber numberWithInteger:[EnumTools downloadStatusToInt:self.thumbnailDownloadStatus]];
     ret[@"fileStatus"] = [NSNumber numberWithInteger:[EnumTools downloadStatusToInt:self.downloadStatus]];
     ret[@"width"] = @(self.size.width);
@@ -469,7 +467,7 @@
     ret[@"secret"] = self.secretKey;
     ret[@"remotePath"] = self.remotePath;
     ret[@"thumbnailRemotePath"] = self.thumbnailRemotePath;
-    ret[@"thumbnailSecretKey"] = self.thumbnailSecretKey;
+    ret[@"thumbnailSecret"] = self.thumbnailSecretKey;
     ret[@"thumbnailStatus"] = [NSNumber numberWithInteger:[EnumTools downloadStatusToInt:self.thumbnailDownloadStatus]];
     ret[@"width"] = @(self.thumbnailSize.width);
     ret[@"height"] = @(self.thumbnailSize.height);

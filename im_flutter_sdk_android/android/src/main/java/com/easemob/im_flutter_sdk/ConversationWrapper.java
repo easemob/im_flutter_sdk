@@ -106,9 +106,6 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
             else if(MethodKey.messageCount.equals(call.method)) {
                 messageCount(param, call.method, result);
             }
-            else if (MethodKey.removeMsgFromServerWithTimeStamp.equals(call.method)) {
-                removeMsgFromServerWithTimeStamp(param, call.method, result);
-            }
             else if (MethodKey.pinnedMessages.equals(call.method)){
                 pinnedMessages(param, call.method, result);
             }
@@ -305,17 +302,11 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
         ConversationParams conversationParams = new ConversationParams(params);
         String keywords = params.getString("keywords");
         List<String> senders = new ArrayList<>();
-        String sender = null;
         if (params.has("senders")) {
 
             JSONArray jsonArray = params.getJSONArray("senders");
             for (int i = 0; i < jsonArray.length(); i++) {
                 senders.add(jsonArray.getString(i));
-            }
-        } else {
-            if (params.has("from")) {
-                sender = params.getString("from");
-                senders.add(sender);
             }
         }
 
@@ -391,15 +382,6 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
             onSuccess(result, channelName,  conversation.getAllMsgCount());
         });
     } 
-
-    private void removeMsgFromServerWithTimeStamp(JSONObject params, String channelName, Result result) throws JSONException {
-        ConversationParams conversationParams = new ConversationParams(params);
-        long timestamp = params.getLong("timestamp");
-        asyncRunnable(()->{
-            EMConversation conversation = conversationParams.getConversation();
-            conversation.removeMessagesFromServer(timestamp, new EMWrapperCallBack(result, channelName, null));
-        });
-    }
 
     private void pinnedMessages(JSONObject params, String channelName, Result result) throws JSONException {
         ConversationParams conversationParams = new ConversationParams(params);

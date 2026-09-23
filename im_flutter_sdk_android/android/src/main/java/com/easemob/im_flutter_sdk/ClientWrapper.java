@@ -81,10 +81,6 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
             {
                 changeAppKey(param, call.method, result);
             }
-            else if (MethodKey.uploadLog.equals(call.method))
-            {
-                uploadLog(param, call.method, result);
-            }
             else if (MethodKey.compressLogs.equals(call.method))
             {
                 compressLogs(param, call.method, result);
@@ -248,10 +244,6 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
     private void isConnected(JSONObject param, String channelName, Result result) throws JSONException{
         asyncRunnable(()-> onSuccess(result, channelName, EMClient.getInstance().isConnected()));
-    }
-
-    private void uploadLog(JSONObject param, String channelName, Result result) throws JSONException {
-        EMClient.getInstance().uploadLog(new EMWrapperCallBack(result, channelName, true));
     }
 
     private void compressLogs(JSONObject param, String channelName, Result result) throws JSONException {
