@@ -13,7 +13,7 @@ Flutter IM SDK 5.0.0 是一次源代码不兼容的大版本升级，主要涉�
 4. **连接断开事件收敛**
    原先 8 个按原因命名的强制下线回调合并为单一回调 `onDisconnected`，并新增 `ChatDisconnectErrorCode` 原因码常量表。
 5. **历史 API 精简**
-   移除服务端拉取接口、长期标记为废弃 `@Deprecated` 的接口及部分边缘能力。注册、举报和消息流量统计等功能需由业务服务或服务端 REST API 实现；密码登录接口下线，仅保留 Token 登录。
+   移除服务端拉取接口、长期标记为废弃 `@Deprecated` 的接口及部分边缘能力。注册、举报、聊天室创建与解散等能力需由业务服务或服务端 REST API 实现；密码登录接口下线，仅保留 Token 登录。（原生 SDK 同时下线了消息流量统计模块，Flutter 4.x 从未暴露该能力，Flutter 侧无需迁移。）
 6. **原生依赖升级**
    iOS 与 Android 原生 SDK 依赖统一升级至 5.0.0（`HyphenateChat 5.0.0` / `HyphenateChat_iOS 5.0.0` / `io.hyphenate:hyphenate-chat:5.0.0`）。
 
@@ -22,7 +22,7 @@ Flutter IM SDK 5.0.0 是一次源代码不兼容的大版本升级，主要涉�
 :::
 
 :::tip
-**与平台迁移指南的关系：** 本指南面向 Flutter 应用层（`im_flutter_sdk` 的 Dart 公开 API）。原生层的改动已由 SDK 内部封装，业务代码不需要直接处理 Objective-C / Java 接口；如需了解原生行为细节，可参考 [环信 iOS IM SDK 4.x 到 5.0.0 迁移指南](https://doc.easemob.com/document/ios/migration_guide.html) 与 Android 迁移指南。
+**与平台迁移指南的关系：** 本指南面向 Flutter 应用层（`im_flutter_sdk` 的 Dart 公开 API）。原生层的改动已由 SDK 内部封装，业务代码不需要直接处理 Objective-C / Java 接口；如需了解原生行为细节，可参考 [环信 iOS IM SDK 4.x 到 5.0.0 迁移指南](https://doc.easemob.com/document/ios/migration_guide.html) 与 [环信 Android IM SDK 4.x 到 5.0.0 迁移指南](https://doc.easemob.com/document/android/migration_guide.html)。
 :::
 
 ## 版本与依赖升级
@@ -35,6 +35,8 @@ Flutter IM SDK 5.0.0 是一次源代码不兼容的大版本升级，主要涉�
 | Android 原生 SDK | hyphenate-chat 4.24.1 | `io.hyphenate:hyphenate-chat:5.0.0` |
 | Dart / Flutter | `>=3.3.0` | `>=3.3.0`（最低支持版本未变） |
 | Android minSdk / iOS 部署目标 | 21 / 13.0 | 21 / 13.0（未变） |
+
+本指南的 4.x 对照基线是 **4.24.0**（当前 `flutter2_stable` 发布版，原生依赖 4.24.1）。若你的项目仍在 4.22.x 或更早版本，请先按对应版本的变更说明升到 4.24.0 的 API 形态，再套用本指南。
 
 升级步骤：
 
@@ -56,6 +58,10 @@ Flutter 的增量构建（Fingerprinter）不追踪 podspec 变化，只改 `pub
 
 使用 Swift Package Manager 集成 iOS 的项目，原生依赖在 `im_flutter_sdk_ios` 的 `Package.swift` 中通过 `exact: "5.0.0"` 固定，升级插件版本后由 Flutter 的 SPM 集成自动解析，无需手工改动。
 
+:::tip
+Android 原生 5.0.0 新增了 `androidx.core:1.12.0`、`androidx.annotation:1.6.0`、`androidx.lifecycle:lifecycle-process:2.6.2` 三个传递依赖（4.24.1 没有）。它们要求消费方以 Android API 34 及以上编译，因此应用模块 `android/app/build.gradle` 的 `compileSdk` 需要 ≥ 34，否则会报 `Dependency 'androidx.core:core:1.12.0' requires libraries and applications that depend on it to compile against version 34 or later`。较新的 Flutter 模板默认已满足，老工程需要手动抬一次。
+:::
+
 :::warning
 本指南只覆盖 iOS 与 Android。鸿蒙（HarmonyOS）由独立仓库 `im_flutter_sdk_oh` 提供，其版本与 iOS/Android 并不同步（当前为 `4.12.0-ohos-beta.x`，尚未提供 5.0.0）。同时构建鸿蒙端的项目不能直接依赖本指南的 API 变更结论，需要以该仓库自身的版本与文档为准。
 :::
@@ -75,6 +81,8 @@ Flutter SDK 5.0.0 不再提供自动登录配置和自动登录状态查询。�
 
 :::warning
 `currentUserId` 的取值在 iOS 与 Android 上存在差异：Android 返回本地持久化的上次登录用户，未登录时也可能非空；iOS 未登录时为 `null`。**不要用 `currentUserId == null` 判断是否已登录**，需要会话态时使用 `isConnected()`。
+
+它同时是 Dart 侧的**缓存值**：只在 `init()`、`loginWithToken()` 时从原生刷新，在 `logout()` 时清空。被踢下线、Token 过期等退出场景只派发 `onDisconnected` / `onTokenDidExpire`，**不会自动清空该缓存**，此时它仍返回上一个用户 ID。替代 `isLoginBefore()` 时请自行维护登录态：在退出分支里调用 `logout()`（会清空缓存），或改用 `await getCurrentUserId()` 主动拉取；业务侧的用户 ID / Token 仍以应用自己的持久化为准。
 :::
 
 ### 密码登录下线
@@ -171,14 +179,18 @@ onDataSyncFinish: (type, error) {
 
 | 类 | 删除的 API | 5.0.0 推荐方式 |
 | :--- | :--- | :--- |
-| `ChatManager` | `getConversationsFromServer()`、`fetchConversationListFromServer(...)`、`fetchConversation(...)`、`fetchConversationsByOptions(...)` | 这些接口用于从服务器拉取会话列表。改用本地接口 `ChatManager.loadAllConversations()`（加载全部本地会话）与 `getConversation(conversationId)`（按 ID 获取单个会话），并在 `onDataSyncFinish` 的 `type` 命中 `ChatDataSyncType.conversations` 位之后刷新。 |
-| `ChatManager` | `fetchPinnedConversations(...)` | 该接口用于拉取服务端置顶会话。置顶状态随会话数据同步落地，改为读取本地会话的置顶字段。 |
+| `ChatManager` | `getConversationsFromServer()`、`fetchConversationListFromServer(...)`、`fetchConversation(...)`、`fetchConversationsByOptions(...)` | 这些接口用于从服务器拉取会话列表。改用本地接口 `ChatManager.loadAllConversations()`（加载全部本地会话）与 `getConversation(conversationId, type: ...)`（按 ID 获取单个会话），并在 `onDataSyncFinish` 的 `type` 命中 `ChatDataSyncType.conversations` 位之后刷新。 |
+| `ChatManager` | `fetchPinnedConversations(...)` | 该接口用于拉取服务端置顶会话。改为读取本地会话的 `isPinned` / `pinnedTime` 字段；需要以服务端最新置顶状态为准时，在 `onDataSyncFinish`（`type` 命中 `conversations`）成功后再读。 |
 | `ChatGroupManager` | `fetchJoinedGroupsFromServer(...)` | 该接口分页拉取已加入群组。改用本地 `ChatGroupManager.getJoinedGroups()`，并在 `onDataSyncFinish` 的 `type` 命中 `ChatDataSyncType.joinedGroups` 位之后刷新。 |
 | `ChatContactManager` | `getAllContactsFromServer()`、`fetchAllContacts()`、`fetchContacts(...)`、`fetchAllContactIds()` | 这些接口从服务器拉取好友列表。改用本地 `getAllContacts()`、`getAllContactIds()`、`getContact(userId: ...)`，并在 `onDataSyncFinish` 的 `type` 命中 `ChatDataSyncType.contacts` 位之后刷新。 |
 | `ChatOptions` | `enableAutoSyncContacts` | 该配置控制好友自动同步。改为在 `dataSyncType` 中包含 `ChatDataSyncType.contacts`。 |
 
 :::tip
-`ChatManager` 的本地会话读取接口为 `loadAllConversations()`（全部本地会话）和 `getConversation(conversationId)`（按 ID 获取）。4.x 中标记为「改用 `fetchConversationsByOptions`」的废弃接口与其替代者 `fetchConversationsByOptions` 在 5.0.0 中均已删除，不要再沿用这条迁移路径。
+`ChatManager` 的本地会话读取接口为 `loadAllConversations()`（全部本地会话）和 `getConversation(conversationId, type: ...)`（按 ID 获取）。4.x 中标记为「改用 `fetchConversationsByOptions`」的废弃接口与其替代者 `fetchConversationsByOptions` 在 5.0.0 中均已删除，不要再沿用这条迁移路径。
+:::
+
+:::warning
+`getConversation` 的完整签名是 `getConversation(String conversationId, {ChatConversationType type = ChatConversationType.Chat, bool createIfNeed = true})`。`type` 默认为单聊，**获取群会话或聊天室会话时必须显式传入 `ChatConversationType.GroupChat` / `ChatConversationType.ChatRoom`**，否则会拿到（并因 `createIfNeed` 默认 `true` 而创建）一个同 ID 的单聊会话。不需要创建时可传 `createIfNeed: false`，会话不存在时返回 `null`。
 :::
 
 相应地，`ChatContactEventHandler.onContactSyncStart` 和 `onContactSyncFinish` 已删除。请改用 `ConnectionEventHandler.onDataSyncStart` 和 `onDataSyncFinish`，并判断 `type` 是否包含 `ChatDataSyncType.contacts`。详见 [监听器回调变化汇总](#监听器回调变化汇总)。
@@ -207,13 +219,19 @@ await ChatClient.getInstance.chatManager
     .clearConversationUnreadMessageCount(conversationId);
 
 // 需要通知发送方已读时，再批量发送回执
+// 注意：loadMessagesWithIds 单次最多 20 个消息 ID（两端原生限制），
+// 要凑足 50 条回执需分批加载，或直接使用会话已加载的消息对象。
 final messages = await ChatClient.getInstance.chatManager
     .loadMessagesWithIds(msgIds, conversationId);
 await ChatClient.getInstance.chatManager.sendMessageReadReceipts(messages);
 ```
 
+:::warning
+`loadMessagesWithIds(messageIds, conversationId)` 底层对应原生的「按 ID 批量取本地消息」，**单次最多 20 个 ID**（iOS `getMessages:withConversationId:` 与 Android 同口径，均为「一次最多获取 20 条消息」），与回执接口的 50 条上限并不相同。一次传入超过 20 个 ID 会失败，需自行分批。
+:::
+
 :::tip
-批量接口的校验结果以原生 SDK 为准：批次中无法解析为本地消息的条目会被跳过，可解析的条目正常发送回执；当整批消息都无法解析时返回 `110 INVALID_PARAM`。请按接口返回的 `ChatError` 处理失败，不要假设整批要么全成功要么全失败。
+批量接口的校验结果以原生 SDK 为准：批次中无法解析为本地消息的条目会被跳过，可解析的条目正常发送回执；当整批消息都无法解析时返回 `110 INVALID_PARAM`。Flutter 侧只透出**整批的 `ChatError`**（不逐条返回哪条失败），请按该错误处理失败，不要假设整批要么全成功要么全失败；也不要在发送前自行拼「全部有效才发」的前置校验。Android 原生还说明：不需要回执或已经回执过的消息会被跳过，整批无合格消息时为空操作（仍返回成功）。
 :::
 
 ### 接收消息已读回执
@@ -244,7 +262,7 @@ SDK 5.0.0 新增 `ChatMessageReadReceipt`，用于统一描述消息已读回执
 回执详情模型由 `ChatGroupMessageAck` 替换为 `ChatGroupReadReceipt`：
 
 - `messageId`：群消息 ID。
-- `receiptId`：已读回执 ID，也用于分页游标（4.x 中字段名为 `ackId`）。
+- `receiptId`：已读回执 ID（`String?`，可为空），也用于分页游标（4.x 中字段名为 `ackId`）。
 - `from`：发送已读回执的群成员，类型由 `String` 改为 `GroupMemberInfo`；其中 `role` 和 `joinedTs` 在该场景不可用。
 - `readCount`：已读回执数量。
 - `timestamp`：发送已读回执的时间戳。
@@ -264,7 +282,7 @@ SDK 5.0.0 新增 `ChatMessageReadReceipt`，用于统一描述消息已读回执
 | `Future<int> ChatMessage.groupAckCount()` | 只读的 `ChatMessage.groupReadReceiptCount` | 由异步方法改为同步只读属性，获取群聊消息的已读人数。 |
 
 :::warning
-`hasRead` / `isRead` 的序列化 key 同步由 `hasRead` 改为 `isRead`，`hasReadAck` / `needGroupAck` 分别改为 `isPeerRead` / `isNeedReadReceipt`。如果业务代码自行解析 MethodChannel 返回的 Map，需要同步修改字段名。
+`hasRead` / `isRead` 的序列化 key 同步由 `hasRead` 改为 `isRead`，`hasReadAck` / `needGroupAck` 分别改为 `isPeerRead` / `isNeedReadReceipt`，群已读人数新增 key `groupReadReceiptCount`（4.x 为异步方法 `groupAckCount()`，无对应 key）。如果业务代码自行解析 MethodChannel 返回的 Map，需要同步修改字段名。
 :::
 
 ### 多设备事件
@@ -273,7 +291,7 @@ SDK 5.0.0 新增 `ChatMessageReadReceipt`，用于统一描述消息已读回执
 
 - `CONVERSATION_UNREAD_MESSAGE_COUNT_CLEARED`（原生事件码 65）：其他设备清除了指定会话的未读数。
 - `ALL_CONVERSATION_UNREAD_MESSAGE_COUNT_CLEARED`（原生事件码 66）：其他设备清除了所有会话的未读数。
-- `GROUP_UPDATE`（原生事件码 34，仅 iOS 下发）：群组信息更新。Android 端没有等价事件码，群信息变化由 `GROUP_MEMBER_ATTRIBUTES_CHANGED`（原生事件码 52）投递。
+- `GROUP_UPDATE`（原生事件码 34，仅 iOS 下发）：群组信息更新，通过 `ChatMultiDeviceEventHandler.onGroupEvent` 送达。Android 没有等价事件码（原生 52 在 Android 为 `GROUP_METADATA_CHANGED`，在 iOS 为 `GroupMemberAttributesChanged`，语义是**群成员自定义属性**变化，不等同于群信息变化，Dart 侧统一映射为 `GROUP_MEMBER_ATTRIBUTES_CHANGED`）。需要跨端感知群信息变化时，请依赖 `ChatGroupEventHandler.onSpecificationDidUpdate(ChatGroup)`，而不要依赖 `GROUP_UPDATE`。
 
 :::tip
 Dart 枚举不声明数值，`65`、`66`、`34`、`52` 是平台事件码，由 SDK 内部转换；业务代码只比较枚举成员，不要比较数字。
@@ -308,7 +326,7 @@ Flutter SDK 5.0.0 将群组可见性、入群审批和成员邀请权限从 `Cha
 | `String? ext` | `String? ext`，字段名保持不变；5.0.0 默认值为 `null` |
 
 :::warning
-`ChatGroupConfigs` 的 `inviteNeedConfirm` 恒定为 `false` 并显式下发，`ext` 为 `null` 时不下发该 key；这样做的目的是延续 4.x Dart 行为，而不依赖两端原生默认值（iOS 原生默认 `inviteNeedConfirm = YES`、`ext` 为空字符串）。
+`ChatGroupConfigs` 的 Dart 默认值固定为 `inviteNeedConfirm = false`，且 `toJson()` 总会显式带上该 key（`ext` 为 `null` 时不下发该 key）；这样做的目的是延续 4.x Dart 行为，而不依赖两端原生默认值（iOS 原生默认 `inviteNeedConfirm = YES`、`ext` 为空字符串）。字段本身仍可由业务显式传 `true`，只是不传时不会变成原生的 `YES`。
 :::
 
 ### 相关 API 变化
@@ -316,10 +334,18 @@ Flutter SDK 5.0.0 将群组可见性、入群审批和成员邀请权限从 `Cha
 | 4.x API | 5.0.0 API 或适配方式 |
 | :--- | :--- |
 | `ChatGroupManager.createGroup({groupName, avatarUrl, desc, inviteMembers, inviteReason, options})` | 参数 `options` 改名为 `configs`，类型为 `ChatGroupConfigs`；其余参数不变。 |
-| `ChatGroup.settings`（`ChatGroupOptions?`，已废弃） | `ChatGroup.configs`（`ChatGroupConfigs?`），用于读取群组配置。 |
-| `ChatGroup.isMemberOnly` | 语义拆分并新增：`isMemberOnly` 是「非公开群 **或** 入群需审批」的合并语义，并非 `isPublic` 的反值。精确等价为 `isMemberOnly == !(isPublic && !joinApprovalRequired)`，即只有 `isPublic = true` 且 `joinApprovalRequired = false`（公开且无需审批）时才为 `false`。建议按用途改用新的 `ChatGroup.isPublic`（公开性）与 `ChatGroup.isJoinApprovalRequired`（是否需要审批）。`isMemberAllowToInvite`、`maxUserCount` 继续作为顶层只读字段保留。 |
+| `ChatGroup.settings`（`ChatGroupOptions?`，已废弃） | `ChatGroup.configs`（`ChatGroupConfigs?`），用于读取群组配置；iOS 上可能为 `null`，见下方 warning。 |
+| `ChatGroup.isMemberOnly`（**已删除**） | 5.0.0 无同名字段，原生改名为 `isJoinApprovalRequired`，但**语义收窄，不能直接顶替**：4.x `isMemberOnly` 是「非公开群 **或** 入群需审批」的合并语义（等价于 `!(isPublic && !joinApprovalRequired)`，只有公开且无需审批的群才为 `false`）；5.0.0 的 `ChatGroup.isJoinApprovalRequired` 只表示「公开群是否需要审批」（原生说明：私有群下该字段不参与行为，通常为 `false`），而 4.x `isMemberOnly` 对私有群恒为 `true`。按用途选择：判断公开性用 `ChatGroup.isPublic`，判断是否需审批用 `ChatGroup.isJoinApprovalRequired`；需要复现旧 `isMemberOnly` 语义则写 `!(isPublic == true && isJoinApprovalRequired == false)`（两个字段均为可空 `bool?`，需处理 `null`）。 |
 | 无 | `ChatGroupManager.updateGroupConfigs({groupId, types, configs})`：创建群组后，按 `types` 指定的字段更新群组配置，返回更新后的 `ChatGroup`。 |
 | 无 | `ChatGroupConfigsType`：包含 `allowInvites`、`maxUsers`、`inviteNeedConfirm`、`joinApprovalRequired`、`isPublic` 和 `ext`，可按位或组合。 |
+
+:::warning
+从 `ChatGroup` 读回群组配置时存在平台差异，升级后需逐项确认：
+
+- `configs`、`isJoinApprovalRequired`、`isMemberAllowToInvite` 在 iOS 上依赖原生 `settings`，未拉取群详情时可能整体缺失（Dart 侧为 `null`）；Android 上总有值。读取前请先调 `fetchGroupInfoFromServer(groupId)`。
+- `maxUserCount` 与 `extension`（群扩展）在 iOS 上**不再下发**，恒为 `null`（4.x 在 `settings` 非空时会下发）；Android 正常。iOS 侧需要这两个值时改读 `group.configs?.maxCount` 与 `group.configs?.ext`。
+- `configs.inviteNeedConfirm` 在 Android 上固定回传 `false`（原生 `EMGroup` 未提供该 getter），不要用它判断真实配置；该字段仅在创建 / 更新时作为入参有效。
+:::
 
 建群示例：
 
@@ -371,7 +397,7 @@ await ChatClient.getInstance.groupManager.updateGroupConfigs(
 | `onUserDidChangePassword()` | `errorCode == ChatDisconnectErrorCode.USER_KICKED_BY_CHANGE_PASSWORD`（216） |
 | `onUserDidLoginTooManyDevice()` | `errorCode == ChatDisconnectErrorCode.USER_LOGIN_TOO_MANY_DEVICES`（214） |
 | `onUserKickedByOtherDevice()` | `errorCode == ChatDisconnectErrorCode.USER_KICKED_BY_OTHER_DEVICE`（217） |
-| `onUserAuthenticationFailed()` | 5.0.0 不再为该场景提供独立回调。4.x 的实现把它误转发为无参 `onDisconnected()`，已一并删除；5.0.0 若平台仍下发对应原因码 `202`，会通过 `onDisconnected(202)` 送达，业务需按退出处理（见下节）。 |
+| `onUserAuthenticationFailed()` | 5.0.0 不再为该场景提供独立回调。4.x 的实现把它误转发为无参 `onDisconnected()`，该缺陷已一并修掉。按平台 5.0 的行为，鉴权失败（原因码 `202`）不再产生断开事件，因此 `ChatDisconnectErrorCode` 未保留对应常量；详见下节。 |
 | `onAppActiveNumberReachLimit()` | `errorCode == ChatDisconnectErrorCode.APP_ACTIVE_NUMBER_REACH_LIMITATION`（8） |
 
 ### 原因码分类
@@ -409,7 +435,7 @@ await ChatClient.getInstance.groupManager.updateGroupConfigs(
 未列出的原因码（含平台后续新增的码）一律按「非退出」处理。
 
 :::warning
-`ChatDisconnectErrorCode` 未列出 `202`（用户鉴权失败）。4.x 中它由 `onUserAuthenticationFailed` 单独通知，5.0.0 没有对应常量；若平台仍下发该码，会以 `onDisconnected(202)` 送达。鉴权失败同样属于退出，**建议把 `202` 显式加入退出码集合**，避免被误判为可自动重连的网络断开：
+`ChatDisconnectErrorCode` 未列出 `202`（用户鉴权失败）。4.x 中它由 `onUserAuthenticationFailed` 单独通知；按平台 5.0 的行为，该场景**不再产生断开事件**（Token 类失败走 `104 INVALID_TOKEN` 与 `onTokenWillExpire` / `onTokenDidExpire`），所以 5.0.0 没有为它保留常量。如果你的业务希望兼容平台后续行为变化，可以把 `202` 作为**防御项**自行加入退出码集合（鉴权失败属于退出），但不要依赖它一定会到达：
 
 ```dart
 const Set<int> kDisconnectLogoutCodes = <int>{ 202, /* ... 其余退出码 */ };
@@ -440,7 +466,7 @@ const Set<int> kDisconnectLogoutCodes = <int>{
   ChatDisconnectErrorCode.USER_DEVICE_CHANGED,
   ChatDisconnectErrorCode.SERVER_GET_DNSLIST_FAILED,
   ChatDisconnectErrorCode.SERVER_SERVICE_RESTRICTED,
-  202, // USER_AUTHENTICATION_FAILED：无对应常量，鉴权失败同样属于退出
+  202, // USER_AUTHENTICATION_FAILED：无对应常量，平台 5.0 不再下发，此处仅作防御性保留
 };
 
 ChatClient.getInstance.addConnectionEventHandler(
@@ -503,12 +529,42 @@ ChatClient.getInstance.addConnectionEventHandler(
 | `ChatOptions.enableOppoPush(appKey, secret)`、`enableMiPush(appId, appKey)`、`enableMeiZuPush(appId, appKey)`、`enableFCM(appId)`、`enableVivoPush(agreePrivacyStatement)`、`enableHWPush()`、`enableAPNs(certName)`、`enableHonorPush()` | `ChatPushManager.bindDeviceToken({required String notifierName, required String deviceToken})` |
 | `ChatPushManager.updateHMSPushToken(...)`、`updateFCMPushToken(...)`、`updateAPNsDeviceToken(...)` | `ChatPushManager.bindDeviceToken({notifierName, deviceToken})` |
 
-同时 `ChatOptions` 不再序列化 `pushConfig` 字段，承载厂商推送 appId / appKey / 证书名的 `ChatPushConfig` 类已删除。推送配置改为「初始化时不配置厂商参数，运行时绑定设备 Token」：
+同时 `ChatOptions` 不再序列化 `pushConfig` 字段，承载厂商推送 appId / appKey / 证书名的 `ChatPushConfig` 类已删除（注意：与之名称相近的 `ChatPushConfigs`（推送通知设置）仍存在，两者无关）。推送配置改为「初始化时不配置厂商参数，运行时绑定设备 Token」。
+
+:::warning
+`notifierName` **不是厂商标识串**，两端取值语义不同，传错会直接导致推送不可用：
+
+- **iOS**：插件把它写入原生的 `apnsCertName`，因此必须传环信控制台配置的 **APNs 证书名**，即 4.x `enableAPNs(certName)` 里的 `certName`（**不是** `'APNs'`）。
+- **Android**：原生要求传**厂商推送凭据**，对应 4.x 各 `enable*Push` 中配置的值。
+
+| 平台 / 厂商 | `notifierName` 取值 | 4.x 对应来源 |
+| :--- | :--- | :--- |
+| iOS（APNs） | 控制台证书名 | `enableAPNs(certName)` 的 `certName` |
+| Android FCM | Sender ID | `enableFCM(appId)` 的 `appId` |
+| Android 小米 | App ID | `enableMiPush(appId, appKey)` 的 `appId` |
+| Android 魅族 | App ID | `enableMeiZuPush(appId, appKey)` 的 `appId` |
+| Android OPPO | App Key | `enableOppoPush(appKey, secret)` 的 `appKey` |
+| Android 华为 HMS | App ID | 原生工程配置（`enableHWPush()` 无参） |
+| Android VIVO | `App ID` + `#` + `App Key` | 原生工程配置（`enableVivoPush(agreePrivacyStatement)`） |
+
+荣耀推送未列在原生接口说明中，取值以原生 SDK 文档为准；`deviceToken` 由厂商推送 SDK 在运行时返回，需业务自行接入厂商推送插件获取。
+:::
+
+:::warning
+厂商推送的**工程侧配置责任转移到业务侧**：4.x 通过 `ChatOptions` 在初始化时下发 appId / appKey / 证书名，5.0.0 删除后，Android 的厂商推送依赖与 manifest 配置、iOS 的推送证书与控制台配置都需先在原生工程侧完成，Flutter 侧只负责在拿到 `deviceToken` 后调用 `bindDeviceToken`。`enableVivoPush(agreePrivacyStatement)` 这类「隐私声明同意」参数在 5.0.0 没有对应入口，需在原生工程配置中处理。
+:::
 
 ```dart
+// iOS：notifierName 传 APNs 证书名
 await ChatClient.getInstance.pushManager.bindDeviceToken(
-  notifierName: 'FCM', // 或 'HMS'、'APNs'、'OPPO'、'VIVO'、'MI'、'MEIZU'、'HONOR'
-  deviceToken: deviceToken,
+  notifierName: apnsCertName,
+  deviceToken: apnsDeviceToken,
+);
+
+// Android：notifierName 传厂商凭据（下例为 FCM Sender ID）
+await ChatClient.getInstance.pushManager.bindDeviceToken(
+  notifierName: fcmSenderId,
+  deviceToken: fcmToken,
 );
 ```
 
@@ -530,21 +586,21 @@ await ChatClient.getInstance.pushManager.bindDeviceToken(
 | 4.x API | 5.0.0 API | 接口说明 | 迁移说明 |
 | :--- | :--- | :--- | :--- |
 | `ChatManager.fetchHistoryMessages({conversationId, type, pageSize, direction, startMsgId})`（已废弃） | `ChatManager.fetchHistoryMessagesByOption(conversationId, type, {options, cursor, pageSize = 50})` | 分页获取服务端历史消息。 | 旧接口删除，该接口是 5.0.0 保留的唯一漫游消息拉取入口，过滤条件改为 `FetchMessageOptions`。 |
-| `ChatManager.searchMsgFromDB(...)`（已废弃） | `ChatManager.loadMessagesWithKeyword(...)` | 从本地数据库按关键词检索消息。 | 旧接口删除，改用新命名接口。 |
+| `ChatManager.searchMsgFromDB(...)`（已废弃） | `ChatManager.loadMessagesWithKeyword(...)` | 从本地数据库按关键词检索消息。 | 旧接口删除，改用新命名接口。注意该接口的发送者参数**仍为单个 `sender`**，只有 `ChatConversation.loadMessagesWithKeyword` 改成了 `senders` 列表。 |
 | `ChatManager.getUnreadMessageCount()` | 统计范围收窄（见「行为变化」） | 获取本地未读消息总数。 | 签名不变，统计口径变化。 |
-| `ChatManager.modifyMessage({messageId, msgBody, attributes})` | 同名同签名（无需改动） | 修改本地和服务端消息。 | `attributes` 在 4.x 已存在，本次未变；`msgBody` 与 `attributes` 不能同时为 `null`。 |
+| `ChatManager.modifyMessage({messageId, msgBody, attributes})` | 同名同签名 | 修改本地和服务端消息。 | 签名未变（`attributes` 在 4.x 已存在），但 Android 侧的扩展字段行为有修正，见「行为变化」第 11 条；`msgBody` 与 `attributes` 不能同时为 `null`。 |
 | `ChatContactManager.getAllContactsFromServer()`、`getAllContactsFromDB()`、`getBlockListFromServer()`、`getBlockListFromDB()`（均已废弃） | `getAllContactIds()`、`fetchBlockIds()`、`getBlockIds()` | 本地好友 ID、服务端黑名单、本地黑名单。 | 旧接口删除，改用新命名接口；`getAllContactsFromServer` 的替代者 `fetchAllContactIds` 本身也已在 5.0.0 删除，应改用本地 `getAllContactIds()`。 |
 | `ChatGroupManager.changeGroupName(...)`、`changeGroupDescription(...)`（均已废弃） | `updateGroupName(groupId, name)`、`updateGroupDesc(groupId, desc)` | 修改群名称或群描述。 | 旧接口删除，改用新命名接口。 |
 | `ChatEventHandler.onMessagesRecalled(List<ChatMessage>)`（已废弃） | `ChatEventHandler.onMessagesRecalledInfo(List<RecallMessageInfo>)` | 消息撤回回调。 | 回调负载由消息列表改为撤回信息列表。 |
 | `ChatGroupEventHandler.onMemberJoinedFromGroup(...)`、`onMemberExitedFromGroup(...)`（参数已废弃） | `onMembersJoinedFromGroup(...)`、`onMembersExitedFromGroup(...)` | 群成员加入、退出回调。 | 使用支持一次通知多名成员的复数版本回调。 |
 | `ChatGroup.name`、`ChatGroup.description`（已废弃） | `ChatGroup.groupName`、`ChatGroup.desc` | 群名称、群描述字段。 | 字段与构造参数一并删除，改用新字段名。 |
-| `ChatConversation.loadMessagesWithKeyword(..., sender: ...)` 的 `sender` 参数 | `senders` 参数 | 按关键词搜索本地消息。 | 单个发送者改为发送者列表。 |
+| `ChatConversation.loadMessagesWithKeyword(..., sender: ...)` 的 `sender` 参数 | `senders` 参数 | 按关键词搜索本地消息。 | 单个发送者改为发送者列表。**仅限 `ChatConversation` 的这个方法**；`ChatManager.loadMessagesWithKeyword` 仍使用单个 `sender`，不要跟着改。 |
 | `FetchMessageOptions.from`（已废弃） | `FetchMessageOptions.senders` | 漫游消息的发送者过滤。 | 单个发送者改为发送者列表。 |
-| `ChatGroupManager.fetchGroupInfoFromServer(groupId, fetchMembers: ...)`、`ChatRoomManager.fetchChatRoomInfoFromServer(roomId, fetchMembers: ...)` 的 `fetchMembers` 参数 | 同名方法（无 `fetchMembers` 参数） | 获取群组或聊天室详情。 | 参数删除，接口不再下发该字段；如需成员列表请调用成员列表接口。 |
+| `ChatGroupManager.fetchGroupInfoFromServer(groupId, fetchMembers: ...)`、`ChatRoomManager.fetchChatRoomInfoFromServer(roomId, fetchMembers: ...)` 的 `fetchMembers` 参数 | 同名方法（无 `fetchMembers` 参数） | 获取群组或聊天室详情。 | 参数删除，详情接口不再一并返回成员列表；需要成员时分页调用 `ChatGroupManager.fetchMemberListFromServer(groupId, {pageSize = 200, cursor})` 或 `ChatRoomManager.fetchChatRoomMembers(roomId, {cursor, pageSize = 200})`。 |
 | `ChatImageMessageBody.thumbnailSecret` | `ChatImageMessageBody.secret` | 图片消息的附件密钥。 | 图片原图、大图、缩略图共用一个密钥，改用 `secret`；视频消息的 `thumbnailSecret` 未废弃，保持不变。 |
 | `ChatMessage.groupAckCount()` | `ChatMessage.groupReadReceiptCount` | 群消息已读人数。 | 由异步方法改为同步只读属性。 |
 | `ChatGroupManager.fetchJoinedGroupsFromServer({pageSize, pageNum, needMemberCount, needRole})` | `ChatGroupManager.getJoinedGroups()` | 获取已加入的群组列表。 | 分页服务端拉取接口删除，改用本地接口配合数据同步事件。 |
-| 全部厂商推送 Token 接口：`updateHMSPushToken(...)`、`updateFCMPushToken(...)`、`updateAPNsDeviceToken(...)`（均已废弃） | `ChatPushManager.bindDeviceToken({notifierName, deviceToken})` | 上报推送设备 Token。 | 统一为一个入口，`notifierName` 指定厂商。 |
+| 全部厂商推送 Token 接口：`updateHMSPushToken(...)`、`updateFCMPushToken(...)`、`updateAPNsDeviceToken(...)`（均已废弃） | `ChatPushManager.bindDeviceToken({notifierName, deviceToken})` | 上报推送设备 Token。 | 统一为一个入口；`notifierName` 在 iOS 上是 APNs 证书名、在 Android 上是厂商推送凭据，**不是厂商标识串**，取值见「推送与设备 Token」一节。 |
 
 ## 主要新增 API
 
@@ -602,9 +658,9 @@ ChatClient.getInstance.removeConnectionEventHandler('app');
    `ChatManager.getUnreadMessageCount()` 获取本地单聊和群聊会话的未读消息总数。该接口的统计范围如下：
 
    - 不统计聊天室会话。
-   - 不统计消息话题（Thread）的未读消息数。
    - 不统计推送通知方式为 `ChatPushRemindType.MENTION_ONLY` 或 `ChatPushRemindType.NONE` 的会话。这些会话即使存在未读消息，也不纳入统计。
    - 仅统计推送通知方式为 `ChatPushRemindType.ALL` 的单聊和群聊会话。
+   - 消息话题（Thread）会话**不在排除范围内**，其未读数按普通会话规则参与统计（若其提醒方式为 `ALL`）。
 
    如果业务需要其他统计口径，应遍历本地会话并根据会话类型和免打扰设置（`ChatConversation.remindType()`）自行累加未读数。
 
@@ -645,9 +701,23 @@ ChatClient.getInstance.removeConnectionEventHandler('app');
    | `ChatError.hasErrorFromResult(Map map)` | 返回类型隐式为 `dynamic` | `static void hasErrorFromResult(Map map)` | 把返回值赋给变量或参与表达式的写法会编译失败；正常情况下只作为语句调用。 |
    | `ChatPageResult.pageCount` | `get pageCount`（隐式 `dynamic`） | `int? get pageCount` | 赋给非空 `int` 变量或直接参与算术运算的写法需要通过 `??` 兜底。 |
 
-10. **`LoginExtensionInfo.fromJson` 不再抛异常**
+10. **断开事件中的 `info` 以 `null` 表示「无设备信息」**
 
-    原生未携带 `deviceName` 时，4.x 会因强制转换抛异常，5.0.0 回退为空字符串（`deviceName` 仍为 `String` 非空类型）。在 `onDisconnected` 中读取 `info.deviceName` 的代码因此在异常场景下更安全，但需要容忍空字符串，不要用 `isEmpty` 反推「没有设备信息」——`info` 是否为 `null` 才是判断依据。
+    `LoginExtensionInfo.fromJson` 不再对缺失字段做强断言（4.x 会因强制转换抛异常）。但 `onDisconnected` 的分发逻辑是：**当原生未携带 `deviceName`（或为空字符串）时，`info` 直接为 `null`**，不会交付一个 `deviceName == ''` 的对象。因此判断「是否有设备信息」只看 `info == null`，不要写 `info?.deviceName.isEmpty` 这类判断；`deviceName` 仍为非空 `String` 类型，非 `null` 时可直接使用。
+
+11. **`modifyMessage` 不传 `attributes` 时不再清空消息扩展（Android）**
+
+    原生语义是「`ext` 会覆盖原有扩展，传 `null` 表示不修改」。4.x 的 Android 桥接层在未传 `attributes` 时下发的是**空 Map**（相当于把消息扩展清空），iOS 下发的是 `nil`（不修改），两端不一致；5.0.0 两端统一为**不传则不修改**。如果业务曾依赖「只改 `msgBody` 顺手清掉扩展」的 Android 旧行为，升级后需显式传 `attributes: {}`。
+
+## 已知限制与注意事项
+
+下列行为已确认为当前版本的实际表现，接入时应避开而不是依赖：
+
+- **不要用回执 / 已读详情接口探测消息是否存在**。传入本地不存在的 `messageId` 时两端行为不一致：`sendMessageReadReceipts` / `getGroupMessageReadReceipts` 会跳过无法解析的条目（整批都无法解析时返回 `110`）；`fetchGroupMessageReadReceipts` 在 iOS 上返回成功且结果集为空，在 Android 上由原生根据本地消息推导群 ID，消息不存在时可能直接崩溃（原生层空指针，Dart 侧 `try/catch` 无法拦住；该问题属原生侧，Flutter 层未做兜底）。请先用 `loadMessagesWithIds` 或会话消息列表确认消息在本地存在。
+- **`ChatCursorResult.totalCount` 仅 iOS 有值**，Android 恒为 `null`，展示总已读数时需兜底。
+- **群字段读取存在平台差异**：iOS 上 `ChatGroup.maxUserCount` / `extension` 不下发（改读 `configs?.maxCount` / `configs?.ext`），`configs` 本身也可能为 `null`；Android 上 `configs.inviteNeedConfirm` 固定回传 `false`。详见「群组配置模型重构」一节的 warning。
+- **`onMessageReadReceipts` 需要双账号场景才能观察到**：自己发、自己读不会产生已读回执事件，联调时请用另一个账号读取消息。
+- **退出事件与登出存在时序竞态**：平台先派发事件、后完成登出，不要在 `onDisconnected` / `onTokenDidExpire` 里发起依赖登录态的调用（包括用 `isConnected()` / `getCurrentUserId()` 反推是否已退出）。
 
 ## 迁移检查清单
 
@@ -657,9 +727,10 @@ ChatClient.getInstance.removeConnectionEventHandler('app');
 - [ ] 应用自行管理 Token 的获取、缓存、过期与续期（`renewToken`）
 - [ ] 已按需显式配置 `ChatOptions.dataSyncType`，不依赖两端不同的默认值
 - [ ] 已在 `ConnectionEventHandler` 中实现 `onDisconnected` 分支与 `onTokenDidExpire`，并接入 `ChatDisconnectErrorCode`
-- [ ] 会话、好友、群组列表改用本地接口读取，并挂接到 `onDataSyncFinish`
-- [ ] 已读回执改用 `sendMessageReadReceipts`，未读数清理改用 `clearConversationUnreadMessageCount` / `clearAllConversationUnreadMessageCount`
-- [ ] 群组创建与配置更新改用 `ChatGroupConfigs` 与 `updateGroupConfigs`，`ChatGroupStyle` / `ChatGroupOptions` 引用已清理
+- [ ] 会话、好友、群组列表改用本地接口读取，并挂接到 `onDataSyncFinish`；按 ID 取会话时已正确传入 `getConversation` 的 `type`
+- [ ] 已读回执改用 `sendMessageReadReceipts`，未读数清理改用 `clearConversationUnreadMessageCount` / `clearAllConversationUnreadMessageCount`；按 ID 加载消息时已注意 `loadMessagesWithIds` 单次 20 条上限
+- [ ] 群组创建与配置更新改用 `ChatGroupConfigs` 与 `updateGroupConfigs`，`ChatGroupStyle` / `ChatGroupOptions` / `ChatGroup.isMemberOnly` 引用已清理，并已处理群字段的可空与平台差异
 - [ ] 设备管理与踢下线接口改为 Token 参数形式
-- [ ] 推送配置改为 `ChatPushManager.bindDeviceToken`，已删除厂商推送开关引用
+- [ ] 推送配置改为 `ChatPushManager.bindDeviceToken`，已删除厂商推送开关引用，并确认 `notifierName` 取值（iOS 为 APNs 证书名、Android 为厂商凭据）
+- [ ] Android 应用模块 `compileSdk` ≥ 34（原生 5.0.0 新增 androidx 传递依赖）
 - [ ] 清理全部 `@Deprecated` 公开 API 的调用（推荐全局搜索 `EM` 前缀类型名与废弃方法名；`em_compat.dart` 中的 65 个 `EM*` typedef 本次仍保留，只有 `EMPushConfig` 随 `ChatPushConfig` 删除，改用 `Chat*` 名称属于长期建议而非本次强制项）

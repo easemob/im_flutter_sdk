@@ -53,7 +53,7 @@
 - Added `ChatManager.deleteConversations` to delete multiple local conversations at once, with an option to also delete the local messages in them; IDs of conversations that do not exist are ignored;
 - Added post-login data sync configuration, data sync events, and the database-opened event: `ChatDataSyncType`, `ChatOptions.dataSyncType`, and `ConnectionEventHandler.onDataSyncStart`/`onDataSyncFinish`/`onDatabaseOpened`;
 - `ChatMultiDevicesEvent` added `GROUP_UPDATE` (the iOS group info update event);
-- `ChatConversation` added read-only `name` and `avatar`; `modifyMessage` added an optional `attributes`;
+- `ChatConversation` added read-only `name` and `avatar`;
 
 ### Improvements
 
@@ -67,6 +67,7 @@
 - Fixed multi-device event mapping: filled in the missing group allowlist and muting-all-members events (native 30-33), corrected the swapped thread update/kick events (native 44/45), and unknown event values no longer throw during event handling;
 - Fixed an issue where `onUserAuthenticationFailed` was incorrectly forwarded as `onDisconnected`;
 - Fixed an issue where iOS did not report reaching the active-count limit (reason code 8);
+- Fixed `modifyMessage` clearing the message extension on Android when `attributes` was omitted: the wrapper passed an empty map (which overwrites the extension) instead of null (which leaves it unchanged), while iOS already passed nil; both platforms now keep the existing extension;
 
 ## 4.24.0
 
