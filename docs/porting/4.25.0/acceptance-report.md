@@ -64,3 +64,67 @@
 - 已沉淀 **KI-107**：`useAgoraChatDomain` 为 native 对内品牌开关（国内 easemob 不设置走默认缺省、海外 agora 显式指定 true），跨平台 SDK 不暴露、环信侧零代码（Android 默认 null 未配置时不下发底层；iOS BOOL 零初始化即缺省）。
 - 候选新条目：worktree 流程下 flutter-local-deps.sh 不兼容（.git 文件判定/git checkout 吞 bump）——脚本已修复，建议标记 resolved 并注明修复落点（工作区 .agents 资产，随脚本现状生效）；restore 在存在未提交 bump 时会吞 bump 的风险可入清单提醒。
 - 其余本次问题均为环境/流程性，不入清单。
+
+---
+
+# 验收报告补充：iOS PushKit 回移（4.25.0 兼容版）
+
+- 日期：2026-09-24
+- 来源：5.0.0 分支最后一次提交 `41d2cf17`（`feat(push): add iOS PushKit APIs and make iOS certificate names init options`）的**定向回移**，按 4.25 兼容优先做差异化取舍
+- 目标：`im_flutter_sdk`，worktree `.worktree/4.25.0`，分支 `4.25.0`
+- 变更清单、契约、实现、验证与待决策全文见同目录 `05-pushkit.md`
+- **代码状态：未提交**（用户明确要求先审后提交）
+
+## 二维对照表
+
+| 变更项 | iOS 源（HyphenateChat 4.25.0） | Android 源 | Dart | Android Wrapper | iOS Wrapper | 状态 |
+|---|---|---|---|---|---|---|
+| `pushkit_register`（PushKit 绑定） | `registerPushKitToken:completion:`（`EMClient.h:776`） | 无（iOS 专有） | 新增 `ChatPushManager.bindPushKitToken({required String deviceToken})` + `Platform.isIOS` 守卫 | 注册同名 route → `OPERATION_UNSUPPORTED` | 新增路由 + 实现 | ✅ |
+| `pushkit_unregister`（PushKit 解绑） | `unRegisterPushKitTokenWithCompletion:`（`EMClient.h:825`） | 无（iOS 专有） | 新增 `ChatPushManager.unbindPushKitToken()` + `Platform.isIOS` 守卫 | 注册同名 route → `OPERATION_UNSUPPORTED` | 新增路由 + 实现 | ✅ |
+| `pushkit_cert_name`（PushKit 证书名） | `EMOptions.pushKitCertName`（`EMOptions.h:305`） | 无（iOS 专有） | `ChatOptions.pushKitCertName`（初始化下发，不入 copyWith 形参） | - | `OptionsHelper.fromJson` 映射 | ✅ |
+| `apns_cert_name`（APNs 证书名） | `EMOptions.apnsCertName`（`EMOptions.h:290`） | 无（iOS 专有） | `ChatOptions.apnsCertName`（初始化下发） | - | `OptionsHelper.fromJson` 映射 + `bindDeviceToken` 运行期写入加非空守卫（**与 5.0.0 不同，见 05 D2**） | ✅ 兼容优先 |
+| `device_token_notifier_name`（参数形态） | iOS 语义为证书名 | 必填厂商凭据 | **保持 `required`**（**与 5.0.0 不同，见 05 D1**），仅补平台语义文档 | 代码不变 | 代码不变 | ✅ 兼容优先 |
+| `pushkit_bind_sync` / `pushkit_unbind_sync` | `bindPushKitToken:` / `unBindPushKitToken`（同步） | 无 | skip（异步变体已覆盖，Flutter 通道本身异步） | - | - | ✅ skip |
+| example 注册条目（**新增于 4.25.0**） | - | - | 新增 `push_apis.dart`（3 条）并在 `apiRegistry` 注册 | - | - | ✅ |
+
+## 验证结果汇总（实证输出见 `05-pushkit.md` §8）
+
+| 验证项 | 结果 | 备注 |
+|---|---|---|
+| `flutter analyze --fatal-infos`（主包 + example） | ✅ | No issues found |
+| `flutter test` | ✅ | 28 个用例全部通过 |
+| `check_contracts.dart`（CI 同款） | ✅ | MethodChannel contracts are consistent. |
+| `check_versions.dart` / `check_case_mapping.dart` | ✅ | 版本与用例映射均通过 |
+| 三端方法名 key 逐字 grep | ✅ | Dart / `MethodKeys.h` / `MethodKey.java` 名称与取值一致，两端路由均已注册 |
+| 初始化选项 key + 运行期写入守卫 grep | ✅ | key 一致；运行期写入仅剩 1 处且在非空守卫内 |
+| iOS 构建 + 产物符号校验 | ✅ | `flutter build ios` 成功；framework 二进制含 `bindPushKitToken:channelName:result:`、`unbindPushKitToken:channelName:result:`、`setApnsCertName:`、`setPushKitCertName:`、`registerPushKitToken:completion:`、`unRegisterPushKitTokenWithCompletion:` |
+| Android 构建 + 产物 dex 校验 | ✅ | `flutter build apk --debug` 成功；dex 含 `bindPushKitToken`、`unbindPushKitToken`、`unsupportedPushKit`、`PushKit is only supported on iOS` |
+| native 能力证据 | ✅ | 4.25.0 framework 头文件有声明 + ObjC 运行时有实现符号（`otool -oV`），且含证书名空校验字符串 |
+| porting_guard gate | ✅ 通过 | 首次报「native 依赖版本不一致」；按用户裁决收窄 gate 规则（iOS 两条集成路径一致即可，Android 依赖版本不参与）后通过，并验证规则仍能拦截 KI-101 类漂移 |
+| 版本校验器（仓库 CI） | ✅ | `check_versions.dart` 新增 iOS 双路径校验并通过；新增 2 个单测，`version_checker_test.dart` 4/4 通过 |
+| 端到端 VoIP 推送 | ⏭️ 未验证 | 需真机 + PushKit 证书 + 应用侧 `PKPushRegistry`，当前环境不具备 |
+
+## 本次问题清单
+
+1. **`pod install` 前置失败（环境性，已绕过）**：`example/ios/Podfile.lock` 快照停在 `HyphenateChat 4.24.1` / `im_flutter_sdk_ios 4.24.0`，与 pubspec/podspec 的 4.25.0 冲突导致 `pod install` 失败；执行 `pod update HyphenateChat` 后装载 4.25.0 并通过构建。**连带改动**：`im_flutter_sdk/example/ios/Podfile.lock` 刷新为 4.25.0（连带 `ShengwangInfra_iOS` 1.3.5→1.3.16）——用户已裁决「需要刷新」，随本次改动提交。
+2. **沙箱需提权（环境性）**：Flutter 启动器需写 `~/fvm/.../bin/cache`、CocoaPods 需写 `~/.cocoapods`，均在会话工作区外，均按策略单次提权后完成；不影响仓库内容。
+3. **下载介质 checksum 口径差异**：`HyphenateChat4_25_0.zip` 的 sha256 与 SPM `Package.swift` 的 `checksum` 不同（口径差异），已用「包内版本号 + 头文件 + ObjC 实现符号」三重证据判定介质正确，仍列待决策。
+4. **门禁规则过严（已按用户裁决修复）**：`porting_guard.sh` 原把「podspec / Package.swift / gradle 三处 native 依赖版本一致」当硬约束，对「Flutter 4.25.0 + Android native 4.25.1」误报 block。已改为**忽略最后一位、只比 `major.minor`**：四包严格相等、iOS 两条集成路径同线、Android 依赖与包版本同线、podspec `s.version` 跟随包版本；仓库 CI `check_versions.dart` 同步实现并补 6 个单测；规则沉淀进 skill `references/flutter.md` 与 `known-issues.md`（KI-101 限定故障面 + 新增 KI-113）。
+5. `OptionsHelper.m toJson` 未输出 `pushKitCertName`（该方法经 grep 证实无调用方，属既存死代码），本次按「少即是稳」未动。
+
+## 本次决策结果与遗留项
+
+已裁决（2026-09-24，详见 `05-pushkit.md` §9.1）：
+
+1. **不升版本**：4.25.0 未发布，四包与 CHANGELOG 版本头维持 4.25.0。
+2. **依赖版本不动**：iOS 包/Android 包版本都是 4.25.0，Android native 依赖 4.25.1 允许；iOS 若为 4.25.1 同样允许。统一口径为**版本比对忽略最后一位、只比 `major.minor`**（要保证四包版本强一致，以及 4.25.x 不跨线），改的是检查脚本而非依赖版本。
+3. **`Podfile.lock` 随本次提交**。
+
+仍待决策（详见 `05-pushkit.md` §9.2）：
+
+1. 4.25.0 与 5.0.0 的 API 形态差异（D1 参数可选性、D2 证书名运行期写入）是否为长期预期。
+2. `EMOptions.h` 证书名注释与实现的差距是否在 native 侧修订。
+3. `OptionsHelper.m toJson` 死代码是否补齐 `pushKitCertName` 或直接删除。
+4. example 是否补 `PKPushRegistry` 接入以支持端到端自测。
+5. `HyphenateChat4_25_0.zip` 的官方 sha256（可选，用于二次确认介质）。
+

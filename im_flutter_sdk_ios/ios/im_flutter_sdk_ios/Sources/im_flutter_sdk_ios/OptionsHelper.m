@@ -109,6 +109,20 @@
     // 4.25.0
     options.enableChatroomConversation = [aJson[@"enableChatroomConversation"] boolValue];
     options.autoLoadConversations = [aJson[@"autoLoadConversations"] boolValue];
+    // The certificate names are initialization options: the native SDK reads them when a device
+    // token is bound, and an empty certificate name makes the binding fail with
+    // EMErrorUserIllegalArgument. Precedence is: a non-empty notifierName passed to
+    // bindDeviceToken at runtime (see PushManagerWrapper) > the top-level apnsCertName option >
+    // the legacy pushConfig.apnsCertName written above by the deprecated ChatOptions.enableAPNs
+    // setter.
+    // The assignment is therefore skipped when the option is absent, which keeps the legacy setter
+    // working.
+    if (aJson[@"apnsCertName"] && ![aJson[@"apnsCertName"] isKindOfClass:[NSNull class]]) {
+        options.apnsCertName = aJson[@"apnsCertName"];
+    }
+    if (aJson[@"pushKitCertName"] && ![aJson[@"pushKitCertName"] isKindOfClass:[NSNull class]]) {
+        options.pushKitCertName = aJson[@"pushKitCertName"];
+    }
     return options;
 }
 

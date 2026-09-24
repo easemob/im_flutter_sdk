@@ -2,6 +2,9 @@
 - iOS依赖 SDK 升级到 4.25.0；
 - 新增本地会话分页加载 `fetchConversationsFromDB` 的原生实现；
 - `ChatOptions` 新增 `enableChatroomConversation`、`autoLoadConversations` 配置项的原生实现；
+- 新增 PushKit（VoIP 推送）路由：`bindPushKitToken` 调用 `registerPushKitToken:completion:`，`unbindPushKitToken` 调用 `unRegisterPushKitTokenWithCompletion:`；
+- `OptionsHelper` 支持在初始化时下发证书名：`ChatOptions.apnsCertName` / `pushKitCertName` 写入 `EMOptions`；
+- `bindDeviceToken` 的证书名优先级明确为「非空 `notifierName` > `ChatOptions.apnsCertName` > 已废弃的 `enableAPNs`」，非空 `notifierName` 仍会写入 `options.apnsCertName`，存量代码不受影响；
 
 ## 4.24.0
 - iOS依赖 SDK 升级到 4.24.1；

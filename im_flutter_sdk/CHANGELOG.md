@@ -1,6 +1,8 @@
 ## 4.25.0
 - 新增本地会话分页加载 `fetchConversationsFromDB` API；
 - `ChatOptions` 新增 `enableChatroomConversation`、`autoLoadConversations` 配置项；
+- `ChatOptions` 新增 `apnsCertName`、`pushKitCertName` 配置项，用于在初始化时配置 iOS 的 APNs 与 PushKit 推送证书名称；
+- 新增 iOS PushKit（VoIP 推送）接口 `ChatPushManager.bindPushKitToken` 与 `ChatPushManager.unbindPushKitToken`，仅 iOS 生效，其他平台调用不做任何处理；
 - iOS/Android 依赖 SDK 升级到 4.25.0；
 
 ## 4.24.0

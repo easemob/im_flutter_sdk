@@ -194,17 +194,31 @@ class ChatPushManager {
   }
 
   /// ~english
-  /// bind the push token.
+  /// Binds the push token of the device.
   ///
-  /// Param [token] The push token.
+  /// Param [deviceToken] The push token reported by the push service of the platform.
+  ///
+  /// Param [notifierName] The push credential of the platform:
+  /// - Android: the vendor push credential, for example the FCM Sender ID, the HUAWEI/Honor app
+  ///   ID, the Xiaomi/Meizu app ID, the OPPO app key, or the vivo `appId#appKey`. It must not be
+  ///   empty, otherwise the native SDK returns an invalid-parameter error;
+  /// - iOS: the APNs certificate name. It is optional here and takes precedence over
+  ///   [ChatOptions.apnsCertName] when it is not empty, so both the initialization option and this
+  ///   argument can be used to set the certificate name.
   ///
   /// **Throws** A description of the issue that caused this exception. See [ChatError]
   /// ~end
   ///
   /// ~chinese
-  /// 更新推送 token。
+  /// 绑定设备的推送 token。
   ///
-  /// Param [token] 要更新的推送 token。
+  /// Param [deviceToken] 平台推送服务返回的推送 token。
+  ///
+  /// Param [notifierName] 平台的推送凭据：
+  /// - Android：厂商推送凭据，例如 FCM 的 Sender ID、华为/荣耀的 App ID、小米/魅族的 App ID、
+  ///   OPPO 的 App Key、vivo 的 `appId#appKey`。不能为空，否则原生 SDK 返回参数非法错误；
+  /// - iOS：APNs 证书名称。此处为非必填，非空时优先级高于 [ChatOptions.apnsCertName]，
+  ///   因此初始化配置与本参数两种方式都可用。
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
   /// ~end
@@ -218,6 +232,94 @@ class ChatPushManager {
       ChatError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
+    }
+  }
+
+  // 4.25.0
+
+  /// ~english
+  /// Binds the Apple PushKit token, which is used for VoIP push notifications.
+  ///
+  /// This method is available on iOS only; on other platforms it does nothing.
+  ///
+  /// Param [deviceToken] The PushKit token reported by `PKPushRegistry`, in hexadecimal.
+  ///
+  /// The PushKit certificate name must be set with [ChatOptions.pushKitCertName] when the SDK is
+  /// initialized, because the certificate name cannot be changed at runtime.
+  ///
+  /// The native SDK caches the token before binding it: if the current user is not logged in
+  /// yet, this call fails with `ChatError`, but the token stays cached and is bound
+  /// automatically after the next successful login. `ChatClient.logout` with
+  /// `unbindDeviceToken: true` unbinds the PushKit token as well.
+  ///
+  /// **Throws** A description of the issue that caused this exception. See [ChatError]
+  /// ~end
+  ///
+  /// ~chinese
+  /// 绑定苹果 PushKit token，用于 VoIP 推送。
+  ///
+  /// 仅 iOS 平台有效，其他平台调用不做任何处理。
+  ///
+  /// Param [deviceToken] `PKPushRegistry` 回调返回的 PushKit token，十六进制字符串。
+  ///
+  /// PushKit 证书名称需要在 SDK 初始化时通过 [ChatOptions.pushKitCertName] 设置，
+  /// 因为证书名称不支持运行时修改。
+  ///
+  /// 原生 SDK 会先缓存 token 再执行绑定：若此时当前用户尚未登录，本次调用会抛出 [ChatError]，
+  /// 但 token 已缓存，下次登录成功后 SDK 会自动完成绑定。调用 `ChatClient.logout` 且
+  /// `unbindDeviceToken` 为 `true` 时，会同时解绑 PushKit token。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
+  /// ~end
+
+  Future<void> bindPushKitToken({required String deviceToken}) async {
+    if (Platform.isIOS) {
+      try {
+        Map req = {'deviceToken': deviceToken};
+        Map result = await platform_interface.Client.instance.pushManager
+            .callNativeMethod(ChatMethodKeys.bindPushKitToken, req);
+        ChatError.hasErrorFromResult(result);
+      } catch (e) {
+        rethrow;
+      }
+    } else {
+      return;
+    }
+  }
+
+  /// ~english
+  /// Unbinds the Apple PushKit token bound by [bindPushKitToken].
+  ///
+  /// This method is available on iOS only; on other platforms it does nothing.
+  ///
+  /// `ChatClient.logout` with `unbindDeviceToken: true` already unbinds the PushKit token,
+  /// so call this method only to unbind it while the current user stays logged in.
+  ///
+  /// **Throws** A description of the issue that caused this exception. See [ChatError]
+  /// ~end
+  ///
+  /// ~chinese
+  /// 解绑 [bindPushKitToken] 绑定的苹果 PushKit token。
+  ///
+  /// 仅 iOS 平台有效，其他平台调用不做任何处理。
+  ///
+  /// `ChatClient.logout` 且 `unbindDeviceToken` 为 `true` 时已经会同时解绑 PushKit token，
+  /// 因此只有在当前用户保持登录状态、需要单独解绑时才需要调用本方法。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [ChatError]。
+  /// ~end
+
+  Future<void> unbindPushKitToken() async {
+    if (Platform.isIOS) {
+      try {
+        Map result = await platform_interface.Client.instance.pushManager
+            .callNativeMethod(ChatMethodKeys.unbindPushKitToken);
+        ChatError.hasErrorFromResult(result);
+      } catch (e) {
+        rethrow;
+      }
+    } else {
+      return;
     }
   }
 
