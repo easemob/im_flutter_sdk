@@ -91,6 +91,13 @@ public class PushManagerWrapper extends Wrapper implements MethodCallHandler {
             else if (MethodKey.bindDeviceToken.equals(call.method)) {
                 bindDeviceToken(param, call.method, result);
             }
+            // 4.25.0
+            else if (MethodKey.bindPushKitToken.equals(call.method)) {
+                unsupportedPushKit(result);
+            }
+            else if (MethodKey.unbindPushKitToken.equals(call.method)) {
+                unsupportedPushKit(result);
+            }
             else {
                 super.onMethodCall(call, result);
             }
@@ -261,6 +268,15 @@ public class PushManagerWrapper extends Wrapper implements MethodCallHandler {
         String notifierName = params.getString("notifierName");
         String deviceToken = params.getString("deviceToken");
         EMClient.getInstance().pushManager().bindDeviceToken(notifierName, deviceToken, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    // 4.25.0
+    // PushKit (VoIP push) is iOS-only: the Android SDK has no PushKit API, and the Dart API is
+    // guarded by Platform.isIOS so this route is normally never reached. It stays registered to
+    // keep the method key contract aligned across Dart, Android and iOS, and answers with an
+    // explicit error instead of a silent success if it is ever invoked directly.
+    private void unsupportedPushKit(Result result) {
+        onError(result, new HyphenateException(EMError.OPERATION_UNSUPPORTED, "PushKit is only supported on iOS"));
     }
 
 }

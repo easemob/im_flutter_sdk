@@ -362,6 +362,12 @@ public class MethodKey {
 
     static final String bindDeviceToken = "bindDeviceToken";
 
+    // 4.25.0
+    // PushKit is an iOS-only capability: the Android SDK has no PushKit API. The routes below
+    // exist to keep the cross-end method key contract aligned and report an explicit error.
+    static final String bindPushKitToken = "bindPushKitToken";
+    static final String unbindPushKitToken = "unbindPushKitToken";
+
     // 4.10
     static final String onOfflineMessageSyncStart = "onOfflineMessageSyncStart";
     static final String onOfflineMessageSyncFinish = "onOfflineMessageSyncFinish";

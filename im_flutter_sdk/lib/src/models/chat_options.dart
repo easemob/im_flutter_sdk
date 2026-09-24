@@ -452,6 +452,49 @@ class ChatOptions {
   final List<String>? ntpServers;
 
   /// ~english
+  /// The name of the APNs certificate, which is used for offline push notifications on iOS.
+  ///
+  /// Set the APNs certificate name that you configured in the console. This parameter is specific
+  /// to iOS and is ignored on other platforms.
+  ///
+  /// This setting takes effect only during SDK initialization and cannot be changed at runtime.
+  /// On iOS the certificate name is resolved in this order: a non-empty `notifierName` passed to
+  /// [ChatPushManager.bindDeviceToken], then this option, then the deprecated
+  /// [ChatOptions.enableAPNs]. Existing code therefore keeps working.
+  /// ~end
+  ///
+  /// ~chinese
+  /// APNs 推送证书名称，用于 iOS 的离线推送。
+  ///
+  /// 填写你在控制台配置的 APNs 证书名称。该参数仅对 iOS 生效，其他平台忽略。
+  ///
+  /// 该配置仅在 SDK 初始化时生效，运行时不可修改。
+  /// iOS 上证书名的取值优先级为：[ChatPushManager.bindDeviceToken] 传入的非空 `notifierName`、
+  /// 本配置、已废弃的 [ChatOptions.enableAPNs]，因此存量代码不受影响。
+  /// ~end
+  final String? apnsCertName;
+
+  /// ~english
+  /// The name of the PushKit certificate, which is used for VoIP push notifications on iOS.
+  ///
+  /// Set the PushKit certificate name that you configured in the console. This parameter is
+  /// specific to iOS and is ignored on other platforms. After the app obtains the PushKit token
+  /// from `PKPushRegistry`, bind it with [ChatPushManager.bindPushKitToken].
+  ///
+  /// This setting takes effect only during SDK initialization and cannot be changed at runtime.
+  /// ~end
+  ///
+  /// ~chinese
+  /// PushKit 推送证书名称，用于 iOS 的 VoIP 推送。
+  ///
+  /// 填写你在控制台配置的 PushKit 证书名称。该参数仅对 iOS 生效，其他平台忽略。
+  /// 应用从 `PKPushRegistry` 拿到 PushKit token 后，调用 [ChatPushManager.bindPushKitToken] 绑定。
+  ///
+  /// 该配置仅在 SDK 初始化时生效，运行时不可修改。
+  /// ~end
+  final String? pushKitCertName;
+
+  /// ~english
   /// Whether to create a conversation for chat room messages.
   ///
   /// - `true`: A conversation is created when sending or receiving chat room messages.
@@ -874,6 +917,8 @@ class ChatOptions {
     bool enableAutoSyncContacts = false,
     String? loginExtension,
     List<String>? ntpServers,
+    String? apnsCertName,
+    String? pushKitCertName,
     bool enableChatroomConversation = false,
     bool autoLoadConversations = true,
     Map<String, dynamic>? extSettings,
@@ -913,6 +958,8 @@ class ChatOptions {
           enableAutoSyncContacts: enableAutoSyncContacts,
           loginExtension: loginExtension,
           ntpServers: ntpServers,
+          apnsCertName: apnsCertName,
+          pushKitCertName: pushKitCertName,
           enableChatroomConversation: enableChatroomConversation,
           autoLoadConversations: autoLoadConversations,
           extSettings: extSettings,
@@ -1167,6 +1214,8 @@ class ChatOptions {
     bool enableAutoSyncContacts = false,
     String? loginExtension,
     List<String>? ntpServers,
+    String? apnsCertName,
+    String? pushKitCertName,
     bool enableChatroomConversation = false,
     bool autoLoadConversations = true,
     Map<String, dynamic>? extSettings,
@@ -1206,6 +1255,8 @@ class ChatOptions {
           enableAutoSyncContacts: enableAutoSyncContacts,
           loginExtension: loginExtension,
           ntpServers: ntpServers,
+          apnsCertName: apnsCertName,
+          pushKitCertName: pushKitCertName,
           enableChatroomConversation: enableChatroomConversation,
           autoLoadConversations: autoLoadConversations,
           extSettings: extSettings,
@@ -1462,6 +1513,8 @@ class ChatOptions {
     bool enableAutoSyncContacts = false,
     String? loginExtension,
     List<String>? ntpServers,
+    String? apnsCertName,
+    String? pushKitCertName,
     bool enableChatroomConversation = false,
     bool autoLoadConversations = true,
   }) : this._(
@@ -1500,6 +1553,8 @@ class ChatOptions {
           enableAutoSyncContacts: enableAutoSyncContacts,
           loginExtension: loginExtension,
           ntpServers: ntpServers,
+          apnsCertName: apnsCertName,
+          pushKitCertName: pushKitCertName,
           enableChatroomConversation: enableChatroomConversation,
           autoLoadConversations: autoLoadConversations,
         );
@@ -1540,6 +1595,8 @@ class ChatOptions {
     this.enableAutoSyncContacts = false,
     this.loginExtension,
     this.ntpServers,
+    this.apnsCertName,
+    this.pushKitCertName,
     this.enableChatroomConversation = false,
     this.autoLoadConversations = true,
     Map<String, dynamic>? extSettings,
@@ -1606,6 +1663,8 @@ class ChatOptions {
     // 4.25.0
     data.putIfNotNull('enableChatroomConversation', enableChatroomConversation);
     data.putIfNotNull('autoLoadConversations', autoLoadConversations);
+    data.putIfNotNull('apnsCertName', apnsCertName);
+    data.putIfNotNull('pushKitCertName', pushKitCertName);
 
     return data;
   }

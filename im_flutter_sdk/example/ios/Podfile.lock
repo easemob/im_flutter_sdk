@@ -34,17 +34,17 @@ PODS:
     - DKImagePickerController/PhotoGallery
     - Flutter
   - Flutter (1.0.0)
-  - HyphenateChat (4.24.1):
+  - HyphenateChat (4.25.0):
     - ShengwangInfra_iOS (~> 1.3.0)
-  - im_flutter_sdk_ios (4.24.0):
+  - im_flutter_sdk_ios (4.25.0):
     - Flutter
-    - HyphenateChat (= 4.24.1)
+    - HyphenateChat (= 4.25.0)
   - integration_test (0.0.1):
     - Flutter
   - SDWebImage (5.21.7):
     - SDWebImage/Core (= 5.21.7)
   - SDWebImage/Core (5.21.7)
-  - ShengwangInfra_iOS (1.3.5)
+  - ShengwangInfra_iOS (1.3.16)
   - SwiftyGif (5.4.5)
 
 DEPENDENCIES:
@@ -77,11 +77,11 @@ SPEC CHECKSUMS:
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
   file_picker: a0560bc09d61de87f12d246fc47d2119e6ef37be
   Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
-  HyphenateChat: ee178bc2204a45f5107b3308630ae1f03338cec8
-  im_flutter_sdk_ios: 654bf2abed445e09ae6286d5090002bb22e5cf1f
+  HyphenateChat: ea10cee23c4855b4cc6b8cf95d15a2f54a39fb9b
+  im_flutter_sdk_ios: f31bccbac9c17e8968d0c652173bf3e363eb18f4
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
-  ShengwangInfra_iOS: 0ae2d429ec428cdbaebb39ac883ec64c5c20f7bb
+  ShengwangInfra_iOS: b72ce9eb087e6056e3f2bb8c4869c1f335a09267
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
 
 PODFILE CHECKSUM: 3ba3a73b1b12adcf321a227a745625fe0888cc82

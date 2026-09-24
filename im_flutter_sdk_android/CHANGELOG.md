@@ -2,6 +2,7 @@
 - 安卓依赖 SDK 升级到 4.25.0；
 - 新增本地会话分页加载 `fetchConversationsFromDB` 的原生实现；
 - `ChatOptions` 新增 `enableChatroomConversation`、`autoLoadConversations` 配置项的原生实现；
+- 注册 iOS 专用的 PushKit 方法名 key（`bindPushKitToken`、`unbindPushKitToken`）以保持跨端契约一致；Android 无 PushKit API，两条路由统一返回 `EMError.OPERATION_UNSUPPORTED`，Dart 侧在非 iOS 平台不会下发调用；
 
 ## 4.24.0
 - 安卓依赖 SDK 升级到 4.24.1；
