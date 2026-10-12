@@ -374,6 +374,26 @@ class ChatOptions {
   ///
   final bool workPathCopiable;
 
+  /// ~english
+  /// The name of the PushKit certificate, which is used for VoIP push notifications on iOS.
+  ///
+  /// Set the PushKit certificate name that you configured in the console. This parameter is
+  /// specific to iOS and is ignored on other platforms. After the app obtains the PushKit token
+  /// from `PKPushRegistry`, bind it with [ChatPushManager.bindPushKitToken].
+  ///
+  /// This setting takes effect only during SDK initialization and cannot be changed at runtime.
+  /// ~end
+  ///
+  /// ~chinese
+  /// PushKit 推送证书名称，用于 iOS 的 VoIP 推送。
+  ///
+  /// 填写你在控制台配置的 PushKit 证书名称。该参数仅对 iOS 生效，其他平台忽略。
+  /// 应用从 `PKPushRegistry` 拿到 PushKit token 后，调用 [ChatPushManager.bindPushKitToken] 绑定。
+  ///
+  /// 该配置仅在 SDK 初始化时生效，运行时不可修改。
+  /// ~end
+  final String? pushKitCertName;
+
   final Map<String, dynamic>? _extSettings;
 
   final ChatPushConfig _pushConfig = ChatPushConfig();
@@ -738,6 +758,7 @@ class ChatOptions {
     bool regardImportMessagesAsRead = false,
     bool workPathCopiable = false,
     String? loginExtension,
+    String? pushKitCertName,
     Map<String, dynamic>? extSettings,
   }) : this._(
           appId: appId,
@@ -770,6 +791,7 @@ class ChatOptions {
           regardImportMessagesAsRead: regardImportMessagesAsRead,
           workPathCopiable: workPathCopiable,
           loginExtension: loginExtension,
+          pushKitCertName: pushKitCertName,
           extSettings: extSettings,
         );
 
@@ -993,6 +1015,7 @@ class ChatOptions {
     bool regardImportMessagesAsRead = false,
     bool workPathCopiable = false,
     String? loginExtension,
+    String? pushKitCertName,
     Map<String, dynamic>? extSettings,
   }) : this._(
           appKey: appKey,
@@ -1025,6 +1048,7 @@ class ChatOptions {
           regardImportMessagesAsRead: regardImportMessagesAsRead,
           workPathCopiable: workPathCopiable,
           loginExtension: loginExtension,
+          pushKitCertName: pushKitCertName,
           extSettings: extSettings,
         );
 
@@ -1250,6 +1274,7 @@ class ChatOptions {
     bool regardImportMessagesAsRead = false,
     bool workPathCopiable = false,
     String? loginExtension,
+    String? pushKitCertName,
   }) : this._(
           appKey: appKey,
           autoLogin: autoLogin,
@@ -1281,6 +1306,7 @@ class ChatOptions {
           regardImportMessagesAsRead: regardImportMessagesAsRead,
           workPathCopiable: workPathCopiable,
           loginExtension: loginExtension,
+          pushKitCertName: pushKitCertName,
         );
 
   ChatOptions._({
@@ -1314,6 +1340,7 @@ class ChatOptions {
     this.regardImportMessagesAsRead = false,
     this.workPathCopiable = false,
     this.loginExtension,
+    this.pushKitCertName,
     Map<String, dynamic>? extSettings,
   }) : _extSettings = extSettings;
 
@@ -1363,6 +1390,9 @@ class ChatOptions {
 
     // 4.10
     data.putIfNotNull('workPathCopiable', workPathCopiable);
+
+    // 1.4.1
+    data.putIfNotNull('pushKitCertName', pushKitCertName);
 
     return data;
   }

@@ -419,6 +419,10 @@ class ChatMethodKeys {
 
   static const String bindDeviceToken = 'bindDeviceToken';
 
+  // 1.4.1
+  static const String bindPushKitToken = 'bindPushKitToken';
+  static const String unbindPushKitToken = 'unbindPushKitToken';
+
   // 4.10
   static const String onOfflineMessageSyncStart = 'onOfflineMessageSyncStart';
   static const String onOfflineMessageSyncFinish = 'onOfflineMessageSyncFinish';

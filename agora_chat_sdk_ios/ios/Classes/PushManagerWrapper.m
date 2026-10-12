@@ -102,6 +102,13 @@
     else if([bindDeviceToken isEqualToString:call.method]) {
         [self bindDeviceToken:call.arguments channelName:call.method result:result];
     }
+    // 1.4.1
+    else if([bindPushKitToken isEqualToString:call.method]) {
+        [self bindPushKitToken:call.arguments channelName:call.method result:result];
+    }
+    else if([unbindPushKitToken isEqualToString:call.method]) {
+        [self unbindPushKitToken:call.arguments channelName:call.method result:result];
+    }
     else{
         [super handleMethodCall:call result:result];
     }
@@ -408,6 +415,40 @@
                                object:nil];
         }];
     });
+}
+
+#pragma mark - 1.4.1
+
+- (void)bindPushKitToken:(NSDictionary *)param
+             channelName:(NSString *)aChannelName
+                  result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    // The PushKit certificate name is not taken from the request: it is an initialization option
+    // (ChatOptions.pushKitCertName -> EMOptions.pushKitCertName, see OptionsHelper) and cannot
+    // change at runtime. An empty certificate name makes the native call fail with
+    // EMErrorUserIllegalArgument.
+    NSString *deviceToken = param[@"deviceToken"];
+    // The native _extractTokenFromRawData: accepts both NSData and NSString, which is the
+    // same way the APNs route above passes its token through bindFCMToken:.
+    [EMClient.sharedClient registerPushKitToken:(NSData *)deviceToken
+                                     completion:^(EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:nil];
+    }];
+}
+
+- (void)unbindPushKitToken:(NSDictionary *)param
+               channelName:(NSString *)aChannelName
+                    result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient unRegisterPushKitTokenWithCompletion:^(EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:nil];
+    }];
 }
 
 @end
