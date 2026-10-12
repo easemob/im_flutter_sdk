@@ -7,28 +7,28 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "1.4.0"
+    version: "1.4.1"
   agora_chat_sdk_android:
     dependency: transitive
     description:
       path: "../../agora_chat_sdk_android"
       relative: true
     source: path
-    version: "1.4.0"
+    version: "1.4.1"
   agora_chat_sdk_interface:
     dependency: transitive
     description:
       path: "../../agora_chat_sdk_interface"
       relative: true
     source: path
-    version: "1.4.0"
+    version: "1.4.1"
   agora_chat_sdk_ios:
     dependency: transitive
     description:
       path: "../../agora_chat_sdk_ios"
       relative: true
     source: path
-    version: "1.4.0"
+    version: "1.4.1"
   async:
     dependency: transitive
     description:

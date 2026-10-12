@@ -1,6 +1,6 @@
 name: agora_chat_sdk_android
 description: Integrate the Chat SDK to enjoy the global IM services with high reliability, ultra-low latency, and high concurrency.
-version: 1.4.0
+version: 1.4.1
 homepage: https://www.agora.io/en/
 
 environment:

@@ -1,3 +1,16 @@
+## 1.4.1
+
+### New features
+
+- Added support for Apple PushKit (VoIP push) on iOS with the `ChatPushManager#bindPushKitToken` and `ChatPushManager#unbindPushKitToken` methods. Both methods take effect on iOS only and do nothing on other platforms.
+- Added the `ChatOptions.pushKitCertName` option, which sets the name of the PushKit certificate uploaded in the console when the SDK is initialized. This option is specific to iOS and cannot be changed at runtime.
+
+#### Improvements
+
+- Upgraded the dependent Android SDK to 4.16.4.
+- Upgraded the dependent iOS SDK to 4.16.4.
+- Updated the `AOSL` library to 1.3.16.
+
 ## 1.4.0
 
 ### New features
