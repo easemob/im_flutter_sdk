@@ -5,6 +5,15 @@ import '../api_entry.dart';
 /// ChatClient related entries.
 final clientApis = <ApiEntry>[
   ApiEntry(
+    name: 'ChatClient.logout',
+    group: 'ChatClient',
+    description: '退出当前账号。unbindDeviceToken 默认为 true。',
+    paramsTemplate: '{"unbindDeviceToken": true}',
+    invoke: (p) => ChatClient.getInstance.logout(
+      p['unbindDeviceToken'] as bool? ?? true,
+    ),
+  ),
+  ApiEntry(
     name: 'ChatClient.fetchLoggedInDevices',
     group: 'ChatClient',
     description: '使用用户 Token 获取指定账号的在线设备列表。',

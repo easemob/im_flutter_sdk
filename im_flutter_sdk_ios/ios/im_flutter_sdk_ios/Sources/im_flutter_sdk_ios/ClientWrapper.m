@@ -624,7 +624,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
                                           ext:(id)aExt {
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
     data[@"event"] = @(aEvent);
-    data[@"threadId"] = aThreadId;
+    data[@"target"] = aThreadId;
     data[@"userIds"] = aExt;
     [self.channel invokeMethod:ChatOnMultiDeviceThreadEvent arguments:data];
 }
