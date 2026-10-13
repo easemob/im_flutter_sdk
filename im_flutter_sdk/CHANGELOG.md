@@ -56,6 +56,7 @@
 
 ### New Features
 
+- `ChatThread` added `toJson()` for structured serialization and script result chaining;
 - Added `ChatManager.deleteConversations` to delete multiple local conversations at once, with an option to also delete the local messages in them; IDs of conversations that do not exist are ignored;
 - Added post-login data sync configuration, data sync events, and the database-opened event: `ChatDataSyncType`, `ChatOptions.dataSyncType`, and `ConnectionEventHandler.onDataSyncStart`/`onDataSyncFinish`/`onDatabaseOpened`;
 - `ChatMultiDevicesEvent` added `GROUP_UPDATE` (the iOS group info update event);

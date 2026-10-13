@@ -104,7 +104,7 @@ class ChatThread {
 
   factory ChatThread.fromJson(Map map) {
     String threadId = map["threadId"];
-    String owner = map["owner"];
+    String? owner = map["owner"];
     String messageId = map["msgId"];
     String parentId = map["parentId"];
     int memberCount = map["memberCount"] as int;
@@ -130,6 +130,28 @@ class ChatThread {
       lastMessage: msg,
       threadName: threadName,
     );
+  }
+
+  /// ~english
+  /// Converts this chat thread to a JSON map.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 将当前子区对象转换为 JSON Map。
+  /// ~end
+  Map<String, dynamic> toJson() {
+    final data = <String, dynamic>{
+      "threadId": threadId,
+      "msgId": messageId,
+      "parentId": parentId,
+      "memberCount": membersCount,
+      "messageCount": messageCount,
+      "createAt": createAt,
+    };
+    data.putIfNotNull("threadName", threadName);
+    data.putIfNotNull("owner", owner);
+    data.putIfNotNull("lastMessage", lastMessage?.toJson());
+    return data;
   }
 
   ChatThread copyWith({

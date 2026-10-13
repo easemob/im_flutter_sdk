@@ -37,15 +37,22 @@ void main() {
   });
 
   late List<ChatMultiDevicesEvent> received;
+  late String? receivedChatThreadId;
+  late List<String>? receivedChatThreadUserIds;
 
   setUp(() {
     received = <ChatMultiDevicesEvent>[];
+    receivedChatThreadId = null;
+    receivedChatThreadUserIds = null;
     client.addMultiDeviceEventHandler(
       'multi-device-event-test',
       ChatMultiDeviceEventHandler(
         onGroupEvent: (event, groupId, userIds) => received.add(event),
-        onChatThreadEvent: (event, chatThreadId, userIds) =>
-            received.add(event),
+        onChatThreadEvent: (event, chatThreadId, userIds) {
+          received.add(event);
+          receivedChatThreadId = chatThreadId;
+          receivedChatThreadUserIds = userIds;
+        },
       ),
     );
   });
@@ -165,7 +172,8 @@ void main() {
     }
   });
 
-  test('delivers the thread update and kick events', () async {
+  test('delivers thread update and kick events with target and users',
+      () async {
     const expected = <int, ChatMultiDevicesEvent>{
       44: ChatMultiDevicesEvent.CHAT_THREAD_UPDATE,
       45: ChatMultiDevicesEvent.CHAT_THREAD_KICK,
@@ -174,6 +182,10 @@ void main() {
       received.clear();
       await sendChatThreadEvent(entry.key);
       expect(received, <ChatMultiDevicesEvent>[entry.value],
+          reason: 'native value ${entry.key}');
+      expect(receivedChatThreadId, 'thread-id',
+          reason: 'native value ${entry.key}');
+      expect(receivedChatThreadUserIds, <String>['member-id'],
           reason: 'native value ${entry.key}');
     }
   });
