@@ -11,7 +11,7 @@
 | 变更项 | iOS 源 | Android 源 | Dart | Android Wrapper | iOS Wrapper | 状态 |
 |---|---|---|---|---|---|---|
 | `fetchConversationsFromDB`（本地会话分页加载） | `getConversationsFromDBWithCursor:pageSize:completion:` | `asyncGetConversationsFromDB(cursor, pageSize, callback)` | 已实现 | 已实现 | 已实现 | ✅ |
-| `enableChatroomConversation`（聊天室消息建会话） | `EMOptions.enableChatroomConversation` | `set/isEnableChatroomConversation` | 已实现（默认 false） | 已实现 | 已实现 | ✅ |
+| `enableChatroomConversation`（设置本地会话是否包含聊天室会话） | `EMOptions.enableChatroomConversation` | `set/isEnableChatroomConversation` | 已实现（默认 false） | 已实现 | 已实现 | ✅ |
 | ~~`useAgoraChatDomain`（域名切换）~~ | 裸 `BOOL` 属性，无文档 | `Boolean` 三态 + `@hide` configured 检查 | **不移植**（评审确认：native 对内品牌开关，国内不设置走缺省/海外显式 true，KI-107） | 不移植 | 不移植 | ✅ 已闭环 |
 | `autoLoadConversations`（衍生新增，UM-2） | `EMOptions.autoLoadConversations`（4.24.1 已有） | `setAutoLoadAllConversations`（4.24.1 已有） | 已实现（默认 true，文档强调分页前须关闭及原因） | 已实现 | 已实现 | ✅ 评审确认保留 |
 | `ChatOptions.copyWith` 透传修复（评审新增） | - | - | "未传字段不修改"：补 `enableChatroomConversation`/`autoLoadConversations` + 历史遗漏 `ntpServers`/`workPathCopiable` 透传，`loginExtension`/`extSettings` 改 `?? this.x`；`_pushConfig` 由用户手动改造为私有构造参数并透传 | - | - | ✅ |
