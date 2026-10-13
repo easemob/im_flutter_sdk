@@ -495,17 +495,22 @@ class ChatOptions {
   final String? pushKitCertName;
 
   /// ~english
-  /// Whether to create a conversation for chat room messages.
+  /// Whether to include chatroom conversations in the local conversation list.
   ///
-  /// - `true`: A conversation is created when sending or receiving chat room messages.
-  /// - (Default) `false`: No conversation is created for chat room messages.
+  /// - `true`: Yes. Includes chatroom conversations.
+  /// - (Default) `false`: No. Excludes chatroom conversations.
+  ///
+  ///  This configuration neither controls the creation or storage of chatroom conversations, nor does it affect normal chatroom message delivery.
   /// ~end
   ///
   /// ~chinese
-  /// 是否为聊天室消息创建会话。
+  /// 获取本地会话列表时是否包含聊天室会话。
   ///
-  /// - `true`：收发聊天室消息时创建对应的会话；
-  /// - （默认）`false`：不创建。
+  /// - `true`：是。本地会话列表中包含聊天室会话。
+  /// - （默认）`false`：否。本地会话列表中不包含聊天室会话。
+  ///
+  /// 该配置不控制聊天室会话的创建或存储，也不影响聊天室消息的正常收发。
+  ///
   /// ~end
   final bool enableChatroomConversation;
 
@@ -766,9 +771,9 @@ class ChatOptions {
   ///
   /// Param [workPathCopiable] Whether the SDK work path is copiable, only valid for iOS, default is false.
   ///
-  /// Param [enableChatroomConversation] Whether to create a conversation for chat room messages.
-  /// - `true`: A conversation is created when sending or receiving chat room messages.
-  /// - (Default) `false`: No conversation is created for chat room messages.
+  /// Param [enableChatroomConversation] Whether to include chatroom conversations in the local conversation list.
+  /// - `true`: Yes. Includes chatroom conversations.
+  /// - (Default) `false`: No. Excludes chatroom conversations.
   ///
   /// Param [autoLoadConversations] Whether to automatically load the conversation list from the local database during initialization. Set it to `false` before using [ChatManager.fetchConversationsFromDB] to load conversations with pagination.
   /// - (Default) `true`: Yes.
@@ -873,9 +878,9 @@ class ChatOptions {
   ///
   /// Param [workPathCopiable] 是否允许复制工作路径到其他地方，只有ios生效，默认为 false。
   ///
-  /// Param [enableChatroomConversation] 是否为聊天室消息创建会话。
-  /// - `true`：收发聊天室消息时创建对应的会话；
-  /// - （默认）`false`：不创建。
+  /// Param [enableChatroomConversation] 获取本地会话列表时是否包含聊天室会话：
+  /// - `true`：是。本地会话列表中包含聊天室会话。
+  /// - （默认）`false`：否。本地会话列表中不包含聊天室会话。
   ///
   /// Param [autoLoadConversations] 初始化时是否自动加载本地会话列表。使用 [ChatManager.fetchConversationsFromDB] 分页加载会话前需将该选项设置为 `false`。
   /// - （默认）`true`：是；
@@ -1063,9 +1068,9 @@ class ChatOptions {
   ///
   /// Param [workPathCopiable] Whether the SDK work path is copiable, only valid for iOS, default is false.
   ///
-  /// Param [enableChatroomConversation] Whether to create a conversation for chat room messages.
-  /// - `true`: A conversation is created when sending or receiving chat room messages.
-  /// - (Default) `false`: No conversation is created for chat room messages.
+  /// Param [enableChatroomConversation] Whether to include chatroom conversations in the local conversation list.
+  /// - `true`: Yes. Includes chatroom conversations.
+  /// - (Default) `false`: No. Excludes chatroom conversations.
   ///
   /// Param [autoLoadConversations] Whether to automatically load the conversation list from the local database during initialization. Set it to `false` before using [ChatManager.fetchConversationsFromDB] to load conversations with pagination.
   /// - (Default) `true`: Yes.
@@ -1170,9 +1175,9 @@ class ChatOptions {
   ///
   /// Param [workPathCopiable] 是否允许复制工作路径到其他地方，只有ios生效，默认为 false。
   ///
-  /// Param [enableChatroomConversation] 是否为聊天室消息创建会话。
-  /// - `true`：收发聊天室消息时创建对应的会话；
-  /// - （默认）`false`：不创建。
+  /// Param [enableChatroomConversation] 获取本地会话列表时是否包含聊天室会话。
+  /// - `true`：是。本地会话列表中包含聊天室会话。
+  /// - （默认）`false`：否。本地会话列表中不包含聊天室会话。
   ///
   /// Param [autoLoadConversations] 初始化时是否自动加载本地会话列表。使用 [ChatManager.fetchConversationsFromDB] 分页加载会话前需将该选项设置为 `false`。
   /// - （默认）`true`：是；
@@ -1362,9 +1367,9 @@ class ChatOptions {
   ///
   /// Param [workPathCopiable] Whether the SDK work path is copiable, only valid for iOS, default is false.
   ///
-  /// Param [enableChatroomConversation] Whether to create a conversation for chat room messages.
-  /// - `true`: A conversation is created when sending or receiving chat room messages.
-  /// - (Default) `false`: No conversation is created for chat room messages.
+  /// Param [enableChatroomConversation] Whether to include chatroom conversations in the local conversation list.
+  /// - `true`: Yes. Includes chatroom conversations.
+  /// - (Default) `false`: No. Excludes chatroom conversations.
   ///
   /// Param [autoLoadConversations] Whether to automatically load the conversation list from the local database during initialization. Set it to `false` before using [ChatManager.fetchConversationsFromDB] to load conversations with pagination.
   /// - (Default) `true`: Yes.
@@ -1469,9 +1474,9 @@ class ChatOptions {
   ///
   /// Param [workPathCopiable] 是否允许复制工作路径到其他地方，只有ios生效，默认为 false。
   ///
-  /// Param [enableChatroomConversation] 是否为聊天室消息创建会话。
-  /// - `true`：收发聊天室消息时创建对应的会话；
-  /// - （默认）`false`：不创建。
+  /// Param [enableChatroomConversation] 获取本地会话列表是否包含聊天室会话。
+  /// - `true`：是。本地会话列表中包含聊天室会话。
+  /// - （默认）`false`：否。本地会话列表中不包含聊天室会话。
   ///
   /// Param [autoLoadConversations] 初始化时是否自动加载本地会话列表。使用 [ChatManager.fetchConversationsFromDB] 分页加载会话前需将该选项设置为 `false`。
   /// - （默认）`true`：是；
