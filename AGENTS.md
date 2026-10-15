@@ -8,6 +8,13 @@ Document split: this document is the only must-read for AI. Procedural content s
 
 - When the investigation direction is unclear, or the same problem has been stuck for more than a few minutes, first sync the symptoms and your hypotheses with the user before deciding the next direction — do not drill down silently. The user may hold context the AI lacks (environment, historical decisions, server-side state).
 
+### Work Log
+
+- After completing a task, making an important decision, or receiving a correction from the user, append an entry to `dailylog/YYYY-MM-DD.md` using the local date. Create the file if it does not exist.
+- Append only; do not modify existing content. Format each entry as: `- HH:MM <what was done or decided>, reason: <...>`.
+- Logs may record progress and process details.
+- Track work logs under `dailylog/` in Git; do not add the directory to `.gitignore`. When making a user-authorized Git commit, include the log changes from the current work. Logging itself does not trigger a commit or push.
+
 ## Project Architecture
 
 | Package | Responsibility |
