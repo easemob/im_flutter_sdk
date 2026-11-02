@@ -159,16 +159,13 @@ class ChatUserInfo {
   final String? ext;
 
   /// ~english
-  /// Gets the time period(seconds) when the user attributes in the cache expire.
-  /// If the interval between two callers is less than or equal to the value you set in the parameter,
-  /// user attributes are obtained directly from the local cache; otherwise, they are obtained from the server.
-  /// For example, if you set this parameter to 120(2 minutes), once this method is called again within 2 minutes,
-  /// the SDK returns the attributes obtained last time.
+  /// The Unix timestamp in milliseconds when this Dart user attribute object was created, used to check Dart cache validity.
+  /// This differs from the `expireTime` parameter of user attribute retrieval methods, which is measured in seconds.
   /// ~end
   ///
   /// ~chinese
-  /// 获取缓存中的用户属性到期时的时间段(秒)。如果两个调用者之间的间隔小于或等于参数中设置的值，则直接从本地缓存获取用户属性;
-  /// 否则，从服务器获取。例如，如果将该参数设置为120(2分钟)，则在2分钟内再次调用该方法，SDK将返回上次获取的属性。
+  /// 当前 Dart 用户属性对象创建时的 Unix 毫秒时间戳，供 Dart 层缓存有效性判断使用。
+  /// 它不同于获取用户属性方法中以秒为单位的 `expireTime` 参数。
   /// ~end
   final int expireTime = DateTime.now().millisecondsSinceEpoch;
 }

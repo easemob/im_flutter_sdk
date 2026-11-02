@@ -14,7 +14,7 @@ import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart'
 ///
 /// ```dart
 ///   ChatMessage msg = ChatMessage.createTxtSendMessage(
-///      username: "user1",
+///      targetId: "user1",
 ///      content: "hello",
 ///    );
 /// ```
