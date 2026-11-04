@@ -10,7 +10,7 @@ Document split: this document is the only must-read for AI. Procedural content s
 
 ### Work Log
 
-- After completing a task, making an important decision, or receiving a correction from the user, append an entry to `dailylog/YYYY-MM-DD.md` using the local date. Create the file if it does not exist.
+- After completing a task, making an important decision, or receiving a correction from the user, append an entry to `dailylog/<GitHub login>/YYYY-MM-DD.md` using the local date. Create the file if it does not exist.
 - Append only; do not modify existing content. Format each entry as: `- HH:MM <what was done or decided>, reason: <...>`.
 - Logs may record progress and process details.
 - Track work logs under `dailylog/` in Git; do not add the directory to `.gitignore`. When making a user-authorized Git commit, include the log changes from the current work. Logging itself does not trigger a commit or push.
