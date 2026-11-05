@@ -5,6 +5,20 @@ import '../api_entry.dart';
 /// ChatClient related entries.
 final clientApis = <ApiEntry>[
   ApiEntry(
+    name: 'ChatClient.getCurrentDeviceId',
+    group: 'ChatClient',
+    description: '获取本设备 UUID，用于与在线设备列表匹配，不能假定列表首项是本设备。',
+    paramsTemplate: '{}',
+    invoke: (_) => ChatClient.getInstance.getCurrentDeviceId(),
+  ),
+  ApiEntry(
+    name: 'ChatClient.isConnected',
+    group: 'ChatClient',
+    description: '检查当前 SDK 连接状态。',
+    paramsTemplate: '{}',
+    invoke: (_) => ChatClient.getInstance.isConnected(),
+  ),
+  ApiEntry(
     name: 'ChatClient.logout',
     group: 'ChatClient',
     description: '退出当前账号。unbindDeviceToken 默认为 true。',

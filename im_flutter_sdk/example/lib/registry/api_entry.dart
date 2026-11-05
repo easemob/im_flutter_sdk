@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 /// API registry entry. Flutter has no runtime reflection; API name -> call must be manually registered.
@@ -65,6 +67,14 @@ Future<Map<String, dynamic>> runApi(
     if (data != null) result['data'] = data;
     return result;
   } catch (e) {
-    return {'success': false, 'error': errorToJson(e)};
+    return {
+      'success': false,
+      'failureKind': e is ChatError
+          ? 'sdk'
+          : e is TimeoutException
+              ? 'timeout'
+              : 'tool',
+      'error': errorToJson(e),
+    };
   }
 }

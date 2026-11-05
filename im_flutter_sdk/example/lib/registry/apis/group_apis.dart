@@ -5,6 +5,21 @@ import '../api_entry.dart';
 /// GroupManager related entries.
 final groupApis = <ApiEntry>[
   ApiEntry(
+    name: 'ChatGroupManager.getJoinedGroups',
+    group: 'GroupManager',
+    description: '读取本地已加入群组；用于核对登录同步后的实际数据。',
+    paramsTemplate: '{}',
+    invoke: (_) => ChatClient.getInstance.groupManager.getJoinedGroups(),
+  ),
+  ApiEntry(
+    name: 'ChatGroupManager.fetchGroupInfoFromServer',
+    group: 'GroupManager',
+    description: '读取服务端群详情，核对创建或修改后的 configs。',
+    paramsTemplate: '{"groupId": "yourGroupId"}',
+    invoke: (p) => ChatClient.getInstance.groupManager
+        .fetchGroupInfoFromServer(p['groupId'] as String),
+  ),
+  ApiEntry(
     name: 'ChatGroupManager.createGroup',
     group: 'GroupManager',
     description: '创建群组。5.0.0 起使用 configs 描述群组配置。',

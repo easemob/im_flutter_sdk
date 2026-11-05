@@ -7,18 +7,24 @@ const _placeholderPrefix = 'TODO';
 /// `config.local.json` holds its credentials and test data, and
 /// `lib/env.dart` is the generated Dart view of it.
 class EnvPaths {
-  EnvPaths(this.exampleDir);
+  EnvPaths(this.exampleDir, {File? config, File? template})
+      : _config = config,
+        _template = template;
 
   factory EnvPaths.fromScript() {
     return EnvPaths(File.fromUri(Platform.script).parent.parent);
   }
 
   final Directory exampleDir;
+  final File? _config;
+  final File? _template;
 
   File get configTemplate =>
+      _template ??
       File('${exampleDir.path}/templates/config.local.example.json');
   File get envTemplate => File('${exampleDir.path}/templates/env.example.dart');
-  File get localConfig => File('${exampleDir.path}/config.local.json');
+  File get localConfig =>
+      _config ?? File('${exampleDir.path}/config.local.json');
   File get activeEnv => File('${exampleDir.path}/lib/env.dart');
 }
 
@@ -70,7 +76,7 @@ Future<void> _copyIfMissing(File source, File target) async {
 
 /// Fetches one user token per configured account and writes the result to
 /// `lib/env.dart`. Switching environments means editing `config.local.json`.
-Future<void> generateEnvironment(EnvPaths paths) async {
+Future<void> generateEnvironment(EnvPaths paths, {File? runtimeConfig}) async {
   final config = await _readJsonObject(paths.localConfig);
   _validateConfigShape(config);
   _requireCredentials(config);
@@ -84,6 +90,9 @@ Future<void> generateEnvironment(EnvPaths paths) async {
     );
     final environment = buildEnvironment(config: config, accounts: accounts);
     await _atomicWrite(paths.activeEnv, renderEnvironmentDart(environment));
+    if (runtimeConfig != null) {
+      await _atomicWrite(runtimeConfig, jsonEncode(environment));
+    }
     stdout.writeln(
       'Generated ${paths.activeEnv.path} (${accounts.length} accounts)',
     );

@@ -12,16 +12,18 @@ Before first run, from the project root:
 make setup
 ```
 
-This creates the ignored local files `config.local.json` and `lib/env.dart`
+This creates the ignored local files `testing/config/environment.local.json`
+(relative to the worktree root) and example `lib/env.dart`
 from templates, runs `flutter pub get`, and runs `pod install` if the Podfile or
-podspec changed. Fill `config.local.json` with the environment you test against,
+podspec changed. Existing example credentials are imported once and kept intact.
+Fill `testing/config/environment.local.json` with the environment you test against,
 then fetch user tokens and generate the environment:
 
 ```bash
 make env-gettoken
 ```
 
-The project configures a single environment: `config.local.json` holds that
+The project configures a single environment: `testing/config/environment.local.json` holds that
 environment's `restApi`, `appKey`, `clientId`, `clientSecret`, accounts, groups,
 rooms, and chat options, and `make env-gettoken` writes them into `lib/env.dart`.
 To switch environments, edit or replace that file — keep your own copies (for
@@ -35,15 +37,19 @@ separate mode: set the top-level `enablePrivateConfig` to `true` and fill
 `webSocketServer` / `restServer` / `msyncServer`; `msyncServer` is then mapped to
 Flutter's `imServer` and `enableDNSConfig` is forced to `false`.
 
+See [the consolidated testing entry](../../testing/README.md) for data tools and
+phase-one progress. The multi-device runner is still being developed; the
+manual mode and legacy script commands below remain available.
+
 ## Page flow
 
 ```
 Init page ──init ok──▶ Login page ──login ok──▶ Search page ──tap──▶ API call page
 ```
 
-- **Init** (one-shot): edit the `EMOptions` JSON template and initialize. Cannot
+- **Init** (one-shot): edit the `ChatOptions` JSON template and initialize. Cannot
   be redone without restarting the app.
-- **Login**: password or token (toggle). Also hosts logout / re-login; later
+- **Login**: user Token (5.0.0 has removed password login). Also hosts logout / re-login; later
   pages can navigate back here.
 - **Search**: live, case-insensitive substring matching over API name and group.
 - **API call**: pre-filled required-field JSON template → invoke → result JSON
@@ -58,7 +64,7 @@ Every event (API results, listener callbacks, lifecycle) is emitted as a
 single-line JSON record:
 
 ```
-[APITEST] {"ts":..., "seq":..., "source":"api.EMChatManager.sendMessage", "payload":{...}}
+[APITEST] {"ts":..., "seq":..., "source":"api.ChatManager.sendMessage", "payload":{...}}
 ```
 
 - **stdout**: prefixed with `[APITEST]`, easy to grep from `flutter run`.

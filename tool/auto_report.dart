@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import '../im_flutter_sdk/example/lib/auto/step_expectation.dart';
+
 const _packageName = 'com.example.example';
 const _reportsRelativePath = 'reports/5.0.0';
 const _stdoutPrefix = '[APITEST]';
@@ -1193,17 +1195,11 @@ bool _matchesExpectation(
   Map<String, dynamic> result,
   Map<String, dynamic> expectation,
 ) {
-  if (expectation.containsKey('success') &&
-      result['success'] != expectation['success']) {
+  try {
+    return stepResultMatchesExpectation(result, expectation);
+  } on FormatException {
     return false;
   }
-  if (expectation.containsKey('errorCode')) {
-    final error = result['error'];
-    return result['success'] == false &&
-        error is Map &&
-        error['code'] == expectation['errorCode'];
-  }
-  return true;
 }
 
 bool _isBlockedResult(

@@ -17,6 +17,14 @@ Map<String, Object?> conversationToScriptJson(
 /// ChatManager related entries.
 final chatApis = <ApiEntry>[
   ApiEntry(
+    name: 'ChatManager.loadMessage',
+    group: 'ChatManager',
+    description: '从本地数据库读取消息，核对正文、attributes 和已读状态；不存在时返回 null。',
+    paramsTemplate: '{"messageId": "messageId"}',
+    invoke: (p) => ChatClient.getInstance.chatManager
+        .loadMessage(p['messageId'] as String),
+  ),
+  ApiEntry(
     name: 'ChatManager.getUnreadMessageCount',
     group: 'ChatManager',
     description: '获取所有会话未读消息总数。5.0.0 起不统计聊天室和免打扰会话。',
