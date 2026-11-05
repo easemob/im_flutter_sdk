@@ -1,7 +1,7 @@
 # 设备 Agent HTTP 服务设计（agent-service）
 
 - 日期：2026-11-05；同日按协议 v2 重写（命令自带 step 内容、判定归宿主、会话取消）。
-- 状态：设计草案，待评审；未实现。
+- 状态：代码已实现（`example/lib/agent/` 五文件 + main.dart 路由 + `example/test/agent/` 三件单测，全部通过、analyze 清零）；设备冒烟未做。
 - 依据：[HTTP 控制协议 v2](2026-11-04-phase-control.md)、[控制流解释器规格](../../docs/spec/2026-11-05-flow-interpreter-spec.md)、[测试体系规格](../../docs/spec/2026-11-04-example-testing-spec.md)。
 - 工作根目录：`.worktree/5.0.0`；路径均相对此目录。
 - 定位：第一阶段剩余工作的**子设计文档 1/5**。本文只覆盖"example App 内嵌 HTTP 控制服务（设备 agent）"；设备批量管理、用例迁移、多设备用例、整体验收见各自子文档。
@@ -156,11 +156,11 @@ POST /v1/commands
 
 ## 12. 任务清单
 
-- [ ] `agent_mode.dart` + `main.dart` 路由分支 + 三模式互斥（`API_SCRIPT`+`API_CONTROL` 同设拒绝启动）
-- [ ] `control_server.dart`：路由/鉴权/限长/错误格式（phase-control v2 §5 状态码）
-- [ ] `command_service.dart`：去重/单在途/runApi + 超时/uncertain/init 特例/expect 兼容
-- [ ] `evidence_store.dart`：LogStore 订阅/环形缓冲/溢出标记
-- [ ] `agent_home_page.dart`：状态展示
-- [ ] 单测（§10 清单）全绿；example 既有 `flutter test` 不回归
+- [x] `agent_mode.dart` + `main.dart` 路由分支 + 三模式互斥（`API_SCRIPT`+`API_CONTROL` 同设拒绝启动，ModeConflictPage）
+- [x] `control_server.dart`：路由/鉴权/限长/错误格式（phase-control v2 §5 状态码）
+- [x] `command_service.dart`：去重/单在途/runApi + 超时/uncertain/init 特例/expect 兼容
+- [x] `evidence_store.dart`：LogStore 订阅/环形缓冲/溢出标记（监听事件 source 剥离 handler 前缀——现有 79 个事件裸名零冲突，2026-11-05 核验）
+- [x] `agent_home_page.dart`：状态展示（含 production init 装配：config/overrides 合并 + registerAllListeners）
+- [x] 单测（§10 清单）全绿（34 个）；example 既有 `flutter test` 不回归（60/60）、analyze 清零
 - [ ] 冒烟序列（§10）在 iOS 模拟器实际通过，记录实际端口/凭据获取方式
 - [ ] Android 模拟器重复冒烟一次（含 cleartext 核实）

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'agent/agent_home_page.dart';
+import 'agent/agent_mode.dart';
 import 'auto/auto_mode.dart';
 import 'log/floating_log.dart';
 import 'log/log_store.dart';
@@ -100,7 +102,16 @@ class ApiTesterApp extends StatelessWidget {
       navigatorKey: appNavigatorKey,
       theme: ThemeData(colorSchemeSeed: Colors.blue, useMaterial3: true),
       builder: (context, child) => RootShell(child: child),
-      home: AutoMode.enabled ? const AutoHomePage() : const InitPage(),
+      // Three mutually exclusive run modes (see agent-service §4): refusing
+      // to start when both automated entry points are set, then
+      // API_CONTROL > API_SCRIPT > manual.
+      home: AgentMode.conflict
+          ? const ModeConflictPage()
+          : AgentMode.enabled
+              ? const AgentHomePage()
+              : AutoMode.enabled
+                  ? const AutoHomePage()
+                  : const InitPage(),
     );
   }
 }
