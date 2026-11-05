@@ -181,9 +181,19 @@ String _dartLiteral(Object? value, [int depth = 0]) {
   throw ArgumentError('Unsupported environment value: ${value.runtimeType}');
 }
 
+/// An [HttpClient] that never routes through an ambient proxy.
+///
+/// Dart's default [HttpClient] uses `findProxyFromEnvironment` (lowercase
+/// `http_proxy`). A local proxy can mangle plaintext requests to the REST
+/// token endpoint (HTTP 400 `invalid_request_body`, unsolicited responses).
+/// Testing clients talk only to the easemob REST host or 127.0.0.1 services,
+/// so they always connect directly regardless of the caller's environment.
+HttpClient directHttpClient() =>
+    HttpClient()..findProxy = (uri) => 'DIRECT';
+
 class TokenClient {
   TokenClient({HttpClient? httpClient})
-      : _httpClient = httpClient ?? HttpClient();
+      : _httpClient = httpClient ?? directHttpClient();
 
   final HttpClient _httpClient;
 

@@ -37,7 +37,11 @@ class HttpAgentClient implements AgentClient {
   final int pollIntervalMs;
 
   int _cmdSeq = 0;
-  final HttpClient _http = HttpClient();
+  // Agent endpoints are 127.0.0.1 loopback services; never route them
+  // through an ambient proxy (Dart honors lowercase http_proxy by default,
+  // which breaks local requests when a local proxy is configured).
+  final HttpClient _http =
+      HttpClient()..findProxy = (uri) => 'DIRECT';
 
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',

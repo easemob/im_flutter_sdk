@@ -65,7 +65,8 @@ void main() {
   }
 
   setUp(() async {
-    http = HttpClient();
+    // Loopback-only test client; bypass ambient proxies (http_proxy env).
+    http = HttpClient()..findProxy = (uri) => 'DIRECT';
     service = makeService(
         (api, params) async => {'success': true, 'data': 'ok'});
     evidence = EvidenceStore();

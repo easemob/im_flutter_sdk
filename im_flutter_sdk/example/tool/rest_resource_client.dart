@@ -13,7 +13,7 @@ final class RestResourceClient {
   })  : _restApi = restApi.replaceFirst(RegExp(r'/+$'), ''),
         _appKey = _parseAppKey(appKey),
         _appToken = appToken,
-        _httpClient = httpClient ?? HttpClient();
+        _httpClient = httpClient ?? directHttpClient();
 
   static Future<RestResourceClient> fromConfig(
     Map<String, dynamic> config,
