@@ -9,10 +9,15 @@
 ///   lookup, protocol v2), resolves parameter references
 ///   (`$inputs` / `$config` / `$step` / `$prev`), dispatches `{api, params}`
 ///   and judges the returned envelope against the step's `expect` itself;
+///   step "ok" follows the expect judgment, so a reverse case that hit its
+///   expected error code is a successful producer for downstream refs;
 /// - skip-on-failed-deps covers both flow variables (inputs referencing
 ///   failed `as` bindings) and device-script references (`$step.<failedId>`);
-/// - `wait_event` scans the agent event stream via a per-agent cursor:
-///   cached events first, then new ones; `match` values are re-evaluated
+/// - `wait_event` scans the agent event stream from a cursor established at
+///   flow start (events of previous runs are never matched); each wait
+///   scans from its own snapshot and the shared cursor only advances on
+///   match, so concurrent waits on one agent observe independently and a
+///   timed-out wait consumes nothing; `match` values are re-evaluated
 ///   on every event (lazy matching resolves cross-branch races);
 /// - timeouts produce a timeout envelope; late results are never delivered
 ///   back into the flow (they remain visible in agent-side evidence).
@@ -43,8 +48,8 @@ class InterpError implements Exception {
 }
 
 /// Outcome of one executed device-script step on one agent. `ok` follows
-/// the API success only (AutoMode semantics): an assertion failure does not
-/// nullify the data for downstream references.
+/// the expect judgment (a reverse case that hit its expected error code is
+/// ok); the data is bound either way so downstream references still see it.
 class _StepOutcome {
   const _StepOutcome(this.ok, this.data);
 
@@ -86,12 +91,30 @@ class Interpreter {
   bool _abortedAll = false;
 
   Future<void> run() async {
+    await _initEventCursors();
     try {
       await _runSteps(spec.steps, 'flow');
     } on AbortFlow {
       // The main line requested abort_flow: nothing left to terminate.
     } on AbortAll {
       // Handled via the flag; nothing else to do.
+    }
+  }
+
+  /// Establish each agent's starting cursor at the CURRENT end of its
+  /// event stream: a flow only ever matches events produced during its own
+  /// run, never leftovers of a previous run on the same app instance
+  /// (event isolation across flows).
+  Future<void> _initEventCursors() async {
+    for (final entry in agents.entries) {
+      var cursor = 0;
+      while (true) {
+        final events = await entry.value.pollEvents(cursor, waitMs: 0);
+        if (events.isEmpty) break;
+        cursor = events.last.seq;
+        if (events.length < 200) break;
+      }
+      _cursors[entry.key] = cursor;
     }
   }
 
@@ -215,10 +238,16 @@ class Interpreter {
         ? const ExpectOutcome(matched: false)
         : evaluateExpect(envelope.toMap(), step['expect']);
 
+    // "Step ok" follows the EXPECTATION, not the envelope success flag: a
+    // reverse case (expected errorCode hit) is a successful step whose
+    // binding downstream steps may reference; only an expectation miss
+    // (or timeout/tool failure) makes producers "not ok" for the
+    // skip-on-failed-deps cascade.
+    final stepOk = expectOutcome.matched;
     if (s.as != null) {
-      env.bind(s.as!, envelope.toMap(), ok: envelope.success);
+      env.bind(s.as!, envelope.toMap(), ok: stepOk);
     }
-    _recordStep(s.agent, s.cmd, ok: envelope.success, data: envelope.data);
+    _recordStep(s.agent, s.cmd, ok: stepOk, data: envelope.data);
     _prev[s.agent] = envelope.data;
 
     final failed = !expectOutcome.matched;
@@ -340,13 +369,23 @@ class Interpreter {
     final deadline = DateTime.now().add(Duration(milliseconds: timeoutMs));
     final client = agents[s.agent]!;
 
+    // Each wait scans from its OWN snapshot of the agent cursor; the shared
+    // per-agent cursor only advances (monotonic max) when a wait matches.
+    // Consequences (isolation & consumption rules):
+    // - concurrent waits on one agent observe independently: one branch
+    //   scanning ahead never consumes events another branch still needs;
+    //   two waits MAY match the same event when they genuinely overlap;
+    // - a sequential wait starts from the previous match: the same event
+    //   cannot satisfy two sequential waits;
+    // - a timed-out wait consumes nothing.
+    var local = _cursors[s.agent] ?? 0;
+
     while (true) {
-      final cursor = _cursors[s.agent] ?? 0;
-      final events = await client.pollEvents(cursor, waitMs: 200);
+      final events = await client.pollEvents(local, waitMs: 200);
 
       for (final ev in events) {
-        // Advance the cursor past every event we have inspected.
-        _cursors[s.agent] = ev.seq;
+        // Advance the local scan position past every event inspected.
+        local = ev.seq;
 
         if (ev.source != s.event) continue;
 
@@ -364,6 +403,9 @@ class Interpreter {
         }
         if (!matched) continue;
 
+        if (ev.seq > (_cursors[s.agent] ?? 0)) {
+          _cursors[s.agent] = ev.seq;
+        }
         if (s.as != null) {
           env.bind(s.as!, ev.payload, ok: true);
         }

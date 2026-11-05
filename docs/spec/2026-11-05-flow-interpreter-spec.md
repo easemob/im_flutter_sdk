@@ -99,6 +99,8 @@ steps: [ ... ]                  # 顶层流程，默认顺序执行
 
 `agents` 的 key 是**角色名**（alice/bob），报告和变量引用都用角色名，不直接暴露设备概念。
 
+**路径解析基准**：`script:` / `env:` 的相对路径相对**流程 YAML 文件所在目录**解析（流程与其伴生文件一起移动）；绝对路径原样使用。早期版本按进程工作目录解析，2026-11-05 评审后改为 YAML 相对。
+
 ### 4.2 步骤类型（step kinds）
 
 | kind | 作用 | 关键字段 |
@@ -161,13 +163,15 @@ reference := '$' name ( '.' (字段名 | 数字下标) )*                  # 如
 | 解释器行为 | `cmd` 等待信封 | `wait_event` 从事件流中匹配一条 |
 | 载体 | HTTP 命令终态 | agent 事件缓存（seq 游标，phase-control §7） |
 
-`wait_event` 语义（防错过的关键设计）：
+`wait_event` 语义（隔离与消费规则，2026-11-05 评审后定稿）：
 
-1. 解释器为每个 agent 维护一个事件游标（自流程启动起从 0 起算，持续轮询缓存全部事件）。
-2. `wait_event` 执行时**先查游标之后的已有缓存事件**，未命中再等待新事件，直到匹配或超时——事件先到、wait 后到也不会错过（对应 phase-control §8 "回调先到、之后才 waitEvent" 故障路径）。
-3. `match` 是字段值匹配 map（值可为表达式，与 §4.3 同一套求值）；**每次事件尝试匹配时重新求值**（延迟求值）。引用的变量尚不存在 → 视为不匹配、继续等。这解决了并行分支竞态：bob 的分支开始等消息时，alice 建群的结果 `$group` 可能还没产生，延迟求值保证 match 最终能引用到。
-4. 匹配成功：绑定事件 payload 到 `as`，游标推进到该事件之后。
-5. 同一事件流上多个 `wait_event` 依次消费、游标单调推进；回看历史第一版不支持。
+1. **跨流程隔离**：流程启动时为每个 agent 建立起始游标 = 该 agent 事件流的当前末尾（drain 一次到空页）。上一流程在同一 app 实例上的遗留事件**永远不会被本流程匹配**——否则旧事件会造成假通过。
+2. **防错过**：`wait_event` 执行时**先查游标之后的已有缓存事件**，未命中再等待新事件，直到匹配或超时——流程运行中事件先到、wait 后到也不会错过。
+3. **延迟求值**：`match` 是字段值匹配 map（值可为表达式，与 §4.3 同一套求值）；**每次事件尝试匹配时重新求值**。引用的变量尚不存在 → 视为不匹配、继续等。这解决了并行分支竞态：bob 的分支开始等消息时，alice 建群的结果 `$group` 可能还没产生，延迟求值保证 match 最终能引用到。
+4. **消费规则**：每个 `wait_event` 从自己启动时的游标快照扫描；共享游标**仅在匹配成功时单调推进**（取 max）。由此：
+   - 顺序的两个 `wait_event` 不会重复匹配同一事件（后者从前者匹配点之后开始）；
+   - 同一 agent 上并发的多个 `wait_event` **独立观察**——一条分支向前扫描不会消费另一条分支还需要的事件（修复共享游标互吞缺陷）；两个并发 wait 确实重叠时**可能匹配同一事件**（有意设计：各自独立观察）；
+   - 超时的 `wait_event` 不消费任何事件（游标不动，后续 wait 仍可匹配其扫过但未匹配的事件）。
 
 ## 7. 超时语义（决策落地）
 
@@ -187,17 +191,19 @@ reference := '$' name ( '.' (字段名 | 数字下标) )*                  # 如
 ## 8. 失败传播与报告
 
 - `onFail` 策略（步骤级可覆盖默认）：`continue`（默认，对齐现有 AutoMode"失败不中断"哲学）| `abort_flow`（终止本执行线；在 parallel 分支内即终止该分支）| `abort_all`（终止整个运行，其余分支尽快收尾）。
-- 依赖失败跳过（2026-11-05 确认，对齐 AutoMode 既有语义）：变量表同时记录每个 `as` 绑定的来源步骤成败。命令的 `inputs` 引用了失败来源的变量时，该命令标记 `skipped`、不执行、不产生新变量，下游对它的依赖同样级联 `skipped`。该行为由 `skipOnFailedDeps` 控制，**双层配置、局部优先**：
+- 依赖失败跳过（2026-11-05 确认，对齐 AutoMode 既有语义；同日评审修订 ok 判定，见下）：变量表同时记录每个 `as` 绑定的来源步骤成败。命令的 `inputs` 引用了失败来源的变量时，该命令标记 `skipped`、不执行、不产生新变量，下游对它的依赖同样级联 `skipped`。该行为由 `skipOnFailedDeps` 控制，**双层配置、局部优先**：
   - 全局：`defaults.skipOnFailedDeps: true`（默认开）；
   - 步骤级：`cmd` 步骤上的同名字段覆盖全局（设 `false` 时按求值语义执行，引用失败来源的值为 null，用于"明知上游失败仍要看实际行为"的探测场景）。
   - `wait_event` 的 `match` 引用失败变量不触发跳过（延迟求值天然兼容，见 §6）。
+- **"步骤 ok"跟随 expect 判定而非信封 success**（2026-11-05 评审修订，有意偏离 AutoMode）：逆向用例（`errorCode` 断言命中）是**成功的步骤**——其 `as` 绑定与 `$step.<id>` 记录对下游是 ok 的，不会触发跳过；信封仍完整绑定（`$err.error.code` 可引用）。只有 expect 不匹配（含超时/工具故障）才使生产者"not ok"。注意 `$step.<id>` 寻址的是 **data**（失败调用 data 为 null，AutoMode 语义）——逆向用例的 error 细节需通过 `as` 绑定引用。
+- **同 agent 并发命令**：agent 协议层同一时刻仅一个在途命令（第二个 409 → 工具故障信封）。并行分支只应对**不同** agent 发命令；同 agent 的命令序列天然串行，`$prev` = 最近**完成**命令的 data（完成序），同一 cmd id 多次执行时 `$step.<id>` 取最新一次的结果。
 - 报告：`testing/reports/<run-id>/flow-report.json`。逐步骤记录 `{kind, agent, cmd/event, status, durationMs, result（含 expectMatched、checks 明细、api、unusedInputs）, evidence: {fromSeq, toSeq}}`，末尾汇总 `{total, passed, failed, timeout, skipped}`。expect 判定在宿主（§9），checks 逐项明细直接进报告。
 
 ## 9. 命令注册、查找与判定（决策落地，2026-11-05 下午更新）
 
 - YAML 中 `cmd: <id>` 只写命令 id；**宿主**在目标 agent 的设备脚本中查找该 id 的 step（`{api, params, expect}`），解析引用后把完整内容派发给 agent——agent 不接触设备脚本（协议 v2）。控制流（多步组合）是 YAML 的职责，叶子保持原子粒度，这也是协议简化的前提。
 - 设备脚本沿用现有形状 `{init?, login?, steps: [...]}`：顶层 init/login 块仅供 AutoMode 直跑路径使用；HTTP 模式下 init/login 是 steps 中的普通 step（如 `{"id":"login","api":"ChatClient.loginWithToken","params":{"userId":"$config.accounts.0.id",...}}`），解释器**无保留命令 id**，保持通用性——`ChatClient.init` 的监听注册特例在 agent 侧（App 内，业务知识归位）。
-- **expect 判定在解释器内**（`lib/expect.dart`，自 example 移植）：拿 step 的 expect 对照返回信封，规则与 AutoMode 一致（缺省即断言 success；success/errorCode/checks；非 sdk failureKind 不通过）。判定失败 → 该步 `failed` + onFail；但 API 成功的数据仍可被下游引用（stepData 的 ok 只看 API success，AutoMode 语义）。
+- **expect 判定在解释器内**（`lib/expect.dart`，自 example 移植）：拿 step 的 expect 对照返回信封，规则与 AutoMode 一致（缺省即断言 success；success/errorCode/checks；非 sdk failureKind 不通过）。判定失败 → 该步 `failed` + onFail；API 成功但断言失败的数据仍可被下游引用；步骤 ok 跟随 expect 判定（逆向用例是 ok 生产者，见 §8）。
 - 静态检查（流程加载时，拼写防护而非格式理解）：每个 `cmd` 的 id 在目标 agent 脚本 steps 中存在且 `api` 非空；step id 唯一；expect 块结构合法（未知字段/非法 checks 拒绝）；`agent` 名已声明；`env` 文件可解析。
 - 命令定义放设备脚本（而非全局命令库）：同一命令在不同设备/角色上参数不同，按 agent 就近定义最自然。全局共享库若将来有需求再议。
 
@@ -308,6 +314,7 @@ tool/flow_runner/            # 纯 Dart package，无 Flutter 依赖，便于日
 - **失败跳过语义**：对齐 AutoMode 的依赖失败跳过，`skipOnFailedDeps` 全局默认 + 步骤级覆盖、局部优先（§8）。v0.2 起覆盖两个来源：流程变量（inputs 引用失败 `as` 绑定）与设备脚本引用（params 引用失败 `$step.<id>`），两者级联一致。
 - **事件命名**：`wait_event` 的 `event` 字段直接使用 SDK 事件处理器方法名（如 `onMessageReceived`、`onMessageReadReceipts`）；agent 侧事件流的 payload 携带该名，解释器只做字符串匹配。
 - **协议 v2（2026-11-05 下午定论）**：命令自带 step 内容（`{api, params}`），宿主侧查库、解析引用并做 expect 判定；agent 为哑执行器，不接触设备脚本；会话绑定取消（见 phase-control §10 演进记录）。理由：宿主本来就要读脚本做静态检查，"绑定 + stage 引用"造成两份脚本状态与重复的解析/跳过逻辑；判断角色归宿主后，`blocked` 状态随依赖跳过统一到宿主而删除。
+- **README 评审修订（2026-11-05 晚间，外部反馈三项）**：① 步骤 ok 从"信封 success"改为"expect 判定结果"——逆向用例是 ok 生产者，下游不误跳（有意偏离 AutoMode，理由记于 §8）；② 事件跨流程隔离（流程启动游标定于流末尾）+ 并发 wait 独立快照扫描 + 共享游标仅在匹配时推进——修复"旧事件假通过"与"同 agent 并发 wait 互吞事件假超时"两个缺陷（§6）；③ 相对路径基准改为 YAML 文件所在目录（§4.1）。配套单测：`reverse case is an ok producer` / `events from before the flow started are never matched` / `sequential waits cannot rematch` / `concurrent waits observe independently`。
 
 约束（长期有效）：
 

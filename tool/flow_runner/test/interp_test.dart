@@ -444,12 +444,14 @@ steps:
   });
 
   group('wait_event', () {
-    test('matches cached events that arrived before the wait', () async {
+    test('matches cached events that arrived earlier in the same flow', () async {
       final h = Harness('''
 name: t
 agents:
   b: {endpoint: 'http://127.0.0.1:8802', script: ''}
 steps:
+  - cmd: poke
+    agent: b
   - wait_event: onMessageReceived
     agent: b
     as: recv
@@ -457,12 +459,92 @@ steps:
     agent: b
     inputs: {from: '\$recv.from'}
 ''');
-      // Event fires BEFORE the flow even starts.
+      // The callback fires during the flow (before the wait_event step
+      // runs) — cached events must still be matched.
       h.mocks['b']!
-        ..emit('onMessageReceived', {'from': 'alice', 'msgId': 'm1'})
+        ..on('poke', (params) async {
+          h.mocks['b']!
+              .emit('onMessageReceived', {'from': 'alice', 'msgId': 'm1'});
+          return const Envelope(success: true, status: 'ok');
+        })
         ..on('ack', (params) async {
           return const Envelope(success: true, status: 'ok');
         });
+      await h.run();
+      expect(h.summary()['passed'], 3);
+    });
+
+    test('events from before the flow started are never matched', () async {
+      final h = Harness('''
+name: t
+agents:
+  b: {endpoint: 'http://127.0.0.1:8802', script: ''}
+steps:
+  - wait_event: onMessageReceived
+    agent: b
+    timeoutMs: 150
+''');
+      // Leftover from a PREVIOUS run on the same app instance: the flow
+      // must not match it (cross-run event isolation).
+      h.mocks['b']!
+          .emit('onMessageReceived', {'from': 'alice', 'msgId': 'stale'});
+      await h.run();
+      expect(h.summary()['timeout'], 1);
+    });
+
+    test('sequential waits cannot rematch the same event', () async {
+      final h = Harness('''
+name: t
+agents:
+  b: {endpoint: 'http://127.0.0.1:8802', script: ''}
+steps:
+  - cmd: poke
+    agent: b
+  - wait_event: onMessageReceived
+    agent: b
+    as: first
+  - wait_event: onMessageReceived
+    agent: b
+    timeoutMs: 150
+''');
+      h.mocks['b']!.on('poke', (params) async {
+        h.mocks['b']!
+            .emit('onMessageReceived', {'from': 'alice', 'msgId': 'm1'});
+        return const Envelope(success: true, status: 'ok');
+      });
+      await h.run();
+      expect(h.summary()['passed'], 2);
+      expect(h.summary()['timeout'], 1);
+    });
+
+    test('concurrent waits on one agent observe independently', () async {
+      // The starvation bug: one branch scanning ahead used to consume the
+      // other branch's event (shared cursor advanced past unseen events).
+      final h = Harness('''
+name: t
+agents:
+  b: {endpoint: 'http://127.0.0.1:8802', script: ''}
+steps:
+  - parallel:
+      waiter_a:
+        - wait_event: onMessageReadReceipts
+          agent: b
+          as: receipt
+          timeoutMs: 3000
+      waiter_b:
+        - wait_event: onMessageReceived
+          agent: b
+          as: recv
+          timeoutMs: 3000
+''');
+      // Give the parallel branches a chance to enter their waits, then
+      // emit receipts first, received second: a naive shared cursor
+      // consumed by the receipts waiter would starve the received waiter.
+      unawaited(Future<void>.delayed(const Duration(milliseconds: 20)).then((_) {
+        h.mocks['b']!
+          ..emit('onMessageReadReceipts', {'msgId': 'm1'})
+          ..emit('onMessageReceived', {'from': 'alice'});
+      }));
       await h.run();
       expect(h.summary()['passed'], 2);
     });
@@ -819,6 +901,68 @@ steps:
       expect(h.summary()['passed'], 1);
     });
 
+    test('reverse case is an ok producer: downstream refs are NOT skipped',
+        () async {
+      final h = Harness('''
+name: t
+agents:
+  a: {endpoint: 'http://127.0.0.1:8801', script: ''}
+steps:
+  - cmd: bad_login
+    agent: a
+    as: err
+  - cmd: after
+    agent: a
+    inputs: {code: '\$err.error.code'}
+  - cmd: uses_step
+    agent: a
+''', scripts: {
+        'a': {
+          'bad_login': {
+            'api': 'X.login',
+            'params': {},
+            'expect': {'errorCode': 110}
+          },
+          'after': {
+            'api': 'X.after',
+            'params': {'code': '\$inputs.code'},
+          },
+          'uses_step': {
+            'api': 'X.uses_step',
+            'params': {'code': '\$step.bad_login.error.code'},
+          },
+        }
+      });
+      final calls = <String>[];
+      h.mocks['a']!
+        ..on('X.login', (p) async {
+          calls.add('login');
+          return const Envelope(
+            success: false,
+            status: 'error',
+            failureKind: 'sdk',
+            error: {'code': 110, 'message': 'wrong password'},
+          );
+        })
+        ..on('X.after', (p) {
+          calls.add('after:${p['code']}');
+          return Future.value(
+              const Envelope(success: true, status: 'ok'));
+        })
+        ..on('X.uses_step', (p) {
+          calls.add('uses_step:${p['code']}');
+          return Future.value(
+              const Envelope(success: true, status: 'ok'));
+        });
+      await h.run();
+      // All three ran: the reverse case passed its expectation, so its
+      // binding and $step entry are "ok" for dependency purposes.
+      // $step.<id> addresses DATA (null on a failed call — AutoMode
+      // semantics); the error details are reachable via the as binding.
+      expect(h.summary(), {'passed': 3, 'failed': 0, 'timeout': 0, 'skipped': 0});
+      expect(calls, ['login', 'after:110', 'uses_step:null']);
+    });
+
     test('checks assert data fields and report per-check details', () async {
       final h = Harness('''
 name: t
@@ -922,9 +1066,10 @@ steps:
           agent: a
           match: {k: '\$r.data.k'}
 ''');
-      h.mocks['a']!
-        ..onOk('do_it', {'k': 'v'})
-        ..emit('onMessageReceived', {'k': 'v'});
+      h.mocks['a']!.on('do_it', (params) async {
+        h.mocks['a']!.emit('onMessageReceived', {'k': 'v'});
+        return const Envelope(success: true, status: 'ok', data: {'k': 'v'});
+      });
       await h.run();
       expect(h.records('cmd').single.context, 'flow.line1');
       expect(h.records('cmd').single.agent, 'a');

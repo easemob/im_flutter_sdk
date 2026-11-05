@@ -41,6 +41,7 @@ Future<void> main(List<String> argv) async {
     File(flowPath).readAsStringSync(),
     options:
         ParseOptions(verifyCommandIds: !results.flag('no-verify-commands')),
+    sourcePath: flowPath,
   );
   final runId =
       spec.runId ?? 'flow-${DateTime.now().toIso8601String().replaceAll(RegExp(r'[:.]'), '-')}';

@@ -53,6 +53,8 @@ agents:
 
 角色名即后续步骤里 `agent:` 的取值，也是 `$agents.<role>` 的键。
 
+> **路径基准**：`script:` / `env:` 的相对路径相对**本 YAML 文件所在目录**解析（流程与伴生文件可整体移动）；绝对路径原样使用。
+
 ### defaults
 
 | 字段 | 缺省 | 取值 |
@@ -60,6 +62,14 @@ agents:
 | `stepTimeoutMs` | 30000 | 命令/事件等待的默认超时 |
 | `onFail` | continue | `continue` \| `abort_flow` \| `abort_all` |
 | `skipOnFailedDeps` | true | 依赖失败时跳过（步骤级可覆盖） |
+
+`onFail` 精确语义：
+
+| 值 | 行为 |
+|---|---|
+| `continue` | 记录失败，继续下一步骤（默认） |
+| `abort_flow` | 终止**当前执行线**：在 parallel 分支内 = 只终止该分支；在主线 = 终止整个流程 |
+| `abort_all` | 终止**整个运行**：所有分支在下一个步骤边界尽快收尾 |
 
 ### 步骤类型（9 种）
 
@@ -88,6 +98,16 @@ agents:
   onFail: continue
 ```
 
+事件隔离与消费规则（写协同用例前必读）：
+
+| 规则 | 行为 |
+|---|---|
+| 跨流程隔离 | 流程启动时游标定在事件流当前末尾——**上一流程的遗留事件永远不会被匹配** |
+| 防错过 | 流程运行中事件先到、wait 后到：先查缓存再等新事件，不遗漏 |
+| 顺序不重复 | 顺序的两个 wait 不会匹配同一事件（后者从前者的匹配点之后开始） |
+| 并发独立观察 | 同一 agent 上并发的多个 wait 各自从快照扫描，互不吞事件；确实重叠时**可能匹配同一事件**（各自独立观察，有意设计） |
+| 超时不消费 | 超时的 wait 不消费任何事件，后续 wait 仍可匹配其扫过但未匹配的事件 |
+
 **`parallel` — 分支并行**（join-all：所有分支结束才继续；**不可嵌套**）
 
 ```yaml
@@ -101,6 +121,8 @@ agents:
       - wait_event: onMessageReceived
         agent: bob
 ```
+
+> **同 agent 并发命令约束**：agent 协议层同一时刻仅允许一个在途命令（第二个直接 409 工具故障）。并行分支只应对**不同** agent 发命令；同一 agent 的命令天然串行。`$prev` = 该 agent 最近**完成**命令的 data（按完成序）；同一 cmd id 多次执行时 `$step.<id>` 取最新一次结果。
 
 **`barrier` — 跨分支同步点**（只能出现在 parallel 分支内；建议放在分支无条件路径上）
 
@@ -182,11 +204,13 @@ op      := == != > >= < <=
 
 | 来源 | 绑定内容 | ok 标志（影响跳过级联） |
 |---|---|---|
-| `cmd` 的 `as` | 完整信封 `{success, status, data, error, failureKind}` | = 信封 success |
+| `cmd` 的 `as` | 完整信封 `{success, status, data, error, failureKind}` | **= expect 判定结果**（见下） |
 | `wait_event` 的 `as` | 事件 payload | 恒真 |
 | `set` | 解析后的值 | 恒真 |
 | `for` 循环变量 | 当前元素（循环内遮蔽同名变量） | 恒真 |
 | 内置 `$agents` | 角色 → 该角色 env 文件内容 | 恒真 |
+
+> **逆向用例是 ok 生产者**：ok 跟随 expect 判定而非信封 success。命中预期错误码（`expect: {errorCode: 110}` 且实际返回 110）的步骤是**成功的步骤**——其 `as` 绑定与 `$step` 记录对下游是 ok 的，不会触发依赖跳过；信封完整绑定，`$err.error.code` 可正常引用。只有 expect 不匹配（含超时、工具故障、checks 失败）才使生产者 not ok。注意 `$step.<id>` 寻址的是 **data**（失败调用 data 为 null）——逆向用例的 error 细节请通过 `as` 绑定引用。
 
 **设备脚本参数槽位**（在 step 的 `params` 里使用，派发前由宿主替换为实值）：
 
@@ -239,7 +263,7 @@ op      := == != > >= < <=
 | `errorCode` | 断言失败调用且 SDK 错误码匹配（逆向用例：`{"errorCode": 110}`） |
 | `checks` | 对 `data` 的 path 断言，操作符：`equals` \| `gte` \| `notEmpty` \| `containsItem` \| `length` |
 
-规则（与 AutoMode 完全一致）：缺省/空 expect 即断言 success；`failureKind != sdk` 或 `error.code <= 0` 永不通过（工具/超时故障不算 SDK 结论）。`checks` 每项形如 `{"path": "group.memberCount", "gte": 2}`；`containsItem` 的操作数是字段匹配映射（`{"path": "members", "containsItem": {"role": "owner"}}`）。
+规则（与 AutoMode 完全一致）：缺省/空 expect 即断言 success；`failureKind != sdk` 或 `error.code <= 0` 永不通过（工具/超时故障不算 SDK 结论）。**逆向用例命中预期错误码时步骤按通过计**，其绑定对下游是 ok 生产者（见"变量与引用"）。`checks` 每项形如 `{"path": "group.memberCount", "gte": 2}`；`containsItem` 的操作数是字段匹配映射（`{"path": "members", "containsItem": {"role": "owner"}}`）。
 
 ## 环境文件（env）
 
@@ -258,11 +282,13 @@ JSON 对象，整份成为该 agent 的 `$config`，同时挂到 `$agents.<role>
 
 | 语义 | 行为 |
 |---|---|
+| 事件隔离 | 流程启动时游标定于事件流末尾，上一流程的遗留事件不匹配 |
 | 事件防错过 | agent 缓存事件流（seq 游标），`wait_event` 先查缓存再等新事件 |
+| 并发观察 | 同 agent 并发 wait 各自独立扫描（互不吞事件，可能重复匹配同一事件） |
 | match 延迟求值 | 引用未产生变量 → 不匹配、继续等，解决并行分支竞态 |
 | 超时 | 命令/事件/整流程三层；迟到结果不投递（agent 证据流保留） |
 | 失败策略 | `onFail: continue / abort_flow / abort_all`（步骤级覆盖全局默认） |
-| 依赖跳过 | `skipOnFailedDeps` 全局默认 + 步骤级覆盖；失败级联 skipped |
+| 依赖跳过 | `skipOnFailedDeps` 全局默认 + 步骤级覆盖；失败级联 skipped；逆向用例（命中预期错误码）不算失败 |
 | join-all | parallel 等所有分支结束（无论成败）；提前退出的分支释放 barrier 不挂死兄弟分支 |
 
 报告判定状态：`passed / failed / timeout / skipped`；failed/timeout 的步骤结果带完整信封 + `expectMatched` + checks 明细 + `unusedInputs`。

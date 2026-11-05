@@ -35,7 +35,13 @@ class ParseOptions {
 }
 
 /// Parse a flow YAML document.
-FlowSpec parseFlow(String yamlText, {ParseOptions options = const ParseOptions()}) {
+///
+/// [sourcePath] is the YAML file's own location: relative `script:`/`env:`
+/// paths inside the document resolve against its directory (so a flow and
+/// its companion files move together); without it they resolve against the
+/// process working directory. Absolute paths always pass through.
+FlowSpec parseFlow(String yamlText,
+    {ParseOptions options = const ParseOptions(), String? sourcePath}) {
   final Object? doc;
   try {
     doc = loadYaml(yamlText);
@@ -75,11 +81,12 @@ FlowSpec parseFlow(String yamlText, {ParseOptions options = const ParseOptions()
       throw FlowParseError(
           'agent "$role" missing "script" (required for command id verification)');
     }
+    final envPath = a['env'] as String?;
     agents[role] = AgentDecl(
       name: role,
       endpoint: endpoint,
-      scriptPath: scriptPath,
-      envPath: a['env'] as String?,
+      scriptPath: _resolvePath(scriptPath, sourcePath),
+      envPath: envPath == null ? null : _resolvePath(envPath, sourcePath),
       meta: _plain(a['meta']) as Map<String, Object?>? ?? const {},
     );
   }
@@ -450,6 +457,15 @@ void _verifyCommandIds(FlowSpec spec) {
 int _int(YamlMap node, String key, {required int fallback}) {
   final v = node[key];
   return v is int ? v : fallback;
+}
+
+/// Resolve a possibly-relative path against the flow file's directory.
+String _resolvePath(String path, String? sourcePath) {
+  if (path.isEmpty || path.startsWith('/') || sourcePath == null) {
+    return path;
+  }
+  final base = File(sourcePath).parent.path;
+  return base.isEmpty ? path : '$base/$path';
 }
 
 /// Convert a YAML node into plain Dart objects (YamlMap/YamlList are views).
