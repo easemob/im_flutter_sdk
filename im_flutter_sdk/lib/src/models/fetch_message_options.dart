@@ -23,14 +23,14 @@ class FetchMessageOptions {
   /// If the [startTs] is set to a specific time spot and the [endTs] uses the default value `-1`,
   /// the SDK returns messages that are sent and received in the period that is from the start time to the current time.
   /// If the [startTs] uses the default value `-1` and the [endTs] is set to a specific time spot,
-  /// the SDK returns messages that are sent and received in the period that is from the timestamp of the first message to the current time.
+  /// the SDK returns messages that are sent and received in the period that is from the timestamp of the first message to the specified end timestamp.
   ///
   /// Param [endTs] The end time for message query. The time is a UNIX timestamp in milliseconds.
   /// The default value is -1, indicating that this parameter is ignored during message query.
   /// If the [startTs] is set to a specific time spot and the [endTs] uses the default value -1,
   /// the SDK returns messages that are sent and received in the period that is from the start time to the current time.
   /// If the [startTs] uses the default value -1 and the [endTs] is set to a specific time spot,
-  /// the SDK returns messages that are sent and received in the period that is from the timestamp of the first message to the current time.
+  /// the SDK returns messages that are sent and received in the period that is from the timestamp of the first message to the specified end timestamp.
   ///
   /// Param [needSave] Whether to save the retrieved messages to the database:
   /// - `true`: Yes.
@@ -91,7 +91,7 @@ class FetchMessageOptions {
   /// If the [startTs] is set to a specific time spot and the [endTs] uses the default value -1,
   /// the SDK returns messages that are sent and received in the period that is from the start time to the current time.
   /// If the [startTs] uses the default value -1 and the [endTs] is set to a specific time spot,
-  /// the SDK returns messages that are sent and received in the period that is from the timestamp of the first message to the current time.
+  /// the SDK returns messages that are sent and received in the period that is from the timestamp of the first message to the specified end timestamp.
   /// ~end
   ///
   /// ~chinese
@@ -107,7 +107,7 @@ class FetchMessageOptions {
   /// If the [startTs] is set to a specific time spot and the [endTs] uses the default value `-1`,
   /// the SDK returns messages that are sent and received in the period that is from the start time to the current time.
   /// If the [startTs] uses the default value `-1` and the [endTs] is set to a specific time spot,
-  /// the SDK returns messages that are sent and received in the period that is from the timestamp of the first message to the current time.
+  /// the SDK returns messages that are sent and received in the period that is from the timestamp of the first message to the specified end timestamp.
   /// ~end
   ///
   /// ~chinese

@@ -5,10 +5,13 @@ typedef CursorResultCallback = Object Function(dynamic obj);
 /// When querying using this class, the SDK returns the queried instance and the cursor.
 ///
 ///   ```dart
-///     String? cursor;
-///     ChatCursorResult<ChatMessage> result = await ChatClient.getInstance.chatManager.fetchHistoryMessagesByOption(conversationId, ChatConversationType.Chat);
-///     List<ChatGroup>? group = result.data;
-///     cursor = result.cursor;
+///     final ChatCursorResult<ChatMessage> result = await ChatClient.getInstance
+///         .chatManager.fetchHistoryMessagesByOption(
+///       conversationId,
+///       ChatConversationType.Chat,
+///     );
+///     final List<ChatMessage> messages = result.data;
+///     final String? nextCursor = result.cursor;
 ///   ```
 /// ~end
 ///
@@ -18,10 +21,13 @@ typedef CursorResultCallback = Object Function(dynamic obj);
 ///
 /// 示例代码如下：
 ///   ```dart
-///     String? cursor;
-///     ChatCursorResult<ChatGroup> result = await ChatClient.getInstance.groupManager.getPublicGroupsFromServer(pageSize: 10, cursor: cursor);
-///     List<ChatGroup>? group = result.data;
-///     cursor = result.cursor;
+///     final ChatCursorResult<ChatMessage> result = await ChatClient.getInstance
+///         .chatManager.fetchHistoryMessagesByOption(
+///       conversationId,
+///       ChatConversationType.Chat,
+///     );
+///     final List<ChatMessage> messages = result.data;
+///     final String? nextCursor = result.cursor;
 ///   ```
 /// ~end
 class ChatCursorResult<T> {
