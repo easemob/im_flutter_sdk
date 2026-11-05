@@ -19,6 +19,16 @@ final clientApis = <ApiEntry>[
     invoke: (_) => ChatClient.getInstance.isConnected(),
   ),
   ApiEntry(
+    name: 'ChatClient.loginWithToken',
+    group: 'ChatClient',
+    description: '使用用户 ID 和用户 Token 登录（agent/HTTP 模式的登录命令）。',
+    paramsTemplate: '{"userId": "userId", "token": "userToken"}',
+    invoke: (p) => ChatClient.getInstance.loginWithToken(
+      p['userId'] as String,
+      p['token'] as String,
+    ),
+  ),
+  ApiEntry(
     name: 'ChatClient.logout',
     group: 'ChatClient',
     description: '退出当前账号。unbindDeviceToken 默认为 true。',

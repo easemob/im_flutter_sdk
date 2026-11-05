@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import '../listeners.dart';
@@ -77,23 +78,50 @@ class _AgentHomePageState extends State<AgentHomePage> {
                     return ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
-                        _row('端口', server.port.toString()),
-                        _row('instanceId', _service!.instanceId),
-                        _row('服务状态', _service!.state.name),
-                        _row('已缓存事件', '${_evidence!.count} (firstSeq ${_evidence!.firstAvailableSeq}, lastSeq ${_evidence!.lastSeq})'),
-                        if (_evidence!.degraded)
-                          const Card(
-                            color: Colors.orange,
-                            child: Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Text('证据缓冲已溢出（degraded）'),
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  '连接信息（文本可长按选择复制）',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                _row('端点', 'http://127.0.0.1:${server.port}'),
+                                _row('token', server.token),
+                                _row('instanceId', _service!.instanceId),
+                                _row('服务状态', _service!.state.name),
+                                _row('已缓存事件',
+                                    '${_evidence!.count} (firstSeq ${_evidence!.firstAvailableSeq}, lastSeq ${_evidence!.lastSeq})'),
+                                if (_evidence!.degraded)
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 8),
+                                    child: Text(
+                                      '证据缓冲已溢出（degraded）',
+                                      style: TextStyle(color: Colors.orange),
+                                    ),
+                                  ),
+                                const SizedBox(height: 8),
+                                OutlinedButton.icon(
+                                  onPressed: () =>
+                                      _copy(_curlCommand(server), 'curl 命令'),
+                                  icon: const Icon(Icons.copy, size: 18),
+                                  label: const Text('复制 curl（GET /v1/info）'),
+                                ),
+                              ],
                             ),
                           ),
+                        ),
                         const SizedBox(height: 16),
                         const Text(
                           '本页面不提供 SDK 操作入口。宿主（flow_runner）通过 '
                           '[AGENT_CONTROL] 输出的端口与凭据连接；命令执行结果与事件'
-                          '见宿主侧报告。',
+                          '见宿主侧报告。\n'
+                          '人工排查：点上方按钮复制 curl 命令直接探测（已带 '
+                          '--noproxy，避免本地代理劫持 127.0.0.1）；'
+                          'Android 模拟器需先 adb forward tcp:<port> tcp:<port>。',
                           style: TextStyle(fontSize: 12, color: Colors.grey),
                         ),
                       ],
@@ -101,6 +129,24 @@ class _AgentHomePageState extends State<AgentHomePage> {
                   },
                 ),
     );
+  }
+
+  /// A ready-to-paste probe command for manual debugging. --noproxy is
+  /// required when a local proxy (http_proxy env) is present, otherwise the
+  /// request to 127.0.0.1 is hijacked and mangled.
+  String _curlCommand(ControlServer server) =>
+      "curl --noproxy '*' -s -H 'Authorization: Bearer ${server.token}' "
+      "http://127.0.0.1:${server.port}/v1/info";
+
+  Future<void> _copy(String text, String label) async {
+    await Clipboard.setData(ClipboardData(text: text));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text('已复制$label'),
+        duration: const Duration(milliseconds: 1200),
+      ));
   }
 
   Widget _row(String k, String v) => Padding(
@@ -112,7 +158,12 @@ class _AgentHomePageState extends State<AgentHomePage> {
               width: 96,
               child: Text(k, style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
-            Expanded(child: Text(v)),
+            Expanded(
+              child: SelectableText(
+                v,
+                style: const TextStyle(fontSize: 13, fontFamily: 'monospace'),
+              ),
+            ),
           ],
         ),
       );
