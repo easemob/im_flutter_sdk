@@ -58,40 +58,40 @@ class ChatOptions {
   /// ~english
   /// Whether to accept friend invitations from other users automatically.
   ///
-  /// - `true`: Yes;
-  /// - (Default) `false`: No.
+  /// - (Default) `true`: Yes;
+  /// - `false`: No.
   /// ~end
   ///
   /// ~chinese
   /// 是否自动接受加好友邀请。
-  /// - `true`：是。
-  /// - （默认）`false`：否。
+  /// - （默认）`true`：是。
+  /// - `false`：否。
   /// ~end
   final bool acceptInvitationAlways;
 
   /// ~english
   /// Whether to accept group invitations automatically.
   ///
-  /// - `true`: Yes;
-  /// - (Default) `false`: No.
+  /// - (Default) `true`: Yes;
+  /// - `false`: No.
   /// ~end
   ///
   /// ~chinese
   /// 是否自动接受群组邀请。
-  /// - `true`：是；
-  /// - （默认）`false`：否。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
   /// ~end
   final bool autoAcceptGroupInvitation;
 
   /// ~english
-  /// Whether to require the delivery receipt after sending a message.
+  /// Whether the SDK automatically sends delivery receipts when receiving one-to-one messages.
   ///
-  /// - `true`: Yes;
-  /// - (Default) `false`: No.
+  /// - (Default) `true`: Yes;
+  /// - `false`: No.
   /// ~end
   ///
   /// ~chinese
-  ///   /// 是否发送消息已送达回执。
+  /// SDK 收到单聊消息时是否自动发送送达回执。
   /// - `true`：是。
   /// - （默认）`false`：否。
   /// ~end
@@ -478,16 +478,17 @@ class ChatOptions {
   /// - `true`: Yes.
   /// - (Default) `false`: No.
   /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically.
-  /// - `true`: Yes.
-  /// - (Default) `false`: No.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
   ///
   /// Param [autoAcceptGroupInvitation] Whether to accept group invitations automatically.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
+  /// Param [requireDeliveryAck] Whether the SDK automatically sends delivery receipts when receiving one-to-one messages.
+  ///
   /// - `true`: Yes.
   /// - (Default) `false`: No.
-  ///
-  /// Param [requireDeliveryAck] Whether the delivery receipt is required.
-  /// `true`: Yes.
-  /// (Default) `false`: No.
   ///
   /// Param [deleteMessagesAsExitGroup] Whether to delete the related group messages when leaving a group.
   /// - (Default) `true`: Yes.
@@ -570,12 +571,12 @@ class ChatOptions {
   /// - （默认）`false`：不会输出调试信息。
   ///
   /// Param [acceptInvitationAlways] 是否自动接受加好友邀请。
-  /// - `true`：是；
-  /// - （默认）`false`：否。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
   ///
   /// Param [autoAcceptGroupInvitation] 是否自动接受群组邀请。
-  /// - `true`：是；
-  /// - （默认）`false`：否。
+  /// -（默认）`true`：是；
+  /// - `false`：否。
   ///
   /// Param [requireDeliveryAck] 是否发送已送达回执。
   /// - `true`：是；
@@ -735,16 +736,17 @@ class ChatOptions {
   /// - `true`: Yes.
   /// - (Default) `false`: No.
   /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically.
-  /// - `true`: Yes.
-  /// - (Default) `false`: No.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
   ///
   /// Param [autoAcceptGroupInvitation] Whether to accept group invitations automatically.
+  /// - (Default) `true`: Yes.
+  /// -`false`: No.
+  ///
+  /// Param [requireDeliveryAck] Whether the SDK automatically sends delivery receipts when receiving one-to-one messages.
+  ///
   /// - `true`: Yes.
   /// - (Default) `false`: No.
-  ///
-  /// Param [requireDeliveryAck] Whether the delivery receipt is required.
-  /// `true`: Yes.
-  /// (Default) `false`: No.
   ///
   /// Param [deleteMessagesAsExitGroup] Whether to delete the related group messages when leaving a group.
   /// - (Default) `true`: Yes.
@@ -827,15 +829,15 @@ class ChatOptions {
   /// - （默认）`false`：不会输出调试信息。
   ///
   /// Param [acceptInvitationAlways] 是否自动接受加好友邀请。
-  /// - `true`：是；
-  /// - （默认）`false`：否。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
   ///
   /// Param [autoAcceptGroupInvitation] 是否自动接受群组邀请。
-  /// - `true`：是；
-  /// - （默认）`false`：否。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
   ///
-  /// Param [requireDeliveryAck] 是否发送已送达回执。
-  /// - `true`：是；
+  /// Param [requireDeliveryAck] SDK 收到单聊消息时是否自动发送送达回执。
+  /// - `true`：是。
   /// - （默认）`false`：否。
   ///
   /// Param [deleteMessagesAsExitGroup] 是否在离开群组时删除群组历史消息。
@@ -994,16 +996,17 @@ class ChatOptions {
   /// - `true`: Yes.
   /// - (Default) `false`: No.
   /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically.
-  /// - `true`: Yes.
-  /// - (Default) `false`: No.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
   ///
   /// Param [autoAcceptGroupInvitation] Whether to accept group invitations automatically.
+  /// - (Default) `true`: Yes.
+  /// -  `false`: No.
+  ///
+  /// Param [requireDeliveryAck] Whether the SDK automatically sends delivery receipts when receiving one-to-one messages.
+  ///
   /// - `true`: Yes.
   /// - (Default) `false`: No.
-  ///
-  /// Param [requireDeliveryAck] Whether the delivery receipt is required.
-  /// `true`: Yes.
-  /// (Default) `false`: No.
   ///
   /// Param [deleteMessagesAsExitGroup] Whether to delete the related group messages when leaving a group.
   /// - (Default) `true`: Yes.
@@ -1085,15 +1088,15 @@ class ChatOptions {
   /// - （默认）`false`：不会输出调试信息。
   ///
   /// Param [acceptInvitationAlways] 是否自动接受加好友邀请。
-  /// - `true`：是；
-  /// - （默认）`false`：否。
+  /// - （默认）`true`：是。
+  /// - `false`：否。
   ///
   /// Param [autoAcceptGroupInvitation] 是否自动接受群组邀请。
-  /// - `true`：是；
-  /// - （默认）`false`：否。
+  /// - （默认）`true`：是。
+  /// - false`：否。
   ///
-  /// Param [requireDeliveryAck] 是否发送已送达回执。
-  /// - `true`：是；
+  /// Param [requireDeliveryAck] SDK 收到单聊消息时是否自动发送送达回执。
+  /// - `true`：是。
   /// - （默认）`false`：否。
   ///
   /// Param [deleteMessagesAsExitGroup] 是否在离开群组时删除群组历史消息。
