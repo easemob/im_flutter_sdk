@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# 数据准备入口（example-testing-spec §3.1）。
+# 用法: prepare_data [--run-id <id>] [--groups <n>]
+#   --run-id   运行标识，缺省按时间戳生成；决定 testing/tmp/<run-id>/ 的隔离环境
+#   --groups   额外创建的临时群数量（供群场景引用），缺省 0
+# 产物: testing/tmp/<run-id>/main/environment.json（含 User Token，不含 clientSecret）
+# Shell: bash >= 3.2（macOS 系统自带即满足；勿用 sh/zsh 直接执行，见 _compat.sh）
+. "$(dirname "$0")/_compat.sh" || exit 64
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+RUN_ID="$(date +%Y%m%d-%H%M%S)"
+# 注意：不能用 GROUPS 做变量名——bash 特殊变量（用户组 ID 数组），赋值无效，
+# 会导致循环次数变成主组 ID。
+N_GROUPS=0
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --run-id) RUN_ID="${2:?}"; shift 2 ;;
+    --groups) N_GROUPS="${2:?}"; shift 2 ;;
+    -h|--help) grep '^# ' "$0" | sed 's/^# //'; exit 0 ;;
+    *) echo "prepare_data: unknown arg: $1" >&2; exit 64 ;;
+  esac
+done
+
+cd "$ROOT"
+if [[ ! -f testing/config/environment.local.json ]]; then
+  echo "==> make config（首次导入本地配置）"
+  make config
+fi
+echo "==> make env-gettoken RUN_ID=$RUN_ID"
+make env-gettoken RUN_ID="$RUN_ID"
+for ((i = 1; i <= N_GROUPS; i++)); do
+  echo "==> prepare-group #$i"
+  dart run testing/tools/data/resources.dart prepare-group "$RUN_ID"
+done
+
+echo "OK RUN_ID=$RUN_ID"
+echo "OK environment=testing/tmp/$RUN_ID/main/environment.json"

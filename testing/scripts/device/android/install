@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Android 模拟器/真机构建/安装（原子脚本）。
+# 用法: device/android/install --device <serial> [--mode control|plain] [--app <apk>]
+#   --mode control  以 API_CONTROL=true 构建（agent 监听模式）
+#   --app           已有 .apk 路径则跳过构建（构建一次、多台安装）
+# 输出: 最后一行 OK app=<apk 路径>
+# Shell: bash >= 3.2（macOS 系统自带即满足；勿用 sh/zsh 直接执行，见 _compat.sh）
+. "$(dirname "$0")/../../_compat.sh" || exit 64
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
+PACKAGE="com.example.example"
+DEVICE=""
+MODE="control"
+APP=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --device) DEVICE="${2:?}"; shift 2 ;;
+    --mode) MODE="${2:?}"; shift 2 ;;
+    --app) APP="${2:?}"; shift 2 ;;
+    -h|--help) grep '^# ' "$0" | sed 's/^# //'; exit 0 ;;
+    *) echo "android/install: unknown arg: $1" >&2; exit 64 ;;
+  esac
+done
+[[ -n "$DEVICE" ]] || { echo "android/install: --device required" >&2; exit 64; }
+[[ "$MODE" == control || "$MODE" == plain ]] || { echo "android/install: --mode control|plain" >&2; exit 64; }
+
+if [[ -z "$APP" ]]; then
+  cd "$ROOT/im_flutter_sdk/example"
+  echo "==> flutter build apk --debug (mode: $MODE)"
+  # bash 3.2 无空数组 + set -u 安全展开，故按模式显式分支
+  if [[ "$MODE" == control ]]; then
+    flutter build apk --debug --dart-define=API_CONTROL=true
+  else
+    flutter build apk --debug
+  fi
+  APP="$PWD/build/app/outputs/flutter-apk/app-debug.apk"
+fi
+[[ -f "$APP" ]] || { echo "android/install: apk not found: $APP" >&2; exit 66; }
+
+# -r 覆盖安装；-t 允许 debug/test-only 包
+adb -s "$DEVICE" install -r -t "$APP" >/dev/null
+echo "OK app=$APP"

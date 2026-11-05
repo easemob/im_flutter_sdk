@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# Android 启动 app（原子脚本，agent 模式收集凭据）。
+# 用法: device/android/launch --device <serial> --mode control --out <log-file> [--timeout <sec>]
+#   --mode control  轮询 [AGENT_CONTROL] 凭据行，adb forward 后输出 port/token/instanceId
+#   --mode plain    仅启动，不等待凭据
+# 最后一行: OK port=<p> token=<t> instanceId=<i>（control）或 OK launched（plain）
+#
+# 凭据捕获原理（与 iOS 同构，详见 scripts 头部经验文档）：
+#   Flutter 的 print() 不写进程 stdout，Android 上进 logcat；
+#   后台 `adb logcat` 流式捕获（先 -c 清旧日志防陈旧凭据）。
+# 端口：app 绑模拟器内 127.0.0.1:<随机端口>，宿主不可直达；
+#   `adb forward tcp:0 tcp:<app端口>` 让 adb 自选空闲宿主端口（stdout 打印所选端口）。
+# 另：启动前 force-stop 残留实例——对已运行实例 am start 只是切前台，拿不到新凭据。
+# 终止 app: adb -s <serial> shell am force-stop com.example.example
+# Shell: bash >= 3.2（macOS 系统自带即满足；勿用 sh/zsh 直接执行，见 _compat.sh）
+. "$(dirname "$0")/../../_compat.sh" || exit 64
+set -euo pipefail
+PACKAGE="com.example.example"
+DEVICE=""
+MODE="control"
+OUT=""
+TIMEOUT=30
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --device) DEVICE="${2:?}"; shift 2 ;;
+    --mode) MODE="${2:?}"; shift 2 ;;
+    --out) OUT="${2:?}"; shift 2 ;;
+    --timeout) TIMEOUT="${2:?}"; shift 2 ;;
+    -h|--help) grep '^# ' "$0" | sed 's/^# //'; exit 0 ;;
+    *) echo "android/launch: unknown arg: $1" >&2; exit 64 ;;
+  esac
+done
+[[ -n "$DEVICE" ]] || { echo "android/launch: --device required" >&2; exit 64; }
+[[ -n "$OUT" ]] || { echo "android/launch: --out <log-file> required" >&2; exit 64; }
+
+# 1) 清理残留实例
+adb -s "$DEVICE" shell am force-stop "$PACKAGE" 2>/dev/null || true
+
+# 2) 后台流式捕获 logcat（清旧日志，防止匹配到陈旧凭据）
+adb -s "$DEVICE" logcat -c 2>/dev/null || true
+: > "$OUT"
+nohup adb -s "$DEVICE" logcat -v time >> "$OUT" 2>&1 &
+echo "$!" > "$OUT.pid"
+
+# 3) 启动 app
+adb -s "$DEVICE" shell am start -n "$PACKAGE/.MainActivity" >/dev/null
+
+if [[ "$MODE" != control ]]; then
+  echo "OK launched"
+  exit 0
+fi
+
+# 4) 轮询凭据行（flutter print 在 logcat 中带 flutter tag）
+for ((i = 0; i < TIMEOUT * 2; i++)); do
+  LINE="$(command grep '\[AGENT_CONTROL\]' "$OUT" | tail -1 || true)"
+  if [[ -n "$LINE" ]]; then
+    CRED="$(sed 's/.*\[AGENT_CONTROL\] //' <<< "$LINE")"
+    APPPORT="$(python3 -c "import json,sys; print(json.loads(sys.argv[1])['port'])" "$CRED")"
+    TOKV="$(python3 -c "import json,sys; print(json.loads(sys.argv[1])['token'])" "$CRED")"
+    IID="$(python3 -c "import json,sys; print(json.loads(sys.argv[1])['instanceId'])" "$CRED")"
+    # 5) 端口转发：tcp:0 = adb 自选空闲宿主端口（打印到 stdout）
+    HOSTPORT="$(adb -s "$DEVICE" forward tcp:0 tcp:"$APPPORT")"
+    echo "OK port=$HOSTPORT token=$TOKV instanceId=$IID"
+    exit 0
+  fi
+  sleep 0.5
+done
+echo "android/launch: [AGENT_CONTROL] not found within ${TIMEOUT}s (log: $OUT)" >&2
+exit 69

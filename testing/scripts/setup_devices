@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# 设备准备编排入口（example-testing-spec §3.2）：组合 device/* 原子脚本。
+# 用法: setup_devices --platform ios|android [--devices id1,id2 | --count N]
+#        [--mode control|plain] [--run-id <id>]
+#   --devices  逗号分隔的设备列表；缺省取已启动/在线设备（取前 --count 台）
+#   --count    需要的设备数（缺省 1）
+#   --mode     control=API_CONTROL 构建（agent 监听）；plain=普通构建
+# 产物(control): testing/tmp/<run-id>/agents.json
+#   [{role, udid, endpoint, token, instanceId, log}]
+#   endpoint 恒为宿主可达的 http://127.0.0.1:<port>：
+#   iOS 模拟器与宿主共享网络（端口直达）；Android 经 adb forward（launch 输出转发端口）。
+# Android v1 约束：设备须已在线（adb devices 可见）；模拟器开机/批量端口分配表
+# 在 device-management 子文档落地后接入。
+# Shell: bash >= 3.2（macOS 系统自带即满足；勿用 sh/zsh 直接执行，见 _compat.sh）
+. "$(dirname "$0")/_compat.sh" || exit 64
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$HERE/../.." && pwd)"
+
+PLATFORM=""
+DEVICES=""
+COUNT=1
+MODE="control"
+RUN_ID="setup-$(date +%Y%m%d-%H%M%S)"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --platform) PLATFORM="${2:?}"; shift 2 ;;
+    --devices) DEVICES="${2:?}"; shift 2 ;;
+    --count) COUNT="${2:?}"; shift 2 ;;
+    --mode) MODE="${2:?}"; shift 2 ;;
+    --run-id) RUN_ID="${2:?}"; shift 2 ;;
+    -h|--help) grep '^# ' "$0" | sed 's/^# //'; exit 0 ;;
+    *) echo "setup_devices: unknown arg: $1" >&2; exit 64 ;;
+  esac
+done
+[[ "$PLATFORM" == ios || "$PLATFORM" == android ]] || { echo "setup_devices: --platform ios|android 必填" >&2; exit 64; }
+
+# 1) 选择设备（原子: device/<platform>/list）
+if [[ -z "$DEVICES" ]]; then
+  # bash 3.2 兼容（无 mapfile）：逐行读入数组
+  ONLINE=()
+  if [[ "$PLATFORM" == ios ]]; then
+    while IFS= read -r u; do ONLINE+=("$u"); done < <("$HERE/device/ios/list" --booted --json | python3 -c "import json,sys; [print(d['udid']) for d in json.load(sys.stdin)]")
+  else
+    while IFS= read -r u; do ONLINE+=("$u"); done < <("$HERE/device/android/list" --json | python3 -c "import json,sys; [print(d['udid']) for d in json.load(sys.stdin)]")
+  fi
+  [[ ${#ONLINE[@]} -ge $COUNT ]] || { echo "setup_devices: 在线设备 ${#ONLINE[@]} 台 < 需要 $COUNT 台；iOS 先 device/ios/boot，Android 先启动模拟器，或传 --devices" >&2; exit 65; }
+  DEVICES="$(IFS=,; echo "${ONLINE[*]:0:$COUNT}")"
+fi
+IFS=',' read -r -a UDIDS <<< "$DEVICES"
+echo "==> devices: ${UDIDS[*]}"
+
+# 2) 启动就绪（原子: device/ios/boot，仅 iOS；Android 要求已在线）
+if [[ "$PLATFORM" == ios ]]; then
+  for u in "${UDIDS[@]}"; do "$HERE/device/ios/boot" --device "$u"; done
+fi
+
+# 3) 构建一次 + 逐台安装（原子: device/<platform>/install，--app 复用产物）
+APP=""
+for u in "${UDIDS[@]}"; do
+  if [[ -n "$APP" ]]; then
+    "$HERE/device/$PLATFORM/install" --device "$u" --mode "$MODE" --app "$APP"
+  else
+    APP="$("$HERE/device/$PLATFORM/install" --device "$u" --mode "$MODE" | tail -1 | sed 's/^OK app=//')"
+  fi
+done
+
+# 4) 启动（原子: device/<platform>/launch）
+LOG_DIR="$ROOT/testing/tmp/$RUN_ID"
+mkdir -p "$LOG_DIR"
+# bash 3.2 兼容（无关联数组）：按下标存凭据
+CRED=()
+for i in "${!UDIDS[@]}"; do
+  u="${UDIDS[$i]}"
+  LOG="$LOG_DIR/agent-$((i + 1)).log"
+  LINE="$("$HERE/device/$PLATFORM/launch" --device "$u" --mode "$MODE" --out "$LOG" | tail -1)"
+  [[ "$LINE" == OK* ]] || { echo "setup_devices: launch 失败: $LINE" >&2; exit 69; }
+  if [[ "$MODE" == control ]]; then
+    CRED[$i]="${LINE#OK }"
+  fi
+done
+
+# 5) 汇总凭据（control 模式）
+if [[ "$MODE" == control ]]; then
+  ARGS=()
+  for i in "${!UDIDS[@]}"; do
+    ARGS+=("${CRED[$i]:-}")
+  done
+  python3 - "$LOG_DIR" "${UDIDS[@]}" "${ARGS[@]}" > "$LOG_DIR/agents.json" <<'PY'
+import json, sys
+log_dir = sys.argv[1]
+rest = sys.argv[2:]
+n = len(rest) // 2
+udids, creds = rest[:n], rest[n:]
+agents = []
+for i, u in enumerate(udids):
+    kv = dict(p.split('=', 1) for p in creds[i].split() if '=' in p)
+    if 'port' in kv:
+        agents.append({
+            'role': f'agent-{i+1}', 'udid': u,
+            'endpoint': f"http://127.0.0.1:{kv['port']}",
+            'token': kv['token'], 'instanceId': kv['instanceId'],
+            'log': f'{log_dir}/agent-{i+1}.log',
+        })
+print(json.dumps(agents, indent=2))
+PY
+  echo "OK agents=$LOG_DIR/agents.json"
+else
+  echo "OK launched (plain mode, no agents.json)"
+fi

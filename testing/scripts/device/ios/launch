@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# iOS 模拟器启动 app（原子脚本，agent 模式收集凭据）。
+# 用法: device/ios/launch --device <udid> --mode control --out <log-file> [--timeout <sec>]
+#   --mode control  轮询 [AGENT_CONTROL] 凭据行，输出 port/token/instanceId
+#   --mode plain    仅启动，不等待凭据
+# 最后一行: OK port=<p> token=<t> instanceId=<i>（control）或 OK launched（plain）
+#
+# 凭据捕获原理（重要，勿改回 --console*）：
+#   Flutter iOS 的 print() 不写进程 stdout（fd 1），而是经引擎转发进 os_log，
+#   因此 simctl 的 --console / --console-pty / --stdout=<path> 全都收不到 app 输出
+#   （实测只见 PID 行，重定向文件恒为 0 字节）。正确通道是模拟器系统日志：
+#   `simctl spawn <udid> log stream --predicate 'process == "Runner"'`，
+#   该流同时包含全部 flutter: 日志，作为运行期 log 一并落盘。
+# 另：启动前先 terminate 残留实例——对已运行实例 launch 拿不到新凭据且无报错。
+# 终止 app: xcrun simctl terminate <udid> com.example.example
+# Shell: bash >= 3.2（macOS 系统自带即满足；勿用 sh/zsh 直接执行，见 _compat.sh）
+. "$(dirname "$0")/../../_compat.sh" || exit 64
+set -euo pipefail
+BUNDLE_ID="com.example.example"
+DEVICE=""
+MODE="control"
+OUT=""
+TIMEOUT=30
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --device) DEVICE="${2:?}"; shift 2 ;;
+    --mode) MODE="${2:?}"; shift 2 ;;
+    --out) OUT="${2:?}"; shift 2 ;;
+    --timeout) TIMEOUT="${2:?}"; shift 2 ;;
+    -h|--help) grep '^# ' "$0" | sed 's/^# //'; exit 0 ;;
+    *) echo "ios/launch: unknown arg: $1" >&2; exit 64 ;;
+  esac
+done
+[[ -n "$DEVICE" ]] || { echo "ios/launch: --device required" >&2; exit 64; }
+[[ -n "$OUT" ]] || { echo "ios/launch: --out <log-file> required" >&2; exit 64; }
+
+# 1) 清理残留实例（未运行时 terminate 报错，忽略）
+xcrun simctl terminate "$DEVICE" "$BUNDLE_ID" 2>/dev/null || true
+
+# 2) 后台持续捕获 Runner 系统日志（凭据与 flutter 日志都走 os_log）
+: > "$OUT"
+nohup xcrun simctl spawn "$DEVICE" log stream --style compact \
+  --predicate 'process == "Runner"' >> "$OUT" 2>&1 &
+echo "$!" > "$OUT.pid"
+# log stream 需要先就绪，否则可能错过启动早期日志
+sleep 2
+
+# 3) 启动 app（无 console 参数，见头部说明）
+xcrun simctl launch "$DEVICE" "$BUNDLE_ID"
+
+if [[ "$MODE" != control ]]; then
+  echo "OK launched"
+  exit 0
+fi
+
+# 4) 轮询凭据行
+for ((i = 0; i < TIMEOUT * 2; i++)); do
+  LINE="$(grep '\[AGENT_CONTROL\]' "$OUT" | tail -1 || true)"
+  if [[ -n "$LINE" ]]; then
+    CRED="$(sed 's/.*\[AGENT_CONTROL\] //' <<< "$LINE")"
+    PORTV="$(python3 -c "import json,sys; print(json.loads(sys.argv[1])['port'])" "$CRED")"
+    TOKV="$(python3 -c "import json,sys; print(json.loads(sys.argv[1])['token'])" "$CRED")"
+    IID="$(python3 -c "import json,sys; print(json.loads(sys.argv[1])['instanceId'])" "$CRED")"
+    echo "OK port=$PORTV token=$TOKV instanceId=$IID"
+    exit 0
+  fi
+  sleep 0.5
+done
+echo "ios/launch: [AGENT_CONTROL] not found within ${TIMEOUT}s (log: $OUT)" >&2
+exit 69

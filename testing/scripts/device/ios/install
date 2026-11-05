@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# iOS 模拟器构建/安装（原子脚本）。
+# 用法: device/ios/install --device <udid> [--mode control|plain] [--app <path>]
+#   --mode control  以 API_CONTROL=true 构建（agent 监听模式）
+#   --app           已有 .app 路径则跳过构建（构建一次、多台安装）
+# 输出: 实际安装的 .app 路径（最后一行 OK app=<path>）
+# Shell: bash >= 3.2（macOS 系统自带即满足；勿用 sh/zsh 直接执行，见 _compat.sh）
+. "$(dirname "$0")/../../_compat.sh" || exit 64
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
+DEVICE=""
+MODE="control"
+APP=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --device) DEVICE="${2:?}"; shift 2 ;;
+    --mode) MODE="${2:?}"; shift 2 ;;
+    --app) APP="${2:?}"; shift 2 ;;
+    -h|--help) grep '^# ' "$0" | sed 's/^# //'; exit 0 ;;
+    *) echo "ios/install: unknown arg: $1" >&2; exit 64 ;;
+  esac
+done
+[[ -n "$DEVICE" ]] || { echo "ios/install: --device required" >&2; exit 64; }
+[[ "$MODE" == control || "$MODE" == plain ]] || { echo "ios/install: --mode control|plain" >&2; exit 64; }
+
+if [[ -z "$APP" ]]; then
+  cd "$ROOT/im_flutter_sdk/example"
+  echo "==> flutter build ios --simulator --debug (mode: $MODE)"
+  # bash 3.2 无空数组 + set -u 安全展开，故按模式显式分支
+  if [[ "$MODE" == control ]]; then
+    flutter build ios --simulator --debug --dart-define=API_CONTROL=true
+  else
+    flutter build ios --simulator --debug
+  fi
+  APP="$PWD/build/ios/iphonesimulator/Runner.app"
+fi
+[[ -d "$APP" ]] || { echo "ios/install: app not found: $APP" >&2; exit 66; }
+
+xcrun simctl install "$DEVICE" "$APP"
+echo "OK app=$APP"
