@@ -2,9 +2,9 @@
 ///
 /// Static checks are deliberately shallow: agent references must be declared,
 /// parallel blocks must not nest, and (unless disabled) every `cmd` id must
-/// appear as a key somewhere inside the target agent's device script JSON.
-/// The interpreter never inspects the *shape* of command definitions —
-/// key-existence is a typo guard, not format understanding.
+/// be a step id in the target agent's device script. Loaded scripts become
+/// the runtime command library (protocol v2: the interpreter looks commands
+/// up host-side and dispatches full content; agents never see the library).
 library;
 
 import 'dart:convert';
@@ -13,6 +13,7 @@ import 'dart:io';
 import 'package:yaml/yaml.dart';
 
 import 'ast.dart';
+import 'expect.dart';
 import 'expr.dart';
 
 class FlowParseError implements Exception {
@@ -78,6 +79,7 @@ FlowSpec parseFlow(String yamlText, {ParseOptions options = const ParseOptions()
       name: role,
       endpoint: endpoint,
       scriptPath: scriptPath,
+      envPath: a['env'] as String?,
       meta: _plain(a['meta']) as Map<String, Object?>? ?? const {},
     );
   }
@@ -98,6 +100,7 @@ FlowSpec parseFlow(String yamlText, {ParseOptions options = const ParseOptions()
   );
 
   _checkAgents(spec);
+  _loadScriptsAndEnvs(spec);
   if (options.verifyCommandIds) {
     _verifyCommandIds(spec);
   }
@@ -314,43 +317,106 @@ void _checkAgents(FlowSpec spec) {
   check(spec.steps);
 }
 
-/// Verify every cmd id appears as a key somewhere in the target agent's
-/// device script JSON tree (typo guard only — no shape assumptions).
-void _verifyCommandIds(FlowSpec spec) {
+/// Load every agent's device script (command library) and environment into
+/// the spec. Script loading happens whenever a path is given (the
+/// interpreter needs the content at runtime); expect blocks are statically
+/// validated here so typos fail before any device is touched.
+void _loadScriptsAndEnvs(FlowSpec spec) {
   for (final agent in spec.agents.values) {
-    final file = File(agent.scriptPath);
-    Object? json;
-    try {
-      json = jsonDecode(file.readAsStringSync());
-    } on FileSystemException {
-      throw FlowParseError(
-          'agent "${agent.name}" script not found: ${agent.scriptPath}');
-    } catch (e) {
-      throw FlowParseError(
-          'agent "${agent.name}" script is not valid JSON: $e');
+    if (agent.scriptPath.isNotEmpty) {
+      spec.scripts[agent.name] = _loadDeviceScript(agent);
     }
-    final keys = <String>{};
-    void collectKeys(Object? node) {
-      if (node is Map) {
-        node.forEach((k, v) {
-          if (k is String) keys.add(k);
-          collectKeys(v);
-        });
-      } else if (node is List) {
-        node.forEach(collectKeys);
+    final envPath = agent.envPath;
+    if (envPath != null && envPath.isNotEmpty) {
+      Object? json;
+      try {
+        json = jsonDecode(File(envPath).readAsStringSync());
+      } on FileSystemException {
+        throw FlowParseError(
+            'agent "${agent.name}" env file not found: $envPath');
+      } catch (e) {
+        throw FlowParseError(
+            'agent "${agent.name}" env file is not valid JSON: $e');
       }
+      if (json is! Map) {
+        throw FlowParseError(
+            'agent "${agent.name}" env file must contain a JSON object');
+      }
+      spec.envs[agent.name] = Map<String, Object?>.from(json);
     }
+  }
+}
 
-    collectKeys(json);
-    agent.commandKeys = keys;
+DeviceScript _loadDeviceScript(AgentDecl agent) {
+  Object? json;
+  try {
+    json = jsonDecode(File(agent.scriptPath).readAsStringSync());
+  } on FileSystemException {
+    throw FlowParseError(
+        'agent "${agent.name}" script not found: ${agent.scriptPath}');
+  } catch (e) {
+    throw FlowParseError(
+        'agent "${agent.name}" script is not valid JSON: $e');
+  }
+  if (json is! Map) {
+    throw FlowParseError(
+        'agent "${agent.name}" script must contain a JSON object');
+  }
+  // Capture the promoted type: closures below do not inherit promotion.
+  final Map<String, Object?> root = Map<String, Object?>.from(json);
+
+  final stepsById = <String, Map<String, Object?>>{};
+  final rawSteps = root['steps'];
+  if (rawSteps is List) {
+    for (final raw in rawSteps) {
+      if (raw is! Map) {
+        throw FlowParseError(
+            'agent "${agent.name}" script: every step must be an object');
+      }
+      final id = raw['id'];
+      if (id == null) continue; // unreferencable steps are allowed (AutoMode runs them)
+      if (id is! String || id.isEmpty) {
+        throw FlowParseError(
+            'agent "${agent.name}" script: step id must be a non-empty string');
+      }
+      if (stepsById.containsKey(id)) {
+        throw FlowParseError(
+            'agent "${agent.name}" script: duplicate step id "$id"');
+      }
+      final step = Map<String, Object?>.from(raw);
+      final api = step['api'];
+      if (api is! String || api.isEmpty) {
+        throw FlowParseError(
+            'agent "${agent.name}" script: step "$id" missing "api"');
+      }
+      try {
+        validateExpect(step['expect'], where: 'agent "${agent.name}" step "$id"');
+      } on FormatException catch (e) {
+        throw FlowParseError(e.message);
+      }
+      stepsById[id] = step;
+    }
   }
 
+  Map<String, Object?>? block(String key) => root[key] is Map
+      ? Map<String, Object?>.from(root[key] as Map)
+      : null;
+  return DeviceScript(
+    init: block('init'),
+    login: block('login'),
+    steps: stepsById,
+  );
+}
+
+/// Verify every cmd id is a step id in the target agent's loaded device
+/// script (typo guard; the interpreter would fail the same way at runtime).
+void _verifyCommandIds(FlowSpec spec) {
   void check(List<Step> steps) {
     for (final s in steps) {
       switch (s) {
         case final CmdStep c:
-          final keys = spec.agents[c.agent]!.commandKeys;
-          if (keys != null && !keys.contains(c.cmd)) {
+          final script = spec.scripts[c.agent];
+          if (script == null || !script.stepsById.containsKey(c.cmd)) {
             throw FlowParseError(
                 'cmd "${c.cmd}" not found in agent "${c.agent}" script '
                 '(${spec.agents[c.agent]!.scriptPath}); use --no-verify-commands '

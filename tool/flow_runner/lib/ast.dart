@@ -38,37 +38,60 @@ class Defaults {
   final bool skipOnFailedDeps;
 }
 
-/// One agent role declared in the flow. `endpoint` is the only field the
-/// interpreter uses; `scriptPath` is loaded for static id verification and
-/// session binding; `meta` is free-form info for humans and external tools.
+/// One agent role declared in the flow. `endpoint` is where the agent's HTTP
+/// control service listens; `scriptPath` points at the device-script JSON
+/// command library (loaded by the parser); `envPath` optionally points at a
+/// runtime environment JSON (the `$config` / `$agents.<role>` source).
+/// `meta` is free-form info for humans and external tools.
 class AgentDecl {
   AgentDecl({
     required this.name,
     required this.endpoint,
     required this.scriptPath,
+    this.envPath,
     this.meta = const {},
   });
 
   final String name;
   final Uri endpoint;
   final String scriptPath;
+  final String? envPath;
   final Map<String, Object?> meta;
+}
 
-  /// All keys found in the device script JSON (populated by the parser when
-  /// command id verification is enabled; typo guard only).
-  Set<String>? commandKeys;
+/// A parsed device-script JSON: the command library for one agent.
+///
+/// `stepsById` maps step id -> raw step map (`{api, params, expect?, ...}`).
+/// The interpreter looks commands up here, resolves parameter references,
+/// and judges the returned envelope against the step's `expect` — the agent
+/// itself never sees this library (protocol v2, 2026-11-05).
+///
+/// Top-level `init`/`login` blocks of the legacy script shape are kept for
+/// the AutoMode direct-run path only; under HTTP they are ordinary steps
+/// that the script author declares with ids.
+class DeviceScript {
+  DeviceScript({this.init, this.login, Map<String, Map<String, Object?>>? steps})
+      : stepsById = steps ?? {};
+
+  final Map<String, Object?>? init;
+  final Map<String, Object?>? login;
+  final Map<String, Map<String, Object?>> stepsById;
 }
 
 /// The parsed flow document.
+///
+/// `scripts`/`envs` are populated by the parser (or injected directly by
+/// tests): role -> loaded device script / environment map.
 class FlowSpec {
-  const FlowSpec({
+  FlowSpec({
     required this.name,
     this.runId,
     this.flowTimeoutMs,
     required this.agents,
     required this.defaults,
     required this.steps,
-  });
+  })  : scripts = {},
+        envs = {};
 
   final String name;
   final String? runId;
@@ -76,6 +99,9 @@ class FlowSpec {
   final Map<String, AgentDecl> agents;
   final Defaults defaults;
   final List<Step> steps;
+
+  final Map<String, DeviceScript> scripts;
+  final Map<String, Map<String, Object?>> envs;
 }
 
 /// Base type of all flow steps.

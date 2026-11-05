@@ -5,9 +5,12 @@
 ///   async lines with join-all semantics;
 /// - `barrier` synchronizes branches of the same parallel block; a branch
 ///   that exits early releases its barriers instead of hanging siblings;
-/// - `cmd` honors the skip-on-failed-deps rule (global default + per-step
-///   override), per-step timeout, and the onFail policy
-///   (continue | abort_flow | abort_all);
+/// - `cmd` looks the step up in the agent's device-script library (host-side
+///   lookup, protocol v2), resolves parameter references
+///   (`$inputs` / `$config` / `$step` / `$prev`), dispatches `{api, params}`
+///   and judges the returned envelope against the step's `expect` itself;
+/// - skip-on-failed-deps covers both flow variables (inputs referencing
+///   failed `as` bindings) and device-script references (`$step.<failedId>`);
 /// - `wait_event` scans the agent event stream via a per-agent cursor:
 ///   cached events first, then new ones; `match` values are re-evaluated
 ///   on every event (lazy matching resolves cross-branch races);
@@ -19,6 +22,7 @@ import 'dart:async';
 
 import 'agent_client.dart';
 import 'ast.dart';
+import 'expect.dart';
 import 'expr.dart';
 import 'report.dart';
 
@@ -38,20 +42,29 @@ class InterpError implements Exception {
   String toString() => 'interpreter error: $message';
 }
 
+/// Outcome of one executed device-script step on one agent. `ok` follows
+/// the API success only (AutoMode semantics): an assertion failure does not
+/// nullify the data for downstream references.
+class _StepOutcome {
+  const _StepOutcome(this.ok, this.data);
+
+  final bool ok;
+  final Object? data;
+}
+
 class Interpreter {
   Interpreter({
     required this.spec,
     required this.agents,
     required this.report,
-    Map<String, Map<String, Object?>> agentInfo = const {},
   }) {
-    // Built-in `$agents` variable: role -> session info (userId etc.),
-    // collected from the handshake before the flow starts.
+    // Built-in `$agents` variable: role -> that agent's runtime environment
+    // (the `env:` file declared per agent). Host-side; no handshake needed.
     env.bindBuiltin(
       'agents',
       {
         for (final role in agents.keys)
-          role: agentInfo[role] ?? <String, Object?>{},
+          role: spec.envs[role] ?? <String, Object?>{},
       },
     );
   }
@@ -60,6 +73,12 @@ class Interpreter {
   final Map<String, AgentClient> agents;
   final ReportCollector report;
   final Env env = Env();
+
+  /// Per-agent device-script step outcomes, keyed by step id.
+  final Map<String, Map<String, _StepOutcome>> _stepData = {};
+
+  /// Per-agent data of the most recent command (`$prev` source).
+  final Map<String, Object?> _prev = {};
 
   /// Per-agent event cursors (exclusive: events with seq <= cursor consumed).
   final Map<String, int> _cursors = {};
@@ -117,13 +136,24 @@ class Interpreter {
 
   Future<void> _cmd(CmdStep s, String ctx) async {
     final sw = Stopwatch()..start();
-
-    // Skip-on-failed-deps: global default, per-step override wins.
     final skip = s.skipOnFailedDeps ?? spec.defaults.skipOnFailedDeps;
+
+    // Host-side library lookup (protocol v2): the agent never sees the
+    // device script; we dispatch full step content.
+    final script = spec.scripts[s.agent];
+    final step = script?.stepsById[s.cmd];
+    if (step == null) {
+      throw InterpError(
+          'command "${s.cmd}" not found in agent "${s.agent}" device script');
+    }
+    final api = step['api'] as String;
+
+    // Skip-on-failed-deps, source 1: flow variables referenced by inputs.
     if (skip) {
       final refs = collectRefs(s.inputs);
       final failed = refs.where((n) => !env.isOk(n)).toList();
       if (failed.isNotEmpty) {
+        _recordStep(s.agent, s.cmd, ok: false);
         report.add(StepRecord(
           kind: 'cmd',
           context: ctx,
@@ -137,13 +167,40 @@ class Interpreter {
       }
     }
 
-    final inputs = resolveValue(s.inputs, env) as Map<String, Object?>?;
+    // Parameter reference resolution (AutoMode semantics, exact full-string
+    // match): `$inputs.*` from the flow, `$config.*` from the agent env,
+    // `$step.<id>.*` from prior commands on the same agent, `$prev` from the
+    // most recent command's data.
+    final inputs = resolveValue(s.inputs, env) as Map<String, Object?>? ??
+        const <String, Object?>{};
+    final failedDeps = <String>{};
+    final usedInputs = <String>{};
+    final params = _resolveParams(
+            step['params'], s.agent, inputs, failedDeps, usedInputs)
+        as Map<String, Object?>? ?? const <String, Object?>{};
+
+    // Skip-on-failed-deps, source 2: device-script references to steps that
+    // failed on this agent (AutoMode's blocked-step semantics).
+    if (skip && failedDeps.isNotEmpty) {
+      _recordStep(s.agent, s.cmd, ok: false);
+      report.add(StepRecord(
+        kind: 'cmd',
+        context: ctx,
+        agent: s.agent,
+        name: s.cmd,
+        status: 'skipped',
+        durationMs: 0,
+        reason: 'failed step deps: ${failedDeps.join(', ')}',
+      ));
+      return;
+    }
+
     final timeoutMs = s.timeoutMs ?? spec.defaults.stepTimeoutMs;
 
     Envelope envelope;
     try {
       envelope = await agents[s.agent]!
-          .runCommand(s.cmd, inputs ?? const {}, timeoutMs)
+          .runCommand(api, params, timeoutMs)
           .timeout(
             Duration(milliseconds: timeoutMs),
             onTimeout: () => Envelope.timeout(timeoutMs),
@@ -152,11 +209,21 @@ class Interpreter {
       envelope = Envelope.error(e);
     }
 
+    // Host-side judgment: evaluate the step's expect against the actual
+    // envelope (absent expect => assert success, AutoMode semantics).
+    final expectOutcome = envelope.status == 'timeout'
+        ? const ExpectOutcome(matched: false)
+        : evaluateExpect(envelope.toMap(), step['expect']);
+
     if (s.as != null) {
       env.bind(s.as!, envelope.toMap(), ok: envelope.success);
     }
+    _recordStep(s.agent, s.cmd, ok: envelope.success, data: envelope.data);
+    _prev[s.agent] = envelope.data;
 
-    final failed = !envelope.success;
+    final failed = !expectOutcome.matched;
+    final unusedInputs =
+        inputs.keys.where((k) => !usedInputs.contains(k)).toList();
     report.add(StepRecord(
       kind: 'cmd',
       context: ctx,
@@ -166,10 +233,89 @@ class Interpreter {
           ? 'timeout'
           : (failed ? 'failed' : 'passed'),
       durationMs: sw.elapsedMilliseconds,
-      result: envelope.toMap(),
+      result: {
+        ...envelope.toMap(),
+        'api': api,
+        'expectMatched': expectOutcome.matched,
+        if (expectOutcome.checks.isNotEmpty) 'checks': expectOutcome.checks,
+        if (unusedInputs.isNotEmpty) 'unusedInputs': unusedInputs,
+      },
     ));
 
     if (failed) _applyOnFail(s.onFail);
+  }
+
+  void _recordStep(String agent, String stepId,
+      {required bool ok, Object? data}) {
+    _stepData.putIfAbsent(agent, () => {})[stepId] = _StepOutcome(ok, data);
+  }
+
+  /// Substitute parameter references. Records step ids whose data was
+  /// requested but whose producer failed (skip signal) and which input
+  /// slots were actually used (unused-inputs typo guard).
+  Object? _resolveParams(
+    Object? v,
+    String agent,
+    Map<String, Object?> inputs,
+    Set<String> failedDeps,
+    Set<String> usedInputs,
+  ) {
+    if (v is String) {
+      if (v == r'$inputs') return inputs;
+      if (v.startsWith(r'$inputs.')) {
+        final path = v.substring(8);
+        usedInputs.add(path.split('.').first);
+        return _dig(inputs, path);
+      }
+      if (v == r'$config') return spec.envs[agent] ?? const {};
+      if (v.startsWith(r'$config.')) {
+        return _dig(spec.envs[agent] ?? const {}, v.substring(8));
+      }
+      if (v == r'$prev') return _prev[agent];
+      if (v.startsWith(r'$prev.')) return _dig(_prev[agent], v.substring(6));
+      if (v.startsWith(r'$step.')) {
+        final parts = v.substring(6).split('.');
+        final stepId = parts.first;
+        final outcome = _stepData[agent]?[stepId];
+        if (outcome != null && !outcome.ok) failedDeps.add(stepId);
+        return outcome == null
+            ? null
+            : _dig(outcome.data, parts.sublist(1).join('.'));
+      }
+      return v;
+    }
+    if (v is Map) {
+      // Normalize to Map<String, Object?> regardless of the source map's
+      // generics (literals, jsonDecode, YAML views all differ).
+      return <String, Object?>{
+        for (final e in v.entries)
+          e.key as String: _resolveParams(
+              e.value, agent, inputs, failedDeps, usedInputs),
+      };
+    }
+    if (v is List) {
+      return v
+          .map((e) => _resolveParams(e, agent, inputs, failedDeps, usedInputs))
+          .toList();
+    }
+    return v;
+  }
+
+  /// Dot-path dig over maps (key) and lists (numeric index); null on miss.
+  static Object? _dig(Object? v, String path) {
+    var cur = v;
+    for (final key in path.split('.')) {
+      if (cur is Map) {
+        cur = cur[key];
+      } else if (cur is List) {
+        final i = int.tryParse(key);
+        if (i == null || i < 0 || i >= cur.length) return null;
+        cur = cur[i];
+      } else {
+        return null;
+      }
+    }
+    return cur;
   }
 
   void _applyOnFail(OnFail? override) {

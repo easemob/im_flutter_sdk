@@ -92,6 +92,8 @@ CI 依赖已确认：`ensure_example_env.sh` 读取 `example/templates/env.examp
 
 ### P4：日志工具与多设备执行支持
 
+子设计文档：[设备 Agent HTTP 服务](../../testing/spec/2026-11-05-agent-service.md)（App 内 HTTP 服务的实现设计）；设备批量管理、单设备用例迁移、多设备用例、第一阶段验收的子设计文档随后补齐。
+
 - [ ] 复制 `auto_report.dart` 的设备启动、安装和报告能力到 `testing/scripts/`（原文件不修改，保护 example 与 CI 兼容性）；增加 HTTP 连接适配（Android adb forward、iOS 模拟器本机、iOS USB 真机转发），新阶段不走文件投递；旧入口原样保留至第三阶段讨论。
 - [ ] 复用 APITEST 分片重组、崩溃提取和报告对比逻辑；增加逐设备增量读取、事件匹配、超时和读取错误反馈，报告归档检查敏感字段。
 - [ ] 实现审查后的 HTTP 会话、命令、状态、增量日志及 finish 接口；一个设备一个在途阶段，状态／日志查询保持响应。区分 HTTP ready 与 SDK watch.ready，再放行触发步骤。单设备完整运行及多脚本串行复用相同接口。

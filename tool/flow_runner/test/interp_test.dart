@@ -12,15 +12,60 @@ import 'mock_agent.dart';
 
 /// Test harness: builds mock agents per declared role up front so tests can
 /// register handlers and events BEFORE running the flow.
+///
+/// [scripts] injects explicit device-script steps (cmd id -> step map with
+/// api/params/expect). Every cmd id without an explicit step gets an
+/// auto-registered passthrough step (`api` = cmd id, empty params) so most
+/// flows work without boilerplate; handlers are keyed by api name.
+/// [envs] injects per-agent environments ($config / $agents source).
 class Harness {
-  Harness(String yaml, {Map<String, Map<String, Object?>> agentInfo = const {}})
-      : spec = parseFlow(
+  Harness(
+    String yaml, {
+    Map<String, Map<String, Map<String, Object?>>> scripts = const {},
+    Map<String, Map<String, Object?>> envs = const {},
+  }) : spec = parseFlow(
           yaml,
           options: const ParseOptions(verifyCommandIds: false),
         ) {
     for (final role in spec.agents.keys) {
-      mocks[role] = MockAgent(infoData: agentInfo[role] ?? const {});
+      final explicit = scripts[role] ?? const {};
+      final steps = <String, Map<String, Object?>>{};
+      void walk(List<Step> list) {
+        for (final s in list) {
+          switch (s) {
+            case final CmdStep c:
+              if (c.agent == role &&
+                  !explicit.containsKey(c.cmd) &&
+                  !steps.containsKey(c.cmd)) {
+                steps[c.cmd] = {
+                  'api': c.cmd,
+                  'params': const <String, Object?>{},
+                };
+              }
+            case final ParallelStep p:
+              p.branches.values.forEach(walk);
+            case final IfStep i:
+              walk(i.thenSteps);
+              walk(i.elseSteps);
+            case final ForStep f:
+              walk(f.doSteps);
+            case final WhileStep w:
+              walk(w.doSteps);
+            case WaitEventStep():
+            case BarrierStep():
+            case SetStep():
+            case DelayStep():
+              break;
+          }
+        }
+      }
+
+      walk(spec.steps);
+      explicit.forEach((k, v) => steps[k] = Map<String, Object?>.from(v));
+      spec.scripts[role] = DeviceScript(steps: steps);
+      mocks[role] = MockAgent();
     }
+    spec.envs.addAll(envs);
   }
 
   final FlowSpec spec;
@@ -33,9 +78,6 @@ class Harness {
       spec: spec,
       agents: mocks,
       report: report,
-      agentInfo: {
-        for (final e in mocks.entries) e.key: e.value.infoData,
-      },
     );
     await interp.run();
   }
@@ -48,7 +90,7 @@ class Harness {
 
 void main() {
   group('sequential commands and data flow', () {
-    test('inputs receive resolved references from earlier steps', () async {
+    test(r'inputs reach params through declared $inputs slots', () async {
       final h = Harness('''
 name: t
 agents:
@@ -60,12 +102,20 @@ steps:
   - cmd: use
     agent: a
     inputs: {groupId: '\$group.data.groupId'}
-''');
+''', scripts: {
+        'a': {
+          'create': {'api': 'X.create', 'params': {}},
+          'use': {
+            'api': 'X.use',
+            'params': {'groupId': r'$inputs.groupId'}
+          },
+        }
+      });
       String? seenGroupId;
       h.mocks['a']!
-        ..onOk('create', {'groupId': 'g42'})
-        ..on('use', (inputs) async {
-          seenGroupId = inputs['groupId'] as String?;
+        ..onOk('X.create', {'groupId': 'g42'})
+        ..on('X.use', (params) async {
+          seenGroupId = params['groupId'] as String?;
           return const Envelope(success: true, status: 'ok');
         });
       await h.run();
@@ -74,7 +124,7 @@ steps:
           h.summary(), {'passed': 2, 'failed': 0, 'timeout': 0, 'skipped': 0});
     });
 
-    test(r'built-in $agents carries handshake info', () async {
+    test(r'built-in $agents carries the agent environment', () async {
       final h = Harness(
         '''
 name: t
@@ -84,19 +134,107 @@ agents:
 steps:
   - cmd: invite
     agent: a
-    inputs: {member: '\$agents.b.userId'}
+    inputs: {member: '\$agents.b.accounts.0.userId'}
 ''',
-        agentInfo: {
-          'b': {'userId': 'u-b-99'},
+        scripts: {
+          'a': {
+            'invite': {
+              'api': 'X.invite',
+              'params': {'member': r'$inputs.member'}
+            },
+          },
+        },
+        envs: {
+          'b': {
+            'accounts': [
+              {'userId': 'u-b-99'}
+            ]
+          },
         },
       );
       String? seenMember;
-      h.mocks['a']!.on('invite', (inputs) async {
-        seenMember = inputs['member'] as String?;
+      h.mocks['a']!.on('X.invite', (params) async {
+        seenMember = params['member'] as String?;
         return const Envelope(success: true, status: 'ok');
       });
       await h.run();
       expect(seenMember, 'u-b-99');
+    });
+
+    test(r'params resolve $config, $step and $prev references', () async {
+      final h = Harness('''
+name: t
+agents:
+  a: {endpoint: 'http://127.0.0.1:8801', script: ''}
+steps:
+  - cmd: create
+    agent: a
+  - cmd: use
+    agent: a
+    inputs: {extra: 'flow-value'}
+''', scripts: {
+        'a': {
+          'create': {
+            'api': 'X.create',
+            'params': {'appKey': r'$config.appKey'}
+          },
+          'use': {
+            'api': 'X.use',
+            'params': {
+              'fromStep': r'$step.create.id',
+              'fromPrev': r'$prev.id',
+              'fromInputs': r'$inputs.extra',
+              'cfg': r'$config.tags.0',
+            }
+          },
+        }
+      }, envs: {
+        'a': {
+          'appKey': 'k1',
+          'tags': ['t0', 't1']
+        }
+      });
+      Map<String, Object?>? createParams;
+      Map<String, Object?>? useParams;
+      h.mocks['a']!
+        ..on('X.create', (params) async {
+          createParams = params;
+          return Envelope(
+              success: true, status: 'ok', data: {'id': 'i9'});
+        })
+        ..on('X.use', (params) async {
+          useParams = params;
+          return const Envelope(success: true, status: 'ok');
+        });
+      await h.run();
+      expect(createParams!['appKey'], 'k1');
+      expect(useParams!['fromStep'], 'i9');
+      expect(useParams!['fromPrev'], 'i9');
+      expect(useParams!['fromInputs'], 'flow-value');
+      expect(useParams!['cfg'], 't0');
+    });
+
+    test('unused inputs are reported on the step record', () async {
+      final h = Harness('''
+name: t
+agents:
+  a: {endpoint: 'http://127.0.0.1:8801', script: ''}
+steps:
+  - cmd: use
+    agent: a
+    inputs: {typoKey: 'v'}
+''', scripts: {
+        'a': {
+          'use': {
+            'api': 'X.use',
+            'params': {'real': r'$inputs.other'}
+          },
+        }
+      });
+      h.mocks['a']!.onOk('X.use', null);
+      await h.run();
+      final rec = h.records('cmd').single;
+      expect((rec.result!['unusedInputs'] as List), ['typoKey']);
     });
   });
 
@@ -107,7 +245,7 @@ name: t
 agents:
   a: {endpoint: 'http://127.0.0.1:8801', script: ''}
 steps:
-  - set: {ok: $cond}
+  - set: {ok: \$cond}
   - if: \$ok == true
     then:
       - cmd: then_cmd
@@ -145,16 +283,27 @@ steps:
       - cmd: tick
         agent: a
         inputs: {i: '\$i'}
-''');
+''', scripts: {
+        'a': {
+          'send': {
+            'api': 'X.send',
+            'params': {'name': r'$inputs.name'}
+          },
+          'tick': {
+            'api': 'X.tick',
+            'params': {'i': r'$inputs.i'}
+          },
+        }
+      });
       final seen = <String>[];
       final ticks = <Object?>[];
       h.mocks['a']!
-        ..on('send', (inputs) async {
-          seen.add(inputs['name'] as String);
+        ..on('X.send', (params) async {
+          seen.add(params['name'] as String);
           return const Envelope(success: true, status: 'ok');
         })
-        ..on('tick', (inputs) async {
-          ticks.add(inputs['i']);
+        ..on('X.tick', (params) async {
+          ticks.add(params['i']);
           return const Envelope(success: true, status: 'ok');
         });
       await h.run();
@@ -177,7 +326,7 @@ steps:
       - set: {n: '\$r.data.n'}
 ''');
       var n = 0;
-      h.mocks['a']!.on('bump', (inputs) async {
+      h.mocks['a']!.on('bump', (params) async {
         n++;
         return Envelope(success: true, status: 'ok', data: {'n': n});
       });
@@ -311,7 +460,7 @@ steps:
       // Event fires BEFORE the flow even starts.
       h.mocks['b']!
         ..emit('onMessageReceived', {'from': 'alice', 'msgId': 'm1'})
-        ..on('ack', (inputs) async {
+        ..on('ack', (params) async {
           return const Envelope(success: true, status: 'ok');
         });
       await h.run();
@@ -534,6 +683,45 @@ steps:
           h.summary(), {'passed': 1, 'failed': 1, 'timeout': 0, 'skipped': 2});
     });
 
+    test(r'$step reference to a failed step skips and cascades', () async {
+      final h = Harness('''
+name: t
+agents:
+  a: {endpoint: 'http://127.0.0.1:8801', script: ''}
+steps:
+  - cmd: produce
+    agent: a
+  - cmd: consume
+    agent: a
+  - cmd: consume2
+    agent: a
+  - cmd: independent
+    agent: a
+''', scripts: {
+        'a': {
+          'produce': {'api': 'X.produce', 'params': {}},
+          'consume': {
+            'api': 'X.consume',
+            'params': {'x': r'$step.produce.data.id'}
+          },
+          'consume2': {
+            'api': 'X.consume2',
+            'params': {'x': r'$step.consume.data.id'}
+          },
+          'independent': {'api': 'X.independent', 'params': {}},
+        }
+      });
+      h.mocks['a']!
+        ..onFail('X.produce', 'boom')
+        ..onOk('X.consume', null)
+        ..onOk('X.consume2', null)
+        ..onOk('X.independent', null);
+      await h.run();
+      expect(h.mocks['a']!.calls, ['X.produce', 'X.independent']);
+      expect(
+          h.summary(), {'passed': 1, 'failed': 1, 'timeout': 0, 'skipped': 2});
+    });
+
     test('per-step override executes with resolved null', () async {
       final h = Harness('''
 name: t
@@ -547,16 +735,24 @@ steps:
     agent: a
     inputs: {x: '\$p.data.x'}
     skipOnFailedDeps: false
-''');
+''', scripts: {
+        'a': {
+          'produce': {'api': 'X.produce', 'params': {}},
+          'probe': {
+            'api': 'X.probe',
+            'params': {'x': r'$inputs.x'}
+          },
+        }
+      });
       Object? seenX;
       h.mocks['a']!
-        ..onFail('produce', 'boom')
-        ..on('probe', (inputs) async {
-          seenX = inputs['x'];
+        ..onFail('X.produce', 'boom')
+        ..on('X.probe', (params) async {
+          seenX = params['x'];
           return const Envelope(success: true, status: 'ok');
         });
       await h.run();
-      expect(h.mocks['a']!.calls, ['produce', 'probe']);
+      expect(h.mocks['a']!.calls, ['X.produce', 'X.probe']);
       expect(seenX, isNull);
     });
 
@@ -579,6 +775,134 @@ steps:
         ..onOk('consume', null);
       await h.run();
       expect(h.mocks['a']!.calls, ['produce', 'consume']);
+    });
+  });
+
+  group('expect judgment (host-side)', () {
+    test('absent expect asserts success', () async {
+      final h = Harness('''
+name: t
+agents:
+  a: {endpoint: 'http://127.0.0.1:8801', script: ''}
+steps:
+  - cmd: plain
+    agent: a
+''', scripts: {
+        'a': {
+          'plain': {'api': 'X.plain', 'params': {}},
+        }
+      });
+      h.mocks['a']!.onFail('X.plain', 'boom');
+      await h.run();
+      expect(h.summary(), {'passed': 0, 'failed': 1, 'timeout': 0, 'skipped': 0});
+    });
+
+    test('errorCode expectation passes on a matching SDK error', () async {
+      final h = Harness('''
+name: t
+agents:
+  a: {endpoint: 'http://127.0.0.1:8801', script: ''}
+steps:
+  - cmd: missing
+    agent: a
+''', scripts: {
+        'a': {
+          'missing': {
+            'api': 'X.missing',
+            'params': {},
+            'expect': {'errorCode': 110}
+          },
+        }
+      });
+      h.mocks['a']!.onFail('X.missing', 'no such message', code: 110);
+      await h.run();
+      expect(h.summary()['passed'], 1);
+    });
+
+    test('checks assert data fields and report per-check details', () async {
+      final h = Harness('''
+name: t
+agents:
+  a: {endpoint: 'http://127.0.0.1:8801', script: ''}
+steps:
+  - cmd: good
+    agent: a
+  - cmd: bad
+    agent: a
+''', scripts: {
+        'a': {
+          'good': {
+            'api': 'X.send',
+            'params': {},
+            'expect': {
+              'success': true,
+              'checks': [
+                {'path': 'msgId', 'notEmpty': true},
+                {'path': 'readCount', 'gte': 2},
+              ]
+            }
+          },
+          'bad': {
+            'api': 'X.send',
+            'params': {},
+            'expect': {
+              'success': true,
+              'checks': [
+                {'path': 'msgId', 'notEmpty': true},
+                {'path': 'readCount', 'gte': 2},
+              ]
+            }
+          },
+        }
+      });
+      // The same api returns different data per call order.
+      var call = 0;
+      h.mocks['a']!.on('X.send', (params) async {
+        call++;
+        return Envelope(
+          success: true,
+          status: 'ok',
+          data: call == 1
+              ? {'msgId': 'm1', 'readCount': 3}
+              : {'msgId': 'm1', 'readCount': 1},
+        );
+      });
+      await h.run();
+      expect(h.summary(), {'passed': 1, 'failed': 1, 'timeout': 0, 'skipped': 0});
+      final bad = h.records('cmd')[1];
+      expect(bad.result!['expectMatched'], isFalse);
+      final checks = bad.result!['checks'] as List;
+      expect((checks[1] as Map)['passed'], isFalse);
+      expect((checks[1] as Map)['actual'], 1);
+    });
+
+    test('expect mismatch triggers onFail', () async {
+      final h = Harness('''
+name: t
+agents:
+  a: {endpoint: 'http://127.0.0.1:8801', script: ''}
+steps:
+  - cmd: lying
+    agent: a
+    onFail: abort_flow
+  - cmd: never
+    agent: a
+''', scripts: {
+        'a': {
+          'lying': {
+            'api': 'X.lying',
+            'params': {},
+            'expect': {'success': true, 'checks': [{'path': 'n', 'equals': 7}]}
+          },
+        }
+      });
+      h.mocks['a']!
+        ..onOk('X.lying', {'n': 1})
+        ..onOk('never', null);
+      await h.run();
+      // API succeeded but the assertion failed: judgment, not execution.
+      expect(h.mocks['a']!.calls, ['X.lying']);
+      expect(h.summary()['failed'], 1);
     });
   });
 

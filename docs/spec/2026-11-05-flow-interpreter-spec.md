@@ -1,11 +1,12 @@
 # 多设备测试控制流解释器规格（YAML 流程语言）
 
 - 日期：2026-11-05
-- 状态：核心决策已确认（设备启动边界、目录组织、失败跳过语义），遗留一个事件命名决策点（§13 Q1）；未实现，未设备验证。
+- 状态：v0.2 已实现（60 个单测全绿，analyze 零问题），尚未接真实设备。全部决策已确认（§13）。
 - 工作对象：`im_flutter_sdk/.worktree/5.0.0`，分支 `5.0.0`。
 - 关联文档：
   - 总体规格：[Example 测试脚本与工具体系规格](2026-11-04-example-testing-spec.md)
-  - HTTP 协议草案：[设备命令、状态与事件接口](../../testing/spec/2026-11-04-phase-control.md)（本文引用其接口，不重新定义）
+  - HTTP 协议：[设备命令、状态与事件接口 v2](../../testing/spec/2026-11-04-phase-control.md)（本文引用其接口，不重新定义）
+  - agent 实现设计：[设备 Agent HTTP 服务设计](../../testing/spec/2026-11-05-agent-service.md)
 - 路径约定：仓库内相对路径以 `5.0.0` 工作树根目录为基准。
 
 ## 1. 背景与定位
@@ -26,12 +27,12 @@
 2. **YAML 对 JSON 命令格式无任何要求**。不做 schema 校验、不理解字段含义。
 3. **YAML 只负责流程**：顺序、循环、分支、比较运算；第一版不要求复杂嵌套。
 
-"完全不关注"有一条必须显式化的边界：控制流需要引用命令执行结果（比较运算的操作数、后续命令的输入）。因此约定两个**最小契约**，这是 YAML 与 JSON 之间仅有的接口：
+"完全不关注"有一条必须显式化的边界：控制流需要引用命令执行结果（比较运算的操作数、后续命令的输入），也需要往命令里注入流程变量。因此约定两个**最小契约**，这是 YAML 与 JSON 之间仅有的接口：
 
 | 契约 | 内容 | 说明 |
 |---|---|---|
-| 输出信封 | 每条命令执行完毕返回 `{success, status, data, error}` | `status ∈ ok \| error \| timeout`；`data` 内部结构解释器不解析，仅按 path 寻址。现有 AutoMode 结果已是此形状，契约事实上已存在 |
-| 输入注入 | 命令可接收外部输入（inputs），值由解释器从流程变量解析 | 注入点由设备脚本声明（phase-control 的 stage inputs 机制），解释器只传值，不改写命令内部结构 |
+| 输出信封 | 每条命令执行完毕返回实际结果 `{success, status, data, error, failureKind}` | `status ∈ ok \| error \| timeout`；即 agent 侧 `runApi` 信封原样（协议 v2）。`data` 内部结构解释器不解析，仅按 path 寻址；`expect` 判定在解释器内完成（§9） |
+| 输入注入 | 设备脚本 step 的 params 通过 `$inputs.<k>` 槽位声明接收点；解释器把流程变量解析后注入 | 同一层还支持 `$config.*`（该 agent 的 env 文件）、`$step.<id>.*`（同 agent 先前命令结果）、`$prev`（上一命令 data）。全部替换在**宿主侧发送前**完成（AutoMode 同款整串匹配语义），agent 收到的 params 无任何引用 |
 
 信封是对"命令"这个抽象的要求，不是对 JSON 格式的要求——两者不矛盾。
 
@@ -43,29 +44,31 @@
 │ flow_runner（纯 Dart CLI，无 Flutter 依赖） │
 │  YAML 解析 → AST → 解释执行                  │
 │  控制流：顺序 / parallel / if / for / while  │
-│  表达式求值、变量表、barrier、超时、报告      │
+│  设备脚本命令库（按 id 查 step）              │
+│  引用替换（$inputs/$config/$step/$prev）     │
+│  expect 判定、变量表、barrier、超时、报告     │
 └──────┬─────────────────────┬───────────────┘
-       │ HTTP（phase-control）│
+       │ HTTP（phase-control v2）│
 ┌──────▼──────┐        ┌──────▼──────┐
 │ agent alice │        │ agent bob   │   example app 内嵌 HttpServer
-│ iOS 模拟器  │        │ Android 模拟│   session 绑定 / 命令执行 / 事件缓存
+│ iOS 模拟器  │        │ Android 模拟│   哑执行（runApi→信封）/ 事件缓存
 └─────────────┘        └─────────────┘
 ```
 
 职责边界：
 
-- **解释器（flow_runner）**：读 YAML 流程 + 各 agent 的设备脚本；启动时绑定 session；按控制流派发命令、等待事件；维护全局变量表与各 agent 事件游标；产出报告。
-- **agent（example 内 HTTP 服务）**：执行命令、返回信封；缓存带 seq 的事件流。实现按 phase-control 草案。
+- **解释器（flow_runner）**：读 YAML 流程 + 各 agent 的设备脚本（命令库）与环境文件；按 id 查 step、宿主侧解析引用后派发完整命令 `{api, params}`；对返回信封做 expect 判定；维护全局变量表、各 agent 的 stepData 与事件游标；产出报告。
+- **agent（example 内 HTTP 服务）**：哑执行器——执行 api、回实际信封；缓存带 seq 的事件流。**不接触设备脚本**（协议 v2）。
 - **设备启动（模拟器、app 构建安装、端口转发）**：**不在解释器内**（2026-11-05 确认）。外部脚本（Makefile / shell）先把模拟器和 app 起好，解释器只连接已就绪的 endpoint。理由：启动是重操作且已有工具链，解释器保持纯控制流。
 
-HTTP 调用映射（全部复用 phase-control，不新增接口）：
+HTTP 调用映射（全部复用 phase-control v2，不新增接口）：
 
 | 流程动作 | HTTP |
 |---|---|
-| 流程启动 | 各 agent `POST /v1/session`（绑定设备脚本） |
-| 执行命令 | `POST /v1/commands` → 轮询 `GET /v1/commands/<id>` 至终态 |
+| 流程启动 | 各 agent `GET /v1/info`（握手 + instanceId 重启检测） |
+| 执行命令 | `POST /v1/commands`（携带 `{api, params, timeoutMs}`）→ 轮询 `GET /v1/commands/<id>` 至终态 |
 | 等待事件 | 轮询 `GET /v1/events?afterSeq=...&waitMs=1000`，按 match 匹配 |
-| 流程结束 | 各 agent `POST /v1/session/finish` |
+| 流程结束 | 各 agent `POST /v1/finish` |
 
 ## 4. YAML 流程语言
 
@@ -79,7 +82,8 @@ runId: auto                     # 缺省按时间戳生成
 agents:                         # 角色 → 设备 endpoint 映射
   alice:
     endpoint: http://127.0.0.1:8801
-    script: scripts/alice_device.json    # 该 agent 绑定的设备脚本（含命令定义）
+    script: scripts/alice_device.json    # 该 agent 的设备脚本（命令库，宿主加载）
+    env: ../tmp/<run-id>/alice/environment.json   # 可选：运行时环境（$config/$agents 来源）
     meta: {device: ios-sim-a}            # 仅供人和启动工具参考，解释器不使用
   bob:
     endpoint: http://127.0.0.1:8802
@@ -131,7 +135,7 @@ reference := '$' name ( '.' (字段名 | 数字下标) )*                  # 如
 
 - 引用即对变量表做 path 寻址（与现有 AutoMode `_dig` 同语义）；路径不存在返回 null，**不报错**。
 - 比较宽松模式：跨类型 `==` 为 false；`null == null` 为 true；`>`/`<` 仅数字与字符串各自内部有效，跨类型为 false。宽松失败记入日志，不中断。
-- 保留字引用：`$agents` 为内置变量（各 agent 会话信息，如 `$agents.bob.userId`，来自握手 info），解释器自己的元数据，不属于业务。
+- 保留字引用：`$agents` 为内置变量（`$agents.<role>` 为该 agent 的 env 文件内容，如 `$agents.bob.accounts.0.userId`），解释器自己的元数据，不属于业务。
 
 ### 4.4 变量与作用域
 
@@ -159,7 +163,7 @@ reference := '$' name ( '.' (字段名 | 数字下标) )*                  # 如
 
 `wait_event` 语义（防错过的关键设计）：
 
-1. 解释器为每个 agent 维护一个事件游标（agent session 建立后从 `firstAvailableSeq` 起算）。
+1. 解释器为每个 agent 维护一个事件游标（自流程启动起从 0 起算，持续轮询缓存全部事件）。
 2. `wait_event` 执行时**先查游标之后的已有缓存事件**，未命中再等待新事件，直到匹配或超时——事件先到、wait 后到也不会错过（对应 phase-control §8 "回调先到、之后才 waitEvent" 故障路径）。
 3. `match` 是字段值匹配 map（值可为表达式，与 §4.3 同一套求值）；**每次事件尝试匹配时重新求值**（延迟求值）。引用的变量尚不存在 → 视为不匹配、继续等。这解决了并行分支竞态：bob 的分支开始等消息时，alice 建群的结果 `$group` 可能还没产生，延迟求值保证 match 最终能引用到。
 4. 匹配成功：绑定事件 payload 到 `as`，游标推进到该事件之后。
@@ -187,13 +191,14 @@ reference := '$' name ( '.' (字段名 | 数字下标) )*                  # 如
   - 全局：`defaults.skipOnFailedDeps: true`（默认开）；
   - 步骤级：`cmd` 步骤上的同名字段覆盖全局（设 `false` 时按求值语义执行，引用失败来源的值为 null，用于"明知上游失败仍要看实际行为"的探测场景）。
   - `wait_event` 的 `match` 引用失败变量不触发跳过（延迟求值天然兼容，见 §6）。
-- 报告：`testing/reports/<run-id>/flow-report.json`。逐步骤记录 `{kind, agent, cmd/event, status, durationMs, envelope 摘要, evidence: {fromSeq, toSeq}}`，末尾汇总 `{total, passed, failed, timeout, skipped}`。断言细节（expect 匹配过程）在 agent 侧证据中，报告只引用区间。
+- 报告：`testing/reports/<run-id>/flow-report.json`。逐步骤记录 `{kind, agent, cmd/event, status, durationMs, result（含 expectMatched、checks 明细、api、unusedInputs）, evidence: {fromSeq, toSeq}}`，末尾汇总 `{total, passed, failed, timeout, skipped}`。expect 判定在宿主（§9），checks 逐项明细直接进报告。
 
-## 9. 命令注册与查找（决策落地）
+## 9. 命令注册、查找与判定（决策落地，2026-11-05 下午更新）
 
-- YAML 中 `cmd: <id>` 只写命令 id；执行时到**目标 agent 绑定的设备脚本**中查找该 id 的定义（phase-control："命令只能选择绑定脚本中的阶段"）。
-- 命令 JSON 保持设备脚本规范定义的格式（现阶段即现有 step 形状 `{api, params, expect}` 的组装），解释器不校验其内部结构。
-- 唯一的静态检查：流程加载时校验每个 `cmd` 的 id 在目标 agent 脚本中存在、`agent` 名已声明、`wait_event` 的 `agent` 已声明——这是拼写防护，不是格式理解。
+- YAML 中 `cmd: <id>` 只写命令 id；**宿主**在目标 agent 的设备脚本中查找该 id 的 step（`{api, params, expect}`），解析引用后把完整内容派发给 agent——agent 不接触设备脚本（协议 v2）。控制流（多步组合）是 YAML 的职责，叶子保持原子粒度，这也是协议简化的前提。
+- 设备脚本沿用现有形状 `{init?, login?, steps: [...]}`：顶层 init/login 块仅供 AutoMode 直跑路径使用；HTTP 模式下 init/login 是 steps 中的普通 step（如 `{"id":"login","api":"ChatClient.loginWithToken","params":{"userId":"$config.accounts.0.id",...}}`），解释器**无保留命令 id**，保持通用性——`ChatClient.init` 的监听注册特例在 agent 侧（App 内，业务知识归位）。
+- **expect 判定在解释器内**（`lib/expect.dart`，自 example 移植）：拿 step 的 expect 对照返回信封，规则与 AutoMode 一致（缺省即断言 success；success/errorCode/checks；非 sdk failureKind 不通过）。判定失败 → 该步 `failed` + onFail；但 API 成功的数据仍可被下游引用（stepData 的 ok 只看 API success，AutoMode 语义）。
+- 静态检查（流程加载时，拼写防护而非格式理解）：每个 `cmd` 的 id 在目标 agent 脚本 steps 中存在且 `api` 非空；step id 唯一；expect 块结构合法（未知字段/非法 checks 拒绝）；`agent` 名已声明；`env` 文件可解析。
 - 命令定义放设备脚本（而非全局命令库）：同一命令在不同设备/角色上参数不同，按 agent 就近定义最自然。全局共享库若将来有需求再议。
 
 ## 10. 第一版范围
@@ -281,14 +286,15 @@ steps:
 ```text
 tool/flow_runner/            # 纯 Dart package，无 Flutter 依赖，便于日后独立成库
   bin/flow_runner.dart       # CLI：flow_runner run <flow.yaml>
-  lib/ast.dart               # 流程 AST 节点与步骤定义
-  lib/parser.dart            # YAML → AST（含静态检查：id 存在性、agent 存在性）
+  lib/ast.dart               # 流程 AST、步骤定义、DeviceScript 命令库
+  lib/parser.dart            # YAML → AST；加载设备脚本/env；静态检查
   lib/expr.dart              # 表达式解析与求值（含 path 寻址）
-  lib/interp.dart            # 解释执行：步骤调度、parallel 协程、barrier、onFail
-  lib/agent_client.dart      # AgentClient 抽象与信封定义
-  lib/http_agent_client.dart # HTTP 客户端：session / commands / events 轮询与游标
+  lib/expect.dart            # expect 判定器（自 example 移植，宿主侧判断）
+  lib/interp.dart            # 解释执行：查库派发、引用替换、并行/barrier、onFail
+  lib/agent_client.dart      # AgentClient 抽象与信封定义（协议 v2）
+  lib/http_agent_client.dart # HTTP 客户端：info / commands / events 轮询与游标
   lib/report.dart            # JSON 报告
-  test/                      # 解释器单测：用假 agent（MockAgentClient）覆盖控制流语义
+  test/                      # 解释器单测：MockAgent 覆盖控制流与判定语义
 ```
 
 关键实现依赖：`yaml` 包（解析）、`dart:io`（HTTP）。并发用 async/await + `Future.wait`/`Completer`，无需 isolate。
@@ -299,8 +305,9 @@ tool/flow_runner/            # 纯 Dart package，无 Flutter 依赖，便于日
 
 - **设备启动边界**：模拟器 / app / 端口转发由外部脚本负责，解释器只连接已就绪的 agent endpoint。
 - **目录组织**：`testing/flows/<name>.yaml` + `testing/flows/scripts/<actor>_device.json`，报告 `testing/reports/<run-id>/`。
-- **失败跳过语义**：对齐 AutoMode 的依赖失败跳过，`skipOnFailedDeps` 全局默认 + 步骤级覆盖、局部优先（§8）。
+- **失败跳过语义**：对齐 AutoMode 的依赖失败跳过，`skipOnFailedDeps` 全局默认 + 步骤级覆盖、局部优先（§8）。v0.2 起覆盖两个来源：流程变量（inputs 引用失败 `as` 绑定）与设备脚本引用（params 引用失败 `$step.<id>`），两者级联一致。
 - **事件命名**：`wait_event` 的 `event` 字段直接使用 SDK 事件处理器方法名（如 `onMessageReceived`、`onMessageReadReceipts`）；agent 侧事件流的 payload 携带该名，解释器只做字符串匹配。
+- **协议 v2（2026-11-05 下午定论）**：命令自带 step 内容（`{api, params}`），宿主侧查库、解析引用并做 expect 判定；agent 为哑执行器，不接触设备脚本；会话绑定取消（见 phase-control §10 演进记录）。理由：宿主本来就要读脚本做静态检查，"绑定 + stage 引用"造成两份脚本状态与重复的解析/跳过逻辑；判断角色归宿主后，`blocked` 状态随依赖跳过统一到宿主而删除。
 
 约束（长期有效）：
 

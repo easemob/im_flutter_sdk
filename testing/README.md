@@ -8,6 +8,7 @@
 - [实施计划](../docs/plan/2026-11-04-example-testing-plan.md) — P1–P7 任务清单与依赖
 - [控制流解释器规格](../docs/spec/2026-11-05-flow-interpreter-spec.md) — 多设备 YAML 流程语言与宿主运行器
 - [HTTP 控制协议](spec/2026-11-04-phase-control.md) — 设备 agent 会话、命令与事件接口
+- 子设计文档（第一阶段剩余工作，可独立执行验收）：[设备 Agent HTTP 服务](spec/2026-11-05-agent-service.md)（P4 核心）；设备批量管理 / 单设备用例迁移 / 多设备用例 / 第一阶段验收 待补
 - [覆盖映射](spec/2026-11-04-coverage.md) — 旧 30 步脚本到新用例的去向
 - [HTTP 方案审查记录](spec/2026-11-04-http-review.md) — 历史审查背景
 - [现有 example 使用说明](../im_flutter_sdk/example/README.md) · [环境准备流程](../CONTRIBUTING.md)

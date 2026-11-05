@@ -191,9 +191,11 @@ $head
       scriptFile = File(
           '${Directory.systemTemp.path}/flow_runner_test_${DateTime.now().millisecondsSinceEpoch}.json')
         ..writeAsStringSync(jsonEncode({
-          'stages': {
-            'known_cmd': {'api': 'ChatManager.sendMessage'},
-          }
+          'init': {'appKey': 'k'},
+          'steps': [
+            {'id': 'known_cmd', 'api': 'ChatManager.sendMessage', 'params': {}},
+            {'id': 'other_cmd', 'api': 'ChatManager.loadMessage'},
+          ]
         }));
     });
 
@@ -208,8 +210,13 @@ steps:
     agent: a1
 ''';
 
-    test('known cmd id passes', () {
-      expect(() => parseFlow(yamlFor('known_cmd')), returnsNormally);
+    test('known cmd id passes and the library is loaded', () {
+      final spec = parseFlow(yamlFor('known_cmd'));
+      expect(spec.scripts['a1']!.stepsById.keys,
+          allOf(contains('known_cmd'), contains('other_cmd')));
+      expect(spec.scripts['a1']!.stepsById['known_cmd']!['api'],
+          'ChatManager.sendMessage');
+      expect(spec.scripts['a1']!.init, isNotNull);
     });
 
     test('unknown cmd id is rejected with a hint', () {
@@ -233,6 +240,118 @@ steps:
     agent: a1
 '''),
           throwsA(isA<FlowParseError>()));
+    });
+  });
+
+  group('script and env loading', () {
+    late Directory tmp;
+
+    setUp(() {
+      tmp = Directory.systemTemp.createTempSync('flow_runner_load_');
+    });
+
+    tearDown(() => tmp.deleteSync(recursive: true));
+
+    test(r'env file loads into spec.envs (the $config / $agents source)',
+        () async {
+      final script = File('${tmp.path}/s.json')
+        ..writeAsStringSync(jsonEncode({
+          'steps': [
+            {'id': 'x', 'api': 'A.x', 'params': {}}
+          ]
+        }));
+      final env = File('${tmp.path}/env.json')
+        ..writeAsStringSync(jsonEncode({
+          'appKey': 'k1',
+          'accounts': [
+            {'id': 'u1', 'token': 't1'}
+          ]
+        }));
+      final spec = parseFlow('''
+name: t
+agents:
+  a1: {endpoint: 'http://127.0.0.1:8801', script: '${script.path}', env: '${env.path}'}
+steps: []
+''');
+      expect(spec.envs['a1']!['appKey'], 'k1');
+      expect((spec.envs['a1']!['accounts'] as List).first['id'], 'u1');
+    });
+
+    test('missing env file is rejected', () {
+      final script = File('${tmp.path}/s.json')
+        ..writeAsStringSync(jsonEncode({
+          'steps': [
+            {'id': 'x', 'api': 'A.x', 'params': {}}
+          ]
+        }));
+      expect(
+          () => parseFlow('''
+name: t
+agents:
+  a1: {endpoint: 'http://127.0.0.1:8801', script: '${script.path}', env: '${tmp.path}/missing.json'}
+steps: []
+'''),
+          throwsA(isA<FlowParseError>()));
+    });
+
+    test('duplicate step ids are rejected', () {
+      final script = File('${tmp.path}/s.json')
+        ..writeAsStringSync(jsonEncode({
+          'steps': [
+            {'id': 'x', 'api': 'A.x', 'params': {}},
+            {'id': 'x', 'api': 'A.y', 'params': {}},
+          ]
+        }));
+      expect(
+          () => parseFlow('''
+name: t
+agents:
+  a1: {endpoint: 'http://127.0.0.1:8801', script: '${script.path}'}
+steps: []
+'''),
+          throwsA(isA<FlowParseError>().having(
+              (e) => e.toString(), 'message', contains('duplicate step id'))));
+    });
+
+    test('malformed expect blocks are rejected statically', () {
+      for (final bad in [
+        {'expect': {'sucess': true}}, // typo'd field
+        {'expect': {'checks': []}},
+        {'expect': {'checks': [{'path': 'x', 'equals': 1, 'gte': 2}]}},
+        {'expect': {'checks': [{'path': 'x', 'wat': 1}]}},
+      ]) {
+        final script = File('${tmp.path}/s.json')
+          ..writeAsStringSync(jsonEncode({
+            'steps': [
+              {'id': 'x', 'api': 'A.x', 'params': {}, ...bad},
+            ]
+          }));
+        expect(
+            () => parseFlow('''
+name: t
+agents:
+  a1: {endpoint: 'http://127.0.0.1:8801', script: '${script.path}'}
+steps: []
+'''),
+            throwsA(isA<FlowParseError>()));
+      }
+    });
+
+    test('steps without id are allowed but not referencable', () {
+      final script = File('${tmp.path}/s.json')
+        ..writeAsStringSync(jsonEncode({
+          'steps': [
+            {'api': 'A.noId', 'params': {}},
+            {'id': 'x', 'api': 'A.x', 'params': {}},
+          ]
+        }));
+      final spec = parseFlow('''
+name: t
+agents:
+  a1: {endpoint: 'http://127.0.0.1:8801', script: '${script.path}'}
+steps: []
+''');
+      expect(spec.scripts['a1']!.stepsById.keys, ['x']);
     });
   });
 }

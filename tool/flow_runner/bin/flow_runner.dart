@@ -45,19 +45,10 @@ Future<void> main(List<String> argv) async {
   final runId =
       spec.runId ?? 'flow-${DateTime.now().toIso8601String().replaceAll(RegExp(r'[:.]'), '-')}';
 
-  // Build clients + bind sessions.
+  // Build clients. Device scripts and envs are loaded by the parser
+  // (spec.scripts / spec.envs); commands carry full step content (v2).
   final clients = <String, AgentClient>{};
-  final scripts = <String, Map<String, Object?>>{};
   for (final agent in spec.agents.values) {
-    if (agent.scriptPath.isNotEmpty) {
-      try {
-        scripts[agent.name] = Map<String, Object?>.from(
-            jsonDecode(File(agent.scriptPath).readAsStringSync()) as Map);
-      } catch (e) {
-        stderr.writeln('failed to load script for ${agent.name}: $e');
-        exit(65);
-      }
-    }
     clients[agent.name] = HttpAgentClient(
       endpoint: agent.endpoint,
       actor: agent.name,
@@ -67,7 +58,7 @@ Future<void> main(List<String> argv) async {
   final report = ReportCollector()
     ..flowName = spec.name
     ..runId = runId;
-  final exitCode = await _run(spec, runId, clients, scripts, report,
+  final exitCode = await _run(spec, runId, clients, report,
       results.option('report-dir')!);
 
   for (final c in clients.values) {
@@ -80,19 +71,14 @@ Future<int> _run(
   FlowSpec spec,
   String runId,
   Map<String, AgentClient> clients,
-  Map<String, Map<String, Object?>> scripts,
   ReportCollector report,
   String reportDir,
 ) async {
-  // Handshake + bind sessions (best effort per agent; a failure here is
-  // a setup error, not a test failure).
-  final agentInfo = <String, Map<String, Object?>>{};
+  // Reachability handshake (best effort per agent; a failure here is a
+  // setup error, not a test failure).
   for (final e in clients.entries) {
     try {
-      agentInfo[e.key] = await e.value.info();
-      if (scripts[e.key] != null) {
-        await e.value.bindSession(runId, scripts[e.key]!);
-      }
+      await e.value.info();
     } catch (err) {
       stderr.writeln('agent "${e.key}" not reachable at startup: $err');
       return 69; // EX_UNAVAILABLE
@@ -103,7 +89,6 @@ Future<int> _run(
     spec: spec,
     agents: clients,
     report: report,
-    agentInfo: agentInfo,
   );
   Object? interpError;
   try {

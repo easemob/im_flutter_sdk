@@ -1,14 +1,16 @@
-/// HTTP AgentClient implementing the phase-control protocol
+/// HTTP AgentClient implementing the phase-control protocol v2
 /// (testing/spec/2026-11-04-phase-control.md):
 ///
-/// - `GET  /v1/info`
-/// - `POST /v1/session`            bind script
-/// - `POST /v1/commands`           submit, then poll `GET /v1/commands/<id>`
-/// - `GET  /v1/events?afterSeq=`   incremental events
-/// - `POST /v1/session/finish`
+/// - `GET  /v1/info`                 handshake (version/platform/instanceId)
+/// - `POST /v1/commands`             submit {commandId, api, params, timeoutMs}
+///                                   -> 202, then poll to terminal state
+/// - `GET  /v1/commands/<commandId>` poll until done | timeout
+/// - `GET  /v1/events?afterSeq=`     incremental events (seq cursor)
+/// - `POST /v1/finish`               close the control service
 ///
-/// The interpreter never sees any of this; only Envelope/AgentEvent cross
-/// the boundary.
+/// No session binding: the command carries everything; the agent returns
+/// the actual result envelope and the host judges. The interpreter never
+/// sees any of this; only Envelope/AgentEvent cross the boundary.
 library;
 
 import 'dart:async';
@@ -26,13 +28,14 @@ class HttpAgentClient implements AgentClient {
   });
 
   final Uri endpoint;
+
+  /// Role name, used for command ids and diagnostics only.
   final String actor;
 
   /// Optional control pairing credential (Authorization: Bearer).
   final String? token;
   final int pollIntervalMs;
 
-  late final String sessionId = '$actor-${DateTime.now().millisecondsSinceEpoch}';
   int _cmdSeq = 0;
   final HttpClient _http = HttpClient();
 
@@ -65,30 +68,19 @@ class HttpAgentClient implements AgentClient {
   Future<Map<String, Object?>> info() => _request('GET', '/v1/info', null);
 
   @override
-  Future<void> bindSession(String runId, Map<String, Object?> scriptJson) =>
-      _request('POST', '/v1/session', {
-        'sessionId': sessionId,
-        'runId': runId,
-        'actor': actor,
-        'script': scriptJson,
-      }).then((_) {});
-
-  @override
   Future<Envelope> runCommand(
-      String cmdId, Map<String, Object?> inputs, int timeoutMs) async {
-    final commandId = 'cmd-${++_cmdSeq}';
+      String api, Map<String, Object?> params, int timeoutMs) async {
+    final commandId = '$actor-${++_cmdSeq}';
     await _request('POST', '/v1/commands', {
-      'sessionId': sessionId,
       'commandId': commandId,
-      'actor': actor,
-      'stage': cmdId,
-      'inputs': inputs,
+      'api': api,
+      'params': params,
       'timeoutMs': timeoutMs,
     });
 
     // Poll until a terminal state. No client-side deadline here: the
     // interpreter's timeout guard converts overruns into timeout envelopes.
-    const terminal = {'passed', 'failed', 'blocked', 'skipped'};
+    const terminal = {'done', 'timeout'};
     while (true) {
       await Future.delayed(Duration(milliseconds: pollIntervalMs));
       final res = await _request('GET', '/v1/commands/$commandId', null);
@@ -121,9 +113,8 @@ class HttpAgentClient implements AgentClient {
   }
 
   @override
-  Future<void> finish() => _request('POST', '/v1/session/finish', {
-        'sessionId': sessionId,
-      }).then((_) {});
+  Future<void> finish() =>
+      _request('POST', '/v1/finish', const {}).then((_) {});
 
   void close() => _http.close();
 }
