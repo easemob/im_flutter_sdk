@@ -19,6 +19,7 @@ testing_v2/
 ├── scripts/              # 账号数据生成脚本，纳入 Git
 ├── data/                 # YAML 流程、JSON 命令等静态数据
 ├── docs/                 # 项目文档
+├── troubleshooting/      # 故障排查与修复记录，纳入 Git
 ├── tmp/                  # 运行临时数据，Git 忽略
 ├── build/                # 构建产物与缓存，Git 忽略
 └── reports/              # 每次运行的报告，Git 忽略
