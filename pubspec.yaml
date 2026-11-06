@@ -1,0 +1,11 @@
+name: im_testing_workspace
+description: >-
+  Package-resolution workspace for testing tools under testing/tools/ that
+  need to reuse the flow_runner package and YAML parsing. Not published.
+publish_to: none
+environment:
+  sdk: ^3.5.0
+dependencies:
+  flow_runner:
+    path: tool/flow_runner
+  yaml: any

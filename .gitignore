@@ -208,3 +208,6 @@ $RECYCLE.BIN/
 .worktree/
 pubspec_overrides.yaml
 .codex/
+
+# Dart workspace (testing tools)
+.dart_tool/

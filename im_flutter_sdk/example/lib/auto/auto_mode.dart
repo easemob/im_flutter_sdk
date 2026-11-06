@@ -159,6 +159,8 @@ class AutoMode {
         _resolveRefs(initJson, null, config, const {}) as Map,
       );
       await ChatClient.getInstance.init(emOptionsFromJson(resolved));
+      // SDK contract: open the native event gate (see agentInitHandler note).
+      await ChatClient.getInstance.startCallback();
       registerAllListeners();
       SdkState.instance.markInitialized(jsonEncode(resolved));
       store.log('api.ChatClient.init', {'success': true});

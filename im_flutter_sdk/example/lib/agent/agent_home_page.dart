@@ -185,6 +185,10 @@ Future<Map<String, dynamic>> agentInitHandler(Map<String, dynamic> params) async
     final initJson = chatOptionsJsonFromEnvironment(config);
     initJson.addAll(overrides);
     await ChatClient.getInstance.init(emOptionsFromJson(initJson));
+    // Required by the SDK contract: without startCallback() the native side
+    // gates contact/group/chatroom events behind ListenerHandle and never
+    // dispatches them to Dart.
+    await ChatClient.getInstance.startCallback();
     registerAllListeners();
     SdkState.instance.markInitialized(jsonEncode(initJson));
     return {'success': true};

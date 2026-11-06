@@ -234,9 +234,13 @@ class Interpreter {
 
     // Host-side judgment: evaluate the step's expect against the actual
     // envelope (absent expect => assert success, AutoMode semantics).
+    // Expect operands resolve references first ($config/$agents/$inputs),
+    // so assertions like "list contains the other role's userId" stay
+    // account-agnostic.
     final expectOutcome = envelope.status == 'timeout'
         ? const ExpectOutcome(matched: false)
-        : evaluateExpect(envelope.toMap(), step['expect']);
+        : evaluateExpect(
+            envelope.toMap(), _resolveExpect(step['expect'], s.agent, inputs));
 
     // "Step ok" follows the EXPECTATION, not the envelope success flag: a
     // reverse case (expected errorCode hit) is a successful step whose
@@ -279,6 +283,35 @@ class Interpreter {
     _stepData.putIfAbsent(agent, () => {})[stepId] = _StepOutcome(ok, data);
   }
 
+  /// Resolve `$`-references inside an expect block (deep copy; strings go
+  /// through the same substitution as params). Keeps assertions such as
+  /// `contains: $agents.bob.userId` account-agnostic.
+  Object? _resolveExpect(
+      Object? v, String agent, Map<String, Object?> inputs) {
+    if (v is Map) {
+      return {
+        for (final e in v.entries)
+          e.key.toString(): _resolveExpect(e.value, agent, inputs),
+      };
+    }
+    if (v is List) {
+      return [
+        for (final item in v) _resolveExpect(item, agent, inputs),
+      ];
+    }
+    if (v is String &&
+        (v == r'$config' ||
+            v.startsWith(r'$config.') ||
+            v == r'$agents' ||
+            v.startsWith(r'$agents.') ||
+            v == r'$inputs' ||
+            v.startsWith(r'$inputs.'))) {
+      return _resolveParams(
+          v, agent, inputs, <String>{}, <String>{});
+    }
+    return v;
+  }
+
   /// Substitute parameter references. Records step ids whose data was
   /// requested but whose producer failed (skip signal) and which input
   /// slots were actually used (unused-inputs typo guard).
@@ -299,6 +332,24 @@ class Interpreter {
       if (v == r'$config') return spec.envs[agent] ?? const {};
       if (v.startsWith(r'$config.')) {
         return _dig(spec.envs[agent] ?? const {}, v.substring(8));
+      }
+      if (v == r'$agents' || v.startsWith(r'$agents.')) {
+        // Host-side cross-role data: `$agents.<role>.<path>` resolves
+        // against the target role's env (e.g. the other device's
+        // `$agents.bob.userId`). Undeclared roles resolve to null.
+        // '$agents.' is 8 chars — must strip the dot too, otherwise the
+        // first path segment becomes '' and every lookup resolves to null.
+        final path = v.substring(8);
+        if (path.isEmpty) {
+          return {
+            for (final role in spec.agents.keys)
+              role: spec.envs[role] ?? const <String, Object?>{},
+          };
+        }
+        final role = path.split('.').first;
+        final roleEnv = spec.envs[role] ?? const <String, Object?>{};
+        final rest = path.length > role.length ? path.substring(role.length + 1) : '';
+        return rest.isEmpty ? roleEnv : _dig(roleEnv, rest);
       }
       if (v == r'$prev') return _prev[agent];
       if (v.startsWith(r'$prev.')) return _dig(_prev[agent], v.substring(6));

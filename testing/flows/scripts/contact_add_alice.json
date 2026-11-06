@@ -1,0 +1,30 @@
+{
+  "steps": [
+    {
+      "id": "init",
+      "api": "ChatClient.init",
+      "params": { "config": "$config.initConfig", "overrides": {} }
+    },
+    {
+      "id": "login",
+      "api": "ChatClient.loginWithToken",
+      "params": { "userId": "$config.userId", "token": "$config.userToken" }
+    },
+    {
+      "id": "add_contact",
+      "api": "ChatContactManager.addContact",
+      "params": { "userId": "$inputs.peerId", "reason": "$inputs.reason" }
+    },
+    {
+      "id": "get_contact_ids",
+      "api": "ChatContactManager.getAllContactIds",
+      "params": {},
+      "expect": {
+        "success": true,
+        "checks": [
+          { "path": "", "contains": "$agents.bob.userId" }
+        ]
+      }
+    }
+  ]
+}

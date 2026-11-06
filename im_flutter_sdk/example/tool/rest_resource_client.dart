@@ -36,6 +36,57 @@ final class RestResourceClient {
   final String _appToken;
   final HttpClient _httpClient;
 
+  /// Contact relations (precondition management for multi-device flows).
+  ///
+  /// The REST endpoints operate server-side and bypass the invite flow:
+  /// POST adds the pair as friends directly, which is what precondition
+  /// setup needs (the SDK-level invite/accept path is the system under
+  /// test and must not be used to arrange fixtures).
+
+  /// Friend userIds of [userId] (server-side view).
+  Future<List<String>> fetchContactIds(String userId) async {
+    final response = await _request(
+      'GET',
+      'users/${Uri.encodeComponent(userId)}/contacts/users',
+    );
+    final data = response['data'];
+    if (data is! List) {
+      throw FormatException('GET contacts of "$userId": data must be a list');
+    }
+    return [for (final e in data) if (e is String) e];
+  }
+
+  /// Whether [a] and [b] are friends (checked from a's server-side view).
+  Future<bool> areContacts(String a, String b) async {
+    final ids = await fetchContactIds(a);
+    return ids.contains(b);
+  }
+
+  /// Make [a] and [b] friends (idempotent: already-friends is a no-op).
+  Future<void> addContacts(String a, String b) async {
+    if (await areContacts(a, b)) return;
+    await _request(
+      'POST',
+      'users/${Uri.encodeComponent(a)}/contacts/users/'
+      '${Uri.encodeComponent(b)}',
+    );
+  }
+
+  /// Make [a] and [b] non-friends both ways (idempotent).
+  Future<void> removeContacts(String a, String b) async {
+    await _removeContactOneWay(a, b);
+    await _removeContactOneWay(b, a);
+  }
+
+  Future<void> _removeContactOneWay(String owner, String friend) async {
+    if (!await areContacts(owner, friend)) return;
+    await _request(
+      'DELETE',
+      'users/${Uri.encodeComponent(owner)}/contacts/users/'
+      '${Uri.encodeComponent(friend)}',
+    );
+  }
+
   Future<String> createGroup({
     required String owner,
     required String name,

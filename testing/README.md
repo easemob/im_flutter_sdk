@@ -4,6 +4,9 @@
 
 ## 文档索引
 
+- [多设备协同测试排查手册](../docs/refs/2026-11-05-multi-device-test-troubleshooting.md) — 按环境、数据、设备、控制通道、解释器、用例、SDK、服务端及日志分类定位；含取证命令与交接模板
+- [联系人流程不稳定原因排查](../docs/refs/2026-11-05-contact-flow-instability-investigation.md) — 原生消息时间线、解释器定向复现与剩余投递问题
+- [双 iOS 联系人用例验证与排查](../docs/refs/2026-11-05-dual-ios-contact-add-verification.md) — 三轮实际命令、失败证据、复验与未解决边界
 - [测试体系规格](../docs/spec/2026-11-04-example-testing-spec.md) — 生命周期、目录、脚本规范、失败铁律（2026-11-05 重写）
 - [实施计划](../docs/plan/2026-11-04-example-testing-plan.md) — P1–P7 任务清单与依赖
 - [控制流解释器规格](../docs/spec/2026-11-05-flow-interpreter-spec.md) — 多设备 YAML 流程语言与宿主运行器

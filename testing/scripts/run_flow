@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # 多设备执行入口（example-testing-spec §3.4）。
-# 用法: run_flow --flow <name.yaml> [--extra "<flow_runner args>"] [--no-verify]
+# 用法: run_flow --flow <name.yaml> [--run-id <id>] [--extra "<flow_runner args>"] [--no-verify]
 #   --flow          流程 YAML（testing/flows/ 下的文件名或绝对路径）
-#   --extra         透传给 flow_runner 的附加参数（如 --run-id、--report-dir）
+#   --run-id        对应 setup_devices 的 run-id；自动注入 --agents-file
+#                   testing/tmp/<run-id>/agents.json（动态凭据+账号绑定）
+#   --extra         透传给 flow_runner 的附加参数（如 --report-dir）
 #   --no-verify     跳过 cmd id 静态校验（草稿期）
-# 前置: setup_devices --mode control 已完成（agents.json 就绪）。
+# 前置: setup_devices --mode control --run-id <id> 已完成（agents.json 就绪）。
 # 产物: testing/reports/<run-id>/flow-report.json
 # Shell: bash >= 3.2（macOS 系统自带即满足；勿用 sh/zsh 直接执行，见 _compat.sh）
 . "$(dirname "$0")/_compat.sh" || exit 64
@@ -12,11 +14,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 FLOW=""
+RUN_ID=""
 EXTRA=""
 NOVERIFY=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --flow) FLOW="${2:?}"; shift 2 ;;
+    --run-id) RUN_ID="${2:?}"; shift 2 ;;
     --extra) EXTRA="${2:?}"; shift 2 ;;
     --no-verify) NOVERIFY=1; shift ;;
     -h|--help) grep '^# ' "$0" | sed 's/^# //'; exit 0 ;;
@@ -28,7 +32,21 @@ done
 FLOW_PATH="$FLOW"
 [[ -f "$FLOW_PATH" ]] || FLOW_PATH="$ROOT/testing/flows/$FLOW"
 
+# 用例前置（声明在 YAML 的 preconditions:，REST 通道执行，blocked ≠ 用例失败）
+if command grep -qE '^preconditions:' "$FLOW_PATH"; then
+  [[ -n "$RUN_ID" ]] || { echo "run_flow: YAML 声明了 preconditions，需要 --run-id（账号绑定来自 agents.json）" >&2; exit 64; }
+  (cd "$ROOT" && dart run testing/tools/data/preconditions.dart "$FLOW_PATH" --run-id "$RUN_ID") || {
+    echo "run_flow: preconditions blocked —— 前置状态无法就绪，流程不执行（环境问题，非用例失败）" >&2
+    exit 65
+  }
+fi
+
 ARGS=(run "$FLOW_PATH" --report-dir testing/reports)
+if [[ -n "$RUN_ID" ]]; then
+  AGENTS_FILE="$ROOT/testing/tmp/$RUN_ID/agents.json"
+  [[ -f "$AGENTS_FILE" ]] || { echo "run_flow: $AGENTS_FILE 不存在——先跑 setup_devices --mode control --run-id $RUN_ID" >&2; exit 65; }
+  ARGS+=(--agents-file "$AGENTS_FILE")
+fi
 [[ $NOVERIFY -eq 1 ]] && ARGS+=(--no-verify-commands)
 [[ -n "$EXTRA" ]] && read -r -a EXTRA_ARGS <<< "$EXTRA" && ARGS+=("${EXTRA_ARGS[@]}")
 

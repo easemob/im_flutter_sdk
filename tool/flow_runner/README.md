@@ -9,11 +9,13 @@
 ```bash
 # 前置：各设备上的 app（agent HTTP 服务）已启动并监听（见 phase-control 协议）
 dart run tool/flow_runner/bin/flow_runner.dart run testing/flows/<name>.yaml \
-    [--report-dir testing/reports] [--no-verify-commands]
+    [--report-dir testing/reports] [--agents-file testing/tmp/<run-id>/agents.json] \
+    [--no-verify-commands]
 ```
 
 - 退出码：0 = 全部通过；1 = 存在 failed/timeout；64/65/69/70 = 用法/脚本/agent 不可达/解释器错误。
 - 报告输出至 `<report-dir>/<runId>/flow-report.json`。
+- `--agents-file`：注入**运行时动态凭据**（agent 端口/token 每次启动随机、账号绑定每次 run 不同），按角色名覆盖 YAML 声明。通常传 `setup_devices` 产出的 `testing/tmp/<run-id>/agents.json`，见下文「agents-file 注入」。
 - `--no-verify-commands`：跳过“cmd id 必须存在于设备脚本”的静态检查（草稿期用）。
 
 ## 三个输入文件
@@ -37,6 +39,7 @@ dart run tool/flow_runner/bin/flow_runner.dart run testing/flows/<name>.yaml \
 | `runId` | 否 | 报告目录名；缺省自动生成 |
 | `flowTimeoutMs` | 否 | 整流程兜底超时（`while` 防死循环） |
 | `agents` | 是 | 非空映射，角色 → 声明 |
+| `preconditions` | 否 | 用例前置声明（见下），解释器只校验不执行 |
 | `defaults` | 否 | 全局默认（见下） |
 | `steps` | 是 | 步骤列表 |
 
@@ -45,7 +48,8 @@ dart run tool/flow_runner/bin/flow_runner.dart run testing/flows/<name>.yaml \
 ```yaml
 agents:
   alice:
-    endpoint: 'http://127.0.0.1:8801'   # 必填，须带 scheme
+    endpoint: 'http://127.0.0.1:8801'   # 可省（agents-file 提供时）；带了 scheme 校验
+    token: 'pairing-token'             # 可选：Bearer 鉴权；agents-file 可覆盖
     script: scripts/alice_device.json   # 命令库路径（开静态校验时必填）
     env: env/alice_env.json             # 可选，$config / $agents.alice 数据源
     meta: {udid: 'SIM-A'}               # 可选，给人/外部工具看的自由信息
@@ -54,6 +58,39 @@ agents:
 角色名即后续步骤里 `agent:` 的取值，也是 `$agents.<role>` 的键。
 
 > **路径基准**：`script:` / `env:` 的相对路径相对**本 YAML 文件所在目录**解析（流程与伴生文件可整体移动）；绝对路径原样使用。
+
+### agents-file 注入（--agents-file）
+
+agent 的端口与配对 token 每次 app 启动都是随机的（多设备共享宿主网络栈，固定端口会冲突），账号绑定每次 run 也不同。静态 YAML 写不下这些值，由 `--agents-file` 在运行时注入：
+
+```json
+[
+  {"role": "alice", "endpoint": "http://127.0.0.1:62001", "token": "…",
+   "instanceId": "…", "udid": "…", "env": {"userId": "zuoyu01", "userToken": "…"}},
+  {"role": "bob",   "endpoint": "http://127.0.0.1:62002", "token": "…"}
+]
+```
+
+语义（按角色名与 YAML `agents` 匹配，角色名是静态流程与动态运行之间的连接键）：
+
+| 字段 | 优先级 | 说明 |
+|---|---|---|
+| `endpoint` | **file > YAML**，两者皆空报错 | agent 控制服务地址 |
+| `token` | file > YAML | Bearer 配对凭据（agent 侧 `401` 即此值不对） |
+| `env` | 浅合并：file > env 文件 | 注入 `$config`（如 `userId`/`userToken`，供设备脚本 params 引用） |
+
+- file 中出现 YAML 未声明的角色 → **忽略并提示**（agents-file 描述的是本次 run 启动的全部设备，单个 flow 可能只用子集；角色名拼错会表现为该角色缺 endpoint 的报错）；YAML 中无对应 entry 的角色保持原声明。
+- 该文件通常由 `setup_devices` 产出（`testing/tmp/<run-id>/agents.json`），编排脚本 `run_flow --run-id` 会自动带上。
+
+### preconditions（用例前置声明）
+
+```yaml
+preconditions:
+  - contacts: {between: [alice, bob], state: none}    # 保证两角色非好友
+  - contacts: {between: [alice, bob], state: friends} # 保证两角色已是好友
+```
+
+**分工边界**：flow_runner 只做**解析与形状校验**（kind 白名单、between 恰两个已声明角色、state 枚举），并把声明写进 flow-report.json 作追溯；**执行不在解释器**——前置是业务状态编排，由 testing 侧工具（`testing/tools/data/preconditions.dart`，REST 通道）完成，编排脚本 `run_flow` 在流程启动前调用。前置失败是 **blocked（环境问题）**，不算用例失败。
 
 ### defaults
 

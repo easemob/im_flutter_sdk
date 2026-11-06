@@ -7,6 +7,8 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
+import 'ast.dart';
+
 class StepRecord {
   StepRecord({
     required this.kind,
@@ -59,6 +61,8 @@ class ReportCollector {
         'runId': runId,
         'startedAt': startedAt.toIso8601String(),
         'finishedAt': DateTime.now().toIso8601String(),
+        if (preconditions.isNotEmpty)
+          'preconditions': [for (final p in preconditions) p.toJson()],
         'steps': [for (final r in records) r.toJson()],
         'summary': {
           'total': records.length,
@@ -69,6 +73,10 @@ class ReportCollector {
   /// Attach after construction (kept out of StepRecord for brevity).
   String flowName = '';
   String runId = '';
+
+  /// Declared flow preconditions (traceability only; execution results
+  /// live in the testing-side preconditions report).
+  List<PreconditionDecl> preconditions = const [];
 
   Future<void> writeToFile(String path) async {
     final file = File(path);

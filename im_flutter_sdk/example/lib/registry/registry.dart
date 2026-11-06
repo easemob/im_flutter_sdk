@@ -2,6 +2,7 @@ import 'api_entry.dart';
 import 'apis/chat_apis.dart';
 import 'apis/chat_thread_apis.dart';
 import 'apis/client_apis.dart';
+import 'apis/contact_apis.dart';
 import 'apis/group_apis.dart';
 import 'apis/presence_apis.dart';
 import 'apis/user_info_apis.dart';
@@ -11,6 +12,7 @@ final List<ApiEntry> apiRegistry = [
   ...clientApis,
   ...chatApis,
   ...chatThreadApis,
+  ...contactApis,
   ...groupApis,
   ...presenceApis,
   ...userInfoApis,

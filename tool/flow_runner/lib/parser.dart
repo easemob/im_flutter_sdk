@@ -68,14 +68,18 @@ FlowSpec parseFlow(String yamlText,
     final role = entry.key as String;
     final a = entry.value;
     if (a is! YamlMap) throw FlowParseError('agent "$role" must be a mapping');
+    // endpoint is optional in the YAML: a runtime --agents-file may supply
+    // it (per-run dynamic credentials). The bin layer enforces that one of
+    // the two sources provides it.
+    Uri? endpoint;
     final endpointStr = a['endpoint'] as String?;
-    if (endpointStr == null) {
-      throw FlowParseError('agent "$role" missing "endpoint"');
+    if (endpointStr != null) {
+      endpoint = Uri.tryParse(endpointStr);
+      if (endpoint == null || !endpoint.hasScheme) {
+        throw FlowParseError('agent "$role" has invalid endpoint "$endpointStr"');
+      }
     }
-    final endpoint = Uri.tryParse(endpointStr);
-    if (endpoint == null || !endpoint.hasScheme) {
-      throw FlowParseError('agent "$role" has invalid endpoint "$endpointStr"');
-    }
+    final token = a['token'] as String?;
     final scriptPath = a['script'] as String? ?? '';
     if (options.verifyCommandIds && scriptPath.isEmpty) {
       throw FlowParseError(
@@ -85,6 +89,7 @@ FlowSpec parseFlow(String yamlText,
     agents[role] = AgentDecl(
       name: role,
       endpoint: endpoint,
+      token: token,
       scriptPath: _resolvePath(scriptPath, sourcePath),
       envPath: envPath == null ? null : _resolvePath(envPath, sourcePath),
       meta: _plain(a['meta']) as Map<String, Object?>? ?? const {},
@@ -92,6 +97,8 @@ FlowSpec parseFlow(String yamlText,
   }
 
   final defaults = _parseDefaults(doc['defaults']);
+
+  final preconditions = _parsePreconditions(doc['preconditions'], agents);
 
   final stepsNode = doc['steps'];
   if (stepsNode is! YamlList) throw FlowParseError('"steps" must be a list');
@@ -104,6 +111,7 @@ FlowSpec parseFlow(String yamlText,
     agents: agents,
     defaults: defaults,
     steps: steps,
+    preconditions: preconditions,
   );
 
   _checkAgents(spec);
@@ -124,6 +132,63 @@ Defaults _parseDefaults(Object? node) {
         : OnFail.parse(node['onFail'] as String),
     skipOnFailedDeps: node['skipOnFailedDeps'] as bool? ?? true,
   );
+}
+
+/// Parse the optional top-level `preconditions` declaration list.
+///
+/// Shape (each entry is a single-key mapping):
+///
+///     preconditions:
+///       - contacts: {between: [alice, bob], state: none}
+///
+/// The interpreter only parses/validates and reports these; execution is
+/// the testing orchestration's job (flow_runner stays business-agnostic).
+List<PreconditionDecl> _parsePreconditions(
+    Object? node, Map<String, AgentDecl> agents) {
+  if (node == null) return const [];
+  if (node is! YamlList) {
+    throw FlowParseError('"preconditions" must be a list');
+  }
+  final result = <PreconditionDecl>[];
+  for (final raw in node) {
+    if (raw is! YamlMap || raw.length != 1) {
+      throw FlowParseError(
+          'each precondition must be a single-key mapping (e.g. '
+          '{contacts: {between: [a, b], state: none}})');
+    }
+    final kind = raw.keys.first as String;
+    final value = raw[kind];
+    if (kind != 'contacts') {
+      throw FlowParseError('unknown precondition kind "$kind" '
+          '(supported: contacts)');
+    }
+    if (value is! YamlMap) {
+      throw FlowParseError('precondition "$kind" value must be a mapping');
+    }
+    final between = _plain(value['between']);
+    if (between is! List || between.length != 2 ||
+        between.any((r) => r is! String)) {
+      throw FlowParseError(
+          'precondition "contacts.between" must be exactly two role names');
+    }
+    for (final role in between) {
+      if (!agents.containsKey(role)) {
+        throw FlowParseError(
+            'precondition references undeclared agent "$role"');
+      }
+    }
+    final state = value['state'] as String?;
+    if (state != 'none' && state != 'friends') {
+      throw FlowParseError(
+          'precondition "contacts.state" must be none|friends, got "$state"');
+    }
+    result.add(PreconditionDecl(
+      kind: kind,
+      between: List<String>.from(between),
+      state: state!,
+    ));
+  }
+  return result;
 }
 
 /// Parse a step list. [inParallel] guards the no-nesting rule.
@@ -448,6 +513,102 @@ void _verifyCommandIds(FlowSpec spec) {
   }
 
   check(spec.steps);
+}
+
+// ---------------------------------------------------------------------------
+// Runtime agents-file injection (--agents-file)
+// ---------------------------------------------------------------------------
+
+/// Apply a runtime agents-file (per-run dynamic credentials) onto a parsed
+/// flow spec, in place.
+///
+/// File format (produced by `testing/scripts/setup_devices`):
+///
+///     [ {"role": "alice", "endpoint": "http://127.0.0.1:62001",
+///        "token": "…", "env": {"userId": "…", "userToken": "…"}, …} ]
+///
+/// Semantics per role (matched by name against the YAML `agents` mapping):
+/// - `endpoint`: file wins over the YAML declaration; error if neither has one.
+/// - `token`: file wins over the YAML declaration.
+/// - `env`: shallow-merged over the agent's env-file content (file wins).
+/// - YAML roles with no matching entry keep their declarations untouched
+///   (endpoints that came from the YAML remain valid).
+/// - File entries whose role is not declared in the YAML are **ignored**:
+///   an agents-file describes every started device, while a single flow may
+///   use only a subset. The skipped role names are returned so the caller
+///   can surface a hint (a typo'd role shows up as the declared agent
+///   missing its endpoint instead).
+Set<String> applyAgentsFile(FlowSpec spec, String jsonText,
+    {String? sourcePath}) {
+  final Object? json;
+  try {
+    json = jsonDecode(jsonText);
+  } catch (e) {
+    throw FlowParseError('agents-file is not valid JSON: $e');
+  }
+  final List entries;
+  if (json is List) {
+    entries = json;
+  } else if (json is Map && json['agents'] is List) {
+    entries = json['agents'] as List;
+  } else {
+    throw FlowParseError(
+        'agents-file must be a JSON array (or {"agents": [...]})');
+  }
+
+  final skipped = <String>{};
+  for (final raw in entries) {
+    if (raw is! Map) {
+      throw FlowParseError('agents-file: every entry must be an object');
+    }
+    final role = raw['role'];
+    if (role is! String || role.isEmpty) {
+      throw FlowParseError('agents-file: entry missing "role"');
+    }
+    final decl = spec.agents[role];
+    if (decl == null) {
+      // The file describes every started device; the flow may use a subset.
+      skipped.add(role);
+      continue;
+    }
+
+    Uri? endpoint = decl.endpoint;
+    final endpointStr = raw['endpoint'] as String?;
+    if (endpointStr != null && endpointStr.isNotEmpty) {
+      endpoint = Uri.tryParse(endpointStr);
+      if (endpoint == null || !endpoint.hasScheme) {
+        throw FlowParseError(
+            'agents-file role "$role" has invalid endpoint "$endpointStr"');
+      }
+    }
+    if (endpoint == null) {
+      throw FlowParseError(
+          'agent "$role" has no endpoint (neither in the YAML nor in the '
+          'agents-file)');
+    }
+    final token = (raw['token'] as String?) ?? decl.token;
+
+    final fileEnv = raw['env'];
+    if (fileEnv != null && fileEnv is! Map) {
+      throw FlowParseError('agents-file role "$role": "env" must be an object');
+    }
+    final mergedEnv = <String, Object?>{}
+      ..addAll(spec.envs[role] ?? const {})
+      ..addAll(fileEnv == null
+          ? const <String, Object?>{}
+          : Map<String, Object?>.from(fileEnv));
+
+    spec.agents[role] = AgentDecl(
+      name: decl.name,
+      endpoint: endpoint,
+      token: token,
+      scriptPath: decl.scriptPath,
+      envPath: decl.envPath,
+      meta: decl.meta,
+    );
+    if (mergedEnv.isNotEmpty) spec.envs[role] = mergedEnv;
+  }
+  return skipped;
 }
 
 // ---------------------------------------------------------------------------

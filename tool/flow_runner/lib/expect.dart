@@ -12,8 +12,8 @@
 /// - absent/empty expect => assert `success == true`;
 /// - `success` asserts the envelope success flag;
 /// - `errorCode` asserts a failed call with that SDK error code;
-/// - `checks` assert fields of `data` via path addressing and five
-///   operators: equals | gte | notEmpty | containsItem | length;
+/// - `checks` assert fields of `data` via path addressing and six
+///   operators: equals | gte | notEmpty | containsItem | contains | length;
 /// - non-sdk failureKind or error.code <= 0 never passes (tool/timeout
 ///   faults are not SDK verdicts).
 library;
@@ -77,7 +77,7 @@ bool _matchesFields(Object? value, Map fields) =>
 // ---------------------------------------------------------------------------
 
 const _expectFields = {'success', 'errorCode', 'checks'};
-const _checkOperators = {'equals', 'gte', 'notEmpty', 'containsItem', 'length'};
+const _checkOperators = {'equals', 'gte', 'notEmpty', 'containsItem', 'contains', 'length'};
 
 /// Validate an expect block; throws [FormatException] on unknown fields or
 /// malformed checks. Called by the parser on every step of a loaded script.
@@ -108,6 +108,7 @@ void validateExpect(Object? raw, {required String where}) {
     final operand = check[op];
     if ((op == 'notEmpty' && operand != true) ||
         (op == 'containsItem' && (operand is! Map || operand.isEmpty)) ||
+        (op == 'contains' && operand is! String) ||
         (op == 'length' && (operand is! int || operand < 0)) ||
         (op == 'gte' && operand is! num)) {
       throw FormatException('$where: invalid $op operand in $check');
@@ -138,6 +139,12 @@ List<Map<String, Object?>> evaluateChecks(Object? data, List checks) {
       } else if (check.containsKey('containsItem')) {
         passed = actual is List &&
             actual.any((item) => _matchesFields(item, check['containsItem'] as Map));
+      } else if (check.containsKey('contains')) {
+        // String containment for strings, item equality for lists
+        // (e.g. a List<String> of contact ids contains the peer's id).
+        final needle = check['contains'];
+        passed = (actual is String && needle is String && actual.contains(needle)) ||
+            (actual is List && actual.any((item) => jsonEquals(item, needle)));
       } else if (check.containsKey('length')) {
         passed = actual is List && actual.length == check['length'];
       }

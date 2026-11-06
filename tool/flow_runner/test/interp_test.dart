@@ -161,6 +161,51 @@ steps:
       expect(seenMember, 'u-b-99');
     });
 
+    test(r'script params/expect resolve $agents.<role>.<path> directly', () async {
+      // Regression: _resolveParams stripped '$agents' (7 chars) but left the
+      // dot, so the first path segment became '' and every nested lookup
+      // resolved to null. This path is used by device-script params and
+      // expect checks (unlike YAML inputs, which use the env resolver).
+      final h = Harness(
+        '''
+name: t
+agents:
+  a: {endpoint: 'http://127.0.0.1:8801', script: ''}
+  b: {endpoint: 'http://127.0.0.1:8802', script: ''}
+steps:
+  - cmd: poke
+    agent: a
+''',
+        scripts: {
+          'a': {
+            'poke': {
+              'api': 'X.poke',
+              'params': {'peer': r'$agents.b.userId'},
+              'expect': {
+                'success': true,
+                'checks': [
+                  {'path': 'ids', 'contains': r'$agents.b.userId'},
+                ],
+              },
+            },
+          },
+        },
+        envs: {
+          'b': {'userId': 'u-b-1'},
+        },
+      );
+      String? seenPeer;
+      h.mocks['a']!.on('X.poke', (params) async {
+        seenPeer = params['peer'] as String?;
+        return const Envelope(
+            success: true, status: 'ok', data: {'ids': ['u-b-1']});
+      });
+      await h.run();
+      expect(seenPeer, 'u-b-1');
+      expect(
+          h.summary(), {'passed': 1, 'failed': 0, 'timeout': 0, 'skipped': 0});
+    });
+
     test(r'params resolve $config, $step and $prev references', () async {
       final h = Harness('''
 name: t

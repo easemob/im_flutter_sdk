@@ -354,4 +354,198 @@ steps: []
       expect(spec.scripts['a1']!.stepsById.keys, ['x']);
     });
   });
+
+  group('preconditions declaration', () {
+    test('parses contacts conditions with role and state validation', () {
+      final spec = parse('''
+name: t
+agents:
+  a1: {script: ''}
+  a2: {script: ''}
+preconditions:
+  - contacts: {between: [a1, a2], state: none}
+steps: []
+''');
+      expect(spec.preconditions.length, 1);
+      final p = spec.preconditions.single;
+      expect(p.kind, 'contacts');
+      expect(p.between, ['a1', 'a2']);
+      expect(p.state, 'none');
+    });
+
+    test('absent preconditions is fine', () {
+      final spec = parse('$head  - set: {x: 1}\n');
+      expect(spec.preconditions, isEmpty);
+    });
+
+    test('rejects bad shapes, states and undeclared roles', () {
+      expect(
+          () => parse('''
+name: t
+agents:
+  a1: {script: ''}
+preconditions: {contacts: x}
+steps: []
+'''),
+          throwsA(isA<FlowParseError>()));
+      expect(
+          () => parse('''
+name: t
+agents:
+  a1: {script: ''}
+preconditions:
+  - contacts: {between: [a1], state: none}
+steps: []
+'''),
+          throwsA(isA<FlowParseError>()));
+      expect(
+          () => parse('''
+name: t
+agents:
+  a1: {script: ''}
+preconditions:
+  - contacts: {between: [a1, ghost], state: none}
+steps: []
+'''),
+          throwsA(isA<FlowParseError>()));
+      expect(
+          () => parse('''
+name: t
+agents:
+  a1: {script: ''}
+  a2: {script: ''}
+preconditions:
+  - contacts: {between: [a1, a2], state: maybe}
+steps: []
+'''),
+          throwsA(isA<FlowParseError>()));
+      expect(
+          () => parse('''
+name: t
+agents:
+  a1: {script: ''}
+preconditions:
+  - bananas: {between: [a1, a1], state: none}
+steps: []
+'''),
+          throwsA(isA<FlowParseError>()));
+    });
+  });
+
+  group('agents-file injection', () {
+    test('endpoint and token from file override the YAML declaration', () {
+      final spec = parse('''
+name: t
+agents:
+  a1: {endpoint: 'http://127.0.0.1:8801', token: 'yaml-token', script: ''}
+steps: []
+''');
+      applyAgentsFile(spec, jsonEncode([
+        {
+          'role': 'a1',
+          'endpoint': 'http://127.0.0.1:9999',
+          'token': 'file-token',
+        }
+      ]));
+      expect(spec.agents['a1']!.endpoint.toString(), 'http://127.0.0.1:9999');
+      expect(spec.agents['a1']!.token, 'file-token');
+    });
+
+    test('YAML may omit endpoint when the file supplies it', () {
+      final spec = parse('''
+name: t
+agents:
+  a1: {script: ''}
+steps: []
+''');
+      applyAgentsFile(spec, jsonEncode([
+        {'role': 'a1', 'endpoint': 'http://127.0.0.1:7001'}
+      ]));
+      expect(spec.agents['a1']!.endpoint!.port, 7001);
+      expect(spec.agents['a1']!.token, isNull);
+    });
+
+    test('env shallow-merges over the env-file content (file wins)', () {
+      final tmp = Directory.systemTemp.createTempSync('fr_agentsfile');
+      addTearDown(() => tmp.deleteSync(recursive: true));
+      final envFile = File('${tmp.path}/env.json')
+        ..writeAsStringSync(jsonEncode({
+          'userId': 'from-file-static',
+          'appkey': 'static-key',
+        }));
+      final spec = parseFlow('''
+name: t
+agents:
+  a1: {endpoint: 'http://127.0.0.1:8801', script: '', env: '${envFile.path}'}
+steps: []
+''', options: const ParseOptions(verifyCommandIds: false));
+      applyAgentsFile(spec, jsonEncode([
+        {
+          'role': 'a1',
+          'endpoint': 'http://127.0.0.1:7002',
+          'env': {'userId': 'zuoyu01', 'userToken': 't1'},
+        }
+      ]));
+      expect(spec.envs['a1'],
+          {'userId': 'zuoyu01', 'appkey': 'static-key', 'userToken': 't1'});
+    });
+
+    test('entries for undeclared roles are skipped and reported', () {
+      final spec = parse("name: t\nagents:\n  a1: {script: ''}\nsteps: []");
+      final skipped = applyAgentsFile(spec, jsonEncode([
+        {'role': 'a1', 'endpoint': 'http://127.0.0.1:7001'},
+        {'role': 'nope', 'endpoint': 'http://127.0.0.1:7002'},
+      ]));
+      // The flow uses a device subset: extra entries are ignored, but the
+      // declared agent still gets its credentials.
+      expect(skipped, ['nope']);
+      expect(spec.agents['a1']!.endpoint!.port, 7001);
+    });
+
+    test('no endpoint from either source is rejected', () {
+      final spec = parse('''
+name: t
+agents:
+  a1: {script: ''}
+steps: []
+''');
+      expect(() => applyAgentsFile(spec, '[{"role": "a1"}]'),
+          throwsA(isA<FlowParseError>()));
+      // Empty endpoint string counts as absent.
+      expect(
+          () => applyAgentsFile(
+              spec, '[{"role": "a1", "endpoint": ""}]'),
+          throwsA(isA<FlowParseError>()));
+    });
+
+    test('roles without a file entry keep their declaration', () {
+      final spec = parse("name: t\nagents:\n  a1: {endpoint: 'http://127.0.0.1:8801', script: ''}\nsteps: []");
+      final skipped = applyAgentsFile(spec, '[]');
+      expect(skipped, isEmpty);
+      expect(spec.agents['a1']!.endpoint.toString(), 'http://127.0.0.1:8801');
+    });
+
+    test('accepts the {"agents": [...]} wrapper form', () {
+      final spec = parse('''
+name: t
+agents:
+  a1: {script: ''}
+steps: []
+''');
+      applyAgentsFile(spec, jsonEncode({
+        'agents': [
+          {'role': 'a1', 'endpoint': 'http://127.0.0.1:7003'}
+        ]
+      }));
+      expect(spec.agents['a1']!.endpoint!.port, 7003);
+    });
+
+    test('invalid JSON and non-array roots are rejected', () {
+      final spec = parse("name: t\nagents:\n  a1: {endpoint: 'http://127.0.0.1:8801', script: ''}\nsteps: []");
+      expect(() => applyAgentsFile(spec, 'not json'),
+          throwsA(isA<FlowParseError>()));
+      expect(() => applyAgentsFile(spec, '{"role": "a1"}'),
+          throwsA(isA<FlowParseError>()));
+    });
+  });
 }

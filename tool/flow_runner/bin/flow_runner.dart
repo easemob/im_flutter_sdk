@@ -2,10 +2,12 @@
 ///
 /// Usage:
 ///   dart run tool/flow_runner/bin/flow_runner.dart run <flow.yaml> \
-///       [--report-dir <dir>] [--no-verify-commands]
+///       [--report-dir <dir>] [--agents-file <agents.json>] [--no-verify-commands]
 ///
 /// Device startup (simulators, app install, port forwarding) is out of
-/// scope: agents must already be listening on their endpoints.
+/// scope: agents must already be listening on their endpoints. Dynamic
+/// per-run credentials (random ports, pairing tokens, account bindings)
+/// come from an agents-file produced by the device-setup orchestration.
 library;
 
 import 'dart:convert';
@@ -21,28 +23,70 @@ import 'package:flow_runner/parser.dart';
 import 'package:flow_runner/report.dart';
 
 Future<void> main(List<String> argv) async {
-  final parser = ArgParser()
-    ..addCommand('run')
+  final parser = ArgParser();
+  // Options must live on the *command* parser: with package:args everything
+  // after "run" is parsed by the command's own ArgParser, so top-level
+  // options would never see --report-dir etc. (and command rest args would
+  // be read from the wrong results object).
+  final runCmd = parser.addCommand('run');
+  runCmd
     ..addOption('report-dir',
         defaultsTo: 'testing/reports', help: 'directory for run reports')
+    ..addOption('agents-file',
+        help: 'runtime agent credentials JSON (role/endpoint/token/env); '
+            'overrides the YAML agent declarations (dynamic ports/tokens)')
     ..addFlag('no-verify-commands',
         negatable: false,
         help: 'skip the cmd-id-in-script static check (for drafts)');
   final results = parser.parse(argv);
 
-  if (results.command?.name != 'run' || results.rest.length != 1) {
-    stderr.writeln(
-        'usage: flow_runner run <flow.yaml> [--report-dir <dir>] [--no-verify-commands]');
+  final cmd = results.command;
+  if (cmd?.name != 'run' || cmd!.rest.length != 1) {
+    stderr.writeln('usage: flow_runner run <flow.yaml> '
+        '[--report-dir <dir>] [--agents-file <agents.json>] '
+        '[--no-verify-commands]');
     exit(64);
   }
-  final flowPath = results.rest.first;
+  final flowPath = cmd.rest.first;
 
   final spec = parseFlow(
     File(flowPath).readAsStringSync(),
     options:
-        ParseOptions(verifyCommandIds: !results.flag('no-verify-commands')),
+        ParseOptions(verifyCommandIds: !cmd.flag('no-verify-commands')),
     sourcePath: flowPath,
   );
+
+  final agentsFilePath = cmd.option('agents-file');
+  if (agentsFilePath != null) {
+    String jsonText;
+    try {
+      jsonText = File(agentsFilePath).readAsStringSync();
+    } on FileSystemException catch (e) {
+      stderr.writeln('agents-file not readable: $e');
+      exit(64);
+    }
+    try {
+      final skipped = applyAgentsFile(spec, jsonText, sourcePath: agentsFilePath);
+      if (skipped.isNotEmpty) {
+        stderr.writeln('agents-file roles not declared in this flow '
+            '(ignored, the flow uses a device subset): ${skipped.join(', ')}');
+      }
+    } on FlowParseError catch (e) {
+      stderr.writeln('$e');
+      exit(64);
+    }
+  }
+
+  // Every agent must end up with an endpoint (YAML and/or agents-file).
+  for (final agent in spec.agents.values) {
+    if (agent.endpoint == null) {
+      stderr.writeln('agent "${agent.name}" has no endpoint: declare one in '
+          'the YAML or provide it via --agents-file (a role-name typo '
+          'between flow and agents-file also lands here)');
+      exit(64);
+    }
+  }
+
   final runId =
       spec.runId ?? 'flow-${DateTime.now().toIso8601String().replaceAll(RegExp(r'[:.]'), '-')}';
 
@@ -51,16 +95,18 @@ Future<void> main(List<String> argv) async {
   final clients = <String, AgentClient>{};
   for (final agent in spec.agents.values) {
     clients[agent.name] = HttpAgentClient(
-      endpoint: agent.endpoint,
+      endpoint: agent.endpoint!,
       actor: agent.name,
+      token: agent.token,
     );
   }
 
   final report = ReportCollector()
     ..flowName = spec.name
-    ..runId = runId;
+    ..runId = runId
+    ..preconditions = spec.preconditions;
   final exitCode = await _run(spec, runId, clients, report,
-      results.option('report-dir')!);
+      cmd.option('report-dir')!);
 
   for (final c in clients.values) {
     if (c is HttpAgentClient) c.close();

@@ -1,0 +1,66 @@
+# 首个多设备用例：添加联系人为好友（正向闭环）。
+#
+# 场景: alice(zuoyu01, 设备1) 向 bob(zuoyu02, 设备2) 发好友邀请，bob 收到
+#       onContactInvited 后接受，alice 收到 onFriendRequestAccepted，双方
+#       本地好友列表包含对方。
+#
+# 前置(preconditions): alice 与 bob 非好友（REST 通道重置，见
+#       testing/tools/data/preconditions.dart；重置不产生 SDK 事件）。
+#
+# 时序约束（2026-11-05 语义实测结论）:
+#   - 离线邀请不补推：对端未登录时发出的邀请，对端登录后不会收到
+#     onContactInvited —— 因此 barrier both-online 保证 bob 登录完成后
+#     alice 才发邀请。
+#   - 操作方自己不收联系人事件（删除/邀请事件只发给对端）。
+#
+# 平台: 任意组合（agents-file 注入动态凭据，YAML 本身平台无关）。
+name: contact-add-positive
+preconditions:
+  - contacts: {between: [alice, bob], state: none}
+agents:
+  alice: {script: scripts/contact_add_alice.json}
+  bob: {script: scripts/contact_add_bob.json}
+defaults:
+  stepTimeoutMs: 20000
+steps:
+  - parallel:
+      alice_line:
+        - cmd: init
+          agent: alice
+          onFail: abort_flow
+        - cmd: login
+          agent: alice
+          onFail: abort_flow
+        - barrier: both-online
+        - cmd: add_contact
+          agent: alice
+          inputs: {peerId: '$agents.bob.userId', reason: 'contact-add-positive flow'}
+          onFail: abort_flow
+        - wait_event: onFriendRequestAccepted
+          agent: alice
+          match: {userId: '$agents.bob.userId'}
+          as: accepted_evt
+          onFail: abort_flow
+        - cmd: get_contact_ids
+          agent: alice
+          as: alice_ids
+      bob_line:
+        - cmd: init
+          agent: bob
+          onFail: abort_flow
+        - cmd: login
+          agent: bob
+          onFail: abort_flow
+        - barrier: both-online
+        - wait_event: onContactInvited
+          agent: bob
+          match: {userId: '$agents.alice.userId'}
+          as: invited_evt
+          onFail: abort_flow
+        - cmd: accept_invitation
+          agent: bob
+          inputs: {peerId: '$agents.alice.userId'}
+          onFail: abort_flow
+        - cmd: get_contact_ids
+          agent: bob
+          as: bob_ids

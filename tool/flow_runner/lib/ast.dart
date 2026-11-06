@@ -39,21 +39,27 @@ class Defaults {
 }
 
 /// One agent role declared in the flow. `endpoint` is where the agent's HTTP
-/// control service listens; `scriptPath` points at the device-script JSON
-/// command library (loaded by the parser); `envPath` optionally points at a
-/// runtime environment JSON (the `$config` / `$agents.<role>` source).
+/// control service listens — it may be omitted in the YAML when a runtime
+/// `--agents-file` supplies it (per-run dynamic credentials; the bin layer
+/// enforces that one of the two provides it). `token` is the optional control
+/// pairing credential (Authorization: Bearer), also overridable by the
+/// agents-file. `scriptPath` points at the device-script JSON command library
+/// (loaded by the parser); `envPath` optionally points at a runtime
+/// environment JSON (the `$config` / `$agents.<role>` source).
 /// `meta` is free-form info for humans and external tools.
 class AgentDecl {
   AgentDecl({
     required this.name,
-    required this.endpoint,
+    this.endpoint,
+    this.token,
     required this.scriptPath,
     this.envPath,
     this.meta = const {},
   });
 
   final String name;
-  final Uri endpoint;
+  final Uri? endpoint;
+  final String? token;
   final String scriptPath;
   final String? envPath;
   final Map<String, Object?> meta;
@@ -78,6 +84,33 @@ class DeviceScript {
   final Map<String, Map<String, Object?>> stepsById;
 }
 
+/// One declared flow precondition.
+///
+/// Parsed and shape-validated but **never executed** by the interpreter:
+/// preconditions arrange business state (friend relations, group
+/// membership, ...) and their execution belongs to the testing
+/// orchestration, not to this business-agnostic tool. The declaration
+/// travels into the run report for traceability.
+class PreconditionDecl {
+  const PreconditionDecl({
+    required this.kind,
+    required this.between,
+    required this.state,
+  });
+
+  /// Currently only 'contacts' (friend relation between two roles).
+  final String kind;
+
+  /// The two agent role names the condition applies to.
+  final List<String> between;
+
+  /// 'none' | 'friends' (contacts kind).
+  final String state;
+
+  Map<String, Object?> toJson() =>
+      {kind: {'between': List.of(between), 'state': state}};
+}
+
 /// The parsed flow document.
 ///
 /// `scripts`/`envs` are populated by the parser (or injected directly by
@@ -90,6 +123,7 @@ class FlowSpec {
     required this.agents,
     required this.defaults,
     required this.steps,
+    this.preconditions = const [],
   })  : scripts = {},
         envs = {};
 
@@ -99,6 +133,7 @@ class FlowSpec {
   final Map<String, AgentDecl> agents;
   final Defaults defaults;
   final List<Step> steps;
+  final List<PreconditionDecl> preconditions;
 
   final Map<String, DeviceScript> scripts;
   final Map<String, Map<String, Object?>> envs;

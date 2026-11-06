@@ -36,6 +36,8 @@ class _InitPageState extends State<InitPage> {
     try {
       final json = jsonDecode(_controller.text) as Map<String, dynamic>;
       await ChatClient.getInstance.init(emOptionsFromJson(json));
+      // SDK contract: open the native event gate (see agentInitHandler note).
+      await ChatClient.getInstance.startCallback();
       registerAllListeners();
       LogStore.instance.log('api.ChatClient.init', {'success': true});
       SdkState.instance.markInitialized(_controller.text);
