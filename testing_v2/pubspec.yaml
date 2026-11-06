@@ -1,0 +1,7 @@
+name: testing_v2
+description: Dart tools for example single-device and multi-device testing.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.3.0

@@ -1,0 +1,7 @@
+/.dart_tool/
+/build/
+/tmp/
+/reports/
+
+# Generated account data. The generator belongs in scripts/.
+/lib/accounts.g.dart
