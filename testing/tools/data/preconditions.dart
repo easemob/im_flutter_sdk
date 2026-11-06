@@ -16,8 +16,7 @@ import '../../../im_flutter_sdk/example/tool/rest_resource_client.dart';
 ///   dart run testing/tools/data/preconditions.dart <flow.yaml> \
 ///       --run-id <id> [--report-dir testing/reports/<runId>]
 ///
-/// - Agent roles resolve to accounts via testing/tmp/<run-id>/agents.json
-///   (produced by setup_devices; the role's env.userId is the account).
+/// - Agent roles resolve via role-data.json, produced without any device setup.
 /// - REST contacts ops bypass the invite flow and are idempotent
 ///   (probe-verified 2026-11-05); the SDK invite/accept path stays the
 ///   system under test.
@@ -48,11 +47,11 @@ Future<void> main(List<String> args) async {
     return;
   }
 
-  // Role -> account via the run's agents.json.
-  final agentsFile = File('${root.path}/testing/tmp/$runId/agents.json');
+  // Role -> account via data preparation, independent of physical devices.
+  final agentsFile = File('${root.path}/testing/tmp/$runId/role-data.json');
   if (runId == null || !await agentsFile.exists()) {
     stderr.writeln('preconditions: $agentsFile not found '
-        '(run setup_devices --mode control --run-id <id> first)');
+        '(run prepare_data --flow <yaml> --run-id <id> first)');
     exitCode = 65;
     return;
   }
@@ -90,7 +89,7 @@ Future<void> main(List<String> args) async {
         results.add({
           'declared': p.toJson(),
           'status': 'blocked',
-          'reason': 'no account bound for roles ${p.between} in agents.json',
+          'reason': 'no account bound for roles ${p.between} in role-data.json',
         });
         blocked = true;
         continue;

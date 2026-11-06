@@ -76,7 +76,8 @@ FlowSpec parseFlow(String yamlText,
     if (endpointStr != null) {
       endpoint = Uri.tryParse(endpointStr);
       if (endpoint == null || !endpoint.hasScheme) {
-        throw FlowParseError('agent "$role" has invalid endpoint "$endpointStr"');
+        throw FlowParseError(
+            'agent "$role" has invalid endpoint "$endpointStr"');
       }
     }
     final token = a['token'] as String?;
@@ -166,7 +167,8 @@ List<PreconditionDecl> _parsePreconditions(
       throw FlowParseError('precondition "$kind" value must be a mapping');
     }
     final between = _plain(value['between']);
-    if (between is! List || between.length != 2 ||
+    if (between is! List ||
+        between.length != 2 ||
         between.any((r) => r is! String)) {
       throw FlowParseError(
           'precondition "contacts.between" must be exactly two role names');
@@ -203,6 +205,8 @@ List<Step> parseSteps(YamlList node, {bool inParallel = false}) {
 Step _parseStep(Object? raw, {required bool inParallel}) {
   if (raw is! YamlMap) throw FlowParseError('each step must be a mapping');
   if (raw.isEmpty) throw FlowParseError('empty step');
+  final binding = raw['as'];
+  if (binding == 'global') throw FlowParseError('global is a reserved name');
   final kind = raw.keys.first as String;
   final value = raw[kind];
 
@@ -236,6 +240,10 @@ Step _parseStep(Object? raw, {required bool inParallel}) {
         throw FlowParseError('wait_event "$value" missing "agent"');
       }
       final match = _plain(raw['match']);
+      final checks = _plain(raw['checks']);
+      if (checks != null) {
+        validateExpect({'checks': checks}, where: 'wait_event checks');
+      }
       if (match != null && match is! Map<String, Object?>) {
         throw FlowParseError('wait_event "$value" match must be a mapping');
       }
@@ -243,6 +251,7 @@ Step _parseStep(Object? raw, {required bool inParallel}) {
         event: value,
         agent: agent,
         match: match as Map<String, Object?>? ?? const {},
+        checks: checks as List<Object?>? ?? const [],
         as: raw['as'] as String?,
         timeoutMs: raw['timeoutMs'] as int?,
         onFail: raw['onFail'] == null
@@ -287,13 +296,15 @@ Step _parseStep(Object? raw, {required bool inParallel}) {
       return IfStep(
         cond: cond,
         thenSteps: parseSteps(thenNode, inParallel: inParallel),
-        elseSteps:
-            elseNode == null ? const [] : parseSteps(elseNode, inParallel: inParallel),
+        elseSteps: elseNode == null
+            ? const []
+            : parseSteps(elseNode, inParallel: inParallel),
       );
 
     case 'for':
       if (value is! String) throw FlowParseError('for value must be a string');
       final spec = _parseForSpec(value);
+      if (spec.$1 == 'global') throw FlowParseError('global is reserved');
       final doNode = raw['do'];
       if (doNode is! YamlList) throw FlowParseError('for missing "do" list');
       return ForStep(
@@ -305,7 +316,9 @@ Step _parseStep(Object? raw, {required bool inParallel}) {
       );
 
     case 'while':
-      if (value is! String) throw FlowParseError('while value must be a string');
+      if (value is! String) {
+        throw FlowParseError('while value must be a string');
+      }
       final doNode = raw['do'];
       if (doNode is! YamlList) throw FlowParseError('while missing "do" list');
       return WhileStep(
@@ -317,6 +330,10 @@ Step _parseStep(Object? raw, {required bool inParallel}) {
       final assignments = _plain(value);
       if (assignments is! Map<String, Object?>) {
         throw FlowParseError('set value must be a mapping');
+      }
+      if (assignments.keys
+          .any((k) => k == 'global' || k.startsWith('global.'))) {
+        throw FlowParseError('set cannot write global data');
       }
       return SetStep(assignments);
 
@@ -347,8 +364,7 @@ Step _parseStep(Object? raw, {required bool inParallel}) {
     return (varName, null, start, end);
   }
   if (!isRef(source)) {
-    throw FlowParseError(
-        'for source "$source" must be a \$list reference');
+    throw FlowParseError('for source "$source" must be a \$list reference');
   }
   return (varName, source, null, null);
 }
@@ -427,8 +443,7 @@ DeviceScript _loadDeviceScript(AgentDecl agent) {
     throw FlowParseError(
         'agent "${agent.name}" script not found: ${agent.scriptPath}');
   } catch (e) {
-    throw FlowParseError(
-        'agent "${agent.name}" script is not valid JSON: $e');
+    throw FlowParseError('agent "${agent.name}" script is not valid JSON: $e');
   }
   if (json is! Map) {
     throw FlowParseError(
@@ -446,7 +461,9 @@ DeviceScript _loadDeviceScript(AgentDecl agent) {
             'agent "${agent.name}" script: every step must be an object');
       }
       final id = raw['id'];
-      if (id == null) continue; // unreferencable steps are allowed (AutoMode runs them)
+      if (id == null) {
+        continue; // unreferencable steps are allowed (AutoMode runs them)
+      }
       if (id is! String || id.isEmpty) {
         throw FlowParseError(
             'agent "${agent.name}" script: step id must be a non-empty string');
@@ -462,7 +479,8 @@ DeviceScript _loadDeviceScript(AgentDecl agent) {
             'agent "${agent.name}" script: step "$id" missing "api"');
       }
       try {
-        validateExpect(step['expect'], where: 'agent "${agent.name}" step "$id"');
+        validateExpect(step['expect'],
+            where: 'agent "${agent.name}" step "$id"');
       } on FormatException catch (e) {
         throw FlowParseError(e.message);
       }
@@ -470,9 +488,8 @@ DeviceScript _loadDeviceScript(AgentDecl agent) {
     }
   }
 
-  Map<String, Object?>? block(String key) => root[key] is Map
-      ? Map<String, Object?>.from(root[key] as Map)
-      : null;
+  Map<String, Object?>? block(String key) =>
+      root[key] is Map ? Map<String, Object?>.from(root[key] as Map) : null;
   return DeviceScript(
     init: block('init'),
     login: block('login'),

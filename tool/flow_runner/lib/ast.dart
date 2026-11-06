@@ -76,7 +76,8 @@ class AgentDecl {
 /// the AutoMode direct-run path only; under HTTP they are ordinary steps
 /// that the script author declares with ids.
 class DeviceScript {
-  DeviceScript({this.init, this.login, Map<String, Map<String, Object?>>? steps})
+  DeviceScript(
+      {this.init, this.login, Map<String, Map<String, Object?>>? steps})
       : stepsById = steps ?? {};
 
   final Map<String, Object?>? init;
@@ -107,8 +108,9 @@ class PreconditionDecl {
   /// 'none' | 'friends' (contacts kind).
   final String state;
 
-  Map<String, Object?> toJson() =>
-      {kind: {'between': List.of(between), 'state': state}};
+  Map<String, Object?> toJson() => {
+        kind: {'between': List.of(between), 'state': state}
+      };
 }
 
 /// The parsed flow document.
@@ -181,6 +183,7 @@ class WaitEventStep extends Step {
     required this.event,
     required this.agent,
     this.match = const {},
+    this.checks = const [],
     this.as,
     this.timeoutMs,
     this.onFail,
@@ -189,6 +192,7 @@ class WaitEventStep extends Step {
   final String event;
   final String agent;
   final Map<String, Object?> match;
+  final List<Object?> checks;
   final String? as;
   final int? timeoutMs;
   final OnFail? onFail;

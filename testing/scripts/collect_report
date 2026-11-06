@@ -37,7 +37,7 @@ run_dir = sys.argv[1]
 flow = os.path.join(run_dir, 'flow-report.json')
 if os.path.exists(flow):
     d = json.load(open(flow))
-    print('flow:', d.get('flowName'), '| runId:', d.get('runId'))
+    print('flow:', d.get('flow'), '| runId:', d.get('runId'))
     for s in d.get('steps', []):
         mark = {'passed': 'PASS', 'failed': 'FAIL', 'timeout': 'TIME', 'skipped': 'SKIP'}.get(s.get('status'), '?')
         print(f"  [{mark}] {s.get('kind')} {s.get('name')} @ {s.get('agent')} ({s.get('durationMs')}ms) ctx={s.get('context')}")

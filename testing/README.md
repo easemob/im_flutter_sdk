@@ -4,6 +4,8 @@
 
 ## 文档索引
 
+- [测试动态数据与引用规范](docs/2026-11-06-dynamic-data-contract.md) — JSON 数据容器（`steps` 命令与 `data` 准备声明）、设备／账号／业务数据分类、`$global` 引用及生命周期；presence 用例已落地，其他用例保留原入口
+- [Presence 双设备用例与验证](../docs/refs/multi-device-testing/2026-11-06-presence-collaboration-verification.md) — A 订阅 B、B 发布、A 收到；双 iOS 五轮通过，含本轮标识、批量回调反例和整体超时工具修正
 - [多设备协同测试排查手册](../docs/refs/2026-11-05-multi-device-test-troubleshooting.md) — 按环境、数据、设备、控制通道、解释器、用例、SDK、服务端及日志分类定位；含取证命令与交接模板
 - [联系人流程不稳定原因排查](../docs/refs/2026-11-05-contact-flow-instability-investigation.md) — 原生消息时间线、解释器定向复现与剩余投递问题
 - [双 iOS 联系人用例验证与排查](../docs/refs/2026-11-05-dual-ios-contact-add-verification.md) — 三轮实际命令、失败证据、复验与未解决边界
@@ -24,6 +26,8 @@
 
 以下命令从 `5.0.0` 工作树根目录运行：
 
+Presence 协同用例已完成统一数据引用整改，可执行 `bash testing/scripts/run_flow --flow 5.0.0-multi-presence-positive.yaml --platform ios --devices <设备A>,<设备B> --run-id <新ID>`。入口自动准备数据与设备、执行并收集证据；参数和分步排查见 [脚本说明](scripts/README.md)。
+
 ```bash
 make config                    # 生成 testing/config/environment.local.json（首次从旧 example 配置导入）
 make env-gettoken              # 换取 Token 写 example/lib/env.dart
@@ -40,7 +44,7 @@ make auto-compare ANDROID=<run-dir> IOS=<run-dir>                   # 双端结�
 - `tmp/`、`reports/`、本地配置被 Git 忽略。证据归档到 reports 后才可删除对应 tmp；当前尚无自动归档工具，不应删除唯一的资源归属记录。
 - 人工使用保持 `cd im_flutter_sdk/example && flutter run -d <device>`。新增可搜索 API 入口：`loadMessage`、`getJoinedGroups`、`fetchGroupInfoFromServer`、`getCurrentDeviceId`、`isConnected`。
 
-## 当前进度（2026-11-05）
+## 当前进度（2026-11-06）
 
 多设备编排已定由宿主端控制流解释器承担（AI 主／子代理方案废弃，coordination 文档已移除）。
 
@@ -49,11 +53,11 @@ make auto-compare ANDROID=<run-dir> IOS=<run-dir>                   # 双端结�
 | 数据工具（environment / resources 薄入口） | ✅ 可用；本地配置导入、运行环境 JSON、资源归属测试通过 |
 | 单设备断言增强（checks / failureKind / skip） | ✅ 已实现；example flutter test 25/25 |
 | registry 新增 5 个 API 入口 | ✅ 可用（人工与脚本共用） |
-| 控制流解释器 `tool/flow_runner` | ✅ v0.1 实现完成；48 个单测全绿，尚未接真实设备 |
-| 设备 agent（App 内 HTTP 服务） | ❌ 未实现（phase-control 协议已定稿） |
-| 设备批量管理 / 端口转发 | ❌ 未实现（复用 auto_report 能力扩展） |
+| 控制流解释器 `tool/flow_runner` | ✅ 91 项回归通过；支持严格 global 引用、独立结果绑定和事件 checks |
+| 设备 agent（App 内 HTTP 服务） | ✅ 已接双 iOS presence 实测；本次未改 App |
+| 设备批量管理 / 端口转发 | ✅ 原子工具与 setup_devices 可用；设备信息独立于业务数据 |
 | 单设备用例迁移（scripts/5.0.0/single） | ❌ 未开始（覆盖映射已就绪） |
-| 多设备用例（flows/：M2 单聊回执 → M3 群回执 → M1 数据同步） | ❌ 未开始 |
-| 设备验证 | ❌ 未开展 |
+| 多设备用例 | 已有联系人与 presence；presence 完成 global 整改，原规划其他场景待补 |
+| 设备验证 | presence 整改后三轮双 iOS 通过，含角色交换；Android 与人工抽验未在本轮执行 |
 
 本轮基础检查（2026-11-04）：example `flutter test` 25/25；`auto_report --self-test` 通过；数据工具及报告 `dart analyze` 无问题；`FORMAT_BASE_SHA=HEAD bash tool/ci/run_quality.sh` 通过。以上不是第一阶段整体验收。

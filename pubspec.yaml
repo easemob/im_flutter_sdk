@@ -9,3 +9,5 @@ dependencies:
   flow_runner:
     path: tool/flow_runner
   yaml: any
+dev_dependencies:
+  test: ^1.25.0

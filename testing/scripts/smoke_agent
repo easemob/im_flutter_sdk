@@ -52,7 +52,7 @@ SETUP_ARGS=(--platform "$PLATFORM" --mode control --run-id "$RUN_ID")
 [[ -n "$DEVICE" ]] && SETUP_ARGS+=(--devices "$DEVICE")
 "$HERE/setup_devices" "${SETUP_ARGS[@]}"
 
-AGENTS="$ROOT/testing/tmp/$RUN_ID/agents.json"
+AGENTS="$ROOT/testing/tmp/$RUN_ID/devices.json"
 ENV="$ROOT/testing/tmp/$RUN_ID/main/environment.json"
 read -r ENDPOINT TOKEN < <(python3 -c "
 import json
@@ -65,23 +65,23 @@ UDID="$(python3 -c "import json; print(json.load(open('$AGENTS'))[0]['udid'])")"
 r="$(cget /v1/info)";                                         check "info: accepting" '"state":"accepting"' "$r"
 check "info: version 2" '"version":2' "$r"
 
-python3 - "$ENV" > /tmp/smoke-c-init.json <<'PY'
+python3 - "$ENV" > "$ROOT/testing/tmp/$RUN_ID/smoke-c-init.json" <<'PY'
 import json, sys
 env = json.load(open(sys.argv[1]))
 print(json.dumps({'commandId': 'c-init', 'api': 'ChatClient.init',
                   'timeoutMs': 15000, 'params': {'config': env, 'overrides': {}}}))
 PY
-r="$(curl --noproxy '*' -s -X POST -H "$AUTH" -H 'Content-Type: application/json' -d @/tmp/smoke-c-init.json "$B/v1/commands")"
+r="$(curl --noproxy '*' -s -X POST -H "$AUTH" -H 'Content-Type: application/json' -d "@$ROOT/testing/tmp/$RUN_ID/smoke-c-init.json" "$B/v1/commands")"
 check "init: accepted" '"status":"accepted"' "$r"
 r="$(poll c-init)";                                            check "init: done" '"status":"done"' "$r"
 
-python3 - "$ENV" > /tmp/smoke-c-login.json <<'PY'
+python3 - "$ENV" > "$ROOT/testing/tmp/$RUN_ID/smoke-c-login.json" <<'PY'
 import json, sys
 a = json.load(open(sys.argv[1]))['accounts'][0]
 print(json.dumps({'commandId': 'c-login', 'api': 'ChatClient.loginWithToken',
                   'timeoutMs': 15000, 'params': {'userId': a['id'], 'token': a['token']}}))
 PY
-r="$(curl --noproxy '*' -s -X POST -H "$AUTH" -H 'Content-Type: application/json' -d @/tmp/smoke-c-login.json "$B/v1/commands")"
+r="$(curl --noproxy '*' -s -X POST -H "$AUTH" -H 'Content-Type: application/json' -d "@$ROOT/testing/tmp/$RUN_ID/smoke-c-login.json" "$B/v1/commands")"
 check "login: accepted" '"status":"accepted"' "$r"
 r="$(poll c-login)";                                           check "login: done" '"status":"done"' "$r"
 

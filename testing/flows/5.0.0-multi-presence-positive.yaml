@@ -1,0 +1,82 @@
+# Run through testing/scripts/run_flow; data and devices are prepared separately.
+# Business references use the run-scoped global context. Each output binds once.
+name: 5.0.0-multi-presence-positive
+flowTimeoutMs: 120000
+agents:
+  alice: {script: scripts/5.0.0-multi-presence-positive.json}
+  bob: {script: scripts/5.0.0-multi-presence-positive.json}
+defaults:
+  stepTimeoutMs: 20000
+steps:
+  - parallel:
+      alice_login:
+        - cmd: init
+          agent: alice
+          as: global.biz.result.alice_init
+          onFail: abort_all
+        - cmd: login_alice
+          agent: alice
+          as: global.biz.result.alice_login
+          onFail: abort_all
+        - cmd: connected
+          agent: alice
+          as: global.biz.result.alice_connected
+          onFail: abort_all
+      bob_login:
+        - cmd: init
+          agent: bob
+          as: global.biz.result.bob_init
+          onFail: abort_all
+        - cmd: login_bob
+          agent: bob
+          as: global.biz.result.bob_login
+          onFail: abort_all
+        - cmd: connected
+          agent: bob
+          as: global.biz.result.bob_connected
+          onFail: abort_all
+  - cmd: unsubscribe
+    agent: alice
+    as: global.biz.result.reset_subscription
+    onFail: abort_flow
+  - cmd: subscribe
+    agent: alice
+    as: global.biz.result.subscription
+    onFail: abort_flow
+  - cmd: capture_presence
+    agent: bob
+    as: global.biz.result.original
+    onFail: abort_flow
+  - parallel:
+      receive:
+        - wait_event: onPresenceStatusChanged
+          agent: alice
+          checks:
+            - path: list
+              containsItem:
+                publisher: '$global.account.bob.userId'
+                statusDescription: '$global.biz.input.presenceDescription'
+          as: global.biz.event.notification
+          onFail: abort_flow
+      publish:
+        - cmd: publish
+          agent: bob
+          as: global.biz.result.publication
+          onFail: abort_flow
+  # Query corroborates the callback; it never replaces a missing callback.
+  # Independent verification and cleanup continue after a receive-branch timeout.
+  - cmd: verify_presence
+    agent: alice
+    as: global.biz.result.verification
+  - cmd: unsubscribe
+    agent: alice
+    as: global.biz.result.cleanup_subscription
+  - cmd: restore_presence
+    agent: bob
+    as: global.biz.result.restoration
+  - cmd: logout
+    agent: alice
+    as: global.biz.result.alice_logout
+  - cmd: logout
+    agent: bob
+    as: global.biz.result.bob_logout

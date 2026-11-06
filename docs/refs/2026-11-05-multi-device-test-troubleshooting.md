@@ -89,6 +89,7 @@ HTTP 错误与 SDK 错误是不同层：SDK 错误通常在已受理命令的 `s
 
 ### 3.5 解释器与宿主适配
 
+- 整流程截止时间也要验证报告与退出码，不能只确认终端打印了超时。Presence 用例开发时定向复现了 `flowTimeoutMs` 超时仍退出 0 的问题；修正后记录 `kind: flow / status: timeout`、退出 1，并停止后续命令派发。已在途的 SDK 操作仍须另行确认，见 [2026-11-06 实测](multi-device-testing/2026-11-06-presence-collaboration-verification.md#51-确认并修正整流程超时误报成功解释器宿主层)。
 - 对照宿主实际发出的参数，不只看 JSON 模板。核对 `$config`、`$agents`、`$inputs`、`$step`、`$prev` 各自来源及 agent 作用域。
 - 分清命令库中的 `id`、流程结果绑定 `as` 和 HTTP `commandId`；它们不是同一标识，也不会自动关联 SDK 回调。
 - 对 parallel/barrier/await 争议，记录“进入、到达、放行、命令开始、命令完成”的顺序。同设备并发命令还受 agent 单在途约束；不能用 HTTP busy 证明 SDK 不支持操作。
@@ -100,6 +101,7 @@ HTTP 错误与 SDK 错误是不同层：SDK 错误通常在已受理命令的 `s
 
 ### 3.6 用例、因果依赖与断言
 
+- 回调为列表时，不要默认目标在第一项，也不能拿不同元素的字段拼成一个匹配结果。Presence 用例用现有循环遍历，要求同一元素的 publisher 与本轮随机 description 同时符合；用“目标在第二项”“身份和描述分属两项”“只有旧通知”的反例验证。
 - 写清被测事实：发送接口成功、对端收到消息、对端发送回执、发送端收到回执是不同断言。必须有合法的依赖关系，不能拿后面的最终状态补证前面的通知归属。
 - 登录完成、连接成功、某类数据同步完成是不同事件。屏障名称叫 `both-online` 不代表它实际检查了全部在线条件；也不要未经证明就给所有失败加同步等待。
 - 对消息用 messageId，对群用 groupId/成员，对支持携带标识的邀请用本轮 reason。接受通知若只有 userId，应承认信息不足，研究账号/历史隔离，不能虚构回调中存在 runId。
@@ -129,6 +131,8 @@ HTTP 错误与 SDK 错误是不同层：SDK 错误通常在已受理命令的 `s
 
 ### 3.9 日志采集与报告问题
 
+- 完整 App 文件也可能跨会话追加，同一个 seq 在不同启动中可重复。先按本轮时间窗口、实例与业务标识筛选，再用 seq 定位；仅搜索事件名会混入历史证据。
+- 原生文本日志可能含 NUL，`rg` 会只报 `binary file matches`；确认文件用途后用 `rg -a` 搜索业务标识，不将默认搜索无展开结果误判为没有日志。
 - iOS Flutter 输出走 os_log，Android 走 logcat；stdout 重定向为空不能证明 App 没执行。
 - 本项目长 `[APITEST]` 日志可能拆成 `[APITEST+序号/总数]`。直接逐行 JSON 解析控制台输出会丢事件；优先 App 的完整 `api_test.log`，或使用具备分片重组能力的读取工具。
 - HTTP `/v1/events` 要分页读至当前末尾，且保存采集时间。快照不是持续订阅，不能拿较早快照断言“后面永远没到”。缓冲缺口应明确标记。
@@ -245,6 +249,7 @@ HTTP 事件的分页导出模板见 [双 iOS 取证方法](2026-11-05-dual-ios-c
 
 本手册的实测依据：
 
+- [Presence 用例开发与五轮双 iOS 验证](multi-device-testing/2026-11-06-presence-collaboration-verification.md)：复用本手册完成数据准备、用例开发、反例验证、CLI 超时缺陷修正和逐层取证。
 - [双 iOS 联系人三轮验证](2026-11-05-dual-ios-contact-add-verification.md)：准备、运行、复验与取证细节。
 - [事件归属与延后投递深入排查](2026-11-05-contact-flow-instability-investigation.md)：原生消息时间线、真实解释器定向实验，以及仍需服务端证据的边界。
 - [HTTP 控制协议](../../testing/spec/2026-11-04-phase-control.md)、[flow_runner 使用说明](../../tool/flow_runner/README.md)：当前接口和语法入口；遇到文档与实现差异，记录差异，不把旧经验当作不变契约。

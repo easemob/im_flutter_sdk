@@ -1,7 +1,7 @@
 /// Structured JSON run report.
 ///
-/// Only leaf steps (cmd, wait_event) produce records; structural steps are
-/// visible through the `context` path (e.g. `flow.alice_line`).
+/// Leaf steps (cmd, wait_event) and a host-level flow timeout produce records;
+/// structural steps are visible through the `context` path (e.g. flow.alice_line).
 library;
 
 import 'dart:convert';
@@ -21,7 +21,7 @@ class StepRecord {
     this.result,
   });
 
-  final String kind; // cmd | wait_event
+  final String kind; // cmd | wait_event | flow (host-level timeout)
   final String context;
   final String status; // passed | failed | timeout | skipped
   final int durationMs;
@@ -81,6 +81,7 @@ class ReportCollector {
   Future<void> writeToFile(String path) async {
     final file = File(path);
     await file.parent.create(recursive: true);
-    await file.writeAsString(const JsonEncoder.withIndent('  ').convert(toMap()));
+    await file
+        .writeAsString(const JsonEncoder.withIndent('  ').convert(toMap()));
   }
 }

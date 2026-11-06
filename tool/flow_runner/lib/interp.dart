@@ -29,6 +29,7 @@ import 'agent_client.dart';
 import 'ast.dart';
 import 'expect.dart';
 import 'expr.dart';
+import 'global_data.dart';
 import 'report.dart';
 
 /// Thrown by abort_flow; caught at the enclosing branch/flow boundary.
@@ -62,7 +63,37 @@ class Interpreter {
     required this.spec,
     required this.agents,
     required this.report,
+    GlobalData? global,
+    this.onTrace,
   }) {
+    env.global = global;
+    void declare(List<Step> steps) {
+      for (final step in steps) {
+        switch (step) {
+          case final CmdStep s:
+            if (s.as != null && GlobalData.isPath(s.as!)) {
+              global?.declare(s.as!);
+            }
+          case final WaitEventStep s:
+            if (s.as != null && GlobalData.isPath(s.as!)) {
+              global?.declare(s.as!);
+            }
+          case final ParallelStep s:
+            s.branches.values.forEach(declare);
+          case final IfStep s:
+            declare(s.thenSteps);
+            declare(s.elseSteps);
+          case final ForStep s:
+            declare(s.doSteps);
+          case final WhileStep s:
+            declare(s.doSteps);
+          default:
+            break;
+        }
+      }
+    }
+
+    declare(spec.steps);
     // Built-in `$agents` variable: role -> that agent's runtime environment
     // (the `env:` file declared per agent). Host-side; no handshake needed.
     env.bindBuiltin(
@@ -78,6 +109,44 @@ class Interpreter {
   final Map<String, AgentClient> agents;
   final ReportCollector report;
   final Env env = Env();
+  final void Function(Map<String, Object?> record)? onTrace;
+  int _traceSeq = 0;
+
+  void _trace(String kind, Map<String, Object?> fields) {
+    onTrace?.call({
+      'seq': ++_traceSeq,
+      'time': DateTime.now().toUtc().toIso8601String(),
+      'kind': kind,
+      ...fields,
+    });
+  }
+
+  void _bind(String? name, Object? value, {required bool ok}) {
+    if (name == null) return;
+    if (GlobalData.isPath(name)) {
+      env.global!.complete(name, value, ok: ok);
+    } else {
+      env.bind(name, value, ok: ok);
+    }
+    _trace('binding', {'path': name, 'ok': ok, 'value': value});
+  }
+
+  List<String> _failedGlobalRefs(Object? value) {
+    final failed = <String>[];
+    void walk(Object? v) {
+      if (v is String &&
+          isRef(v) &&
+          v.startsWith(r'$global.') &&
+          env.global?.failed(v.substring(1)) == true) {
+        failed.add(v);
+      }
+      if (v is Map) v.values.forEach(walk);
+      if (v is List) v.forEach(walk);
+    }
+
+    walk(value);
+    return failed;
+  }
 
   /// Per-agent device-script step outcomes, keyed by step id.
   final Map<String, Map<String, _StepOutcome>> _stepData = {};
@@ -89,6 +158,14 @@ class Interpreter {
   final Map<String, int> _cursors = {};
   final Map<String, _BarrierState> _barriers = {};
   bool _abortedAll = false;
+  bool _stopped = false;
+
+  /// Stop scheduling and accepting results after a host-level deadline.
+  /// Commands already sent to an agent may still have external side effects.
+  void stop() {
+    _stopped = true;
+    _abortedAll = true;
+  }
 
   Future<void> run() async {
     await _initEventCursors();
@@ -121,7 +198,54 @@ class Interpreter {
   Future<void> _runSteps(List<Step> steps, String ctx) async {
     for (final step in steps) {
       if (_abortedAll) return;
-      await _runStep(step, ctx);
+      final binding = switch (step) {
+        final CmdStep s => s.as,
+        final WaitEventStep s => s.as,
+        _ => null,
+      };
+      var claimed = false;
+      try {
+        if (binding != null && GlobalData.isPath(binding)) {
+          if (env.global == null) {
+            throw const FormatException('Global data was not supplied');
+          }
+          env.global!.claim(binding);
+          claimed = true;
+        }
+        await runZoned(() => _runStep(step, ctx), zoneValues: {
+          #dataReadContext: {
+            'context': ctx,
+            'binding': binding,
+            'step': switch (step) {
+              final CmdStep s => s.cmd,
+              final WaitEventStep s => s.event,
+              _ => step.runtimeType.toString()
+            }
+          },
+        });
+      } on FormatException catch (error) {
+        if (claimed) {
+          _bind(binding, {...Envelope.error(error).toMap(), 'data': null},
+              ok: false);
+        }
+        final (kind, name, agent, policy) = switch (step) {
+          CmdStep s => ('cmd', s.cmd, s.agent, s.onFail),
+          WaitEventStep s => ('wait_event', s.event, s.agent, s.onFail),
+          _ => ('flow', 'reference', null, OnFail.abortAll),
+        };
+        report.add(StepRecord(
+            kind: kind,
+            context: ctx,
+            name: name,
+            agent: agent,
+            status: 'failed',
+            durationMs: 0,
+            reason: error.message.toString(),
+            result: {'failureKind': 'tool'}));
+        _trace('reference_error',
+            {'context': ctx, 'name': name, 'error': error.message});
+        _applyOnFail(policy);
+      }
     }
   }
 
@@ -174,9 +298,15 @@ class Interpreter {
     // Skip-on-failed-deps, source 1: flow variables referenced by inputs.
     if (skip) {
       final refs = collectRefs(s.inputs);
-      final failed = refs.where((n) => !env.isOk(n)).toList();
+      final failed = [
+        ...refs.where((n) => !env.isOk(n)),
+        ..._failedGlobalRefs([s.inputs, step['params'], step['expect']]),
+      ];
       if (failed.isNotEmpty) {
         _recordStep(s.agent, s.cmd, ok: false);
+        if (s.as != null && GlobalData.isPath(s.as!)) {
+          _bind(s.as, null, ok: false);
+        }
         report.add(StepRecord(
           kind: 'cmd',
           context: ctx,
@@ -198,14 +328,19 @@ class Interpreter {
         const <String, Object?>{};
     final failedDeps = <String>{};
     final usedInputs = <String>{};
-    final params = _resolveParams(
-            step['params'], s.agent, inputs, failedDeps, usedInputs)
-        as Map<String, Object?>? ?? const <String, Object?>{};
+    final params =
+        _resolveParams(step['params'], s.agent, inputs, failedDeps, usedInputs)
+                as Map<String, Object?>? ??
+            const <String, Object?>{};
+    final expectation = _resolveExpect(step['expect'], s.agent, inputs);
 
     // Skip-on-failed-deps, source 2: device-script references to steps that
     // failed on this agent (AutoMode's blocked-step semantics).
     if (skip && failedDeps.isNotEmpty) {
       _recordStep(s.agent, s.cmd, ok: false);
+      if (s.as != null && GlobalData.isPath(s.as!)) {
+        _bind(s.as, null, ok: false);
+      }
       report.add(StepRecord(
         kind: 'cmd',
         context: ctx,
@@ -219,18 +354,35 @@ class Interpreter {
     }
 
     final timeoutMs = s.timeoutMs ?? spec.defaults.stepTimeoutMs;
+    _trace('command', {
+      'context': ctx,
+      'agent': s.agent,
+      'command': s.cmd,
+      'binding': s.as,
+      'api': api,
+      'params': params,
+      'expect': expectation
+    });
 
     Envelope envelope;
     try {
-      envelope = await agents[s.agent]!
-          .runCommand(api, params, timeoutMs)
-          .timeout(
-            Duration(milliseconds: timeoutMs),
-            onTimeout: () => Envelope.timeout(timeoutMs),
-          );
+      envelope =
+          await agents[s.agent]!.runCommand(api, params, timeoutMs).timeout(
+                Duration(milliseconds: timeoutMs),
+                onTimeout: () => Envelope.timeout(timeoutMs),
+              );
     } catch (e) {
       envelope = Envelope.error(e);
     }
+
+    if (_stopped) return;
+    _trace('result', {
+      'context': ctx,
+      'agent': s.agent,
+      'command': s.cmd,
+      'binding': s.as,
+      'result': envelope.toMap()
+    });
 
     // Host-side judgment: evaluate the step's expect against the actual
     // envelope (absent expect => assert success, AutoMode semantics).
@@ -239,8 +391,7 @@ class Interpreter {
     // account-agnostic.
     final expectOutcome = envelope.status == 'timeout'
         ? const ExpectOutcome(matched: false)
-        : evaluateExpect(
-            envelope.toMap(), _resolveExpect(step['expect'], s.agent, inputs));
+        : evaluateExpect(envelope.toMap(), expectation);
 
     // "Step ok" follows the EXPECTATION, not the envelope success flag: a
     // reverse case (expected errorCode hit) is a successful step whose
@@ -249,7 +400,12 @@ class Interpreter {
     // skip-on-failed-deps cascade.
     final stepOk = expectOutcome.matched;
     if (s.as != null) {
-      env.bind(s.as!, envelope.toMap(), ok: stepOk);
+      _bind(
+          s.as,
+          GlobalData.isPath(s.as!)
+              ? {...envelope.toMap(), 'data': envelope.data}
+              : envelope.toMap(),
+          ok: stepOk);
     }
     _recordStep(s.agent, s.cmd, ok: stepOk, data: envelope.data);
     _prev[s.agent] = envelope.data;
@@ -268,6 +424,7 @@ class Interpreter {
       durationMs: sw.elapsedMilliseconds,
       result: {
         ...envelope.toMap(),
+        if (s.as != null) 'binding': s.as,
         'api': api,
         'expectMatched': expectOutcome.matched,
         if (expectOutcome.checks.isNotEmpty) 'checks': expectOutcome.checks,
@@ -286,8 +443,7 @@ class Interpreter {
   /// Resolve `$`-references inside an expect block (deep copy; strings go
   /// through the same substitution as params). Keeps assertions such as
   /// `contains: $agents.bob.userId` account-agnostic.
-  Object? _resolveExpect(
-      Object? v, String agent, Map<String, Object?> inputs) {
+  Object? _resolveExpect(Object? v, String agent, Map<String, Object?> inputs) {
     if (v is Map) {
       return {
         for (final e in v.entries)
@@ -300,14 +456,14 @@ class Interpreter {
       ];
     }
     if (v is String &&
-        (v == r'$config' ||
+        (v.startsWith(r'$global.') ||
+            v == r'$config' ||
             v.startsWith(r'$config.') ||
             v == r'$agents' ||
             v.startsWith(r'$agents.') ||
             v == r'$inputs' ||
             v.startsWith(r'$inputs.'))) {
-      return _resolveParams(
-          v, agent, inputs, <String>{}, <String>{});
+      return _resolveParams(v, agent, inputs, <String>{}, <String>{});
     }
     return v;
   }
@@ -323,6 +479,10 @@ class Interpreter {
     Set<String> usedInputs,
   ) {
     if (v is String) {
+      if (v == r'$global' || v.startsWith(r'$global.')) {
+        if (!isRef(v)) throw FormatException('Invalid global reference: $v');
+        return env.lookup(refPath(v));
+      }
       if (v == r'$inputs') return inputs;
       if (v.startsWith(r'$inputs.')) {
         final path = v.substring(8);
@@ -348,7 +508,8 @@ class Interpreter {
         }
         final role = path.split('.').first;
         final roleEnv = spec.envs[role] ?? const <String, Object?>{};
-        final rest = path.length > role.length ? path.substring(role.length + 1) : '';
+        final rest =
+            path.length > role.length ? path.substring(role.length + 1) : '';
         return rest.isEmpty ? roleEnv : _dig(roleEnv, rest);
       }
       if (v == r'$prev') return _prev[agent];
@@ -369,8 +530,8 @@ class Interpreter {
       // generics (literals, jsonDecode, YAML views all differ).
       return <String, Object?>{
         for (final e in v.entries)
-          e.key as String: _resolveParams(
-              e.value, agent, inputs, failedDeps, usedInputs),
+          e.key as String:
+              _resolveParams(e.value, agent, inputs, failedDeps, usedInputs),
       };
     }
     if (v is List) {
@@ -419,6 +580,29 @@ class Interpreter {
     final timeoutMs = s.timeoutMs ?? spec.defaults.stepTimeoutMs;
     final deadline = DateTime.now().add(Duration(milliseconds: timeoutMs));
     final client = agents[s.agent]!;
+    final failed = _failedGlobalRefs([s.match, s.checks]);
+    if (failed.isNotEmpty) {
+      if (s.as != null && GlobalData.isPath(s.as!)) {
+        _bind(s.as, null, ok: false);
+      }
+      report.add(StepRecord(
+          kind: 'wait_event',
+          context: ctx,
+          name: s.event,
+          agent: s.agent,
+          status: 'skipped',
+          durationMs: 0,
+          reason: 'failed global deps: ${failed.join(', ')}'));
+      return;
+    }
+    // Strict global operands must be ready before polling starts. Event
+    // history remains available even when the producer completed earlier.
+    final checks = resolveValue(s.checks, env) as List;
+    for (final value in s.match.values) {
+      if (value is String && value.startsWith(r'$global.')) {
+        resolveValue(value, env);
+      }
+    }
 
     // Each wait scans from its OWN snapshot of the agent cursor; the shared
     // per-agent cursor only advances (monotonic max) when a wait matches.
@@ -432,9 +616,17 @@ class Interpreter {
     var local = _cursors[s.agent] ?? 0;
 
     while (true) {
+      if (_stopped) return;
       final events = await client.pollEvents(local, waitMs: 200);
+      if (_stopped) return;
 
       for (final ev in events) {
+        _trace('event', {
+          'agent': s.agent,
+          'eventSeq': ev.seq,
+          'source': ev.source,
+          'payload': ev.payload
+        });
         // Advance the local scan position past every event inspected.
         local = ev.seq;
 
@@ -453,12 +645,17 @@ class Interpreter {
           }
         }
         if (!matched) continue;
+        if (checks.isNotEmpty &&
+            !evaluateChecks(ev.payload, checks)
+                .every((c) => c['passed'] == true)) {
+          continue;
+        }
 
         if (ev.seq > (_cursors[s.agent] ?? 0)) {
           _cursors[s.agent] = ev.seq;
         }
         if (s.as != null) {
-          env.bind(s.as!, ev.payload, ok: true);
+          _bind(s.as, ev.payload, ok: true);
         }
         report.add(StepRecord(
           kind: 'wait_event',
@@ -467,12 +664,19 @@ class Interpreter {
           name: s.event,
           status: 'passed',
           durationMs: sw.elapsedMilliseconds,
-          result: {'seq': ev.seq, 'payload': ev.payload},
+          result: {
+            'seq': ev.seq,
+            'payload': ev.payload,
+            if (s.as != null) 'binding': s.as
+          },
         ));
         return;
       }
 
       if (DateTime.now().isAfter(deadline)) {
+        if (s.as != null && GlobalData.isPath(s.as!)) {
+          _bind(s.as, null, ok: false);
+        }
         report.add(StepRecord(
           kind: 'wait_event',
           context: ctx,

@@ -1,34 +1,34 @@
 # testing/scripts — 阶段脚本入口
 
-对应 [总体规格 §3/§4](../../docs/spec/2026-11-04-example-testing-spec.md)：六步闭环每阶段一个编排脚本，设备操作拆分为**按平台的原子脚本**，编排脚本组合原子脚本复用。所有脚本 `--help` 可查用法。
+数据约定见 [测试动态数据与引用规范](../docs/2026-11-06-dynamic-data-contract.md)。Presence 用例已采用 `$global`；旧联系人命令及单设备直跑仍保留原有引用方式。
 
-执行失败、结果不稳定或怀疑误通过时，先看 [多设备协同测试排查手册](../../docs/refs/2026-11-05-multi-device-test-troubleshooting.md)：分类速查、逐层取证、临时日志与定向复现。
+执行失败或结果不稳定时，先看 [多设备协同测试排查手册](../../docs/refs/2026-11-05-multi-device-test-troubleshooting.md)。实际验证与证据见 [Presence 订阅/发布/接收](../../docs/refs/multi-device-testing/2026-11-06-presence-collaboration-verification.md)。
 
-## 调用关系
+## 调用关系与职责
 
 ```text
-smoke_agent（冒烟编排的编排）
-├── prepare_data                        # 数据准备
-│   ├── make config                     # （首次）导入本地配置
-│   ├── make env-gettoken RUN_ID=<id>   # 换 User Token → tmp/<run-id>/main/environment.json
-│   └── resources.dart prepare-group    # 临时群 ×N
-└── setup_devices                       # 设备准备（--mode control）
-    ├── device/ios/list --booted        # ① 选择设备（--devices 可指定）
-    ├── device/ios/boot                 # ② 逐台启动 + bootstatus 等就绪
-    ├── device/ios/install              # ③ 构建一次（control=API_CONTROL）+ 各台安装
-    └── device/ios/launch               # ④ 启动 app + 轮询 [AGENT_CONTROL] 凭据
-        └── 产物 tmp/<run-id>/agents.json（role/endpoint/token/instanceId/log）
+run_flow --flow <yaml> --platform ios|android|mixed [--devices ...]
+├── prepare_data --flow <yaml>
+│   ├── declaration.dart：用例 JSON 的 data → data-declaration.json
+│   ├── environment.dart：配置、账号 Token → main/environment.json
+│   ├── roles.dart：角色账号分配、用例数据 → data.json / role-data.json
+│   └── preconditions.dart：用例声明的服务端前置条件
+├── setup_devices：安装、启动、控制连接 → devices.json（无业务数据）
+├── context.dart bind：按角色组合 → global.json / agents.json / flow.yaml
+├── flow_runner：执行显式初始化、登录及业务流程，保存结果、事件和引用证据
+├── collect_report：汇总本轮报告
+└── stop_devices.py：认证本轮 App 后停止；保留运行数据，不删除 tmp
 
-run_single                              # 单设备直跑（§3.3 路径 1）
-└── make auto-report PLATFORM=… SCRIPT=…
-
-run_flow                                # 多设备执行（§3.4）
-└── flow_runner run <flow.yaml> --report-dir testing/reports
-    （前置：setup_devices --mode control 已产出 agents.json）
-
-collect_report [--run-id]               # 报告摘要（§3.5）
-cleanup --run-id                        # 清理：群资源 → tmp（归档检查）→ 进程（§3.6）
+run_single --platform ... --script ... → make auto-report（旧单设备直跑保留）
+smoke_agent → prepare_data + setup_devices + 控制接口冒烟
 ```
+
+- `run_flow` 默认执行完整准备和运行；`--prepared` 使用同一 run-id 已准备的 `data.json`、`devices.json`，仍需上下文尚未绑定。它不恢复执行，也不允许重跑已消费的会话。
+- 用例 JSON 的顶级 `data` 保存准备声明，`steps` 保存命令，YAML 保存流程；presence 两角色共用一份 JSON。格式及字段见[容器规则](../docs/2026-11-06-dynamic-data-contract.md#11-用例-json-容器规则)。新增同类用例只改用例文件，不修改设备准备脚本。
+- `prepare_data --flow` 自动读取 `agents.*.script` 的 `data`，同一实际文件去重；多份声明拒绝隐式合并。旧相邻 `<flow>.data.json` 仍兼容，但与内嵌声明同时存在会报冲突。显式 `--data <json>` 完整替代自动发现结果；无声明时保留旧默认值。
+- `--prebuilt ios=/path/Runner.app` 可复用已确认的控制模式 App；本次用例改造没有变更 App/SDK 源码。
+- `--keep-app` 保留 App 便于排查；默认在成功或失败后都尝试停止本轮设备上的 App。清理失败单独记录，不覆盖原测试退出码。
+- 设备准备、数据准备均可单独调用。`run_single` 的 HTTP 组合模式未在本次 presence 整改范围内实现。
 
 ## 原子脚本（可单独执行，排查时与手动命令一致）
 
@@ -78,12 +78,16 @@ bash testing/scripts/smoke_agent --platform android
 # 指定设备 / 保留 app 便于人工查看
 bash testing/scripts/smoke_agent --platform ios --device <udid> --keep-app
 
-# 多设备准备 + 跑一个流程
-bash testing/scripts/prepare_data --run-id m2 --groups 1
-bash testing/scripts/setup_devices --platform ios --count 2 --mode control --run-id m2
-bash testing/scripts/run_flow --flow 5.0.0-multi-direct-read-receipt-positive.yaml
-bash testing/scripts/collect_report
-bash testing/scripts/cleanup --run-id m2
+# Presence 双 iOS：完整组合入口（也支持 --platform android）
+bash testing/scripts/run_flow \
+  --flow 5.0.0-multi-presence-positive.yaml --platform ios \
+  --devices <设备A-UDID>,<设备B-UDID> --run-id presence-001
+bash testing/scripts/collect_report --run-id presence-001
+
+# 分步排查：相同 run-id，先准备数据，再准备设备，最后执行一次
+bash testing/scripts/prepare_data --flow 5.0.0-multi-presence-positive.yaml --run-id presence-002
+bash testing/scripts/setup_devices --platform ios --count 2 --roles alice,bob --mode control --run-id presence-002
+bash testing/scripts/run_flow --flow 5.0.0-multi-presence-positive.yaml --run-id presence-002 --prepared
 
 # 单设备直跑（旧路径）
 bash testing/scripts/run_single --platform ios --script script_500_apis_positive.json
@@ -93,4 +97,23 @@ bash testing/scripts/device/ios/list --booted
 bash testing/scripts/device/ios/boot --device <udid>
 ```
 
-约定：`tmp/<run-id>/` 为运行中间产物（Git 忽略），`reports/<run-id>/` 为最终报告；凭据只出现在 `tmp` 与进程输出，不入报告。
+## 本轮数据与证据
+
+所有路径相对工作树根目录。`testing/tmp/<run-id>/` 是项目内的可见临时目录，保留供排查；与 `testing/reports/<run-id>/` 使用同一个运行 ID，两者均被 Git 忽略。
+
+| 文件 | 内容 |
+|---|---|
+| `data-declaration.json` | 本轮选定的数据准备声明快照（未生成随机值、未填入 Token） |
+| `data.json` | 数据工具准备的 account / biz.config / biz.input |
+| `devices.json` | 设备角色、平台、设备 ID、控制地址及凭据 |
+| `global.json` | 运行器输入：`initial` 初始数据及 `outputRoots` 可写结果区域 |
+| `agents.json`、`flow.yaml`、`scripts/` | 本轮控制连接和流程、命令快照；旧命令需要的 env 保留在 agents.json |
+| `trace.jsonl` | 实际派发参数、返回值、绑定及事件观察记录 |
+| `references.json` | 引用路径、实际值、消费步骤（并行分支各自标注） |
+| `global-final.json` | 运行结束后的数据视图，包括 API 结果和已匹配事件 |
+| `<role>-events.jsonl` | 从 App 事件历史分页收集的原始事件，包括未匹配记录 |
+| `run.log`、`exit.json`、`cleanup.json` | 执行输出、原退出码和独立清理结果 |
+| `reports/<run-id>/flow-report.json` | 命令与目标通知的断言结果 |
+| `reports/<run-id>/runtime-index.json` | 对应临时目录、文件列表、退出码及清理摘要，不复制凭据 |
+
+原始运行文件包含 Token 等凭据，使用本地受限权限保存；共享报告不包含这些值。需要清理临时目录时先确认本轮证据与资源记录已归档。旧 `cleanup` 入口未在本次迁移中重写，人工调用时使用 `--keep-tmp`，避免删除唯一证据。

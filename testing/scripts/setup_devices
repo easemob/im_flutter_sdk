@@ -3,7 +3,7 @@
 # 用法: setup_devices --platform ios|android|mixed [--devices id1,id2 | --count N]
 #        [--mode control|plain] [--run-id <id>] [--roles r1,r2,...]
 #   --platform mixed 时 --devices 必填，每项形如 ios:<udid> 或 android:<serial>
-#   --roles    语义角色名（写入 agents.json 的 role 字段，供 flow YAML 按角色引用）
+#   --roles    语义角色名（写入 devices.json 的 role 字段，供 flow YAML 按角色引用）
 #              数量必须等于设备数；缺省 agent-1..N
 #   --devices  逗号分隔的设备列表（mixed 形如 ios:UDID,android:SERIAL）；缺省取已
 #              启动/在线设备（取前 --count 台）
@@ -12,18 +12,17 @@
 #   --prebuilt 逗号分隔的预构建产物，形如 ios=/path/to/Runner.app 或
 #              ios=/path/app,android=/path/app.apk；命中的平台跳过构建直接安装
 #              （沙箱/CI 环境无法执行 flutter build ios 时由外部构建后传入）
-# 产物(control): testing/tmp/<run-id>/agents.json
-#   [{role, platform, udid, endpoint, token, instanceId,
-#     env: {userId, userToken}, log}]
+# 产物(control): testing/tmp/<run-id>/devices.json
+#   [{role, platform, udid, endpoint, token, instanceId, log}]
 #   endpoint 恒为宿主可达的 http://127.0.0.1:<port>：
 #   iOS 模拟器与宿主共享网络（端口直达）；Android 经 adb forward（launch 输出转发端口）。
-#   env 的账号按设备序号绑定 environment.json 的 accounts[i]（control 模式要求
-#   prepare_data 已完成；设备数多于账号数时报错）。
+#   No accounts, user tokens or SDK configuration are read here.
 # Android v1 约束：设备须已在线（adb devices 可见）；模拟器开机/批量端口分配表
 # 在 device-management 子文档落地后接入。
 # Shell: bash >= 3.2（macOS 系统自带即满足；勿用 sh/zsh 直接执行，见 _compat.sh）
 . "$(dirname "$0")/_compat.sh" || exit 64
 set -euo pipefail
+umask 077
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
 
@@ -48,6 +47,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 [[ "$PLATFORM" == ios || "$PLATFORM" == android || "$PLATFORM" == mixed ]] || { echo "setup_devices: --platform ios|android|mixed 必填" >&2; exit 64; }
+[[ "$RUN_ID" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{0,100}$ ]] || { echo "setup_devices: invalid run-id" >&2; exit 64; }
+[[ "$COUNT" =~ ^[1-9][0-9]*$ ]] || { echo "setup_devices: count must be positive" >&2; exit 64; }
 if [[ "$PLATFORM" == mixed ]]; then
   [[ -n "$DEVICES" ]] || { echo "setup_devices: --platform mixed 需要显式 --devices ios:<udid>,android:<serial>" >&2; exit 64; }
 fi
@@ -83,7 +84,7 @@ fi
 N=${#UDIDS[@]}
 echo "==> devices(${N}): $(for i in "${!UDIDS[@]}"; do echo -n "${PLATS[$i]}:${UDIDS[$i]} "; done)"
 
-# 角色名（写入 agents.json 的 role，flow YAML 按它引用）
+# 角色名（写入 devices.json 的 role，flow YAML 按它引用）
 ROLEN=()
 if [[ -n "$ROLES" ]]; then
   IFS=',' read -r -a ROLEN <<< "$ROLES"
@@ -94,6 +95,19 @@ fi
 for r in "${ROLEN[@]}"; do
   [[ "$r" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{0,31}$ ]] || { echo "setup_devices: 角色名须为字母数字开头、[A-Za-z0-9_-] 且 ≤32 字符: $r" >&2; exit 64; }
 done
+
+# Reject duplicate roles/devices before any installation or launch.
+python3 - "${ROLEN[@]}" -- "${UDIDS[@]}" <<'CHECK'
+import sys
+args=sys.argv[1:]; split=args.index('--')
+for values in (args[:split],args[split+1:]):
+    if not values or any(not v for v in values) or len(set(values))!=len(values):
+        sys.exit('setup_devices: roles and devices must be nonempty and unique')
+CHECK
+LOG_DIR="$ROOT/testing/tmp/$RUN_ID"
+mkdir -p "$LOG_DIR"
+[[ ! -e "$LOG_DIR/devices.json" ]] || { echo "setup_devices: devices already prepared; use a fresh run-id" >&2; exit 65; }
+printf '[]\n' > "$LOG_DIR/devices.json"
 
 # 2) 启动就绪（原子: device/ios/boot，仅 iOS；Android 要求已在线）
 for i in "${!UDIDS[@]}"; do
@@ -130,61 +144,28 @@ for i in "${!UDIDS[@]}"; do
   fi
 done
 
-# 4) 启动（原子: device/<platform>/launch），日志按角色命名
-LOG_DIR="$ROOT/testing/tmp/$RUN_ID"
-mkdir -p "$LOG_DIR"
-CRED=()   # 每台设备的 "port=.. token=.. instanceId=.."（plain 模式为空）
+# 4) Launch and journal each successful device immediately, for partial-failure cleanup.
 for i in "${!UDIDS[@]}"; do
   u="${UDIDS[$i]}"; r="${ROLEN[$i]}"
   LOG="$LOG_DIR/$r.log"
   LINE="$("$HERE/device/${PLATS[$i]}/launch" --device "$u" --mode "$MODE" --out "$LOG" | tail -1)"
-  [[ "$LINE" == OK* ]] || { echo "setup_devices: launch 失败: $LINE" >&2; exit 69; }
-  if [[ "$MODE" == control ]]; then
-    CRED[$i]="${LINE#OK }"
-  fi
+  [[ "$LINE" == OK* ]] || { echo "setup_devices: launch failed for $r; see $LOG" >&2; exit 69; }
+  printf '%s\n' "${LINE#OK }" > "$LOG_DIR/.device.tmp"
+  python3 - "$LOG_DIR" "$r" "${PLATS[$i]}" "$u" "$MODE" <<'DEVICE'
+import json,sys,os
+from pathlib import Path
+path,role,platform,udid,mode=sys.argv[1:]
+root=Path(path)
+entry={'role':role,'platform':platform,'udid':udid,'log':str(root/f'{role}.log')}
+if mode=='control':
+    kv=dict(p.split('=',1) for p in (root/'.device.tmp').read_text().split() if '=' in p)
+    if not all(kv.get(k) for k in ['port','token','instanceId']):
+        sys.exit(f'setup_devices: missing control credentials for {role}')
+    entry.update(endpoint=f"http://127.0.0.1:{int(kv['port'])}",token=kv['token'],instanceId=kv['instanceId'])
+entries=json.loads((root/'devices.json').read_text()); entries.append(entry)
+(root/'devices.pending').write_text(json.dumps(entries,indent=2)+'\n')
+os.replace(root/'devices.pending',root/'devices.json')
+DEVICE
+  rm -f "$LOG_DIR/.device.tmp"
 done
-
-# 5) 汇总凭据 + 账号绑定（control 模式）
-if [[ "$MODE" == control ]]; then
-  ENV_JSON="$LOG_DIR/main/environment.json"
-  [[ -f "$ENV_JSON" ]] || { echo "setup_devices: 缺少 $ENV_JSON —— control 模式需要先跑 prepare_data --run-id $RUN_ID（账号绑定）" >&2; exit 65; }
-  # 设备条目经临时文件传给 python（cred 含空格，不能走 argv/命令替换）
-  DEVLIST="$LOG_DIR/.devices.tmp"
-  : > "$DEVLIST"
-  for i in "${!UDIDS[@]}"; do
-    printf '%s|%s|%s|%s\n' "${ROLEN[$i]}" "${PLATS[$i]}" "${UDIDS[$i]}" "${CRED[$i]}" >> "$DEVLIST"
-  done
-  python3 - "$LOG_DIR" "$ENV_JSON" "$DEVLIST" > "$LOG_DIR/agents.json" <<'PY'
-import json, sys
-log_dir, env_path, devlist = sys.argv[1:4]
-entries = [line.rstrip('\n') for line in open(devlist) if line.strip()]
-env_doc = json.load(open(env_path))
-accounts = env_doc['accounts']
-if len(accounts) < len(entries):
-    sys.exit(f'setup_devices: environment.json 账号数 {len(accounts)} < 设备数 {len(entries)}；'
-             f'在 testing/config/environment.local.json 增加账号后重跑 prepare_data')
-agents = []
-for i, e in enumerate(entries):
-    role, platform, udid, cred = e.split('|', 3)
-    kv = dict(p.split('=', 1) for p in cred.split() if '=' in p)
-    if 'port' not in kv:
-        sys.exit(f'setup_devices: 设备 {udid} 未捕获凭据（launch 输出: {cred!r}）')
-    agents.append({
-        'role': role, 'platform': platform, 'udid': udid,
-        'endpoint': f"http://127.0.0.1:{kv['port']}",
-        'token': kv['token'], 'instanceId': kv['instanceId'],
-        'env': {
-            'userId': accounts[i]['id'],
-            'userToken': accounts[i]['token'],
-            # init 命令的 config 数据源（设备脚本 params 用 $config.initConfig）
-            'initConfig': env_doc,
-        },
-        'log': f'{log_dir}/{role}.log',
-    })
-print(json.dumps(agents, indent=2))
-PY
-  rm -f "$DEVLIST"
-  echo "OK agents=$LOG_DIR/agents.json roles=$(IFS=,; echo "${ROLEN[*]}")"
-else
-  echo "OK launched (plain mode, no agents.json)"
-fi
+echo "OK devices=$LOG_DIR/devices.json roles=$(IFS=,; echo "${ROLEN[*]}")"

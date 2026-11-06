@@ -16,6 +16,8 @@
 /// everything else is truthy.
 library;
 
+import 'global_data.dart';
+
 // ---------------------------------------------------------------------------
 // Expression AST
 // ---------------------------------------------------------------------------
@@ -208,7 +210,8 @@ class _Parser {
       return inner;
     }
     final left = _operand();
-    if (_cur.kind == 'op' && _ops.contains(_cur.text) &&
+    if (_cur.kind == 'op' &&
+        _ops.contains(_cur.text) &&
         _cur.text != '(' &&
         _cur.text != ')') {
       final op = _cur.text;
@@ -239,8 +242,8 @@ class _Parser {
         _advance();
         return Ref(refPath(t.text));
       default:
-        throw ExprError('unexpected token "${t.text.isEmpty ? "<eof>" : t.text}"',
-            src);
+        throw ExprError(
+            'unexpected token "${t.text.isEmpty ? "<eof>" : t.text}"', src);
     }
   }
 }
@@ -261,6 +264,7 @@ Expr parseExpr(String src) => _Parser(src).parse();
 /// Flow variable table. Also tracks, per binding, whether the producing
 /// step succeeded — the basis of the skip-on-failed-deps semantics.
 class Env {
+  GlobalData? global;
   final Map<String, Object?> _vars = {};
   final Map<String, bool> _ok = {};
 
@@ -281,17 +285,30 @@ class Env {
   }
 
   /// Look up `$a.b.0` given the full path including the variable name.
-  Object? lookup(List<String> path) => dig(_vars[path.first], path.sublist(1));
+  Object? lookup(List<String> path) {
+    if (path.first == 'global') {
+      if (global == null) {
+        throw const FormatException('Global data was not supplied');
+      }
+      return global!.read(path.join('.'));
+    }
+    return dig(_vars[path.first], path.sublist(1));
+  }
 
   /// True when the variable is bound by a successful producer (or is a
   /// built-in). Unknown variables are NOT ok: cascading skips rely on this.
-  bool isOk(String name) => _ok[name] ?? false;
+  bool isOk(String name) =>
+      name == 'global' ? global != null : _ok[name] ?? false;
 
   bool isBound(String name) => _vars.containsKey(name);
 
   Object? value(String name) => _vars[name];
 
   void bind(String name, Object? value, {required bool ok}) {
+    if (name == 'global' || GlobalData.isPath(name)) {
+      throw const FormatException(
+          'global is reserved for runtime data and output bindings');
+    }
     _vars[name] = value;
     _ok[name] = ok;
   }
@@ -305,6 +322,7 @@ class Env {
   /// Save the current binding so a loop variable can shadow it; returns
   /// the restore token (null when the name was unbound).
   Object? pushShadow(String name, Object? value) {
+    if (name == 'global') throw const FormatException('global is reserved');
     final old = _Shadow(name, _vars.containsKey(name), _vars[name], _ok[name]);
     _vars[name] = value;
     _ok[name] = true;
@@ -360,8 +378,7 @@ Object? evalExpr(Expr e, Env env) {
       }
       return false;
     case final CompareExpr c:
-      return _compare(
-          c.op, evalExpr(c.left, env), evalExpr(c.right, env));
+      return _compare(c.op, evalExpr(c.left, env), evalExpr(c.right, env));
   }
 }
 

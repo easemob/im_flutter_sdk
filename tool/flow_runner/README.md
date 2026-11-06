@@ -10,21 +10,23 @@
 # 前置：各设备上的 app（agent HTTP 服务）已启动并监听（见 phase-control 协议）
 dart run tool/flow_runner/bin/flow_runner.dart run testing/flows/<name>.yaml \
     [--report-dir testing/reports] [--agents-file testing/tmp/<run-id>/agents.json] \
-    [--no-verify-commands]
+    [--globals-file <global.json>] [--evidence-dir <private-run-dir>] [--no-verify-commands]
 ```
 
 - 退出码：0 = 全部通过；1 = 存在 failed/timeout；64/65/69/70 = 用法/脚本/agent 不可达/解释器错误。
+- 整流程 `flowTimeoutMs` 到期也记 timeout 并退出 1，报告增加 `kind: flow / name: flowTimeoutMs`。宿主停止后续派发与结果接纳；已经发到设备的操作可能仍继续，超时报告不能证明清理完成。
 - 报告输出至 `<report-dir>/<runId>/flow-report.json`。
-- `--agents-file`：注入**运行时动态凭据**（agent 端口/token 每次启动随机、账号绑定每次 run 不同），按角色名覆盖 YAML 声明。通常传 `setup_devices` 产出的 `testing/tmp/<run-id>/agents.json`，见下文「agents-file 注入」。
+- `--agents-file`：注入**运行时动态凭据**（agent 端口/token 每次启动随机、账号绑定每次 run 不同），按角色名覆盖 YAML 声明。通常传 `run_flow` 组合数据和设备后产出的 `testing/tmp/<run-id>/agents.json`，见下文「agents-file 注入」。
 - `--no-verify-commands`：跳过“cmd id 必须存在于设备脚本”的静态检查（草稿期用）。
 
-## 三个输入文件
+## 输入文件
 
 | 文件 | 角色 | 形态 |
 |---|---|---|
 | 流程 YAML | 树：控制流（顺序/并行/分支/循环/等待） | 每流程一份 |
-| 设备脚本 JSON | 叶子：命令库（每个 agent 一份，按 `id` 被 YAML 引用） | 可多流程复用 |
-| 环境 JSON（可选） | 该 agent 的 `$config` 数据源（账号、appkey 等） | 每设备一份 |
+| 设备脚本 JSON | 数据容器：`steps` 命令库按 `id` 被 YAML 引用，其他顶级数据由对应外部工具消费 | 可多角色、多流程共用 |
+| 环境 JSON（可选） | 该 agent 的旧 `$config` 数据源（账号、appkey 等） | 每设备一份 |
+| global JSON（可选） | 严格 `$global` 数据视图：initial + outputRoots | 每轮一份 |
 
 工具不含任何业务语义，不限于 IM 测试。协议契约只有两条：命令返回实际信封 `{success, status, data, error, failureKind}`；expect 判定在宿主侧完成。
 
@@ -80,7 +82,7 @@ agent 的端口与配对 token 每次 app 启动都是随机的（多设备共�
 | `env` | 浅合并：file > env 文件 | 注入 `$config`（如 `userId`/`userToken`，供设备脚本 params 引用） |
 
 - file 中出现 YAML 未声明的角色 → **忽略并提示**（agents-file 描述的是本次 run 启动的全部设备，单个 flow 可能只用子集；角色名拼错会表现为该角色缺 endpoint 的报错）；YAML 中无对应 entry 的角色保持原声明。
-- 该文件通常由 `setup_devices` 产出（`testing/tmp/<run-id>/agents.json`），编排脚本 `run_flow --run-id` 会自动带上。
+- 该文件由测试侧 `context.dart bind` 组合数据与设备清单后产出（`testing/tmp/<run-id>/agents.json`），编排脚本 `run_flow --run-id` 会自动带上。
 
 ### preconditions（用例前置声明）
 
@@ -139,7 +141,7 @@ preconditions:
 
 | 规则 | 行为 |
 |---|---|
-| 跨流程隔离 | 流程启动时游标定在事件流当前末尾——**上一流程的遗留事件永远不会被匹配** |
+| 观察起点 | 流程启动时游标定在事件流当前末尾，只排除当时已缓存的事件；登录后补到的历史通知仍可出现，须用业务 ID/本轮唯一标识判断归属 |
 | 防错过 | 流程运行中事件先到、wait 后到：先查缓存再等新事件，不遗漏 |
 | 顺序不重复 | 顺序的两个 wait 不会匹配同一事件（后者从前者的匹配点之后开始） |
 | 并发独立观察 | 同一 agent 上并发的多个 wait 各自从快照扫描，互不吞事件；确实重叠时**可能匹配同一事件**（各自独立观察，有意设计） |
@@ -262,7 +264,11 @@ op      := == != > >= < <=
 
 **依赖跳过（skipOnFailedDeps）**：inputs 引用了失败/未绑定的流程变量，或 params 引用了同 agent 上失败命令的 `$step.<id>` → 本步骤记 `skipped` 不执行，级联下游。
 
-## 设备脚本 JSON（命令库）
+## 设备脚本 JSON（数据容器与命令库）
+
+根节点为 JSON 对象，`steps` 保持原有命令数组。其同级可以放其他数据节点（对象、数组或标量）；命令加载器只装载 `steps` 及兼容字段 `init`／`login`，不会将其他节点当作命令、流程控制或自动注入的变量。数据如何进入运行上下文，由相应外部工具定义。
+
+例如本仓库 presence JSON 的 `data` 由 `testing/scripts/prepare_data` 消费，用于账号分配和生成本轮唯一标识，规则见[测试动态数据规范](../../testing/docs/2026-11-06-dynamic-data-contract.md#11-用例-json-容器规则)。这些业务准备规则不属于解释器；不带 `data` 的旧命令 JSON 仍可使用。
 
 ```json
 {
@@ -281,7 +287,7 @@ op      := == != > >= < <=
 }
 ```
 
-字段规则：
+`steps` 内命令对象的字段规则：
 
 | 字段 | 必要 | 说明 |
 |---|---|---|
@@ -319,7 +325,7 @@ JSON 对象，整份成为该 agent 的 `$config`，同时挂到 `$agents.<role>
 
 | 语义 | 行为 |
 |---|---|
-| 事件隔离 | 流程启动时游标定于事件流末尾，上一流程的遗留事件不匹配 |
+| 事件观察范围 | 启动时已有的缓存事件不匹配；之后到达的历史通知仍需业务条件排除 |
 | 事件防错过 | agent 缓存事件流（seq 游标），`wait_event` 先查缓存再等新事件 |
 | 并发观察 | 同 agent 并发 wait 各自独立扫描（互不吞事件，可能重复匹配同一事件） |
 | match 延迟求值 | 引用未产生变量 → 不匹配、继续等，解决并行分支竞态 |
@@ -329,6 +335,8 @@ JSON 对象，整份成为该 agent 的 `$config`，同时挂到 `$agents.<role>
 | join-all | parallel 等所有分支结束（无论成败）；提前退出的分支释放 barrier 不挂死兄弟分支 |
 
 报告判定状态：`passed / failed / timeout / skipped`；failed/timeout 的步骤结果带完整信封 + `expectMatched` + checks 明细 + `unusedInputs`。
+
+批量事件的实际例子见 [Presence 控制流](../../testing/flows/5.0.0-multi-presence-positive.yaml)：逐批等待、逐元素比较 publisher 和本轮状态描述。循环中单次 `wait_event passed` 表示读到该批事件，整条用例通过还要求业务条件满足和尾部验证完成。用例及验证证据见 [记录](../../docs/refs/multi-device-testing/2026-11-06-presence-collaboration-verification.md)。
 
 ## 结构
 
@@ -355,3 +363,17 @@ dart test
 ```
 
 纯 Dart package，无 Flutter 依赖；设备启动（模拟器/app/端口转发）由外部脚本负责。iOS 模拟器宿主直连 endpoint；Android 经 `adb forward`（转发管理见 device-management 子文档）。
+
+## 严格的运行数据引用（presence 用例已采用）
+
+`--globals-file <json>` 可注入通用 JSON 数据，格式为 `{"initial": {...}, "outputRoots": ["global.outputs"]}`。输出区域必须是 initial 中的空对象。解释器只认识路径，不认识 account、biz 或 SDK 字段；这些布局由 testing 的数据工具约定。
+
+- `$global.<path>` 支持 YAML 和命令 JSON 的参数、断言引用，保留值类型；不存在、尚未产生与合法 null 分开处理。
+- `as: global.outputs.call_a` 将完整命令结果绑定到指定路径；事件的 `as` 保存 payload。只允许写入配置的 outputRoots 之下，每个路径只能绑定一次；重复使用在派发前失败。
+- `global` 保留，不能用 set/for 覆盖。初始数据固定，不允许结果绑定改写。旧 `$config/$inputs/$step/$prev` 继续服务未迁移用例。
+- 默认跳过引用失败生产者的命令；显式失败分析可通过已有 `skipOnFailedDeps: false` 读取失败结果。拼错字段属于工具错误，不向设备传 null。
+- `wait_event` 可使用 `checks`，格式与命令 expect 的 checks 相同，对事件 payload 判定；不匹配则继续等待。`containsItem` 要求同一个列表元素满足全部字段。它与 `match` 同时存在时两者都要满足。
+- 事件 checks 的引用必须在进入等待前就绪。App 从流程开始持续留存事件，因此匹配能读取命令响应之前已经到达的通知。
+- `--evidence-dir <dir>` 保存参数 trace、引用读取、最终 global 及原始事件；目录包含原始凭据，仅供本地排查。报告继续由 `--report-dir` 指定。
+
+具体项目约束及运行产物见 [动态数据规范](../../testing/docs/2026-11-06-dynamic-data-contract.md) 和 [组合脚本说明](../../testing/scripts/README.md)。重复执行需要明确的不同结果绑定；本次不增加自动取“最新值”或历史索引语法。

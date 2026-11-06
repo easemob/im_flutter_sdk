@@ -1,55 +1,82 @@
 #!/usr/bin/env bash
-# 多设备执行入口（example-testing-spec §3.4）。
-# 用法: run_flow --flow <name.yaml> [--run-id <id>] [--extra "<flow_runner args>"] [--no-verify]
-#   --flow          流程 YAML（testing/flows/ 下的文件名或绝对路径）
-#   --run-id        对应 setup_devices 的 run-id；自动注入 --agents-file
-#                   testing/tmp/<run-id>/agents.json（动态凭据+账号绑定）
-#   --extra         透传给 flow_runner 的附加参数（如 --report-dir）
-#   --no-verify     跳过 cmd id 静态校验（草稿期）
-# 前置: setup_devices --mode control --run-id <id> 已完成（agents.json 就绪）。
-# 产物: testing/reports/<run-id>/flow-report.json
-# Shell: bash >= 3.2（macOS 系统自带即满足；勿用 sh/zsh 直接执行，见 _compat.sh）
+# Multi-device composition: prepare data -> prepare devices -> bind -> execute.
+# Usage: run_flow --flow <yaml> --platform ios|android|mixed [--devices id1,id2]
+#        [--run-id <id>] [--prebuilt platform=path] [--data <json>]
+#        [--prepared] [--keep-app]
+# --prepared uses this run's existing data.json and devices.json; execution cannot be resumed/repeated.
+# Runtime data and evidence: testing/tmp/<run-id>/; report: testing/reports/<run-id>/.
 . "$(dirname "$0")/_compat.sh" || exit 64
 set -euo pipefail
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-
-FLOW=""
-RUN_ID=""
-EXTRA=""
-NOVERIFY=0
+umask 077
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$HERE/../.." && pwd)"
+FLOW=""; PLATFORM=""; DEVICES=""; PREBUILT=""; DATA=""
+RUN_ID="flow-$(date +%Y%m%d-%H%M%S)"
+PREPARED=0; KEEP_APP=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --flow) FLOW="${2:?}"; shift 2 ;;
     --run-id) RUN_ID="${2:?}"; shift 2 ;;
-    --extra) EXTRA="${2:?}"; shift 2 ;;
-    --no-verify) NOVERIFY=1; shift ;;
+    --platform) PLATFORM="${2:?}"; shift 2 ;;
+    --devices) DEVICES="${2:?}"; shift 2 ;;
+    --prebuilt) PREBUILT="${2:?}"; shift 2 ;;
+    --data) DATA="${2:?}"; shift 2 ;;
+    --prepared) PREPARED=1; shift ;;
+    --keep-app) KEEP_APP=1; shift ;;
     -h|--help) grep '^# ' "$0" | sed 's/^# //'; exit 0 ;;
     *) echo "run_flow: unknown arg: $1" >&2; exit 64 ;;
   esac
 done
-[[ -n "$FLOW" ]] || { echo "run_flow: --flow required" >&2; exit 64; }
-
-FLOW_PATH="$FLOW"
-[[ -f "$FLOW_PATH" ]] || FLOW_PATH="$ROOT/testing/flows/$FLOW"
-
-# 用例前置（声明在 YAML 的 preconditions:，REST 通道执行，blocked ≠ 用例失败）
-if command grep -qE '^preconditions:' "$FLOW_PATH"; then
-  [[ -n "$RUN_ID" ]] || { echo "run_flow: YAML 声明了 preconditions，需要 --run-id（账号绑定来自 agents.json）" >&2; exit 64; }
-  (cd "$ROOT" && dart run testing/tools/data/preconditions.dart "$FLOW_PATH" --run-id "$RUN_ID") || {
-    echo "run_flow: preconditions blocked —— 前置状态无法就绪，流程不执行（环境问题，非用例失败）" >&2
-    exit 65
-  }
-fi
-
-ARGS=(run "$FLOW_PATH" --report-dir testing/reports)
-if [[ -n "$RUN_ID" ]]; then
-  AGENTS_FILE="$ROOT/testing/tmp/$RUN_ID/agents.json"
-  [[ -f "$AGENTS_FILE" ]] || { echo "run_flow: $AGENTS_FILE 不存在——先跑 setup_devices --mode control --run-id $RUN_ID" >&2; exit 65; }
-  ARGS+=(--agents-file "$AGENTS_FILE")
-fi
-[[ $NOVERIFY -eq 1 ]] && ARGS+=(--no-verify-commands)
-[[ -n "$EXTRA" ]] && read -r -a EXTRA_ARGS <<< "$EXTRA" && ARGS+=("${EXTRA_ARGS[@]}")
-
+[[ -n "$FLOW" ]] || { echo 'run_flow: --flow required' >&2; exit 64; }
+[[ "$RUN_ID" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{0,100}$ ]] || { echo 'run_flow: invalid run-id' >&2; exit 64; }
+[[ -f "$FLOW" ]] || FLOW="$ROOT/testing/flows/$FLOW"
+FLOW="$(python3 -c 'import os,sys; print(os.path.abspath(sys.argv[1]))' "$FLOW")"
+[[ -f "$FLOW" ]] || { echo 'run_flow: flow not found' >&2; exit 66; }
+[[ -z "$DATA" ]] || DATA="$(python3 -c 'import os,sys; print(os.path.abspath(sys.argv[1]))' "$DATA")"
 cd "$ROOT"
-echo "==> flow_runner ${ARGS[*]}"
-exec dart run tool/flow_runner/bin/flow_runner.dart "${ARGS[@]}"
+ROLES="$(dart run testing/tools/runner/context.dart roles "$FLOW")"
+COUNT="$(python3 -c 'import sys; print(len(sys.argv[1].split(",")))' "$ROLES")"
+RUN_DIR="$ROOT/testing/tmp/$RUN_ID"
+if [[ $PREPARED -eq 0 ]]; then
+  [[ "$PLATFORM" == ios || "$PLATFORM" == android || "$PLATFORM" == mixed ]] || { echo 'run_flow: --platform required unless --prepared' >&2; exit 64; }
+  [[ ! -e "$RUN_DIR" ]] || { echo 'run_flow: run directory exists; use a fresh ID or --prepared' >&2; exit 65; }
+else
+  [[ -f "$RUN_DIR/data.json" && -f "$RUN_DIR/devices.json" && ! -f "$RUN_DIR/flow.yaml" ]] || { echo 'run_flow: prepared data/devices missing or context already used' >&2; exit 65; }
+fi
+mkdir -p "$RUN_DIR"
+# Keep the original failure code. Cleanup/evidence has a separate outcome.
+finish_run() {
+  code=$?
+  trap - EXIT
+  if [[ $KEEP_APP -eq 0 && -f "$RUN_DIR/devices.json" ]]; then
+    python3 testing/tools/runner/stop_devices.py "$RUN_DIR" || echo 'WARN: device cleanup incomplete; inspect cleanup.json' >&2
+  fi
+  python3 - "$RUN_DIR" "$code" <<'RESULT'
+import json,sys
+from pathlib import Path
+p=Path(sys.argv[1]); (p/'exit.json').write_text(json.dumps({'exitCode':int(sys.argv[2])})+'\n')
+report=p.parents[1]/'reports'/p.name
+report.mkdir(parents=True,exist_ok=True)
+summary={'runId':p.name,'exitCode':int(sys.argv[2]),'runtimeDir':str(p),'files':sorted(f.name for f in p.iterdir() if f.is_file())}
+if (p/'cleanup.json').exists(): summary['cleanup']=json.loads((p/'cleanup.json').read_text())
+(report/'runtime-index.json').write_text(json.dumps(summary,indent=2)+'\n')
+RESULT
+  exit "$code"
+}
+trap finish_run EXIT
+if [[ $PREPARED -eq 0 ]]; then
+  DATA_ARGS=(--run-id "$RUN_ID" --flow "$FLOW")
+  [[ -z "$DATA" ]] || DATA_ARGS+=(--data "$DATA")
+  "$HERE/prepare_data" "${DATA_ARGS[@]}"
+  DEVICE_ARGS=(--run-id "$RUN_ID" --platform "$PLATFORM" --count "$COUNT" --roles "$ROLES" --mode control)
+  [[ -z "$DEVICES" ]] || DEVICE_ARGS+=(--devices "$DEVICES")
+  [[ -z "$PREBUILT" ]] || DEVICE_ARGS+=(--prebuilt "$PREBUILT")
+  "$HERE/setup_devices" "${DEVICE_ARGS[@]}"
+fi
+dart run testing/tools/runner/context.dart bind "$RUN_ID" "$FLOW"
+dart run tool/flow_runner/bin/flow_runner.dart run "$RUN_DIR/flow.yaml" \
+  --agents-file "$RUN_DIR/agents.json" --globals-file "$RUN_DIR/global.json" \
+  --evidence-dir "$RUN_DIR" --report-dir "$ROOT/testing/reports" \
+  > "$RUN_DIR/run.log" 2>&1 || { code=$?; cat "$RUN_DIR/run.log"; exit "$code"; }
+cat "$RUN_DIR/run.log"
+"$HERE/collect_report" --run-id "$RUN_ID"
