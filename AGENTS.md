@@ -2,7 +2,7 @@
 
 Easemob IM Flutter SDK, built on the Federated Plugin architecture. This document is intended for AI Agents: it describes the project structure, cross-layer call chains, and hard conventions; for code-level details, the actual repository code prevails.
 
-Document split: this document is the only must-read for AI. Procedural content such as environment setup, data preparation, and verification flows lives in `CONTRIBUTING.md` (read on demand only when the task involves it); `im_flutter_sdk/README.md` targets SDK users and AI does not need to read it.
+Document split: this document defines agent conventions; [README.md](README.md) provides the project overview and directory map. Environment setup and CI procedures live in [CONTRIBUTING.md](CONTRIBUTING.md); testing entry points are listed below. `im_flutter_sdk/README.md` targets SDK users.
 
 ## Collaboration Conventions
 
@@ -27,6 +27,19 @@ Document split: this document is the only must-read for AI. Procedural content s
 Call chain: `Dart API → MethodChannel (interface) → Native Wrapper → HyphenateChat SDK`
 
 Dependency direction: `im_flutter_sdk` → `im_flutter_sdk_android` / `im_flutter_sdk_ios` → `im_flutter_sdk_interface`. The interface is the contract shared by all platform packages; changing it affects every upper-layer package. Package pubspecs use hosted version dependencies for publishing. Run `make local-deps` to generate gitignored `pubspec_overrides.yaml` files for local development; `make deps` and CI do this automatically. Overrides belong to each resolution root, including the example, and are not inherited from dependency packages. See `CONTRIBUTING.md` for release validation.
+
+## Verification Architecture
+
+| Mode | Responsibility | Implementation and entry |
+|---|---|---|
+| CI tests | Protect basic SDK behavior, stability, and regression coverage | Flutter unit/contract tests in `im_flutter_sdk/test/` and device tests in `im_flutter_sdk/example/integration_test/`; workflows in `.github/workflows/`, local entry points in `tool/ci/`. See [CONTRIBUTING.md](CONTRIBUTING.md#running-and-verification). |
+| AI tests | Verify API additions, behavior changes, and interactions for SDK version ports | Single-device JSON scripts via `make auto-report` / `API_SCRIPT`; multi-device YAML flows and JSON commands via `testing_v2` and `tool/flow_runner`. See the [example guide](im_flutter_sdk/example/README.md#script-mode-ai-friendly) and [testing_v2 guide](testing_v2/README.md). |
+| Manual mode | Allow free API spot checks and provide usable, extractable examples | Run the [example app](im_flutter_sdk/example/README.md) without `API_SCRIPT` or `API_CONTROL`; initialize, log in, and select APIs in the UI. |
+
+- Keep CI and AI test architectures independent. Their case formats and execution engines are maintained separately; API coverage may overlap, and a pass in one mode does not replace verification in another. Manual mode is an interactive usage path, not an automated test suite.
+- For each SDK version port, pass the relevant single-device and multi-device scenarios on the affected platforms. Then add CI regression tests for basic behavior, important boundaries, and fixed defects that need lasting protection; do not mechanically duplicate every AI script.
+- AI scenarios are executed by the script runner. AI authors cases, initiates runs, and analyzes evidence; it does not control each step of a fixed workflow. Investigate failed cases and never weaken correct assertions to accommodate an SDK defect.
+- Select the entry point that supports the case: `testing_v2` handles multi-device execution; single-device scripts use `make auto-report`. Existing `testing/flows/` cases use the [testing script entry points](testing/scripts/README.md). Changes to `testing_v2` must follow [its scope and collaboration rules](testing_v2/spec.md).
 
 ## Development Environment Setup
 
