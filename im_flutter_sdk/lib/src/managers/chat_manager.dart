@@ -13,7 +13,7 @@ import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart'
 ///
 /// ```dart
 ///    ChatMessage msg = ChatMessage.createTxtSendMessage(
-///        username: toChatUsername, content: content);
+///        targetId: toChatUsername, content: content);
 ///    await ChatClient.getInstance.chatManager.sendMessage(msg);
 /// ```
 /// ~end

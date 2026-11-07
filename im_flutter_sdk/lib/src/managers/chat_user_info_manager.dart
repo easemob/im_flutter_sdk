@@ -206,7 +206,10 @@ class ChatUserInfoManager {
   /// ~english
   /// Gets the current user's attributes from the server.
   ///
-  /// Param [expireTime] The time period(seconds) when the user attributes in the cache expire. If the interval between two callers is less than or equal to the value you set in the parameter, user attributes are obtained directly from the local cache; otherwise, they are obtained from the server. For example, if you set this parameter to 120(2 minutes), once this method is called again within 2 minutes, the SDK returns the attributes obtained last time.
+  /// Param [expireTime] The validity period of the Dart user attribute cache, in seconds. The default value is `0`.
+  /// The period starts when the cached object is created. Cache hits do not extend this period.
+  /// Cached attributes can be reused within this period; users without cached attributes or with expired attributes are requested through the native SDK.
+  /// A value of `0` provides no positive cache validity period, but a call within the same millisecond may still reuse cached attributes.
   ///
   /// **Return** The user properties that are obtained. See [ChatUserInfo].
   ///
@@ -216,7 +219,10 @@ class ChatUserInfoManager {
   /// ~chinese
   /// 获取当前用户的属性信息。
   ///
-  /// Param [expireTime] 获取的用户属性到期时间。如果在到期时间内再次调用该方法，则 SDK 直接返回上次获取到的缓存数据。例如，将该参数设为 120，即 2 分钟，则如果你在 2 分钟内再次调用该方法获取用户属性，SDK 仍将返回上次获取到的属性。否则需从服务器获取。
+  /// Param [expireTime] Dart 层用户属性缓存有效期，单位为秒，默认值为 `0`。
+  /// 从缓存对象创建时起计算，命中缓存的读取不会延长有效期。
+  /// 有效期内可复用缓存；未缓存或缓存已过期的用户会交由原生 SDK 请求。
+  /// `0` 表示不设置正时长的缓存有效期，但同一毫秒内再次调用仍可能复用缓存。
   ///
   /// **Return** 用户属性。请参见 [ChatUserInfo]。
   ///
@@ -248,7 +254,10 @@ class ChatUserInfoManager {
   ///
   /// Param [userIds] The username array.
   ///
-  /// Param [expireTime] The time period(seconds) when the user attributes in the cache expire. If the interval between two callers is less than or equal to the value you set in the parameter, user attributes are obtained directly from the local cache; otherwise, they are obtained from the server. For example, if you set this parameter to 120(2 minutes), once this method is called again within 2 minutes, the SDK returns the attributes obtained last time.
+  /// Param [expireTime] The validity period of the Dart user attribute cache, in seconds. The default value is `0`.
+  /// The period starts when the cached object is created. Cache hits do not extend this period.
+  /// Cached attributes can be reused within this period; users without cached attributes or with expired attributes are requested through the native SDK.
+  /// A value of `0` provides no positive cache validity period, but a call within the same millisecond may still reuse cached attributes.
   ///
   /// **Return** A map that contains key-value pairs where the key is the user ID and the value is user attributes.
   ///
@@ -260,7 +269,10 @@ class ChatUserInfoManager {
   ///
   /// Param [userIds] 用户 ID 数组。
   ///
-  /// Param [expireTime] 获取的用户属性到期时间。如果在到期时间内再次调用该方法，则 SDK 直接返回上次获取到的缓存数据。例如，将该参数设为 120，即 2 分钟，则如果你在 2 分钟内再次调用该方法获取用户属性，SDK 仍将返回上次获取到的属性。否则需从服务器获取。
+  /// Param [expireTime] Dart 层用户属性缓存有效期，单位为秒，默认值为 `0`。
+  /// 从缓存对象创建时起计算，命中缓存的读取不会延长有效期。
+  /// 有效期内可复用缓存；未缓存或缓存已过期的用户会交由原生 SDK 请求。
+  /// `0` 表示不设置正时长的缓存有效期，但同一毫秒内再次调用仍可能复用缓存。
   ///
   /// **Return** 返回 key-value 格式的 Map 类型数据，key 为用户 ID，value 为用户属性。
   ///
