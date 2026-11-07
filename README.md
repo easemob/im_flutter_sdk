@@ -53,6 +53,7 @@ CI 使用 Flutter 单元、契约和设备集成测试；AI 使用 JSON 脚本�
 |---|---|---|
 | SDK 使用者 | [SDK 接入指南](im_flutter_sdk/README.md) | 集成、平台配置与快速开始 |
 | 开发维护者 | [CONTRIBUTING.md](CONTRIBUTING.md) | 开发环境、验证、分支与发布流程 |
+| CI 用例维护者 | [用例说明](im_flutter_sdk/docs/ci/flutter-only-ci.md)、[验证记录](docs/refs/ci-basic-api-tests/2026-11-07-positive-verification.md) | 覆盖范围、运行条件、报告与未完成项 |
 | AI 执行者 | [AGENTS.md](AGENTS.md) | 架构边界、任务选择与协作规则 |
 | 用例编写者 | [flow_runner](tool/flow_runner/README.md) | YAML 流程、JSON 命令及断言语法 |
 

@@ -129,15 +129,53 @@ Every device task on CI has an equivalent local script; the scripts first compar
 |----------|---------|---------|------------------|
 | `.github/workflows/ci.yml` | PR, push to `flutter2_stable` / `4.*` / `5.*`, manual | Quality gate + Android debug build + iOS simulator build | `bash tool/ci/run_quality.sh` |
 | `.github/workflows/device-smoke.yml` | Daily schedule + manual | Android / iOS login-free Presence smoke (`integration_test/no_login_presence_test.dart`, uses the test's built-in public demo appKey, no credentials needed) | `bash tool/ci/smoke_local.sh android\|ios` |
-| `.github/workflows/single-account-nightly.yml` | Daily schedule + manual | Android / iOS single-account login + local database (`integration_test/single_account_local_test.dart`), requires `E2E_APP_KEY`, `E2E_USER_ID`, `E2E_REST_API`, `E2E_CLIENT_ID`, `E2E_CLIENT_SECRET`; the user token is freshly exchanged on each run by `tool/ci/fetch_e2e_user_token.sh` (5.0.0 no longer has password login; the token expires in ~24h and cannot be stored as a secret) | `E2E_APP_KEY=... E2E_USER_ID=... E2E_REST_API=... E2E_CLIENT_ID=... E2E_CLIENT_SECRET=... bash tool/ci/nightly_local.sh android\|ios` |
+| `.github/workflows/single-account-nightly.yml` | Daily schedule + manual | Client, contact, group, conversation, and message cases (`integration_test/single_account_local_test.dart`); configuration preparation is incomplete for the expanded suite, as described below | `bash tool/ci/nightly_local.sh android\|ios` (same preparation gap) |
 
 > The cron in `single-account-nightly.yml` (`37 18 * * *`, one hour earlier than RN's nightly) only takes effect on the **default branch** (`flutter2_stable`) — GitHub scheduled workflows "run the latest commit of the default branch using the default branch's workflow file", so before this file lands on the default branch, scheduled triggers on the 5.0.0 branch will not happen; only manual dispatch works.
 
 Android requires a booted emulator (the scripts hard-connect to `emulator-5554`); on iOS, `run_ios_simulator_test.sh` boots the simulator itself, with logs written to `artifacts/*.log` (gitignored).
 
-The two example build jobs in `ci.yml` and both `run_*_test.sh` scripts first call `tool/ci/ensure_example_env.sh` to generate the `example/lib/env.dart` placeholder (filling in only this one file, without touching `testing/config/environment.local.json`), so they can run directly on a fresh checkout (or CI) without `make config` first; an existing real local environment is not overwritten — which environment to run is still decided by local `testing/config/environment.local.json` + `make env-gettoken`.
+The two example build jobs in `ci.yml` and both `run_*_test.sh` scripts call `tool/ci/ensure_example_env.sh` to create the missing `example/lib/env.dart` placeholder without overwriting an existing file. This satisfies the compilation dependency only. CI integration tests read credentials from dart-defines; `testing/config/environment.local.json` and `make env-gettoken` prepare data for the example's manual/script modes and do not supply the CI test configuration automatically.
 
-Both `run_*_test.sh` scripts wipe the app's data on the device before running (`adb uninstall` / `xcrun simctl uninstall`, ignored if the app is absent). Reason: `flutter test` over-installs an already-installed app and only uninstalls after the run ends; leftover login state on a local device would fail cold-start-dependent cases (e.g. `FL-APP-001`). CI uses fresh devices every time and is unaffected.
+Both `run_*_test.sh` scripts uninstall the app before running to avoid leftover login state in cold-start cases such as `FL-APP-001`. Reinstalling does not remove server-side history or guarantee an empty conversation after login; retain the contact deletion cases' existing-message protection.
+
+#### Cases and inputs
+
+The two entry files remain under `im_flutter_sdk/example/integration_test/`:
+
+| Entry | Cases | Scope |
+|---|---|---|
+| `no_login_presence_test.dart` | 6 | Cold-start initialization and five existing logged-out Presence negative cases |
+| `single_account_local_test.dart` | 22 | Positive cases registered from `modules/{client,contact,group,conversation,message}_cases.dart` |
+
+`support/` contains shared test timeout, login synchronization, and REST fixture helpers. Case IDs and assertions are recorded in [native-case-mapping.json](im_flutter_sdk/docs/ci/native-case-mapping.json); selection rules and exclusions are in the [API selection](docs/refs/ci-basic-api-tests/2026-11-07-api-selection.md).
+
+The logged-in entry requires all six dart-defines:
+
+| Fields | Purpose |
+|---|---|
+| `E2E_APP_KEY`, `E2E_REST_API` | App identity and REST endpoint |
+| `E2E_USER_ID`, `E2E_USER_TOKEN` | Account logged into the test device and its fresh user token |
+| `E2E_PEER_ID` | Another prepared account in the same app, used for contacts, groups, and message sending; no second running client is required |
+| `E2E_APP_TOKEN` | Fresh app token used by REST fixture preparation and verification |
+
+The existing Nightly workflow and `nightly_local.sh` take `E2E_APP_KEY`, `E2E_USER_ID`, `E2E_REST_API`, `E2E_CLIENT_ID`, and `E2E_CLIENT_SECRET` as host inputs. They fetch a fresh user token, but `write_e2e_dart_defines.sh` writes only the app key, user ID, and user token. **Both preparation paths still lack the other three fields required by the expanded entry.** Passing additional environment variables alone does not add them to the generated JSON. App/User tokens must be obtained through REST for each run; the peer is a runtime role selected from prepared accounts, not a new fixed GitHub Secret. Client secrets stay on the host.
+
+For direct device execution with an already prepared, complete temporary JSON, run from the worktree root:
+
+```bash
+E2E_CONFIG_PATH="$PWD/reports/ci-basic-api/local/e2e-config.json" \
+  bash tool/ci/run_android_emulator_test.sh \
+  integration_test/single_account_local_test.dart android-basic-r1.log
+```
+
+For iOS, use `run_ios_simulator_test.sh` and a distinct log name. Keep the token file local with mode `0600` and delete it after execution. Tests verify prepared relations and group membership, restore changed relations/blacklists, and destroy temporary groups. Preparation or cleanup failure fails the run; it must not be hidden by weakening SDK assertions.
+
+#### Results and evidence
+
+Device scripts print the log path under `artifacts/`; pass a different second argument for each platform and retry to preserve earlier failures. Logs and temporary runtime evidence under `reports/` are gitignored. The reviewed [verification record](docs/refs/ci-basic-api-tests/2026-11-07-positive-verification.md) links to the per-case CSV and [troubleshooting record](docs/refs/troubleshooting/2026-11-07-ci-contact-fixture-sync.md). The CSV records case ID, platform, round, expected/actual behavior, result, failure stage, target execution, and evidence; device scripts do not generate it automatically.
+
+Positive cases are implemented, but acceptance is incomplete: the latest Android rerun passed 22/22; iOS passed 20 with two contact cases stopped during preparation. Those cases remain enabled. Cloud Nightly has not been verified with the expanded suite, and the new negative-case phase has not started. See the verification record for individual rounds and retained failures.
 
 ## Coding Conventions
 
