@@ -82,8 +82,6 @@ void main() {
   });
 
   registerClientCases(client: client, userId: _userId, token: _token);
-  // Contact deletion needs an empty peer conversation after the cold install.
-  // Run it before sending the suite's message to that peer.
   registerContactCases(
       client: client,
       userId: _userId,

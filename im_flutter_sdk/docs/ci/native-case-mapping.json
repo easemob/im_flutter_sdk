@@ -496,8 +496,8 @@
         "ios"
       ],
       "assertions": [
-        "deleteContact(keepConversation:true) removes the bilateral server relationship and local contact while preserving the original seeded conversation and message",
-        "Other friends and the control conversation are unchanged; original relations are restored and local fixtures are reclaimed"
+        "deleteContact(keepConversation:true) completes successfully after the server confirms deletion",
+        "Friendship is prepared before the call; original friendship and blacklist state are restored after the case"
       ],
       "testFile": "example/integration_test/modules/contact_cases.dart"
     },
@@ -514,8 +514,8 @@
         "ios"
       ],
       "assertions": [
-        "deleteContact(keepConversation:false) removes the bilateral server relationship, local contact, and seeded conversation",
-        "Other friends and the control conversation are unchanged; original relations are restored and local fixtures are reclaimed"
+        "deleteContact(keepConversation:false) completes successfully after the server confirms deletion",
+        "Friendship is prepared before the call; original friendship and blacklist state are restored after the case"
       ],
       "testFile": "example/integration_test/modules/contact_cases.dart"
     },

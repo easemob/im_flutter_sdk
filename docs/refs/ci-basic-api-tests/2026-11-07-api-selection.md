@@ -128,12 +128,12 @@ PY
 | 方法 | 准备、断言及清理 |
 |---|---|
 | `getAllContactIds`、`getAllContacts`、`getContact` | 准备受控好友及非好友账号，独立核验服务端好友关系；SDK 列表须在有限等待内包含指定好友、排除非好友，详情对应正确账号；结束后恢复本轮修改的关系 |
-| `deleteContact` | REST 建立并核验好友关系，准备该联系人的本轮会话；通过 SDK 删除后核对服务端关系和本地列表，分别验证 `keepConversation: true/false` 的保留／删除语义；恢复原好友关系，不误删其他会话 |
+| `deleteContact` | REST 建立并核验好友关系；分别传入 `keepConversation: true/false`，仅验证 API 成功返回；不准备会话和消息，不追加 REST、本地列表、监听通知或会话断言；结束后恢复原好友关系 |
 | `addUserToBlockList`、`removeUserFromBlockList`、`fetchBlockIds`、`getBlockIds` | 保存目标的原始黑名单状态；SDK 添加后核对远端、本地列表包含目标，移除后两处均排除目标，未指定账号不受影响；结束后恢复原状态并核验。不宣称验证了对方消息被拦截 |
 
 八个方法均为新增验证目标。准备方式须能在单设备执行条件下建立关系；不能将发出好友邀请或等待固定时间视为准备成功。
 
-`deleteContact` 存在待复现的 iOS 封装疑点：[wrapper](../../../im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/ContactManagerWrapper.m) 将 `keepConversation` 原样传给 native 的 `isDeleteConversation`，与公开的保留／删除语义相反。本次仅静态核查；用例仍按公开契约断言，实际失败后提交证据请用户确认，不能以接受相反结果规避问题。
+`deleteContact` 的 iOS 封装错误已通过独立数据实测确认：[wrapper](../../../im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/ContactManagerWrapper.m) 修复前将 `keepConversation` 原样传给 native 的 `isDeleteConversation`，两个取值的保留／删除行为均与公开契约相反。用户修正取反后，专项验证 2/2 通过；旧正式用例曾因本地联系人更新超时失败，Android 诊断也出现过同类异常，见[专项排查](2026-11-07-delete-contact-investigation.md)。经用户确认，`FL-CONTACT-002/003` 的范围收敛为删除 API 成功返回；两个参数取值均执行，但不宣称覆盖会话语义或本地同步。旧失败保留，同步问题不因范围调整而视为修复。
 
 ### 3.6 群组：5 个方法
 

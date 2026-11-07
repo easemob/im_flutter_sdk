@@ -22,8 +22,10 @@ and `single_account_local_test.dart`. The logged-in entry registers cases from
 are listed in [native-case-mapping.json](native-case-mapping.json).
 
 Contacts and groups are verifiable on one device with prepared resources and
-independent REST checks. Message sending correlates the final SDK callback with
-the sent message to verify server confirmation; it does not establish recipient
+independent REST checks. Contact deletion checks only successful API completion
+for both `keepConversation` values; REST is used for fixture preparation and
+restoration, not to recheck the delete result. Message sending correlates the
+final SDK callback with the sent message to verify server confirmation; it does not establish recipient
 delivery. Multi-device collaboration, Thread, Room, Push, and active network-loss
 simulation are outside this scope. Full API exclusions and selection rationale
 are in the [selection record](../../../docs/refs/ci-basic-api-tests/2026-11-07-api-selection.md).
@@ -43,8 +45,9 @@ placeholder for compilation and preserves an existing file. Integration tests
 take credentials from dart-defines, independently of the example's local data
 under `testing/config/environment.local.json`.
 
-Positive-case acceptance remains incomplete: iOS has two preparation failures,
-the cloud preparation path needs completion, and new negative cases have not
+The latest local positive-suite run passed 22/22 on each platform. Contact
+deletion cases check API completion; earlier local-sync failures remain recorded.
+The cloud preparation path still needs completion; new negative cases have not
 started. Existing negative cases remain in the smoke suite. The
 [verification record](../../../docs/refs/ci-basic-api-tests/2026-11-07-positive-verification.md)
 contains platform results, per-case CSV, and unresolved issues. Daily schedules

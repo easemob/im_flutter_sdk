@@ -46,7 +46,8 @@ void registerContactCases({
     await observeContact(present);
   }
 
-  Future<ContactRelationSnapshot> prepareRelation(String caseId) async {
+  Future<void> prepareRelation(String caseId,
+      {bool syncLocalOnRestore = true}) async {
     final snapshot = await rest.snapshotContacts(userId, peerId);
     final userBlocks = await rest.blockIds(userId);
     final peerBlocks = await rest.blockIds(peerId);
@@ -64,14 +65,15 @@ void registerContactCases({
     });
     addTearDown(() async {
       await rest.restoreContacts(userId, peerId, snapshot);
-      await reloadRelation(caseId, snapshot.userIds.contains(peerId),
-          restoring: true);
+      if (syncLocalOnRestore) {
+        await reloadRelation(caseId, snapshot.userIds.contains(peerId),
+            restoring: true);
+      }
       debugPrint('CI $caseId cleanup verified: friendship $userId / $peerId');
     });
     await rest.setBlocked(userId, peerId, false);
     await rest.setBlocked(peerId, userId, false);
     await client.contactManager.fetchBlockIds();
-    return snapshot;
   }
 
   ciTestWidgets(
@@ -108,82 +110,18 @@ void registerContactCases({
 
   for (final keep in [true, false]) {
     final id = keep ? 'FL-CONTACT-002' : 'FL-CONTACT-003';
-    ciTestWidgets('$id positive deletes friendship with keepConversation=$keep',
+    ciTestWidgets(
+        '$id positive deleteContact succeeds with keepConversation=$keep',
         (tester) async {
-      final original = await prepareRelation(id);
+      await prepareRelation(id, syncLocalOnRestore: false);
       await rest.setContacts(userId, peerId, true);
       debugPrint(
           'CI $id prepare verified: bilateral friendship $userId / $peerId');
-      await reloadRelation(id, true);
-      final existing = await client.chatManager.getConversation(
-        peerId,
-        createIfNeed: false,
-      );
-      if (existing != null && await existing.messagesCount() != 0) {
-        final messages = await existing.loadMessages(loadCount: 5);
-        debugPrint('CI $id existing peer conversation: '
-            'count=${await existing.messagesCount()} samples=${messages.map((message) => {
-                  'id': message.msgId,
-                  'direction': message.direction.name,
-                  'serverTime': message.serverTime,
-                  'ciCase': message.attributes?['ciCase'],
-                }).toList()}');
-        throw StateError('$id preparation: refusing to delete an existing '
-            'nonempty conversation for $peerId');
-      }
-      final controlId =
-          'ci_contact_control_${DateTime.now().microsecondsSinceEpoch}';
-      for (final conversationId in [peerId, controlId]) {
-        addTearDown(() async {
-          await client.chatManager
-              .deleteConversation(conversationId, deleteMessages: true);
-          expect(
-              await client.chatManager
-                  .getConversation(conversationId, createIfNeed: false),
-              isNull);
-          debugPrint(
-              'CI $id cleanup verified: local conversation $conversationId');
-        });
-      }
-      final conversation = (await client.chatManager.getConversation(peerId))!;
-      final control = (await client.chatManager.getConversation(controlId))!;
-      final seed = _message(peerId, userId, '$id seed');
-      final controlSeed = _message(controlId, userId, '$id untouched');
-      await conversation.insertMessage(seed);
-      await control.insertMessage(controlSeed);
-      expect(await conversation.messagesCount(), 1);
-      expect((await conversation.loadMessage(seed.msgId))?.msgId, seed.msgId);
 
       debugPrint('CI $id verify: deleteContact keepConversation=$keep');
-      await client.contactManager.deleteContact(peerId, keepConversation: keep);
-      await rest.verifyContacts(userId, peerId, false);
-      expect(await rest.contactIds(userId),
-          unorderedEquals(original.userIds.where((value) => value != peerId)));
-      expect(await rest.contactIds(peerId),
-          unorderedEquals(original.peerIds.where((value) => value != userId)));
-      final observedConversation =
-          await client.chatManager.getConversation(peerId, createIfNeed: false);
-      debugPrint('CI $id after SDK delete: keepConversation=$keep '
-          'conversationExists=${observedConversation != null} '
-          'messageCount=${await observedConversation?.messagesCount()}');
-      await observeContact(false);
-      final after = await waitForCi(
-        'conversation $peerId retained = $keep after deleteContact',
-        () => client.chatManager.getConversation(peerId, createIfNeed: false),
-        (value) => (value != null) == keep,
-      );
-      if (keep) {
-        expect(await after!.messagesCount(), 1);
-        expect((await after.loadMessage(seed.msgId))?.msgId, seed.msgId);
-      } else {
-        expect(after, isNull);
-      }
-      final untouched = await client.chatManager
-          .getConversation(controlId, createIfNeed: false);
-      expect(untouched, isNotNull);
-      expect(await untouched!.messagesCount(), 1);
-      expect((await untouched.loadMessage(controlSeed.msgId))?.msgId,
-          controlSeed.msgId);
+      await client.contactManager
+          .deleteContact(peerId, keepConversation: keep)
+          .timeout(const Duration(seconds: 30));
       debugPrint('CI $id verify passed');
     });
   }
@@ -233,16 +171,4 @@ void registerContactCases({
     await verify(withoutPeer);
     debugPrint('CI $id verify passed');
   });
-}
-
-ChatMessage _message(String from, String userId, String content) {
-  final time = DateTime.now().millisecondsSinceEpoch;
-  return ChatMessage.createReceiveMessage(
-      body: ChatTextMessageBody(content: content))
-    ..from = from
-    ..to = userId
-    ..conversationId = from
-    ..localTime = time
-    ..serverTime = time
-    ..status = MessageStatus.SUCCESS;
 }

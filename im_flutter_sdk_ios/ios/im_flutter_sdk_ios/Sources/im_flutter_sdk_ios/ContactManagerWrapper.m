@@ -112,7 +112,7 @@
     NSString *username = param[@"userId"];
     BOOL keepConversation = [param[@"keepConversation"] boolValue];
     [EMClient.sharedClient.contactManager deleteContact:username
-                                   isDeleteConversation:keepConversation
+                                   isDeleteConversation:!keepConversation
                                              completion:^(NSString *aUsername, EMError *aError)
      {
         [weakSelf wrapperCallBack:result

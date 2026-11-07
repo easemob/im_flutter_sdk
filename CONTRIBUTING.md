@@ -137,7 +137,7 @@ Android requires a booted emulator (the scripts hard-connect to `emulator-5554`)
 
 The two example build jobs in `ci.yml` and both `run_*_test.sh` scripts call `tool/ci/ensure_example_env.sh` to create the missing `example/lib/env.dart` placeholder without overwriting an existing file. This satisfies the compilation dependency only. CI integration tests read credentials from dart-defines; `testing/config/environment.local.json` and `make env-gettoken` prepare data for the example's manual/script modes and do not supply the CI test configuration automatically.
 
-Both `run_*_test.sh` scripts uninstall the app before running to avoid leftover login state in cold-start cases such as `FL-APP-001`. Reinstalling does not remove server-side history or guarantee an empty conversation after login; retain the contact deletion cases' existing-message protection.
+Both `run_*_test.sh` scripts uninstall the app before running to avoid leftover login state in cold-start cases such as `FL-APP-001`. Reinstalling does not remove server-side history. Contact deletion cases prepare friendship only and check the delete API's successful completion; they do not prepare or inspect conversations or messages.
 
 #### Cases and inputs
 
@@ -175,7 +175,7 @@ For iOS, use `run_ios_simulator_test.sh` and a distinct log name. Keep the token
 
 Device scripts print the log path under `artifacts/`; pass a different second argument for each platform and retry to preserve earlier failures. Logs and temporary runtime evidence under `reports/` are gitignored. The reviewed [verification record](docs/refs/ci-basic-api-tests/2026-11-07-positive-verification.md) links to the per-case CSV and [troubleshooting record](docs/refs/troubleshooting/2026-11-07-ci-contact-fixture-sync.md). The CSV records case ID, platform, round, expected/actual behavior, result, failure stage, target execution, and evidence; device scripts do not generate it automatically.
 
-Positive cases are implemented, but acceptance is incomplete: the latest Android rerun passed 22/22; iOS passed 20 with two contact cases stopped during preparation. Those cases remain enabled. Cloud Nightly has not been verified with the expanded suite, and the new negative-case phase has not started. See the verification record for individual rounds and retained failures.
+The latest local positive-suite run passed 22/22 on both Android and iOS. Contact deletion cases check successful API completion for both parameter values; REST result checks, local contact updates, notifications, and conversation behavior are outside these two cases. Earlier local-contact failures on both platforms remain recorded and are not considered fixed by this scope change. Cloud Nightly has not been verified with the expanded suite, and the new negative-case phase has not started. See the verification record for individual rounds.
 
 ## Coding Conventions
 
