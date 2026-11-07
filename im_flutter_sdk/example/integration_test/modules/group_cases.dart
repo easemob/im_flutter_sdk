@@ -102,6 +102,12 @@ void registerGroupCases({
     return detail;
   }
 
+  // Test: Create a private group owned by the logged-in user with one prepared
+  // peer, read its remote detail/members, then destroy it through the SDK.
+  // Expected: The ID is nonempty; name, description, owner, count, and configs
+  // match; REST confirms the two members and SDK member results include the peer
+  // without outsiders/duplicates. REST confirms absence after destruction.
+  // Cleanup reclaims this case's group if execution fails before destruction.
   ciTestWidgets(
       'FL-GROUP-001 positive creates, reads, and destroys an owned group',
       (tester) async {
@@ -114,6 +120,10 @@ void registerGroupCases({
     debugPrint('CI $id verify passed: group ${group.groupId} absent');
   });
 
+  // Test: Create and remotely verify an owned group, then read getGroupWithId
+  // and getJoinedGroups from local SDK state.
+  // Expected: Local ID/name/description/owner match the prepared group; the
+  // joined list contains it exactly once with the same name. Cleanup deletes it.
   ciTestWidgets(
       'FL-GROUP-002 positive reads the created group from local SDK state',
       (tester) async {

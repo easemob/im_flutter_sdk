@@ -7,6 +7,10 @@ void registerConversationNegativeCases({
   required ChatClient client,
   required String userId,
 }) {
+  // Test: In a conversation containing one stored message, call the conversation
+  // updateMessage API with a different message that has never been persisted.
+  // Expected: ChatError 500; no new message is inserted, the count remains one,
+  // and the original message ID/content are unchanged.
   ciTestWidgets('FL-CONV-009 negative update rejects an unpersisted message',
       (_) async {
     final manager = client.chatManager;

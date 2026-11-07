@@ -13,6 +13,9 @@ void registerLoggedOutClientNegativeCases({required ChatClient client}) {
     expect(await client.isConnected(), isFalse);
   }
 
+  // Test: Call loginWithToken with an empty user ID while logged out.
+  // Expected: ChatError 110 on Android or 101 on iOS; both user IDs stay null
+  // and the client remains disconnected.
   ciTestWidgets('FL-AUTH-004 negative rejects an empty login user', (_) async {
     await expectLoggedOut();
     // Android validates both required parameters as INVALID_PARAM; iOS uses
@@ -22,6 +25,10 @@ void registerLoggedOutClientNegativeCases({required ChatClient client}) {
     await expectLoggedOut();
   });
 
+  // Test: While logged out, call loginWithToken with a nonempty user ID and an
+  // empty token.
+  // Expected: ChatError 110 on Android or 104 on iOS; both user IDs stay null
+  // and the client remains disconnected.
   ciTestWidgets('FL-AUTH-005 negative rejects an empty login token', (_) async {
     await expectLoggedOut();
     await expectCiError(() => client.loginWithToken('flutter-ci-peer', ''),
@@ -35,6 +42,9 @@ void registerClientNegativeCases({
   required String userId,
   required String token,
 }) {
+  // Test: Call loginWithToken again for the already connected user.
+  // Expected: ChatError 200; cached/native user IDs and the connection remain
+  // unchanged. Cleanup restores the original session if it was disrupted.
   ciTestWidgets(
       'FL-AUTH-006 negative rejects login of the already logged in user',
       (_) async {

@@ -41,6 +41,11 @@ Future<void> _expectSendError(
 }
 
 void registerLoggedOutMessageNegativeCases({required ChatClient client}) {
+  // Test: Send text to a nonempty recipient while logged out, with the message
+  // listener registered before sending and correlated by the local message ID.
+  // Expected: onError reports ChatError 201 and preserves the recipient.
+  // The retained FAIL status assertion is pending contract confirmation;
+  // SDK 5.0.0 was observed to return PROGRESS on both Android and iOS.
   ciTestWidgets(
       'FL-MSG-006 negative send reports not logged in through callback',
       (_) async {
@@ -88,6 +93,11 @@ void registerMessageNegativeCases({
     return (conversation, stored, absent);
   }
 
+  // Test: Send text to an empty recipient while logged in, with a listener
+  // registered before sending and correlated by the local message ID.
+  // Expected: onError reports ChatError 500 and preserves the empty recipient.
+  // The retained FAIL status assertion is pending contract confirmation;
+  // SDK 5.0.0 was observed to return PROGRESS on both Android and iOS.
   ciTestWidgets(
       'FL-MSG-007 negative send rejects an empty recipient in callback',
       (_) async {
@@ -100,6 +110,10 @@ void registerMessageNegativeCases({
     );
   });
 
+  // Test: In a conversation with one stored message, read a missing ID alone
+  // and mixed with the stored ID using loadMessage/loadMessagesWithIds.
+  // Expected: Missing-only reads return null/empty; the mixed read returns only
+  // the stored ID/content, and the conversation still contains one message.
   ciTestWidgets(
       'FL-MSG-008 negative missing IDs do not return unrelated messages',
       (_) async {
@@ -114,6 +128,10 @@ void registerMessageNegativeCases({
     expect(await conversation.messagesCount(), 1);
   });
 
+  // Test: With one stored local message, call ChatManager.updateMessage for a
+  // different message that has never been persisted.
+  // Expected: ChatError 500; the missing ID remains absent, the count stays one,
+  // and the stored message keeps its original ID/content.
   ciTestWidgets('FL-MSG-009 negative update cannot insert a missing message',
       (_) async {
     final (conversation, stored, absent) = await prepare();

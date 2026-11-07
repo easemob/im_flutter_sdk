@@ -95,6 +95,12 @@ void registerMessageCases({
   }
 
   group('message positive', () {
+    // Test: Prepare an unblocked friend, register a listener, and send it text
+    // with known attributes; restore the original friendship/blacklists later.
+    // Expected: The matching final callback succeeds with SUCCESS, a nonempty
+    // ID, the configured sender/recipient, and original content/attributes; it is
+    // readable locally and its conversation exists in the local list.
+    // Server send confirmation does not prove delivery to the peer device.
     ciTestWidgets('FL-MSG-001 positive send receives final server confirmation',
         (
       tester,
@@ -211,6 +217,10 @@ void registerMessageCases({
       // message/conversation global reclamation is outside this suite's scope.
     });
 
+    // Test: Import three local messages, read selected IDs, then update one
+    // message's body and full attributes map through ChatManager.
+    // Expected: Reads match only the requested messages; the update persists
+    // under the same ID and leaves the other two messages unchanged.
     ciTestWidgets('FL-MSG-002 positive import reads and updates owned messages',
         (
       tester,
@@ -250,6 +260,10 @@ void registerMessageCases({
       expectMessage(await manager.loadMessage(unselected.msgId), unselected);
     });
 
+    // Test: Import matching/nonmatching text across two conversations and query
+    // loadMessagesWithKeyword with sender and Up/Down timestamp filters.
+    // Expected: Each result has exactly the matching messages and their stored
+    // fields; a unique absent keyword returns an empty list.
     ciTestWidgets('FL-MSG-003 positive keyword search filters sender and time',
         (
       tester,
@@ -301,6 +315,10 @@ void registerMessageCases({
       expect(await manager.loadMessagesWithKeyword(unique('absent')), isEmpty);
     });
 
+    // Test: Import text/custom messages from different senders and query
+    // searchMsgsByOptions with type sets, sender, timestamp, and direction.
+    // Expected: Results contain exactly the matching messages with their stored
+    // fields, excluding other senders/types and the opposite time direction.
     ciTestWidgets(
         'FL-MSG-004 positive options search filters type sender and time', (
       tester,
@@ -371,6 +389,10 @@ void registerMessageCases({
       );
     });
 
+    // Test: Seed matching/nonmatching messages in three conversations and query
+    // loadConversationMessagesWithKeyword, including sender and time filters.
+    // Expected: The map contains exactly matching conversation IDs and message
+    // IDs, excluding nonmatches; an absent keyword returns an empty map.
     ciTestWidgets('FL-MSG-005 positive keyword aggregation maps matching IDs', (
       tester,
     ) async {

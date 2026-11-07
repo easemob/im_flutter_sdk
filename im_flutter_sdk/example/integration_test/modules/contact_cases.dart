@@ -76,6 +76,11 @@ void registerContactCases({
     await client.contactManager.fetchBlockIds();
   }
 
+  // Test: Prepare nonfriend/friend states through REST and relogin to sync,
+  // then query getAllContactIds, getAllContacts, and getContact.
+  // Expected: Both lists exclude the nonfriend; after adding the friend, each
+  // list contains the peer exactly once and the detail has the peer's user ID.
+  // Cleanup restores the original friendship and both blacklists.
   ciTestWidgets(
       'FL-CONTACT-001 positive queries prepared contacts and excludes nonfriends',
       (tester) async {
@@ -110,6 +115,10 @@ void registerContactCases({
 
   for (final keep in [true, false]) {
     final id = keep ? 'FL-CONTACT-002' : 'FL-CONTACT-003';
+    // Test: Delete a prepared friend with keepConversation=true (002) or
+    // false (003), then restore the original friendship and blacklists.
+    // Expected: deleteContact completes successfully within 30 seconds.
+    // Local contact sync, notifications, and conversation state are not checked.
     ciTestWidgets(
         '$id positive deleteContact succeeds with keepConversation=$keep',
         (tester) async {
@@ -126,6 +135,10 @@ void registerContactCases({
     });
   }
 
+  // Test: Start with the peer unblocked, add it to the blacklist, then remove it.
+  // Expected: REST, fetchBlockIds, and getBlockIds match the exact member set
+  // after each operation, preserving unrelated entries. Cleanup restores and
+  // verifies the original blacklist.
   ciTestWidgets(
       'FL-CONTACT-004 positive adds, queries, and removes blacklist membership',
       (tester) async {

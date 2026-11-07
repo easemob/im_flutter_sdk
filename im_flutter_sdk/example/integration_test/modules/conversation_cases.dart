@@ -38,6 +38,11 @@ void registerConversationCases({
   }
 
   group('positive conversation cases', () {
+    // Test: Create a local conversation with a seed message, replace its ext
+    // twice, then delete it with deleteMessages=true and recreate it.
+    // Expected: Rereads preserve ID/type and exactly the latest ext; the list
+    // includes the conversation before deletion and excludes it afterward;
+    // deletion returns true and recreating the conversation returns no messages.
     ciTestWidgets(
       'FL-CONV-001 positive conversation lifecycle and persisted extensions',
       (tester) async {
@@ -94,6 +99,11 @@ void registerConversationCases({
       },
     );
 
+    // Test: Insert two received messages and a newer sent message, query latest,
+    // last received, and by ID, then clear the zero unread count twice.
+    // Expected: Reads match the seeded messages, latest is the sent message,
+    // last received is the second received message, and unread stays zero.
+    // This covers the zero boundary, not clearing a nonzero unread count.
     ciTestWidgets(
       'FL-CONV-002 positive latest and received messages with zero unread state',
       (tester) async {
@@ -126,6 +136,10 @@ void registerConversationCases({
       },
     );
 
+    // Test: Append two local messages, update one message's body/attributes,
+    // reread it, and delete it by ID.
+    // Expected: The update keeps the ID and persists the new fields; deletion
+    // leaves exactly the untouched control message with its original content.
     ciTestWidgets(
       'FL-CONV-003 positive append update and selective message deletion',
       (tester) async {
@@ -162,6 +176,10 @@ void registerConversationCases({
       },
     );
 
+    // Test: Page through five local messages with known timestamps in Up and
+    // Down directions, including queries beyond the first/last message.
+    // Expected: Up pages contain messages {4,5}, {2,3}, {1}; Down pages contain
+    // {2,3,4}, {5}, excluding cursors. Queries past either end return empty.
     ciTestWidgets(
       'FL-CONV-004 positive pagination excludes cursors and reaches both ends',
       (tester) async {
@@ -223,6 +241,10 @@ void registerConversationCases({
       },
     );
 
+    // Test: Seed text/location messages with known senders and timestamps;
+    // query keyword, type, search options, time ranges, and local counts.
+    // Expected: Each query returns exactly the matching IDs; absent keywords,
+    // types, and time ranges return empty lists, and range counts are 2 or 0.
     ciTestWidgets(
       'FL-CONV-005 positive local filters exclude nonmatching messages',
       (tester) async {
@@ -310,6 +332,10 @@ void registerConversationCases({
       },
     );
 
+    // Test: Seed four local messages, delete the first/third by ID, delete the
+    // second by its timestamp range, then delete all remaining messages.
+    // Expected: Lists and counts contain exactly the survivors after each step;
+    // the fourth message retains its content until the final deletion leaves none.
     ciTestWidgets(
       'FL-CONV-006 positive deletions preserve each remaining message set',
       (tester) async {
@@ -335,6 +361,10 @@ void registerConversationCases({
       },
     );
 
+    // Test: Delete a seeded local conversation with deleteMessages=false,
+    // load its message directly, then reopen the conversation.
+    // Expected: Deletion returns true and removes the conversation from the
+    // list; the message remains readable and reopening returns exactly that ID.
     ciTestWidgets(
       'FL-CONV-007 positive conversation deletion can retain local messages',
       (tester) async {
@@ -362,6 +392,9 @@ void registerConversationCases({
       },
     );
 
+    // Test: Seed three local conversations; batch-delete two plus an absent ID.
+    // Expected: The selected conversations disappear and reopen empty; the
+    // unselected conversation and its original message remain intact.
     ciTestWidgets(
       'FL-CONV-008 positive batch deletion preserves unselected conversations',
       (tester) async {

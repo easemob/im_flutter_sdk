@@ -6,6 +6,9 @@ import '../support/ci_test.dart';
 
 void registerLoggedOutGroupNegativeCases({required ChatClient client}) {
   final manager = client.groupManager;
+  // Test: Call createGroup with valid group parameters while logged out.
+  // Expected: ChatError 201 (not logged in); unexpected creation fails the case
+  // and registers an attempt to destroy the returned group.
   ciTestWidgets('FL-GROUP-003 negative rejects group creation while logged out',
       (_) async {
     expect(await client.getCurrentUserId(), isNull);
@@ -24,11 +27,15 @@ void registerLoggedOutGroupNegativeCases({required ChatClient client}) {
   });
 
   final cases = <(String, String, Future<Object?> Function())>[
+    // Test: Fetch remote group detail with a nonempty ID while logged out.
+    // Expected: ChatError 201 for authentication, regardless of group existence.
     (
       'FL-GROUP-004',
       'fetchGroupInfoFromServer',
       () => manager.fetchGroupInfoFromServer('123456789012345')
     ),
+    // Test: Call destroyGroup with a nonempty ID while logged out.
+    // Expected: ChatError 201 (not logged in).
     (
       'FL-GROUP-005',
       'destroyGroup',
@@ -45,11 +52,15 @@ void registerLoggedOutGroupNegativeCases({required ChatClient client}) {
 
 void registerGroupNegativeCases({required ChatClient client}) {
   final cases = <(String, String, Future<Object?> Function())>[
+    // Test: Fetch remote group detail with an empty ID while logged in.
+    // Expected: ChatError 600 (invalid group ID).
     (
       'FL-GROUP-006',
       'fetchGroupInfoFromServer',
       () => client.groupManager.fetchGroupInfoFromServer('')
     ),
+    // Test: Call destroyGroup with an empty ID while logged in.
+    // Expected: ChatError 600 (invalid group ID).
     (
       'FL-GROUP-007',
       'destroyGroup',
