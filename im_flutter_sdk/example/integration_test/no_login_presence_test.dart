@@ -3,6 +3,10 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import 'package:integration_test/integration_test.dart';
 
+import 'modules/client_cases.negative.dart';
+import 'modules/contact_cases.negative.dart';
+import 'modules/group_cases.negative.dart';
+import 'modules/message_cases.negative.dart';
 import 'support/ci_test.dart';
 
 const _publicAppKey = String.fromEnvironment(
@@ -88,4 +92,9 @@ void main() {
       ),
     );
   });
+
+  registerLoggedOutClientNegativeCases(client: client);
+  registerLoggedOutContactNegativeCases(client: client);
+  registerLoggedOutGroupNegativeCases(client: client);
+  registerLoggedOutMessageNegativeCases(client: client);
 }

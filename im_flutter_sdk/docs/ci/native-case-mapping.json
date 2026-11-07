@@ -587,6 +587,349 @@
         "ChatGroupManager.fetchGroupInfoFromServer",
         "ChatGroupManager.fetchMemberListFromServer"
       ]
+    },
+    {
+      "id": "FL-AUTH-004",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatClient.loginWithToken",
+        "ChatClient.getCurrentUserId",
+        "ChatClient.isConnected"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "On a cold logged-out SDK, an empty user ID is rejected with Android 110 / iOS 101; cached/native identity remain empty and the connection remains disconnected"
+      ],
+      "testFile": "example/integration_test/modules/client_cases.negative.dart"
+    },
+    {
+      "id": "FL-AUTH-005",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatClient.loginWithToken",
+        "ChatClient.getCurrentUserId",
+        "ChatClient.isConnected"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "On a cold logged-out SDK, an empty token is rejected with Android 110 / iOS 104; cached/native identity remain empty and the connection remains disconnected"
+      ],
+      "testFile": "example/integration_test/modules/client_cases.negative.dart"
+    },
+    {
+      "id": "FL-AUTH-006",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatClient.loginWithToken",
+        "ChatClient.getCurrentUserId",
+        "ChatClient.isConnected"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Repeated login of the currently connected user returns 200 without changing identity or disconnecting the session"
+      ],
+      "testFile": "example/integration_test/modules/client_cases.negative.dart"
+    },
+    {
+      "id": "FL-CONTACT-005",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatContactManager.deleteContact"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Cold logged-out deleteContact(keepConversation:true) rejects with exactly ChatError 201; no remote account or relation is required"
+      ],
+      "testFile": "example/integration_test/modules/contact_cases.negative.dart"
+    },
+    {
+      "id": "FL-CONTACT-006",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatContactManager.deleteContact"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Cold logged-out deleteContact(keepConversation:false) rejects with exactly ChatError 201; no remote account or relation is required"
+      ],
+      "testFile": "example/integration_test/modules/contact_cases.negative.dart"
+    },
+    {
+      "id": "FL-CONTACT-007",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatContactManager.addUserToBlockList"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Cold logged-out addUserToBlockList() rejects with exactly ChatError 201; no remote account or relation is required"
+      ],
+      "testFile": "example/integration_test/modules/contact_cases.negative.dart"
+    },
+    {
+      "id": "FL-CONTACT-008",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatContactManager.removeUserFromBlockList"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Cold logged-out removeUserFromBlockList() rejects with exactly ChatError 201; no remote account or relation is required"
+      ],
+      "testFile": "example/integration_test/modules/contact_cases.negative.dart"
+    },
+    {
+      "id": "FL-CONTACT-009",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatContactManager.fetchBlockIds"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Cold logged-out fetchBlockIds() rejects with exactly ChatError 201; no remote account or relation is required"
+      ],
+      "testFile": "example/integration_test/modules/contact_cases.negative.dart"
+    },
+    {
+      "id": "FL-GROUP-003",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.createGroup"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Cold logged-out createGroup rejects with exactly ChatError 201 before a server operation; unexpected group creation records its ID and attempts cleanup"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.negative.dart"
+    },
+    {
+      "id": "FL-GROUP-004",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.fetchGroupInfoFromServer"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Cold logged-out fetchGroupInfoFromServer rejects with exactly ChatError 201 before a server operation"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.negative.dart"
+    },
+    {
+      "id": "FL-GROUP-005",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.destroyGroup"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Cold logged-out destroyGroup rejects with exactly ChatError 201 before a server operation"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.negative.dart"
+    },
+    {
+      "id": "FL-GROUP-006",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.fetchGroupInfoFromServer"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Logged-in fetchGroupInfoFromServer rejects an empty group ID with exactly ChatError 600"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.negative.dart"
+    },
+    {
+      "id": "FL-GROUP-007",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.destroyGroup"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Logged-in destroyGroup rejects an empty group ID with exactly ChatError 600"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.negative.dart"
+    },
+    {
+      "id": "FL-MSG-006",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.sendMessage"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Sending with a logged-out sender produces a final error callback correlated by local message ID with exactly ChatError 201 and message status FAIL; method completion, timeout, and success callbacks cannot satisfy the assertion"
+      ],
+      "testFile": "example/integration_test/modules/message_cases.negative.dart"
+    },
+    {
+      "id": "FL-MSG-007",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.sendMessage"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Sending with an empty recipient while logged in produces a final error callback correlated by local message ID with exactly ChatError 500 and message status FAIL; method completion, timeout, and success callbacks cannot satisfy the assertion"
+      ],
+      "testFile": "example/integration_test/modules/message_cases.negative.dart"
+    },
+    {
+      "id": "FL-MSG-008",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.loadMessage",
+        "ChatManager.loadMessagesWithIds"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "An absent message ID returns null in manager lookup and an empty batch result; a mixed existing/missing batch returns only the existing control message with unchanged content and conversation count"
+      ],
+      "testFile": "example/integration_test/modules/message_cases.negative.dart",
+      "preparationApis": [
+        "ChatConversation.insertMessage"
+      ]
+    },
+    {
+      "id": "FL-MSG-009",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.updateMessage"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Updating an unpersisted message returns exactly ChatError 500; the missing message is not inserted and the stored control message and count are unchanged"
+      ],
+      "testFile": "example/integration_test/modules/message_cases.negative.dart",
+      "preparationApis": [
+        "ChatConversation.insertMessage",
+        "ChatManager.loadMessage"
+      ]
+    },
+    {
+      "id": "FL-CONV-009",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatConversation.updateMessage"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Updating an unpersisted message in an existing conversation returns exactly ChatError 500; the missing message is not inserted and the stored control message, exact ID set, and count are unchanged"
+      ],
+      "testFile": "example/integration_test/modules/conversation_cases.negative.dart",
+      "preparationApis": [
+        "ChatConversation.insertMessage",
+        "ChatManager.loadMessage"
+      ]
+    },
+    {
+      "id": "FL-CONTACT-010",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatContactManager.getContact",
+        "ChatContactManager.getAllContactIds",
+        "ChatContactManager.getAllContacts"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "A unique ID absent from local contact lists returns null detail; querying it does not add it to either list"
+      ],
+      "testFile": "example/integration_test/modules/contact_cases.negative.dart"
     }
   ]
 }

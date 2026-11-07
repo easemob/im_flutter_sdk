@@ -145,8 +145,8 @@ The two entry files remain under `im_flutter_sdk/example/integration_test/`:
 
 | Entry | Cases | Scope |
 |---|---|---|
-| `no_login_presence_test.dart` | 6 | Cold-start initialization and five existing logged-out Presence negative cases |
-| `single_account_local_test.dart` | 22 | Positive cases registered from `modules/{client,contact,group,conversation,message}_cases.dart` |
+| `no_login_presence_test.dart` | 17 | Cold-start initialization, five existing Presence errors, and 11 client/contact/group/message negative cases |
+| `single_account_local_test.dart` | 30 | 22 positive cases and eight negative cases registered from `modules/`; negative implementations use `*_cases.negative.dart` |
 
 `support/` contains shared test timeout, login synchronization, and REST fixture helpers. Case IDs and assertions are recorded in [native-case-mapping.json](im_flutter_sdk/docs/ci/native-case-mapping.json); selection rules and exclusions are in the [API selection](docs/refs/ci-basic-api-tests/2026-11-07-api-selection.md).
 
@@ -175,7 +175,7 @@ For iOS, use `run_ios_simulator_test.sh` and a distinct log name. Keep the token
 
 Device scripts print the log path under `artifacts/`; pass a different second argument for each platform and retry to preserve earlier failures. Logs and temporary runtime evidence under `reports/` are gitignored. The reviewed [verification record](docs/refs/ci-basic-api-tests/2026-11-07-positive-verification.md) links to the per-case CSV and [troubleshooting record](docs/refs/troubleshooting/2026-11-07-ci-contact-fixture-sync.md). The CSV records case ID, platform, round, expected/actual behavior, result, failure stage, target execution, and evidence; device scripts do not generate it automatically.
 
-The latest local positive-suite run passed 22/22 on both Android and iOS. Contact deletion cases check successful API completion for both parameter values; REST result checks, local contact updates, notifications, and conversation behavior are outside these two cases. Earlier local-contact failures on both platforms remain recorded and are not considered fixed by this scope change. Cloud Nightly has not been verified with the expanded suite, and the new negative-case phase has not started. See the verification record for individual rounds.
+The 22 positive cases pass on both Android and iOS. Contact deletion cases check successful API completion for both parameter values; REST result checks, local contact updates, notifications, and conversation behavior are outside these two cases. Earlier local-contact failures on both platforms remain recorded and are not considered fixed by this scope change. The 19 new negative cases expose two send-state failures on both platforms; assertions remain intact pending review. See the [negative verification record](docs/refs/ci-basic-api-tests/2026-11-07-negative-verification.md) for expected behavior, exclusions, per-round results, and logs. Cloud Nightly has not been verified with the expanded suite.
 
 ## Coding Conventions
 

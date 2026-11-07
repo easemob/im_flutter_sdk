@@ -4,10 +4,15 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:integration_test/integration_test.dart';
 
 import 'modules/client_cases.dart';
+import 'modules/client_cases.negative.dart';
 import 'modules/contact_cases.dart';
+import 'modules/contact_cases.negative.dart';
 import 'modules/conversation_cases.dart';
+import 'modules/conversation_cases.negative.dart';
 import 'modules/group_cases.dart';
+import 'modules/group_cases.negative.dart';
 import 'modules/message_cases.dart';
+import 'modules/message_cases.negative.dart';
 import 'support/login.dart';
 import 'support/rest_fixture.dart';
 
@@ -93,4 +98,9 @@ void main() {
   registerConversationCases(client: client, userId: _userId);
   registerMessageCases(
       client: client, userId: _userId, peerId: _peerId, rest: rest);
+  registerClientNegativeCases(client: client, userId: _userId, token: _token);
+  registerContactNegativeCases(client: client);
+  registerGroupNegativeCases(client: client);
+  registerConversationNegativeCases(client: client, userId: _userId);
+  registerMessageNegativeCases(client: client, userId: _userId);
 }

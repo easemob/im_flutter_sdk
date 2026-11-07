@@ -7,10 +7,10 @@ and manual example usage have separate entry points; see the
 1. `Flutter CI` is the required PR gate. It runs Dart formatting, analysis,
    unit tests, MethodChannel contracts, package/podspec versions, the static
    Native case mapping, and Android/iOS example builds.
-2. `Flutter Device Smoke` runs the same logged-out SDK initialization and five
-   Presence error cases on Android Emulator and iOS Simulator. It needs no
-   account or secret.
-3. `Flutter Single Account Nightly` targets 22 positive cases covering client
+2. `Flutter Device Smoke` runs 17 cases: SDK initialization, five existing
+   Presence errors, and 11 negative client/contact/group/message cases on
+   Android Emulator and iOS Simulator. It needs no account or secret.
+3. `Flutter Single Account Nightly` targets 22 positive and eight negative cases covering client
    state, contacts/blacklists, group lifecycle and queries, local conversations,
    and messages. One account logs into the device; another prepared account is
    used as a peer without running a second client. Android and iOS are serialized.
@@ -18,7 +18,7 @@ and manual example usage have separate entry points; see the
 
 The two device entries remain `example/integration_test/no_login_presence_test.dart`
 and `single_account_local_test.dart`. The logged-in entry registers cases from
-`modules/`; `support/` supplies shared helpers. IDs, assertions, and source files
+`modules/`; new negative cases use `*_cases.negative.dart`, and `support/` supplies shared helpers. IDs, assertions, and source files
 are listed in [native-case-mapping.json](native-case-mapping.json).
 
 Contacts and groups are verifiable on one device with prepared resources and
@@ -47,8 +47,12 @@ under `testing/config/environment.local.json`.
 
 The latest local positive-suite run passed 22/22 on each platform. Contact
 deletion cases check API completion; earlier local-sync failures remain recorded.
-The cloud preparation path still needs completion; new negative cases have not
-started. Existing negative cases remain in the smoke suite. The
+The cloud preparation path still needs completion. The 19 new negative cases
+include two send-error cases that currently fail on both platforms: the callback
+has the expected error code but still reports message status `PROGRESS` instead
+of `FAIL`. Assertions remain intact pending review; see the
+[negative verification record](../../../docs/refs/ci-basic-api-tests/2026-11-07-negative-verification.md).
+The
 [verification record](../../../docs/refs/ci-basic-api-tests/2026-11-07-positive-verification.md)
 contains platform results, per-case CSV, and unresolved issues. Daily schedules
 run the default branch's workflow; branch-specific validation uses manual dispatch.
