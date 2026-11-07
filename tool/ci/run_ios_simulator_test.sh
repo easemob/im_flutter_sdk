@@ -38,6 +38,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 bash "$repo_root/tool/use_local_packages.sh"
 mkdir -p "$repo_root/artifacts"
 log_file="$repo_root/artifacts/$log_name"
+echo "Test log: $log_file"
 
 # The example app only compiles with the gitignored lib/env.dart in place.
 bash "$repo_root/tool/ci/ensure_example_env.sh"
@@ -51,6 +52,10 @@ flutter pub get
 # Note: keep the array non-empty; expanding an empty array under set -u
 # fails on macOS's bash 3.2, which is what the GitHub macOS runners use.
 command=(flutter test "$test_target" -d "$simulator_udid")
+# Preserve GitHub's reporter: the watchdog below relies on its zero-test summary.
+if [[ "${GITHUB_ACTIONS:-}" != "true" ]]; then
+  command+=(--reporter expanded)
+fi
 if [[ -n "${E2E_CONFIG_PATH:-}" ]]; then
   command+=(--dart-define-from-file="$E2E_CONFIG_PATH")
 fi

@@ -57,6 +57,9 @@ app.*.map.json
 # Local auto-mode run reports may contain account/resource identifiers.
 /reports/
 
+# Local CI logs, retry output, and device diagnostics.
+/artifacts/
+
 # Local testing credentials, transient files and self-contained run reports.
 /testing/config/environment.local.json
 /testing/tmp/

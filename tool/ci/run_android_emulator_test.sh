@@ -15,6 +15,8 @@ app_id="com.example.example"
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 bash "$repo_root/tool/use_local_packages.sh"
 mkdir -p "$repo_root/artifacts"
+log_file="$repo_root/artifacts/$log_name"
+echo "Test log: $log_file"
 
 # The example app only compiles with the gitignored lib/env.dart in place.
 bash "$repo_root/tool/ci/ensure_example_env.sh"
@@ -35,9 +37,12 @@ adb -s emulator-5554 uninstall "$app_id" >/dev/null 2>&1 || true
 # Keep the array non-empty: expanding an empty array under set -u fails
 # on bash 3.2 (e.g. when this script is run locally on macOS).
 command=(flutter test "$test_target" -d emulator-5554)
+if [[ "${GITHUB_ACTIONS:-}" != "true" ]]; then
+  command+=(--reporter expanded)
+fi
 if [[ -n "${E2E_CONFIG_PATH:-}" ]]; then
   command+=(--dart-define-from-file="$E2E_CONFIG_PATH")
 fi
 
 set -o pipefail
-"${command[@]}" 2>&1 | tee "$repo_root/artifacts/$log_name"
+"${command[@]}" 2>&1 | tee "$log_file"

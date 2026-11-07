@@ -7,59 +7,111 @@
       "priority": "P0",
       "origin": "flutter-only",
       "sourceCases": [],
-      "flutterApis": ["EMClient.init"],
-      "platforms": ["android", "ios"],
-      "assertions": ["Native plugin registers and initializes while logged out"],
+      "flutterApis": [
+        "ChatClient.init"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Native plugin registers and initializes while logged out"
+      ],
       "testFile": "example/integration_test/no_login_presence_test.dart"
     },
     {
       "id": "FL-PRESENCE-001",
       "priority": "P0",
       "origin": "native-shared",
-      "sourceCases": ["wayang.TestCase.在线状态::Presence SDK API Without Login/publishPresence"],
-      "flutterApis": ["EMPresenceManager.publishPresence"],
-      "platforms": ["android", "ios"],
-      "assertions": ["Logged-out call throws EMError code 201"],
+      "sourceCases": [
+        "wayang.TestCase.在线状态::Presence SDK API Without Login/publishPresence"
+      ],
+      "flutterApis": [
+        "ChatPresenceManager.publishPresence"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Logged-out call throws ChatError code 201"
+      ],
       "testFile": "example/integration_test/no_login_presence_test.dart"
     },
     {
       "id": "FL-PRESENCE-002",
       "priority": "P0",
       "origin": "native-shared",
-      "sourceCases": ["wayang.TestCase.在线状态::Presence SDK API Without Login/fetchPresenceStatus"],
-      "flutterApis": ["EMPresenceManager.fetchPresenceStatus"],
-      "platforms": ["android", "ios"],
-      "assertions": ["Logged-out call throws EMError code 201"],
+      "sourceCases": [
+        "wayang.TestCase.在线状态::Presence SDK API Without Login/fetchPresenceStatus"
+      ],
+      "flutterApis": [
+        "ChatPresenceManager.fetchPresenceStatus"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Logged-out call throws ChatError code 201"
+      ],
       "testFile": "example/integration_test/no_login_presence_test.dart"
     },
     {
       "id": "FL-PRESENCE-003",
       "priority": "P0",
       "origin": "native-shared",
-      "sourceCases": ["wayang.TestCase.在线状态::Presence SDK API Without Login/subscribe"],
-      "flutterApis": ["EMPresenceManager.subscribe"],
-      "platforms": ["android", "ios"],
-      "assertions": ["Logged-out call throws EMError code 201"],
+      "sourceCases": [
+        "wayang.TestCase.在线状态::Presence SDK API Without Login/subscribe"
+      ],
+      "flutterApis": [
+        "ChatPresenceManager.subscribe"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Logged-out call throws ChatError code 201"
+      ],
       "testFile": "example/integration_test/no_login_presence_test.dart"
     },
     {
       "id": "FL-PRESENCE-004",
       "priority": "P0",
       "origin": "native-shared",
-      "sourceCases": ["wayang.TestCase.在线状态::Presence SDK API Without Login/unsubscribe"],
-      "flutterApis": ["EMPresenceManager.unsubscribe"],
-      "platforms": ["android", "ios"],
-      "assertions": ["Logged-out call throws EMError code 201"],
+      "sourceCases": [
+        "wayang.TestCase.在线状态::Presence SDK API Without Login/unsubscribe"
+      ],
+      "flutterApis": [
+        "ChatPresenceManager.unsubscribe"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Logged-out call throws ChatError code 201"
+      ],
       "testFile": "example/integration_test/no_login_presence_test.dart"
     },
     {
       "id": "FL-PRESENCE-005",
       "priority": "P0",
       "origin": "native-shared",
-      "sourceCases": ["wayang.TestCase.在线状态::Presence SDK API Without Login/fetchSubscribedMembers"],
-      "flutterApis": ["EMPresenceManager.fetchSubscribedMembers"],
-      "platforms": ["android", "ios"],
-      "assertions": ["Logged-out call throws EMError code 201"],
+      "sourceCases": [
+        "wayang.TestCase.在线状态::Presence SDK API Without Login/fetchSubscribedMembers"
+      ],
+      "flutterApis": [
+        "ChatPresenceManager.fetchSubscribedMembers"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Logged-out call throws ChatError code 201"
+      ],
       "testFile": "example/integration_test/no_login_presence_test.dart"
     },
     {
@@ -72,15 +124,64 @@
         "wayang.TestCase.登录注册::登出"
       ],
       "flutterApis": [
-        "EMClient.loginWithToken",
-        "EMClient.getCurrentUserId",
-        "EMClient.isConnected",
-        "EMClient.getAccessToken",
-        "EMClient.logout"
+        "ChatClient.loginWithToken",
+        "ChatClient.getCurrentUserId",
+        "ChatClient.isConnected",
+        "ChatClient.getAccessToken"
       ],
-      "platforms": ["android", "ios"],
-      "assertions": ["Login succeeds and native client state matches the configured user"],
-      "testFile": "example/integration_test/single_account_local_test.dart"
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Login sets the configured cached user before the native getter refreshes it; native identity, bounded connected state, and a nonempty access token are verified without logging the token"
+      ],
+      "testFile": "example/integration_test/modules/client_cases.dart",
+      "preparationApis": [
+        "ChatClient.startCallback"
+      ]
+    },
+    {
+      "id": "FL-AUTH-002",
+      "priority": "P0",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatClient.getCurrentDeviceId"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "The logged-in device ID is nonempty and remains identical on repeated reads within the session"
+      ],
+      "testFile": "example/integration_test/modules/client_cases.dart"
+    },
+    {
+      "id": "FL-AUTH-003",
+      "priority": "P0",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatClient.logout",
+        "ChatClient.loginWithToken",
+        "ChatClient.getCurrentUserId",
+        "ChatClient.isConnected",
+        "ChatClient.getAccessToken"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Logout clears cached identity before the native getter is called, clears native identity, and reaches the disconnected state within a bound",
+        "Relogin in the same process restores the configured cached/native identity, connected state, and a nonempty token"
+      ],
+      "testFile": "example/integration_test/modules/client_cases.dart",
+      "preparationApis": [
+        "ChatClient.startCallback"
+      ]
     },
     {
       "id": "FL-CONV-001",
@@ -92,60 +193,400 @@
         "wayang.TestCase.会话::会话扩展",
         "wayang.TestCase.会话::删除会话"
       ],
-      "flutterApis": ["EMChatManager.getConversation", "EMChatManager.loadAllConversations", "EMConversation.setExt", "EMChatManager.deleteConversation"],
-      "platforms": ["android", "ios"],
-      "assertions": ["Conversation lifecycle and extension persist in the local database"],
-      "testFile": "example/integration_test/single_account_local_test.dart"
+      "flutterApis": [
+        "ChatManager.getConversation",
+        "ChatManager.loadAllConversations",
+        "ChatConversation.setExt",
+        "ChatManager.deleteConversation"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Conversation lookup with createIfNeed:false does not create an absent conversation; the created conversation is listed",
+        "Replacing extensions is verified through a newly fetched conversation",
+        "Deleting with messages removes the conversation from the list and reopening yields no retained messages"
+      ],
+      "testFile": "example/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-CONV-002",
       "priority": "P1",
       "origin": "native-shared",
-      "sourceCases": ["wayang.TestCase.会话::插入消息", "wayang.TestCase.会话::未读数和已读", "wayang.TestCase.会话::最新消息"],
-      "flutterApis": ["EMConversation.insertMessage", "EMConversation.messagesCount", "EMConversation.unreadCount", "EMChatManager.clearConversationUnreadMessageCount", "EMConversation.latestMessage", "EMConversation.lastReceivedMessage"],
-      "platforms": ["android", "ios"],
-      "assertions": ["Inserted messages update count and latest message; clearing the conversation resets unread count"],
-      "testFile": "example/integration_test/single_account_local_test.dart"
+      "sourceCases": [
+        "wayang.TestCase.会话::插入消息",
+        "wayang.TestCase.会话::未读数和已读",
+        "wayang.TestCase.会话::最新消息"
+      ],
+      "flutterApis": [
+        "ChatConversation.insertMessage",
+        "ChatConversation.messagesCount",
+        "ChatConversation.unreadCount",
+        "ChatManager.clearConversationUnreadMessageCount",
+        "ChatConversation.latestMessage",
+        "ChatConversation.lastReceivedMessage"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Local incoming and outgoing messages have the expected count and persisted content; latestMessage and lastReceivedMessage select different expected messages",
+        "Local insertion keeps unread count at zero; repeated clearConversationUnreadMessageCount preserves zero only, without claiming nonzero unread clearing"
+      ],
+      "testFile": "example/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-CONV-003",
       "priority": "P1",
       "origin": "native-shared",
-      "sourceCases": ["wayang.TestCase.会话::追加消息", "wayang.TestCase.会话::更新消息", "wayang.TestCase.会话::删除消息"],
-      "flutterApis": ["EMConversation.appendMessage", "EMConversation.updateMessage", "EMConversation.loadMessage", "EMConversation.deleteMessage"],
-      "platforms": ["android", "ios"],
-      "assertions": ["Append, update, lookup, and removal are reflected in the local database"],
-      "testFile": "example/integration_test/single_account_local_test.dart"
+      "sourceCases": [
+        "wayang.TestCase.会话::追加消息",
+        "wayang.TestCase.会话::更新消息",
+        "wayang.TestCase.会话::删除消息"
+      ],
+      "flutterApis": [
+        "ChatConversation.appendMessage",
+        "ChatConversation.updateMessage",
+        "ChatConversation.loadMessage",
+        "ChatConversation.deleteMessage"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Append and update are independently reloaded with unchanged message ID, body, attributes, and ownership",
+        "Deleting one message leaves the exact control-message set and count unchanged"
+      ],
+      "testFile": "example/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-CONV-004",
       "priority": "P1",
       "origin": "native-shared",
-      "sourceCases": ["wayang.TestCase.会话::消息上下翻页"],
-      "flutterApis": ["EMConversation.loadMessages"],
-      "platforms": ["android", "ios"],
-      "assertions": ["Up and down pagination return the expected adjacent messages"],
-      "testFile": "example/integration_test/single_account_local_test.dart"
+      "sourceCases": [
+        "wayang.TestCase.会话::消息上下翻页"
+      ],
+      "flutterApis": [
+        "ChatConversation.loadMessages"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Upward and downward pagination return exact adjacent ID sets, exclude the cursor, do not overlap, include a short final page, and end with an empty page"
+      ],
+      "testFile": "example/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-CONV-005",
       "priority": "P1",
       "origin": "native-shared",
-      "sourceCases": ["wayang.TestCase.会话::关键字搜索", "wayang.TestCase.会话::类型和条件搜索", "wayang.TestCase.会话::时间范围和本地消息数"],
-      "flutterApis": ["EMConversation.loadMessagesWithKeyword", "EMConversation.loadMessagesWithMsgType", "EMConversation.searchMsgsByOptions", "EMConversation.loadMessagesFromTime", "EMConversation.getLocalMessageCount"],
-      "platforms": ["android", "ios"],
-      "assertions": ["Local search filters by content, type, sender, and timestamp"],
-      "testFile": "example/integration_test/single_account_local_test.dart"
+      "sourceCases": [
+        "wayang.TestCase.会话::关键字搜索",
+        "wayang.TestCase.会话::类型和条件搜索",
+        "wayang.TestCase.会话::时间范围和本地消息数"
+      ],
+      "flutterApis": [
+        "ChatConversation.loadMessagesWithKeyword",
+        "ChatConversation.loadMessagesWithMsgType",
+        "ChatConversation.searchMsgsByOptions",
+        "ChatConversation.loadMessagesFromTime",
+        "ChatConversation.getLocalMessageCount"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Keyword, sender, message type, options, and time filters return exact matching message ID sets while excluding nonmatching messages",
+        "Unmatched keyword, type, and time queries return empty results; interval counts match the prepared data"
+      ],
+      "testFile": "example/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-CONV-006",
       "priority": "P1",
       "origin": "native-shared",
-      "sourceCases": ["wayang.TestCase.会话::按消息ID删除", "wayang.TestCase.会话::按时间删除", "wayang.TestCase.会话::删除全部消息"],
-      "flutterApis": ["EMConversation.deleteMessageByIds", "EMConversation.deleteMessagesWithTs", "EMConversation.deleteAllMessages"],
-      "platforms": ["android", "ios"],
-      "assertions": ["Local deletion by id, timestamp, and all removes only the selected data"],
-      "testFile": "example/integration_test/single_account_local_test.dart"
+      "sourceCases": [
+        "wayang.TestCase.会话::按消息ID删除",
+        "wayang.TestCase.会话::按时间删除",
+        "wayang.TestCase.会话::删除全部消息"
+      ],
+      "flutterApis": [
+        "ChatConversation.deleteMessageByIds",
+        "ChatConversation.deleteMessagesWithTs",
+        "ChatConversation.deleteAllMessages"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Deletion by IDs and interior time range preserves the exact remaining message IDs and counts after each operation",
+        "Deleting all messages leaves an empty set and zero count"
+      ],
+      "testFile": "example/integration_test/modules/conversation_cases.dart"
+    },
+    {
+      "id": "FL-CONV-007",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.deleteConversation",
+        "ChatManager.loadMessage",
+        "ChatManager.getConversation"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Deleting a conversation with deleteMessages:false removes its list entry while the message remains independently readable",
+        "Reopening the conversation yields exactly its original message and count"
+      ],
+      "testFile": "example/integration_test/modules/conversation_cases.dart"
+    },
+    {
+      "id": "FL-CONV-008",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.deleteConversations"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Batch deletion removes only the selected conversations and their messages, ignores an absent ID, and preserves the unselected control conversation and message"
+      ],
+      "testFile": "example/integration_test/modules/conversation_cases.dart"
+    },
+    {
+      "id": "FL-MSG-001",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.sendMessage",
+        "ChatManager.getConversation",
+        "ChatManager.loadAllConversations",
+        "ChatManager.loadMessage"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "A listener registered before sending receives a final success callback correlated with the local message ID; errors and timeout fail the case",
+        "The server-confirmed message has the expected status, sender, recipient, body, and attributes and is independently readable in the corresponding listed conversation; recipient delivery is not asserted"
+      ],
+      "testFile": "example/integration_test/modules/message_cases.dart"
+    },
+    {
+      "id": "FL-MSG-002",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.importMessages",
+        "ChatManager.loadMessage",
+        "ChatManager.loadMessagesWithIds",
+        "ChatManager.updateMessage"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Imported incoming/outgoing messages preserve ID, body, attributes, direction, sender, recipient, and conversation on independent reads",
+        "Batch ID lookup returns exactly the selected messages; update preserves ID and changes body/attributes without modifying the other messages"
+      ],
+      "testFile": "example/integration_test/modules/message_cases.dart"
+    },
+    {
+      "id": "FL-MSG-003",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.loadMessagesWithKeyword"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "A unique keyword selects exact cross-conversation message sets; sender and upward/downward time filters exclude unrelated messages",
+        "An unmatched keyword returns no messages"
+      ],
+      "testFile": "example/integration_test/modules/message_cases.dart"
+    },
+    {
+      "id": "FL-MSG-004",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.searchMsgsByOptions"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Options searches return exact message sets for sender, text/custom types, and upward/downward time constraints; nonmatching data is excluded"
+      ],
+      "testFile": "example/integration_test/modules/message_cases.dart"
+    },
+    {
+      "id": "FL-MSG-005",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.loadConversationMessagesWithKeyword"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Keyword aggregation returns exactly the matching conversation keys and message IDs; sender and time constraints narrow both keys and IDs correctly",
+        "An unmatched keyword yields no conversation results"
+      ],
+      "testFile": "example/integration_test/modules/message_cases.dart"
+    },
+    {
+      "id": "FL-CONTACT-001",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatContactManager.getAllContactIds",
+        "ChatContactManager.getAllContacts",
+        "ChatContactManager.getContact"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Independently verified bilateral REST friendship is reflected by the SDK contact IDs, records, and detail within a bounded wait",
+        "The controlled nonfriend is excluded from the SDK lists; original friendship and blacklist state are restored and verified"
+      ],
+      "testFile": "example/integration_test/modules/contact_cases.dart"
+    },
+    {
+      "id": "FL-CONTACT-002",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatContactManager.deleteContact"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "deleteContact(keepConversation:true) removes the bilateral server relationship and local contact while preserving the original seeded conversation and message",
+        "Other friends and the control conversation are unchanged; original relations are restored and local fixtures are reclaimed"
+      ],
+      "testFile": "example/integration_test/modules/contact_cases.dart"
+    },
+    {
+      "id": "FL-CONTACT-003",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatContactManager.deleteContact"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "deleteContact(keepConversation:false) removes the bilateral server relationship, local contact, and seeded conversation",
+        "Other friends and the control conversation are unchanged; original relations are restored and local fixtures are reclaimed"
+      ],
+      "testFile": "example/integration_test/modules/contact_cases.dart"
+    },
+    {
+      "id": "FL-CONTACT-004",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatContactManager.addUserToBlockList",
+        "ChatContactManager.removeUserFromBlockList",
+        "ChatContactManager.fetchBlockIds",
+        "ChatContactManager.getBlockIds"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Adding and removing the controlled user changes exactly that blacklist membership in independent REST, remote SDK, and local SDK observations",
+        "The original blacklist is restored and verified; message blocking or delivery is not asserted"
+      ],
+      "testFile": "example/integration_test/modules/contact_cases.dart"
+    },
+    {
+      "id": "FL-GROUP-001",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.createGroup",
+        "ChatGroupManager.fetchGroupInfoFromServer",
+        "ChatGroupManager.destroyGroup"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "SDK creation produces a group whose independent remote detail matches its ID, owner, name, description, and configurations; explicit member queries verify the intended member",
+        "SDK destruction is followed by an explicit remote absence check; transport or authentication errors do not prove absence",
+        "Only this case's group is reclaimed after failure, and rescue cleanup cannot replace the tested destruction result"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart",
+      "preparationApis": [
+        "ChatGroupManager.fetchMemberListFromServer"
+      ]
+    },
+    {
+      "id": "FL-GROUP-002",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.getGroupWithId",
+        "ChatGroupManager.getJoinedGroups"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "A group independently created and verified by this case is fetched with matching local detail after explicit native-cache population",
+        "The local joined list contains the prepared group exactly once with its expected name; the group is reclaimed and remote absence verified"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart",
+      "preparationApis": [
+        "ChatGroupManager.createGroup",
+        "ChatGroupManager.fetchGroupInfoFromServer",
+        "ChatGroupManager.fetchMemberListFromServer"
+      ]
     }
   ]
 }

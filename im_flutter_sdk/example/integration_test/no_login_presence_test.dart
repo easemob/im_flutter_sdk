@@ -1,6 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
 import 'package:integration_test/integration_test.dart';
+
+import 'support/ci_test.dart';
 
 const _publicAppKey = String.fromEnvironment(
   'E2E_APP_KEY',
@@ -13,7 +16,9 @@ void main() {
   final client = ChatClient.getInstance;
 
   setUpAll(() async {
-    await client.init(ChatOptions.withAppKey(_publicAppKey, debugMode: false));
+    await client
+        .init(ChatOptions.withAppKey(_publicAppKey, debugMode: false))
+        .timeout(const Duration(seconds: 30));
   });
 
   Future<void> expectNotLoggedIn(Future<void> Function() operation) async {
@@ -23,7 +28,7 @@ void main() {
     );
   }
 
-  testWidgets('FL-APP-001 initializes the native SDK while logged out', (
+  ciTestWidgets('FL-APP-001 initializes the native SDK while logged out', (
     tester,
   ) async {
     // Assumes a cold install. The Android SDK reports its persisted last-login
@@ -34,7 +39,7 @@ void main() {
     expect(client.currentUserId, isNull);
   });
 
-  testWidgets('FL-PRESENCE-001 rejects publish while logged out', (
+  ciTestWidgets('FL-PRESENCE-001 rejects publish while logged out', (
     tester,
   ) async {
     await expectNotLoggedIn(
@@ -42,7 +47,7 @@ void main() {
     );
   });
 
-  testWidgets('FL-PRESENCE-002 rejects status fetch while logged out', (
+  ciTestWidgets('FL-PRESENCE-002 rejects status fetch while logged out', (
     tester,
   ) async {
     await expectNotLoggedIn(
@@ -52,7 +57,7 @@ void main() {
     );
   });
 
-  testWidgets('FL-PRESENCE-003 rejects subscribe while logged out', (
+  ciTestWidgets('FL-PRESENCE-003 rejects subscribe while logged out', (
     tester,
   ) async {
     await expectNotLoggedIn(
@@ -63,7 +68,7 @@ void main() {
     );
   });
 
-  testWidgets('FL-PRESENCE-004 rejects unsubscribe while logged out', (
+  ciTestWidgets('FL-PRESENCE-004 rejects unsubscribe while logged out', (
     tester,
   ) async {
     await expectNotLoggedIn(
@@ -73,7 +78,7 @@ void main() {
     );
   });
 
-  testWidgets('FL-PRESENCE-005 rejects subscription query while logged out', (
+  ciTestWidgets('FL-PRESENCE-005 rejects subscription query while logged out', (
     tester,
   ) async {
     await expectNotLoggedIn(

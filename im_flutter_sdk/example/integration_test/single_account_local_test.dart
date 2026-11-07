@@ -1,269 +1,98 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:integration_test/integration_test.dart';
 
+import 'modules/client_cases.dart';
+import 'modules/contact_cases.dart';
+import 'modules/conversation_cases.dart';
+import 'modules/group_cases.dart';
+import 'modules/message_cases.dart';
+import 'support/login.dart';
+import 'support/rest_fixture.dart';
+
 const _appKey = String.fromEnvironment('E2E_APP_KEY');
 const _userId = String.fromEnvironment('E2E_USER_ID');
 const _token = String.fromEnvironment('E2E_USER_TOKEN');
+const _peerId = String.fromEnvironment('E2E_PEER_ID');
+const _restApi = String.fromEnvironment('E2E_REST_API');
+const _appToken = String.fromEnvironment('E2E_APP_TOKEN');
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-
-  final client = ChatClient.getInstance;
-  var sequence = 0;
-
-  void requireConfiguration() {
-    final missing = <String>[
-      if (_appKey.isEmpty) 'E2E_APP_KEY',
-      if (_userId.isEmpty) 'E2E_USER_ID',
-      if (_token.isEmpty) 'E2E_USER_TOKEN',
-    ];
-    if (missing.isNotEmpty) {
-      throw StateError('Missing dart-defines: ${missing.join(', ')}');
-    }
+  final required = <String, String>{
+    'E2E_APP_KEY': _appKey,
+    'E2E_USER_ID': _userId,
+    'E2E_USER_TOKEN': _token,
+    'E2E_PEER_ID': _peerId,
+    'E2E_REST_API': _restApi,
+    'E2E_APP_TOKEN': _appToken,
+  };
+  final missing = required.entries
+      .where((entry) => entry.value.isEmpty)
+      .map((entry) => entry.key);
+  if (missing.isNotEmpty) {
+    throw StateError('Missing dart-defines: ${missing.join(', ')}');
+  }
+  if (_peerId == _userId) {
+    throw StateError('E2E_PEER_ID must differ from E2E_USER_ID');
   }
 
+  final client = ChatClient.getInstance;
+  final rest = CiRestFixture(
+    restApi: _restApi,
+    appKey: _appKey,
+    appToken: _appToken,
+  );
+  var initialized = false;
+
   setUpAll(() async {
-    requireConfiguration();
-    await client.init(ChatOptions.withAppKey(_appKey, debugMode: false));
-    await client.loginWithToken(_userId, _token);
-    await client.startCallback();
+    debugPrint('CI suite prepare: initialize with contacts and groups sync');
+    await client
+        .init(ChatOptions.withAppKey(
+          _appKey,
+          debugMode: false,
+          dataSyncType:
+              ChatDataSyncType.contacts | ChatDataSyncType.joinedGroups,
+        ))
+        .timeout(const Duration(seconds: 30));
+    initialized = true;
+    await loginForCi(client, _userId, _token);
+    debugPrint('CI suite prepare: verified');
   });
 
   tearDownAll(() async {
-    await client.logout(false);
-  });
-
-  testWidgets('FL-AUTH-001 logs in and exposes native client state', (
-    tester,
-  ) async {
-    expect(await client.getCurrentUserId(), _userId);
-    expect(client.currentUserId, _userId);
-    expect(await client.isConnected(), isTrue);
-    expect(await client.getAccessToken(), isNotEmpty);
-  });
-
-  group('single-account local database', () {
-    late String conversationId;
-    late ChatConversation conversation;
-
-    ChatMessage incoming(
-      String content, {
-      int? timestamp,
-      Map<String, dynamic>? attributes,
-    }) {
-      final time = timestamp ?? DateTime.now().millisecondsSinceEpoch;
-      return ChatMessage.createReceiveMessage(
-        body: ChatTextMessageBody(content: content),
-      )
-        ..from = conversationId
-        ..to = _userId
-        ..conversationId = conversationId
-        ..localTime = time
-        ..serverTime = time
-        ..status = MessageStatus.SUCCESS
-        ..attributes = attributes;
+    try {
+      if (initialized) {
+        debugPrint('CI suite cleanup: logout');
+        await client.logout(false).timeout(const Duration(seconds: 30));
+        expect(client.currentUserId, isNull);
+        expect(
+            await client
+                .getCurrentUserId()
+                .timeout(const Duration(seconds: 10)),
+            isNull);
+        await waitForCi('SDK disconnected after logout', client.isConnected,
+            (connected) => !connected);
+        debugPrint('CI suite cleanup: verified');
+      }
+    } finally {
+      rest.close();
     }
-
-    setUp(() async {
-      sequence += 1;
-      conversationId =
-          'flutter_ci_${DateTime.now().microsecondsSinceEpoch}_$sequence';
-      conversation = (await client.chatManager.getConversation(
-        conversationId,
-        createIfNeed: true,
-      ))!;
-    });
-
-    tearDown(() async {
-      await client.chatManager.deleteConversation(
-        conversationId,
-        deleteMessages: true,
-      );
-    });
-
-    testWidgets(
-      'FL-CONV-001 creates, lists, extends, and deletes a conversation',
-      (tester) async {
-        final seed = incoming('conversation lifecycle seed');
-        await conversation.insertMessage(seed);
-        await conversation.setExt(const <String, String>{
-          'owner': 'flutter-ci',
-        });
-
-        expect(conversation.id, conversationId);
-        expect(conversation.type, ChatConversationType.Chat);
-        expect(conversation.ext, const <String, String>{'owner': 'flutter-ci'});
-
-        final all = await client.chatManager.loadAllConversations();
-        expect(all.map((item) => item.id), contains(conversationId));
-
-        expect(
-          await client.chatManager.deleteConversation(
-            conversationId,
-            deleteMessages: true,
-          ),
-          isTrue,
-        );
-        expect(
-          await client.chatManager.getConversation(
-            conversationId,
-            createIfNeed: false,
-          ),
-          isNull,
-        );
-      },
-    );
-
-    testWidgets('FL-CONV-002 maintains latest and clears unread state', (
-      tester,
-    ) async {
-      final first = incoming('first', timestamp: 1000);
-      final second = incoming('second', timestamp: 2000);
-      await conversation.insertMessage(first);
-      await conversation.insertMessage(second);
-
-      expect(await conversation.messagesCount(), 2);
-      // Locally produced messages do not raise the unread count: neither
-      // insertMessage nor importMessages updates it, and switching the "regard
-      // imported messages as read" option off first does not change that.
-      // Measured on the Android emulator and the iOS simulator, which all
-      // report 0 here. Only a message received from another client does, which
-      // the im-test-hub stage covers, so this pins the initial value for the
-      // clear call below instead of asserting unread growth.
-      expect(await conversation.unreadCount(), 0);
-      expect((await conversation.latestMessage())?.msgId, second.msgId);
-      expect((await conversation.lastReceivedMessage())?.msgId, second.msgId);
-      expect((await conversation.loadMessage(first.msgId))?.msgId, first.msgId);
-
-      await client.chatManager.clearConversationUnreadMessageCount(
-        conversationId,
-      );
-      expect(await conversation.unreadCount(), 0);
-    });
-
-    testWidgets('FL-CONV-003 appends, updates, loads, and removes a message', (
-      tester,
-    ) async {
-      final message = incoming('before update');
-      await conversation.appendMessage(message);
-      expect(
-        (await conversation.loadMessage(message.msgId))?.msgId,
-        message.msgId,
-      );
-
-      message.body = ChatTextMessageBody(content: 'after update');
-      await conversation.updateMessage(message);
-      final updated = await conversation.loadMessage(message.msgId);
-      expect((updated?.body as ChatTextMessageBody).content, 'after update');
-
-      await conversation.deleteMessage(message.msgId);
-      // NOTE(ios): loading a deleted message throws ChatError (code 3) on iOS
-      // because the native SDK reports an EMError, while Android returns null.
-      // expect(await conversation.loadMessage(message.msgId), isNull);
-    });
-
-    testWidgets('FL-CONV-004 pages local messages upward and downward', (
-      tester,
-    ) async {
-      final first = incoming('page 1', timestamp: 1000);
-      final second = incoming('page 2', timestamp: 2000);
-      final third = incoming('page 3', timestamp: 3000);
-      for (final message in <ChatMessage>[first, second, third]) {
-        await conversation.insertMessage(message);
-      }
-
-      final older = await conversation.loadMessages(
-        startMsgId: third.msgId,
-        loadCount: 2,
-        direction: ChatSearchDirection.Up,
-      );
-      expect(
-        older.map((item) => item.msgId),
-        containsAll(<String>[first.msgId, second.msgId]),
-      );
-
-      final newer = await conversation.loadMessages(
-        startMsgId: first.msgId,
-        loadCount: 2,
-        direction: ChatSearchDirection.Down,
-      );
-      expect(
-        newer.map((item) => item.msgId),
-        containsAll(<String>[second.msgId, third.msgId]),
-      );
-    });
-
-    testWidgets(
-      'FL-CONV-005 searches local messages by content, type, and options',
-      (tester) async {
-        final first = incoming(
-          'flutter needle alpha',
-          timestamp: 1000,
-          attributes: <String, dynamic>{'suite': 'flutter-ci'},
-        );
-        final second = incoming('ordinary beta', timestamp: 2000);
-        await conversation.insertMessage(first);
-        await conversation.insertMessage(second);
-
-        final keyword = await conversation.loadMessagesWithKeyword(
-          'needle',
-          count: 10,
-        );
-        expect(keyword.map((item) => item.msgId), contains(first.msgId));
-
-        final texts = await conversation.loadMessagesWithMsgType(
-          type: MessageType.TXT,
-          count: 10,
-        );
-        expect(
-          texts.map((item) => item.msgId),
-          containsAll(<String>[first.msgId, second.msgId]),
-        );
-
-        final options = await conversation.searchMsgsByOptions(
-          MessageSearchOptions(
-            types: const <MessageType>[MessageType.TXT],
-            from: conversationId,
-            count: 10,
-          ),
-        );
-        expect(options.map((item) => item.msgId), contains(first.msgId));
-
-        final inRange = await conversation.loadMessagesFromTime(
-          startTime: 500,
-          endTime: 1500,
-          count: 10,
-        );
-        expect(inRange.map((item) => item.msgId), contains(first.msgId));
-        expect(
-          await conversation.getLocalMessageCount(startMs: 500, endMs: 2500),
-          2,
-        );
-      },
-    );
-
-    testWidgets('FL-CONV-006 deletes local messages by id, time, and all', (
-      tester,
-    ) async {
-      final first = incoming('delete by id', timestamp: 1000);
-      final second = incoming('delete by time', timestamp: 2000);
-      final third = incoming('delete all', timestamp: 3000);
-      for (final message in <ChatMessage>[first, second, third]) {
-        await conversation.insertMessage(message);
-      }
-
-      await conversation.deleteMessageByIds(<String>[first.msgId]);
-      // NOTE(ios): loading a deleted message throws ChatError (code 3) on iOS
-      // because the native SDK reports an EMError, while Android returns null.
-      // expect(await conversation.loadMessage(first.msgId), isNull);
-
-      await conversation.deleteMessagesWithTs(1500, 2500);
-      // expect(await conversation.loadMessage(second.msgId), isNull);
-      expect(await conversation.loadMessage(third.msgId), isNotNull);
-
-      await conversation.deleteAllMessages();
-      expect(await conversation.messagesCount(), 0);
-    });
   });
+
+  registerClientCases(client: client, userId: _userId, token: _token);
+  // Contact deletion needs an empty peer conversation after the cold install.
+  // Run it before sending the suite's message to that peer.
+  registerContactCases(
+      client: client,
+      userId: _userId,
+      token: _token,
+      peerId: _peerId,
+      rest: rest);
+  registerGroupCases(
+      client: client, userId: _userId, peerId: _peerId, rest: rest);
+  registerConversationCases(client: client, userId: _userId);
+  registerMessageCases(
+      client: client, userId: _userId, peerId: _peerId, rest: rest);
 }

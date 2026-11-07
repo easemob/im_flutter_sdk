@@ -1,0 +1,424 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
+import '../support/ci_test.dart';
+
+import '../support/rest_fixture.dart';
+
+void registerMessageCases({
+  required ChatClient client,
+  required String userId,
+  required String peerId,
+  required CiRestFixture rest,
+}) {
+  final manager = client.chatManager;
+  var sequence = 0;
+
+  String unique(String label) =>
+      'ci_msg_${DateTime.now().microsecondsSinceEpoch}_${sequence++}_$label';
+
+  String ownedConversation(String label) {
+    final id = unique(label);
+    addTearDown(() async {
+      await manager.deleteConversation(id, deleteMessages: true);
+      expect(await manager.getConversation(id, createIfNeed: false), isNull);
+    });
+    return id;
+  }
+
+  ChatMessage localMessage(
+    String conversationId,
+    String text, {
+    required int timestamp,
+    bool outgoing = false,
+    bool custom = false,
+  }) {
+    final ChatMessageBody body = custom
+        ? ChatCustomMessageBody(event: text)
+        : ChatTextMessageBody(content: text);
+    final message = outgoing
+        ? ChatMessage.createSendMessage(to: conversationId, body: body)
+        : ChatMessage.createReceiveMessage(body: body);
+    message
+      ..from = outgoing ? userId : conversationId
+      ..to = outgoing ? conversationId : userId
+      ..conversationId = conversationId
+      ..status = MessageStatus.SUCCESS
+      ..localTime = timestamp
+      ..serverTime = timestamp
+      ..attributes = <String, dynamic>{
+        'fixture': conversationId,
+        'time': timestamp
+      };
+    return ChatMessage.fromJson(<String, dynamic>{
+      ...message.toJson(),
+      'msgId': unique('local'),
+    });
+  }
+
+  void expectMessage(ChatMessage? actual, ChatMessage expected) {
+    expect(actual, isNotNull);
+    expect(actual!.msgId, expected.msgId);
+    expect(actual.conversationId, expected.conversationId);
+    expect(actual.from, expected.from);
+    expect(actual.to, expected.to);
+    expect(actual.direction, expected.direction);
+    expect(actual.body.type, expected.body.type);
+    if (expected.body is ChatTextMessageBody) {
+      expect(
+        (actual.body as ChatTextMessageBody).content,
+        (expected.body as ChatTextMessageBody).content,
+      );
+    } else if (expected.body is ChatCustomMessageBody) {
+      expect(
+        (actual.body as ChatCustomMessageBody).event,
+        (expected.body as ChatCustomMessageBody).event,
+      );
+    }
+    expect(actual.attributes, expected.attributes);
+  }
+
+  void expectMessages(List<ChatMessage> actual, List<ChatMessage> expected) {
+    expect(
+      actual.map((message) => message.msgId),
+      unorderedEquals(expected.map((message) => message.msgId)),
+    );
+    for (final message in expected) {
+      expectMessage(
+        actual.singleWhere((item) => item.msgId == message.msgId),
+        message,
+      );
+    }
+  }
+
+  group('message positive', () {
+    ciTestWidgets('FL-MSG-001 positive send receives final server confirmation',
+        (
+      tester,
+    ) async {
+      expect(peerId, isNotEmpty, reason: 'A prepared recipient is required');
+      expect(peerId, isNot(userId));
+      final relationship = await rest.snapshotContacts(userId, peerId);
+      final userBlocks = await rest.blockIds(userId);
+      final peerBlocks = await rest.blockIds(peerId);
+
+      // Restore the relationship before restoring blocks. Separate callbacks
+      // ensure that one restoration failure cannot prevent the others.
+      addTearDown(() async {
+        await rest.setBlocked(userId, peerId, userBlocks.contains(peerId));
+        final restored = await waitForCi(
+          'FL-MSG-001 original sender blacklist',
+          () => rest.blockIds(userId),
+          (ids) => setEquals(ids.toSet(), userBlocks.toSet()),
+        );
+        expect(restored, unorderedEquals(userBlocks));
+        expect(await client.contactManager.fetchBlockIds(),
+            unorderedEquals(userBlocks));
+        debugPrint('CI FL-MSG-001 cleanup verified: sender blacklist');
+      });
+      addTearDown(() async {
+        await rest.setBlocked(peerId, userId, peerBlocks.contains(userId));
+        final restored = await waitForCi(
+          'FL-MSG-001 original recipient blacklist',
+          () => rest.blockIds(peerId),
+          (ids) => setEquals(ids.toSet(), peerBlocks.toSet()),
+        );
+        expect(restored, unorderedEquals(peerBlocks));
+        debugPrint('CI FL-MSG-001 cleanup verified: recipient blacklist');
+      });
+      addTearDown(() async {
+        await rest.restoreContacts(userId, peerId, relationship);
+        debugPrint('CI FL-MSG-001 cleanup verified: bilateral friendship');
+      });
+
+      await rest.setBlocked(userId, peerId, false);
+      await rest.setBlocked(peerId, userId, false);
+      final unblockedUser = userBlocks.where((id) => id != peerId).toSet();
+      final unblockedPeer = peerBlocks.where((id) => id != userId).toSet();
+      expect(await rest.blockIds(userId), unorderedEquals(unblockedUser));
+      expect(await rest.blockIds(peerId), unorderedEquals(unblockedPeer));
+      expect(await client.contactManager.fetchBlockIds(),
+          unorderedEquals(unblockedUser));
+      await rest.setContacts(userId, peerId, true);
+      expect(await rest.contactIds(userId),
+          unorderedEquals({...relationship.userIds, peerId}));
+      expect(await rest.contactIds(peerId),
+          unorderedEquals({...relationship.peerIds, userId}));
+      debugPrint('CI FL-MSG-001 prepare verified: bilateral friendship and '
+          'unblocked sender/recipient; unrelated members preserved');
+
+      final content = unique('send');
+      final message = ChatMessage.createTxtSendMessage(
+        targetId: peerId,
+        content: content,
+      )..attributes = <String, dynamic>{'ciCase': 'FL-MSG-001', 'run': content};
+      final localId = message.msgId;
+      final handlerId = unique('send_handler');
+      final completion = Completer<({ChatMessage message, ChatError? error})>();
+      manager.addMessageEvent(
+        handlerId,
+        ChatMessageEvent(
+          onSuccess: (id, confirmed) {
+            if (id == localId && !completion.isCompleted) {
+              completion.complete((message: confirmed, error: null));
+            }
+          },
+          onError: (id, failed, error) {
+            if (id == localId && !completion.isCompleted) {
+              completion.complete((message: failed, error: error));
+            }
+          },
+        ),
+      );
+      addTearDown(() => manager.removeMessageEvent(handlerId));
+
+      // Method completion only acknowledges submission. The listener is already
+      // installed, including when the final callback precedes the method result.
+      debugPrint('CI FL-MSG-001 verify: correlated final server send callback');
+      await manager.sendMessage(message).timeout(const Duration(seconds: 30));
+      final result = await completion.future.timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw TimeoutException(
+          'No final send callback for FL-MSG-001 local message $localId',
+        ),
+      );
+      expect(result.error, isNull, reason: 'Server rejected the message');
+      final confirmed = result.message;
+      expect(confirmed.status, MessageStatus.SUCCESS);
+      expect(confirmed.msgId, isNotEmpty);
+      expect(confirmed.from, userId);
+      expect(confirmed.to, peerId);
+      expect(confirmed.conversationId, peerId);
+      expect((confirmed.body as ChatTextMessageBody).content, content);
+      expect(confirmed.attributes, message.attributes);
+
+      final conversation = await manager.getConversation(
+        peerId,
+        createIfNeed: false,
+      );
+      expect(conversation, isNotNull);
+      expect(conversation!.id, peerId);
+      expectMessage(await manager.loadMessage(confirmed.msgId), confirmed);
+      expect(
+        (await manager.loadAllConversations()).map((item) => item.id),
+        contains(peerId),
+      );
+      debugPrint('CI FL-MSG-001 verify passed');
+      // This peer can have preexisting history. Do not delete its conversation;
+      // message/conversation global reclamation is outside this suite's scope.
+    });
+
+    ciTestWidgets('FL-MSG-002 positive import reads and updates owned messages',
+        (
+      tester,
+    ) async {
+      final id = ownedConversation('import');
+      final first = localMessage(id, 'import incoming', timestamp: 1000);
+      final second = localMessage(
+        id,
+        'import outgoing',
+        timestamp: 2000,
+        outgoing: true,
+      );
+      final unselected = localMessage(id, 'not requested', timestamp: 3000);
+      await manager.importMessages(<ChatMessage>[first, second, unselected]);
+      expectMessage(await manager.loadMessage(first.msgId), first);
+      expectMessage(await manager.loadMessage(second.msgId), second);
+      expectMessages(
+        await manager
+            .loadMessagesWithIds(<String>[second.msgId, first.msgId], id),
+        <ChatMessage>[first, second],
+      );
+
+      final originalId = second.msgId;
+      second
+        ..body = ChatTextMessageBody(content: 'updated outgoing')
+        // Submit the complete map; deletion by omission has no public contract.
+        ..attributes = <String, dynamic>{
+          ...?second.attributes,
+          'time': 2001,
+          'revision': 2,
+        };
+      await manager.updateMessage(second);
+      final updated = await manager.loadMessage(originalId);
+      expectMessage(updated, second);
+      expect(updated!.msgId, originalId);
+      expectMessage(await manager.loadMessage(first.msgId), first);
+      expectMessage(await manager.loadMessage(unselected.msgId), unselected);
+    });
+
+    ciTestWidgets('FL-MSG-003 positive keyword search filters sender and time',
+        (
+      tester,
+    ) async {
+      final a = ownedConversation('keyword_a');
+      final b = ownedConversation('keyword_b');
+      final keyword = unique('needle');
+      final first = localMessage(a, '$keyword alpha', timestamp: 1000);
+      final unrelated = localMessage(a, 'ordinary content', timestamp: 2000);
+      final otherSender = localMessage(b, '$keyword beta', timestamp: 3000);
+      final outgoing = localMessage(
+        a,
+        '$keyword gamma',
+        timestamp: 4000,
+        outgoing: true,
+      );
+      await manager.importMessages(<ChatMessage>[
+        first,
+        unrelated,
+        otherSender,
+        outgoing,
+      ]);
+      expectMessages(
+        await manager.loadMessagesWithKeyword(keyword, count: 10),
+        <ChatMessage>[first, otherSender, outgoing],
+      );
+      expectMessages(
+        await manager.loadMessagesWithKeyword(keyword, sender: a, count: 10),
+        <ChatMessage>[first],
+      );
+      expectMessages(
+        await manager.loadMessagesWithKeyword(
+          keyword,
+          timestamp: 2500,
+          count: 10,
+          direction: ChatSearchDirection.Up,
+        ),
+        <ChatMessage>[first],
+      );
+      expectMessages(
+        await manager.loadMessagesWithKeyword(
+          keyword,
+          timestamp: 2500,
+          count: 10,
+          direction: ChatSearchDirection.Down,
+        ),
+        <ChatMessage>[otherSender, outgoing],
+      );
+      expect(await manager.loadMessagesWithKeyword(unique('absent')), isEmpty);
+    });
+
+    ciTestWidgets(
+        'FL-MSG-004 positive options search filters type sender and time', (
+      tester,
+    ) async {
+      final a = ownedConversation('options_a');
+      final b = ownedConversation('options_b');
+      final first = localMessage(a, 'first text', timestamp: 1000);
+      final second = localMessage(a, 'second text', timestamp: 2000);
+      final custom =
+          localMessage(a, 'ci_custom', timestamp: 3000, custom: true);
+      final outgoing = localMessage(
+        a,
+        'outgoing text',
+        timestamp: 4000,
+        outgoing: true,
+      );
+      final otherSender = localMessage(b, 'other sender', timestamp: 5000);
+      await manager.importMessages(<ChatMessage>[
+        first,
+        second,
+        custom,
+        outgoing,
+        otherSender,
+      ]);
+      expectMessages(
+        await manager.searchMsgsByOptions(
+          MessageSearchOptions(
+              types: const <MessageType>[MessageType.TXT], from: a),
+        ),
+        <ChatMessage>[first, second],
+      );
+      expectMessages(
+        await manager.searchMsgsByOptions(
+          MessageSearchOptions(
+              types: const <MessageType>[MessageType.CUSTOM], from: a),
+        ),
+        <ChatMessage>[custom],
+      );
+      expectMessages(
+        await manager.searchMsgsByOptions(
+          MessageSearchOptions(
+            types: const <MessageType>[MessageType.TXT, MessageType.CUSTOM],
+            from: a,
+          ),
+        ),
+        <ChatMessage>[first, second, custom],
+      );
+      expectMessages(
+        await manager.searchMsgsByOptions(
+          MessageSearchOptions(
+            types: const <MessageType>[MessageType.TXT],
+            from: a,
+            ts: 1500,
+          ),
+        ),
+        <ChatMessage>[first],
+      );
+      expectMessages(
+        await manager.searchMsgsByOptions(
+          MessageSearchOptions(
+            types: const <MessageType>[MessageType.TXT],
+            from: a,
+            ts: 1500,
+            direction: ChatSearchDirection.Down,
+          ),
+        ),
+        <ChatMessage>[second],
+      );
+    });
+
+    ciTestWidgets('FL-MSG-005 positive keyword aggregation maps matching IDs', (
+      tester,
+    ) async {
+      final a = ownedConversation('aggregate_a');
+      final b = ownedConversation('aggregate_b');
+      final c = ownedConversation('aggregate_nonmatching');
+      final keyword = unique('aggregate_needle');
+      final first = localMessage(a, '$keyword alpha', timestamp: 1000);
+      final second = localMessage(a, '$keyword beta', timestamp: 2000);
+      final third = localMessage(b, '$keyword gamma', timestamp: 3000);
+      final sameConversationNonmatch =
+          localMessage(a, 'ordinary', timestamp: 4000);
+      final nonmatching = localMessage(c, 'ordinary', timestamp: 5000);
+      await manager.importMessages(<ChatMessage>[
+        first,
+        second,
+        third,
+        sameConversationNonmatch,
+        nonmatching,
+      ]);
+      final matches = await manager.loadConversationMessagesWithKeyword(
+        keyword: keyword,
+      );
+      expect(matches.keys, unorderedEquals(<String>[a, b]));
+      expect(matches[a], unorderedEquals(<String>[first.msgId, second.msgId]));
+      expect(matches[b], <String>[third.msgId]);
+
+      final senderMatches = await manager.loadConversationMessagesWithKeyword(
+        keyword: keyword,
+        sender: a,
+      );
+      expect(senderMatches.keys, <String>[a]);
+      expect(senderMatches[a],
+          unorderedEquals(<String>[first.msgId, second.msgId]));
+
+      final older = await manager.loadConversationMessagesWithKeyword(
+        keyword: keyword,
+        timestamp: 1500,
+        direction: ChatSearchDirection.Up,
+      );
+      expect(older, <String, List<String>>{
+        a: <String>[first.msgId]
+      });
+      expect(
+        await manager.loadConversationMessagesWithKeyword(
+            keyword: unique('absent')),
+        isEmpty,
+      );
+    });
+  });
+}
