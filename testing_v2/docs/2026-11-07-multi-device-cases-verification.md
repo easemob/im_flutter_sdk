@@ -176,3 +176,12 @@ Presence 三轮均在同一事件元素内匹配 B 与本轮唯一描述；辅�
 - 配置生成不改写源用例；12 份 JSON 的命令参数和核心断言与原内容对照，仅调整账号引用、联系人前置引用及移除收件账号占位值。账号配置和生成源码未改变。
 - 汇总、统计及过程索引：`reports/<runId>/summary.md`、`statistics.csv`、`process.json`；原始报告：`reports/<runId>/<用例名>/1/flow-report.json`；原始事件和设备日志：`tmp/<runId>/<用例名>/1/`。
 - 执行日志：`tmp/account-device-validation-1.log` 至 `-3.log`；回归日志：`tmp/account-device-tests.log`、`tmp/account-device-flow-tests-host.log`。
+
+### 按 README 双 iOS 抽验
+
+轮次 `20261108-145740-presence-c18371f2`：按 README 依次执行 `dart pub get`、`generate_accounts_input.dart`、`generate_accounts.dart --input config/accounts-input.json`、`generate_cases.dart --platform ios --case 5.0.0-multi-presence-positive`、`all --cases config/cases.json`。已有账号输入保留，Token 重新获取，选择文件直接引用源用例。
+
+- 设备：自动选中的 iPad (A16)／iOS 18.6 与 iPad Air 11-inch (M2)／iOS 18.2；Flutter 3.47.0。
+- 结果：设备准备、重新构建、安装启动及执行成功，CLI 退出码 0；Presence 16/16 步通过，任务故障 0。A 的 `onPresenceStatusChanged`（`seq=30`）同时匹配 B 与本轮唯一发布值；退订、恢复原状态、双方 logout 和 HTTP finish 成功。
+- 产物：`reports/<runId>/summary.md`、`statistics.csv`、`process.json` 自动生成；步骤报告及原始事件位置同上。过程记录的 33 个阶段证据引用均可读取，未清理产物。
+- 本轮抽验未发现 README 操作或场景执行问题，未修改代码和用例；仅验证一个场景的一轮，不代表全部 iOS 场景或多轮稳定性验证。
