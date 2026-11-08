@@ -2,9 +2,9 @@
 
 ## 1. 范围与产物
 
-在 `testing_v2` 中完成以下六个独立正向用例。每例选择一个平台的两台模拟器验证，固定用例后连续完整执行三轮。先补齐场景契约并由子代理审查，再逐例开发、验证，主代理验收。无法解决的场景先记录问题并暂停，继续不受影响的下一例，不为此增加辅助脚本。
+在 `testing_v2` 中完成以下独立正向用例。每例选择一个平台的两台模拟器验证，固定用例后连续完整执行三轮。先补齐场景契约并由子代理审查，再逐例开发、验证，主代理验收。无法解决的场景先记录问题并暂停，继续不受影响的下一例，不为此增加辅助脚本。
 
-| 顺序 | 场景 | 用例标识／文件主名 |
+| 序号 | 场景 | 用例标识／文件主名 |
 |---|---|---|
 | 1 | 单聊消息送达确认 | `5.0.0-multi-message-delivery-positive` |
 | 2 | 单聊消息已读回执 | `5.0.0-multi-message-read-receipt-positive` |
@@ -12,12 +12,20 @@
 | 4 | 公开群入群通知 | `5.0.0-multi-group-member-join-positive` |
 | 5 | Presence 订阅与发布 | `5.0.0-multi-presence-positive` |
 | 6 | 同账号双设备消息同步 | `5.0.0-multi-message-device-sync-positive` |
+| 7 | 消息内容编辑通知 | `5.0.0-multi-message-edit-positive` |
+| 8 | 消息撤回通知（暂停执行） | `5.0.0-multi-message-recall-positive` |
+| 9 | 群成员退出通知 | `5.0.0-multi-group-member-leave-positive` |
+| 10 | 用户资料订阅更新 | `5.0.0-multi-user-info-subscribe-positive` |
+| 11 | 群名片更新通知 | `5.0.0-multi-group-namecard-positive` |
+| 12 | 同账号双设备建群同步 | `5.0.0-multi-group-create-device-sync-positive` |
 
 每例在 `data/` 下对应同名 YAML、JSON；Presence 完善现有文件。YAML 保存控制流，JSON 的 `steps` 保存完整命令和参数，`data` 保存业务输入，`requiredBindings` 声明必要验证。用文件主名关联报告，不另设一套用例编号。
 
 各例实现、验证结果及暂缓原因见[验证记录](2026-11-07-multi-device-cases-verification.md)。
 
 本任务复用现有执行工具。若编写或验证需要新增测试用例以外的独立脚本（含临时辅助脚本），须先说明用途、必要性及现有工具不能满足的原因，取得用户确认后再创建或执行。
+
+example 可按场景需要注册 SDK 已有公开 API、补齐通知的结构化记录；仅透传实际参数和结果，不增加业务编排或改动 SDK、解释器契约。
 
 本规格遵循 [规则与边界](../spec.md)、[编写用例](2026-11-06-test-case-authoring.md)、[执行规格](../../docs/spec/2026-11-06-testing-v2-spec.md)及 [flow_runner 语法](../../tool/flow_runner/README.md)。本次不扩展逆向场景、单设备用例或 CI 测试，不使用 `testing/`。
 
@@ -141,6 +149,90 @@ Native 5.0.0 的自动送达回执路径也要求消息 `isNeedReadReceipt: true
 | 7 | 已登录的 a1、a2 | `ChatClient.logout` | 两端分别退出，不使用 kickAllDevices。 |
 
 初始化、登录、设备 UUID、在线列表、连接、发送、同步通知及正常退出列入必要绑定；SDK UUID 不同的条件控制发送，未满足时不得靠其余查询通过。本例不验证 B 接收，也不用 `ChatMultiDeviceEventHandler` 的联系人／群组通知替代消息同步。被踢下线、身份不符或同步能力缺失记录实际证据并暂停，不修改服务端开关绕过结果。
+
+### 3.7 消息内容编辑通知
+
+**角色与输入**：A/B 不同账号，双方初始化、登录和连接成功；`data.unique` 分别生成原正文、编辑正文及扩展标识。
+
+| 顺序 | 执行端 | API／事件 | 必要断言 |
+|---|---|---|---|
+| 1 | A | `sendMessage`，单聊文本发往 B | 发送成功回调，服务器消息 ID 非空。 |
+| 2 | B | `onMessagesReceived` | 同一消息元素匹配本轮 ID、A、B、原正文及文本类型。 |
+| 3 | A | `modifyMessage(messageId, msgBody, attributes)`，example 参数为 `messageId/content/attributes` | 使用本轮消息 ID，返回同一 ID、新正文和扩展标识。 |
+| 4 | B | `onMessageContentChanged` | `message.msgId`、正文、扩展标识及 `operatorId=A` 同时匹配。 |
+| 5 | A、B | `logout` | 双方独立退出。 |
+
+只在已确认 B 收到原消息后编辑；不使用本地 `updateMessage` 替代服务端修改。发送、接收、修改、编辑通知及公共前后置均为必要绑定。失败停止依赖步骤，仍退出双方；不重发或反复编辑结果未知的消息。
+
+### 3.8 消息撤回通知
+
+**执行状态**：2026-11-08 按用户要求暂停，不纳入当前执行清单；保留用例、断言和历史证据，待用户明确通知恢复后再执行。
+
+**角色与输入**：A/B 不同账号，公共前后置同 §3.7；环境须支持所请求的撤回能力，本轮正文和撤回 `ext` 均为唯一值，操作须在服务端允许的撤回窗口内完成。返回 `505: Service is not enabled` 时保留失败证据并暂停，不擅自开通服务或删除断言绕过。
+
+| 顺序 | 执行端 | API／事件 | 必要断言 |
+|---|---|---|---|
+| 1 | A | `sendMessage`，单聊文本发往 B | 发送回调成功，取得服务器消息 ID。 |
+| 2 | B | `onMessagesReceived` | 同一元素匹配本轮消息 ID、A、B、正文。 |
+| 3 | A | `recallMessage(messageId, ext)` | 撤回本轮消息，API 成功返回。 |
+| 4 | B | `onMessagesRecalledInfo` | `recallMessageInfos` 同一元素匹配 `recallMessageId=本轮ID`、`recallBy=A`、`ext=本轮值`。 |
+| 5 | A、B | `logout` | 双方独立退出。 |
+
+example 对 `RecallMessageInfo` 保留公开字段名并输出结构化值；允许 `recallMessage` 为 null，不将可选原消息对象作为通过条件。撤回失败或通知超时不能算通过，不盲目重试撤回；保留原消息证据，仍退出双方。
+
+### 3.9 群成员退出通知
+
+**角色与前置**：B 群主，A 成员。按 §3.4 创建本轮无审批公开群、A 主动加入，先验证 B 收到匹配本群及 A 的入群通知。
+
+| 顺序 | 执行端 | API／事件 | 必要断言 |
+|---|---|---|---|
+| 1 | A | `leaveGroup(groupId)` | 使用本轮群 ID，调用成功。 |
+| 2 | B | `onMembersExitedFromGroup` | 本轮 `groupId`，`userIds contains A`；不假定数组顺序。 |
+| 3 | B | `destroyGroup(groupId)` | 取得有效群 ID 后，前置加入、退出或通知失败仍尝试解散。 |
+| 4 | A、B | `logout` | 双方独立退出。 |
+
+建群、入群及其通知、退出及其通知、解散和公共前后置均为必要绑定。创建结果未知时不重建、不以未知 ID 清理。
+
+### 3.10 用户资料订阅更新
+
+**角色与前置**：A 订阅者、B 资料提供者，使用专用账号，环境支持用户资料订阅；两端初始化 `enableUserInfo=true`。只修改 B 的昵称；原值必须可以准确恢复，不能把缺失/null 等同于空字符串。
+
+| 顺序 | 执行端 | API／事件 | 必要断言 |
+|---|---|---|---|
+| 1 | B | `fetchOwnInfo(expireTime: 0)` | 取得 B 的资料，保存可恢复的 `nickName` 及 `gender`；不满足则禁止修改。 |
+| 2 | A | `unsubscribeUsersInfo([B])`、`subscribeUsersInfo([B])` | 专用订阅先归零，再订阅成功；不提前修改资料。 |
+| 3 | B | `updateUserInfo(nickname: 本轮唯一值, gender: 原值)` | 只传目标昵称与原性别；返回 `userId=B`、`nickName=本轮值`。 |
+| 4 | A | `onUserInfoUpdate` | `userInfos` 同一元素匹配 B 与本轮 `nickName`。 |
+| 5 | A、B | A 退订；B 恢复原昵称及性别 | 发布前记录尝试标记，修改结果未知或通知失败仍尝试恢复；两项清理独立执行。 |
+| 6 | A、B | `logout` | 双方独立退出。 |
+
+订阅、更新及准确通知缺一不可；资料查询不替代通知。恢复命令必须带原始字符串，不能传 null 假装清理成功。原资料不可恢复时记录前置缺项并暂停该例，不擅自预置账号资料或改工具取值规则。
+
+### 3.11 群名片更新通知
+
+**角色与前置**：B 创建本轮无审批公开群，A 主动加入；先验证 B 的入群通知。使用本轮群 ID 字符串作为名片值，保持每轮唯一且长度明确。
+
+| 顺序 | 执行端 | API／事件 | 必要断言 |
+|---|---|---|---|
+| 1 | A | `updateGroupNamecard(groupId, namecard)` | 本轮群 ID、唯一名片，调用成功。 |
+| 2 | B | `onUserGroupNamecardChanged` | 同时匹配本轮 `groupId`、`userId=A`、本轮 `namecard`。 |
+| 3 | B | `destroyGroup(groupId)` | 已创建的群始终尝试解散；该群名片随群回收。 |
+| 4 | A、B | `logout` | 双方独立退出。 |
+
+公共前后置、建群、入群及通知、名片更新及通知、解散均为必要绑定。`getGroupNamecard` 为本地查询，不能替代对端通知或充当服务端确认。
+
+### 3.12 同账号双设备建群同步
+
+**角色与前置**：a1/a2 绑定同一账号 A、不同模拟器，环境允许同时在线。按 §3.6 核验不同 SDK UUID、在线列表包含两端，第二端登录后双方连接仍正常。无需第三账号或消息同步专用选项。
+
+| 顺序 | 执行端 | API／事件 | 必要断言 |
+|---|---|---|---|
+| 1 | a1 | `createGroup`，本轮唯一群名称、无邀请成员 | 返回非空群 ID。 |
+| 2 | a2 | `ChatMultiDeviceEventHandler.onGroupEvent` | `event=GROUP_CREATE`、`groupId=本轮群ID` 同时匹配；不要求未定义的 `userIds` 内容。 |
+| 3 | a1 | `destroyGroup(groupId)` | 创建成功后即使同步通知失败也尝试解散本群。 |
+| 4 | a1、a2 | `logout` | 双方独立退出。 |
+
+身份与在线核验、建群、同步通知、解散及公共前后置均为必要绑定。不能用普通 `ChatGroupEventHandler` 的群通知替代同账号同步通知；创建未知、被踢下线或多设备能力缺失均保留证据并暂停，不改服务端开关绕过。
 
 ## 4. 逐例实施与验收
 

@@ -5,6 +5,15 @@ import '../api_entry.dart';
 /// UserInfoManager related entries (new in 4.22, requires ChatOptions.enableUserInfo=true).
 final userInfoApis = <ApiEntry>[
   ApiEntry(
+    name: 'ChatUserInfoManager.fetchOwnInfo',
+    group: 'UserInfoManager',
+    description: '读取当前用户属性，返回单个 ChatUserInfo；expireTime 为 Dart 缓存有效期（秒），默认 0。',
+    paramsTemplate: '{"expireTime": 0}',
+    invoke: (p) => ChatClient.getInstance.userInfoManager.fetchOwnInfo(
+      expireTime: (p['expireTime'] as int?) ?? 0,
+    ),
+  ),
+  ApiEntry(
     name: 'ChatUserInfoManager.subscribeUsersInfo',
     group: 'UserInfoManager',
     description: '订阅指定用户的用户属性（4.22 新增，需 enableUserInfo=true）。'

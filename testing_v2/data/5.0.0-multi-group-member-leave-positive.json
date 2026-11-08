@@ -1,0 +1,114 @@
+{
+  "data": {
+    "unique": {
+      "groupName": "member-leave-"
+    }
+  },
+  "steps": [
+    {
+      "id": "init",
+      "api": "ChatClient.init",
+      "params": {
+        "config": "$global.biz.config.initConfig",
+        "overrides": {}
+      }
+    },
+    {
+      "id": "login_alice",
+      "api": "ChatClient.loginWithToken",
+      "params": {
+        "userId": "$global.account.alice.userId",
+        "token": "$global.account.alice.userToken"
+      }
+    },
+    {
+      "id": "login_bob",
+      "api": "ChatClient.loginWithToken",
+      "params": {
+        "userId": "$global.account.bob.userId",
+        "token": "$global.account.bob.userToken"
+      }
+    },
+    {
+      "id": "connected",
+      "api": "ChatClient.isConnected",
+      "params": {},
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "create_group",
+      "api": "ChatGroupManager.createGroup",
+      "params": {
+        "groupName": "$global.biz.input.groupName",
+        "configs": {
+          "maxCount": 200,
+          "isPublic": true,
+          "joinApprovalRequired": false,
+          "inviteNeedConfirm": false,
+          "allowInvites": true
+        }
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "groupId",
+            "notEmpty": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "join_group",
+      "api": "ChatGroupManager.joinPublicGroup",
+      "params": {
+        "groupId": "$global.biz.result.created.data.groupId"
+      }
+    },
+    {
+      "id": "leave_group",
+      "api": "ChatGroupManager.leaveGroup",
+      "params": {
+        "groupId": "$global.biz.result.created.data.groupId"
+      }
+    },
+    {
+      "id": "destroy_group",
+      "api": "ChatGroupManager.destroyGroup",
+      "params": {
+        "groupId": "$global.biz.result.created.data.groupId"
+      }
+    },
+    {
+      "id": "logout",
+      "api": "ChatClient.logout",
+      "params": {
+        "unbindDeviceToken": true
+      }
+    }
+  ],
+  "requiredBindings": [
+    "global.biz.result.alice_init",
+    "global.biz.result.bob_init",
+    "global.biz.result.alice_login",
+    "global.biz.result.bob_login",
+    "global.biz.result.alice_connected",
+    "global.biz.result.bob_connected",
+    "global.biz.result.created",
+    "global.biz.result.joined",
+    "global.biz.event.member_joined",
+    "global.biz.result.left",
+    "global.biz.event.member_left",
+    "global.biz.result.group_destroyed",
+    "global.biz.result.alice_logout",
+    "global.biz.result.bob_logout"
+  ]
+}

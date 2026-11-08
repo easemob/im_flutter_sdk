@@ -1,0 +1,86 @@
+# Both SDK devices must remain online as the same account before creating a group.
+name: 5.0.0-multi-group-create-device-sync-positive
+flowTimeoutMs: 300000
+agents:
+  a1: {script: 5.0.0-multi-group-create-device-sync-positive.json}
+  a2: {script: 5.0.0-multi-group-create-device-sync-positive.json}
+defaults:
+  stepTimeoutMs: 30000
+steps:
+  - set: {a1_logged_in: false, a2_logged_in: false, group_created: false}
+  - if: '$global.account.a1.userId == $global.account.a2.userId'
+    then:
+      - parallel:
+          session:
+            - cmd: init
+              agent: a1
+              as: global.biz.result.a1_init
+              onFail: abort_flow
+            - cmd: init
+              agent: a2
+              as: global.biz.result.a2_init
+              onFail: abort_flow
+            - cmd: login_a1
+              agent: a1
+              as: global.biz.result.a1_login
+              onFail: abort_flow
+            - set: {a1_logged_in: true}
+            - cmd: login_a2
+              agent: a2
+              as: global.biz.result.a2_login
+              onFail: abort_flow
+            - set: {a2_logged_in: true}
+            - cmd: device_id
+              agent: a1
+              as: global.biz.result.a1_device
+              onFail: abort_flow
+            - cmd: device_id
+              agent: a2
+              as: global.biz.result.a2_device
+              onFail: abort_flow
+            - if: '$global.biz.result.a1_device.data != $global.biz.result.a2_device.data'
+              then:
+                - cmd: online_devices
+                  agent: a1
+                  as: global.biz.result.online_devices
+                  onFail: abort_flow
+                - cmd: connected
+                  agent: a1
+                  as: global.biz.result.a1_connected
+                  onFail: abort_flow
+                - cmd: connected
+                  agent: a2
+                  as: global.biz.result.a2_connected
+                  onFail: abort_flow
+                - cmd: create_group
+                  agent: a1
+                  as: global.biz.result.created
+                  onFail: abort_flow
+                - set: {group_created: true}
+                # The event may arrive before the create response supplies its ID.
+                - wait_event: onGroupEvent
+                  agent: a2
+                  match:
+                    event: GROUP_CREATE
+                    groupId: '$global.biz.result.created.data.groupId'
+                  as: global.biz.event.group_created
+                  onFail: abort_flow
+  # A missing synchronization event must not leave the confirmed group behind.
+  - if: '$group_created'
+    then:
+      - cmd: destroy_group
+        agent: a1
+        as: global.biz.result.group_destroyed
+  - parallel:
+      a1_exit:
+        - if: '$a1_logged_in'
+          then:
+            - cmd: logout
+              agent: a1
+              as: global.biz.result.a1_logout
+      a2_exit:
+        - if: '$a2_logged_in'
+          then:
+            - cmd: logout
+              agent: a2
+              as: global.biz.result.a2_logout

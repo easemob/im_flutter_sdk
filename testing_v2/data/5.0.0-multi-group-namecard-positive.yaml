@@ -1,0 +1,92 @@
+# Use the fresh group ID as a short, unique namecard and verify it on the other member.
+name: 5.0.0-multi-group-namecard-positive
+flowTimeoutMs: 240000
+agents:
+  alice: {script: 5.0.0-multi-group-namecard-positive.json}
+  bob: {script: 5.0.0-multi-group-namecard-positive.json}
+defaults:
+  stepTimeoutMs: 30000
+steps:
+  - set: {alice_logged_in: false, bob_logged_in: false, alice_ready: false, bob_ready: false, group_created: false}
+  - parallel:
+      alice_login:
+        - cmd: init
+          agent: alice
+          as: global.biz.result.alice_init
+          onFail: abort_flow
+        - cmd: login_alice
+          agent: alice
+          as: global.biz.result.alice_login
+          onFail: abort_flow
+        - set: {alice_logged_in: true}
+        - cmd: connected
+          agent: alice
+          as: global.biz.result.alice_connected
+          onFail: abort_flow
+        - set: {alice_ready: true}
+      bob_login:
+        - cmd: init
+          agent: bob
+          as: global.biz.result.bob_init
+          onFail: abort_flow
+        - cmd: login_bob
+          agent: bob
+          as: global.biz.result.bob_login
+          onFail: abort_flow
+        - set: {bob_logged_in: true}
+        - cmd: connected
+          agent: bob
+          as: global.biz.result.bob_connected
+          onFail: abort_flow
+        - set: {bob_ready: true}
+  - if: '$alice_ready and $bob_ready'
+    then:
+      - parallel:
+          group_lifecycle:
+            - cmd: create_group
+              agent: bob
+              as: global.biz.result.created
+              onFail: abort_flow
+            - set: {group_created: true}
+            - cmd: join_group
+              agent: alice
+              as: global.biz.result.joined
+              onFail: abort_flow
+            - wait_event: onMembersJoinedFromGroup
+              agent: bob
+              match: {groupId: '$global.biz.result.created.data.groupId'}
+              checks:
+                - {path: userIds, contains: '$global.account.alice.userId'}
+              as: global.biz.event.member_joined
+              onFail: abort_flow
+            - cmd: update_namecard
+              agent: alice
+              as: global.biz.result.namecard_updated
+              onFail: abort_flow
+            - wait_event: onUserGroupNamecardChanged
+              agent: bob
+              match:
+                groupId: '$global.biz.result.created.data.groupId'
+                userId: '$global.account.alice.userId'
+                namecard: '$global.biz.result.created.data.groupId'
+              as: global.biz.event.namecard_changed
+              onFail: abort_flow
+  # Recycle the confirmed group even when the tested operation or notification fails.
+  - if: '$group_created'
+    then:
+      - cmd: destroy_group
+        agent: bob
+        as: global.biz.result.group_destroyed
+  - parallel:
+      alice_exit:
+        - if: '$alice_logged_in'
+          then:
+            - cmd: logout
+              agent: alice
+              as: global.biz.result.alice_logout
+      bob_exit:
+        - if: '$bob_logged_in'
+          then:
+            - cmd: logout
+              agent: bob
+              as: global.biz.result.bob_logout

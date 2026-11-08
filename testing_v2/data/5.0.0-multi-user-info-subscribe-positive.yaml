@@ -1,0 +1,112 @@
+# Subscribe to one user's nickname update and restore the captured nickname and gender.
+name: 5.0.0-multi-user-info-subscribe-positive
+flowTimeoutMs: 240000
+agents:
+  alice: {script: 5.0.0-multi-user-info-subscribe-positive.json}
+  bob: {script: 5.0.0-multi-user-info-subscribe-positive.json}
+defaults:
+  stepTimeoutMs: 30000
+steps:
+  - set: {alice_logged_in: false, bob_logged_in: false, alice_ready: false, bob_ready: false}
+  - parallel:
+      alice_login:
+        - cmd: init
+          agent: alice
+          as: global.biz.result.alice_init
+          onFail: abort_flow
+        - cmd: login_alice
+          agent: alice
+          as: global.biz.result.alice_login
+          onFail: abort_flow
+        - set: {alice_logged_in: true}
+        - cmd: connected
+          agent: alice
+          as: global.biz.result.alice_connected
+          onFail: abort_flow
+        - set: {alice_ready: true}
+      bob_login:
+        - cmd: init
+          agent: bob
+          as: global.biz.result.bob_init
+          onFail: abort_flow
+        - cmd: login_bob
+          agent: bob
+          as: global.biz.result.bob_login
+          onFail: abort_flow
+        - set: {bob_logged_in: true}
+        - cmd: connected
+          agent: bob
+          as: global.biz.result.bob_connected
+          onFail: abort_flow
+        - set: {bob_ready: true}
+  - set:
+      original_found: false
+      original_nickname: null
+      original_gender: null
+      subscription_attempted: false
+      update_attempted: false
+  - if: '$alice_ready and $bob_ready'
+    then:
+      - parallel:
+          profile:
+            - cmd: capture_profile
+              agent: bob
+              as: global.biz.result.original
+              onFail: abort_flow
+            - set: {original_profile: '$global.biz.result.original.data'}
+            # null means no restorable nickname; it must not become an empty string.
+            - if: '$original_profile.nickName != null'
+              then:
+                - set:
+                    original_found: true
+                    original_nickname: '$original_profile.nickName'
+                    original_gender: '$original_profile.gender'
+                - cmd: unsubscribe
+                  agent: alice
+                  as: global.biz.result.reset_subscription
+                  onFail: abort_flow
+                - set: {subscription_attempted: true}
+                - cmd: subscribe
+                  agent: alice
+                  as: global.biz.result.subscription
+                  onFail: abort_flow
+                - set: {update_attempted: true}
+                - cmd: update_profile
+                  agent: bob
+                  inputs: {gender: '$original_gender'}
+                  as: global.biz.result.updated
+                  onFail: abort_flow
+                - wait_event: onUserInfoUpdate
+                  agent: alice
+                  checks:
+                    - path: userInfos
+                      containsItem:
+                        userId: '$global.account.bob.userId'
+                        nickName: '$global.biz.input.nickname'
+                        gender: '$original_gender'
+                  as: global.biz.event.updated
+                  onFail: abort_flow
+  - parallel:
+      alice_cleanup:
+        - if: '$subscription_attempted'
+          then:
+            - cmd: unsubscribe
+              agent: alice
+              as: global.biz.result.cleanup_subscription
+        - if: '$alice_logged_in'
+          then:
+            - cmd: logout
+              agent: alice
+              as: global.biz.result.alice_logout
+      bob_cleanup:
+        - if: '$update_attempted and $original_found'
+          then:
+            - cmd: restore_profile
+              agent: bob
+              inputs: {nickname: '$original_nickname', gender: '$original_gender'}
+              as: global.biz.result.restoration
+        - if: '$bob_logged_in'
+          then:
+            - cmd: logout
+              agent: bob
+              as: global.biz.result.bob_logout

@@ -127,6 +127,16 @@ final chatApis = <ApiEntry>[
     },
   ),
   ApiEntry(
+    name: 'ChatManager.recallMessage',
+    group: 'ChatManager',
+    description: '撤回发送成功的消息；可通过 ext 透传本次撤回的标识。',
+    paramsTemplate: '{"messageId": "messageId", "ext": "recall reason"}',
+    invoke: (p) => ChatClient.getInstance.chatManager.recallMessage(
+      p['messageId'] as String,
+      ext: p['ext'] as String?,
+    ),
+  ),
+  ApiEntry(
     name: 'ChatManager.modifyMessage',
     group: 'ChatManager',
     description: '修改消息正文和/或扩展属性。5.0.0 起支持 attributes 参数。',

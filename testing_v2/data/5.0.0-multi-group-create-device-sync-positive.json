@@ -1,0 +1,139 @@
+{
+  "data": {
+    "unique": {
+      "groupName": "group-device-sync-"
+    }
+  },
+  "steps": [
+    {
+      "id": "init",
+      "api": "ChatClient.init",
+      "params": {
+        "config": "$global.biz.config.initConfig",
+        "overrides": {}
+      }
+    },
+    {
+      "id": "login_a1",
+      "api": "ChatClient.loginWithToken",
+      "params": {
+        "userId": "$global.account.a1.userId",
+        "token": "$global.account.a1.userToken"
+      }
+    },
+    {
+      "id": "login_a2",
+      "api": "ChatClient.loginWithToken",
+      "params": {
+        "userId": "$global.account.a2.userId",
+        "token": "$global.account.a2.userToken"
+      }
+    },
+    {
+      "id": "device_id",
+      "api": "ChatClient.getCurrentDeviceId",
+      "params": {},
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "",
+            "notEmpty": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "online_devices",
+      "api": "ChatClient.fetchLoggedInDevices",
+      "params": {
+        "userId": "$global.account.a1.userId",
+        "token": "$global.account.a1.userToken"
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "",
+            "containsItem": {
+              "deviceUUID": "$global.biz.result.a1_device.data"
+            }
+          },
+          {
+            "path": "",
+            "containsItem": {
+              "deviceUUID": "$global.biz.result.a2_device.data"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "connected",
+      "api": "ChatClient.isConnected",
+      "params": {},
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "create_group",
+      "api": "ChatGroupManager.createGroup",
+      "params": {
+        "groupName": "$global.biz.input.groupName",
+        "configs": {
+          "maxCount": 200,
+          "isPublic": true,
+          "joinApprovalRequired": false,
+          "inviteNeedConfirm": false,
+          "allowInvites": true
+        }
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "groupId",
+            "notEmpty": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "destroy_group",
+      "api": "ChatGroupManager.destroyGroup",
+      "params": {
+        "groupId": "$global.biz.result.created.data.groupId"
+      }
+    },
+    {
+      "id": "logout",
+      "api": "ChatClient.logout",
+      "params": {
+        "unbindDeviceToken": true
+      }
+    }
+  ],
+  "requiredBindings": [
+    "global.biz.result.a1_init",
+    "global.biz.result.a2_init",
+    "global.biz.result.a1_login",
+    "global.biz.result.a2_login",
+    "global.biz.result.a1_device",
+    "global.biz.result.a2_device",
+    "global.biz.result.online_devices",
+    "global.biz.result.a1_connected",
+    "global.biz.result.a2_connected",
+    "global.biz.result.created",
+    "global.biz.event.group_created",
+    "global.biz.result.group_destroyed",
+    "global.biz.result.a1_logout",
+    "global.biz.result.a2_logout"
+  ]
+}

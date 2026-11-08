@@ -77,6 +77,14 @@ final groupApis = <ApiEntry>[
         .joinPublicGroup(p['groupId'] as String),
   ),
   ApiEntry(
+    name: 'ChatGroupManager.leaveGroup',
+    group: 'GroupManager',
+    description: '当前成员退出指定群组；群主应使用解散群组接口。',
+    paramsTemplate: '{"groupId": "yourGroupId"}',
+    invoke: (p) =>
+        ChatClient.getInstance.groupManager.leaveGroup(p['groupId'] as String),
+  ),
+  ApiEntry(
     name: 'ChatGroupManager.destroyGroup',
     group: 'GroupManager',
     description: '解散群组，仅群主可调用；用于清理 createGroup 创建的测试群。',

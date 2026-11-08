@@ -1,0 +1,157 @@
+{
+  "data": {
+    "unique": {
+      "nickname": "profile-"
+    }
+  },
+  "steps": [
+    {
+      "id": "init",
+      "api": "ChatClient.init",
+      "params": {
+        "config": "$global.biz.config.initConfig",
+        "overrides": {
+          "enableUserInfo": true
+        }
+      }
+    },
+    {
+      "id": "login_alice",
+      "api": "ChatClient.loginWithToken",
+      "params": {
+        "userId": "$global.account.alice.userId",
+        "token": "$global.account.alice.userToken"
+      }
+    },
+    {
+      "id": "login_bob",
+      "api": "ChatClient.loginWithToken",
+      "params": {
+        "userId": "$global.account.bob.userId",
+        "token": "$global.account.bob.userToken"
+      }
+    },
+    {
+      "id": "connected",
+      "api": "ChatClient.isConnected",
+      "params": {},
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "unsubscribe",
+      "api": "ChatUserInfoManager.unsubscribeUsersInfo",
+      "params": {
+        "userIds": [
+          "$global.account.bob.userId"
+        ]
+      }
+    },
+    {
+      "id": "capture_profile",
+      "api": "ChatUserInfoManager.fetchOwnInfo",
+      "params": {
+        "expireTime": 0
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "userId",
+            "equals": "$global.account.bob.userId"
+          }
+        ]
+      }
+    },
+    {
+      "id": "subscribe",
+      "api": "ChatUserInfoManager.subscribeUsersInfo",
+      "params": {
+        "userIds": [
+          "$global.account.bob.userId"
+        ]
+      }
+    },
+    {
+      "id": "update_profile",
+      "api": "ChatUserInfoManager.updateUserInfo",
+      "params": {
+        "nickname": "$global.biz.input.nickname",
+        "gender": "$inputs.gender"
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "userId",
+            "equals": "$global.account.bob.userId"
+          },
+          {
+            "path": "nickName",
+            "equals": "$global.biz.input.nickname"
+          },
+          {
+            "path": "gender",
+            "equals": "$inputs.gender"
+          }
+        ]
+      }
+    },
+    {
+      "id": "restore_profile",
+      "api": "ChatUserInfoManager.updateUserInfo",
+      "params": {
+        "nickname": "$inputs.nickname",
+        "gender": "$inputs.gender"
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "userId",
+            "equals": "$global.account.bob.userId"
+          },
+          {
+            "path": "nickName",
+            "equals": "$inputs.nickname"
+          },
+          {
+            "path": "gender",
+            "equals": "$inputs.gender"
+          }
+        ]
+      }
+    },
+    {
+      "id": "logout",
+      "api": "ChatClient.logout",
+      "params": {
+        "unbindDeviceToken": true
+      }
+    }
+  ],
+  "requiredBindings": [
+    "global.biz.result.alice_init",
+    "global.biz.result.bob_init",
+    "global.biz.result.alice_login",
+    "global.biz.result.bob_login",
+    "global.biz.result.alice_connected",
+    "global.biz.result.bob_connected",
+    "global.biz.result.reset_subscription",
+    "global.biz.result.original",
+    "global.biz.result.subscription",
+    "global.biz.result.updated",
+    "global.biz.event.updated",
+    "global.biz.result.cleanup_subscription",
+    "global.biz.result.restoration",
+    "global.biz.result.alice_logout",
+    "global.biz.result.bob_logout"
+  ]
+}

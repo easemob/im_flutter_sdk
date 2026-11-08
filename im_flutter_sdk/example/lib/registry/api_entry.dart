@@ -33,6 +33,16 @@ Object? toJsonSafe(Object? v) {
       'statusDetails': v.statusDetails,
     };
   }
+  // RecallMessageInfo has no toJson; preserve fields used to correlate events.
+  if (v is RecallMessageInfo) {
+    return {
+      'recallMessageId': v.recallMessageId,
+      'recallBy': v.recallBy,
+      'conversationId': v.conversationId,
+      'recallMessage': toJsonSafe(v.recallMessage),
+      'ext': v.ext,
+    };
+  }
   if (v is Map) {
     return v.map((k, val) => MapEntry(k.toString(), toJsonSafe(val)));
   }
