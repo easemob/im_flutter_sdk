@@ -28,6 +28,26 @@ class RecallMessageInfo {
     this.ext,
   });
 
+  // 5.0.0
+  /// ~english
+  /// Converts this recall information to a JSON map using the keys accepted by [RecallMessageInfo.fromJson].
+  /// Nullable fields retain null values; the original message is serialized under `msg`.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 将当前撤回信息转换为 JSON Map，字段名与 [RecallMessageInfo.fromJson] 一致。
+  /// 可空字段保留 null，原消息序列化后放入 `msg` 字段。
+  /// ~end
+  Map<String, dynamic> toJson() {
+    return {
+      'recallMsgId': recallMessageId,
+      'recallBy': recallBy,
+      'convId': conversationId,
+      'msg': recallMessage?.toJson(),
+      'ext': ext,
+    };
+  }
+
   /// ~english
   /// The ID of the recalled message.
   /// ~end

@@ -25,7 +25,7 @@
 
 本任务复用现有执行工具。若编写或验证需要新增测试用例以外的独立脚本（含临时辅助脚本），须先说明用途、必要性及现有工具不能满足的原因，取得用户确认后再创建或执行。
 
-example 可按场景需要注册 SDK 已有公开 API、补齐通知的结构化记录；仅透传实际参数和结果，不增加业务编排或改动 SDK、解释器契约。
+example 可按场景需要注册 SDK 已有公开 API、补齐通知的结构化记录；仅透传实际参数和结果，不增加业务编排。模型序列化由 SDK 的 `toJson()` 提供，公共转换函数不按模型类型特判，不改动解释器契约。
 
 本规格遵循 [规则与边界](../spec.md)、[编写用例](2026-11-06-test-case-authoring.md)、[执行规格](../../docs/spec/2026-11-06-testing-v2-spec.md)及 [flow_runner 语法](../../tool/flow_runner/README.md)。本次不扩展逆向场景、单设备用例或 CI 测试，不使用 `testing/`。
 
@@ -175,10 +175,10 @@ Native 5.0.0 的自动送达回执路径也要求消息 `isNeedReadReceipt: true
 | 1 | A | `sendMessage`，单聊文本发往 B | 发送回调成功，取得服务器消息 ID。 |
 | 2 | B | `onMessagesReceived` | 同一元素匹配本轮消息 ID、A、B、正文。 |
 | 3 | A | `recallMessage(messageId, ext)` | 撤回本轮消息，API 成功返回。 |
-| 4 | B | `onMessagesRecalledInfo` | `recallMessageInfos` 同一元素匹配 `recallMessageId=本轮ID`、`recallBy=A`、`ext=本轮值`。 |
+| 4 | B | `onMessagesRecalledInfo` | `recallMessageInfos` 同一元素匹配 `recallMsgId=本轮ID`、`recallBy=A`、`ext=本轮值`。 |
 | 5 | A、B | `logout` | 双方独立退出。 |
 
-example 对 `RecallMessageInfo` 保留公开字段名并输出结构化值；允许 `recallMessage` 为 null，不将可选原消息对象作为通过条件。撤回失败或通知超时不能算通过，不盲目重试撤回；保留原消息证据，仍退出双方。
+`RecallMessageInfo.toJson()` 输出 `recallMsgId/recallBy/convId/msg/ext`，与 `fromJson()` 一致；允许 `msg` 为 null，不将可选原消息对象作为通过条件。撤回失败或通知超时不能算通过，不盲目重试撤回；保留原消息证据，仍退出双方。
 
 ### 3.9 群成员退出通知
 

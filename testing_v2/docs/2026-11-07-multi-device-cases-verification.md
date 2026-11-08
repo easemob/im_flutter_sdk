@@ -108,7 +108,9 @@ Presence 三轮均在同一事件元素内匹配 B 与本轮唯一描述；辅�
 
 ### 撤回事件的结构化记录（已补齐）
 
-静态审查发现 `RecallMessageInfo` 没有 `toJson()`，example 原 `toJsonSafe` 会回退为对象字符串，导致有回调也无法按消息 ID 断言。现按公开字段输出 `recallMessageId/recallBy/conversationId/recallMessage/ext`，保留合法 null；针对性回归已通过。复验 1 的真实 Android 撤回通知已确认结构和字段关联正确；服务能力问题仍按上节单独跟踪。
+历史设备轮次使用 example 特化输出的 `recallMessageId/recallBy/conversationId/recallMessage/ext`，复验 1 确认字段关联正确。当前由 SDK `RecallMessageInfo.toJson()` 输出 `recallMsgId/recallBy/convId/msg/ext`，与 `fromJson()` 一致，保留合法 null；用例字段引用已同步。历史报告保留原样，不代表当前序列化实现已完成设备验证；撤回场景仍暂停。
+
+2026-11-08 序列化回归通过：SDK 模型 16 项、example API 注册与输出 18 项、模拟事件驱动的消息／资料／Presence 流程 29 项；相关文件静态分析通过。覆盖 JSON 编解码、嵌套消息、null 与空值，以及消息 ID／操作者／ext 必须匹配同一事件元素的断言。
 
 ### 公开群入群：执行端缺少命令（已解决）
 

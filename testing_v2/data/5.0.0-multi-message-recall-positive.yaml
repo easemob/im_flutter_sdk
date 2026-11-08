@@ -69,7 +69,7 @@ steps:
               checks:
                 - path: recallMessageInfos
                   containsItem:
-                    recallMessageId: '$global.biz.result.sent.data.msgId'
+                    recallMsgId: '$global.biz.result.sent.data.msgId'
                     recallBy: '$global.account.alice.userId'
                     ext: '$global.biz.input.recallMarker'
               as: global.biz.event.recalled

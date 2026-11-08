@@ -68,6 +68,24 @@ class ChatPresence {
     return ChatPresence(
         publisher, statusDescription, statusDetails, latestTime, expiryTime);
   }
+
+  // 5.0.0
+  /// ~english
+  /// Converts this presence to a JSON map using the keys accepted by [ChatPresence.fromJson].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 将当前在线状态转换为 JSON Map，字段名与 [ChatPresence.fromJson] 一致。
+  /// ~end
+  Map<String, dynamic> toJson() {
+    return {
+      'publisher': publisher,
+      'statusDescription': statusDescription,
+      'lastTime': lastTime,
+      'expiryTime': expiryTime,
+      'statusDetails': statusDetails,
+    };
+  }
 }
 
 /// ~english

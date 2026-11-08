@@ -23,26 +23,6 @@ class ApiEntry {
 Object? toJsonSafe(Object? v) {
   if (v == null || v is num || v is bool || v is String) return v;
   if (v is Enum) return v.name;
-  // ChatPresence does not implement toJson; serialized with special handling.
-  if (v is ChatPresence) {
-    return {
-      'publisher': v.publisher,
-      'statusDescription': v.statusDescription,
-      'lastTime': v.lastTime,
-      'expiryTime': v.expiryTime,
-      'statusDetails': v.statusDetails,
-    };
-  }
-  // RecallMessageInfo has no toJson; preserve fields used to correlate events.
-  if (v is RecallMessageInfo) {
-    return {
-      'recallMessageId': v.recallMessageId,
-      'recallBy': v.recallBy,
-      'conversationId': v.conversationId,
-      'recallMessage': toJsonSafe(v.recallMessage),
-      'ext': v.ext,
-    };
-  }
   if (v is Map) {
     return v.map((k, val) => MapEntry(k.toString(), toJsonSafe(val)));
   }

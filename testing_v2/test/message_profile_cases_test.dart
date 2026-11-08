@@ -191,17 +191,17 @@ void main() {
           agents['bob']!.emit('onMessagesRecalledInfo', {
             'recallMessageInfos': [
               {
-                'recallMessageId': 'current-message',
+                'recallMsgId': 'current-message',
                 'recallBy': 'other-user',
                 'ext': 'recall-this-run',
               },
               {
-                'recallMessageId': 'other-message',
+                'recallMsgId': 'other-message',
                 'recallBy': 'user-a',
                 'ext': 'recall-this-run',
               },
               {
-                'recallMessageId': 'current-message',
+                'recallMsgId': 'current-message',
                 'recallBy': 'user-a',
                 'ext': 'stale-recall',
               },
@@ -211,10 +211,10 @@ void main() {
             agents['bob']!.emit('onMessagesRecalledInfo', {
               'recallMessageInfos': [
                 {
-                  'recallMessageId': 'current-message',
+                  'recallMsgId': 'current-message',
                   'recallBy': 'user-a',
                   'ext': 'recall-this-run',
-                  'recallMessage': null,
+                  'msg': null,
                 },
               ],
             });

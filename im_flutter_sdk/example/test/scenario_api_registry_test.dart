@@ -127,12 +127,12 @@ void main() {
       ],
     }))) as Map;
     final info = (payload['recallMessageInfos'] as List).single as Map;
-    expect(info['recallMessageId'], 'server-message');
+    expect(info['recallMsgId'], 'server-message');
     expect(info['recallBy'], 'alice');
-    expect(info['conversationId'], 'alice');
+    expect(info['convId'], 'alice');
     expect(info['ext'], 'run-unique');
-    expect(info['recallMessage']['msgId'], 'server-message');
-    expect(info['recallMessage']['body']['content'], 'original text');
+    expect(info['msg']['msgId'], 'server-message');
+    expect(info['msg']['body']['content'], 'original text');
   });
 
   test('fetchOwnInfo resolves the logged-in user and returns one user object',
@@ -202,12 +202,55 @@ void main() {
         recallMessageId: 'server-message',
       )))),
       {
-        'recallMessageId': 'server-message',
+        'recallMsgId': 'server-message',
         'recallBy': 'alice',
-        'conversationId': null,
-        'recallMessage': null,
+        'convId': null,
+        'msg': null,
         'ext': null,
       },
     );
+  });
+
+  test('presence events retain their existing JSON fields', () {
+    final presence = ChatPresence('bob', 'busy', {'android': 1}, 100, 200);
+    expect(
+      jsonDecode(jsonEncode(toJsonSafe({
+        'list': [presence],
+      }))),
+      {
+        'list': [
+          {
+            'publisher': 'bob',
+            'statusDescription': 'busy',
+            'statusDetails': {'android': 1},
+            'lastTime': 100,
+            'expiryTime': 200,
+          },
+        ],
+      },
+    );
+  });
+
+  test('API results serialize presence lists with nullable status details',
+      () async {
+    final entry = ApiEntry(
+      name: 'presence-result',
+      group: 'test',
+      description: '',
+      paramsTemplate: '{}',
+      invoke: (_) async => [ChatPresence('bob', '', null, 0, 0)],
+    );
+    expect(jsonDecode(jsonEncode(await runApi(entry, {}))), {
+      'success': true,
+      'data': [
+        {
+          'publisher': 'bob',
+          'statusDescription': '',
+          'statusDetails': null,
+          'lastTime': 0,
+          'expiryTime': 0,
+        },
+      ],
+    });
   });
 }
