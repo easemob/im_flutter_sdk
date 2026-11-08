@@ -17,12 +17,20 @@
 #   E2E_CLIENT_SECRET app client secret
 #   E2E_USER_ID       account user id to fetch a token for
 #
-# Output contract: the user token is the ONLY stdout line (callers capture it
-# with $(...)); diagnostics go to stderr. Exit code is non-zero on failure.
+# Without arguments, stdout contains only the user token. --json prepares a
+# reusable peer account and returns the six dart-defines for integration tests.
+# Diagnostics go to stderr. Exit code is non-zero on failure.
 #
 # Usage:
 #   E2E_USER_TOKEN="$(bash tool/ci/fetch_e2e_user_token.sh)"
+#   bash tool/ci/fetch_e2e_user_token.sh --json
 set -euo pipefail
+
+output_format="${1:-token}"
+if (( $# > 1 )) || { (( $# == 1 )) && [[ "$1" != --json ]]; }; then
+  echo 'usage: fetch_e2e_user_token.sh [--json]' >&2
+  exit 2
+fi
 
 max_attempts="${MAX_ATTEMPTS:-3}"
 retry_interval_seconds="${RETRY_INTERVAL_SECONDS:-1}"
@@ -105,17 +113,20 @@ post_token() {
       "$http_code" "$url" "$detail" >&2
     return 1
   fi
-  token="$(printf '%s' "$payload" | jq -r '.access_token // empty')"
-  if [ -z "$token" ]; then
-    printf 'fetch_e2e_user_token: token response missing access_token\n' >&2
+  if ! token="$(printf '%s' "$payload" | jq -er \
+    '.access_token | select(type == "string" and length > 0)')"; then
+    printf 'fetch_e2e_user_token: token response missing a valid access_token\n' >&2
     return 1
+  fi
+  if [[ "${GITHUB_ACTIONS:-}" == true ]]; then
+    printf '::add-mask::%s\n' "$token" >&2
   fi
   printf '%s\n' "$token"
 }
 
-# Exchanges the app credentials for a user token; echoes the token.
+# Reuse one app token for both accounts and the test fixtures.
 fetch_user_token() {
-  local app_token user_token
+  local app_token user_token peer_id
   app_token="$(post_token "$token_url" "$(jq -n \
     --arg client_id "$E2E_CLIENT_ID" \
     --arg client_secret "$E2E_CLIENT_SECRET" \
@@ -125,15 +136,35 @@ fetch_user_token() {
     --arg username "$E2E_USER_ID" \
     '{username: $username, grant_type: "inherit", autoCreateUser: true}')" \
     "$app_token")" || return 1
-  printf '%s\n' "$user_token"
+  if [[ "$output_format" == token ]]; then
+    printf '%s\n' "$user_token"
+    return 0
+  fi
+
+  # Stable per primary account: repeated runs do not accumulate new users.
+  peer_id="${E2E_USER_ID}_ci_peer"
+  post_token "$token_url" "$(jq -n --arg username "$peer_id" \
+    '{username: $username, grant_type: "inherit", autoCreateUser: true}')" \
+    "$app_token" >/dev/null || return 1
+
+  jq -n \
+    --arg app_key "$E2E_APP_KEY" \
+    --arg user_id "$E2E_USER_ID" \
+    --arg user_token "$user_token" \
+    --arg peer_id "$peer_id" \
+    --arg rest_api "$E2E_REST_API" \
+    --arg app_token "$app_token" \
+    '{E2E_APP_KEY: $app_key, E2E_USER_ID: $user_id,
+      E2E_USER_TOKEN: $user_token, E2E_PEER_ID: $peer_id,
+      E2E_REST_API: $rest_api, E2E_APP_TOKEN: $app_token}'
 }
 
 attempt=1
 while [ "$attempt" -le "$max_attempts" ]; do
-  if user_token="$(fetch_user_token)"; then
-    printf 'fetch_e2e_user_token: got a token for %s (attempt %s)\n' \
+  if prepared="$(fetch_user_token)"; then
+    printf 'fetch_e2e_user_token: prepared %s (attempt %s)\n' \
       "$E2E_USER_ID" "$attempt" >&2
-    printf '%s\n' "$user_token"
+    printf '%s\n' "$prepared"
     exit 0
   fi
   printf 'fetch_e2e_user_token: attempt %s/%s failed\n' \

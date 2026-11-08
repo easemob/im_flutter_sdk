@@ -56,12 +56,6 @@ if [ "$flutter_version" != "$EXPECTED_FLUTTER_VERSION" ]; then
   echo "warning: local Flutter is '$flutter_version', CI pins $EXPECTED_FLUTTER_VERSION" >&2
 fi
 
-# User tokens expire in ~24h, so fetch a fresh one for every run (same as CI).
-# Nothing here echoes it; locally there is deliberately no equivalent of CI's
-# ::add-mask::, because that command line carries the token itself.
-E2E_USER_TOKEN="$(bash "$REPO_ROOT/tool/ci/fetch_e2e_user_token.sh")"
-export E2E_USER_TOKEN
-
 CONFIG="$(mktemp "${TMPDIR:-/tmp}/flutter-e2e-config.XXXXXX.json")"
 trap 'rm -f "$CONFIG"' EXIT
 bash "$REPO_ROOT/tool/ci/write_e2e_dart_defines.sh" "$CONFIG"

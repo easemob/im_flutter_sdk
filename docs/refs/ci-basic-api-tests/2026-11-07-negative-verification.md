@@ -64,7 +64,7 @@
 
 未登录用例使用冷安装，不要求账号或真实远端资源；参数在未登录阶段应被拒绝。登录用例沿用两个已存在账号及每轮新取的 Token，没有新增云端配置字段。消息用例显式创建本例会话、插入确定消息并核验准备结果，结束时删除本例会话及消息。原有好友关系、黑名单恢复和临时群回收继续执行。
 
-配置仍通过临时 `E2E_CONFIG_PATH` 传入，文件位于 Git 忽略的 `reports/ci-basic-api/20261107-negative/`。CI workflow 的三字段准备与登录入口六字段输入之间的既有缺口仍存在，本次未修改 `tool/ci` 或云端 workflow。
+配置通过临时 `E2E_CONFIG_PATH` 传入，文件位于 Git 忽略的 `reports/ci-basic-api/20261107-negative/`。当时 CI workflow 的三字段准备与登录入口六字段输入之间仍有缺口，该轮未修改 `tool/ci` 或云端 workflow；后续正式入口复验见下文。
 
 ## 验证记录
 
@@ -86,3 +86,26 @@
 - **SDK 状态异常候选，待人工确认**：MSG-006、007 在消息错误回调中获得 `PROGRESS`，与 `FAIL` 预期不符；双端重复复现。回调消息是独立反序列化对象，已排除原发送对象被方法返回修改的测试竞态。调用链及源码边界见[排查记录](../troubleshooting/2026-11-07-send-error-callback-message-status.md)。未修改断言、SDK 或数据准备以绕过此问题。
 
 全部登录轮次中，原有 22 个正向用例通过；好友关系和黑名单恢复、退出检查通过，累计 12 个本轮临时群已核验回收。静态分析、用例映射及差异检查通过。临时 Token 配置已删除，原始日志未包含本轮原始 Token。未运行云端 CI，也不以本轮结果推断长期稳定率。
+
+## 2026-11-08：本地 Nightly 正式入口复验
+
+云端运行 `42457333778` 暴露配置交付遗漏：生成器只写三个字段，测试要求六个。本地此前另行准备完整 JSON，绕过了生成器，未覆盖此问题。Shell 环境变量不会自动成为 `String.fromEnvironment` 可读的 dart-defines。
+
+现有配置生成器已统一供本地和云端调用：接收原五项宿主输入，自动获取 App/User Token、准备固定陪测账号并写入全部六字段。没有增加脚本或 Secrets，也没有修改 SDK、用例或断言。
+
+本轮仅向 `nightly_local.sh` 提供五项基础环境变量，分别执行 `bash tool/ci/nightly_local.sh android` 和 `bash tool/ci/nightly_local.sh ios`，未手工提供运行 JSON。设备为 Android `emulator-5554`、iOS 18.2 / iPhone 16 Pro `4BEA133B-4B24-430F-96FC-924632C2CF53`，Flutter 3.47.0。
+
+| 平台 | 结果 | 失败原因 | 准备与清理 |
+|---|---|---|---|
+| Android | 29/30，退出码 1 | MSG-007：回调 500 正确，状态 PROGRESS，预期 FAIL | 六字段加载、初始化登录、关系与黑名单恢复、临时群回收、退出及凭据文件删除均通过 |
+| iOS | 29/30，退出码 1 | 同 Android | 同 Android |
+
+另外，11 项临时隔离检查通过，覆盖旧 Token 输出兼容、完整配置、请求失败及重试、权限与脱敏；真实准备连续两次通过，陪测账号服务器 UUID 相同，输出权限均为 `0600`。Bash 语法、工作流两端准备入口一致性及差异检查通过。
+
+原始日志及结果：`reports/ci-basic-api/20261108-nightly-preparation/{android,ios}-nightly.log`、`{android,ios}-result.json`、`preparation-checks.json`（Git 忽略）。本轮没有执行未登录 smoke，也没有推送或运行修改后的云端工作流。
+
+### 同日冒烟回归
+
+清除进程中的全部 `E2E_*` 输入，分别执行 `bash tool/ci/smoke_local.sh android` 和 `bash tool/ci/smoke_local.sh ios`。两端均为 **16/17，退出码 1**；唯一失败 MSG-006：错误回调 201 正确，状态 PROGRESS，预期 FAIL，与修改前云端运行 `42457309706` 一致。
+
+冒烟工作流、本地入口、共用设备执行脚本及用例均未修改；冒烟不调用 Nightly 的账号／Token 准备脚本。此次回归未发现配置修复引入的新失败。日志及结果位于 `reports/ci-basic-api/20261108-smoke-regression/{android,ios}-smoke.log`、`{android,ios}-result.json`（Git 忽略）。

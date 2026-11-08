@@ -56,9 +56,6 @@ jobs:
           E2E_CLIENT_ID: ${{ secrets.E2E_CLIENT_ID }}
           E2E_CLIENT_SECRET: ${{ secrets.E2E_CLIENT_SECRET }}
         run: |
-          E2E_USER_TOKEN="$(bash tool/ci/fetch_e2e_user_token.sh)"
-          echo "::add-mask::$E2E_USER_TOKEN"
-          export E2E_USER_TOKEN
           ./tool/ci/write_e2e_dart_defines.sh "$RUNNER_TEMP/flutter-single-account.json"
           echo "E2E_CONFIG_PATH=$RUNNER_TEMP/flutter-single-account.json" >> "$GITHUB_ENV"
 
@@ -128,9 +125,6 @@ jobs:
           E2E_CLIENT_ID: ${{ secrets.E2E_CLIENT_ID }}
           E2E_CLIENT_SECRET: ${{ secrets.E2E_CLIENT_SECRET }}
         run: |
-          E2E_USER_TOKEN="$(bash tool/ci/fetch_e2e_user_token.sh)"
-          echo "::add-mask::$E2E_USER_TOKEN"
-          export E2E_USER_TOKEN
           ./tool/ci/write_e2e_dart_defines.sh "$RUNNER_TEMP/flutter-single-account.json"
           echo "E2E_CONFIG_PATH=$RUNNER_TEMP/flutter-single-account.json" >> "$GITHUB_ENV"
 

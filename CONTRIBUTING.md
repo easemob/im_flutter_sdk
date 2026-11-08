@@ -129,7 +129,7 @@ Every device task on CI has an equivalent local script; the scripts first compar
 |----------|---------|---------|------------------|
 | `.github/workflows/ci.yml` | PR, push to `flutter2_stable` / `4.*` / `5.*`, manual | Quality gate + Android debug build + iOS simulator build | `bash tool/ci/run_quality.sh` |
 | `.github/workflows/device-smoke.yml` | Daily schedule + manual | Android / iOS login-free Presence smoke (`integration_test/no_login_presence_test.dart`, uses the test's built-in public demo appKey, no credentials needed) | `bash tool/ci/smoke_local.sh android\|ios` |
-| `.github/workflows/single-account-nightly.yml` | Daily schedule + manual | Client, contact, group, conversation, and message cases (`integration_test/single_account_local_test.dart`); configuration preparation is incomplete for the expanded suite, as described below | `bash tool/ci/nightly_local.sh android\|ios` (same preparation gap) |
+| `.github/workflows/single-account-nightly.yml` | Daily schedule + manual | Client, contact, group, conversation, and message cases (`integration_test/single_account_local_test.dart`) | `bash tool/ci/nightly_local.sh android\|ios` |
 
 > The cron in `single-account-nightly.yml` (`37 18 * * *`, one hour earlier than RN's nightly) only takes effect on the **default branch** (`flutter2_stable`) — GitHub scheduled workflows "run the latest commit of the default branch using the default branch's workflow file", so before this file lands on the default branch, scheduled triggers on the 5.0.0 branch will not happen; only manual dispatch works.
 
@@ -159,7 +159,11 @@ The logged-in entry requires all six dart-defines:
 | `E2E_PEER_ID` | Another prepared account in the same app, used for contacts, groups, and message sending; no second running client is required |
 | `E2E_APP_TOKEN` | Fresh app token used by REST fixture preparation and verification |
 
-The existing Nightly workflow and `nightly_local.sh` take `E2E_APP_KEY`, `E2E_USER_ID`, `E2E_REST_API`, `E2E_CLIENT_ID`, and `E2E_CLIENT_SECRET` as host inputs. They fetch a fresh user token, but `write_e2e_dart_defines.sh` writes only the app key, user ID, and user token. **Both preparation paths still lack the other three fields required by the expanded entry.** Passing additional environment variables alone does not add them to the generated JSON. App/User tokens must be obtained through REST for each run; the peer is a runtime role selected from prepared accounts, not a new fixed GitHub Secret. Client secrets stay on the host.
+The Nightly workflow and `nightly_local.sh` take the same five host inputs: `E2E_APP_KEY`, `E2E_USER_ID`, `E2E_REST_API`, `E2E_CLIENT_ID`, and `E2E_CLIENT_SECRET`. Set them as environment variables locally, or as **Environment secrets** in GitHub's `flutter-single-account` environment. Both paths call `write_e2e_dart_defines.sh`, which prepares and validates all six fields before device execution.
+
+Preparation fetches fresh App/User tokens and ensures the reusable `${E2E_USER_ID}_ci_peer` account exists through REST `autoCreateUser`. The peer token is discarded; the App Token is reused by the test fixtures. No additional Secrets are needed. The JSON has mode `0600` and is removed after the run; Client ID/Secret stay on the host. Shell environment variables do not reach `String.fromEnvironment` unless explicitly included in the dart-define file.
+
+After exporting the five inputs, run `bash tool/ci/nightly_local.sh android` or `bash tool/ci/nightly_local.sh ios`. Standalone configuration generation uses `bash tool/ci/write_e2e_dart_defines.sh OUTPUT_PATH`. The token helper retains its no-argument, User-Token-only stdout contract; `--json` is the structured output consumed by the configuration generator.
 
 For direct device execution with an already prepared, complete temporary JSON, run from the worktree root:
 
