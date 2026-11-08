@@ -1,12 +1,5 @@
 ## 5.0.0
 
-### 中文
-
-- `ChatPresence` 和 `RecallMessageInfo` 新增 `toJson()`，字段名与各自的 `fromJson()` 一致，支持嵌套消息序列化并保留可空字段。
-
-### English
-
-- Added `toJson()` to `ChatPresence` and `RecallMessageInfo`, using the keys accepted by their respective `fromJson()` factories, serializing nested messages and preserving nullable fields.
 - Upgraded the iOS/Android native SDK dependencies to 5.0.0;
 
 ### Breaking Changes

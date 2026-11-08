@@ -1,7 +1,7 @@
 {
   "data": {
     "unique": {"inviteReason": "contact-invite-"},
-    "prepare": [{"contacts": {"between": ["alice", "bob"], "state": "none"}}]
+    "prepare": [{"contacts": {"between": ["account1", "account2"], "state": "none"}}]
   },
   "steps": [
     {
@@ -12,12 +12,12 @@
     {
       "id": "login_alice",
       "api": "ChatClient.loginWithToken",
-      "params": {"userId": "$global.account.alice.userId", "token": "$global.account.alice.userToken"}
+      "params": {"userId": "$global.account.account1.userId", "token": "$global.account.account1.userToken"}
     },
     {
       "id": "login_bob",
       "api": "ChatClient.loginWithToken",
-      "params": {"userId": "$global.account.bob.userId", "token": "$global.account.bob.userToken"}
+      "params": {"userId": "$global.account.account2.userId", "token": "$global.account.account2.userToken"}
     },
     {
       "id": "connected",
@@ -28,17 +28,17 @@
     {
       "id": "invite",
       "api": "ChatContactManager.addContact",
-      "params": {"userId": "$global.account.bob.userId", "reason": "$global.biz.input.inviteReason"}
+      "params": {"userId": "$global.account.account2.userId", "reason": "$global.biz.input.inviteReason"}
     },
     {
       "id": "accept",
       "api": "ChatContactManager.acceptInvitation",
-      "params": {"userId": "$global.account.alice.userId"}
+      "params": {"userId": "$global.account.account1.userId"}
     },
     {
       "id": "delete_contact",
       "api": "ChatContactManager.deleteContact",
-      "params": {"userId": "$global.account.bob.userId", "keepConversation": true}
+      "params": {"userId": "$global.account.account2.userId", "keepConversation": true}
     },
     {
       "id": "logout",

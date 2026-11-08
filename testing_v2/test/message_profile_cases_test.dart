@@ -75,8 +75,8 @@ void main() {
     final text = await File(loaded.definition.yaml.path).readAsString();
     final global = GlobalData({
       'account': {
-        'alice': {'userId': 'user-a', 'userToken': 'token-a'},
-        'bob': {'userId': 'user-b', 'userToken': 'token-b'},
+        'account1': {'userId': 'user-a', 'userToken': 'token-a'},
+        'account2': {'userId': 'user-b', 'userToken': 'token-b'},
       },
       'biz': {
         'config': {

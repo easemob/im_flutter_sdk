@@ -20,6 +20,21 @@ import 'http_client.dart';
 
 export 'execution_validation.dart';
 
+String? caseDisabledReason(JsonObject metadata) {
+  if (!metadata.containsKey('selection')) return null;
+  final selection = readObject(metadata['selection'], 'selection');
+  if (selection.keys.any((key) => key != 'disabledReason')) {
+    throw const FormatException(
+        'selection only supports disabledReason; account declarations are not supported');
+  }
+  if (!selection.containsKey('disabledReason')) return null;
+  final reason = selection['disabledReason'];
+  if (reason is! String || reason.trim().isEmpty) {
+    throw const FormatException('selection.disabledReason must be nonempty');
+  }
+  return reason;
+}
+
 class LoadedCase {
   LoadedCase(this.definition, this.flow, this.metadata);
   final CaseDefinition definition;
@@ -130,7 +145,8 @@ class CaseLoader {
     if (flow.flowTimeoutMs != null && flow.flowTimeoutMs! <= 0) {
       throw const FormatException('flowTimeoutMs must be a positive integer');
     }
-    data.validateCaseMetadata(metadata, flow.preconditions, flow.agents.keys);
+    caseDisabledReason(metadata);
+    data.validateCaseMetadata(metadata, flow.preconditions);
     final bindings = <String, List<bool>>{};
     void walk(List<Step> steps, bool inLoop) {
       for (final step in steps) {
@@ -404,6 +420,9 @@ class ExecutionService {
             'Fixed definition belongs to another run or location');
       }
       final loaded = await loader.load(definition);
+      final disabled = caseDisabledReason(loaded.metadata);
+      if (disabled != null)
+        throw FormatException('Case is disabled: $disabled');
       accepting('data', 'caseData', 'caseData',
           'fixed inputs for this case and attempt', null, 'data');
       loader.data.validateCaseData(caseData, expectedCaseData);
@@ -428,7 +447,6 @@ class ExecutionService {
       }
       final roles = loaded.flow.agents.keys.toSet();
       for (final entry in <(String, String, Iterable<String>)>[
-        ('data', 'caseData', caseData.accounts.keys),
         ('orchestration', 'definition', devices.keys),
         ('launch', 'launch', launch.data!.roles.keys),
       ]) {

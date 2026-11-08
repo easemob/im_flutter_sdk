@@ -32,19 +32,12 @@ JsonObject input() => {
       'clientSecret': 'client-secret',
     };
 
-Map<String, JsonObject> roles() => {
-      'alice': {
-        'accountId': 'alice',
-        'platform': 'ios',
-        'instance': 'device-a'
-      },
-      'bob': {'accountId': 'bob', 'platform': 'ios', 'instance': 'device-b'},
-    };
+Map<String, String> accounts() => {'account1': 'alice', 'account2': 'bob'};
 
 const none = PreconditionDecl(
-    kind: 'contacts', between: ['alice', 'bob'], state: 'none');
+    kind: 'contacts', between: ['account1', 'account2'], state: 'none');
 const friends = PreconditionDecl(
-    kind: 'contacts', between: ['alice', 'bob'], state: 'friends');
+    kind: 'contacts', between: ['account1', 'account2'], state: 'friends');
 
 class Request {
   Request(this.method, this.uri, this.body, this.bearer);
@@ -99,17 +92,14 @@ void main() {
       redactor: SecretRedactor());
 
   CaseData create(DataService service,
-      {JsonObject? metadata,
-      Map<String, JsonObject>? mapping,
-      int attempt = 1}) {
+      {JsonObject? metadata, Map<String, String>? mapping, int attempt = 1}) {
     final result = service.createCaseData(
         context: context,
         environment: environment(),
         caseName: 'presence',
         caseBasename: '5.0.0-multi-presence-positive',
         attempt: attempt,
-        roles: mapping ?? roles(),
-        agentRoles: ['alice', 'bob'],
+        accounts: mapping ?? accounts(),
         metadata: metadata ?? {});
     expect(result.status, OperationStatus.success,
         reason: result.errors.map((e) => e.message).join('; '));
@@ -276,7 +266,7 @@ void main() {
       };
       final first = create(service, metadata: metadata);
       final second = create(service, metadata: metadata, attempt: 2);
-      expect(first.accounts['alice'],
+      expect(first.accounts['account1'],
           {'userId': 'alice', 'userToken': 'alice-secret'});
       expect(first.initConfig,
           {'appKey': 'org#app', 'debugMode': true, 'dataSyncType': 7});
@@ -297,20 +287,15 @@ void main() {
           throwsA(isA<DataValidationException>()));
     });
 
-    test(
-        'rejects role mismatch, missing account and repeated device without guessing',
+    test('rejects missing, duplicate and nonconsecutive account selections',
         () {
       final service = DataService();
-      for (final mapping in <Map<String, JsonObject>>[
-        {'alice': roles()['alice']!},
-        {
-          ...roles(),
-          'alice': {...roles()['alice']!, 'accountId': 'missing'}
-        },
-        {
-          ...roles(),
-          'bob': {...roles()['bob']!, 'instance': 'device-a'}
-        },
+      for (final mapping in <Map<String, String>>[
+        {},
+        {'account2': 'alice'},
+        {'alice': 'alice'},
+        {'account1': 'missing'},
+        {'account1': 'alice', 'account2': 'alice'},
       ]) {
         final result = service.createCaseData(
             context: context,
@@ -318,11 +303,12 @@ void main() {
             caseName: 'test',
             caseBasename: 'test',
             attempt: 1,
-            roles: mapping,
-            agentRoles: ['alice', 'bob'],
+            accounts: mapping,
             metadata: {});
         expect(result.status, OperationStatus.failure);
       }
+      expect(create(service, mapping: {'account1': 'alice'}).accounts,
+          hasLength(1));
     });
 
     test('reserved inputs, conflicting values and invalid names are rejected',
@@ -348,15 +334,32 @@ void main() {
           'unique': {'key': 123}
         },
       ]) {
-        expect(
-            () => service
-                .validateCaseMetadata({'data': data}, [], ['alice', 'bob']),
+        expect(() => service.validateCaseMetadata({'data': data}, []),
             throwsA(isA<DataValidationException>()));
       }
     });
   });
 
   group('preconditions', () {
+    test('missing account slot is refused before management requests',
+        () async {
+      final transport = FakeTransport((_) => throw StateError('not reached'));
+      final service = DataService(transport: transport);
+      const missing = PreconditionDecl(
+          kind: 'contacts', between: ['account1', 'account3'], state: 'none');
+      final result = await service.preconditions(
+          context: context,
+          caseName: 'presence',
+          environment: environment(),
+          caseData: create(service),
+          declarations: [missing],
+          metadata: {},
+          dataInputPath: inputPath,
+          prepare: true);
+      expect(result.isSuccess, isFalse);
+      expect(transport.calls, isEmpty);
+    });
+
     test(
         'no declaration needs no management configuration and writes empty run check',
         () async {

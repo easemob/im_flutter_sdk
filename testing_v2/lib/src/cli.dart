@@ -131,6 +131,17 @@ class TestingCli {
         _leases.add(await store.lock('run:${state.id}'));
         output('runId=${state.id}');
       }
+      if (!['report', 'clean'].contains(name)) {
+        for (final entry in state.cases) {
+          final loaded =
+              await loader.load(CaseDefinition.fromJson(entry['definition']));
+          readAccountSelection(entry['accounts']);
+          readDeviceSelection(entry['devices'], loaded.flow.agents.keys);
+          final disabled = caseDisabledReason(loaded.metadata);
+          if (disabled != null)
+            throw FormatException('Case is disabled: $disabled');
+        }
+      }
       _activeRunId = state.id;
       // Reporting and cleanup must retain uncertainty left by interrupted work.
       final previousState = state.json['status'];
@@ -210,8 +221,7 @@ class TestingCli {
 
   void _help(String? name) {
     output('Dart multi-device test CLI${name == null ? '' : ': $name'}');
-    output(
-        'Usage: dart run bin/cli.dart ${name ?? '<operation>'} [options]');
+    output('Usage: dart run bin/cli.dart ${name ?? '<operation>'} [options]');
     output(
         'Operations: prepare, devices, build, launch, run, report, clean, all.');
     output(
@@ -296,11 +306,14 @@ class TestingCli {
   }
 
   Map<String, JsonObject> _roles(JsonObject entry) =>
-      readObject(entry['roles']).map((k, v) => MapEntry(k, readObject(v)));
+      readObject(entry['devices'], 'devices')
+          .map((k, v) => MapEntry(k, readObject(v)));
   String _key(JsonObject role) => '${role['platform']}:${role['instance']}';
   Set<String> _resources(JsonObject entry) => {
         ..._roles(entry).values.map(_key),
-        ..._roles(entry).values.map((role) => 'account:${role['accountId']}'),
+        ...readAccountSelection(entry['accounts'])
+            .values
+            .map((id) => 'account:$id'),
       };
   void _ensureResourcesKnown(RunState state, JsonObject entry) {
     final resources = _resources(entry);
@@ -405,6 +418,8 @@ class TestingCli {
   Future<String> _selectionScene(String path) async {
     final selection =
         readObject(jsonDecode(await File(p.absolute(path)).readAsString()));
+    if (selection.keys.any((key) => key != 'cases'))
+      throw const FormatException('Selection only supports cases');
     final rows = selection['cases'];
     if (rows is! List || rows.isEmpty)
       throw const FormatException('Selection must contain cases');
@@ -421,6 +436,8 @@ class TestingCli {
   Future<void> _establish(RunState state, String selectionPath) async {
     final selection =
         readObject(jsonDecode(await File(selectionPath).readAsString()));
+    if (selection.keys.any((key) => key != 'cases'))
+      throw const FormatException('Selection only supports cases');
     final rows = selection['cases'];
     if (rows is! List || rows.isEmpty)
       throw const FormatException(
@@ -438,6 +455,11 @@ class TestingCli {
     final pendingCases = <JsonObject>[];
     for (final raw in rows) {
       final row = readObject(raw);
+      if (row.keys
+          .any((key) => !{'yaml', 'accounts', 'devices'}.contains(key))) {
+        throw const FormatException(
+            'Each case must use yaml/accounts/devices; regenerate the selection');
+      }
       final yaml = row['yaml'];
       if (yaml is! String || yaml.isEmpty)
         throw const FormatException('Case yaml must be a path');
@@ -457,8 +479,14 @@ class TestingCli {
       });
       _accepted(fixedResult, 'execution-static', 'orchestration');
       final loaded = fixed!;
+      final disabled = caseDisabledReason(loaded.metadata);
+      if (disabled != null)
+        throw FormatException('Case is disabled: $disabled');
+      final accounts = readAccountSelection(row['accounts']);
       final roles =
-          readObject(row['roles']).map((k, v) => MapEntry(k, readObject(v)));
+          readDeviceSelection(row['devices'], loaded.flow.agents.keys);
+      data.validateCaseMetadata(
+          loaded.metadata, loaded.flow.preconditions, accounts.keys);
       final basename = p.basenameWithoutExtension(source);
       if (!names.add(loaded.definition.name) || !basenames.add(basename))
         throw const FormatException('Duplicate case name or basename');
@@ -468,13 +496,13 @@ class TestingCli {
           caseName: loaded.definition.name,
           caseBasename: basename,
           attempt: 1,
-          roles: roles,
-          agentRoles: loaded.flow.agents.keys,
+          accounts: accounts,
           metadata: loaded.metadata);
       _accepted(validated, 'data', 'orchestration');
       pendingCases.add({
         'definition': loaded.definition.toJson(),
-        'roles': roles,
+        'accounts': accounts,
+        'devices': roles,
         'definitionOperationId': fixedResult.operationId
       });
       state.register(loaded.definition.yaml.path, 'cache', 'inputs',
@@ -507,8 +535,7 @@ class TestingCli {
             caseName: definition.name,
             caseBasename: p.basenameWithoutExtension(definition.sourceYaml),
             attempt: attempt,
-            roles: _roles(entry),
-            agentRoles: loaded.flow.agents.keys,
+            accounts: readAccountSelection(entry['accounts']),
             metadata: loaded.metadata));
     return _accepted(result, 'data', 'execution');
   }

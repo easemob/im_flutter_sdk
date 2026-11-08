@@ -4,6 +4,42 @@ import 'package:test/test.dart';
 import 'package:testing_v2/src/contracts.dart';
 
 void main() {
+  test('account slots and device roles have independent admission rules', () {
+    expect(readAccountSelection({'account1': 'a'}), {'account1': 'a'});
+    final selected = {
+      for (final role in ['first', 'second', 'third'])
+        role: {'platform': 'android', 'instance': role}
+    };
+    expect(readDeviceSelection(selected, selected.keys), hasLength(3));
+    for (final patch in [
+      {'first': selected['first']},
+      {...selected, 'second': selected['first']},
+      {
+        ...selected,
+        'first': {...selected['first']!, 'accountId': 'a'}
+      },
+      {
+        ...selected,
+        'first': {'platform': 'web', 'instance': 'first'}
+      },
+    ]) {
+      expect(() => readDeviceSelection(patch, selected.keys),
+          throwsFormatException);
+    }
+    for (final invalid in [
+      <String, Object?>{},
+      {'account2': 'a'},
+      {'account0': 'a'},
+      {'account1': 'a', 'account3': 'b'},
+      {'account1': 'a', 'account2': 'a'},
+      {'account1': ''},
+      {'account1': 1},
+      {'sender': 'a'},
+    ]) {
+      expect(() => readAccountSelection(invalid), throwsFormatException);
+    }
+  });
+
   final digest = 'a' * 64;
   FileRef ref(String name) => FileRef(path: '/tmp/$name', sha256: digest);
   CaseDefinition definition() => CaseDefinition(
@@ -49,7 +85,7 @@ void main() {
     'definition': (definition(), CaseDefinition.fromJson),
     'data': (
       const CaseData(caseName: 'presence', attempt: 1, accounts: {
-        'alice': {'userId': 'a', 'userToken': 'token'}
+        'account1': {'userId': 'a', 'userToken': 'token'}
       }, initConfig: {
         'appKey': 'org#app'
       }, input: {}),

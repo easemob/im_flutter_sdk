@@ -99,7 +99,7 @@ FlowSpec parseFlow(String yamlText,
 
   final defaults = _parseDefaults(doc['defaults']);
 
-  final preconditions = _parsePreconditions(doc['preconditions'], agents);
+  final preconditions = _parsePreconditions(doc['preconditions']);
 
   final stepsNode = doc['steps'];
   if (stepsNode is! YamlList) throw FlowParseError('"steps" must be a list');
@@ -144,8 +144,7 @@ Defaults _parseDefaults(Object? node) {
 ///
 /// The interpreter only parses/validates and reports these; execution is
 /// the testing orchestration's job (flow_runner stays business-agnostic).
-List<PreconditionDecl> _parsePreconditions(
-    Object? node, Map<String, AgentDecl> agents) {
+List<PreconditionDecl> _parsePreconditions(Object? node) {
   if (node == null) return const [];
   if (node is! YamlList) {
     throw FlowParseError('"preconditions" must be a list');
@@ -171,12 +170,11 @@ List<PreconditionDecl> _parsePreconditions(
         between.length != 2 ||
         between.any((r) => r is! String)) {
       throw FlowParseError(
-          'precondition "contacts.between" must be exactly two role names');
+          'precondition "contacts.between" must be exactly two account references');
     }
     for (final role in between) {
-      if (!agents.containsKey(role)) {
-        throw FlowParseError(
-            'precondition references undeclared agent "$role"');
+      if (!RegExp(r'^[A-Za-z_][A-Za-z0-9_]*$').hasMatch(role as String)) {
+        throw FlowParseError('invalid precondition account reference "$role"');
       }
     }
     final state = value['state'] as String?;

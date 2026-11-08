@@ -154,19 +154,7 @@ void main() {
         caseName: loaded.definition.name,
         caseBasename: p.basenameWithoutExtension(loaded.definition.sourceYaml),
         attempt: attempt,
-        roles: {
-          'alice': {
-            'accountId': 'user-a',
-            'platform': 'ios',
-            'instance': 'device-a'
-          },
-          'bob': {
-            'accountId': 'user-b',
-            'platform': 'ios',
-            'instance': 'device-b'
-          }
-        },
-        agentRoles: loaded.flow.agents.keys,
+        accounts: {'account1': 'user-a', 'account2': 'user-b'},
         metadata: loaded.metadata);
     expect(result.isSuccess, isTrue);
     return result.data!;
@@ -271,6 +259,31 @@ void main() {
         },
         flowTimeoutMs: timeout);
   }
+
+  test('paused cases cannot dispatch even with a valid launch', () async {
+    final loaded = await makeCase(metadataPatch: {
+      'selection': {'disabledReason': 'Paused by user'}
+    });
+    final result = await execute(loaded);
+    expect(result.isSuccess, isFalse);
+    expect(claims, 0);
+    expect(admissions, 0);
+    expect(result.errors.map((e) => e.message).join(),
+        contains('Case is disabled'));
+  });
+
+  test('one fixed account does not need to match two device roles', () async {
+    final loaded = await makeCase();
+    final full = caseData(loaded);
+    final one = CaseData(
+        caseName: full.caseName,
+        attempt: full.attempt,
+        accounts: {'account1': full.accounts['account1']!},
+        initConfig: full.initConfig,
+        input: full.input);
+    final result = await execute(loaded, expected: one);
+    expect(result.data!.verdict, '是');
+  });
 
   group('message delivery case', () {
     Future<LoadedCase> loadDelivery() => loader.freeze(
@@ -817,7 +830,7 @@ void main() {
             'agent': 'alice',
             'as': 'global.biz.event.received',
             'match': {
-              'publisher': r'$global.account.bob.userId',
+              'publisher': r'$global.account.account2.userId',
               'description': r'$global.biz.input.description'
             }
           },

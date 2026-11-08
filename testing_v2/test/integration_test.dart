@@ -22,7 +22,7 @@ void main() {
     await File(p.join(root.path, 'lib', 'accounts.g.dart')).writeAsString('''
 const Map<String, Object?> environment = {
   'appKey': 'org#app',
-  'accounts': [{'id': 'a', 'token': 'account-a-secret'}, {'id': 'b', 'token': 'account-b-secret'}],
+  'accounts': [{'id': 'a', 'token': 'account-a-secret'}, {'id': 'b', 'token': 'account-b-secret'}, {'id': 'c', 'token': 'account-c-secret'}],
   'groups': <Object?>[], 'rooms': <Object?>[]
 };
 ''');
@@ -58,17 +58,10 @@ const Map<String, Object?> environment = {
       'cases': [
         {
           'yaml': yaml.path,
-          'roles': {
-            'alice': {
-              'accountId': 'a',
-              'platform': 'android',
-              'instance': 'Pixel_A'
-            },
-            'bob': {
-              'accountId': 'b',
-              'platform': 'android',
-              'instance': 'Pixel_B'
-            },
+          'accounts': {'account1': 'a', 'account2': 'b', 'account3': 'c'},
+          'devices': {
+            'alice': {'platform': 'android', 'instance': 'Pixel_A'},
+            'bob': {'platform': 'android', 'instance': 'Pixel_B'},
           },
         }
       ]
@@ -238,6 +231,25 @@ const Map<String, Object?> environment = {
           reason: output.join('\n'));
       expect(commands.values.fold<int>(0, (sum, list) => sum + list.length),
           initialCommandCount);
+      // Fixed account selection survives source edits; an unlogged account
+      // still blocks dependent operations when its external outcome is unknown.
+      final originalSelection = await selection.readAsString();
+      await selection.writeAsString('{}');
+      expect(await cli.run(['prepare', yaml.path, '--run-id', runId]), 0);
+      final fixed = await RunStore(root).load(runId);
+      expect((fixed.cases.single['accounts'] as Map)['account3'], 'c');
+      fixed.issues.add({
+        'status': 'open',
+        'resources': ['account:c'],
+        'message': 'Unknown outcome on unlogged recipient'
+      });
+      await fixed.save();
+      final launchedBefore = launched.values.fold<int>(0, (sum, n) => sum + n);
+      expect(await cli.run(['launch', yaml.path, '--run-id', runId]), 1);
+      expect(output.lastWhere((s) => s.startsWith('error:')),
+          contains('Shared resources'));
+      expect(launched.values.fold<int>(0, (sum, n) => sum + n), launchedBefore);
+      await selection.writeAsString(originalSelection);
       final external = File(p.join(root.path, 'external-build-result.json'));
       await external.writeAsString(jsonEncode(snapshot.builds.values.single));
       expect(

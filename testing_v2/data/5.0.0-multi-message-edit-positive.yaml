@@ -55,8 +55,8 @@ steps:
                 - path: messages
                   containsItem:
                     msgId: '$global.biz.result.sent.data.msgId'
-                    from: '$global.account.alice.userId'
-                    to: '$global.account.bob.userId'
+                    from: '$global.account.account1.userId'
+                    to: '$global.account.account2.userId'
                     body.type: 0
                     body.content: '$global.biz.input.messageContent'
               as: global.biz.event.received
@@ -68,10 +68,10 @@ steps:
             - wait_event: onMessageContentChanged
               agent: bob
               match:
-                operatorId: '$global.account.alice.userId'
+                operatorId: '$global.account.account1.userId'
                 message.msgId: '$global.biz.result.sent.data.msgId'
-                message.from: '$global.account.alice.userId'
-                message.to: '$global.account.bob.userId'
+                message.from: '$global.account.account1.userId'
+                message.to: '$global.account.account2.userId'
                 message.body.type: 0
                 message.body.content: '$global.biz.input.editedContent'
                 message.attributes.testRun: '$global.biz.input.editMarker'

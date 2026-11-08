@@ -62,7 +62,7 @@ steps:
               onFail: abort_flow
             - for: presence in $global.biz.result.original.data
               do:
-                - if: '$presence.publisher == $global.account.bob.userId'
+                - if: '$presence.publisher == $global.account.account2.userId'
                   then:
                     - set:
                         original_found: true
@@ -85,7 +85,7 @@ steps:
                   checks:
                     - path: list
                       containsItem:
-                        publisher: '$global.account.bob.userId'
+                        publisher: '$global.account.account2.userId'
                         statusDescription: '$global.biz.input.presenceDescription'
                   as: global.biz.event.notification
                 # Query corroborates the callback; it cannot replace it.

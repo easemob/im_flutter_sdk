@@ -525,8 +525,9 @@ class DataService {
     }
   }
 
-  void validateCaseMetadata(JsonObject metadata,
-      List<PreconditionDecl> declarations, Iterable<String> agentRoles) {
+  void validateCaseMetadata(
+      JsonObject metadata, List<PreconditionDecl> declarations,
+      [Iterable<String>? accountSlots]) {
     final data = metadata.containsKey('data')
         ? _object(metadata['data'], 'data')
         : <String, Object?>{};
@@ -548,14 +549,10 @@ class DataService {
       if (entry.value is! String)
         _invalid('data.unique.${entry.key}', 'string prefix', entry.value);
     }
-    final roles = agentRoles.toSet();
-    for (final role in roles) {
-      if (!_identifier.hasMatch(role))
-        _invalid('roles.$role', 'identifier', role);
-    }
+    final accounts = accountSlots?.toSet();
     final declared =
-        _validateDeclarations(declarations, roles, 'preconditions');
-    final prepare = _prepareDeclarations(data, roles);
+        _validateDeclarations(declarations, accounts, 'preconditions');
+    final prepare = _prepareDeclarations(data, accounts);
     for (final condition in prepare) {
       final match = declared[_pair(condition.between)];
       if (match == null || match.state != condition.state) {
@@ -635,8 +632,7 @@ class DataService {
     required String caseName,
     required String caseBasename,
     required int attempt,
-    required Map<String, JsonObject> roles,
-    required Iterable<String> agentRoles,
+    required Map<String, String> accounts,
     required JsonObject metadata,
   }) {
     try {
@@ -645,38 +641,19 @@ class DataService {
       _string(caseBasename, 'caseBasename');
       if (attempt <= 0) _invalid('attempt', 'positive integer', attempt);
       final verified = validateEnvironment(environment);
-      final declaredRoles = agentRoles.toSet();
-      if (roles.length != declaredRoles.length ||
-          !roles.keys.toSet().containsAll(declaredRoles)) {
-        _invalid('roles', 'exact YAML agent role set', roles.keys.toList());
-      }
+      final mapping = readAccountSelection(accounts);
       final accountsById = <String, JsonObject>{
         for (final value in verified['accounts'] as List<Object?>)
           (_object(value, 'accounts')['id'] as String):
               _object(value, 'accounts'),
       };
       final selected = <String, JsonObject>{};
-      final devices = <String>{};
-      for (final entry in roles.entries) {
-        if (!_identifier.hasMatch(entry.key))
-          _invalid('roles.${entry.key}', 'identifier', entry.key);
-        _onlyKeys(entry.value, {'accountId', 'platform', 'instance'},
-            'roles.${entry.key}');
-        final accountId =
-            _string(entry.value['accountId'], 'roles.${entry.key}.accountId');
-        final account = accountsById[accountId];
-        if (account == null)
-          _invalid('roles.${entry.key}.accountId',
-              'account in fixed environment', accountId);
-        final platform =
-            _string(entry.value['platform'], 'roles.${entry.key}.platform');
-        if (platform != 'android' && platform != 'ios')
-          _invalid('roles.${entry.key}.platform', 'android or ios', platform);
-        final instance =
-            _string(entry.value['instance'], 'roles.${entry.key}.instance');
-        if (!devices.add('$platform:$instance'))
-          _invalid('roles.${entry.key}.instance', 'different device per role',
-              instance);
+      for (final entry in mapping.entries) {
+        final account = accountsById[entry.value];
+        if (account == null) {
+          _invalid('accounts.${entry.key}', 'account in fixed environment',
+              entry.value);
+        }
         selected[entry.key] = {
           'userId': account['id'],
           'userToken': account['token']
@@ -691,7 +668,7 @@ class DataService {
         ...metadata,
         'data': {...data}..remove('prepare')
       };
-      validateCaseMetadata(forInput, const [], declaredRoles);
+      validateCaseMetadata(forInput, const [], mapping.keys);
       final input = data.containsKey('input')
           ? _copy(_object(data['input'], 'data.input'))
           : <String, Object?>{};
@@ -975,17 +952,21 @@ class DataService {
           .every((value) => value == (expected == ContactState.friends));
 
   Map<String, PreconditionDecl> _validateDeclarations(
-      List<PreconditionDecl> declarations, Set<String> roles, String field) {
+      List<PreconditionDecl> declarations,
+      Set<String>? accounts,
+      String field) {
     final pairs = <String, PreconditionDecl>{};
     for (final declaration in declarations) {
       if (declaration.kind != 'contacts' ||
           !{'none', 'friends'}.contains(declaration.state) ||
           declaration.between.length != 2 ||
           declaration.between.toSet().length != 2 ||
-          !roles.containsAll(declaration.between)) {
+          declaration.between
+              .any((slot) => !RegExp(r'^account[1-9][0-9]*$').hasMatch(slot)) ||
+          (accounts != null && !accounts.containsAll(declaration.between))) {
         _invalid(
             field,
-            'contacts between two declared roles, state none/friends',
+            'contacts between two available account slots, state none/friends',
             declaration.toJson());
       }
       final pair = _pair(declaration.between);
@@ -998,7 +979,7 @@ class DataService {
   }
 
   List<PreconditionDecl> _prepareDeclarations(
-      JsonObject data, Set<String> roles) {
+      JsonObject data, Set<String>? accounts) {
     final raw = data.containsKey('prepare')
         ? _list(data['prepare'], 'data.prepare')
         : const <Object?>[];
@@ -1018,7 +999,7 @@ class DataService {
           ],
           state: _string(contacts['state'], 'data.prepare.$i.contacts.state')));
     }
-    _validateDeclarations(declarations, roles, 'data.prepare');
+    _validateDeclarations(declarations, accounts, 'data.prepare');
     return declarations;
   }
 

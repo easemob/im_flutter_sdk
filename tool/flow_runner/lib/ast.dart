@@ -99,10 +99,10 @@ class PreconditionDecl {
     required this.state,
   });
 
-  /// Currently only 'contacts' (friend relation between two roles).
+  /// Currently only 'contacts' (friend relation between two accounts).
   final String kind;
 
-  /// The two agent role names the condition applies to.
+  /// Two account references resolved by the caller, independently of agents.
   final List<String> between;
 
   /// 'none' | 'friends' (contacts kind).

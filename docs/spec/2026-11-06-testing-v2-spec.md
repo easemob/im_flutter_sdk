@@ -20,11 +20,11 @@
 | 环节 | 必需输入及来源 | 成功交付的产物 | 消费方 |
 |---|---|---|---|
 | 数据生成 | 辅助脚本的环境、账号及资源输入 | 校验后的 `lib/accounts.g.dart` | CLI 加载并固定本轮数据（§2） |
-| 用例前置准备 | 已确认的准备声明、本轮角色账号、管理配置来源 | 准备操作结果及独立核验记录（§2.5） | 编排层逐用例启动与执行；执行前仍重新核验 |
+| 用例前置准备 | 已确认的准备声明、本轮账号映射、管理配置来源 | 准备操作结果及独立核验记录（§2.5） | 编排层逐用例启动与执行；执行前仍重新核验 |
 | 设备准备 | 本轮指定的模拟器 | 平台、模拟器实例、运行设备 ID、就绪检查结果；保存为 `devices.json` | 构建目标选择、安装与启动（§3.2） |
 | 编译 | example 工程、设备平台、构建参数 | 平台、构建参数、应用标识、产物绝对路径、构建日志 | 安装运行（§3.4） |
 | 安装运行 | 设备准备结果、匹配的构建产物 | 设备 ID、应用标识、HTTP 端点、凭据、握手信息及检查时间 | 用例执行（§4.2） |
-| 用例执行 | 用例及本轮角色对应的账号、设备、连接数据 | 运行器结束结果、每次执行报告或未完成原因、证据位置 | 汇报与排查（§4） |
+| 用例执行 | 用例及本轮独立的账号映射、设备及连接数据 | 运行器结束结果、每次执行报告或未完成原因、证据位置 | 汇报与排查（§4） |
 | 汇报 | 本轮各阶段结果、用例执行及复验记录 | `summary.md`、`statistics.csv`、过程记录及证据引用 | 人工和 AI 判读、清理保护（§6） |
 | 清理 | 选定类型、目标轮次、受保护产物 | 实际删除项、保留项及原因、失败项 | CLI 展示及操作日志（§7） |
 
@@ -59,7 +59,7 @@ Dart 编排层负责输入交接、汇集各接收方的验收结果及组织收
 |---|---|
 | `all --cases <文件>` | 新建测试轮次、固定输入并执行列表；不能用此入口恢复已有轮次 |
 | `prepare <用例.yaml> --cases <文件>` | 分环节建轮入口；固定列表及账号快照，只准备指定用例，该用例须在列表中 |
-| `prepare <用例.yaml> --run-id <ID>` | 在已有测试轮次准备指定用例，不刷新账号或角色映射 |
+| `prepare <用例.yaml> --run-id <ID>` | 在已有测试轮次准备指定用例，不刷新账号或设备映射 |
 | `devices <子操作> [--run-id <ID>]`、`build [--run-id <ID>]` | 有 ID 时并入指定轮次；无 ID 时创建独立操作轮次，仍保存日志、设备清单或构建产物，不要求账号数据 |
 | `launch <用例.yaml> --run-id <ID>` | 使用该用例全部角色及登记的匹配构建；返回一个完整启动操作标识 |
 | `run <用例.yaml> --run-id <ID> --launch <启动标识>` | 使用且核验这一组连接；不接受多个启动标识，不自动选取或拼接 |
@@ -70,23 +70,24 @@ Dart 编排层负责输入交接、汇集各接收方的验收结果及组织收
 
 `prepare/run/all` 涉及管理通道时使用 `--data-input <JSON路径>` 指定 §2.3 的输入来源；未涉及时不要求。`run/all` 可用 `--flow-timeout-ms <正整数>` 覆盖 YAML 值。设备子操作参数及构建产物选择参数由实现计划统一定义，必须满足指定目标、拒绝歧义的规则。
 
-用例选择文件不纳入 Git，可放在 `tmp/`；只保存用例列表和角色选择，不保存 Token 或管理配置。例如该文件位于 `tmp/cases.json`：
+用例选择文件保存在 `config/cases.json`，不纳入 Git、不参与运行清理；只保存用例列表和角色选择，不保存 Token 或管理配置。例如：
 
 ```json
 {
   "cases": [
     {
       "yaml": "../data/5.0.0-multi-presence-positive.yaml",
-      "roles": {
-        "alice": {"accountId": "user_a", "platform": "ios", "instance": "<UDID-A>"},
-        "bob": {"accountId": "user_b", "platform": "ios", "instance": "<UDID-B>"}
+      "accounts": {"account1": "user_a", "account2": "user_b"},
+      "devices": {
+        "alice": {"platform": "ios", "instance": "<UDID-A>"},
+        "bob": {"platform": "ios", "instance": "<UDID-B>"}
       }
     }
   ]
 }
 ```
 
-`cases` 有序、非空，每项 `yaml` 相对选择文件所在目录解析；`roles` 遵循 §2.4。建轮时规范化路径，调用执行模块的静态解析入口交付 §1.4 的 `CaseDefinition`，固定列表、角色及用例副本到本轮；后续不重读选择文件。分环节的用例参数用于匹配已登记的源路径，不隐式追加或替换定义。轮次输入固定前失败只记录初始化故障，不开始设备或业务操作。
+`cases` 有序、非空，每项 `yaml` 相对选择文件所在目录解析；`accounts/devices` 遵循 §2.4。建轮时规范化路径，调用执行模块的静态解析入口交付 §1.4 的 `CaseDefinition`，固定列表、账号与设备映射及用例副本到本轮；后续不重读选择文件。分环节的用例参数用于匹配已登记的源路径，不隐式追加或替换定义。轮次输入固定前失败只记录初始化故障，不开始设备或业务操作。
 
 ### 1.3 交接与失败规则
 
@@ -125,7 +126,7 @@ Dart 编排层负责输入交接、汇集各接收方的验收结果及组织收
 |---|---|
 | `AccountData`，账号生成／加载 | `environment: JsonObject`，内容遵循 §2.1；生成脚本另外以证据引用交付的源码位置，加载模块返回实际读到的数据 |
 | `CaseDefinition`，执行模块的静态解析入口 | `name: String`、`sourceYaml: String`、`sourceJson: String`、`yaml: FileRef`、`json: FileRef`、`requiredBindings: List<String>`；源路径用于追溯，文件引用指向本轮固定副本；解析后的 `FlowSpec` 仅在内存传递 |
-| `CaseData`，数据模块 | `caseName: String`、`attempt: int`、`accounts: Map<String, JsonObject>`、`initConfig: JsonObject`、`input: JsonObject`；正整数执行序号，账号按角色映射为 `{userId: String, userToken: String}`，业务输入及唯一值遵循 §2.4 |
+| `CaseData`，数据模块 | `caseName: String`、`attempt: int`、`accounts: Map<String, JsonObject>`、`initConfig: JsonObject`、`input: JsonObject`；正整数执行序号，账号按 `account1` 至 `accountN` 映射为 `{userId: String, userToken: String}`，业务输入及唯一值遵循 §2.4 |
 | `PreconditionResult`，数据模块 | `caseName: String`、`appKey: String`、`checks: List<PreconditionCheck>`、`setup: FileRef?`、`check: FileRef`；无声明时 `checks` 为空，纯核验时 `setup` 为 `null` |
 | `DeviceResult`，设备模块 | `platform: android/ios`、`instance: String`、`deviceId: String?`、`observedState: String`、`checkedAt: DateTime`、`ready: bool`；就绪结果必须有运行设备 ID；查找／查看返回 `List<DeviceResult>`，未就绪设备也可正常列出 |
 | `BuildResult`，构建模块 | `platform: android/ios`、`architectures: List<String>`、`applicationId: String`、`mode: debug`、`arguments: List<String>`、`artifact: FileRef`；架构非空，产物为本轮副本，参数遵循 §3.3 |
@@ -147,7 +148,7 @@ Dart 编排层负责输入交接、汇集各接收方的验收结果及组织收
 |---|---|---|
 | 生成 → 加载、建轮 | 数据加载模块复用 §2.1–2.3 的完整字段校验；建轮核对账号选择和角色集合 | 数据内容交回数据准备；角色选择交回调用输入 |
 | 用例 → 准备、执行、汇报 | 执行模块静态解析并校验命令 ID、必要绑定及配套文件，业务数据和准备声明调用数据模块校验；其他模块只消费同一 `CaseDefinition` 和固定数据 | 用例定义；传错副本则是编排问题 |
-| 数据准备 → 执行 | 执行入口核对 `caseName/attempt`、角色账号、只读数据布局；调用数据模块重新核验声明状态，确认实际账号、应用及观测属于本次调用 | 数据准备或调用映射；`run` 不自行恢复业务状态 |
+| 数据准备 → 执行 | 执行入口核对 `caseName/attempt`、账号编号映射、只读数据布局；调用数据模块重新核验声明状态，确认实际账号、应用及观测属于本次调用 | 数据准备或调用映射；`run` 不自行恢复业务状态 |
 | 设备 → 构建、安装启动 | 构建只核对所需平台；安装启动调用设备模块复核目标身份及 §3.2 就绪判据 | 设备准备；不以构建成功证明设备可用 |
 | 构建 → 安装 | 安装方检查产物摘要、应用标识、平台、架构和控制模式构建参数；不能只检查路径存在 | 构建副本或构建操作 |
 | 启动 → 执行 | 执行入口核对完整启动组、设备、构建引用、未占用／未失效状态，并按 §3.4 重新握手 | 启动；若设备已失效，先处理设备 |
@@ -185,11 +186,11 @@ Dart 编排层负责输入交接、汇集各接收方的验收结果及组织收
 1. 辅助脚本位于 `scripts/`，纳入 Git；在 CLI 启动前读取输入、获取账号 Token、校验数据并生成 Dart 源码。`appKey`、账号 `id/token` 必须为非空字符串，账号 ID 不得重复；资源列表及初始化参数须符合对应 SDK 类型。
 2. 全部数据获取、校验及源码生成成功后，整体替换目标文件并返回成功；任一账号获取失败则本次生成失败，保留原文件且返回非零结果。文件存在不能代替本次生成结果，也不能证明 Token 当前仍有效。
 3. 不覆盖 example 的配置及生成文件，不擅自重置服务端业务状态。生成数据不执行 SDK 初始化、登录或设备操作。
-4. CLI 将实际加载的 `environment` 固定为本轮输入，保存在 `run.json` 的 `environment` 字段；角色绑定从该副本选取账号。不得在一轮中重新读取已改写的源码混用数据；更换初始化配置或账号数据须重新启动 CLI、创建新轮次。含凭据的快照按 §5.3 受限保存，不作为可直接分享的报告。
+4. CLI 将实际加载的 `environment` 固定为本轮输入，保存在 `run.json` 的 `environment` 字段；账号编号映射从该副本选取账号。不得在一轮中重新读取已改写的源码混用数据；更换初始化配置或账号数据须重新启动 CLI、创建新轮次。含凭据的快照按 §5.3 受限保存，不作为可直接分享的报告。
 
 ### 2.3 生成输入与加载
 
-生成脚本显式接收本地 JSON 路径，不搜索其他工程配置。输入不纳入 Git，可放在 `tmp/`；该人工提供的源文件不登记为可自动清理的运行缓存。
+账号输入保存在 `config/accounts-input.json`，场景选择保存在 `config/cases.json`；`config/` 不纳入 Git，不登记为运行清理产物。账号配置生成脚本默认读取 example 的 `config.local.json`，也可显式指定来源，不扫描其他目录；源文件不存在时生成占位模板，已有配置默认保留，明确指定覆盖选项后才能重新导入。Token 生成脚本显式接收该 JSON 路径，沿用以下输入及加载契约。
 
 | 输入 | 约束及用途 |
 |---|---|
@@ -224,16 +225,18 @@ Token 有效性与测试结论分开处理：执行前若已有权威的过期�
 
 建轮时保存 YAML、JSON 原文副本及摘要到 `tmp/<runId>/cases/<用例文件主名>/`。准备、执行、复验和汇报均使用这份定义；源文件后来修改不改变本轮，用新定义须新建轮次。副本缺失或摘要不符时拒收，不以当前源文件补齐。执行模块解析时仅将配套 JSON 的引用定位到本轮副本，保持流程和命令语义，源路径仍用于追溯；不能让 YAML 副本中的绝对 `script` 路径绕过固定副本。
 
-CLI 接收每个用例的显式角色映射，形状为 `{角色: {accountId, platform, instance}}`。角色集合必须与 YAML `agents` 完全相同；`accountId` 精确匹配本轮账号 ID，`platform` 为 `android` 或 `ios`，`instance` 为 AVD 名或 iOS UDID。编排层保存映射，设备模块补充运行设备 ID；不按列表顺序推断绑定，不把账号选择交给设备模块。同一用例不同角色对应不同设备；是否共用账号由场景决定。
+CLI 接收每用例独立的 `accounts/devices` 映射：`accounts` 为 `{account1: 账号ID, account2: 账号ID, ...}`，编号从 1 连续递增，实际 ID 存在且不重复；`devices` 为 `{设备角色: {platform, instance}}`，键集合与 YAML `agents` 一致，设备不同。两类集合互不比较。登录账号由 JSON 命令参数选择，不属于设备配置。
+
+`scripts/generate_cases.dart --platform <android|ios>` 从账号配置、设备查询结果和 `data/` 生成 `config/cases.json`；支持重复的 `--case/--account/--instance`。账号按选定顺序编号并全部保留，设备按 `agents` 顺序分配；不读取用例账号声明，不改写源用例或生成持久化用例副本。暂停用例用可选的 `selection.disabledReason` 标记，默认跳过，显式选择和执行均拒绝。完整输入、分配及拒收规则见[账号与设备独立管理规格](../../testing_v2/docs/2026-11-08-account-device-separation-spec.md)。
 
 角色名、`data.unique` 字段名及点路径中的对象键须符合解释器标识符规则 `[A-Za-z_][A-Za-z0-9_]*`；`as` 与 `requiredBindings` 使用相同路径规则，列表索引仍用数字。非法名称在派发前报错。账号 ID、设备 ID 是字段值，不受此命名限制。
 
-用例业务数据统一使用 `$global`；不同时注入 `$config`、`$agents` 等同义业务数据。流程局部变量仍遵循解释器作用域。数据模块交付 `CaseData`；编排层只组织角色和设备对应关系，执行模块验收后以本次数据创建 `GlobalData(initial, outputRoots: ...)`，不在编排层实现 SDK 字段筛选。布局及写入责任如下：
+用例业务数据统一使用 `$global`；不同时注入 `$config`、`$agents` 等同义业务数据。流程局部变量仍遵循解释器作用域。数据模块交付 `CaseData`；编排层保存两份独立映射并组织设备操作，执行模块验收后以本次数据创建 `GlobalData(initial, outputRoots: ...)`，不在编排层实现 SDK 字段筛选。布局及写入责任如下：
 
 | 引用区域 | 提供者与设置时机 | 内容及使用者 |
 |---|---|---|
 | `$global.device.<role>` | 启动检查通过后，由编排层固定 | `platform`、`instance`、`deviceId`、握手 `instanceId`；用于场景条件与定位，不包含控制 Token |
-| `$global.account.<role>` | 数据模块按已固定映射从本轮数据选取 | `{userId, userToken}`，分别取账号 `id/token`；供登录命令及身份断言使用 |
+| `$global.account.accountN` | 数据模块按独立账号映射从本轮数据选取 | `{userId, userToken}`，分别取账号 `id/token`；供登录命令及身份断言使用 |
 | `$global.biz.config.initConfig` | 数据模块由本轮 `environment` 构造 | 包含 `appKey`、SDK 初始化参数及私有部署参数，排除 `accounts/groups/rooms` 及 Token；供 `ChatClient.init` 使用 |
 | `$global.biz.input` | 数据模块在每次尝试前生成 | 用例常量、本次唯一值；`groups/rooms` 从本轮数据提供，这两个名称保留，不允许用例覆盖 |
 | `$global.biz.result.<binding>` | 解释器在命令返回后写入 | 完整结果对象；后续步骤通过 `.data` 等明确字段读取 |
@@ -248,10 +251,10 @@ CLI 接收每个用例的显式角色映射，形状为 `{角色: {accountId, pl
 `data.prepare` 是可选数组，省略或为空时只核验。每项沿用 `preconditions` 的数据形状，必须与一项 YAML 前置声明一致，不增加控制流语法。例如邀请加好友用例的前置为非好友：
 
 ```json
-{"data": {"prepare": [{"contacts": {"between": ["alice", "bob"], "state": "none"}}]}}
+{"data": {"prepare": [{"contacts": {"between": ["account1", "account2"], "state": "none"}}]}}
 ```
 
-当前只支持联系人关系，角色必须绑定两个不同账号。同一声明列表内，针对同一账号对的重复或冲突项拒绝执行。数据模块通过管理 REST 查询双方列表：`none` 要求双方均不包含对方，`friends` 要求双方均包含对方；准备只处理该账号对，不删除其他联系人、不创建账号。已经满足时不写入；否则按声明增删，完成后重新查询双方状态，不能用 HTTP 请求成功代替准备成功。测试邀请流程时不能把前置准备成“已是好友”，以免提前完成被测行为。
+当前只支持联系人关系，`between` 的两个账号编号必须存在并对应不同账号；不按设备角色解析。同一声明列表内，针对同一账号对的重复或冲突项拒绝执行。数据模块通过管理 REST 查询双方列表：`none` 要求双方均不包含对方，`friends` 要求双方均包含对方；准备只处理该账号对，不删除其他联系人、不创建账号。已经满足时不写入；否则按声明增删，完成后重新查询双方状态，不能用 HTTP 请求成功代替准备成功。测试邀请流程时不能把前置准备成“已是好友”，以免提前完成被测行为。
 
 | 管理操作 | 通道及约束 |
 |---|---|
@@ -389,8 +392,8 @@ CLI 接收每个用例的显式角色映射，形状为 `{角色: {accountId, pl
 
 **准入检查**：执行模块在派发业务命令前验收编排层传入的结果，调用数据、设备和连接检查能力完成专业核验；编排层记录结果并阻断依赖操作。失败记为未执行，并按 §1.4 交付具体差异和需重做环节。
 
-1. `CaseDefinition` 属于本轮，固定副本摘要匹配，复用执行模块的静态解析及命令 ID 校验结果；独立调用时从同一副本重新解析，不从当前源文件加载。YAML `agents` 中每个角色均有唯一设备和明确账号来源，不按列表顺序隐式绑定。不同角色使用同一账号必须符合场景，不能被工具擅自改为不同账号。
-2. `CaseData` 的用例、执行序号及角色与本次调用一致，账号来自本轮输入，设备及控制服务满足 §3；执行模块按 §2.4 组装 `global`，按 §2.5 调用数据模块取得本次前置条件核验结果。解释器只校验 `preconditions` 的形状，不会替测试工具准备业务状态；无法验证或不支持时必须阻断。
+1. `CaseDefinition` 属于本轮，固定副本摘要匹配，复用执行模块的静态解析及命令 ID 校验结果；独立调用时从同一副本重新解析，不从当前源文件加载。YAML `agents` 中每个角色均有唯一设备；账号独立映射，不按角色推断。是否在多个设备登录同一账号，由登录命令参数决定。
+2. `CaseData` 的用例、执行序号及账号映射与本次调用一致，账号来自本轮输入，设备及控制服务满足 §3；执行模块按 §2.4 组装 `global`，按 §2.5 调用数据模块取得本次前置条件核验结果。解释器只校验 `preconditions` 的形状，不会替测试工具准备业务状态；无法验证或不支持时必须阻断。
 3. 校验 §4.1 的必要验证声明，使用 §5.1 登记的执行序号及独立输出位置，记录固定 YAML 的 `name`、输入和证据路径。静态 YAML 不写固定运行轮次；配套 JSON 定位到本轮副本，原始源路径单独保留用于追溯。
 
 **接入与生命周期**：直接调用 `tool/flow_runner` 的 Dart API。`testing_v2` 执行模块负责下表操作，分环节和全流程共用该模块；不以运行器 CLI 子进程作为执行入口。
@@ -496,7 +499,7 @@ CLI 每次调用对指定用例执行一次，不自动重跑失败用例，也�
 | 内容 | 约束 |
 |---|---|
 | 任务状态 | `runId`、运行中／已停止／未知及观测时间；已停止不表示用例通过或故障已解决 |
-| 本轮输入 | `environment` 保存固定账号配置；用例列表、`CaseDefinition`、每用例角色映射和本次 `CaseData`；管理凭据只记录源文件位置，不保存值 |
+| 本轮输入 | `environment` 保存固定账号配置；用例列表、`CaseDefinition`、每用例账号及设备映射和本次 `CaseData`；管理凭据只记录源文件位置，不保存值 |
 | 前置准备 | 用例、准备操作标识、允许处理的声明及账号对、准备结果和核验文件引用；独立操作不冒充用例执行 |
 | 启动连接 | `connections` 保存 §3.4 的启动记录；本次执行引用明确的启动操作标识 |
 | 执行记录 | 本轮输入引用、阶段结果、`ExecutionResult` 及错误；原始报告的摘要随本次执行固定，不接受后续换文件后重算摘要冒充原报告 |
@@ -662,7 +665,7 @@ CSV 每行表示一个用例的一次执行，列定义如下：
 | 准备与构建 | 映射中的实例 → `devices.json`；对应平台构建 → 自有 `build/<runId>/` 副本 |
 | 启动 | 设备和构建副本 → 两角色的新连接，保存启动记录；握手均为 accepting |
 | 准入 | 用例 JSON 的 `data.unique.presenceDescription` → 本次唯一状态；必要绑定指向 `global.biz.event.presence_received`，前置核验及数据视图准备完成 |
-| 执行 | 两端初始化和登录 → A 清除自身对 B 的残留订阅并重新订阅 → B 发布 `$global.biz.input.presenceDescription`；A 等待事件，检查 publisher 为 `$global.account.bob.userId` 且状态内容为本次唯一值，绑定匹配 payload |
+| 执行 | 两端初始化和登录 → A 清除自身对 B 的残留订阅并重新订阅 → B 发布 `$global.biz.input.presenceDescription`；A 等待事件，检查 publisher 为 `$global.account.account2.userId` 且状态内容为本次唯一值，绑定匹配 payload |
 | 用例收尾 | 用例按已确认流程退订、恢复原状态及退出；运行器随后逐端 finish。业务清理命令仍属于用例，与 HTTP finish 分开记录 |
 | 汇报 | 有效 flow-report、必要绑定恰好一条 passed、匹配事件证据 → 用例结论及 CSV；缺少该通知不能用查询成功代替 |
 | 复验与清理 | 按声明恢复并核验前置状态，重新 launch；保留原序号并为复验登记新序号、新业务唯一值，run 显式选择本次启动；清理按类型及引用保护执行 |

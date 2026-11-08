@@ -55,8 +55,8 @@ steps:
                 - path: messages
                   containsItem:
                     msgId: '$global.biz.result.sent.data.msgId'
-                    from: '$global.account.alice.userId'
-                    to: '$global.account.bob.userId'
+                    from: '$global.account.account1.userId'
+                    to: '$global.account.account2.userId'
                     body.type: 0
                     body.content: '$global.biz.input.messageContent'
               as: global.biz.event.received
@@ -75,7 +75,7 @@ steps:
                 - path: receipts
                   containsItem:
                     messageId: '$global.biz.result.sent.data.msgId'
-                    conversationId: '$global.account.bob.userId'
+                    conversationId: '$global.account.account2.userId'
                     isPeerReceipt: true
               as: global.biz.event.read_receipt
               onFail: abort_flow

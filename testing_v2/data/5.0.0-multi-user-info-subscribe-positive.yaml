@@ -81,7 +81,7 @@ steps:
                   checks:
                     - path: userInfos
                       containsItem:
-                        userId: '$global.account.bob.userId'
+                        userId: '$global.account.account2.userId'
                         nickName: '$global.biz.input.nickname'
                         gender: '$original_gender'
                   as: global.biz.event.updated

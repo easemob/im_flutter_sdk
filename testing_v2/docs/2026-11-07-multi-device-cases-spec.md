@@ -34,7 +34,7 @@ example 可按场景需要注册 SDK 已有公开 API、补齐通知的结构化
 | 项目 | 要求 |
 |---|---|
 | 独立性 | 单独选择任意一例即可执行，不消费其他用例产生的消息、群组或关系；初始化、登录、前置准备和收尾完整。 |
-| 账号与设备 | 使用明确授权的测试账号；角色通过选择文件绑定账号和模拟器，不在用例中硬编码账号、Token、设备 ID。执行期间账号和设备不被其他任务占用。 |
+| 账号与设备 | 使用明确授权的测试账号；选择文件分别提供账号编号和设备映射，登录命令选择账号，不在用例中硬编码账号、Token、设备 ID。执行期间账号和设备不被其他任务占用。 |
 | 前置状态 | 数据模块按声明准备并核验联系人关系；初始化、登录及被测 SDK 操作由用例执行。准备不能提前完成被测行为。环境不满足时报告具体缺项，不能作为通过。 |
 | 初始化 | 每次执行重新启动 App，按本例配置初始化并注册回调；初始化参数不能在登录后临时修改。双方登录及连接检查成功后才发送业务命令。 |
 | 数据归属 | 使用既有 `$global` 读写规则；正文、申请理由、群名称及状态描述按需使用 `data.unique`。复验生成新的唯一值，不复用上次业务结果。 |
@@ -58,9 +58,9 @@ example 可按场景需要注册 SDK 已有公开 API、补齐通知的结构化
 | 步骤 | 执行端 | API／事件及关键输入 | 完成条件与后续依赖 |
 |---|---|---|---|
 | 1. 初始化 | A、B | `ChatClient.init`：`config = $global.biz.config.initConfig`；B 的 `overrides.requireDeliveryAck = true` | 各端初始化成功，执行端完成 `startCallback()` 和监听注册；本端才可登录。 |
-| 2. 登录 | A、B | `ChatClient.loginWithToken`：A 使用 `$global.account.alice`，B 使用 `$global.account.bob`；各自的 `userId`、`userToken` 分别传入命令参数 `userId`、`token` | 各端登录成功；本端才可检查连接。两端的步骤 1–3 可并行，本端内部串行。 |
+| 2. 登录 | A、B | `ChatClient.loginWithToken`：A 使用 `$global.account.account1`，B 使用 `$global.account.account2`；各自的 `userId`、`userToken` 分别传入命令参数 `userId`、`token` | 各端登录成功；本端才可检查连接。两端的步骤 1–3 可并行，本端内部串行。 |
 | 3. 确认连接 | A、B | `ChatClient.isConnected`，无参数 | 两端均返回 `true`，才允许 A 发送消息。 |
-| 4. 发送 | A | `ChatManager.sendMessage`：`to = $global.account.bob.userId`、`chatType = 0`、`isNeedReadReceipt = true`、`body.type = 0`、`body.content = $global.biz.input.messageContent` | 收到对应消息的发送成功回调；完整命令结果绑定到 `global.biz.result.sent`，其 `data.msgId` 为非空服务器消息 ID。 |
+| 4. 发送 | A | `ChatManager.sendMessage`：`to = $global.account.account2.userId`、`chatType = 0`、`isNeedReadReceipt = true`、`body.type = 0`、`body.content = $global.biz.input.messageContent` | 收到对应消息的发送成功回调；完整命令结果绑定到 `global.biz.result.sent`，其 `data.msgId` 为非空服务器消息 ID。 |
 | 5a. 验证接收 | B | 等待 `onMessagesReceived`；检查 `messages` 中同一元素的 `msgId`、`from`、`to`、`body.type`、`body.content` | 分别等于 `$global.biz.result.sent.data.msgId`、A 账号、B 账号、`0`、本次正文；事件绑定到 `global.biz.event.received`。 |
 | 5b. 验证送达回执 | A | 等待 `onMessagesDelivered`；检查 `messages` 中的 `msgId` | 包含 `$global.biz.result.sent.data.msgId`；事件绑定到 `global.biz.event.delivered`。 |
 | 6. 退出 | 已登录的 A、B | `ChatClient.logout`：`unbindDeviceToken = true` | 分别保存退出结果；一端退出失败不跳过另一端。 |
@@ -88,7 +88,7 @@ Native 5.0.0 的自动送达回执路径也要求消息 `isNeedReadReceipt: true
 
 ### 3.3 联系人申请与接受
 
-**角色与前置**：`alice/bob` 为专用 A/B 账号，互不拉黑，执行期间独占。YAML `preconditions` 与 JSON `data.prepare` 均声明 `contacts: {between: [alice, bob], state: none}`；通过既有 `--data-input` 准备并核验双方非好友。两端初始化覆盖 `acceptInvitationAlways: false`。
+**角色与前置**：`alice/bob` 为专用 A/B 账号，互不拉黑，执行期间独占。YAML `preconditions` 与 JSON `data.prepare` 均声明 `contacts: {between: [account1, account2], state: none}`；通过既有 `--data-input` 准备并核验双方非好友。两端初始化覆盖 `acceptInvitationAlways: false`。
 
 | 顺序 | 执行端 | API／事件与参数 | 断言与依赖 |
 |---|---|---|---|
@@ -136,7 +136,7 @@ Native 5.0.0 的自动送达回执路径也要求消息 `isNeedReadReceipt: true
 
 ### 3.6 同账号双设备消息同步
 
-**角色与输入**：`a1/a2` 均绑定账号 A、不同模拟器；流程须检查两个角色账号相等，环境允许同账号双端在线及消息同步。B 为有效收件账号，不占第三台设备。JSON `data.input.recipientId` 默认 null；运行前在 `tmp/` 的同名用例副本填入已准备的 B，YAML 和 JSON 一起交给现有 CLI 冻结，不提交私有账号。B 未配置、为空或等于 A 时禁止发送，必要绑定缺失不能通过。此路径复用既有业务输入，不将 a2 映射 B 后再登录 A。
+**角色与输入**：`a1/a2` 为不同模拟器，两端登录命令均引用 `account1`；环境允许同账号双端在线及消息同步。收件人 B 使用 `account2`，不占第三台设备，无需填写业务占位值或制作私有用例副本。账号映射须包含两个不同账号，必要绑定缺失不能通过。
 
 | 顺序 | 执行端 | API／事件与参数 | 断言与依赖 |
 |---|---|---|---|
@@ -144,7 +144,7 @@ Native 5.0.0 的自动送达回执路径也要求消息 `isNeedReadReceipt: true
 | 2 | a1、a2 | `ChatClient.getCurrentDeviceId` | SDK UUID 非空且不同；相同则禁止发送。 |
 | 3 | a1 | `ChatClient.fetchLoggedInDevices`：`userId=A`、`token=A的Token` | 返回列表分别包含两端 UUID（`deviceUUID`）；证明同账号设备身份与并存。 |
 | 4 | a1、a2 | `ChatClient.isConnected` | 第二端登录后两端均为 true，才进入业务。 |
-| 5 | a1 | `ChatManager.sendMessage`：`to=recipientId`、单聊文本、本轮唯一正文 | 45 秒内取得发送成功回调及服务器 ID。 |
+| 5 | a1 | `ChatManager.sendMessage`：`to=$global.account.account2.userId`、单聊文本、本轮唯一正文 | 45 秒内取得发送成功回调及服务器 ID。 |
 | 6 | a2 | `onMessagesReceived` | messages 同一元素匹配 msgId、from=A、to=B、body.type=0、正文；允许从缓存匹配。 |
 | 7 | 已登录的 a1、a2 | `ChatClient.logout` | 两端分别退出，不使用 kickAllDevices。 |
 
@@ -223,7 +223,7 @@ Native 5.0.0 的自动送达回执路径也要求消息 `isNeedReadReceipt: true
 
 ### 3.12 同账号双设备建群同步
 
-**角色与前置**：a1/a2 绑定同一账号 A、不同模拟器，环境允许同时在线。按 §3.6 核验不同 SDK UUID、在线列表包含两端，第二端登录后双方连接仍正常。无需第三账号或消息同步专用选项。
+**角色与前置**：a1/a2 使用不同模拟器，两端登录命令均引用 account1，环境允许同时在线。按 §3.6 核验不同 SDK UUID、在线列表包含两端，第二端登录后双方连接仍正常。无需第三账号或消息同步专用选项。
 
 | 顺序 | 执行端 | API／事件 | 必要断言 |
 |---|---|---|---|
@@ -259,6 +259,6 @@ Native 5.0.0 的自动送达回执路径也要求消息 `isNeedReadReceipt: true
 | 联系人 | 现有数据模块可准备非好友关系；非好友不等于无历史待处理申请。 | 依赖专用账号、本轮唯一邀请理由及因果链；发现历史干扰／未知写结果先记录暂停，不声称已查询待处理列表。 |
 | 入群 | [公开 API](../../im_flutter_sdk/lib/src/managers/chat_group_manager.dart) 与 [example 注册表](../../im_flutter_sdk/example/lib/registry/apis/group_apis.dart) 均提供 `joinPublicGroup`。 | 直接调用公开接口，不新增 SDK API；命令成功和群主收到目标成员通知分别验证。 |
 | 入群 | 事件 `userIds` 是字符串列表；现有 `expect.dart` 和测试已实现 `contains`。 | 直接使用列表元素相等检查，无需扩展解释器。 |
-| 同账号同步 | 角色映射允许同账号绑定不同设备；并发登录与消息同步取决于服务端配置。 | 每轮通过 SDK UUID、账号在线设备列表及双端连接核验前置；被踢下线或缺少同步能力须如实报告。 |
+| 同账号同步 | 两端命令可引用同一账号编号；并发登录与消息同步取决于服务端配置。 | 每轮通过 SDK UUID、账号在线设备列表及双端连接核验前置；被踢下线或缺少同步能力须如实报告。 |
 
 事件字段依据 [example 回调记录](../../im_flutter_sdk/example/lib/listeners.dart)，初始化选项依据 [ChatOptions](../../im_flutter_sdk/lib/src/models/chat_options.dart)，消息回执依据 [ChatManager](../../im_flutter_sdk/lib/src/managers/chat_manager.dart)。执行端不得替 SDK 伪造通知或业务成功结果。

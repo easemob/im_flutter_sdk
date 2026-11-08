@@ -11,12 +11,12 @@
     {
       "id": "login_alice",
       "api": "ChatClient.loginWithToken",
-      "params": {"userId": "$global.account.alice.userId", "token": "$global.account.alice.userToken"}
+      "params": {"userId": "$global.account.account1.userId", "token": "$global.account.account1.userToken"}
     },
     {
       "id": "login_bob",
       "api": "ChatClient.loginWithToken",
-      "params": {"userId": "$global.account.bob.userId", "token": "$global.account.bob.userToken"}
+      "params": {"userId": "$global.account.account2.userId", "token": "$global.account.account2.userToken"}
     },
     {
       "id": "connected",
@@ -28,7 +28,7 @@
       "id": "send",
       "api": "ChatManager.sendMessage",
       "params": {
-        "to": "$global.account.bob.userId",
+        "to": "$global.account.account2.userId",
         "chatType": 0,
         "isNeedReadReceipt": true,
         "body": {"type": 0, "content": "$global.biz.input.messageContent"}
@@ -43,8 +43,8 @@
         "success": true,
         "checks": [
           {"path": "msgId", "equals": "$global.biz.result.sent.data.msgId"},
-          {"path": "from", "equals": "$global.account.alice.userId"},
-          {"path": "to", "equals": "$global.account.bob.userId"},
+          {"path": "from", "equals": "$global.account.account1.userId"},
+          {"path": "to", "equals": "$global.account.account2.userId"},
           {"path": "body.type", "equals": 0},
           {"path": "body.content", "equals": "$global.biz.input.messageContent"}
         ]

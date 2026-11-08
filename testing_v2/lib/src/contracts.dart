@@ -304,6 +304,61 @@ class CaseDefinition implements JsonContract {
       };
 }
 
+/// Account selection is independent of device roles and preserves fixed slots.
+Map<String, String> readAccountSelection(Object? value) {
+  final accounts = readObject(value, 'accounts');
+  if (accounts.isEmpty ||
+      !List.generate(accounts.length, (i) => 'account${i + 1}')
+          .every(accounts.containsKey)) {
+    throw const FormatException(
+        'accounts must contain consecutive account1..accountN slots');
+  }
+  final result = <String, String>{};
+  for (final entry in accounts.entries) {
+    if (entry.value is! String || (entry.value as String).trim().isEmpty) {
+      throw FormatException(
+          'accounts.${entry.key} must be a nonempty account ID');
+    }
+    result[entry.key] = entry.value as String;
+  }
+  if (result.values.toSet().length != result.length) {
+    throw const FormatException(
+        'Each account slot requires a different account');
+  }
+  return result;
+}
+
+/// Validates device selection without accepting account or login information.
+Map<String, JsonObject> readDeviceSelection(
+    Object? value, Iterable<String> agents) {
+  final devices = readObject(value, 'devices');
+  final roles = agents.toSet();
+  if (devices.length != roles.length ||
+      !devices.keys.toSet().containsAll(roles)) {
+    throw const FormatException('devices must match YAML agents exactly');
+  }
+  final result = <String, JsonObject>{};
+  final instances = <String>{};
+  for (final entry in devices.entries) {
+    final device = readObject(entry.value, 'devices.${entry.key}');
+    if (!RegExp(r'^[A-Za-z_][A-Za-z0-9_]*$').hasMatch(entry.key) ||
+        device.length != 2 ||
+        !device.containsKey('platform') ||
+        !device.containsKey('instance') ||
+        !{'android', 'ios'}.contains(device['platform']) ||
+        device['instance'] is! String ||
+        (device['instance'] as String).trim().isEmpty) {
+      throw FormatException('Invalid device selection: ${entry.key}');
+    }
+    if (!instances.add('${device['platform']}:${device['instance']}')) {
+      throw const FormatException(
+          'Each device role requires a different device');
+    }
+    result[entry.key] = device;
+  }
+  return result;
+}
+
 class CaseData implements JsonContract {
   const CaseData({
     required this.caseName,
@@ -331,6 +386,8 @@ class CaseData implements JsonContract {
       a.string('userId');
       a.string('userToken');
     }
+    readAccountSelection(
+        {for (final e in result.accounts.entries) e.key: e.value['userId']});
     return result;
   }
   @override

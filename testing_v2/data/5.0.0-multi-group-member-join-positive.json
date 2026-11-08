@@ -11,12 +11,12 @@
     {
       "id": "login_alice",
       "api": "ChatClient.loginWithToken",
-      "params": {"userId": "$global.account.alice.userId", "token": "$global.account.alice.userToken"}
+      "params": {"userId": "$global.account.account1.userId", "token": "$global.account.account1.userToken"}
     },
     {
       "id": "login_bob",
       "api": "ChatClient.loginWithToken",
-      "params": {"userId": "$global.account.bob.userId", "token": "$global.account.bob.userToken"}
+      "params": {"userId": "$global.account.account2.userId", "token": "$global.account.account2.userToken"}
     },
     {
       "id": "connected",

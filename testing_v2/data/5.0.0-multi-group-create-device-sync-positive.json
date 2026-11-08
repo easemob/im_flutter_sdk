@@ -17,16 +17,16 @@
       "id": "login_a1",
       "api": "ChatClient.loginWithToken",
       "params": {
-        "userId": "$global.account.a1.userId",
-        "token": "$global.account.a1.userToken"
+        "userId": "$global.account.account1.userId",
+        "token": "$global.account.account1.userToken"
       }
     },
     {
       "id": "login_a2",
       "api": "ChatClient.loginWithToken",
       "params": {
-        "userId": "$global.account.a2.userId",
-        "token": "$global.account.a2.userToken"
+        "userId": "$global.account.account1.userId",
+        "token": "$global.account.account1.userToken"
       }
     },
     {
@@ -47,8 +47,8 @@
       "id": "online_devices",
       "api": "ChatClient.fetchLoggedInDevices",
       "params": {
-        "userId": "$global.account.a1.userId",
-        "token": "$global.account.a1.userToken"
+        "userId": "$global.account.account1.userId",
+        "token": "$global.account.account1.userToken"
       },
       "expect": {
         "success": true,

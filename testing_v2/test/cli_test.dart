@@ -164,14 +164,16 @@ steps:
       'cases': [
         {
           'yaml': source,
-          'roles': {
-            'alice': {'accountId': 'a', 'platform': 'ios', 'instance': 'sim-a'},
-            'bob': {'accountId': 'b', 'platform': 'ios', 'instance': 'sim-b'}
+          'accounts': {'account1': 'a', 'account2': 'b'},
+          'devices': {
+            'alice': {'platform': 'ios', 'instance': 'sim-a'},
+            'bob': {'platform': 'ios', 'instance': 'sim-b'}
           }
         },
         {
           'yaml': p.join(root.path, 'missing.yaml'),
-          'roles': <String, Object?>{}
+          'accounts': <String, Object?>{},
+          'devices': <String, Object?>{}
         },
       ]
     }));

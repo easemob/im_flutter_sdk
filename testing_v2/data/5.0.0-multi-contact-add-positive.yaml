@@ -5,7 +5,7 @@ agents:
   alice: {script: 5.0.0-multi-contact-add-positive.json}
   bob: {script: 5.0.0-multi-contact-add-positive.json}
 preconditions:
-  - contacts: {between: [alice, bob], state: none}
+  - contacts: {between: [account1, account2], state: none}
 defaults:
   stepTimeoutMs: 30000
 steps:
@@ -52,7 +52,7 @@ steps:
             - wait_event: onContactInvited
               agent: bob
               match:
-                userId: '$global.account.alice.userId'
+                userId: '$global.account.account1.userId'
                 reason: '$global.biz.input.inviteReason'
               as: global.biz.event.invited
               onFail: abort_flow
@@ -63,7 +63,7 @@ steps:
             - set: {accepted: true}
             - wait_event: onFriendRequestAccepted
               agent: alice
-              match: {userId: '$global.account.bob.userId'}
+              match: {userId: '$global.account.account2.userId'}
               as: global.biz.event.accepted
               onFail: abort_flow
   # Receipt timeout must not leave the successfully created relationship behind.

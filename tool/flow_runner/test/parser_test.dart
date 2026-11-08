@@ -39,23 +39,20 @@ steps: []
     });
 
     test('rejects missing name / agents / steps', () {
-      expect(() => parse('agents: {}\nsteps: []'),
-          throwsA(isA<FlowParseError>()));
-      expect(() => parse('name: t\nsteps: []'),
-          throwsA(isA<FlowParseError>()));
+      expect(
+          () => parse('agents: {}\nsteps: []'), throwsA(isA<FlowParseError>()));
+      expect(() => parse('name: t\nsteps: []'), throwsA(isA<FlowParseError>()));
       expect(() => parse('name: t\nagents: {}\nsteps: {}'),
           throwsA(isA<FlowParseError>()));
     });
 
     test('rejects bad endpoint', () {
-      expect(
-          () => parse('''
+      expect(() => parse('''
 name: t
 agents:
   a1: {endpoint: 'not-a-url', script: ''}
 steps: []
-'''),
-          throwsA(isA<FlowParseError>()));
+'''), throwsA(isA<FlowParseError>()));
     });
   });
 
@@ -82,13 +79,12 @@ $head
     });
 
     test('cmd requires agent', () {
-      expect(() => parse('$head\n  - cmd: x\n'),
-          throwsA(isA<FlowParseError>()));
+      expect(
+          () => parse('$head\n  - cmd: x\n'), throwsA(isA<FlowParseError>()));
     });
 
     test('cmd referencing undeclared agent fails statically', () {
-      expect(
-          () => parse('$head\n  - cmd: x\n    agent: nope\n'),
+      expect(() => parse('$head\n  - cmd: x\n    agent: nope\n'),
           throwsA(isA<FlowParseError>()));
     });
 
@@ -158,8 +154,7 @@ $head
       expect(p.branches.keys, ['line1', 'line2']);
       expect(p.branches['line1']!.single, isA<CmdStep>());
 
-      expect(
-          () => parse('''
+      expect(() => parse('''
 $head
   - parallel:
       line1:
@@ -167,8 +162,7 @@ $head
             inner:
               - cmd: a
                 agent: a1
-'''),
-          throwsA(isA<FlowParseError>()));
+'''), throwsA(isA<FlowParseError>()));
     });
 
     test('unknown step kind is rejected', () {
@@ -230,16 +224,14 @@ steps:
     });
 
     test('missing script file is rejected', () {
-      expect(
-          () => parseFlow('''
+      expect(() => parseFlow('''
 name: t
 agents:
   a1: {endpoint: 'http://127.0.0.1:8801', script: '/nonexistent/x.json'}
 steps:
   - cmd: any
     agent: a1
-'''),
-          throwsA(isA<FlowParseError>()));
+'''), throwsA(isA<FlowParseError>()));
     });
   });
 
@@ -284,14 +276,12 @@ steps: []
             {'id': 'x', 'api': 'A.x', 'params': {}}
           ]
         }));
-      expect(
-          () => parseFlow('''
+      expect(() => parseFlow('''
 name: t
 agents:
   a1: {endpoint: 'http://127.0.0.1:8801', script: '${script.path}', env: '${tmp.path}/missing.json'}
 steps: []
-'''),
-          throwsA(isA<FlowParseError>()));
+'''), throwsA(isA<FlowParseError>()));
     });
 
     test('duplicate step ids are rejected', () {
@@ -315,10 +305,26 @@ steps: []
 
     test('malformed expect blocks are rejected statically', () {
       for (final bad in [
-        {'expect': {'sucess': true}}, // typo'd field
-        {'expect': {'checks': []}},
-        {'expect': {'checks': [{'path': 'x', 'equals': 1, 'gte': 2}]}},
-        {'expect': {'checks': [{'path': 'x', 'wat': 1}]}},
+        {
+          'expect': {'sucess': true}
+        }, // typo'd field
+        {
+          'expect': {'checks': []}
+        },
+        {
+          'expect': {
+            'checks': [
+              {'path': 'x', 'equals': 1, 'gte': 2}
+            ]
+          }
+        },
+        {
+          'expect': {
+            'checks': [
+              {'path': 'x', 'wat': 1}
+            ]
+          }
+        },
       ]) {
         final script = File('${tmp.path}/s.json')
           ..writeAsStringSync(jsonEncode({
@@ -326,14 +332,12 @@ steps: []
               {'id': 'x', 'api': 'A.x', 'params': {}, ...bad},
             ]
           }));
-        expect(
-            () => parseFlow('''
+        expect(() => parseFlow('''
 name: t
 agents:
   a1: {endpoint: 'http://127.0.0.1:8801', script: '${script.path}'}
 steps: []
-'''),
-            throwsA(isA<FlowParseError>()));
+'''), throwsA(isA<FlowParseError>()));
       }
     });
 
@@ -356,20 +360,20 @@ steps: []
   });
 
   group('preconditions declaration', () {
-    test('parses contacts conditions with role and state validation', () {
+    test('parses account references independently of device roles', () {
       final spec = parse('''
 name: t
 agents:
   a1: {script: ''}
   a2: {script: ''}
 preconditions:
-  - contacts: {between: [a1, a2], state: none}
+  - contacts: {between: [account1, account2], state: none}
 steps: []
 ''');
       expect(spec.preconditions.length, 1);
       final p = spec.preconditions.single;
       expect(p.kind, 'contacts');
-      expect(p.between, ['a1', 'a2']);
+      expect(p.between, ['account1', 'account2']);
       expect(p.state, 'none');
     });
 
@@ -378,38 +382,31 @@ steps: []
       expect(spec.preconditions, isEmpty);
     });
 
-    test('rejects bad shapes, states and undeclared roles', () {
-      expect(
-          () => parse('''
+    test('rejects bad shapes, states and invalid reference names', () {
+      expect(() => parse('''
 name: t
 agents:
   a1: {script: ''}
 preconditions: {contacts: x}
 steps: []
-'''),
-          throwsA(isA<FlowParseError>()));
-      expect(
-          () => parse('''
+'''), throwsA(isA<FlowParseError>()));
+      expect(() => parse('''
 name: t
 agents:
   a1: {script: ''}
 preconditions:
   - contacts: {between: [a1], state: none}
 steps: []
-'''),
-          throwsA(isA<FlowParseError>()));
-      expect(
-          () => parse('''
+'''), throwsA(isA<FlowParseError>()));
+      expect(() => parse('''
 name: t
 agents:
   a1: {script: ''}
 preconditions:
-  - contacts: {between: [a1, ghost], state: none}
+  - contacts: {between: [a1, bad-name], state: none}
 steps: []
-'''),
-          throwsA(isA<FlowParseError>()));
-      expect(
-          () => parse('''
+'''), throwsA(isA<FlowParseError>()));
+      expect(() => parse('''
 name: t
 agents:
   a1: {script: ''}
@@ -417,18 +414,15 @@ agents:
 preconditions:
   - contacts: {between: [a1, a2], state: maybe}
 steps: []
-'''),
-          throwsA(isA<FlowParseError>()));
-      expect(
-          () => parse('''
+'''), throwsA(isA<FlowParseError>()));
+      expect(() => parse('''
 name: t
 agents:
   a1: {script: ''}
 preconditions:
   - bananas: {between: [a1, a1], state: none}
 steps: []
-'''),
-          throwsA(isA<FlowParseError>()));
+'''), throwsA(isA<FlowParseError>()));
     });
   });
 
@@ -440,13 +434,15 @@ agents:
   a1: {endpoint: 'http://127.0.0.1:8801', token: 'yaml-token', script: ''}
 steps: []
 ''');
-      applyAgentsFile(spec, jsonEncode([
-        {
-          'role': 'a1',
-          'endpoint': 'http://127.0.0.1:9999',
-          'token': 'file-token',
-        }
-      ]));
+      applyAgentsFile(
+          spec,
+          jsonEncode([
+            {
+              'role': 'a1',
+              'endpoint': 'http://127.0.0.1:9999',
+              'token': 'file-token',
+            }
+          ]));
       expect(spec.agents['a1']!.endpoint.toString(), 'http://127.0.0.1:9999');
       expect(spec.agents['a1']!.token, 'file-token');
     });
@@ -458,9 +454,11 @@ agents:
   a1: {script: ''}
 steps: []
 ''');
-      applyAgentsFile(spec, jsonEncode([
-        {'role': 'a1', 'endpoint': 'http://127.0.0.1:7001'}
-      ]));
+      applyAgentsFile(
+          spec,
+          jsonEncode([
+            {'role': 'a1', 'endpoint': 'http://127.0.0.1:7001'}
+          ]));
       expect(spec.agents['a1']!.endpoint!.port, 7001);
       expect(spec.agents['a1']!.token, isNull);
     });
@@ -479,23 +477,27 @@ agents:
   a1: {endpoint: 'http://127.0.0.1:8801', script: '', env: '${envFile.path}'}
 steps: []
 ''', options: const ParseOptions(verifyCommandIds: false));
-      applyAgentsFile(spec, jsonEncode([
-        {
-          'role': 'a1',
-          'endpoint': 'http://127.0.0.1:7002',
-          'env': {'userId': 'zuoyu01', 'userToken': 't1'},
-        }
-      ]));
+      applyAgentsFile(
+          spec,
+          jsonEncode([
+            {
+              'role': 'a1',
+              'endpoint': 'http://127.0.0.1:7002',
+              'env': {'userId': 'zuoyu01', 'userToken': 't1'},
+            }
+          ]));
       expect(spec.envs['a1'],
           {'userId': 'zuoyu01', 'appkey': 'static-key', 'userToken': 't1'});
     });
 
     test('entries for undeclared roles are skipped and reported', () {
       final spec = parse("name: t\nagents:\n  a1: {script: ''}\nsteps: []");
-      final skipped = applyAgentsFile(spec, jsonEncode([
-        {'role': 'a1', 'endpoint': 'http://127.0.0.1:7001'},
-        {'role': 'nope', 'endpoint': 'http://127.0.0.1:7002'},
-      ]));
+      final skipped = applyAgentsFile(
+          spec,
+          jsonEncode([
+            {'role': 'a1', 'endpoint': 'http://127.0.0.1:7001'},
+            {'role': 'nope', 'endpoint': 'http://127.0.0.1:7002'},
+          ]));
       // The flow uses a device subset: extra entries are ignored, but the
       // declared agent still gets its credentials.
       expect(skipped, ['nope']);
@@ -512,14 +514,13 @@ steps: []
       expect(() => applyAgentsFile(spec, '[{"role": "a1"}]'),
           throwsA(isA<FlowParseError>()));
       // Empty endpoint string counts as absent.
-      expect(
-          () => applyAgentsFile(
-              spec, '[{"role": "a1", "endpoint": ""}]'),
+      expect(() => applyAgentsFile(spec, '[{"role": "a1", "endpoint": ""}]'),
           throwsA(isA<FlowParseError>()));
     });
 
     test('roles without a file entry keep their declaration', () {
-      final spec = parse("name: t\nagents:\n  a1: {endpoint: 'http://127.0.0.1:8801', script: ''}\nsteps: []");
+      final spec = parse(
+          "name: t\nagents:\n  a1: {endpoint: 'http://127.0.0.1:8801', script: ''}\nsteps: []");
       final skipped = applyAgentsFile(spec, '[]');
       expect(skipped, isEmpty);
       expect(spec.agents['a1']!.endpoint.toString(), 'http://127.0.0.1:8801');
@@ -532,16 +533,19 @@ agents:
   a1: {script: ''}
 steps: []
 ''');
-      applyAgentsFile(spec, jsonEncode({
-        'agents': [
-          {'role': 'a1', 'endpoint': 'http://127.0.0.1:7003'}
-        ]
-      }));
+      applyAgentsFile(
+          spec,
+          jsonEncode({
+            'agents': [
+              {'role': 'a1', 'endpoint': 'http://127.0.0.1:7003'}
+            ]
+          }));
       expect(spec.agents['a1']!.endpoint!.port, 7003);
     });
 
     test('invalid JSON and non-array roots are rejected', () {
-      final spec = parse("name: t\nagents:\n  a1: {endpoint: 'http://127.0.0.1:8801', script: ''}\nsteps: []");
+      final spec = parse(
+          "name: t\nagents:\n  a1: {endpoint: 'http://127.0.0.1:8801', script: ''}\nsteps: []");
       expect(() => applyAgentsFile(spec, 'not json'),
           throwsA(isA<FlowParseError>()));
       expect(() => applyAgentsFile(spec, '{"role": "a1"}'),

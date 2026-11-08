@@ -185,8 +185,7 @@ class _Harness {
     return const Envelope(success: true, status: 'ok');
   }
 
-  Future<void> run(Directory temporary,
-      {bool differentAccounts = false}) async {
+  Future<void> run(Directory temporary) async {
     final stem = '5.0.0-multi-${scenario.name}-positive';
     loaded = await CaseLoader(DataService()).freeze(
         p.absolute('data/$stem.yaml'),
@@ -197,13 +196,9 @@ class _Harness {
         sourcePath: loaded.definition.yaml.path);
     final global = GlobalData({
       'account': {
-        for (final role in scenario.roles)
-          role: {
-            'userId': role == 'bob' || (role == 'a2' && differentAccounts)
-                ? 'user-b'
-                : 'user-a',
-            'userToken': 'token-$role'
-          }
+        'account1': {'userId': 'user-a', 'userToken': 'token-a'},
+        if (!scenario.sameAccount)
+          'account2': {'userId': 'user-b', 'userToken': 'token-b'}
       },
       'biz': {
         'config': {
@@ -293,11 +288,16 @@ void main() {
     });
   }
 
-  test('sync: different accounts cannot create a group', () async {
+  test('sync: both login commands use one account slot', () async {
     final h = _Harness(_Scenario.sync);
-    await h.run(temporary, differentAccounts: true);
-    expect(h.passed, isFalse);
-    expect(h.calls, isEmpty);
+    await h.run(temporary);
+    final logins =
+        h.calls.where((c) => c.api == 'ChatClient.loginWithToken').toList();
+    expect(logins.map((c) => c.role).toSet(), {'a1', 'a2'});
+    expect(
+        logins.every((c) =>
+            c.params['userId'] == 'user-a' && c.params['token'] == 'token-a'),
+        isTrue);
   });
 
   test('sync: one SDK identity cannot count as two devices', () async {

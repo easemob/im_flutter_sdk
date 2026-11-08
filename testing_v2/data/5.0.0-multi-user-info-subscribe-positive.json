@@ -19,16 +19,16 @@
       "id": "login_alice",
       "api": "ChatClient.loginWithToken",
       "params": {
-        "userId": "$global.account.alice.userId",
-        "token": "$global.account.alice.userToken"
+        "userId": "$global.account.account1.userId",
+        "token": "$global.account.account1.userToken"
       }
     },
     {
       "id": "login_bob",
       "api": "ChatClient.loginWithToken",
       "params": {
-        "userId": "$global.account.bob.userId",
-        "token": "$global.account.bob.userToken"
+        "userId": "$global.account.account2.userId",
+        "token": "$global.account.account2.userToken"
       }
     },
     {
@@ -50,7 +50,7 @@
       "api": "ChatUserInfoManager.unsubscribeUsersInfo",
       "params": {
         "userIds": [
-          "$global.account.bob.userId"
+          "$global.account.account2.userId"
         ]
       }
     },
@@ -65,7 +65,7 @@
         "checks": [
           {
             "path": "userId",
-            "equals": "$global.account.bob.userId"
+            "equals": "$global.account.account2.userId"
           }
         ]
       }
@@ -75,7 +75,7 @@
       "api": "ChatUserInfoManager.subscribeUsersInfo",
       "params": {
         "userIds": [
-          "$global.account.bob.userId"
+          "$global.account.account2.userId"
         ]
       }
     },
@@ -91,7 +91,7 @@
         "checks": [
           {
             "path": "userId",
-            "equals": "$global.account.bob.userId"
+            "equals": "$global.account.account2.userId"
           },
           {
             "path": "nickName",
@@ -116,7 +116,7 @@
         "checks": [
           {
             "path": "userId",
-            "equals": "$global.account.bob.userId"
+            "equals": "$global.account.account2.userId"
           },
           {
             "path": "nickName",

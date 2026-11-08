@@ -88,11 +88,11 @@ agent 的端口与配对 token 每次 app 启动都是随机的（多设备共�
 
 ```yaml
 preconditions:
-  - contacts: {between: [alice, bob], state: none}    # 保证两角色非好友
-  - contacts: {between: [alice, bob], state: friends} # 保证两角色已是好友
+  - contacts: {between: [account1, account2], state: none}    # 要求两账号非好友
+  - contacts: {between: [account1, account2], state: friends} # 要求两账号已是好友
 ```
 
-**分工边界**：flow_runner 只做**解析与形状校验**（kind 白名单、between 恰两个已声明角色、state 枚举），并把声明写进 flow-report.json 作追溯；**执行不在解释器**——前置是业务状态编排，由 testing 侧工具（`testing/tools/data/preconditions.dart`，REST 通道）完成，编排脚本 `run_flow` 在流程启动前调用。前置失败是 **blocked（环境问题）**，不算用例失败。
+**分工边界**：flow_runner 只做解析与形状校验（kind 白名单、between 恰好两个名称、名称格式、state 枚举），不将账号引用当作 `agents`，并把声明写入报告。调用方负责验证账号存在、准备并核验业务状态；`testing_v2` 由数据模块按独立账号映射执行，失败阻断用例。解释器不执行 REST 操作。
 
 ### defaults
 

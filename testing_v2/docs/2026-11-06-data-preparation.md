@@ -43,9 +43,12 @@ const Map<String, Object?> environment = <String, Object?>{
 
 ## 输入与交接
 
-- 生成脚本显式读取本地 JSON，包含账号 ID、初始化及资源配置、REST 地址和管理凭据；不搜索其他工程配置，不自动创建账号、群组或聊天室。
+- `scripts/generate_accounts_input.dart` 默认从 example 的 `config.local.json` 导入配置，也可用 `--source` 指定文件；展开 `chatOptions`，转换私有部署参数，保留所有已有账号。源文件不存在时生成占位模板，已有输出默认保留，只有 `--force` 才覆盖。
+- `config/accounts-input.json` 和 `config/cases.json` 为本地持久配置，不纳入 Git，也不登记为运行清理产物。
+- `scripts/generate_cases.dart --platform <android|ios>` 读取账号配置、查询设备并扫描 `data/`，将独立的 `accounts/devices` 映射写入 `config/cases.json`。账号按选择顺序编号，不要求用例声明；不获取 Token、改变设备状态或生成私有用例副本。格式与校验见[账号与设备独立管理规格](2026-11-08-account-device-separation-spec.md)。
+- `scripts/generate_accounts.dart --input config/accounts-input.json` 获取 Token 并生成源码，不自动创建账号、群组或聊天室；配置导入与 Token 获取分别执行，不修改 example 的文件。
 - 数据模块按需加载生成源码，复用生成端的字段及类型校验后交付，编排层固定本轮数据；帮助、设备操作、构建、已有报告及清理不依赖该源码。已有轮次读取快照，不混入重新生成的数据。
-- 数据模块按已固定角色映射生成账号、初始化及本次业务输入；编排层交接设备对应关系，执行模块验收后组装 `$global`。命令结果和匹配事件由解释器分别绑定，生成脚本不预填运行结果。
+- 数据模块按已固定账号编号映射生成账号、初始化及本次业务输入；编排层交接设备对应关系，执行模块验收后组装 `$global`。命令结果和匹配事件由解释器分别绑定，生成脚本不预填运行结果。
 - `initConfig` 包含 `appKey`、SDK 初始化及私有部署参数，不包含账号列表和 Token；Token 问题按证据归因，不自动改写用例断言结论。
 - 交付类型为 `AccountData`、`CaseData` 和 `PreconditionResult`，字段及接收检查见[执行规格 §1.4](../../docs/spec/2026-11-06-testing-v2-spec.md#14-交付格式与接收验收)。数据不合格返回数据模块处理，账号选择错误返回调用输入；下游不隐式刷新 Token 或修复业务状态。
 

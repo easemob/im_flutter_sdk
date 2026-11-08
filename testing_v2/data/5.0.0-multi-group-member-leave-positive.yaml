@@ -56,7 +56,7 @@ steps:
               agent: bob
               match: {groupId: '$global.biz.result.created.data.groupId'}
               checks:
-                - {path: userIds, contains: '$global.account.alice.userId'}
+                - {path: userIds, contains: '$global.account.account1.userId'}
               as: global.biz.event.member_joined
               onFail: abort_flow
             - cmd: leave_group
@@ -67,7 +67,7 @@ steps:
               agent: bob
               match: {groupId: '$global.biz.result.created.data.groupId'}
               checks:
-                - {path: userIds, contains: '$global.account.alice.userId'}
+                - {path: userIds, contains: '$global.account.account1.userId'}
               as: global.biz.event.member_left
               onFail: abort_flow
   # Recycle the confirmed group even when the tested operation or notification fails.

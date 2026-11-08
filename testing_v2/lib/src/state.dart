@@ -233,7 +233,7 @@ class RunState {
       'caseName': definition.name,
       'attempt': number,
       'definition': definition.toJson(),
-      'roles': entry['roles'],
+      'roles': entry['devices'],
       'caseData': null,
       'launchOperationId': null,
       'state': 'started',

@@ -8,6 +8,8 @@
 
 各场景结果与待处理问题见[验证记录](2026-11-07-multi-device-cases-verification.md)。
 
+账号与设备的独立选择及交接契约见[账号与设备独立管理规格](2026-11-08-account-device-separation-spec.md)。
+
 相关排查：[5.0.0 送达回执受已读回执开关限制](../troubleshooting/2026-11-07-delivery-receipt-read-flag.md)。
 
 [数据准备](2026-11-06-data-preparation.md)中的账号源码由辅助脚本在 Dart CLI 启动前生成；用例业务前置状态由 CLI 的数据模块按已确认声明准备并核验。

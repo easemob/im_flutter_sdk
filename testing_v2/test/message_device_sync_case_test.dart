@@ -73,18 +73,12 @@ void main() {
 
   tearDown(() async => temporary.delete(recursive: true));
 
-  Future<void> execute({
-    Object? recipient = 'user-b',
-    String secondAccount = 'user-a',
-  }) async {
-    // The private companion file supplies business input without changing roles.
+  Future<void> execute({bool includeRecipient = true}) async {
     final source = Directory(p.join(temporary.path, 'input'));
     await source.create();
     final metadata =
         jsonDecode(await File('data/$_caseName.json').readAsString())
             as JsonObject;
-    final data = metadata['data']! as JsonObject;
-    (data['input']! as JsonObject)['recipientId'] = recipient;
     await File(p.join(source.path, '$_caseName.json'))
         .writeAsString(jsonEncode(metadata));
     final yaml = await File('data/$_caseName.yaml').readAsString();
@@ -112,19 +106,10 @@ void main() {
         caseName: loaded.definition.name,
         caseBasename: _caseName,
         attempt: 1,
-        roles: {
-          'a1': {
-            'accountId': 'user-a',
-            'platform': 'android',
-            'instance': 'emulator-a1'
-          },
-          'a2': {
-            'accountId': secondAccount,
-            'platform': 'android',
-            'instance': 'emulator-a2'
-          }
+        accounts: {
+          'account1': 'user-a',
+          if (includeRecipient) 'account2': 'user-b'
         },
-        agentRoles: loaded.flow.agents.keys,
         metadata: loaded.metadata);
     expect(prepared.isSuccess, isTrue);
     final caseData = prepared.data!;
@@ -252,19 +237,13 @@ void main() {
     expectBothLoggedOut();
   });
 
-  for (final recipient in <Object?>[null, '', 'user-a', 42]) {
-    test('does not start SDK work with invalid recipient $recipient', () async {
-      await execute(recipient: recipient);
-      expect(calls, isEmpty);
-      expectNoSend();
-    });
-  }
-
-  test('does not mistake separate-account receipt for same-account sync',
+  test('missing recipient is a configuration failure before SDK dispatch',
       () async {
-    await execute(secondAccount: 'user-b');
+    await execute(includeRecipient: false);
     expect(calls, isEmpty);
     expectNoSend();
+    expect(
+        report.records.any((r) => r.result?['failureKind'] == 'tool'), isTrue);
   });
 
   test('duplicate SDK identity blocks sending but preserves both logouts',

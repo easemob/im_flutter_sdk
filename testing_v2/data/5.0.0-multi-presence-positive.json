@@ -20,16 +20,16 @@
       "id": "login_alice",
       "api": "ChatClient.loginWithToken",
       "params": {
-        "userId": "$global.account.alice.userId",
-        "token": "$global.account.alice.userToken"
+        "userId": "$global.account.account1.userId",
+        "token": "$global.account.account1.userToken"
       }
     },
     {
       "id": "login_bob",
       "api": "ChatClient.loginWithToken",
       "params": {
-        "userId": "$global.account.bob.userId",
-        "token": "$global.account.bob.userToken"
+        "userId": "$global.account.account2.userId",
+        "token": "$global.account.account2.userToken"
       }
     },
     {
@@ -51,7 +51,7 @@
       "api": "ChatPresenceManager.subscribe",
       "params": {
         "members": [
-          "$global.account.bob.userId"
+          "$global.account.account2.userId"
         ],
         "expiry": "$global.biz.input.expiry"
       },
@@ -61,7 +61,7 @@
           {
             "path": "",
             "containsItem": {
-              "publisher": "$global.account.bob.userId"
+              "publisher": "$global.account.account2.userId"
             }
           }
         ]
@@ -72,7 +72,7 @@
       "api": "ChatPresenceManager.unsubscribe",
       "params": {
         "members": [
-          "$global.account.bob.userId"
+          "$global.account.account2.userId"
         ]
       }
     },
@@ -81,7 +81,7 @@
       "api": "ChatPresenceManager.fetchPresenceStatus",
       "params": {
         "members": [
-          "$global.account.bob.userId"
+          "$global.account.account2.userId"
         ]
       },
       "expect": {
@@ -90,7 +90,7 @@
           {
             "path": "",
             "containsItem": {
-              "publisher": "$global.account.bob.userId"
+              "publisher": "$global.account.account2.userId"
             }
           }
         ]
@@ -115,7 +115,7 @@
       "api": "ChatPresenceManager.fetchPresenceStatus",
       "params": {
         "members": [
-          "$global.account.bob.userId"
+          "$global.account.account2.userId"
         ]
       },
       "expect": {
@@ -124,7 +124,7 @@
           {
             "path": "",
             "containsItem": {
-              "publisher": "$global.account.bob.userId",
+              "publisher": "$global.account.account2.userId",
               "statusDescription": "$global.biz.input.presenceDescription"
             }
           }

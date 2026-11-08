@@ -8,7 +8,7 @@ defaults:
   stepTimeoutMs: 30000
 steps:
   - set: {a1_logged_in: false, a2_logged_in: false}
-  - if: "$global.account.a1.userId == $global.account.a2.userId and $global.biz.input.recipientId > '' and $global.biz.input.recipientId != $global.account.a1.userId"
+  - if: "$global.account.account2.userId > '' and $global.account.account2.userId != $global.account.account1.userId"
     then:
       # Branch-local abort stops dependent work without bypassing logout below.
       - parallel:
@@ -65,8 +65,8 @@ steps:
                     - path: messages
                       containsItem:
                         msgId: '$global.biz.result.sent.data.msgId'
-                        from: '$global.account.a1.userId'
-                        to: '$global.biz.input.recipientId'
+                        from: '$global.account.account1.userId'
+                        to: '$global.account.account2.userId'
                         body.type: 0
                         body.content: '$global.biz.input.messageContent'
                   as: global.biz.event.synced

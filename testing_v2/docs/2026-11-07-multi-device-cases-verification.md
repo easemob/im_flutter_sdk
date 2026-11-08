@@ -10,7 +10,7 @@
 | 消息已读 | Android 连续三轮通过，每轮 13/13，任务故障 0 | 见轮次表 |
 | 联系人申请与接受 | Android 连续三轮通过，每轮 13/13，任务故障 0 | 见轮次表 |
 | 公开群入群 | Android 连续三轮通过，每轮 12/12，任务故障 0 | 见轮次表 |
-| Presence | Android 连续三轮通过，每轮 16/16，任务故障 0 | 见轮次表 |
+| Presence | Android 连续三轮通过；iOS 全流程和分环节各通过一轮，均 16/16、任务故障 0 | 见轮次表及 README 实操验证 |
 | 同账号双设备消息同步 | Android 连续三轮通过，每轮 13/13，任务故障 0 | 见轮次表 |
 | 消息内容编辑 | Android 连续三轮通过，每轮 12/12，任务故障 0 | 见轮次表 |
 | 消息撤回 | 按用户要求暂停执行；累计 1 轮通过、2 轮返回 505，未完成连续三轮 | 见轮次表及问题记录 |
@@ -93,7 +93,31 @@ Presence 三轮均在同一事件元素内匹配 B 与本轮唯一描述；辅�
 
 新增五个通过场景的 15 轮均完成独立原始证据验收；各例冻结 YAML、JSON、实际 APK 的 SHA-256 在三轮间分别一致。六例共享构建轮次 `20261108-101531-build-b4541dd6`，选择文件与构建引用位于 `tmp/20261108-collaboration-input/`。撤回失败轮次单独核验了错误来源与双方收尾，未记作通过；复验成功轮的 12 个必要绑定、目标撤回事件、双方 logout 和 HTTP finish 均由主代理核验。
 
+## README 实操验证（2026-11-08）
+
+按 README 的命令操作，只替换私有账号、模拟器 ID 和选择文件路径。使用 Flutter 3.47.0 / Dart 3.13.0；从已有私有配置重新生成账号源码，由 CLI 构建并安装 App。
+
+| 路径 | 轮次 | 结果 |
+|---|---|---|
+| 双 iOS Presence，`all` | `20261108-112905-presence-ea6aa6cc` | 16/16；任务故障 0 |
+| 双 iOS Presence，`prepare → devices start → build → launch → run → report` | `20261108-113158-presence-c68e7aba` | 16/16；任务故障 0 |
+| 双 Android 批量：联系人申请 → 同账号消息同步 | `20261108-113714-batch-01e697f9` | 两例各 13/13；任务故障 0 |
+
+四次用例执行均核验退出及双方 HTTP finish 成功。批量轮次验证 `--data-input`、不同账号到同账号的角色切换，以及 `tmp/` 用例副本的 `recipientId` 配置；撤回场景未执行。
+
+`dart pub get`、账号生成、双平台设备列表、`dart analyze` 和 `dart test` 均成功，单元测试 224 项通过。命令输出、原 README 副本及验收摘要保存在 `tmp/20261108-readme-check/`；用例报告按上述 runId 查询。
+
+文档缺项已修正：分环节 `run` 后只存在 `flow-report.json`，还须执行 `report` 才会生成汇总、CSV 和过程索引；`report` 成功时终端无输出。清理实操发现下述过程证据引用问题，未修改工具代码；后两轮未清理，保留完整证据。
+
 ## 已记录问题
+
+### 清理后过程记录引用失效（待修复）
+
+- 触发：按 README 完成双 iOS Presence 轮次 `20261108-112905-presence-ea6aa6cc`，生成报告后执行 `clean --run-id 20261108-112905-presence-ea6aa6cc --type logs --type build`。命令返回 0，删除 17 项、保留 12 项、删除失败 0 项。
+- 问题：保留的 `process.json` 中，`operations[*].result.evidence` 有 15 个引用指向已删除文件，涉及准备、设备、构建和启动环节。`summary.md`、CSV、过程记录文件本身、用例必要断言证据及账号源码均保留；本次用例通过结论不受影响，受影响的是完整过程追溯。
+- 原因：[reporting.dart](../lib/src/reporting.dart) 的 `generate()` 仅从用例行的 `row.evidence` 登记报告依赖，却同时把全部 `snapshot.operations` 写入 `process.json`；上述 15 项均未进入 `reportDependencies`。[cleanup.dart](../lib/src/cleanup.dart) 按登记依赖计算保护范围，因此允许删除这些仍被过程记录引用的日志。
+- 处理边界：问题位于报告依赖登记与验收，未修改工具代码或降低清理保护要求。修复应补齐过程记录的证据依赖并验证“真实报告 → 清理 → 引用仍可读取”；需要保留完整过程时暂缓日志清理。
+- 复核证据：`tmp/20261108-readme-check/14-clean-ios.log`、`cleanup-reference-audit.json` 和该轮 `reports/<runId>/process.json`；原始执行事件及 `flow-report.json` 仍可读取。
 
 ### 消息撤回：后台开通后仍出现 505（按用户要求暂停执行）
 
@@ -118,8 +142,37 @@ Presence 三轮均在同一事件元素内匹配 B 与本轮唯一描述；辅�
 - 处理：2026-11-08 经用户确认，在 [example 注册表](../../im_flutter_sdk/example/lib/registry/apis/group_apis.dart) 补充直接调用 `joinPublicGroup(groupId)` 的入口，重新构建 App；未新增 SDK API、解释器语法或辅助脚本。
 - 验证：[公开群入群用例](../data/5.0.0-multi-group-member-join-positive.yaml) 双 Android 连续三轮通过，见轮次表；iOS 未验证。
 
-### 同账号同步：无设备收件人的输入
+### 同账号同步：无设备收件人的输入（历史记录）
+
+以下为此前轮次的输入方式；当前使用独立账号编号，见下方验证记录。
 
 - 事实：`$global.account` 只包含 YAML 设备角色；a1/a2 均为 A 时，已生成的 B 不自动进入该映射。
 - 处理：沿用现有 JSON `data.input.recipientId`，在 `tmp/` 私有用例副本填入 B，再交给 CLI 冻结。跟踪文件默认为 null，未填写禁止发送、不能通过；不变更数据模块契约、不伪造角色映射。
 - 边界：若要求自动从生成账号中选择无设备收件人，需要单独确认数据交付规则；本次不增加该能力。
+
+
+## 2026-11-08 账号与设备独立映射验证
+
+[账号与设备独立管理规格](2026-11-08-account-device-separation-spec.md)已完成实现验证。配置分别保存 `accounts/devices`；命令使用 `account1` 至 `accountN`，YAML 选择执行设备。生成器直接引用 `data/` 源用例，不生成持久化用例副本，不要求 `selection.accounts`。
+
+### 双 Android 稳定性
+
+模拟器：`Pixel_9`、`Pixel_9_2`。三个场景通过 `all --cases config/cases.json` 串行执行；第 2、3 轮使用 `--build-result tmp/account-device-build.json` 导入首轮 APK。三轮账号设备映射、冻结 YAML/JSON 摘要及 APK 摘要一致，期间未调整用例。
+
+| 轮次 | Presence | 同账号建群同步 | 同账号消息同步 | 任务故障 |
+|---|---|---|---|---|
+| `20261108-141700-batch-d9b97504` | 16/16 | 14/14 | 13/13 | 0 |
+| `20261108-142142-batch-357b0106` | 16/16 | 14/14 | 13/13 | 0 |
+| `20261108-142615-batch-c0eda987` | 16/16 | 14/14 | 13/13 | 0 |
+
+共 9 次执行通过。逐轮核对：Presence 发布者与本轮唯一状态一致；建群通知关联本轮群 ID；消息同步通知在同一消息元素内匹配服务器消息 ID、发送者、无设备收件人及本轮正文。匹配事件的序号和内容均可在设备原始事件记录中定位。退订、原状态恢复、解散群、双方 logout 及 HTTP finish 均成功。
+
+本次设备验证仅覆盖上述三个 Android 场景；其余 8 个未暂停场景通过静态装载、数据契约及既有回归检查，未重新实跑。消息撤回仍暂停。
+
+### 自动化检查与证据
+
+- `testing_v2` 241 项、`flow_runner` 91 项测试通过，两包静态分析通过。
+- 覆盖独立账号/设备选择、一账号多设备、三账号两设备、无设备账号参与故障隔离、分环节读取固定输入、无效映射拒收、缺失账号不派发命令、暂停用例拒绝执行。全部 11 个未暂停源用例通过生成和数据交接校验。
+- 配置生成不改写源用例；12 份 JSON 的命令参数和核心断言与原内容对照，仅调整账号引用、联系人前置引用及移除收件账号占位值。账号配置和生成源码未改变。
+- 汇总、统计及过程索引：`reports/<runId>/summary.md`、`statistics.csv`、`process.json`；原始报告：`reports/<runId>/<用例名>/1/flow-report.json`；原始事件和设备日志：`tmp/<runId>/<用例名>/1/`。
+- 执行日志：`tmp/account-device-validation-1.log` 至 `-3.log`；回归日志：`tmp/account-device-tests.log`、`tmp/account-device-flow-tests-host.log`。
