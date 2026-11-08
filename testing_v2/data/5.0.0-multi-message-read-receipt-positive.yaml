@@ -1,0 +1,94 @@
+# Receive one exact message, acknowledge it, and require its peer read receipt.
+name: 5.0.0-multi-message-read-receipt-positive
+flowTimeoutMs: 240000
+agents:
+  alice: {script: 5.0.0-multi-message-read-receipt-positive.json}
+  bob: {script: 5.0.0-multi-message-read-receipt-positive.json}
+defaults:
+  stepTimeoutMs: 30000
+steps:
+  - set: {alice_logged_in: false, bob_logged_in: false, alice_ready: false, bob_ready: false}
+  - parallel:
+      alice_login:
+        - cmd: init
+          agent: alice
+          as: global.biz.result.alice_init
+          onFail: abort_flow
+        - cmd: login_alice
+          agent: alice
+          as: global.biz.result.alice_login
+          onFail: abort_flow
+        - set: {alice_logged_in: true}
+        - cmd: connected
+          agent: alice
+          as: global.biz.result.alice_connected
+          onFail: abort_flow
+        - set: {alice_ready: true}
+      bob_login:
+        - cmd: init
+          agent: bob
+          as: global.biz.result.bob_init
+          onFail: abort_flow
+        - cmd: login_bob
+          agent: bob
+          as: global.biz.result.bob_login
+          onFail: abort_flow
+        - set: {bob_logged_in: true}
+        - cmd: connected
+          agent: bob
+          as: global.biz.result.bob_connected
+          onFail: abort_flow
+        - set: {bob_ready: true}
+  - if: '$alice_ready and $bob_ready'
+    then:
+      # A branch-local failure stops dependent work without bypassing logout.
+      - parallel:
+          read_receipt:
+            - cmd: send
+              agent: alice
+              as: global.biz.result.sent
+              timeoutMs: 45000
+              onFail: abort_flow
+            - wait_event: onMessagesReceived
+              agent: bob
+              checks:
+                - path: messages
+                  containsItem:
+                    msgId: '$global.biz.result.sent.data.msgId'
+                    from: '$global.account.alice.userId'
+                    to: '$global.account.bob.userId'
+                    body.type: 0
+                    body.content: '$global.biz.input.messageContent'
+              as: global.biz.event.received
+              onFail: abort_flow
+            - cmd: load_received
+              agent: bob
+              as: global.biz.result.loaded
+              onFail: abort_flow
+            - cmd: acknowledge_read
+              agent: bob
+              as: global.biz.result.read_acknowledged
+              onFail: abort_flow
+            - wait_event: onMessageReadReceipts
+              agent: alice
+              checks:
+                - path: receipts
+                  containsItem:
+                    messageId: '$global.biz.result.sent.data.msgId'
+                    conversationId: '$global.account.bob.userId'
+                    isPeerReceipt: true
+              as: global.biz.event.read_receipt
+              onFail: abort_flow
+  - parallel:
+      alice_exit:
+        - if: '$alice_logged_in'
+          then:
+            - cmd: logout
+              agent: alice
+              as: global.biz.result.alice_logout
+      bob_exit:
+        - if: '$bob_logged_in'
+          then:
+            - cmd: logout
+              agent: bob
+              as: global.biz.result.bob_logout

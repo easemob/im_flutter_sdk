@@ -61,13 +61,10 @@ final chatApis = <ApiEntry>[
 }''',
     invoke: (p) async {
       final msg = ChatMessage.fromJson(p);
-      final sent = await ChatClient.getInstance.chatManager.sendMessage(msg);
-      // sendMessage returns the pre-send message (local msgId); on success the server rewrites
-      // the msgId, and the local DB stores it with the new id. downloadBigImage / voiceMessageToText
-      // wrappers look up DB by msgId, so we must wait for the message status event to get the new id,
-      // otherwise subsequent steps cannot find it (direct NPE / 500 on Android).
-      final localId = sent.msgId;
-      const eventId = 'api_tester_send_message';
+      // Register before sending: the status callback can precede the method reply.
+      // Its localId correlates the original message with the server-assigned ID.
+      final localId = msg.msgId;
+      final eventId = 'api_tester_send_message_$localId';
       final completer = Completer<ChatMessage>();
       ChatClient.getInstance.chatManager.addMessageEvent(
         eventId,
@@ -85,7 +82,15 @@ final chatApis = <ApiEntry>[
         ),
       );
       try {
-        return await completer.future.timeout(const Duration(seconds: 30));
+        // Observe both futures immediately, including an early error callback.
+        final results = await Future.wait<ChatMessage>(
+          [
+            ChatClient.getInstance.chatManager.sendMessage(msg),
+            completer.future
+          ],
+          eagerError: true,
+        ).timeout(const Duration(seconds: 30));
+        return results[1];
       } finally {
         ChatClient.getInstance.chatManager.removeMessageEvent(eventId);
       }

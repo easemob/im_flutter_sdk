@@ -1,0 +1,87 @@
+# Accept only this run's invitation; recycle the relationship even if its notice is missing.
+name: 5.0.0-multi-contact-add-positive
+flowTimeoutMs: 240000
+agents:
+  alice: {script: 5.0.0-multi-contact-add-positive.json}
+  bob: {script: 5.0.0-multi-contact-add-positive.json}
+preconditions:
+  - contacts: {between: [alice, bob], state: none}
+defaults:
+  stepTimeoutMs: 30000
+steps:
+  - set: {alice_logged_in: false, bob_logged_in: false, alice_ready: false, bob_ready: false, accepted: false}
+  - parallel:
+      alice_login:
+        - cmd: init
+          agent: alice
+          as: global.biz.result.alice_init
+          onFail: abort_flow
+        - cmd: login_alice
+          agent: alice
+          as: global.biz.result.alice_login
+          onFail: abort_flow
+        - set: {alice_logged_in: true}
+        - cmd: connected
+          agent: alice
+          as: global.biz.result.alice_connected
+          onFail: abort_flow
+        - set: {alice_ready: true}
+      bob_login:
+        - cmd: init
+          agent: bob
+          as: global.biz.result.bob_init
+          onFail: abort_flow
+        - cmd: login_bob
+          agent: bob
+          as: global.biz.result.bob_login
+          onFail: abort_flow
+        - set: {bob_logged_in: true}
+        - cmd: connected
+          agent: bob
+          as: global.biz.result.bob_connected
+          onFail: abort_flow
+        - set: {bob_ready: true}
+  - if: '$alice_ready and $bob_ready'
+    then:
+      - parallel:
+          invite_and_accept:
+            - cmd: invite
+              agent: alice
+              as: global.biz.result.invitation
+              onFail: abort_flow
+            - wait_event: onContactInvited
+              agent: bob
+              match:
+                userId: '$global.account.alice.userId'
+                reason: '$global.biz.input.inviteReason'
+              as: global.biz.event.invited
+              onFail: abort_flow
+            - cmd: accept
+              agent: bob
+              as: global.biz.result.acceptance
+              onFail: abort_flow
+            - set: {accepted: true}
+            - wait_event: onFriendRequestAccepted
+              agent: alice
+              match: {userId: '$global.account.bob.userId'}
+              as: global.biz.event.accepted
+              onFail: abort_flow
+  # Receipt timeout must not leave the successfully created relationship behind.
+  - if: '$accepted'
+    then:
+      - cmd: delete_contact
+        agent: alice
+        as: global.biz.result.cleanup_contact
+  - parallel:
+      alice_exit:
+        - if: '$alice_logged_in'
+          then:
+            - cmd: logout
+              agent: alice
+              as: global.biz.result.alice_logout
+      bob_exit:
+        - if: '$bob_logged_in'
+          then:
+            - cmd: logout
+              agent: bob
+              as: global.biz.result.bob_logout

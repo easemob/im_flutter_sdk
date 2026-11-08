@@ -1,0 +1,95 @@
+{
+  "data": {
+    "input": {"recipientId": null},
+    "unique": {"messageContent": "device-sync-"}
+  },
+  "steps": [
+    {
+      "id": "init_a1",
+      "api": "ChatClient.init",
+      "params": {"config": "$global.biz.config.initConfig", "overrides": {}}
+    },
+    {
+      "id": "init_a2",
+      "api": "ChatClient.init",
+      "params": {
+        "config": "$global.biz.config.initConfig",
+        "overrides": {"messagesReceiveCallbackIncludeSend": true}
+      }
+    },
+    {
+      "id": "login_a1",
+      "api": "ChatClient.loginWithToken",
+      "params": {
+        "userId": "$global.account.a1.userId",
+        "token": "$global.account.a1.userToken"
+      }
+    },
+    {
+      "id": "login_a2",
+      "api": "ChatClient.loginWithToken",
+      "params": {
+        "userId": "$global.account.a2.userId",
+        "token": "$global.account.a2.userToken"
+      }
+    },
+    {
+      "id": "device_id",
+      "api": "ChatClient.getCurrentDeviceId",
+      "params": {},
+      "expect": {"success": true, "checks": [{"path": "", "notEmpty": true}]}
+    },
+    {
+      "id": "online_devices",
+      "api": "ChatClient.fetchLoggedInDevices",
+      "params": {
+        "userId": "$global.account.a1.userId",
+        "token": "$global.account.a1.userToken"
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {"path": "", "containsItem": {"deviceUUID": "$global.biz.result.a1_device.data"}},
+          {"path": "", "containsItem": {"deviceUUID": "$global.biz.result.a2_device.data"}}
+        ]
+      }
+    },
+    {
+      "id": "connected",
+      "api": "ChatClient.isConnected",
+      "params": {},
+      "expect": {"success": true, "checks": [{"path": "", "equals": true}]}
+    },
+    {
+      "id": "send",
+      "api": "ChatManager.sendMessage",
+      "params": {
+        "to": "$global.biz.input.recipientId",
+        "chatType": 0,
+        "isNeedReadReceipt": true,
+        "body": {"type": 0, "content": "$global.biz.input.messageContent"}
+      },
+      "expect": {"success": true, "checks": [{"path": "msgId", "notEmpty": true}]}
+    },
+    {
+      "id": "logout",
+      "api": "ChatClient.logout",
+      "params": {"unbindDeviceToken": true}
+    }
+  ],
+  "requiredBindings": [
+    "global.biz.result.a1_init",
+    "global.biz.result.a2_init",
+    "global.biz.result.a1_login",
+    "global.biz.result.a2_login",
+    "global.biz.result.a1_device",
+    "global.biz.result.a2_device",
+    "global.biz.result.online_devices",
+    "global.biz.result.a1_connected",
+    "global.biz.result.a2_connected",
+    "global.biz.result.sent",
+    "global.biz.event.synced",
+    "global.biz.result.a1_logout",
+    "global.biz.result.a2_logout"
+  ]
+}

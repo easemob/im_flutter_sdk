@@ -69,6 +69,14 @@ final groupApis = <ApiEntry>[
     },
   ),
   ApiEntry(
+    name: 'ChatGroupManager.joinPublicGroup',
+    group: 'GroupManager',
+    description: '加入无需审批的公开群组。',
+    paramsTemplate: '{"groupId": "yourGroupId"}',
+    invoke: (p) => ChatClient.getInstance.groupManager
+        .joinPublicGroup(p['groupId'] as String),
+  ),
+  ApiEntry(
     name: 'ChatGroupManager.destroyGroup',
     group: 'GroupManager',
     description: '解散群组，仅群主可调用；用于清理 createGroup 创建的测试群。',

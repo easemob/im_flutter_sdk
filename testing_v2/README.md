@@ -6,6 +6,8 @@
 
 入口见[执行流程](docs/2026-11-06-test-execution-flow.md)及[执行规格](../docs/spec/2026-11-06-testing-v2-spec.md)。
 
+场景与验收要求见[多设备协同测试用例规格](docs/2026-11-07-multi-device-cases-spec.md)，结果与待处理问题见[验证记录](docs/2026-11-07-multi-device-cases-verification.md)。
+
 ## 目录
 
 ```text

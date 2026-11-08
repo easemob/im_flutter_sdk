@@ -1,0 +1,69 @@
+{
+  "data": {
+    "unique": {"messageContent": "delivery-"}
+  },
+  "steps": [
+    {
+      "id": "init_alice",
+      "api": "ChatClient.init",
+      "params": {"config": "$global.biz.config.initConfig", "overrides": {}}
+    },
+    {
+      "id": "init_bob",
+      "api": "ChatClient.init",
+      "params": {
+        "config": "$global.biz.config.initConfig",
+        "overrides": {"requireDeliveryAck": true}
+      }
+    },
+    {
+      "id": "login_alice",
+      "api": "ChatClient.loginWithToken",
+      "params": {
+        "userId": "$global.account.alice.userId",
+        "token": "$global.account.alice.userToken"
+      }
+    },
+    {
+      "id": "login_bob",
+      "api": "ChatClient.loginWithToken",
+      "params": {
+        "userId": "$global.account.bob.userId",
+        "token": "$global.account.bob.userToken"
+      }
+    },
+    {
+      "id": "connected",
+      "api": "ChatClient.isConnected",
+      "params": {},
+      "expect": {"success": true, "checks": [{"path": "", "equals": true}]}
+    },
+    {
+      "id": "send",
+      "api": "ChatManager.sendMessage",
+      "params": {
+        "to": "$global.account.bob.userId",
+        "chatType": 0,
+        "isNeedReadReceipt": true,
+        "body": {"type": 0, "content": "$global.biz.input.messageContent"}
+      },
+      "expect": {"success": true, "checks": [{"path": "msgId", "notEmpty": true}]}
+    },
+    {
+      "id": "logout",
+      "api": "ChatClient.logout",
+      "params": {"unbindDeviceToken": true}
+    }
+  ],
+  "requiredBindings": [
+    "global.biz.result.alice_init",
+    "global.biz.result.bob_init",
+    "global.biz.result.alice_login",
+    "global.biz.result.bob_login",
+    "global.biz.result.alice_connected",
+    "global.biz.result.bob_connected",
+    "global.biz.result.sent",
+    "global.biz.event.received",
+    "global.biz.event.delivered"
+  ]
+}

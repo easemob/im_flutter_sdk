@@ -1,0 +1,64 @@
+{
+  "data": {
+    "unique": {"inviteReason": "contact-invite-"},
+    "prepare": [{"contacts": {"between": ["alice", "bob"], "state": "none"}}]
+  },
+  "steps": [
+    {
+      "id": "init",
+      "api": "ChatClient.init",
+      "params": {"config": "$global.biz.config.initConfig", "overrides": {"acceptInvitationAlways": false}}
+    },
+    {
+      "id": "login_alice",
+      "api": "ChatClient.loginWithToken",
+      "params": {"userId": "$global.account.alice.userId", "token": "$global.account.alice.userToken"}
+    },
+    {
+      "id": "login_bob",
+      "api": "ChatClient.loginWithToken",
+      "params": {"userId": "$global.account.bob.userId", "token": "$global.account.bob.userToken"}
+    },
+    {
+      "id": "connected",
+      "api": "ChatClient.isConnected",
+      "params": {},
+      "expect": {"success": true, "checks": [{"path": "", "equals": true}]}
+    },
+    {
+      "id": "invite",
+      "api": "ChatContactManager.addContact",
+      "params": {"userId": "$global.account.bob.userId", "reason": "$global.biz.input.inviteReason"}
+    },
+    {
+      "id": "accept",
+      "api": "ChatContactManager.acceptInvitation",
+      "params": {"userId": "$global.account.alice.userId"}
+    },
+    {
+      "id": "delete_contact",
+      "api": "ChatContactManager.deleteContact",
+      "params": {"userId": "$global.account.bob.userId", "keepConversation": true}
+    },
+    {
+      "id": "logout",
+      "api": "ChatClient.logout",
+      "params": {"unbindDeviceToken": true}
+    }
+  ],
+  "requiredBindings": [
+    "global.biz.result.alice_init",
+    "global.biz.result.bob_init",
+    "global.biz.result.alice_login",
+    "global.biz.result.bob_login",
+    "global.biz.result.alice_connected",
+    "global.biz.result.bob_connected",
+    "global.biz.result.invitation",
+    "global.biz.event.invited",
+    "global.biz.result.acceptance",
+    "global.biz.event.accepted",
+    "global.biz.result.cleanup_contact",
+    "global.biz.result.alice_logout",
+    "global.biz.result.bob_logout"
+  ]
+}

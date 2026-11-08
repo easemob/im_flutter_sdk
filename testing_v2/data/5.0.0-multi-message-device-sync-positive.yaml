@@ -1,0 +1,85 @@
+# Two distinct SDK devices must remain online as the same account before sending.
+name: 5.0.0-multi-message-device-sync-positive
+flowTimeoutMs: 300000
+agents:
+  a1: {script: 5.0.0-multi-message-device-sync-positive.json}
+  a2: {script: 5.0.0-multi-message-device-sync-positive.json}
+defaults:
+  stepTimeoutMs: 30000
+steps:
+  - set: {a1_logged_in: false, a2_logged_in: false}
+  - if: "$global.account.a1.userId == $global.account.a2.userId and $global.biz.input.recipientId > '' and $global.biz.input.recipientId != $global.account.a1.userId"
+    then:
+      # Branch-local abort stops dependent work without bypassing logout below.
+      - parallel:
+          session:
+            - cmd: init_a1
+              agent: a1
+              as: global.biz.result.a1_init
+              onFail: abort_flow
+            - cmd: init_a2
+              agent: a2
+              as: global.biz.result.a2_init
+              onFail: abort_flow
+            - cmd: login_a1
+              agent: a1
+              as: global.biz.result.a1_login
+              onFail: abort_flow
+            - set: {a1_logged_in: true}
+            - cmd: login_a2
+              agent: a2
+              as: global.biz.result.a2_login
+              onFail: abort_flow
+            - set: {a2_logged_in: true}
+            - cmd: device_id
+              agent: a1
+              as: global.biz.result.a1_device
+              onFail: abort_flow
+            - cmd: device_id
+              agent: a2
+              as: global.biz.result.a2_device
+              onFail: abort_flow
+            - if: '$global.biz.result.a1_device.data != $global.biz.result.a2_device.data'
+              then:
+                - cmd: online_devices
+                  agent: a1
+                  as: global.biz.result.online_devices
+                  onFail: abort_flow
+                - cmd: connected
+                  agent: a1
+                  as: global.biz.result.a1_connected
+                  onFail: abort_flow
+                - cmd: connected
+                  agent: a2
+                  as: global.biz.result.a2_connected
+                  onFail: abort_flow
+                - cmd: send
+                  agent: a1
+                  as: global.biz.result.sent
+                  timeoutMs: 45000
+                  onFail: abort_flow
+                # The synchronized message may precede the send response.
+                - wait_event: onMessagesReceived
+                  agent: a2
+                  checks:
+                    - path: messages
+                      containsItem:
+                        msgId: '$global.biz.result.sent.data.msgId'
+                        from: '$global.account.a1.userId'
+                        to: '$global.biz.input.recipientId'
+                        body.type: 0
+                        body.content: '$global.biz.input.messageContent'
+                  as: global.biz.event.synced
+  - parallel:
+      a1_exit:
+        - if: '$a1_logged_in'
+          then:
+            - cmd: logout
+              agent: a1
+              as: global.biz.result.a1_logout
+      a2_exit:
+        - if: '$a2_logged_in'
+          then:
+            - cmd: logout
+              agent: a2
+              as: global.biz.result.a2_logout

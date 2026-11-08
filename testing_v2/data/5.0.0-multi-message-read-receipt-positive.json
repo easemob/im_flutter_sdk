@@ -1,0 +1,79 @@
+{
+  "data": {
+    "unique": {"messageContent": "read-receipt-"}
+  },
+  "steps": [
+    {
+      "id": "init",
+      "api": "ChatClient.init",
+      "params": {"config": "$global.biz.config.initConfig", "overrides": {}}
+    },
+    {
+      "id": "login_alice",
+      "api": "ChatClient.loginWithToken",
+      "params": {"userId": "$global.account.alice.userId", "token": "$global.account.alice.userToken"}
+    },
+    {
+      "id": "login_bob",
+      "api": "ChatClient.loginWithToken",
+      "params": {"userId": "$global.account.bob.userId", "token": "$global.account.bob.userToken"}
+    },
+    {
+      "id": "connected",
+      "api": "ChatClient.isConnected",
+      "params": {},
+      "expect": {"success": true, "checks": [{"path": "", "equals": true}]}
+    },
+    {
+      "id": "send",
+      "api": "ChatManager.sendMessage",
+      "params": {
+        "to": "$global.account.bob.userId",
+        "chatType": 0,
+        "isNeedReadReceipt": true,
+        "body": {"type": 0, "content": "$global.biz.input.messageContent"}
+      },
+      "expect": {"success": true, "checks": [{"path": "msgId", "notEmpty": true}]}
+    },
+    {
+      "id": "load_received",
+      "api": "ChatManager.loadMessage",
+      "params": {"messageId": "$global.biz.result.sent.data.msgId"},
+      "expect": {
+        "success": true,
+        "checks": [
+          {"path": "msgId", "equals": "$global.biz.result.sent.data.msgId"},
+          {"path": "from", "equals": "$global.account.alice.userId"},
+          {"path": "to", "equals": "$global.account.bob.userId"},
+          {"path": "body.type", "equals": 0},
+          {"path": "body.content", "equals": "$global.biz.input.messageContent"}
+        ]
+      }
+    },
+    {
+      "id": "acknowledge_read",
+      "api": "ChatManager.sendMessageReadReceipts",
+      "params": {"messages": ["$global.biz.result.loaded.data"]}
+    },
+    {
+      "id": "logout",
+      "api": "ChatClient.logout",
+      "params": {"unbindDeviceToken": true}
+    }
+  ],
+  "requiredBindings": [
+    "global.biz.result.alice_init",
+    "global.biz.result.bob_init",
+    "global.biz.result.alice_login",
+    "global.biz.result.bob_login",
+    "global.biz.result.alice_connected",
+    "global.biz.result.bob_connected",
+    "global.biz.result.sent",
+    "global.biz.event.received",
+    "global.biz.result.loaded",
+    "global.biz.result.read_acknowledged",
+    "global.biz.event.read_receipt",
+    "global.biz.result.alice_logout",
+    "global.biz.result.bob_logout"
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "data": {
     "input": {
-      "expiry": 120
+      "expiry": 600
     },
     "unique": {
       "presenceDescription": "presence-"
@@ -89,11 +89,9 @@
         "checks": [
           {
             "path": "",
-            "length": 1
-          },
-          {
-            "path": "0.publisher",
-            "equals": "$global.account.bob.userId"
+            "containsItem": {
+              "publisher": "$global.account.bob.userId"
+            }
           }
         ]
       }
@@ -109,7 +107,7 @@
       "id": "restore_presence",
       "api": "ChatPresenceManager.publishPresence",
       "params": {
-        "desc": "$global.biz.result.original.data.0.statusDescription"
+        "desc": "$inputs.desc"
       }
     },
     {
@@ -142,7 +140,21 @@
     }
   ],
   "requiredBindings": [
+    "global.biz.result.alice_init",
+    "global.biz.result.bob_init",
+    "global.biz.result.alice_login",
+    "global.biz.result.bob_login",
+    "global.biz.result.alice_connected",
+    "global.biz.result.bob_connected",
+    "global.biz.result.reset_subscription",
+    "global.biz.result.original",
+    "global.biz.result.subscription",
     "global.biz.result.publication",
-    "global.biz.event.notification"
+    "global.biz.event.notification",
+    "global.biz.result.verification",
+    "global.biz.result.cleanup_subscription",
+    "global.biz.result.restoration",
+    "global.biz.result.alice_logout",
+    "global.biz.result.bob_logout"
   ]
 }

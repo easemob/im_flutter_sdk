@@ -96,7 +96,7 @@ void main() {
           'global.biz.result.publication',
           'global.biz.event.notification'
         ]));
-    expect(loaded.flow.flowTimeoutMs, 120000);
+    expect(loaded.flow.flowTimeoutMs, 240000);
   });
 
   Future<LoadedCase> makeCase(
@@ -271,6 +271,114 @@ void main() {
         },
         flowTimeoutMs: timeout);
   }
+
+  group('message delivery case', () {
+    Future<LoadedCase> loadDelivery() => loader.freeze(
+        p.absolute('data/5.0.0-multi-message-delivery-positive.yaml'),
+        Directory(p.join(root.path, 'cases')));
+
+    void respond({String? failApi}) {
+      for (final role in agents.keys) {
+        agents[role]!.command = (api, input) async {
+          if (role == 'alice' && api == failApi) {
+            return const Envelope(
+                success: false,
+                status: 'error',
+                failureKind: 'sdk',
+                error: {'code': 201, 'message': 'test failure'});
+          }
+          if (api == 'ChatClient.isConnected') {
+            return const Envelope(success: true, status: 'ok', data: true);
+          }
+          if (api == 'ChatManager.sendMessage') {
+            final message = <String, Object?>{
+              ...input,
+              'msgId': 'server-id',
+              'from': 'user-a'
+            };
+            // Events precede the send reply; unrelated messages precede the match.
+            agents['alice']!.events.add(const AgentEvent(
+                    seq: 1,
+                    source: 'onMessagesDelivered',
+                    payload: {
+                      'messages': [
+                        {'msgId': 'server-id'}
+                      ]
+                    }));
+            agents['bob']!.events.addAll([
+              AgentEvent(seq: 1, source: 'onMessagesReceived', payload: {
+                'messages': [
+                  {
+                    ...message,
+                    'body': {'type': 0, 'content': 'old content'}
+                  },
+                  {...message, 'msgId': 'other-id'}
+                ]
+              }),
+              AgentEvent(seq: 2, source: 'onMessagesReceived', payload: {
+                'messages': [
+                  {...message, 'msgId': 'other-id'},
+                  message
+                ]
+              })
+            ]);
+            return Envelope(success: true, status: 'ok', data: message);
+          }
+          return const Envelope(success: true, status: 'ok');
+        };
+      }
+    }
+
+    test('requires matching cached receive and delivery events before exit',
+        () async {
+      final loaded = await loadDelivery();
+      respond();
+      final result = await execute(loaded);
+      expect(result.data!.verdict, '是', reason: '${result.errors}');
+      expect(result.data!.required, hasLength(9));
+      expect(result.data!.required.every((item) => item.passed), isTrue);
+      final report =
+          jsonDecode(await File(result.data!.report!.path).readAsString())
+              as Map;
+      final receive = (report['steps'] as List)
+          .cast<Map<String, dynamic>>()
+          .singleWhere((step) => step['name'] == 'onMessagesReceived');
+      expect((receive['result'] as Map)['seq'], 2);
+      expect(
+          agents['alice']!
+              .calls
+              .where((api) => api == 'ChatManager.sendMessage'),
+          hasLength(1));
+      expect(agents['bob']!.params.first['overrides'],
+          {'requireDeliveryAck': true});
+      for (final agent in agents.values) {
+        expect(agent.calls.last, 'ChatClient.logout');
+        expect(agent.finishes, 1);
+      }
+    });
+
+    for (final failed in [
+      'ChatClient.loginWithToken',
+      'ChatClient.isConnected',
+      'ChatManager.sendMessage'
+    ]) {
+      test('$failed failure prevents dependent work and preserves logout',
+          () async {
+        final loaded = await loadDelivery();
+        respond(failApi: failed);
+        final result = await execute(loaded);
+        expect(result.data!.verdict, '否');
+        expect(result.data!.required.any((item) => !item.passed), isTrue);
+        if (failed != 'ChatManager.sendMessage') {
+          expect(agents['alice']!.calls,
+              isNot(contains('ChatManager.sendMessage')));
+        }
+        expect(agents['bob']!.calls.last, 'ChatClient.logout');
+        expect(agents['alice']!.calls.contains('ChatClient.logout'),
+            failed != 'ChatClient.loginWithToken');
+      });
+    }
+  });
 
   group('fixed definitions', () {
     test(
