@@ -15,7 +15,7 @@ Federated Plugin architecture; package pubspecs declare hosted version dependenc
 
 Call chain: `Dart API → MethodChannel (interface) → Native Wrapper → HyphenateChat SDK`. Changing the interface affects all upper-layer packages.
 
-Beyond the four packages, the repository root also contains: `Makefile` (local development entry point), `tool/ci/` (quality gate and device test scripts), `tool/auto_report.dart` (auto-mode runner), `docs/porting/<version>/` (diff, contract, implementation, and acceptance docs for each version upgrade), `reports/` (local auto-run artifacts, gitignored).
+Beyond the four packages, the repository root also contains: `Makefile` (local development entry point), `tool/ci/` (quality gate and device test scripts), `testing/single/auto_report.dart` (auto-mode runner), `docs/porting/<version>/` (diff, contract, implementation, and acceptance docs for each version upgrade), `reports/` (local auto-run artifacts, gitignored).
 
 ## Environment Preparation
 
@@ -52,7 +52,7 @@ For release validation, use a checkout without overrides, or temporarily move th
 
 ## Test Data Preparation
 
-Manual and single-device script modes use [the example environment](im_flutter_sdk/example/README.md#setup). Multi-device execution uses [testing_v2](testing_v2/README.md) and its own account preparation. `make config` creates `im_flutter_sdk/example/config.local.json` without overwriting an existing file.
+Manual and single-device script modes use [the example environment](im_flutter_sdk/example/README.md#setup). Multi-device execution uses [multi-device tool](testing/multi/README.md) and its own account preparation. `make config` creates `im_flutter_sdk/example/config.local.json` without overwriting an existing file.
 
 Example run data is prepared in two steps; both products are local files and neither is committed:
 
@@ -80,15 +80,15 @@ flutter run -d <device> --dart-define=API_SCRIPT=<script path>  # script mode
 
 For 5.0.0, the logged-in scripts are split into positive/negative paths (both single-account):
 
-- `example/scripts/script_500_apis_positive.json`: the normal path — 20 steps, all expected to succeed, including batch interfaces mixed with unparseable message ids;
-- `example/scripts/script_500_apis_negative.json`: the error path — 10 steps, each expecting a specific error code. Among them, passing a missing message to `fetchGroupMessageReadReceipts` crashes the Android native process, so that step is not executed; the runner always records a `fetch-group-receipt-missing-disabled` candidate.
+- `testing/single/cases/script_500_apis_positive.json`: the normal path — 20 steps, all expected to succeed, including batch interfaces mixed with unparseable message ids;
+- `testing/single/cases/script_500_apis_negative.json`: the error path — 10 steps, each expecting a specific error code. Among them, passing a missing message to `fetchGroupMessageReadReceipts` crashes the Android native process, so that step is not executed; the runner always records a `fetch-group-receipt-missing-disabled` candidate.
 
 When evidence needs to be preserved, use the runner at the repository root (more reproducible than typing `flutter run` by hand: it automatically boots/activates the emulator and pushes the script into the Android app's private directory):
 
 ```bash
 make auto-report PLATFORM=android DEVICE=emulator-5554
 make auto-report PLATFORM=ios DEVICE=<udid of a booted simulator>
-make auto-report PLATFORM=android SCRIPT=im_flutter_sdk/example/scripts/script_500_apis_negative.json
+make auto-report PLATFORM=android SCRIPT=testing/single/cases/script_500_apis_negative.json
 make auto-compare ANDROID=reports/5.0.0/<android-run> IOS=reports/5.0.0/<ios-run>
 ```
 

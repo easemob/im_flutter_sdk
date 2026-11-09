@@ -1,7 +1,7 @@
 # Example HTTP 执行控制协议（v2）
 
 - 日期：2026-11-04；2026-11-05 重写为 v2（演进记录见 §10）。
-- 状态：宿主端和设备 agent 均已实现；当前多设备执行与验证记录见 [testing_v2](../../../testing_v2/README.md)。
+- 状态：宿主端和设备 agent 均已实现；当前多设备执行与验证记录见 [多设备测试](../../../testing/multi/README.md)。
 - 关联：[控制流解释器规格](../../../docs/spec/2026-11-05-flow-interpreter-spec.md)、[设备 Agent 实现](../../../im_flutter_sdk/example/lib/agent/control_server.dart)。
 
 ## 1. 职责与模型

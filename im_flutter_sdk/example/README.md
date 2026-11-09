@@ -37,7 +37,7 @@ separate mode: set the top-level `enablePrivateConfig` to `true` and fill
 `webSocketServer` / `restServer` / `msyncServer`; `msyncServer` is then mapped to
 Flutter's `imServer` and `enableDNSConfig` is forced to `false`.
 
-Multi-device scenarios use [testing_v2](../../testing_v2/README.md) and its own
+Multi-device scenarios use [multi-device tool](../../testing/multi/README.md) and its own
 account preparation. The manual and single-device script modes below use this
 example environment.
 
@@ -115,7 +115,8 @@ from the environment's ChatOptions keys and `login` from the first account's
   `"timeoutMs"`): a timed-out step logs `{"code": -2}` and the run continues —
   native calls sometimes never call back (e.g. some APIs while logged out).
 - Optional `expect` assertions determine whether a step counts as failed:
-  `{"success": true}`, `{"success": false}`, or `{"errorCode": 305}`. Without
+  `{"success": true}`, `{"success": false}`, or `{"errorCode": 305}`. `checks` can inspect returned `data`, for example
+  `{"success": true, "checks": [{"path": "count", "equals": 1}]}`. Without
   `expect`, only a successful API result passes.
 - Steps run sequentially; a failed step is counted and does not abort the run.
 - Ends with `{"source":"script.done","payload":{"total":N,"failed":M}}`; the app
@@ -131,7 +132,7 @@ mode 0770 and the app cannot even traverse it). Write the script as the app uid
 instead:
 
 ```
-adb shell "run-as com.example.example sh -c 'cat > /data/data/com.example.example/files/script_422_apis.json'" < scripts/script_422_apis.json
+adb shell "run-as com.example.example sh -c 'cat > /data/data/com.example.example/files/script_422_apis.json'" < ../../testing/single/cases/script_422_apis.json
 flutter run --dart-define=API_SCRIPT=/data/data/com.example.example/files/script_422_apis.json
 ```
 
@@ -139,12 +140,12 @@ flutter run --dart-define=API_SCRIPT=/data/data/com.example.example/files/script
 exist, so run the app once (or `adb install -r` a debug APK) before pushing.
 `make auto-report PLATFORM=android` does all of this by itself.
 
-A full example covering the 4.22 additions lives at `scripts/script_422_apis.json`
+A full example covering the 4.22 additions lives at `../../testing/single/cases/script_422_apis.json`
 (expects at least two accounts and one group in the generated environment).
 The 5.0.0 login-state scenario is split into two single-account scripts:
-`scripts/script_500_apis_positive.json` (20 steps, each expecting success,
+`../../testing/single/cases/script_500_apis_positive.json` (20 steps, each expecting success,
 including batches that mix an unresolvable message id) and
-`scripts/script_500_apis_negative.json` (10 steps, each expecting an error code).
+`../../testing/single/cases/script_500_apis_negative.json` (10 steps, each expecting an error code).
 Receipt results are decided by native: Flutter builds no error codes and does not
 drop a batch because of an unresolvable id. The missing-message case of
 `fetchGroupMessageReadReceipts` crashes the Android native process, so it is not
@@ -156,7 +157,7 @@ For a traceable local run, execute from the worktree root:
 ```bash
 make auto-report PLATFORM=android DEVICE=emulator-5554
 make auto-report PLATFORM=ios DEVICE=<booted-simulator-udid>
-make auto-report PLATFORM=android SCRIPT=im_flutter_sdk/example/scripts/script_500_apis_negative.json
+make auto-report PLATFORM=android SCRIPT=testing/single/cases/script_500_apis_negative.json
 make auto-compare ANDROID=reports/5.0.0/<android-run> IOS=reports/5.0.0/<ios-run>
 ```
 

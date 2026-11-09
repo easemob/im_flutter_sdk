@@ -1,6 +1,6 @@
 # testing_v2 实现计划
 
-依据：[执行规格](../spec/2026-11-06-testing-v2-spec.md)。契约调整须先确认；实现与测试均在 `testing_v2/`，不修改 SDK、example 或运行器的既有行为。
+依据：[执行规格](../spec/2026-11-06-testing-v2-spec.md)。契约调整须先确认；实现与测试均在 `testing/multi/`，不修改 SDK、example 或运行器的既有行为。
 
 ## 任务与验收
 
@@ -35,8 +35,8 @@
 
 - `dart test`：144 项通过，覆盖数据生成／加载、设备与构建、连接、执行生命周期、报告、清理及 CLI 交接，含 iOS 架构检测的 4 项、签名验收的 5 项及 Android 入口解析的 7 项回归；`dart analyze` 通过。
 - 完整集成使用两个本地 HTTP 执行端及模拟宿主命令，实际组合各模块；覆盖全流程、重复汇报不重派命令、跨轮构建校验并复制。此结果不代替真实 SDK 验证。
-- 实际宿主验证：iOS／Android 模拟器发现、iOS 就绪判据、两个平台的控制模式构建及自有副本验收通过。对应轮次在 `testing_v2/tmp/`：`20261106-224852-devices-5e56c889`、`20261106-225017-devices-56314e61`、`20261106-225403-build-1a68d406`、`20261106-225735-build-ad8398ea`、`20261106-230139-devices-61c4ca9a`。
-- [Presence 正向用例](../../testing_v2/data/5.0.0-multi-presence-positive.yaml)双 iOS 完整验证通过：轮次 `20261107-110031-presence-8a6c4bcb`，iOS 18.2／18.1 两台 iPhone 16 模拟器，16 步全部通过，无任务故障。A 的原始事件 `seq=29` 证实收到 B 发布的本轮唯一状态值；查询验证、取消订阅、恢复状态、双方退出及 HTTP 收尾均成功。原始报告见 `testing_v2/reports/<runId>/`，事件与宿主日志见 `testing_v2/tmp/<runId>/`。本次验证一轮，不据此推断长期稳定率。
-- 先前轮次 `20261107-101724-presence-c4c1eca8` 在业务执行前遇到架构检测及签名问题，保留失败记录；修复依据及对照实验见[架构检测记录](../../testing_v2/troubleshooting/2026-11-07-ios-simulator-architecture.md)、[签名故障记录](../../testing_v2/troubleshooting/2026-11-07-ios-unsigned-framework.md)。
-- 双 Android 完整验证通过：轮次 `20261107-111925-presence-83fe79f6`，Android 15 / API 35 的 `Pixel_9`、`Pixel_9_2`，16 步全部通过，无任务故障。A 的原始事件 `seq=30` 与本轮发布值匹配，查询、业务恢复及双方收尾通过。前两轮在业务执行前分别被启动命令缺陷、模拟器连接无响应阻断，保留原结果；见 [Android 启动记录](../../testing_v2/troubleshooting/2026-11-07-android-launch-activity.md)及 [adb 连接排查](../../testing_v2/troubleshooting/2026-11-07-android-adb-transport-hang.md)。
-- 使用入口：[testing_v2/README.md](../../testing_v2/README.md)。
+- 实际宿主验证：iOS／Android 模拟器发现、iOS 就绪判据、两个平台的控制模式构建及自有副本验收通过。对应轮次在 `testing/multi/tmp/`：`20261106-224852-devices-5e56c889`、`20261106-225017-devices-56314e61`、`20261106-225403-build-1a68d406`、`20261106-225735-build-ad8398ea`、`20261106-230139-devices-61c4ca9a`。
+- [Presence 正向用例](../../testing/multi/data/5.0.0-multi-presence-positive.yaml)双 iOS 完整验证通过：轮次 `20261107-110031-presence-8a6c4bcb`，iOS 18.2／18.1 两台 iPhone 16 模拟器，16 步全部通过，无任务故障。A 的原始事件 `seq=29` 证实收到 B 发布的本轮唯一状态值；查询验证、取消订阅、恢复状态、双方退出及 HTTP 收尾均成功。原始报告见 `testing/multi/reports/<runId>/`，事件与宿主日志见 `testing/multi/tmp/<runId>/`。本次验证一轮，不据此推断长期稳定率。
+- 先前轮次 `20261107-101724-presence-c4c1eca8` 在业务执行前遇到架构检测及签名问题，保留失败记录；修复依据及对照实验见[架构检测记录](../../testing/multi/troubleshooting/2026-11-07-ios-simulator-architecture.md)、[签名故障记录](../../testing/multi/troubleshooting/2026-11-07-ios-unsigned-framework.md)。
+- 双 Android 完整验证通过：轮次 `20261107-111925-presence-83fe79f6`，Android 15 / API 35 的 `Pixel_9`、`Pixel_9_2`，16 步全部通过，无任务故障。A 的原始事件 `seq=30` 与本轮发布值匹配，查询、业务恢复及双方收尾通过。前两轮在业务执行前分别被启动命令缺陷、模拟器连接无响应阻断，保留原结果；见 [Android 启动记录](../../testing/multi/troubleshooting/2026-11-07-android-launch-activity.md)及 [adb 连接排查](../../testing/multi/troubleshooting/2026-11-07-android-adb-transport-hang.md)。
+- 使用入口：[testing/multi/README.md](../../testing/multi/README.md)。

@@ -92,8 +92,10 @@ void main() {
   });
 
   test('5.0.0 positive and negative scripts cover the RN scenario', () {
-    final positive = _stepsOf('scripts/script_500_apis_positive.json');
-    final negative = _stepsOf('scripts/script_500_apis_negative.json');
+    final positive =
+        _stepsOf('../../testing/single/cases/script_500_apis_positive.json');
+    final negative =
+        _stepsOf('../../testing/single/cases/script_500_apis_negative.json');
 
     expect(positive, isNotEmpty);
     expect(negative, isNotEmpty);
@@ -161,7 +163,8 @@ void main() {
   });
 
   test('positive steps expect success and negative steps expect an error', () {
-    for (final step in _stepsOf('scripts/script_500_apis_positive.json')) {
+    for (final step in _stepsOf(
+        '../../testing/single/cases/script_500_apis_positive.json')) {
       final expectation = step['expect'] as Map;
       expect(
         expectation['success'],
@@ -169,7 +172,8 @@ void main() {
         reason: '${step['id']} must assert the positive contract',
       );
     }
-    for (final step in _stepsOf('scripts/script_500_apis_negative.json')) {
+    for (final step in _stepsOf(
+        '../../testing/single/cases/script_500_apis_negative.json')) {
       final expectation = step['expect'] as Map;
       expect(
         expectation['success'] == false || expectation['errorCode'] is int,

@@ -29,11 +29,11 @@ env-gettoken: ## Fetch tokens from example/config.local.json and write example/l
 
 auto-report: local-deps ## Run 5.0.0 auto mode and write a local report: make auto-report PLATFORM=android [DEVICE=...] [SCRIPT=...]
 	@test "$(PLATFORM)" = "android" || test "$(PLATFORM)" = "ios" || (echo "Usage: make auto-report PLATFORM=<android|ios> [DEVICE=<id>] [SCRIPT=<json>]" && exit 2)
-	dart run tool/auto_report.dart --platform "$(PLATFORM)" $(if $(DEVICE),--device "$(DEVICE)",) $(if $(SCRIPT),--script "$(SCRIPT)",)
+	dart run testing/single/auto_report.dart --platform "$(PLATFORM)" $(if $(DEVICE),--device "$(DEVICE)",) $(if $(SCRIPT),--script "$(SCRIPT)",)
 
 auto-compare: ## Compare two finished runs: make auto-compare ANDROID=<run-dir> IOS=<run-dir>
 	@test -n "$(ANDROID)" -a -n "$(IOS)" || (echo "Usage: make auto-compare ANDROID=<run-dir> IOS=<run-dir>" && exit 2)
-	dart run tool/auto_report.dart --android-report "$(ANDROID)" --ios-report "$(IOS)"
+	dart run testing/single/auto_report.dart --android-report "$(ANDROID)" --ios-report "$(IOS)"
 
 scan-deprecated: ## Scan wrapper code for deprecated native APIs: make scan-deprecated [PLATFORM=android|ios]
 	@test -z "$(PLATFORM)" || test "$(PLATFORM)" = "android" || test "$(PLATFORM)" = "ios" || (echo "Usage: make scan-deprecated [PLATFORM=<android|ios>]" && exit 2)

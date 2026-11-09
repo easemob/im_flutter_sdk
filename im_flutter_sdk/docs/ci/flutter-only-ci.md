@@ -14,7 +14,6 @@ and manual example usage have separate entry points; see the
    state, contacts/blacklists, group lifecycle and queries, local conversations,
    and messages. One account logs into the device; another prepared account is
    used as a peer without running a second client. Android and iOS are serialized.
-   The expanded entry's configuration preparation is incomplete, as noted below.
 
 The two device entries remain `example/integration_test/no_login_presence_test.dart`
 and `single_account_local_test.dart`. The logged-in entry registers cases from
@@ -33,10 +32,9 @@ are in the [selection record](../../../docs/refs/ci-basic-api-tests/2026-11-07-a
 The Nightly workflow reads `E2E_APP_KEY`, `E2E_USER_ID`, `E2E_REST_API`,
 `E2E_CLIENT_ID`, and `E2E_CLIENT_SECRET` from the protected
 `flutter-single-account` GitHub Environment and fetches a fresh user token.
-Its temporary dart-define file currently contains only the app key, user ID,
-and user token. The expanded entry also requires `E2E_PEER_ID`, `E2E_REST_API`,
-and `E2E_APP_TOKEN`; neither the workflow nor `nightly_local.sh` supplies these
-yet. Do not add token or fixed-peer Secrets to work around this preparation gap.
+The temporary dart-define file contains the app key, user ID, user token,
+peer ID, REST API and app token. Both the workflow and `nightly_local.sh`
+prepare these six fields automatically; peer and token Secrets are not required.
 The input contract, direct device command, and log handling are documented in
 [CONTRIBUTING.md](../../../CONTRIBUTING.md#device-integration-tests).
 
@@ -47,7 +45,7 @@ under `im_flutter_sdk/example/config.local.json`.
 
 The latest local positive-suite run passed 22/22 on each platform. Contact
 deletion cases check API completion; earlier local-sync failures remain recorded.
-The cloud preparation path still needs completion. The 19 new negative cases
+The 19 new negative cases
 include two send-error cases that currently fail on both platforms: the callback
 has the expected error code but still reports message status `PROGRESS` instead
 of `FAIL`. Assertions remain intact pending review; see the

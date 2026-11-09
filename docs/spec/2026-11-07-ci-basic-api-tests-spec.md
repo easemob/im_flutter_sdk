@@ -4,7 +4,7 @@
 
 为基础、行为明确且能重复验证的公开 API 建立长期 CI 回归保护；不以覆盖全部 API 或增加用例数量为目标。
 
-依据：[项目验证架构](../../AGENTS.md#verification-architecture)、[公开 API 入口](../../im_flutter_sdk/lib/im_flutter_sdk.dart)、[现有设备集成测试](../../im_flutter_sdk/example/integration_test/)。协作和文档遵循 [testing_v2/spec.md](../../testing_v2/spec.md) 的范围约束。
+依据：[项目验证架构](../../AGENTS.md#verification-architecture)、[公开 API 入口](../../im_flutter_sdk/lib/im_flutter_sdk.dart)、[现有设备集成测试](../../im_flutter_sdk/example/integration_test/)。协作和文档遵循 [testing/multi/spec.md](../../testing/multi/spec.md) 的范围约束。
 
 ## 2. 范围
 

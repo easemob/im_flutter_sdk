@@ -82,7 +82,7 @@ agent 的端口与配对 token 每次 app 启动都是随机的（多设备共�
 | `env` | 浅合并：file > env 文件 | 注入 `$config`（如 `userId`/`userToken`，供设备脚本 params 引用） |
 
 - file 中出现 YAML 未声明的角色 → **忽略并提示**（agents-file 描述的是本次 run 启动的全部设备，单个 flow 可能只用子集；角色名拼错会表现为该角色缺 endpoint 的报错）；YAML 中无对应 entry 的角色保持原声明。
-- 文件由调用方提供；完整设备准备与用例执行使用 [testing_v2](../../testing_v2/README.md)，无需手动拼接凭据。
+- 文件由调用方提供；完整设备准备与用例执行使用 [多设备测试](../../testing/multi/README.md)，无需手动拼接凭据。
 
 ### preconditions（用例前置声明）
 
@@ -92,7 +92,7 @@ preconditions:
   - contacts: {between: [account1, account2], state: friends} # 要求两账号已是好友
 ```
 
-**分工边界**：flow_runner 只做解析与形状校验（kind 白名单、between 恰好两个名称、名称格式、state 枚举），不将账号引用当作 `agents`，并把声明写入报告。调用方负责验证账号存在、准备并核验业务状态；`testing_v2` 由数据模块按独立账号映射执行，失败阻断用例。解释器不执行 REST 操作。
+**分工边界**：flow_runner 只做解析与形状校验（kind 白名单、between 恰好两个名称、名称格式、state 枚举），不将账号引用当作 `agents`，并把声明写入报告。调用方负责验证账号存在、准备并核验业务状态；`testing/multi` 由数据模块按独立账号映射执行，失败阻断用例。解释器不执行 REST 操作。
 
 ### defaults
 
@@ -336,7 +336,7 @@ JSON 对象，整份成为该 agent 的 `$config`，同时挂到 `$agents.<role>
 
 报告判定状态：`passed / failed / timeout / skipped`；failed/timeout 的步骤结果带完整信封 + `expectMatched` + checks 明细 + `unusedInputs`。
 
-批量事件的实际例子见 [Presence 控制流](../../testing_v2/data/5.0.0-multi-presence-positive.yaml)：匹配列表中同一元素的 publisher 和本轮状态描述。用例及验证证据见 [验证记录](../../testing_v2/docs/2026-11-07-multi-device-cases-verification.md)。
+批量事件的实际例子见 [Presence 控制流](../../testing/multi/data/5.0.0-multi-presence-positive.yaml)：匹配列表中同一元素的 publisher 和本轮状态描述。用例及验证证据见 [验证记录](../../testing/multi/docs/2026-11-07-multi-device-cases-verification.md)。
 
 ## 结构
 
@@ -376,4 +376,4 @@ dart test
 - 事件 checks 的引用必须在进入等待前就绪。App 从流程开始持续留存事件，因此匹配能读取命令响应之前已经到达的通知。
 - `--evidence-dir <dir>` 保存参数 trace、引用读取、最终 global 及原始事件；目录包含原始凭据，仅供本地排查。报告继续由 `--report-dir` 指定。
 
-具体项目约束及运行产物见 [testing_v2 执行规格](../../docs/spec/2026-11-06-testing-v2-spec.md)和[使用说明](../../testing_v2/README.md)。重复执行需要明确的不同结果绑定；本次不增加自动取“最新值”或历史索引语法。
+具体项目约束及运行产物见 [testing_v2 执行规格](../../docs/spec/2026-11-06-testing-v2-spec.md)和[使用说明](../../testing/multi/README.md)。重复执行需要明确的不同结果绑定；本次不增加自动取“最新值”或历史索引语法。

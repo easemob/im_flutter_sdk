@@ -2,7 +2,7 @@
 
 目标：通过 Dart CLI 完成可重复执行、可追溯的多设备协同系统测试。单设备执行暂缓。
 
-框架入口：[测试执行流程](../../testing_v2/docs/2026-11-06-test-execution-flow.md)。协作约束遵循 [testing_v2/spec.md](../../testing_v2/spec.md)。本文路径除特别注明外，均相对 `testing_v2/`。
+框架入口：[测试执行流程](../../testing/multi/docs/2026-11-06-test-execution-flow.md)。协作约束遵循 [testing/multi/spec.md](../../testing/multi/spec.md)。本文路径除特别注明外，均相对 `testing/multi/`。
 
 ## 1. 系统边界与编排
 
@@ -32,7 +32,7 @@ Dart 编排层负责输入交接、汇集各接收方的验收结果及组织收
 
 ### 1.2 CLI 与帮助
 
-在 `testing_v2/` 执行 `dart run bin/cli.dart <操作>`。CLI 文件参数相对调用时的工作目录解析，随后转为绝对路径；YAML 内的 `script` 路径相对 YAML 所在目录。工具根据自身位置定位仓库和产物目录，不随宿主命令的工作目录改变。操作职责如下：
+在 `testing/multi/` 执行 `dart run bin/cli.dart <操作>`。CLI 文件参数相对调用时的工作目录解析，随后转为绝对路径；YAML 内的 `script` 路径相对 YAML 所在目录。工具根据自身位置定位仓库和产物目录，不随宿主命令的工作目录改变。操作职责如下：
 
 | 操作 | 职责 |
 |---|---|
@@ -164,7 +164,7 @@ Dart 编排层负责输入交接、汇集各接收方的验收结果及组织收
 
 ## 2. 数据准备
 
-详细约定：[数据准备](../../testing_v2/docs/2026-11-06-data-preparation.md)。
+详细约定：[数据准备](../../testing/multi/docs/2026-11-06-data-preparation.md)。
 
 ### 2.1 生成产物
 
@@ -227,7 +227,7 @@ Token 有效性与测试结论分开处理：执行前若已有权威的过期�
 
 CLI 接收每用例独立的 `accounts/devices` 映射：`accounts` 为 `{account1: 账号ID, account2: 账号ID, ...}`，编号从 1 连续递增，实际 ID 存在且不重复；`devices` 为 `{设备角色: {platform, instance}}`，键集合与 YAML `agents` 一致，设备不同。两类集合互不比较。登录账号由 JSON 命令参数选择，不属于设备配置。
 
-`scripts/generate_cases.dart --platform <android|ios>` 从账号配置、设备查询结果和 `data/` 生成 `config/cases.json`；支持重复的 `--case/--account/--instance`。账号按选定顺序编号并全部保留，设备按 `agents` 顺序分配；不读取用例账号声明，不改写源用例或生成持久化用例副本。暂停用例用可选的 `selection.disabledReason` 标记，默认跳过，显式选择和执行均拒绝。完整输入、分配及拒收规则见[账号与设备独立管理规格](../../testing_v2/docs/2026-11-08-account-device-separation-spec.md)。
+`scripts/generate_cases.dart --platform <android|ios>` 从账号配置、设备查询结果和 `data/` 生成 `config/cases.json`；支持重复的 `--case/--account/--instance`。账号按选定顺序编号并全部保留，设备按 `agents` 顺序分配；不读取用例账号声明，不改写源用例或生成持久化用例副本。暂停用例用可选的 `selection.disabledReason` 标记，默认跳过，显式选择和执行均拒绝。完整输入、分配及拒收规则见[账号与设备独立管理规格](../../testing/multi/docs/2026-11-08-account-device-separation-spec.md)。
 
 角色名、`data.unique` 字段名及点路径中的对象键须符合解释器标识符规则 `[A-Za-z_][A-Za-z0-9_]*`；`as` 与 `requiredBindings` 使用相同路径规则，列表索引仍用数字。非法名称在派发前报错。账号 ID、设备 ID 是字段值，不受此命名限制。
 
@@ -270,7 +270,7 @@ CLI 接收每用例独立的 `accounts/devices` 映射：`accounts` 为 `{accoun
 
 ## 3. 设备准备、编译与安装运行
 
-详细约定：[设备准备](../../testing_v2/docs/2026-11-06-device-preparation.md)。
+详细约定：[设备准备](../../testing/multi/docs/2026-11-06-device-preparation.md)。
 
 ### 3.1 基础操作
 
@@ -368,7 +368,7 @@ CLI 接收每用例独立的 `accounts/devices` 映射：`accounts` 为 `{accoun
 
 ### 4.1 用例要求
 
-详细约定：[编写用例](../../testing_v2/docs/2026-11-06-test-case-authoring.md)。
+详细约定：[编写用例](../../testing/multi/docs/2026-11-06-test-case-authoring.md)。
 
 1. 场景、前置条件和通过标准须与用户确认；命令依据 SDK 公开接口，并核对 example 执行端是否支持。
 2. 本次编写多设备协同用例，覆盖适用的正向、逆向场景；单设备用例及执行改造不在本次范围。
@@ -376,7 +376,7 @@ CLI 接收每用例独立的 `accounts/devices` 映射：`accounts` 为 `{accoun
 4. 缺少执行端命令支持时须单独提出并确认，不将不可执行的用例标记为可用。
 5. 不得为绕过 SDK 缺陷修改正确用例或降低断言要求。
 
-**必要验证声明**：按 §2.4 定位与 YAML 同目录、同主文件名的 JSON，读取其顶层 `requiredBindings`，`steps` 仍保存命令。声明由 `testing_v2` 消费，不增加解释器语法。
+**必要验证声明**：按 §2.4 定位与 YAML 同目录、同主文件名的 JSON，读取其顶层 `requiredBindings`，`steps` 仍保存命令。声明由 `testing/multi` 消费，不增加解释器语法。
 
 ```json
 {"requiredBindings": ["global.biz.event.presence_received"]}
@@ -396,7 +396,7 @@ CLI 接收每用例独立的 `accounts/devices` 映射：`accounts` 为 `{accoun
 2. `CaseData` 的用例、执行序号及账号映射与本次调用一致，账号来自本轮输入，设备及控制服务满足 §3；执行模块按 §2.4 组装 `global`，按 §2.5 调用数据模块取得本次前置条件核验结果。解释器只校验 `preconditions` 的形状，不会替测试工具准备业务状态；无法验证或不支持时必须阻断。
 3. 校验 §4.1 的必要验证声明，使用 §5.1 登记的执行序号及独立输出位置，记录固定 YAML 的 `name`、输入和证据路径。静态 YAML 不写固定运行轮次；配套 JSON 定位到本轮副本，原始源路径单独保留用于追溯。
 
-**接入与生命周期**：直接调用 `tool/flow_runner` 的 Dart API。`testing_v2` 执行模块负责下表操作，分环节和全流程共用该模块；不以运行器 CLI 子进程作为执行入口。
+**接入与生命周期**：直接调用 `tool/flow_runner` 的 Dart API。`testing/multi` 执行模块负责下表操作，分环节和全流程共用该模块；不以运行器 CLI 子进程作为执行入口。
 
 | 环节 | 执行模块的责任 |
 |---|---|
@@ -435,7 +435,7 @@ CLI 接收每用例独立的 `accounts/devices` 映射：`accounts` 为 `{accoun
 
 ### 4.3 故障闭环
 
-详细约定：[用例执行与故障排查](../../testing_v2/docs/2026-11-06-test-execution-troubleshooting.md)。
+详细约定：[用例执行与故障排查](../../testing/multi/docs/2026-11-06-test-execution-troubleshooting.md)。
 
 执行 → 发现问题 → 复验与排查 → 按职责修复 → 复验 → 继续执行。
 
@@ -506,7 +506,7 @@ CLI 每次调用对指定用例执行一次，不自动重跑失败用例，也�
 | 产物引用 | 产物路径、类型、所属阶段或执行；报告指向所需证据，不能只有未分类目录 |
 | 故障状态 | 故障 ID、未解决／已解决、详情文件、关联证据及处理结论和复验记录的引用 |
 
-模块返回操作结果和产物引用，汇报模块返回报告及证据依赖，编排层据此保存快照。故障解决由 AI／人工明确确认并提交处理结论及验证证据后，由编排层更新；一次复验通过不自动解除故障保护。快照中相对路径以 `testing_v2/` 为基准，外部产物使用绝对路径。
+模块返回操作结果和产物引用，汇报模块返回报告及证据依赖，编排层据此保存快照。故障解决由 AI／人工明确确认并提交处理结论及验证证据后，由编排层更新；一次复验通过不自动解除故障保护。快照中相对路径以 `testing/multi/` 为基准，外部产物使用绝对路径。
 
 快照和报告须完整写入后再发布引用，不能以提前创建的空文件作为完成标记。交付验收结果连同生产方、接收方、操作标识及差异保存到该次操作记录；失败时关联故障文件。写入失败须记录为产物保存故障；内存中已有结果仍保留，但不得宣称该次结果可恢复或报告已完成。
 
@@ -560,7 +560,7 @@ CLI 每次调用对指定用例执行一次，不自动重跑失败用例，也�
 
 ## 6. 汇报总结
 
-详细约定：[汇报总结](../../testing_v2/docs/2026-11-06-reporting.md)。
+详细约定：[汇报总结](../../testing/multi/docs/2026-11-06-reporting.md)。
 
 | 形式 | 本轮报告目录内的产物 | 必须包含的内容 |
 |---|---|---|
@@ -593,7 +593,7 @@ CSV 每行表示一个用例的一次执行，列定义如下：
 
 ## 7. 必要清理
 
-详细约定：[必要清理](../../testing_v2/docs/2026-11-06-cleanup.md)。
+详细约定：[必要清理](../../testing/multi/docs/2026-11-06-cleanup.md)。
 
 1. 支持选择缓存、日志、构建、报告中的一个或多个类型，或全部类型；运行产物支持按 `runId` 选择轮次。
 2. 只删除明确属于所选范围且不纳入 Git 的产物，不将全部 Git 忽略项作为删除清单。

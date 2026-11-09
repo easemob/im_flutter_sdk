@@ -310,7 +310,7 @@ tool/flow_runner/            # 纯 Dart package，无 Flutter 依赖，便于日
 已确认（2026-11-05）：
 
 - **设备启动边界**：模拟器 / app / 端口转发由外部脚本负责，解释器只连接已就绪的 agent endpoint。
-- **目录组织**：解释器位于 `tool/flow_runner/`，当前协同用例位于 `testing_v2/data/`，执行产物由调用方指定位置。
+- **目录组织**：解释器位于 `tool/flow_runner/`，当前协同用例位于 `testing/multi/data/`，执行产物由调用方指定位置。
 - **失败跳过语义**：对齐 AutoMode 的依赖失败跳过，`skipOnFailedDeps` 全局默认 + 步骤级覆盖、局部优先（§8）。v0.2 起覆盖两个来源：流程变量（inputs 引用失败 `as` 绑定）与设备脚本引用（params 引用失败 `$step.<id>`），两者级联一致。
 - **事件命名**：`wait_event` 的 `event` 字段直接使用 SDK 事件处理器方法名（如 `onMessageReceived`、`onMessageReadReceipts`）；agent 侧事件流的 payload 携带该名，解释器只做字符串匹配。
 - **协议 v2（2026-11-05 下午定论）**：命令自带 step 内容（`{api, params}`），宿主侧查库、解析引用并做 expect 判定；agent 为哑执行器，不接触设备脚本；会话绑定取消（见 phase-control §10 演进记录）。理由：宿主本来就要读脚本做静态检查，"绑定 + stage 引用"造成两份脚本状态与重复的解析/跳过逻辑；判断角色归宿主后，`blocked` 状态随依赖跳过统一到宿主而删除。
