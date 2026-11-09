@@ -87,6 +87,8 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                 importMessages(params, call.method, result);
             } else if (MethodKey.loadAllConversations.equals(call.method)) {
                 loadAllConversations(params, call.method, result);
+            } else if (MethodKey.getConversationsFromDB.equals(call.method)) {
+                getConversationsFromDB(params, call.method, result);
             } else if (MethodKey.deleteConversation.equals(call.method)) {
                 deleteConversation(params, call.method, result);
             } else if (MethodKey.deleteConversations.equals(call.method)) {
@@ -704,6 +706,20 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             }
             onSuccess(result, channelName, conversations);
         });
+    }
+
+    // 5.1.0
+    private void getConversationsFromDB(JSONObject params, String channelName, Result result) throws JSONException {
+        String cursor = params.has("cursor") && !params.isNull("cursor") ? params.getString("cursor") : null;
+        int pageSize = params.getInt("pageSize");
+        EMClient.getInstance().chatManager().asyncGetConversationsFromDB(
+                cursor, pageSize,
+                new EMValueWrapperCallBack<EMCursorResult<EMConversation>>(result, channelName) {
+                    @Override
+                    public void onSuccess(EMCursorResult<EMConversation> cursorResult) {
+                        updateObject(CursorResultHelper.toJson(cursorResult));
+                    }
+                });
     }
 
     private void deleteConversation(JSONObject params, String channelName, Result result) throws JSONException {

@@ -27,4 +27,4 @@ Android 同账号返回合法空字符串，完成 15/15 步并恢复空昵称�
 - `reports/<runId>/5.0.0-multi-user-info-subscribe-positive/1/flow-report.json`：`capture_profile.result.data` 与实际执行步骤。
 - `tmp/<runId>/run.json`：必要绑定判定和故障记录，含私有数据，不提交。
 
-轮次：iOS `20261109-141848-batch-127e26b1`、复验 `20261109-143444-user-info-subscribe-cf735883`；Android `20261109-143734-batch-6ddee280`。完整结果见 [目录整理验证](../../porting/5.1.0/2026-11-09-testing-directory-verification.md)。
+轮次：iOS `20261109-141848-batch-127e26b1`、复验 `20261109-143444-user-info-subscribe-cf735883`；Android `20261109-143734-batch-6ddee280`。完整目录整理验证结果保留于历史提交 `33cfc60a`。

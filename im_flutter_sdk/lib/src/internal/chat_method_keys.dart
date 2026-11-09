@@ -416,6 +416,9 @@ class ChatMethodKeys {
   // 4.24.0
   static const String searchMessagesFromServer = "searchMessagesFromServer";
 
+  // 5.1.0
+  static const String getConversationsFromDB = "getConversationsFromDB";
+
   /// ChatUserInfoManager listener
   static const String onUserInfoChanged = "onUserInfoChanged";
 }

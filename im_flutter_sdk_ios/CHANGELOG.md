@@ -1,11 +1,6 @@
 ## 5.1.0
-
-### 中文
-
-- `loadAllConversations` 将 `isSort` 传给 native 会话查询 API，默认排序。
-
-### English
-
+- Upgraded both CocoaPods and SPM native dependencies to 5.1.0.
+- Added local conversation pagination and initialization mappings for `autoLoadConversations` and `enableChatroomConversation`.
 - `loadAllConversations` forwards `isSort` to the native conversation API, defaulting to sorting.
 
 ## 5.0.0

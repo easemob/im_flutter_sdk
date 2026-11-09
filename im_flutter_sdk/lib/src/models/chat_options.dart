@@ -342,6 +342,32 @@ class ChatOptions {
   final bool enableEmptyConversation;
 
   /// ~english
+  /// Whether to automatically load conversations. Defaults to `true`.
+  /// Set this to `false` before initialization to use [ChatManager.getConversationsFromDB].
+  /// This setting cannot be changed at runtime.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否自动加载会话，默认为 `true`。
+  /// 使用 [ChatManager.getConversationsFromDB] 前，需在初始化时将此项设置为 `false`。
+  /// 该配置不能在运行时修改。
+  /// ~end
+  // 5.1.0
+  final bool autoLoadConversations;
+
+  /// ~english
+  /// Whether to create a conversation when chatroom messages are sent or received.
+  /// Defaults to `false`. This setting only takes effect during initialization.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否在收发聊天室消息时创建对应的聊天室会话。
+  /// 默认为 `false`，仅在初始化时设置生效。
+  /// ~end
+  // 5.1.0
+  final bool enableChatroomConversation;
+
+  /// ~english
   ///  Custom device name.
   /// ~end
   ///
@@ -401,12 +427,12 @@ class ChatOptions {
   /// ~english
   /// The data types automatically synchronized after login.
   /// Combine [ChatDataSyncType] values with the bitwise OR operator.
-  /// If omitted, the native platform default is used.
+  /// If omitted, the native platform default is used. In native SDK 5.1.0, both platforms synchronize conversations by default.
   /// ~end
   ///
   /// ~chinese
   /// 登录后自动同步的数据类型。多个 [ChatDataSyncType] 值可使用按位或组合。
-  /// 未设置时使用 native 平台默认值。
+  /// 未设置时使用 native 平台默认值。native SDK 5.1.0 双端默认同步会话数据。
   /// ~end
   final int? dataSyncType;
 
@@ -540,6 +566,10 @@ class ChatOptions {
   /// - `true`: Yes. Empty conversations are included.
   /// - (Default) `false`: No. Empty conversations are excluded.
   ///
+  /// Param [autoLoadConversations] Whether to automatically load conversations. Defaults to `true`. Set to `false` to use [ChatManager.getConversationsFromDB].
+  ///
+  /// Param [enableChatroomConversation] Whether to create conversations for chatroom messages. Defaults to `false`.
+  ///
   /// Param [deviceName] Custom device name.
   ///
   /// Param [osType] Custom system type.
@@ -632,6 +662,10 @@ class ChatOptions {
   /// - `true`：包含空会话；
   /// - （默认）`false`：不包含空会话。
   ///
+  /// Param [autoLoadConversations] 是否自动加载会话，默认为 `true`。使用 [ChatManager.getConversationsFromDB] 时需设为 `false`。
+  ///
+  /// Param [enableChatroomConversation] 是否为聊天室消息创建会话，默认为 `false`。
+  ///
   /// Param [deviceName] 自定义设备名称。
   ///
   /// Param [osType] 自定义系统类型。
@@ -674,6 +708,8 @@ class ChatOptions {
     int? webSocketPort,
     int? chatAreaCode,
     bool enableEmptyConversation = false,
+    bool autoLoadConversations = true,
+    bool enableChatroomConversation = false,
     String? deviceName,
     int? osType,
     bool useReplacedMessageContents = false,
@@ -710,6 +746,8 @@ class ChatOptions {
           webSocketPort: webSocketPort,
           chatAreaCode: chatAreaCode ?? ChatAreaCode.GLOB,
           enableEmptyConversation: enableEmptyConversation,
+          autoLoadConversations: autoLoadConversations,
+          enableChatroomConversation: enableChatroomConversation,
           deviceName: deviceName,
           osType: osType,
           useReplacedMessageContents: useReplacedMessageContents,
@@ -797,6 +835,10 @@ class ChatOptions {
   /// Param [enableEmptyConversation] Whether to include empty conversations when the SDK loads conversations from the local database.
   /// - `true`: Yes. Empty conversations are included.
   /// - (Default) `false`: No. Empty conversations are excluded.
+  ///
+  /// Param [autoLoadConversations] Whether to automatically load conversations. Defaults to `true`. Set to `false` to use [ChatManager.getConversationsFromDB].
+  ///
+  /// Param [enableChatroomConversation] Whether to create conversations for chatroom messages. Defaults to `false`.
   ///
   /// Param [deviceName] Custom device name.
   ///
@@ -890,6 +932,10 @@ class ChatOptions {
   /// - `true`：包含空会话；
   /// - （默认）`false`：不包含空会话。
   ///
+  /// Param [autoLoadConversations] 是否自动加载会话，默认为 `true`。使用 [ChatManager.getConversationsFromDB] 时需设为 `false`。
+  ///
+  /// Param [enableChatroomConversation] 是否为聊天室消息创建会话，默认为 `false`。
+  ///
   /// Param [deviceName] 自定义设备名称。
   ///
   /// Param [osType] 自定义系统类型。
@@ -932,6 +978,8 @@ class ChatOptions {
     int? webSocketPort,
     int? chatAreaCode,
     bool enableEmptyConversation = false,
+    bool autoLoadConversations = true,
+    bool enableChatroomConversation = false,
     String? deviceName,
     int? osType,
     bool useReplacedMessageContents = false,
@@ -968,6 +1016,8 @@ class ChatOptions {
           webSocketPort: webSocketPort,
           chatAreaCode: chatAreaCode ?? ChatAreaCode.GLOB,
           enableEmptyConversation: enableEmptyConversation,
+          autoLoadConversations: autoLoadConversations,
+          enableChatroomConversation: enableChatroomConversation,
           deviceName: deviceName,
           osType: osType,
           useReplacedMessageContents: useReplacedMessageContents,
@@ -1056,6 +1106,10 @@ class ChatOptions {
   /// Param [enableEmptyConversation] Whether to include empty conversations when the SDK loads conversations from the local database.
   /// - `true`: Yes. Empty conversations are included.
   /// - (Default) `false`: No. Empty conversations are excluded.
+  ///
+  /// Param [autoLoadConversations] Whether to automatically load conversations. Defaults to `true`. Set to `false` to use [ChatManager.getConversationsFromDB].
+  ///
+  /// Param [enableChatroomConversation] Whether to create conversations for chatroom messages. Defaults to `false`.
   ///
   /// Param [deviceName] Custom device name.
   ///
@@ -1149,6 +1203,10 @@ class ChatOptions {
   /// - `true`：包含空会话；
   /// - （默认）`false`：不包含空会话。
   ///
+  /// Param [autoLoadConversations] 是否自动加载会话，默认为 `true`。使用 [ChatManager.getConversationsFromDB] 时需设为 `false`。
+  ///
+  /// Param [enableChatroomConversation] 是否为聊天室消息创建会话，默认为 `false`。
+  ///
   /// Param [deviceName] 自定义设备名称。
   ///
   /// Param [osType] 自定义系统类型。
@@ -1191,6 +1249,8 @@ class ChatOptions {
     int? webSocketPort,
     int? chatAreaCode,
     bool enableEmptyConversation = false,
+    bool autoLoadConversations = true,
+    bool enableChatroomConversation = false,
     String? deviceName,
     int? osType,
     bool useReplacedMessageContents = false,
@@ -1226,6 +1286,8 @@ class ChatOptions {
           webSocketPort: webSocketPort,
           chatAreaCode: chatAreaCode ?? ChatAreaCode.GLOB,
           enableEmptyConversation: enableEmptyConversation,
+          autoLoadConversations: autoLoadConversations,
+          enableChatroomConversation: enableChatroomConversation,
           deviceName: deviceName,
           osType: osType,
           useReplacedMessageContents: useReplacedMessageContents,
@@ -1265,6 +1327,8 @@ class ChatOptions {
     this.webSocketPort,
     this.chatAreaCode = ChatAreaCode.GLOB,
     this.enableEmptyConversation = false,
+    this.autoLoadConversations = true,
+    this.enableChatroomConversation = false,
     this.deviceName,
     this.osType,
     this.useReplacedMessageContents = false,
@@ -1341,6 +1405,10 @@ class ChatOptions {
     data.putIfNotNull('apnsCertName', apnsCertName);
     data.putIfNotNull('pushKitCertName', pushKitCertName);
 
+    // 5.1.0
+    data.putIfNotNull('autoLoadConversations', autoLoadConversations);
+    data.putIfNotNull('enableChatroomConversation', enableChatroomConversation);
+
     return data;
   }
 
@@ -1360,7 +1428,22 @@ class ChatOptions {
   /// ~end
   final String? loginExtension;
 
+  /// ~english
+  /// Copies these options with the specified values replaced.
+  /// Param [autoLoadConversations] Whether to automatically load conversations.
+  /// Param [enableChatroomConversation] Whether to create conversations for chatroom messages.
+  /// These two options must be configured before SDK initialization.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 复制配置并替换指定的值。
+  /// Param [autoLoadConversations] 是否自动加载会话。
+  /// Param [enableChatroomConversation] 是否为聊天室消息创建会话。
+  /// 这两个配置项必须在 SDK 初始化前设置。
+  /// ~end
   ChatOptions copyWith({
+    bool? autoLoadConversations,
+    bool? enableChatroomConversation,
     bool? usingHttpsOnly,
     String? loginExtension,
     bool? deleteMessageWhenLeaveRoom,
@@ -1405,6 +1488,10 @@ class ChatOptions {
       webSocketPort: webSocketPort,
       chatAreaCode: chatAreaCode,
       enableEmptyConversation: enableEmptyConversation,
+      autoLoadConversations:
+          autoLoadConversations ?? this.autoLoadConversations,
+      enableChatroomConversation:
+          enableChatroomConversation ?? this.enableChatroomConversation,
       deviceName: deviceName,
       osType: osType,
       useReplacedMessageContents: useReplacedMessageContents,

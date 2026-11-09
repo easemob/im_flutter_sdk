@@ -918,6 +918,49 @@ class ChatManager {
   }
 
   /// ~english
+  /// Gets conversations from the local database with pagination.
+  ///
+  /// Set [ChatOptions.autoLoadConversations] to `false` before SDK initialization.
+  /// Conversations are ordered by pinned state, the server timestamp of the latest
+  /// message, and the case-insensitive conversation ID, all in descending order.
+  ///
+  /// Param [cursor] The cursor returned by the previous page. Omit it or pass an
+  /// empty string for the first page. An empty returned cursor means the last page.
+  /// Param [pageSize] The number of conversations per page, from 1 to 100. Defaults to 20.
+  ///
+  /// **Return** The conversations and the cursor for the next page.
+  /// **Throws** A [ChatError] from the native SDK. An invalid cursor returns code 110.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 分页从本地数据库获取会话。
+  ///
+  /// 调用前需在 SDK 初始化时将 [ChatOptions.autoLoadConversations] 设置为 `false`。
+  /// 会话依次按置顶状态、最新一条消息的服务器时间、会话 ID（不区分大小写）降序返回。
+  ///
+  /// Param [cursor] 上一页返回的游标。不传或传空字符串时获取第一页，返回的游标为空字符串表示最后一页。
+  /// Param [pageSize] 每页会话数，取值范围为 1–100，默认为 20。
+  ///
+  /// **Return** 会话列表及下一页游标。
+  /// **Throws** 原生 SDK 返回的 [ChatError]。无效游标返回错误码 110。
+  /// ~end
+  // 5.1.0
+  Future<ChatCursorResult<ChatConversation>> getConversationsFromDB({
+    String? cursor,
+    int pageSize = 20,
+  }) async {
+    Map request = {'pageSize': pageSize};
+    request.putIfNotNull('cursor', cursor);
+    Map result = await platform_interface.Client.instance.chatManager
+        .callNativeMethod(ChatMethodKeys.getConversationsFromDB, request);
+    ChatError.hasErrorFromResult(result);
+    return ChatCursorResult<ChatConversation>.fromJson(
+      result[ChatMethodKeys.getConversationsFromDB],
+      dataItemCallback: (value) => ChatConversation.fromJson(value),
+    );
+  }
+
+  /// ~english
   /// Unidirectionally removes historical message by message ID from the server.
   ///
   /// Param [conversationId] The conversation ID.

@@ -35,7 +35,7 @@ docs/
 
 `PROGRESS.md` 是一句话一项、带完成状态的 roadmap。
 
-当前测试说明见 [测试指南](testing/README.md)，本轮目录整理验证见 [5.1.0 验证记录](porting/5.1.0/2026-11-09-testing-directory-verification.md)。
+当前测试说明见 [测试指南](testing/README.md)。
 
 ## backlog
 

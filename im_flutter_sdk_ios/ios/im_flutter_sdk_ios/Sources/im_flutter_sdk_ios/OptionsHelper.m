@@ -23,6 +23,9 @@
     data[@"isChatRoomOwnerLeaveAllowed"] = @(self.canChatroomOwnerLeave);
     data[@"serverTransfer"] = @(self.isAutoTransferMessageAttachments);
     data[@"loadEmptyConversations"] = @(self.loadEmptyConversations);
+    // 5.1.0
+    data[@"autoLoadConversations"] = @(self.autoLoadConversations);
+    data[@"enableChatroomConversation"] = @(self.enableChatroomConversation);
     data[@"usingHttpsOnly"] = @(self.usingHttpsOnly);
     data[@"enableDNSConfig"] = @(self.enableDnsConfig);
     data[@"imPort"] = @(self.chatPort);
@@ -72,6 +75,13 @@
     options.canChatroomOwnerLeave = [aJson[@"isChatRoomOwnerLeaveAllowed"] boolValue];
     options.isAutoTransferMessageAttachments = [aJson[@"serverTransfer"] boolValue];
     options.loadEmptyConversations = [aJson[@"loadEmptyConversations"] boolValue];
+    // 5.1.0
+    if (aJson[@"autoLoadConversations"] && ![aJson[@"autoLoadConversations"] isKindOfClass:[NSNull class]]) {
+        options.autoLoadConversations = [aJson[@"autoLoadConversations"] boolValue];
+    }
+    if (aJson[@"enableChatroomConversation"] && ![aJson[@"enableChatroomConversation"] isKindOfClass:[NSNull class]]) {
+        options.enableChatroomConversation = [aJson[@"enableChatroomConversation"] boolValue];
+    }
     options.usingHttpsOnly = [aJson[@"usingHttpsOnly"] boolValue];
     options.enableDnsConfig = [aJson[@"enableDNSConfig"] boolValue];
     options.chatPort = [aJson[@"imPort"] intValue];

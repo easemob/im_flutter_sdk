@@ -121,6 +121,10 @@
         [self loadAllConversations:call.arguments
                        channelName:call.method
                             result:result];
+    } else if ([ChatGetConversationsFromDB isEqualToString:call.method]) {
+        [self getConversationsFromDB:call.arguments
+                        channelName:call.method
+                             result:result];
     } else if ([ChatDeleteConversation isEqualToString:call.method]) {
         [self deleteConversation:call.arguments
                      channelName:call.method
@@ -769,6 +773,26 @@
               channelName:aChannelName
                     error:nil
                    object:conList];
+}
+
+// 5.1.0
+- (void)getConversationsFromDB:(NSDictionary *)param
+                  channelName:(NSString *)aChannelName
+                       result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *cursor = param[@"cursor"];
+    if ([cursor isKindOfClass:[NSNull class]]) {
+        cursor = nil;
+    }
+    NSInteger pageSize = [param[@"pageSize"] integerValue];
+    [EMClient.sharedClient.chatManager getConversationsFromDBWithCursor:cursor
+                                                             pageSize:pageSize
+                                                           completion:^(EMCursorResult<EMConversation *> *aResult, EMError *aError) {
+        [weakSelf wrapperCallBack:result
+                     channelName:aChannelName
+                           error:aError
+                          object:[aResult toJson]];
+    }];
 }
 
 - (void)deleteConversation:(NSDictionary *)param

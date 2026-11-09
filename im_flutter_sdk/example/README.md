@@ -58,6 +58,14 @@ Init page ──init ok──▶ Login page ──login ok──▶ Search page 
 The full API list is registered in `lib/registry/apis/` — add an `ApiEntry`
 there to cover more APIs.
 
+For local conversation pagination in 5.1.0, set `autoLoadConversations: false`
+in the initialization JSON before calling `ChatManager.getConversationsFromDB`.
+Pass an empty `cursor` for the first page and the returned `cursor` for the next;
+an empty returned cursor marks the last page. `pageSize` defaults to 20 (1–100).
+`enableChatroomConversation` defaults to false; set it to true during
+initialization to create conversations when sending or receiving chatroom messages.
+Both options are also accepted in script `init` and environment chat options.
+
 ## Logs
 
 Every event (API results, listener callbacks, lifecycle) is emitted as a

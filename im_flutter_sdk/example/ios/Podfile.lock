@@ -3,14 +3,14 @@ PODS:
     - Flutter
     - FlutterMacOS
   - Flutter (1.0.0)
-  - HyphenateChat (5.0.0):
+  - HyphenateChat (5.1.0):
     - ShengwangInfra_iOS (~> 1.3.0)
-  - im_flutter_sdk_ios (5.0.0):
+  - im_flutter_sdk_ios (5.1.0):
     - Flutter
-    - HyphenateChat (= 5.0.0)
+    - HyphenateChat (= 5.1.0)
   - integration_test (0.0.1):
     - Flutter
-  - ShengwangInfra_iOS (1.3.5)
+  - ShengwangInfra_iOS (1.3.16)
 
 DEPENDENCIES:
   - file_picker_darwin (from `.symlinks/plugins/file_picker_darwin/darwin`)
@@ -36,10 +36,10 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   file_picker_darwin: 4c2b9a50ea44cb3b071381ea0cf48591bdd80251
   Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
-  HyphenateChat: 32bb7305bfb333d3902ef9497b6892470bf1fa61
-  im_flutter_sdk_ios: b7fbdb018ca9feefcee370b8ed48f908ee218093
+  HyphenateChat: b45227e7765e35980d231bd14f3321f1d72633f1
+  im_flutter_sdk_ios: 9105dfc329e7ead6380dd490207629e0cbc43ece
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
-  ShengwangInfra_iOS: 0ae2d429ec428cdbaebb39ac883ec64c5c20f7bb
+  ShengwangInfra_iOS: b72ce9eb087e6056e3f2bb8c4869c1f335a09267
 
 PODFILE CHECKSUM: 3ba3a73b1b12adcf321a227a745625fe0888cc82
 

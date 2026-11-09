@@ -44,6 +44,25 @@ final chatApis = <ApiEntry>[
             .toList(),
   ),
   ApiEntry(
+    name: 'ChatManager.getConversationsFromDB',
+    group: 'ChatManager',
+    description: '分页读取本地会话。初始化时须设置 autoLoadConversations=false；'
+        'cursor 为空时读取首页，返回 cursor 为空表示末页；pageSize 范围 1–100，默认 20。'
+        '按置顶状态、最新消息服务器时间、会话 ID（忽略大小写）依次降序。',
+    paramsTemplate: '{"cursor": "", "pageSize": 20}',
+    invoke: (p) async {
+      final result =
+          await ChatClient.getInstance.chatManager.getConversationsFromDB(
+        cursor: p['cursor'] as String?,
+        pageSize: p['pageSize'] as int? ?? 20,
+      );
+      return {
+        'cursor': result.cursor,
+        'list': result.data.map(conversationToScriptJson).toList(),
+      };
+    },
+  ),
+  ApiEntry(
     name: 'ChatManager.sendMessage',
     group: 'ChatManager',
     description:

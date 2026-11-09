@@ -1,12 +1,30 @@
 ## 5.1.0
 
-### 中文
+- Upgraded the iOS/Android native SDKs to 5.1.0.
 
-- `ChatManager.loadAllConversations` 新增 `isSort` 参数，默认为 `true`；传 `false` 获取未排序的本地会话列表。
+### Breaking Changes
 
-### English
+- Local conversation lists now exclude chat room conversations by default. Set `ChatOptions.enableChatroomConversation: true` during SDK initialization to include them.
+- On Android, the default post-login data sync mode changed from none to conversations. When `ChatOptions.dataSyncType` is omitted, both platforms now synchronize conversations by default; the iOS default is unchanged.
 
+### New Features
+
+- Added `ChatManager.getConversationsFromDB` for cursor-based local conversation pagination; initialize with `ChatOptions.autoLoadConversations: false` before calling it.
+- Added `ChatOptions.autoLoadConversations` (default `true`) and `enableChatroomConversation` (default `false`).
+- Android group configs now return the native `inviteNeedConfirm` value; multi-device `GROUP_UPDATE` (34) is supported on both platforms.
 - Added the `isSort` parameter to `ChatManager.loadAllConversations`, defaulting to `true`; pass `false` to get the unsorted local conversation list.
+
+### Native SDK Improvements and Fixes
+
+The following changes are included through the native SDK 5.1.0 upgrade:
+
+- Both platforms use NTP-calibrated time to check token expiration when NTP time synchronization is enabled, and improve database concurrency with WAL mode.
+- Android increases the overall login timeout from 30 to 70 seconds, TCP/WebSocket connection timeouts from 5 to 20 seconds, and non-attachment HTTP request timeouts from 10 to 20 seconds. Reconnection waits inside `sendMessage` and DNS list retrieval use a 20-second timeout.
+- Fixed attachment sends failing to invoke callbacks: on iOS, when automatic attachment transfer is disabled and `remotePath` is empty; on Android, when the attachment remote path is invalid.
+- Fixed message and group event ordering issues, and repeated private deployment server address configuration not taking effect.
+- iOS: Fixed `fetchSubscribedUsers` returning an empty array after subscribing to user information, and incorrect conversation do-not-disturb settings after multi-device synchronization.
+- Android: Fixed the conversation's last message not being updated after fetching historical messages from the server. Messages with empty content are no longer stored or delivered through message callbacks.
+- Android: Fixed attachment upload HTTP timeouts being too short due to incorrect seconds-to-milliseconds conversion.
 
 ## 5.0.0
 

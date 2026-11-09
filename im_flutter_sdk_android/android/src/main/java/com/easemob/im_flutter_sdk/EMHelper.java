@@ -86,6 +86,13 @@ class OptionsHelper {
         options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
         options.enableDNSConfig(json.getBoolean("enableDNSConfig"));
         options.setLoadEmptyConversations(json.optBoolean("loadEmptyConversations", false));
+        // 5.1.0
+        if (json.has("autoLoadConversations") && !json.isNull("autoLoadConversations")) {
+            options.setAutoLoadAllConversations(json.getBoolean("autoLoadConversations"));
+        }
+        if (json.has("enableChatroomConversation") && !json.isNull("enableChatroomConversation")) {
+            options.setEnableChatroomConversation(json.getBoolean("enableChatroomConversation"));
+        }
         if (json.has("deviceName")) {
             options.setCustomDeviceName(json.optString("deviceName"));
         }
@@ -245,7 +252,8 @@ class GroupConfigsHelper {
     static Map<String, Object> toJson(EMGroup group) {
         Map<String, Object> data = new HashMap<>();
         data.put("maxCount", group.getMaxUserCount());
-        data.put("inviteNeedConfirm", false);
+        // 5.1.0
+        data.put("inviteNeedConfirm", group.isInviteNeedConfirm());
         data.put("ext", group.getExtension());
         data.put("isPublic", group.isPublic());
         data.put("joinApprovalRequired", group.isJoinApprovalRequired());

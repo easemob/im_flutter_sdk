@@ -1,3 +1,6 @@
+## 5.1.0
+- Synchronized the federated package version to 5.1.0; the existing MethodChannel interface is unchanged.
+
 ## 5.0.0
 - Bumped the federated plugin version in sync with Flutter SDK 5.0.0;
 

@@ -1,11 +1,8 @@
 ## 5.1.0
 
-### 中文
-
-- `loadAllConversations` 根据 `isSort` 选择 native 排序或未排序 API，默认排序。
-
-### English
-
+- Upgraded the native dependency to 5.1.0.
+- Added local conversation pagination and initialization mappings for `autoLoadConversations` and `enableChatroomConversation`.
+- Group configs read `inviteNeedConfirm` from the native getter instead of returning a fixed `false`.
 - `loadAllConversations` selects the sorted or unsorted native API based on `isSort`, defaulting to sorting.
 
 ## 5.0.0

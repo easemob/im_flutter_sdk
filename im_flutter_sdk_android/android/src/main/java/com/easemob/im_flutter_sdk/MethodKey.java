@@ -69,6 +69,8 @@ public class MethodKey {
     static final String downloadMessageThumbnailInCombine = "downloadMessageThumbnailInCombine";
     static final String importMessages = "importMessages";
     static final String loadAllConversations = "loadAllConversations";
+    // 5.1.0
+    static final String getConversationsFromDB = "getConversationsFromDB";
     static final String deleteConversation = "deleteConversation";
     // 5.0.0
     static final String deleteConversations = "deleteConversations";

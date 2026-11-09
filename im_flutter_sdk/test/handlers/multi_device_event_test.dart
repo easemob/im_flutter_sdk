@@ -149,7 +149,7 @@ void main() {
       convertIntToChatMultiDevicesEvent(45),
       ChatMultiDevicesEvent.CHAT_THREAD_KICK,
     );
-    // 34 is iOS-only (`EMMultiDevicesEventGroupUpdate`).
+    // 34 is shared by iOS and Android as of native SDK 5.1.0.
     expect(
       convertIntToChatMultiDevicesEvent(34),
       ChatMultiDevicesEvent.GROUP_UPDATE,

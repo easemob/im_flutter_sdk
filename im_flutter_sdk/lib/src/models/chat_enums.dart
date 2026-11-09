@@ -681,13 +681,13 @@ enum ChatMultiDevicesEvent {
   /// ~english
   /// If user A updates the chat group information on Device A1, this event is triggered on Device A2.
   ///
-  /// Only the iOS SDK reports this event (native value 34, `EMMultiDevicesEventGroupUpdate`); the Android SDK reports group metadata changes with native value 52 instead, which is named `GROUP_METADATA_CHANGED` there.
+  /// Both iOS and Android SDK 5.1.0 report this event with native value 34. Android native value 52 (`GROUP_METADATA_CHANGED`) remains a separate event.
   /// ~end
   ///
   /// ~chinese
   /// 用户 A 在设备 A1 上更新了群组信息，则设备 A2 上会收到该事件。
   ///
-  /// 仅 iOS SDK 上报该事件（native 值 34，`EMMultiDevicesEventGroupUpdate`）；Android SDK 的群组信息变更使用 native 值 52，在 Android 侧命名为 `GROUP_METADATA_CHANGED`。
+  /// iOS 和 Android SDK 5.1.0 均使用 native 值 34 上报此事件。Android native 值 52（`GROUP_METADATA_CHANGED`）仍是独立事件。
   /// ~end
   GROUP_UPDATE,
 
