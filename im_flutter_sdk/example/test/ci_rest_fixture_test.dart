@@ -273,6 +273,117 @@ void main() {
     });
   });
 
+  group('chatroom absence evidence', () {
+    const roomId = 'owned-ci-room';
+    test('reads the requested room and verifies its resource identity',
+        () async {
+      final room = {'id': roomId, 'name': 'CI room', 'owner': 'owner-user'};
+      reply = _Reply.json({
+        'data': [room]
+      });
+      expect(await fixture.chatRoom(roomId), room);
+      expect(requests.single.uri.path, '/test-org/test-app/chatrooms/$roomId');
+    });
+
+    test('explicit resource missing response proves room absence', () async {
+      reply = _Reply.json({'error': 'chatroom_not_found'},
+          status: HttpStatus.notFound);
+      await fixture.verifyChatRoomAbsent(roomId);
+    });
+
+    test('observed service absence uses group wording with the exact room ID',
+        () async {
+      reply = _Reply.json({
+        'error': 'service_resource_not_found',
+        'error_description': 'do not find this group:$roomId',
+      }, status: HttpStatus.notFound);
+      await fixture.verifyChatRoomAbsent(roomId);
+      expect(requests, hasLength(1));
+    });
+
+    for (final description in [
+      'do not find this group:another-room',
+      'do not find this group:${roomId}_another',
+      'service unavailable',
+    ]) {
+      test('unmatched service absence "$description" cannot prove room cleanup',
+          () async {
+        reply = _Reply.json({
+          'error': 'service_resource_not_found',
+          'error_description': description,
+        }, status: HttpStatus.notFound);
+        await expectLater(
+            fixture.verifyChatRoomAbsent(roomId),
+            throwsA(
+              predicate<Object>(
+                  (error) => error.toString().contains('HTTP 404')),
+            ));
+        expect(requests, hasLength(1));
+      });
+    }
+
+    test(
+        'matching service absence text cannot hide room authentication failure',
+        () async {
+      reply = _Reply.json({
+        'error': 'service_resource_not_found',
+        'error_description': 'do not find this group:$roomId',
+      }, status: HttpStatus.unauthorized);
+      await expectLater(
+          fixture.verifyChatRoomAbsent(roomId),
+          throwsA(
+            predicate<Object>((error) => error.toString().contains('HTTP 401')),
+          ));
+      expect(requests, hasLength(1));
+    });
+
+    test('matching resource-level missing result proves room absence',
+        () async {
+      reply = _Reply.json({
+        'data': [
+          {'id': roomId, 'error': "chatroom id doesn't exist"}
+        ]
+      });
+      await fixture.verifyChatRoomAbsent(roomId);
+    });
+
+    for (final failure in [
+      (status: HttpStatus.unauthorized, code: 'chatroom_not_found'),
+      (status: HttpStatus.forbidden, code: 'chatroom_not_found'),
+      (status: HttpStatus.notFound, code: 'unknown_route'),
+      (status: HttpStatus.internalServerError, code: 'chatroom_not_found'),
+    ]) {
+      test('HTTP ${failure.status} ${failure.code} cannot prove room cleanup',
+          () async {
+        reply = _Reply.json({'error': failure.code}, status: failure.status);
+        await expectLater(
+            fixture.verifyChatRoomAbsent(roomId),
+            throwsA(
+              predicate<Object>((error) =>
+                  error.toString().contains('HTTP ${failure.status}')),
+            ));
+        expect(requests, hasLength(1));
+      });
+    }
+
+    test('missing evidence for a different room cannot prove cleanup',
+        () async {
+      reply = _Reply.json({
+        'data': [
+          {'id': 'different-room', 'error': "chatroom id doesn't exist"}
+        ]
+      });
+      await expectLater(
+          fixture.verifyChatRoomAbsent(roomId), throwsFormatException);
+    });
+
+    test('empty detail list cannot prove room cleanup', () async {
+      reply = _Reply.json({'data': <Object?>[]});
+      await expectLater(
+          fixture.verifyChatRoomAbsent(roomId), throwsFormatException);
+    });
+  });
+
   group('group membership evidence', () {
     test('reads each supported role and requests the complete small-group page',
         () async {

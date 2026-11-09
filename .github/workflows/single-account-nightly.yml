@@ -78,7 +78,7 @@ jobs:
           disable-animations: true
           # Multi-line scripts are not run in one shell session by the
           # runner, so the real steps live in a wrapper script.
-          script: bash tool/ci/run_android_emulator_test.sh integration_test/single_account_local_test.dart android-single-account.log
+          script: bash tool/ci/nightly_local.sh android
 
       - name: Remove protected test configuration
         if: always()
@@ -89,7 +89,11 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: flutter-single-account-android-${{ github.run_id }}
-          path: artifacts/android-single-account.log
+          path: |
+            artifacts/android-single-account.log
+            artifacts/android-native-defaults.log
+            artifacts/android-user-info-subscription.log
+            artifacts/android-conversation-config.log
           if-no-files-found: warn
           retention-days: 7
 
@@ -143,7 +147,7 @@ jobs:
             ${{ runner.os }}-spm-
 
       - name: Run login and local database suite on iOS simulator
-        run: ./tool/ci/run_ios_simulator_test.sh integration_test/single_account_local_test.dart ios-single-account.log
+        run: bash tool/ci/nightly_local.sh ios
 
       - name: Collect iOS diagnostics after failure
         if: failure()
@@ -163,6 +167,9 @@ jobs:
           name: flutter-single-account-ios-${{ github.run_id }}
           path: |
             artifacts/ios-single-account.log*
+            artifacts/ios-native-defaults.log*
+            artifacts/ios-user-info-subscription.log*
+            artifacts/ios-conversation-config.log*
             artifacts/*diagnose*.tar.gz
           if-no-files-found: warn
           retention-days: 7

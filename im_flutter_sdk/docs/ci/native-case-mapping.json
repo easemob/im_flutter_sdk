@@ -930,6 +930,172 @@
         "A unique ID absent from local contact lists returns null detail; querying it does not add it to either list"
       ],
       "testFile": "example/integration_test/modules/contact_cases.negative.dart"
+    },
+    {
+      "id": "FL-CONV-010",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.loadAllConversations"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Default and explicit true return the owned conversation subset in descending latest-message time; false retains the exact subset without any order requirement"
+      ],
+      "testFile": "example/integration_test/modules/conversation_cases.dart",
+      "preparationApis": [
+        "ChatConversation.insertMessage",
+        "ChatManager.getConversation"
+      ]
+    },
+    {
+      "id": "FL-CONV-011",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.getConversationsFromDB"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "With autoLoadConversations=false, null/empty first-page cursors agree; bounded traversal respects page size, never repeats IDs or cursors, terminates with empty cursor and includes all owned conversations in descending message time then case-insensitive ID order"
+      ],
+      "testFile": "example/integration_test/modules/conversation_cases.dart",
+      "preparationApis": [
+        "ChatConversation.insertMessage",
+        "ChatManager.getConversation"
+      ]
+    },
+    {
+      "id": "FL-CONV-012",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.getConversationsFromDB"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "A malformed cursor returns exactly ChatError 110 after initialization with autoLoadConversations=false"
+      ],
+      "testFile": "example/integration_test/modules/conversation_cases.negative.dart"
+    },
+    {
+      "id": "FL-GROUP-008",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.fetchGroupInfoFromServer",
+        "ChatGroupManager.getGroupWithId"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Owner-only groups created with inviteNeedConfirm=true and false retain the exact flag in server detail and local snapshots; REST cleanup removes both owned groups"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart",
+      "preparationApis": [
+        "ChatGroupManager.createGroup"
+      ]
+    },
+    {
+      "id": "FL-CONV-013",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.sendMessage",
+        "ChatManager.loadAllConversations"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "A real chatroom message completes with a correlated SUCCESS callback; its local conversation is present exactly once only when enableChatroomConversation=true, checked in independent processes; REST and local teardown reclaim the owned room"
+      ],
+      "testFile": "example/integration_test/modules/conversation_cases.dart",
+      "preparationApis": [
+        "ChatRoomManager.joinChatRoom"
+      ]
+    },
+    {
+      "id": "FL-AUTH-007",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatClient.init",
+        "ChatClient.loginWithToken"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "With dataSyncType explicitly set to conversations (1), cold-app login emits start and successful finish events with exactly mask 1 and connects; logout clears identity and connection; omitted-parameter defaults and server-history contents are not asserted"
+      ],
+      "testFile": "example/integration_test/native_defaults_test.dart",
+      "preparationApis": [
+        "ChatClient.startCallback"
+      ]
+    },
+    {
+      "id": "FL-USERINFO-001",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatUserInfoManager.subscribeUsersInfo",
+        "ChatUserInfoManager.fetchSubscribedUsers",
+        "ChatUserInfoManager.unsubscribeUsersInfo"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "A freshly created offline non-friend appears exactly once in the subscribed user list after subscribing",
+        "The peer disappears after unsubscribe; existing accounts, profiles, contacts and subscriptions are not modified",
+        "Cleanup deletes only the freshly created REST account and verifies its absence"
+      ],
+      "testFile": "example/integration_test/user_info_subscription_test.dart"
+    },
+    {
+      "id": "FL-MSG-010",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.fetchHistoryMessagesByOption",
+        "ChatConversation.latestMessage"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Saving fetched server history replaces a preheated older latest-message cache with the exact REST message ID; duplicate live delivery cannot satisfy this assertion",
+        "Only the owned group and its local conversation are reclaimed during cleanup"
+      ],
+      "testFile": "example/integration_test/modules/message_cases.dart",
+      "preparationApis": [
+        "ChatConversation.deleteMessage",
+        "ChatConversation.insertMessage"
+      ]
     }
   ]
 }

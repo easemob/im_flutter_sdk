@@ -33,7 +33,7 @@ testing/multi/
 
 ## 用例
 
-以下均为双模拟器正向用例，每个 YAML 对应同名 JSON。文件名统一使用 `5.0.0-multi-<场景>-positive`。
+以下均为双模拟器正向用例，每个 YAML 对应同名 JSON。文件名使用 `<引入版本>-multi-<场景>-positive`，已有场景跨版本复用。
 
 | 场景 | YAML 入口 |
 |---|---|
@@ -48,9 +48,10 @@ testing/multi/
 | 群成员退出通知 | [group-member-leave](data/5.0.0-multi-group-member-leave-positive.yaml) |
 | 用户资料订阅更新 | [user-info-subscribe](data/5.0.0-multi-user-info-subscribe-positive.yaml) |
 | 群名片更新通知 | [group-namecard](data/5.0.0-multi-group-namecard-positive.yaml) |
-| 同账号双设备建群同步 | [group-create-device-sync](data/5.0.0-multi-group-create-device-sync-positive.yaml) |
+| 同账号双设备建群及群名称更新同步 | [group-create-device-sync](data/5.0.0-multi-group-create-device-sync-positive.yaml) |
+| 群邀请接收、接受与成员关系 | [group-invite-confirm](data/5.1.0-multi-group-invite-confirm-positive.yaml) |
 
-消息撤回场景按用户要求暂停，暂不加入执行选择文件；恢复须明确确认。各场景前置条件见上方规格链接，平台验证与问题证据见验证记录。
+消息撤回场景按用户要求暂停，暂不加入执行选择文件；恢复须明确确认。各场景前置条件见上方规格链接，平台验证与问题证据见验证记录。5.1.0 的群更新、群邀请确认场景及本轮结果见[覆盖与场景定义](../../docs/porting/5.1.0/2026-11-09-test-coverage.md#多设备第二轮确认)和[执行统计](../../docs/porting/5.1.0/2026-11-09-test-verification.md)。
 
 ## 首次执行一个场景
 

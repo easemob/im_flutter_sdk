@@ -1,0 +1,90 @@
+# The invitee receives and accepts this run's invitation before both devices read membership.
+name: 5.1.0-multi-group-invite-confirm-positive
+flowTimeoutMs: 240000
+agents:
+  alice: {script: 5.1.0-multi-group-invite-confirm-positive.json}
+  bob: {script: 5.1.0-multi-group-invite-confirm-positive.json}
+defaults:
+  stepTimeoutMs: 30000
+steps:
+  - set: {alice_logged_in: false, bob_logged_in: false, alice_ready: false, bob_ready: false, group_created: false}
+  - parallel:
+      alice_login:
+        - cmd: init_alice
+          agent: alice
+          as: global.biz.result.alice_init
+          onFail: abort_flow
+        - cmd: login_alice
+          agent: alice
+          as: global.biz.result.alice_login
+          onFail: abort_flow
+        - set: {alice_logged_in: true}
+        - cmd: connected
+          agent: alice
+          as: global.biz.result.alice_connected
+          onFail: abort_flow
+        - set: {alice_ready: true}
+      bob_login:
+        - cmd: init_bob
+          agent: bob
+          as: global.biz.result.bob_init
+          onFail: abort_flow
+        - cmd: login_bob
+          agent: bob
+          as: global.biz.result.bob_login
+          onFail: abort_flow
+        - set: {bob_logged_in: true}
+        - cmd: connected
+          agent: bob
+          as: global.biz.result.bob_connected
+          onFail: abort_flow
+        - set: {bob_ready: true}
+  - if: '$alice_ready and $bob_ready'
+    then:
+      - parallel:
+          invite_and_accept:
+            - cmd: create_group
+              agent: alice
+              as: global.biz.result.created
+              onFail: abort_flow
+            - set: {group_created: true}
+            - cmd: invite_bob
+              agent: alice
+              as: global.biz.result.invited
+              onFail: abort_flow
+            - wait_event: onInvitationReceivedFromGroup
+              agent: bob
+              match:
+                groupId: '$global.biz.result.created.data.groupId'
+                inviter: '$global.account.account1.userId'
+              as: global.biz.event.invitation
+              onFail: abort_flow
+            - cmd: accept_invitation
+              agent: bob
+              as: global.biz.result.accepted
+              onFail: abort_flow
+            - cmd: fetch_members
+              agent: alice
+              as: global.biz.result.alice_members
+            - cmd: fetch_members
+              agent: bob
+              as: global.biz.result.bob_members
+  # Business failures end only the branch; confirmed resources still reach cleanup.
+  - if: '$group_created'
+    then:
+      - cmd: destroy_group
+        agent: alice
+        as: global.biz.result.group_destroyed
+  - parallel:
+      alice_exit:
+        - if: '$alice_logged_in'
+          then:
+            - cmd: logout
+              agent: alice
+              as: global.biz.result.alice_logout
+      bob_exit:
+        - if: '$bob_logged_in'
+          then:
+            - cmd: logout
+              agent: bob
+              as: global.biz.result.bob_logout

@@ -5,6 +5,49 @@ import '../api_entry.dart';
 /// GroupManager related entries.
 final groupApis = <ApiEntry>[
   ApiEntry(
+    name: 'ChatGroupManager.updateGroupName',
+    group: 'GroupManager',
+    description: '修改指定群组名称。',
+    paramsTemplate: '{"groupId": "yourGroupId", "name": "new group name"}',
+    invoke: (p) => ChatClient.getInstance.groupManager
+        .updateGroupName(p['groupId'] as String, p['name'] as String),
+  ),
+  ApiEntry(
+    name: 'ChatGroupManager.addMembers',
+    group: 'GroupManager',
+    description: '邀请成员入群；是否需要接受由群配置及受邀方设置决定。',
+    paramsTemplate: '{"groupId": "yourGroupId", "members": ["userId"]}',
+    invoke: (p) => ChatClient.getInstance.groupManager.addMembers(
+      p['groupId'] as String,
+      (p['members'] as List).cast<String>(),
+      welcome: p['welcome'] as String?,
+    ),
+  ),
+  ApiEntry(
+    name: 'ChatGroupManager.acceptInvitation',
+    group: 'GroupManager',
+    description: '接受指定邀请人发出的群组邀请。',
+    paramsTemplate: '{"groupId": "yourGroupId", "inviter": "ownerId"}',
+    invoke: (p) async => (await ChatClient.getInstance.groupManager
+            .acceptInvitation(p['groupId'] as String, p['inviter'] as String))
+        .toJson(),
+  ),
+  ApiEntry(
+    name: 'ChatGroupManager.fetchMemberListFromServer',
+    group: 'GroupManager',
+    description: '分页读取服务端群成员列表。',
+    paramsTemplate: '{"groupId": "yourGroupId", "pageSize": 200}',
+    invoke: (p) async {
+      final result =
+          await ChatClient.getInstance.groupManager.fetchMemberListFromServer(
+        p['groupId'] as String,
+        pageSize: p['pageSize'] as int? ?? 200,
+        cursor: p['cursor'] as String?,
+      );
+      return {'list': result.data, 'cursor': result.cursor};
+    },
+  ),
+  ApiEntry(
     name: 'ChatGroupManager.getJoinedGroups',
     group: 'GroupManager',
     description: '读取本地已加入群组；用于核对登录同步后的实际数据。',

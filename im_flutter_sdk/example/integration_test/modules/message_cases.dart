@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
+import '../../tool/rest_resource_client.dart';
 import '../support/ci_test.dart';
 
 import '../support/rest_fixture.dart';
@@ -443,4 +444,163 @@ void registerMessageCases({
       );
     });
   });
+  // Test: Consume one correlated REST group message, delete only that local
+  // message, then prime the conversation cache with an older local sentinel.
+  // Fetch history once with needSave=true and require latestMessage to advance
+  // to the returned server message. An empty cache alone would miss the old
+  // Android bug because latestMessage could read the new message from the DB.
+  // The peer is an offline REST sender, not a second running SDK client.
+  ciTestWidgets(
+    'FL-MSG-010 saved server history replaces a stale latest message',
+    (_) async {
+      final resources = RestResourceClient(
+        restApi: const String.fromEnvironment('E2E_REST_API'),
+        appKey: const String.fromEnvironment('E2E_APP_KEY'),
+        appToken: const String.fromEnvironment('E2E_APP_TOKEN'),
+      );
+      addTearDown(resources.close);
+      final manager = client.chatManager;
+      final run = 'ci_history_${DateTime.now().microsecondsSinceEpoch}';
+      final ownedGroupIds = <String>{};
+      String? groupId;
+
+      // Register independent cleanup before creation. The remote cleanup runs
+      // first and can discover an interrupted creation before local cleanup.
+      addTearDown(() async {
+        for (final id in ownedGroupIds) {
+          await manager
+              .deleteConversation(id, deleteMessages: true)
+              .timeout(const Duration(seconds: 15));
+          expect(
+              await manager.getConversation(id,
+                  type: ChatConversationType.GroupChat, createIfNeed: false),
+              isNull);
+        }
+        debugPrint('CI FL-MSG-010 cleanup verified: owned local conversations');
+      });
+      addTearDown(() async {
+        final ids = groupId == null
+            ? await rest.groupIdsNamed(owner: userId, name: run)
+            : [groupId];
+        if (groupId == null && ids.isEmpty) {
+          throw StateError('FL-MSG-010 cleanup unresolved creation: '
+              'owner=$userId name=$run');
+        }
+        for (final id in ids) {
+          final remote = await rest.group(id);
+          if (remote != null) {
+            if (remote['owner'] != userId ||
+                remote['name'] != run ||
+                remote['description'] != run) {
+              throw StateError('FL-MSG-010 cleanup ownership mismatch: $id');
+            }
+            ownedGroupIds.add(id);
+            await rest.deleteGroup(id);
+          }
+          await rest.verifyGroupAbsent(id);
+        }
+        debugPrint('CI FL-MSG-010 cleanup verified: owned REST groups');
+      });
+
+      groupId = await resources.createGroup(
+          owner: userId,
+          name: run,
+          description: run,
+          members: [peerId]).timeout(const Duration(seconds: 20));
+      final id = groupId;
+      ownedGroupIds.add(id);
+      final expectedMembers = <String>{userId}..add(peerId);
+      await waitForCi(
+          'History fixture owner and peer are group members',
+          () => rest.groupMembers(id),
+          (members) => setEquals(members, expectedMembers));
+      final detail = await client.groupManager
+          .fetchGroupInfoFromServer(id)
+          .timeout(const Duration(seconds: 20));
+      expect(detail.groupId, id);
+      expect(detail.owner, userId);
+
+      final received = Completer<ChatMessage>();
+      var consumedDelivery = false;
+      final lateDeliveries = <String>[];
+      manager.addEventHandler(
+        run,
+        ChatEventHandler(onMessagesReceived: (messages) {
+          for (final message in messages) {
+            final body = message.body;
+            if (message.conversationId != id ||
+                message.from != peerId ||
+                message.chatType != ChatType.GroupChat ||
+                body is! ChatTextMessageBody ||
+                body.content != run) {
+              continue;
+            }
+            if (consumedDelivery) lateDeliveries.add(message.msgId);
+            if (!received.isCompleted) received.complete(message);
+          }
+        }),
+      );
+      addTearDown(() => manager.removeEventHandler(run));
+
+      debugPrint('CI FL-MSG-010 prepare: REST group=$id, unique incoming text');
+      final serverId = await resources
+          .sendGroupTextMessage(from: peerId, groupId: id, text: run)
+          .timeout(const Duration(seconds: 20));
+      final incoming =
+          await received.future.timeout(const Duration(seconds: 30));
+      expect(incoming.msgId, serverId,
+          reason: 'Consume this exact online delivery before deleting locally');
+      expect(incoming.status, MessageStatus.SUCCESS);
+      consumedDelivery = true;
+
+      final conversation = await manager.getConversation(id,
+          type: ChatConversationType.GroupChat, createIfNeed: false);
+      expect(conversation, isNotNull);
+      await conversation!.deleteMessage(serverId);
+      final sentinelBody = ChatMessage.createTxtSendMessage(
+        targetId: id,
+        content: '$run local old sentinel',
+        chatType: ChatType.GroupChat,
+      )
+        ..from = userId
+        ..conversationId = id
+        ..localTime = 1
+        ..serverTime = 1
+        ..status = MessageStatus.SUCCESS;
+      final sentinel = ChatMessage.fromJson({
+        ...sentinelBody.toJson(),
+        'msgId': '${run}_sentinel',
+      });
+      await conversation.insertMessage(sentinel);
+      expect((await conversation.latestMessage())?.msgId, sentinel.msgId,
+          reason: 'A stale populated cache is the precondition under test');
+      expect(lateDeliveries, isEmpty,
+          reason: 'A repeated live delivery invalidates the history fixture');
+
+      debugPrint('CI FL-MSG-010 verify: fetch once with needSave=true');
+      final page = await manager
+          .fetchHistoryMessagesByOption(
+            id,
+            ChatConversationType.GroupChat,
+            options: const FetchMessageOptions(needSave: true),
+            pageSize: 20,
+          )
+          .timeout(const Duration(seconds: 30));
+      final matches = page.data.where((message) => message.msgId == serverId);
+      expect(matches, hasLength(1));
+      final fetched = matches.single;
+      expect(fetched.conversationId, id);
+      expect(fetched.from, peerId);
+      expect((fetched.body as ChatTextMessageBody).content, run);
+      expect(fetched.serverTime, greaterThan(sentinel.serverTime));
+      final latest = await conversation.latestMessage();
+      expect(lateDeliveries, isEmpty,
+          reason:
+              'Live delivery must not satisfy the history update assertion');
+      expect(latest?.msgId, serverId);
+      expect((latest!.body as ChatTextMessageBody).content, run);
+      debugPrint(
+          'CI FL-MSG-010 verify passed: stale cache advanced to REST ID');
+    },
+  );
 }

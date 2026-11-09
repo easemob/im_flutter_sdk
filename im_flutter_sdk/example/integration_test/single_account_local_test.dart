@@ -57,6 +57,9 @@ void main() {
         .init(ChatOptions.withAppKey(
           _appKey,
           debugMode: false,
+          autoLoadConversations: true,
+          enableChatroomConversation: false,
+          enableUserInfo: false,
           dataSyncType:
               ChatDataSyncType.contacts | ChatDataSyncType.joinedGroups,
         ))
@@ -95,7 +98,7 @@ void main() {
       rest: rest);
   registerGroupCases(
       client: client, userId: _userId, peerId: _peerId, rest: rest);
-  registerConversationCases(client: client, userId: _userId);
+  registerConversationCases(client: client, userId: _userId, rest: rest);
   registerMessageCases(
       client: client, userId: _userId, peerId: _peerId, rest: rest);
   registerClientNegativeCases(client: client, userId: _userId, token: _token);

@@ -114,6 +114,56 @@ final class CiRestFixture {
   Future<void> deleteGroup(String groupId) =>
       _resources.deleteGroup(groupId).timeout(const Duration(seconds: 15));
 
+  Future<String> createChatRoom({
+    required String owner,
+    required String name,
+    required String description,
+  }) =>
+      _resources
+          .createChatRoom(owner: owner, name: name, description: description)
+          .timeout(const Duration(seconds: 15));
+
+  Future<void> deleteChatRoom(String roomId) =>
+      _resources.deleteChatRoom(roomId).timeout(const Duration(seconds: 15));
+
+  /// Only a resource-specific missing response proves successful cleanup.
+  Future<Map<String, dynamic>?> chatRoom(String roomId) async {
+    Map<String, dynamic> response;
+    try {
+      response = await _request('GET', 'chatrooms/${_path(roomId)}');
+    } on _RestFailure catch (error) {
+      if (error.status == HttpStatus.notFound &&
+          (error.code == 'chatroom_not_found' ||
+              (error.code == 'service_resource_not_found' &&
+                  error.description == 'do not find this group:$roomId'))) {
+        return null;
+      }
+      rethrow;
+    }
+    final data = response['data'];
+    if (data is! List || data.length != 1 || data.single is! Map) {
+      throw const FormatException(
+          'REST chatroom detail must contain one object');
+    }
+    final value = Map<String, dynamic>.from(data.single as Map);
+    if (value['id'] != roomId) {
+      throw FormatException('REST chatroom ID mismatch: expected $roomId');
+    }
+    if (value['error'] == "chatroom id doesn't exist") return null;
+    if (value.containsKey('error')) {
+      throw StateError('REST chatroom $roomId: ${value['error']}');
+    }
+    if (value['name'] is! String || value['owner'] is! String) {
+      throw const FormatException('REST chatroom detail missing name or owner');
+    }
+    return value;
+  }
+
+  Future<void> verifyChatRoomAbsent(String roomId) async {
+    await waitForCi('REST chatroom $roomId absent', () => chatRoom(roomId),
+        (value) => value == null);
+  }
+
   Future<List<String>> groupIdsNamed({
     required String owner,
     required String name,

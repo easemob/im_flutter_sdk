@@ -5,6 +5,7 @@
 ## 设计规则
 
 - 场景放在 `testing/single/cases/`，复用已有 JSON 引擎和 example API 注册，不在执行端伪造业务结果。
+- 新增版本场景沿用 5.0.0 的正向、逆向分文件方式：`script_<版本数字>_apis_positive.json` 与 `script_<版本数字>_apis_negative.json`。两者各自准备和清理、可独立运行；初始化依赖项在 `init` 中显式设置。合法布尔值 true/false 均属正向，逆向只使用契约明确的错误输入。
 - API 调用成功只证明该契约的完成条件；查询、筛选、分页、写后读取应按目标检查相关字段和内容。
 - 用 `expect.success`、`expect.errorCode` 和 `expect.checks` 表达断言；`checks` 针对返回 `data`。引用通过 `$config`、`$prev`、`$step.<id>` 获取。
 - 核对执行端已暴露所需 API、参数和结果。缺少核心断言能力时记录缺口，不能降为“调用成功”并宣称验收通过。

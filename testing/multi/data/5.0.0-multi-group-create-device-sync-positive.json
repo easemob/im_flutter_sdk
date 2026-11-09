@@ -1,7 +1,8 @@
 {
   "data": {
     "unique": {
-      "groupName": "group-device-sync-"
+      "groupName": "group-device-sync-",
+      "updatedName": "group-device-updated-"
     }
   },
   "steps": [
@@ -106,6 +107,34 @@
       }
     },
     {
+      "id": "update_group",
+      "api": "ChatGroupManager.updateGroupName",
+      "params": {
+        "groupId": "$global.biz.result.created.data.groupId",
+        "name": "$global.biz.input.updatedName"
+      }
+    },
+    {
+      "id": "fetch_updated_group",
+      "api": "ChatGroupManager.fetchGroupInfoFromServer",
+      "params": {
+        "groupId": "$global.biz.result.created.data.groupId"
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "groupId",
+            "equals": "$global.biz.result.created.data.groupId"
+          },
+          {
+            "path": "name",
+            "equals": "$global.biz.input.updatedName"
+          }
+        ]
+      }
+    },
+    {
       "id": "destroy_group",
       "api": "ChatGroupManager.destroyGroup",
       "params": {
@@ -132,6 +161,9 @@
     "global.biz.result.a2_connected",
     "global.biz.result.created",
     "global.biz.event.group_created",
+    "global.biz.result.group_updated",
+    "global.biz.event.group_updated",
+    "global.biz.result.updated_detail",
     "global.biz.result.group_destroyed",
     "global.biz.result.a1_logout",
     "global.biz.result.a2_logout"

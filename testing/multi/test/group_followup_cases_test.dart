@@ -18,7 +18,9 @@ enum _Scenario {
   namecard('group-namecard', 'ChatGroupManager.updateGroupNamecard',
       'onUserGroupNamecardChanged'),
   sync('group-create-device-sync', 'ChatGroupManager.createGroup',
-      'onGroupEvent');
+      'onGroupEvent'),
+  invite('group-invite-confirm', 'ChatGroupManager.addMembers',
+      'onInvitationReceivedFromGroup');
 
   const _Scenario(this.name, this.operation, this.event);
   final String name;
@@ -27,7 +29,7 @@ enum _Scenario {
 
   bool get sameAccount => this == sync;
   List<String> get roles => sameAccount ? ['a1', 'a2'] : ['alice', 'bob'];
-  String get owner => sameAccount ? 'a1' : 'bob';
+  String get owner => sameAccount ? 'a1' : (this == invite ? 'alice' : 'bob');
   String get observer => sameAccount ? 'a2' : 'bob';
 }
 
@@ -66,6 +68,8 @@ class _Harness {
   late final agents = {for (final r in scenario.roles) r: _Agent(r, this)};
   late LoadedCase loaded;
   bool matchingEvent = true;
+  bool matchingUpdate = true;
+  String? missingMemberRole;
   bool unknownCreate = false;
   bool sameDevice = false;
   bool missingDevice = false;
@@ -110,6 +114,12 @@ class _Harness {
           {...correct, 'groupId': 'old-group'},
           {...correct, 'userId': 'user-b'},
           {...correct, 'namecard': 'old-card'}
+        ];
+      case _Scenario.invite:
+        correct = {'groupId': 'this-run-group', 'inviter': 'user-a'};
+        wrong = [
+          {...correct, 'groupId': 'old-group'},
+          {...correct, 'inviter': 'user-b'}
         ];
       case _Scenario.sync:
         correct = {'groupId': 'this-run-group', 'event': 'GROUP_CREATE'};
@@ -172,10 +182,49 @@ class _Harness {
         expect(params,
             {'groupId': 'this-run-group', 'namecard': 'this-run-group'});
         emitTarget();
+      case 'ChatGroupManager.updateGroupName':
+        expect(role, 'a1');
+        expect(params, {'groupId': 'this-run-group', 'name': 'updated-name'});
+        emit('onGroupEvent', {'groupId': 'old-group', 'event': 'GROUP_UPDATE'});
+        emit('onGroupEvent', {
+          'groupId': 'this-run-group',
+          'event': 'GROUP_MEMBER_ATTRIBUTES_UPDATE'
+        });
+        if (matchingUpdate) {
+          emit('onGroupEvent',
+              {'groupId': 'this-run-group', 'event': 'GROUP_UPDATE'});
+        }
+      case 'ChatGroupManager.fetchGroupInfoFromServer':
+        expect(role, 'a2');
+        expect(params, {'groupId': 'this-run-group'});
+        return const Envelope(
+            success: true,
+            status: 'ok',
+            data: {'groupId': 'this-run-group', 'name': 'updated-name'});
+      case 'ChatGroupManager.addMembers':
+        expect(role, 'alice');
+        expect(params, {
+          'groupId': 'this-run-group',
+          'members': ['user-b']
+        });
+        emitTarget();
+      case 'ChatGroupManager.acceptInvitation':
+        expect(role, 'bob');
+        expect(params, {'groupId': 'this-run-group', 'inviter': 'user-a'});
+      case 'ChatGroupManager.fetchMemberListFromServer':
+        expect(params, {'groupId': 'this-run-group', 'pageSize': 200});
+        return Envelope(success: true, status: 'ok', data: {
+          'list': ['user-a', if (role != missingMemberRole) 'user-b'],
+          'cursor': ''
+        });
       case 'ChatGroupManager.destroyGroup':
         expect(role, scenario.owner);
         expect(params, {'groupId': 'this-run-group'});
       case 'ChatClient.init':
+        if (scenario == _Scenario.invite && role == 'bob') {
+          expect((params['overrides'] as Map)['autoAcceptGroupInvitation'],
+              isFalse);
+        }
       case 'ChatClient.loginWithToken':
       case 'ChatClient.logout':
         break;
@@ -186,7 +235,8 @@ class _Harness {
   }
 
   Future<void> run(Directory temporary) async {
-    final stem = '5.0.0-multi-${scenario.name}-positive';
+    final version = scenario == _Scenario.invite ? '5.1.0' : '5.0.0';
+    final stem = '$version-multi-${scenario.name}-positive';
     loaded = await CaseLoader(DataService()).freeze(
         p.absolute('data/$stem.yaml'),
         Directory(p.join(temporary.path, 'cases')));
@@ -204,7 +254,7 @@ class _Harness {
         'config': {
           'initConfig': {'appKey': 'org#app'}
         },
-        'input': {'groupName': 'this-run-name'},
+        'input': {'groupName': 'this-run-name', 'updatedName': 'updated-name'},
         'result': <String, Object?>{},
         'event': <String, Object?>{}
       }
@@ -238,11 +288,14 @@ void main() {
       final h = _Harness(scenario);
       await h.run(temporary);
       expect(h.passed, isTrue);
-      expect(h.loaded.definition.requiredBindings, hasLength(14));
-      expect(h.report.records, hasLength(14));
+      final count = scenario == _Scenario.sync
+          ? 17
+          : (scenario == _Scenario.invite ? 15 : 14);
+      expect(h.loaded.definition.requiredBindings, hasLength(count));
+      expect(h.report.records, hasLength(count));
       expect(h.report.records.every((r) => r.status == 'passed'), isTrue);
       final matched =
-          h.report.records.singleWhere((r) => r.name == scenario.event);
+          h.report.records.lastWhere((r) => r.name == scenario.event);
       expect(
           matched.result!['seq'], h.agents[scenario.observer]!.events.last.seq);
       expect(h.parameters('ChatGroupManager.destroyGroup'), hasLength(1));
@@ -274,7 +327,11 @@ void main() {
     });
   }
 
-  for (final scenario in [_Scenario.leave, _Scenario.namecard]) {
+  for (final scenario in [
+    _Scenario.leave,
+    _Scenario.namecard,
+    _Scenario.invite
+  ]) {
     test(
         '${scenario.name}: failed operation preserves cleanup and both logouts',
         () async {
@@ -287,6 +344,41 @@ void main() {
       h.expectLogouts();
     });
   }
+
+  test('sync: unrelated update events fail without bypassing cleanup',
+      () async {
+    final h = _Harness(_Scenario.sync)..matchingUpdate = false;
+    await h.run(temporary);
+    expect(h.passed, isFalse);
+    expect(h.report.records.lastWhere((r) => r.name == 'onGroupEvent').status,
+        'timeout');
+    expect(h.parameters('ChatGroupManager.fetchGroupInfoFromServer'), isEmpty);
+    expect(h.parameters('ChatGroupManager.destroyGroup'), hasLength(1));
+    h.expectLogouts();
+  });
+
+  for (final role in ['alice', 'bob']) {
+    test('invite: missing membership on $role fails and still cleans up',
+        () async {
+      final h = _Harness(_Scenario.invite)..missingMemberRole = role;
+      await h.run(temporary);
+      expect(h.passed, isFalse);
+      expect(h.parameters('ChatGroupManager.fetchMemberListFromServer'),
+          hasLength(2));
+      expect(h.parameters('ChatGroupManager.destroyGroup'), hasLength(1));
+      h.expectLogouts();
+    });
+  }
+
+  test('invite: failed acceptance still cleans up', () async {
+    final h = _Harness(_Scenario.invite)
+      ..failedApi = 'ChatGroupManager.acceptInvitation';
+    await h.run(temporary);
+    expect(h.passed, isFalse);
+    expect(h.parameters('ChatGroupManager.fetchMemberListFromServer'), isEmpty);
+    expect(h.parameters('ChatGroupManager.destroyGroup'), hasLength(1));
+    h.expectLogouts();
+  });
 
   test('sync: both login commands use one account slot', () async {
     final h = _Harness(_Scenario.sync);

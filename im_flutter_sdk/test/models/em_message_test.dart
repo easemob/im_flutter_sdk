@@ -3,6 +3,56 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 void main() {
   group('EMMessage JSON contract', () {
+    test('image round trip uses secret and drops legacy thumbnailSecret', () {
+      final message = ChatMessage.fromJson({
+        'msgId': 'image-secret-contract',
+        'from': 'sender',
+        'to': 'receiver',
+        'chatType': ChatType.Chat.index,
+        'direction': MessageDirection.RECEIVE.index,
+        'body': {
+          'type': MessageType.IMAGE.index,
+          'localPath': '/tmp/image.png',
+          'secret': 'image-original-secret',
+          'thumbnailSecret': 'obsolete-image-thumbnail-secret',
+        },
+      });
+
+      expect((message.body as ChatImageMessageBody).secret,
+          'image-original-secret');
+      final bodyJson = message.toJson()['body'] as Map;
+      expect(bodyJson['secret'], 'image-original-secret');
+      expect(bodyJson.containsKey('thumbnailSecret'), isFalse);
+      final decoded = ChatMessage.fromJson(message.toJson());
+      expect((decoded.body as ChatImageMessageBody).secret,
+          'image-original-secret');
+    });
+
+    test('video round trip keeps distinct original and thumbnail secrets', () {
+      final message = ChatMessage.fromJson({
+        'msgId': 'video-secret-contract',
+        'from': 'sender',
+        'to': 'receiver',
+        'chatType': ChatType.Chat.index,
+        'direction': MessageDirection.RECEIVE.index,
+        'body': {
+          'type': MessageType.VIDEO.index,
+          'localPath': '/tmp/video.mp4',
+          'duration': 1,
+          'secret': 'video-original-secret',
+          'thumbnailSecret': 'video-thumbnail-secret',
+        },
+      });
+
+      final bodyJson = message.toJson()['body'] as Map;
+      expect(bodyJson['secret'], 'video-original-secret');
+      expect(bodyJson['thumbnailSecret'], 'video-thumbnail-secret');
+      final decoded = ChatMessage.fromJson(message.toJson());
+      final body = decoded.body as ChatVideoMessageBody;
+      expect(body.secret, 'video-original-secret');
+      expect(body.thumbnailSecret, 'video-thumbnail-secret');
+    });
+
     test('text message round trip preserves routing and content', () {
       final message =
           EMMessage.createTxtSendMessage(targetId: 'receiver', content: 'hello')

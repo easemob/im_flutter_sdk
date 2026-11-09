@@ -42,3 +42,7 @@
 验证结果以 [04-verification.md](04-verification.md) 为准。本轮验证 SDK/桥接/文档与构建；未运行 CI 设备 smoke/nightly、单设备 JSON 或多设备业务场景，没有声称历史 FL-MSG-006/007 或其他既有设备失败已修复。
 
 后续 `flutter-sdk-test-coverage` 输入：当前 worktree、目标版本 `5.1.0` 和本目录五份产物；应覆盖原清单 12 个 ID，并区分 `options_auto_load_conversations` 必要补齐、原有映射修正和 skip/defer 理由。先出变更到测试的覆盖表，补齐并验证 CI/单设备，再将有效的多设备场景交用户二次确认。
+
+## 后续测试覆盖
+
+升级后的用例补充与实际执行证据另见[覆盖表](2026-11-09-test-coverage.md)及[验证统计](2026-11-09-test-verification.md)。上述升级阶段未运行设备的历史结论保持原义；后续测试失败与多设备确认状态以新增报告为准。

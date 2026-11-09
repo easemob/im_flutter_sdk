@@ -13,7 +13,9 @@ void registerGroupCases({
   required CiRestFixture rest,
 }) {
   Future<ChatGroup> createOwnedGroup(String caseId,
-      {String phase = 'prepare'}) async {
+      {String phase = 'prepare',
+      bool inviteNeedConfirm = false,
+      bool invitePeer = true}) async {
     final tag = '${caseId}_${DateTime.now().microsecondsSinceEpoch}';
     final name = 'ci_$tag';
     final description = 'CI basic API fixture $tag';
@@ -55,10 +57,11 @@ void registerGroupCases({
     final created = await client.groupManager.createGroup(
       groupName: name,
       desc: description,
-      inviteMembers: [peerId],
+      inviteMembers: invitePeer ? [peerId] : const [],
       configs: ChatGroupConfigs(
         maxCount: 100,
         allowInvites: true,
+        inviteNeedConfirm: inviteNeedConfirm,
         ext: tag,
       ),
     );
@@ -74,28 +77,29 @@ void registerGroupCases({
     await waitForCi(
         'REST group $groupId exact owner/member set',
         () => rest.groupMembers(groupId!),
-        (members) => setEquals(members, {userId, peerId}));
+        (members) => setEquals(members, {userId, if (invitePeer) peerId}));
 
     final detail = await client.groupManager.fetchGroupInfoFromServer(groupId);
     expect(detail.groupId, groupId);
     expect(detail.groupName, name);
     expect(detail.desc, description);
     expect(detail.owner, userId);
-    expect(detail.memberCount, 2);
+    expect(detail.memberCount, invitePeer ? 2 : 1);
     expect(detail.configs, isNotNull);
     expect(detail.configs!.maxCount, 100);
     expect(detail.configs!.isPublic, isFalse);
     expect(detail.configs!.joinApprovalRequired, isFalse);
     expect(detail.configs!.allowInvites, isTrue);
-    expect(detail.configs!.inviteNeedConfirm, isFalse);
+    expect(detail.configs!.inviteNeedConfirm, inviteNeedConfirm);
     expect(detail.configs!.ext, tag);
     // This is a member-readiness check, not an independent pagination case.
     final members = await client.groupManager.fetchMemberListFromServer(
       groupId,
       pageSize: 20,
     );
-    expect(members.data, contains(peerId));
-    expect(members.data.toSet().difference({userId, peerId}), isEmpty);
+    if (invitePeer) expect(members.data, contains(peerId));
+    expect(members.data.toSet().difference({userId, if (invitePeer) peerId}),
+        isEmpty);
     expect(members.data.toSet().length, members.data.length);
     expect(members.cursor == null || members.cursor!.isEmpty, isTrue);
     debugPrint('CI $caseId $phase verified: remote group detail and members');
@@ -143,5 +147,27 @@ void registerGroupCases({
     expect(matches, hasLength(1));
     expect(matches.single.groupName, prepared.groupName);
     debugPrint('CI $id verify passed');
+  });
+
+  // Test: Create independent owner-only groups with invitation confirmation
+  // enabled and disabled, then fetch their server details and local snapshots.
+  // Expected: Both reads retain the requested boolean. No invitee or second
+  // online client is needed to test this field; REST teardown reclaims groups.
+  ciTestWidgets(
+      'FL-GROUP-008 invitation confirmation flag survives server and local reads',
+      (_) async {
+    for (final required in [true, false]) {
+      final group = await createOwnedGroup(
+        'FL-GROUP-008',
+        phase: 'verify',
+        inviteNeedConfirm: required,
+        invitePeer: false,
+      );
+      expect(group.configs!.inviteNeedConfirm, required);
+      final local = await client.groupManager.getGroupWithId(group.groupId);
+      expect(local, isNotNull);
+      expect(local!.configs, isNotNull);
+      expect(local.configs!.inviteNeedConfirm, required);
+    }
   });
 }

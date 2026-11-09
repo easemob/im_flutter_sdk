@@ -1,0 +1,23 @@
+{
+  "_comment": "5.1.0 逆向路径（auto 模式）。初始化关闭自动加载后，验证本地会话分页非法 cursor 的 110 契约；不代表正向分页连续性。该步骤不创建资源，不依赖正向脚本的执行或遗留数据。",
+  "init": {
+    "dataSyncType": 6,
+    "autoLoadConversations": false,
+    "enableChatroomConversation": false,
+    "enableUserInfo": false,
+    "debugMode": false
+  },
+  "steps": [
+    {
+      "api": "ChatManager.getConversationsFromDB",
+      "id": "invalid_conversation_cursor",
+      "params": {
+        "cursor": "not-a-valid-conversation-cursor",
+        "pageSize": 20
+      },
+      "expect": {
+        "errorCode": 110
+      }
+    }
+  ]
+}

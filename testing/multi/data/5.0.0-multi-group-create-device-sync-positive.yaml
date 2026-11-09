@@ -1,4 +1,4 @@
-# Both SDK devices must remain online as the same account before creating a group.
+# Both SDK devices must remain online as the same account before creating and updating a group.
 name: 5.0.0-multi-group-create-device-sync-positive
 flowTimeoutMs: 300000
 agents:
@@ -62,6 +62,21 @@ steps:
                 event: GROUP_CREATE
                 groupId: '$global.biz.result.created.data.groupId'
               as: global.biz.event.group_created
+              onFail: abort_flow
+            - cmd: update_group
+              agent: a1
+              as: global.biz.result.group_updated
+              onFail: abort_flow
+            - wait_event: onGroupEvent
+              agent: a2
+              match:
+                event: GROUP_UPDATE
+                groupId: '$global.biz.result.created.data.groupId'
+              as: global.biz.event.group_updated
+              onFail: abort_flow
+            - cmd: fetch_updated_group
+              agent: a2
+              as: global.biz.result.updated_detail
               onFail: abort_flow
   # A missing synchronization event must not leave the confirmed group behind.
   - if: '$group_created'

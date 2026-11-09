@@ -309,7 +309,7 @@ void main() {
   });
 
   test(
-      'real catalog generates eleven cases accepted by existing execution contracts',
+      'real catalog generates twelve cases accepted by existing execution contracts',
       () async {
     for (final file in Directory('data').listSync().whereType<File>()) {
       if (['.yaml', '.json'].contains(p.extension(file.path))) {
@@ -317,7 +317,7 @@ void main() {
       }
     }
     final result = await generate();
-    expect(rows(result), hasLength(11));
+    expect(rows(result), hasLength(12));
     expect(jsonEncode(result), isNot(contains('message-recall')));
     final accepted = await accept(result);
     final sync =

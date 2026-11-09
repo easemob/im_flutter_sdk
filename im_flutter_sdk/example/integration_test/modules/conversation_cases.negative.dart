@@ -49,3 +49,22 @@ void registerConversationNegativeCases({
     expect((reloaded!.body as ChatTextMessageBody).content, 'stored');
   });
 }
+
+void registerConversationPaginationNegativeCases({
+  required ChatClient client,
+}) {
+  // Test: Pass a malformed nonempty pagination cursor after initialization
+  // with autoLoadConversations=false. Expected: Native invalid-param code 110.
+  ciTestWidgets(
+      'FL-CONV-012 negative database pagination rejects invalid cursor',
+      (_) async {
+    expect(client.options!.autoLoadConversations, isFalse);
+    await expectCiError(
+      () => client.chatManager.getConversationsFromDB(
+        cursor: 'ci-invalid-cursor-not-generated-by-sdk',
+        pageSize: 2,
+      ),
+      110,
+    );
+  });
+}

@@ -41,3 +41,7 @@ rg -n 'message.status = MessageStatus.PROGRESS|onMessageError' im_flutter_sdk/li
 ```
 
 先查看错误码与本次消息 ID 是否匹配，再比较回调消息和原发送对象。不要通过增加睡眠或放宽错误码来处理状态不一致。
+
+## 2026-11-09：5.1.0 验证补充
+
+Flutter 四包及 native 依赖升级到 5.1.0 后，FL-MSG-006/007 在本轮 Android/iOS 仍收到预期错误码 201/500，但回调消息状态为 PROGRESS，FAIL 断言失败。证据见[5.1.0 验证统计与问题表](../../porting/5.1.0/2026-11-09-test-verification.md)中的 `smoke-{android,ios}.log`、`nightly-android-r2.log`、`nightly-ios.log`。用户要求记录后跳过，恢复任务没有再次执行这两个用例，也未改 SDK 或放宽断言。旧版源码分析不能替代本轮二进制根因确认，具体层次仍待确认。

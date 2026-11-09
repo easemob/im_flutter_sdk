@@ -1,0 +1,102 @@
+{
+  "_comment": "5.1.0 正向路径（auto 模式）。检查群邀请确认配置的创建返回值、服务端读取及 true→false 更新。群配置使用本轮新建群，无需其他在线客户端，不证明邀请通知或多设备同步。每个后续群步骤直接引用 create_group 的 groupId，读取或更新失败不会阻断 destroy_group；必须核对清理结果，创建超时等无法取得 groupId 的情况另行记录与人工收尾。",
+  "init": {
+    "dataSyncType": 6,
+    "autoLoadConversations": true,
+    "enableChatroomConversation": false,
+    "enableUserInfo": false,
+    "debugMode": false
+  },
+  "steps": [
+    {
+      "api": "ChatGroupManager.createGroup",
+      "id": "create_group",
+      "params": {
+        "groupName": "flutter-port-510-invite-confirm",
+        "desc": "5.1.0 invite confirmation configuration round trip",
+        "configs": {
+          "maxCount": 200,
+          "inviteNeedConfirm": true,
+          "isPublic": false,
+          "joinApprovalRequired": false,
+          "allowInvites": true
+        }
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "groupId",
+            "notEmpty": true
+          },
+          {
+            "path": "configs.inviteNeedConfirm",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "api": "ChatGroupManager.fetchGroupInfoFromServer",
+      "id": "fetch_confirm_true",
+      "params": {
+        "groupId": "$step.create_group.groupId"
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "configs.inviteNeedConfirm",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "api": "ChatGroupManager.updateGroupConfigs",
+      "id": "update_confirm_false",
+      "params": {
+        "groupId": "$step.create_group.groupId",
+        "types": 4,
+        "configs": {
+          "inviteNeedConfirm": false
+        }
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "configs.inviteNeedConfirm",
+            "equals": false
+          }
+        ]
+      }
+    },
+    {
+      "api": "ChatGroupManager.fetchGroupInfoFromServer",
+      "id": "fetch_confirm_false",
+      "params": {
+        "groupId": "$step.create_group.groupId"
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "configs.inviteNeedConfirm",
+            "equals": false
+          }
+        ]
+      }
+    },
+    {
+      "api": "ChatGroupManager.destroyGroup",
+      "id": "destroy_group",
+      "params": {
+        "groupId": "$step.create_group.groupId"
+      },
+      "expect": {
+        "success": true
+      }
+    }
+  ]
+}

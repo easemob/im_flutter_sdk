@@ -1,41 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import '../support/ci_test.dart';
+import '../support/rest_fixture.dart';
 
 void registerConversationCases({
   required ChatClient client,
   required String userId,
+  required CiRestFixture rest,
 }) {
-  var sequence = 0;
-
-  Future<_ConversationFixture> prepare() async {
-    final id =
-        'flutter_ci_conv_${DateTime.now().microsecondsSinceEpoch}_${++sequence}';
-    addTearDown(() async {
-      // Reopen this test's conversation to also reclaim messages retained by
-      // deleteMessages:false, including when the assertion failed midway.
-      await client.chatManager.getConversation(id, createIfNeed: true);
-      await client.chatManager.deleteConversation(id, deleteMessages: true);
-      expect(
-        await client.chatManager.getConversation(id, createIfNeed: false),
-        isNull,
-        reason: 'Cleanup must remove the test conversation $id',
-      );
-    });
-    expect(
-      await client.chatManager.getConversation(id, createIfNeed: false),
-      isNull,
-      reason: 'Reading an absent conversation must not create it',
-    );
-    final conversation = await client.chatManager.getConversation(
-      id,
-      createIfNeed: true,
-    );
-    expect(conversation, isNotNull);
-    return _ConversationFixture(conversation!, userId);
-  }
+  Future<_ConversationFixture> prepare() =>
+      _prepareConversation(client, userId);
 
   group('positive conversation cases', () {
     // Test: Create a local conversation with a seed message, replace its ext
@@ -357,7 +335,24 @@ void registerConversationCases({
         _expectStoredMessage(
             await conversation.loadMessage(seeds[3].msgId), seeds[3]);
         await conversation.deleteAllMessages();
-        await _expectMessages(conversation, const []);
+        final remainingCount = await conversation.messagesCount();
+        final remainingMessages =
+            await conversation.loadMessages(loadCount: 20);
+        Object? remainingLast;
+        try {
+          remainingLast =
+              (await conversation.loadMessage(seeds.last.msgId))?.msgId;
+        } on ChatError catch (error) {
+          // Missing-message lookup differs by platform; this is diagnostic only.
+          remainingLast = 'error:${error.code}';
+        }
+        debugPrint('CI FL-CONV-006 after deleteAllMessages: '
+            'autoLoad=${client.options!.autoLoadConversations} '
+            'count=$remainingCount '
+            'ids=${remainingMessages.map((item) => item.msgId).toList()} '
+            'lastLookup=$remainingLast');
+        expect(remainingCount, 0);
+        expect(remainingMessages, isEmpty);
       },
     );
 
@@ -437,7 +432,253 @@ void registerConversationCases({
         }
       },
     );
+    // Test: Read three uniquely seeded conversations with omitted, enabled,
+    // and disabled sorting. Ignore unrelated account history in assertions.
+    // Expected: Default/true return this subset newest-first; false preserves
+    // the exact subset without imposing an order or requiring a different one.
+    ciTestWidgets(
+      'FL-CONV-010 positive conversation sorting and unsorted membership',
+      (_) async {
+        final fixtures = [await prepare(), await prepare(), await prepare()];
+        for (var index = 0; index < fixtures.length; index++) {
+          final fixture = fixtures[index];
+          await fixture.conversation.insertMessage(
+            fixture.text('sort seed', timestamp: (index + 1) * 1000),
+          );
+        }
+        final ids = fixtures.map((item) => item.conversation.id).toSet();
+        final expected =
+            fixtures.reversed.map((item) => item.conversation.id).toList();
+        for (final isSort in <bool?>[null, true, false]) {
+          final results = isSort == null
+              ? await client.chatManager.loadAllConversations()
+              : await client.chatManager.loadAllConversations(isSort: isSort);
+          final own = results.where((item) => ids.contains(item.id)).toList();
+          expect(own.every((item) => !item.isPinned), isTrue);
+          expect(
+              own.map((item) => item.id),
+              isSort == false
+                  ? unorderedEquals(expected)
+                  : orderedEquals(expected),
+              reason: 'isSort=$isSort must retain all test conversations');
+        }
+      },
+    );
+
+    registerChatroomConversationCases(
+      client: client,
+      userId: userId,
+      rest: rest,
+    );
   });
+}
+
+void registerConversationPaginationCases({
+  required ChatClient client,
+  required String userId,
+}) {
+  Future<_ConversationFixture> prepare() =>
+      _prepareConversation(client, userId);
+
+  // Test: Page through a real database containing three owned conversations,
+  // including two tied timestamps. Follow each native cursor to the last page.
+  // Expected: Null/empty initial cursors agree; pages respect the limit,
+  // cursors and IDs never repeat, and the owned subset is complete and sorted
+  // by time then case-insensitive ID descending. Never delete account history.
+  ciTestWidgets(
+    'FL-CONV-011 positive database pagination preserves continuity and order',
+    (_) async {
+      expect(client.options!.autoLoadConversations, isFalse);
+      final fixtures = [await prepare(), await prepare(), await prepare()];
+      final timestamps = <String, int>{};
+      for (var index = 0; index < fixtures.length; index++) {
+        final fixture = fixtures[index];
+        final timestamp = index == 1 ? 1000 : 2000;
+        timestamps[fixture.conversation.id] = timestamp;
+        await fixture.conversation.insertMessage(
+          fixture.text('database page seed', timestamp: timestamp),
+        );
+      }
+      final first =
+          await client.chatManager.getConversationsFromDB(pageSize: 2);
+      final emptyCursor = await client.chatManager.getConversationsFromDB(
+        cursor: '',
+        pageSize: 2,
+      );
+      expect(emptyCursor.data.map((item) => item.id),
+          orderedEquals(first.data.map((item) => item.id)));
+
+      final seenIds = <String>{};
+      final seenCursors = <String>{};
+      final owned = <ChatConversation>[];
+      var page = first;
+      var reachedEnd = false;
+      for (var pageIndex = 0; pageIndex < 200; pageIndex++) {
+        expect(page.data.length, lessThanOrEqualTo(2));
+        for (final conversation in page.data) {
+          expect(seenIds.add(conversation.id), isTrue,
+              reason: 'Database pagination repeated ${conversation.id}');
+          if (timestamps.containsKey(conversation.id)) {
+            owned.add(conversation);
+          }
+        }
+        final cursor = page.cursor;
+        expect(cursor, isNotNull,
+            reason: 'Native contract uses an empty string for the last page');
+        if (cursor!.isEmpty) {
+          reachedEnd = true;
+          break;
+        }
+        expect(seenCursors.add(cursor), isTrue,
+            reason: 'Database pagination repeated a nonterminal cursor');
+        page = await client.chatManager.getConversationsFromDB(
+          cursor: cursor,
+          pageSize: 2,
+        );
+      }
+      expect(reachedEnd, isTrue,
+          reason: 'Fixture/account exceeds the bounded 200-page budget or '
+              'pagination does not terminate; inspect the database');
+      final expectedIds = timestamps.keys.toList()
+        ..sort((a, b) {
+          final byTime = timestamps[b]!.compareTo(timestamps[a]!);
+          return byTime != 0
+              ? byTime
+              : b.toLowerCase().compareTo(a.toLowerCase());
+        });
+      expect(owned.map((item) => item.id), orderedEquals(expectedIds));
+      expect(owned.every((item) => !item.isPinned), isTrue);
+    },
+  );
+}
+
+void registerChatroomConversationCases({
+  required ChatClient client,
+  required String userId,
+  required CiRestFixture rest,
+}) {
+  // Test: Send a real message in an independently created chatroom without
+  // explicitly creating its local conversation. Run in separate processes
+  // with explicit enableChatroomConversation=false and true.
+  // Expected: The correlated final send callback succeeds; the local list
+  // contains this room exactly once only when conversation creation is enabled.
+  ciTestWidgets(
+    'FL-CONV-013 positive chatroom send obeys conversation creation option',
+    (_) async {
+      final enabled = client.options!.enableChatroomConversation;
+      final run = 'ci_room_${DateTime.now().microsecondsSinceEpoch}';
+      final manager = client.chatManager;
+      String? roomId;
+      // Independent teardown callbacks allow later cleanup after one fails.
+      addTearDown(() async {
+        final id = roomId;
+        if (id == null) return;
+        await manager.deleteConversation(id, deleteMessages: true);
+        expect((await manager.loadAllConversations()).map((item) => item.id),
+            isNot(contains(id)));
+        debugPrint('CI FL-CONV-013 cleanup verified: local room absent');
+      });
+      addTearDown(() async {
+        final id = roomId;
+        if (id == null) {
+          throw StateError('FL-CONV-013 room creation outcome unconfirmed; '
+              'owner=$userId name=$run; verify REST resources');
+        }
+        await rest.deleteChatRoom(id);
+        await rest.verifyChatRoomAbsent(id);
+        debugPrint('CI FL-CONV-013 cleanup verified: REST room $id absent');
+      });
+      roomId = await rest.createChatRoom(
+        owner: userId,
+        name: run,
+        description: run,
+      );
+      final id = roomId;
+      debugPrint('CI FL-CONV-013 resource: room=$id enable=$enabled');
+      final remote = await rest.chatRoom(id);
+      expect(remote, isNotNull);
+      expect(remote!['owner'], userId);
+      expect(remote['name'], run);
+      // Register before join so an interrupted join still attempts to leave.
+      addTearDown(() => client.chatRoomManager
+          .leaveChatRoom(id)
+          .timeout(const Duration(seconds: 15)));
+      await client.chatRoomManager
+          .joinChatRoom(id)
+          .timeout(const Duration(seconds: 30));
+
+      final message = ChatMessage.createTxtSendMessage(
+        targetId: id,
+        content: run,
+        chatType: ChatType.ChatRoom,
+      );
+      final localId = message.msgId;
+      final completion = Completer<({ChatMessage message, ChatError? error})>();
+      manager.addMessageEvent(
+          run,
+          ChatMessageEvent(
+            onSuccess: (messageId, confirmed) {
+              if (messageId == localId && !completion.isCompleted) {
+                completion.complete((message: confirmed, error: null));
+              }
+            },
+            onError: (messageId, failed, error) {
+              if (messageId == localId && !completion.isCompleted) {
+                completion.complete((message: failed, error: error));
+              }
+            },
+          ));
+      addTearDown(() => manager.removeMessageEvent(run));
+      await manager.sendMessage(message).timeout(const Duration(seconds: 30));
+      final result =
+          await completion.future.timeout(const Duration(seconds: 30));
+      expect(result.error, isNull,
+          reason: 'Chatroom send must finish successfully');
+      expect(result.message.status, MessageStatus.SUCCESS);
+      expect(result.message.msgId, isNotEmpty);
+      expect(result.message.to, id);
+      expect(result.message.chatType, ChatType.ChatRoom);
+      expect((result.message.body as ChatTextMessageBody).content, run);
+      final rooms = (await manager.loadAllConversations())
+          .where((conversation) => conversation.id == id)
+          .toList();
+      expect(rooms, hasLength(enabled ? 1 : 0));
+      if (enabled) expect(rooms.single.type, ChatConversationType.ChatRoom);
+      debugPrint('CI FL-CONV-013 verify passed: enable=$enabled room=$id');
+    },
+  );
+}
+
+var _fixtureSequence = 0;
+
+Future<_ConversationFixture> _prepareConversation(
+  ChatClient client,
+  String userId,
+) async {
+  final id =
+      'flutter_ci_conv_${DateTime.now().microsecondsSinceEpoch}_${++_fixtureSequence}';
+  addTearDown(() async {
+    // Reopen this test's conversation to also reclaim messages retained by
+    // deleteMessages:false, including when the assertion failed midway.
+    await client.chatManager.getConversation(id, createIfNeed: true);
+    await client.chatManager.deleteConversation(id, deleteMessages: true);
+    expect(
+      await client.chatManager.getConversation(id, createIfNeed: false),
+      isNull,
+      reason: 'Cleanup must remove the test conversation $id',
+    );
+  });
+  expect(
+    await client.chatManager.getConversation(id, createIfNeed: false),
+    isNull,
+    reason: 'Reading an absent conversation must not create it',
+  );
+  final conversation = await client.chatManager.getConversation(
+    id,
+    createIfNeed: true,
+  );
+  expect(conversation, isNotNull);
+  return _ConversationFixture(conversation!, userId);
 }
 
 final class _ConversationFixture {
