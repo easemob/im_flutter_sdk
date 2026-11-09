@@ -27,7 +27,7 @@
 
 example 可按场景需要注册 SDK 已有公开 API、补齐通知的结构化记录；仅透传实际参数和结果，不增加业务编排。模型序列化由 SDK 的 `toJson()` 提供，公共转换函数不按模型类型特判，不改动解释器契约。
 
-本规格遵循 [规则与边界](../spec.md)、[编写用例](2026-11-06-test-case-authoring.md)、[执行规格](../../docs/spec/2026-11-06-testing-v2-spec.md)及 [flow_runner 语法](../../tool/flow_runner/README.md)。本次不扩展逆向场景、单设备用例或 CI 测试，不使用 `testing/`。
+本规格遵循 [规则与边界](../spec.md)、[编写用例](2026-11-06-test-case-authoring.md)、[执行规格](../../docs/spec/2026-11-06-testing-v2-spec.md)及 [flow_runner 语法](../../tool/flow_runner/README.md)。本次不扩展逆向场景、单设备用例或 CI 测试。
 
 ## 2. 共同规则
 

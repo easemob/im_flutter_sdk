@@ -1,8 +1,8 @@
 # Example HTTP 执行控制协议（v2）
 
 - 日期：2026-11-04；2026-11-05 重写为 v2（演进记录见 §10）。
-- 状态：v2 草案，宿主端（flow_runner）已按此实现，agent 端未实现、未设备验证。
-- 依据：[总体规格](../../docs/spec/2026-11-04-example-testing-spec.md)、[控制流解释器规格](../../docs/spec/2026-11-05-flow-interpreter-spec.md)、[设备 Agent 服务设计](2026-11-05-agent-service.md)。路径均相对 5.0.0 工作树。
+- 状态：宿主端和设备 agent 均已实现；当前多设备执行与验证记录见 [testing_v2](../../../testing_v2/README.md)。
+- 关联：[控制流解释器规格](../../../docs/spec/2026-11-05-flow-interpreter-spec.md)、[设备 Agent 实现](../../../im_flutter_sdk/example/lib/agent/control_server.dart)。
 
 ## 1. 职责与模型
 
@@ -28,7 +28,7 @@ example（agent）：哑执行器 —— 校验 api → runApi → 回实际信�
 
 ## 2. 启用与连接
 
-- 仅 Debug 且 `--dart-define=API_CONTROL=true` 时启动 `dart:io HttpServer`；默认人工启动不监听。example 三种运行模式（人工 / `API_SCRIPT` 脚本 / `API_CONTROL` 监听交互）同一进程同一时刻只允许一种：`API_SCRIPT` 与 `API_CONTROL` 同时设置时拒绝启动双执行入口，人工模式与其余两者由 dart-define 天然互斥（详见 agent-service §4）。
+- 仅 Debug 且 `--dart-define=API_CONTROL=true` 时启动 `dart:io HttpServer`；默认人工启动不监听。example 三种运行模式（人工 / `API_SCRIPT` 脚本 / `API_CONTROL` 监听交互）同一进程同一时刻只允许一种：`API_SCRIPT` 与 `API_CONTROL` 同时设置时拒绝启动双执行入口，人工模式与其余两者由 dart-define 天然互斥。
 - 监听 loopback，端口系统分配。iOS 模拟器宿主直连；Android 经 `adb forward`；iOS USB 真机经 `iproxy`（转发管理在宿主设备工具，不在协议内）。
 - 启动时生成随机控制凭据，经普通 `print` 输出 `[AGENT_CONTROL] {"port":…,"token":…}`——不走结构化日志，凭据因此不进入事件流与归档。
 - 所有 `/v1` 请求要求 `Authorization: Bearer <token>`；请求体上限 1 MiB。

@@ -43,7 +43,7 @@ The input contract, direct device command, and log handling are documented in
 `tool/ci/ensure_example_env.sh` creates the missing gitignored `example/lib/env.dart`
 placeholder for compilation and preserves an existing file. Integration tests
 take credentials from dart-defines, independently of the example's local data
-under `testing/config/environment.local.json`.
+under `im_flutter_sdk/example/config.local.json`.
 
 The latest local positive-suite run passed 22/22 on each platform. Contact
 deletion cases check API completion; earlier local-sync failures remain recorded.

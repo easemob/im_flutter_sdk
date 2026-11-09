@@ -150,13 +150,11 @@ PY
 
 ### 3.7 现有数据准备能力
 
-以下是源码核查结果，未联网执行；现有配置和服务端资源的实际状态在运行时验收。
+以下为保留的数据准备入口；配置和服务端资源的实际状态在运行时验收。临时群组准备与回收见 [CI 资源夹具](../../../im_flutter_sdk/example/integration_test/support/rest_fixture.dart)。
 
 | 入口或工具 | 已有能力与使用边界 |
 |---|---|
-| [Makefile：env-gettoken](../../../Makefile) → [environment.dart](../../../testing/tools/data/environment.dart) → [env_tool.dart](../../../im_flutter_sdk/example/tool/env_tool.dart) | 获取 App Token，再为配置中的账号获取 User Token；账号 ID 保持不变，将账号和配置中的 `groups`、`rooms` 写入 `example/lib/env.dart`。群组 ID 只透传，不创建或核验群组 |
-| `env-gettoken RUN_ID=<id>` | 额外写入 `testing/tmp/<id>/main/environment.json`，仍写同一个 `env.dart`；运行文件独立不等于账号和远端资源独立 |
-| [resources.dart](../../../testing/tools/data/resources.dart) | 独立创建本轮临时群，以第一个账号为群主、第二个为成员，记录资源归属并写入运行环境；不由 `env-gettoken` 调用，当前未进行创建后的成员查询核验 |
+| [Makefile：env-gettoken](../../../Makefile) → [env_tool.dart](../../../im_flutter_sdk/example/tool/env_tool.dart) | 获取 App Token，再为配置中的账号获取 User Token；账号 ID 保持不变，将账号和配置中的 `groups`、`rooms` 写入 `example/lib/env.dart`。群组 ID 只透传，不创建或核验群组 |
 | [rest_resource_client.dart](../../../im_flutter_sdk/example/tool/rest_resource_client.dart) | 提供好友列表查询、直接建立好友关系、双向删除；添加前只查询一个方向，增删后仍需补充双向核验，不能将无异常返回当成关系已核验 |
 
 CI 参考这些基础能力，不因此接入 AI 测试编排或改变既有入口。复用已有群组时先验证资源及成员，只删除本轮创建的群；既有关系按修改前状态恢复。上述生成入口不会强制创建 Room 或 Thread，本轮也不调用这些能力。

@@ -34,7 +34,6 @@ CI 使用 Flutter 单元、契约和设备集成测试；AI 使用 JSON 脚本�
 ├── im_flutter_sdk_interface/   # MethodChannel 平台接口
 ├── im_flutter_sdk_android/     # Android 原生封装
 ├── im_flutter_sdk_ios/         # iOS 原生封装及依赖配置
-├── testing/                    # 数据准备工具、已有协同用例及组合脚本
 ├── testing_v2/                 # Dart 多设备测试 CLI、用例、报告及排查文档
 ├── tool/                       # 仓库开发工具、单设备报告工具
 │   ├── ci/                     # CI 检查与设备测试的执行入口
@@ -45,7 +44,7 @@ CI 使用 Flutter 单元、契约和设备集成测试；AI 使用 JSON 脚本�
 └── Makefile                    # 环境准备和常用开发命令
 ```
 
-`testing_v2` 当前用于多设备执行；`testing/flows/` 中的用例使用[对应脚本入口](testing/scripts/README.md)。本地凭据、生成账号数据、构建缓存和运行报告由各工具管理，不纳入 Git。
+`testing_v2` 用于多设备执行；单设备脚本使用 `make auto-report`。本地凭据、生成账号数据、构建缓存和运行报告由各工具管理，不纳入 Git。
 
 ## 文档
 

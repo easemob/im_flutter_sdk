@@ -36,7 +36,7 @@ Future<void> main(List<String> argv) async {
     ..addOption('evidence-dir',
         help: 'private directory for runtime values and trace')
     ..addOption('report-dir',
-        defaultsTo: 'testing/reports', help: 'directory for run reports')
+        defaultsTo: 'reports/flow_runner', help: 'directory for run reports')
     ..addOption('agents-file',
         help: 'runtime agent credentials JSON (role/endpoint/token/env); '
             'overrides the YAML agent declarations (dynamic ports/tokens)')

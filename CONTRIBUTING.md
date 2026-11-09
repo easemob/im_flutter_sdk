@@ -28,8 +28,8 @@ The `Makefile` at the project root is the local development entry point; run `ma
 | target | Purpose |
 |--------|---------|
 | `make setup` | Runs `config` + `deps` + `pods` in sequence |
-| `make config` | Generates `testing/config/environment.local.json` (from `testing/config/environment.example.json`, or imports the old example config once) and a placeholder `example/lib/env.dart` (from `example/templates/env.example.dart`); skipped if they already exist |
-| `make env-gettoken` | Exchanges user tokens for each account on the host per `testing/config/environment.local.json` and writes `example/lib/env.dart` directly; exits non-zero when required fields are missing or still `TODO` |
+| `make config` | Generates `im_flutter_sdk/example/config.local.json` (from `im_flutter_sdk/example/templates/config.local.example.json`) and a placeholder `example/lib/env.dart` (from `example/templates/env.example.dart`); skipped if they already exist |
+| `make env-gettoken` | Exchanges user tokens for each account on the host per `im_flutter_sdk/example/config.local.json` and writes `example/lib/env.dart` directly; exits non-zero when required fields are missing or still `TODO` |
 | `make local-deps` | Generates gitignored local dependency overrides for the main package, Android, iOS, and example; preserves existing files |
 | `make deps` | Runs `make local-deps`, then `flutter pub get` in the example directory |
 | `make pods` | Runs `deps` first, then uses mtime to check whether Podfile/podspec is newer than Podfile.lock, running `pod install` in `example/ios` only when needed |
@@ -52,16 +52,16 @@ For release validation, use a checkout without overrides, or temporarily move th
 
 ## Test Data Preparation
 
-The consolidated entry is [testing/README.md](testing/README.md). Phase one is in progress; the new multi-device runner is not available yet. `make config` now creates `testing/config/environment.local.json`, importing the existing example config once without overwriting it. Edit the new location for all subsequent `make env-gettoken` runs.
+Manual and single-device script modes use [the example environment](im_flutter_sdk/example/README.md#setup). Multi-device execution uses [testing_v2](testing_v2/README.md) and its own account preparation. `make config` creates `im_flutter_sdk/example/config.local.json` without overwriting an existing file.
 
 Example run data is prepared in two steps; both products are local files and neither is committed:
 
-1. **Credentials and test data**: `make config` generates `testing/config/environment.local.json`; fill in `restApi`, `appKey`, `clientId` / `clientSecret`, plus the test `accounts`, `groups`, and `rooms` per the `TODO` placeholders in `testing/config/environment.example.json`.
+1. **Credentials and test data**: `make config` generates `im_flutter_sdk/example/config.local.json`; fill in `restApi`, `appKey`, `clientId` / `clientSecret`, plus the test `accounts`, `groups`, and `rooms` per the `TODO` placeholders in `im_flutter_sdk/example/templates/config.local.example.json`.
    - The project configures **one environment only**: this file describes the environment currently being run. To switch environments, edit this file's values directly, or keep multiple copies outside Git (e.g. `config.ngi.json` / `config.ebs.json`) and swap them in; the tooling does not do multi-environment selection.
    - Private deployment is not a separate mode: set the top-level `enablePrivateConfig` to `true` and fill in `webSocketServer` / `restServer` / `msyncServer`; the generated `env.dart` will carry these server fields and force `enableDNSConfig=false`.
 2. **Environment and tokens**: `make env-gettoken` exchanges an app token for each account's user token on the host and writes them directly into `example/lib/env.dart`. The app token and `clientSecret` are not written to the env file.
 
-`testing/config/environment.local.json` and `example/lib/env.dart` are both gitignored; do not commit them. The legacy example config remains local for older tools but is no longer read by the Makefile entry points.
+`im_flutter_sdk/example/config.local.json` and `example/lib/env.dart` are both gitignored; do not commit them.
 
 ## Running and Verification
 
@@ -96,7 +96,7 @@ Each run writes `run.json`, `events.jsonl`, `crash.log`, `steps.json`, `summary.
 
 ### Quality Gate
 
-`tool/ci/run_quality.sh` is CI's quality job — locally and in CI the same gate applies. It first generates local SDK overrides with `tool/use_local_packages.sh`, then calls `tool/ci/ensure_example_env.sh`: if `im_flutter_sdk/example/lib/env.dart` does not exist, it generates an empty placeholder from `example/templates/env.example.dart`; if it already exists, it is kept as-is. This file is gitignored; without it a fresh checkout of the example cannot compile at all, and `flutter analyze` directly reports `Target of URI doesn't exist: '../env.dart'`. The script fills in only this one file — it **does not generate `testing/config/environment.local.json`**: the credentials in that file belong to each user's own environment configuration, read only by local `make env-gettoken`; CI does not fabricate one for anyone. It then runs in order:
+`tool/ci/run_quality.sh` is CI's quality job — locally and in CI the same gate applies. It first generates local SDK overrides with `tool/use_local_packages.sh`, then calls `tool/ci/ensure_example_env.sh`: if `im_flutter_sdk/example/lib/env.dart` does not exist, it generates an empty placeholder from `example/templates/env.example.dart`; if it already exists, it is kept as-is. This file is gitignored; without it a fresh checkout of the example cannot compile at all, and `flutter analyze` directly reports `Target of URI doesn't exist: '../env.dart'`. The script fills in only this one file — it **does not generate `im_flutter_sdk/example/config.local.json`**: the credentials in that file belong to each user's own environment configuration, read only by local `make env-gettoken`; CI does not fabricate one for anyone. It then runs in order:
 
 1. `flutter pub get` in the 5 packages in sequence;
 2. `dart format --set-exit-if-changed`: checks only changed `.dart` files; the baseline is specified by `FORMAT_BASE_SHA` (CI passes the PR base / pre-push sha), falling back to `HEAD^` when unset locally;
@@ -135,7 +135,7 @@ Every device task on CI has an equivalent local script; the scripts first compar
 
 Android requires a booted emulator (the scripts hard-connect to `emulator-5554`); on iOS, `run_ios_simulator_test.sh` boots the simulator itself, with logs written to `artifacts/*.log` (gitignored).
 
-The two example build jobs in `ci.yml` and both `run_*_test.sh` scripts call `tool/ci/ensure_example_env.sh` to create the missing `example/lib/env.dart` placeholder without overwriting an existing file. This satisfies the compilation dependency only. CI integration tests read credentials from dart-defines; `testing/config/environment.local.json` and `make env-gettoken` prepare data for the example's manual/script modes and do not supply the CI test configuration automatically.
+The two example build jobs in `ci.yml` and both `run_*_test.sh` scripts call `tool/ci/ensure_example_env.sh` to create the missing `example/lib/env.dart` placeholder without overwriting an existing file. This satisfies the compilation dependency only. CI integration tests read credentials from dart-defines; `im_flutter_sdk/example/config.local.json` and `make env-gettoken` prepare data for the example's manual/script modes and do not supply the CI test configuration automatically.
 
 Both `run_*_test.sh` scripts uninstall the app before running to avoid leftover login state in cold-start cases such as `FL-APP-001`. Reinstalling does not remove server-side history. Contact deletion cases prepare friendship only and check the delete API's successful completion; they do not prepare or inspect conversations or messages.
 

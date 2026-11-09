@@ -537,7 +537,7 @@ void _verifyCommandIds(FlowSpec spec) {
 /// Apply a runtime agents-file (per-run dynamic credentials) onto a parsed
 /// flow spec, in place.
 ///
-/// File format (produced by `testing/scripts/setup_devices`):
+/// File format supplied by the caller's device orchestration:
 ///
 ///     [ {"role": "alice", "endpoint": "http://127.0.0.1:62001",
 ///        "token": "…", "env": {"userId": "…", "userToken": "…"}, …} ]

@@ -4,9 +4,9 @@
 - 状态：v0.2 已实现（60 个单测全绿，analyze 零问题），尚未接真实设备。全部决策已确认（§13）。
 - 工作对象：`im_flutter_sdk/.worktree/5.0.0`，分支 `5.0.0`。
 - 关联文档：
-  - 总体规格：[Example 测试脚本与工具体系规格](2026-11-04-example-testing-spec.md)
-  - HTTP 协议：[设备命令、状态与事件接口 v2](../../testing/spec/2026-11-04-phase-control.md)（本文引用其接口，不重新定义）
-  - agent 实现设计：[设备 Agent HTTP 服务设计](../../testing/spec/2026-11-05-agent-service.md)
+  - 执行规格：[testing_v2](2026-11-06-testing-v2-spec.md)
+  - HTTP 协议：[设备命令、状态与事件接口 v2](../../tool/flow_runner/docs/2026-11-04-phase-control.md)（本文引用其接口，不重新定义）
+  - agent 实现：[HTTP 控制服务](../../im_flutter_sdk/example/lib/agent/control_server.dart)
 - 路径约定：仓库内相对路径以 `5.0.0` 工作树根目录为基准。
 
 ## 1. 背景与定位
@@ -197,7 +197,7 @@ reference := '$' name ( '.' (字段名 | 数字下标) )*                  # 如
   - `wait_event` 的 `match` 引用失败变量不触发跳过（延迟求值天然兼容，见 §6）。
 - **"步骤 ok"跟随 expect 判定而非信封 success**（2026-11-05 评审修订，有意偏离 AutoMode）：逆向用例（`errorCode` 断言命中）是**成功的步骤**——其 `as` 绑定与 `$step.<id>` 记录对下游是 ok 的，不会触发跳过；信封仍完整绑定（`$err.error.code` 可引用）。只有 expect 不匹配（含超时/工具故障）才使生产者"not ok"。注意 `$step.<id>` 寻址的是 **data**（失败调用 data 为 null，AutoMode 语义）——逆向用例的 error 细节需通过 `as` 绑定引用。
 - **同 agent 并发命令**：agent 协议层同一时刻仅一个在途命令（第二个 409 → 工具故障信封）。并行分支只应对**不同** agent 发命令；同 agent 的命令序列天然串行，`$prev` = 最近**完成**命令的 data（完成序），同一 cmd id 多次执行时 `$step.<id>` 取最新一次的结果。
-- 报告：`testing/reports/<run-id>/flow-report.json`。逐步骤记录 `{kind, agent, cmd/event, status, durationMs, result（含 expectMatched、checks 明细、api、unusedInputs）, evidence: {fromSeq, toSeq}}`，末尾汇总 `{total, passed, failed, timeout, skipped}`。expect 判定在宿主（§9），checks 逐项明细直接进报告。
+- 报告：`<report-dir>/<run-id>/flow-report.json`（CLI 默认 report-dir 为 `reports/flow_runner`）。逐步骤记录 `{kind, agent, cmd/event, status, durationMs, result（含 expectMatched、checks 明细、api、unusedInputs）, evidence: {fromSeq, toSeq}}`，末尾汇总 `{total, passed, failed, timeout, skipped}`。expect 判定在宿主（§9），checks 逐项明细直接进报告。
 
 ## 9. 命令注册、查找与判定（决策落地，2026-11-05 下午更新）
 
@@ -310,7 +310,7 @@ tool/flow_runner/            # 纯 Dart package，无 Flutter 依赖，便于日
 已确认（2026-11-05）：
 
 - **设备启动边界**：模拟器 / app / 端口转发由外部脚本负责，解释器只连接已就绪的 agent endpoint。
-- **目录组织**：`testing/flows/<name>.yaml` + `testing/flows/scripts/<actor>_device.json`，报告 `testing/reports/<run-id>/`。
+- **目录组织**：解释器位于 `tool/flow_runner/`，当前协同用例位于 `testing_v2/data/`，执行产物由调用方指定位置。
 - **失败跳过语义**：对齐 AutoMode 的依赖失败跳过，`skipOnFailedDeps` 全局默认 + 步骤级覆盖、局部优先（§8）。v0.2 起覆盖两个来源：流程变量（inputs 引用失败 `as` 绑定）与设备脚本引用（params 引用失败 `$step.<id>`），两者级联一致。
 - **事件命名**：`wait_event` 的 `event` 字段直接使用 SDK 事件处理器方法名（如 `onMessageReceived`、`onMessageReadReceipts`）；agent 侧事件流的 payload 携带该名，解释器只做字符串匹配。
 - **协议 v2（2026-11-05 下午定论）**：命令自带 step 内容（`{api, params}`），宿主侧查库、解析引用并做 expect 判定；agent 为哑执行器，不接触设备脚本；会话绑定取消（见 phase-control §10 演进记录）。理由：宿主本来就要读脚本做静态检查，"绑定 + stage 引用"造成两份脚本状态与重复的解析/跳过逻辑；判断角色归宿主后，`blocked` 状态随依赖跳过统一到宿主而删除。
@@ -318,4 +318,4 @@ tool/flow_runner/            # 纯 Dart package，无 Flutter 依赖，便于日
 
 约束（长期有效）：
 
-- AI 主／子代理协同方案已废弃（2026-11-05 定论：多设备编排由本解释器承担）。`2026-11-04-example-testing-coordination.md` 已移除；保留文档中的代理叙述已改为宿主运行器表述，`testing/spec/2026-11-04-phase-control.md` 的 HTTP 接口作为本解释器的通道依据。解释器的工作只新增自己的文件；当前 `testing/flows/`、`tool/flow_runner/` 与既有目录无命名冲突，后续若出现占用必要名称的情况，向用户报告后处理。
+- 多设备编排由解释器承担；HTTP 接口见 [控制协议](../../tool/flow_runner/docs/2026-11-04-phase-control.md)。

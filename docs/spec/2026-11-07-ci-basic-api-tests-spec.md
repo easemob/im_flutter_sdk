@@ -33,9 +33,9 @@
 
 ### 数据准备与结果验证
 
-数据准备参考 [Makefile 的 env-gettoken](../../Makefile) 及其[生成工具](../../im_flutter_sdk/example/tool/env_tool.dart)：沿用账号与 User Token 的获取方式，群组可取自配置中的已有 ID，但使用前须核验存在性和所需成员。该入口透传群组配置，不创建或核验群组；`RUN_ID` 只增加运行环境 JSON，不隔离远端账号和资源。
+数据准备参考 [Makefile 的 env-gettoken](../../Makefile) 及其[生成工具](../../im_flutter_sdk/example/tool/env_tool.dart)：沿用账号与 User Token 的获取方式，群组可取自配置中的已有 ID，但使用前须核验存在性和所需成员。该入口透传群组配置，不创建或核验群组，也不隔离远端账号和资源。
 
-好友关系准备和恢复使用已有 [REST 资源客户端](../../im_flutter_sdk/example/tool/rest_resource_client.dart) 的查询、添加、删除能力，增删后须双向查询核验；这不作为被测 `deleteContact` 的结果断言。临时群组创建可参考[资源准备工具](../../testing/tools/data/resources.dart)，补足所需成员核验。CI 参考和复用所需基础能力，保持既有数据准备入口行为，不接入 AI 测试编排；凭据获取、资源准备和被测 SDK 断言职责分开。
+好友关系准备和恢复使用已有 [REST 资源客户端](../../im_flutter_sdk/example/tool/rest_resource_client.dart) 的查询、添加、删除能力，增删后须双向查询核验；这不作为被测 `deleteContact` 的结果断言。临时群组准备和清理使用 [CI 资源夹具](../../im_flutter_sdk/example/integration_test/support/rest_fixture.dart)，核验所需成员和资源归属。CI 参考和复用所需基础能力，保持既有数据准备入口行为，不接入 AI 测试编排；凭据获取、资源准备和被测 SDK 断言职责分开。
 
 | 对象 | 准备及验证方法 |
 |---|---|

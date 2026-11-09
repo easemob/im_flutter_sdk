@@ -7,16 +7,16 @@
 ## 使用
 
 ```bash
-# 前置：各设备上的 app（agent HTTP 服务）已启动并监听（见 phase-control 协议）
-dart run tool/flow_runner/bin/flow_runner.dart run testing/flows/<name>.yaml \
-    [--report-dir testing/reports] [--agents-file testing/tmp/<run-id>/agents.json] \
+# 前置：各设备上的 app（agent HTTP 服务）已启动并监听（见 docs/2026-11-04-phase-control.md）
+dart run tool/flow_runner/bin/flow_runner.dart run <flow.yaml> \
+    [--report-dir reports/flow_runner] [--agents-file <agents.json>] \
     [--globals-file <global.json>] [--evidence-dir <private-run-dir>] [--no-verify-commands]
 ```
 
 - 退出码：0 = 全部通过；1 = 存在 failed/timeout；64/65/69/70 = 用法/脚本/agent 不可达/解释器错误。
 - 整流程 `flowTimeoutMs` 到期也记 timeout 并退出 1，报告增加 `kind: flow / name: flowTimeoutMs`。宿主停止后续派发与结果接纳；已经发到设备的操作可能仍继续，超时报告不能证明清理完成。
-- 报告输出至 `<report-dir>/<runId>/flow-report.json`。
-- `--agents-file`：注入**运行时动态凭据**（agent 端口/token 每次启动随机、账号绑定每次 run 不同），按角色名覆盖 YAML 声明。通常传 `run_flow` 组合数据和设备后产出的 `testing/tmp/<run-id>/agents.json`，见下文「agents-file 注入」。
+- 报告输出至 `<report-dir>/<runId>/flow-report.json`，默认 report-dir 为 `reports/flow_runner`（相对当前工作目录）。
+- `--agents-file`：注入**运行时动态凭据**（agent 端口/token 每次启动随机、账号绑定每次 run 不同），按角色名覆盖 YAML 声明。文件由调用方的设备编排提供，格式见下文「agents-file 注入」。
 - `--no-verify-commands`：跳过“cmd id 必须存在于设备脚本”的静态检查（草稿期用）。
 
 ## 输入文件
@@ -82,7 +82,7 @@ agent 的端口与配对 token 每次 app 启动都是随机的（多设备共�
 | `env` | 浅合并：file > env 文件 | 注入 `$config`（如 `userId`/`userToken`，供设备脚本 params 引用） |
 
 - file 中出现 YAML 未声明的角色 → **忽略并提示**（agents-file 描述的是本次 run 启动的全部设备，单个 flow 可能只用子集；角色名拼错会表现为该角色缺 endpoint 的报错）；YAML 中无对应 entry 的角色保持原声明。
-- 该文件由测试侧 `context.dart bind` 组合数据与设备清单后产出（`testing/tmp/<run-id>/agents.json`），编排脚本 `run_flow --run-id` 会自动带上。
+- 文件由调用方提供；完整设备准备与用例执行使用 [testing_v2](../../testing_v2/README.md)，无需手动拼接凭据。
 
 ### preconditions（用例前置声明）
 
@@ -268,7 +268,7 @@ op      := == != > >= < <=
 
 根节点为 JSON 对象，`steps` 保持原有命令数组。其同级可以放其他数据节点（对象、数组或标量）；命令加载器只装载 `steps` 及兼容字段 `init`／`login`，不会将其他节点当作命令、流程控制或自动注入的变量。数据如何进入运行上下文，由相应外部工具定义。
 
-例如本仓库 presence JSON 的 `data` 由 `testing/scripts/prepare_data` 消费，用于账号分配和生成本轮唯一标识，规则见[测试动态数据规范](../../testing/docs/2026-11-06-dynamic-data-contract.md#11-用例-json-容器规则)。这些业务准备规则不属于解释器；不带 `data` 的旧命令 JSON 仍可使用。
+例如本仓库 Presence JSON 的 `data` 由 testing_v2 数据模块消费，用于业务输入和生成本轮唯一标识，规则见[执行规格](../../docs/spec/2026-11-06-testing-v2-spec.md)。这些业务准备规则不属于解释器；不带 `data` 的命令 JSON 仍可使用。
 
 ```json
 {
@@ -336,7 +336,7 @@ JSON 对象，整份成为该 agent 的 `$config`，同时挂到 `$agents.<role>
 
 报告判定状态：`passed / failed / timeout / skipped`；failed/timeout 的步骤结果带完整信封 + `expectMatched` + checks 明细 + `unusedInputs`。
 
-批量事件的实际例子见 [Presence 控制流](../../testing/flows/5.0.0-multi-presence-positive.yaml)：逐批等待、逐元素比较 publisher 和本轮状态描述。循环中单次 `wait_event passed` 表示读到该批事件，整条用例通过还要求业务条件满足和尾部验证完成。用例及验证证据见 [记录](../../docs/refs/multi-device-testing/2026-11-06-presence-collaboration-verification.md)。
+批量事件的实际例子见 [Presence 控制流](../../testing_v2/data/5.0.0-multi-presence-positive.yaml)：匹配列表中同一元素的 publisher 和本轮状态描述。用例及验证证据见 [验证记录](../../testing_v2/docs/2026-11-07-multi-device-cases-verification.md)。
 
 ## 结构
 
@@ -376,4 +376,4 @@ dart test
 - 事件 checks 的引用必须在进入等待前就绪。App 从流程开始持续留存事件，因此匹配能读取命令响应之前已经到达的通知。
 - `--evidence-dir <dir>` 保存参数 trace、引用读取、最终 global 及原始事件；目录包含原始凭据，仅供本地排查。报告继续由 `--report-dir` 指定。
 
-具体项目约束及运行产物见 [动态数据规范](../../testing/docs/2026-11-06-dynamic-data-contract.md) 和 [组合脚本说明](../../testing/scripts/README.md)。重复执行需要明确的不同结果绑定；本次不增加自动取“最新值”或历史索引语法。
+具体项目约束及运行产物见 [testing_v2 执行规格](../../docs/spec/2026-11-06-testing-v2-spec.md)和[使用说明](../../testing_v2/README.md)。重复执行需要明确的不同结果绑定；本次不增加自动取“最新值”或历史索引语法。

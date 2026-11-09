@@ -39,7 +39,7 @@ Dependency direction: `im_flutter_sdk` → `im_flutter_sdk_android` / `im_flutte
 - Keep CI and AI test architectures independent. Their case formats and execution engines are maintained separately; API coverage may overlap, and a pass in one mode does not replace verification in another. Manual mode is an interactive usage path, not an automated test suite.
 - For each SDK version port, pass the relevant single-device and multi-device scenarios on the affected platforms. Then add CI regression tests for basic behavior, important boundaries, and fixed defects that need lasting protection; do not mechanically duplicate every AI script.
 - AI scenarios are executed by the script runner. AI authors cases, initiates runs, and analyzes evidence; it does not control each step of a fixed workflow. Investigate failed cases and never weaken correct assertions to accommodate an SDK defect.
-- Select the entry point that supports the case: `testing_v2` handles multi-device execution; single-device scripts use `make auto-report`. Existing `testing/flows/` cases use the [testing script entry points](testing/scripts/README.md). Changes to `testing_v2` must follow [its scope and collaboration rules](testing_v2/spec.md).
+- Select the entry point that supports the case: `testing_v2` handles multi-device execution; single-device scripts use `make auto-report`. Changes to `testing_v2` must follow [its scope and collaboration rules](testing_v2/spec.md).
 
 ## Development Environment Setup
 
@@ -53,8 +53,8 @@ make setup   # config + deps + pods
 
 | target | Purpose |
 |--------|---------|
-| `make config` | Creates `testing/config/environment.local.json` (imports existing example credentials once) and placeholder `example/lib/env.dart` (both gitignored) |
-| `make env-gettoken` | Fetches a User Token for each account per `testing/config/environment.local.json` and generates `example/lib/env.dart` directly (the project configures only one environment; switching environments = editing this file) |
+| `make config` | Creates `im_flutter_sdk/example/config.local.json` and placeholder `example/lib/env.dart` (both gitignored) |
+| `make env-gettoken` | Fetches a User Token for each account per `im_flutter_sdk/example/config.local.json` and generates `example/lib/env.dart` directly (the project configures only one environment; switching environments = editing this file) |
 | `make auto-report PLATFORM=<android\|ios> [DEVICE=<id>] [SCRIPT=<json>]` | Runs the 5.0.0 auto script (defaults to the positive path `script_500_apis_positive.json`; use `SCRIPT=` to specify the negative script), explicitly boots the emulator, and produces sanitized events, crash evidence, and issue candidates under the Git-ignored `reports/5.0.0/<run-id>/` |
 | `make auto-compare ANDROID=<run-dir> IOS=<run-dir>` | Compares two Android/iOS runs of the same path, writes `reports/5.0.0/comparison-<path>-<timestamp>.md`, and exits non-zero when steps diverge |
 | `make local-deps` | Creates local dependency overrides for the main package, Android, iOS, and example; preserves existing override files |

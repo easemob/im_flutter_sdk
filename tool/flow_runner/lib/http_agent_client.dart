@@ -1,5 +1,5 @@
 /// HTTP AgentClient implementing the phase-control protocol v2
-/// (testing/spec/2026-11-04-phase-control.md):
+/// (../docs/2026-11-04-phase-control.md):
 ///
 /// - `GET  /v1/info`                 handshake (version/platform/instanceId)
 /// - `POST /v1/commands`             submit {commandId, api, params, timeoutMs}
@@ -40,8 +40,7 @@ class HttpAgentClient implements AgentClient {
   // Agent endpoints are 127.0.0.1 loopback services; never route them
   // through an ambient proxy (Dart honors lowercase http_proxy by default,
   // which breaks local requests when a local proxy is configured).
-  final HttpClient _http =
-      HttpClient()..findProxy = (uri) => 'DIRECT';
+  final HttpClient _http = HttpClient()..findProxy = (uri) => 'DIRECT';
 
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',

@@ -12,18 +12,18 @@ Before first run, from the project root:
 make setup
 ```
 
-This creates the ignored local files `testing/config/environment.local.json`
+This creates the ignored local files `im_flutter_sdk/example/config.local.json`
 (relative to the worktree root) and example `lib/env.dart`
 from templates, runs `flutter pub get`, and runs `pod install` if the Podfile or
-podspec changed. Existing example credentials are imported once and kept intact.
-Fill `testing/config/environment.local.json` with the environment you test against,
+podspec changed. Existing configuration and generated environment files are kept intact.
+Fill `im_flutter_sdk/example/config.local.json` with the environment you test against,
 then fetch user tokens and generate the environment:
 
 ```bash
 make env-gettoken
 ```
 
-The project configures a single environment: `testing/config/environment.local.json` holds that
+The project configures a single environment: `im_flutter_sdk/example/config.local.json` holds that
 environment's `restApi`, `appKey`, `clientId`, `clientSecret`, accounts, groups,
 rooms, and chat options, and `make env-gettoken` writes them into `lib/env.dart`.
 To switch environments, edit or replace that file — keep your own copies (for
@@ -37,9 +37,9 @@ separate mode: set the top-level `enablePrivateConfig` to `true` and fill
 `webSocketServer` / `restServer` / `msyncServer`; `msyncServer` is then mapped to
 Flutter's `imServer` and `enableDNSConfig` is forced to `false`.
 
-See [the consolidated testing entry](../../testing/README.md) for data tools and
-phase-one progress. The multi-device runner is still being developed; the
-manual mode and legacy script commands below remain available.
+Multi-device scenarios use [testing_v2](../../testing_v2/README.md) and its own
+account preparation. The manual and single-device script modes below use this
+example environment.
 
 ## Page flow
 

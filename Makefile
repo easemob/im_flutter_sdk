@@ -3,7 +3,7 @@
 
 EXAMPLE_DIR := im_flutter_sdk/example
 IOS_DIR     := $(EXAMPLE_DIR)/ios
-ENV_TOOL    := testing/tools/data/environment.dart
+ENV_TOOL    := $(EXAMPLE_DIR)/tool/env_tool.dart
 PODSPEC     := im_flutter_sdk_ios/ios/im_flutter_sdk_ios.podspec
 PODFILE     := $(IOS_DIR)/Podfile
 PODLOCK     := $(IOS_DIR)/Podfile.lock
@@ -24,8 +24,8 @@ setup: config deps pods ## Run all setup steps
 config: ## Create local config and placeholder env.dart if missing
 	dart run $(ENV_TOOL) ensure
 
-env-gettoken: ## Fetch tokens and write example/lib/env.dart; RUN_ID also prepares isolated run data
-	dart run $(ENV_TOOL) gettoken $(if $(RUN_ID),"$(RUN_ID)",)
+env-gettoken: ## Fetch tokens from example/config.local.json and write example/lib/env.dart
+	dart run $(ENV_TOOL) gettoken
 
 auto-report: local-deps ## Run 5.0.0 auto mode and write a local report: make auto-report PLATFORM=android [DEVICE=...] [SCRIPT=...]
 	@test "$(PLATFORM)" = "android" || test "$(PLATFORM)" = "ios" || (echo "Usage: make auto-report PLATFORM=<android|ios> [DEVICE=<id>] [SCRIPT=<json>]" && exit 2)

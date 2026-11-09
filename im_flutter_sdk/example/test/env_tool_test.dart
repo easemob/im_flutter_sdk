@@ -203,8 +203,7 @@ void main() {
           ],
         }));
 
-        final runtimeConfig = File('${temporary.path}/run/environment.json');
-        await generateEnvironment(paths, runtimeConfig: runtimeConfig);
+        await generateEnvironment(paths);
 
         final generated = await paths.activeEnv.readAsString();
         expect(generated, contains('"appKey": "org#app"'));
@@ -212,11 +211,7 @@ void main() {
         expect(generated, contains('"id": "g1"'));
         expect(generated, isNot(contains('cluster')));
         expect(generated, isNot(contains('client-secret')));
-        final runtime = jsonDecode(await runtimeConfig.readAsString()) as Map;
-        expect(runtime['accounts'], [
-          {'id': 'u1', 'token': 'user-token'},
-        ]);
-        expect(runtime, isNot(contains('clientSecret')));
+        expect(generated, contains('"token": "user-token"'));
         expect(requestCount, 2);
       } finally {
         await server.close(force: true);

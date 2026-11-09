@@ -60,11 +60,6 @@ app.*.map.json
 # Local CI logs, retry output, and device diagnostics.
 /artifacts/
 
-# Local testing credentials, transient files and self-contained run reports.
-/testing/config/environment.local.json
-/testing/tmp/
-/testing/reports/
-
 # Created by https://www.toptal.com/developers/gitignore/api/windows,macos,linux,flutter
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows,macos,linux,flutter
 
@@ -211,6 +206,3 @@ $RECYCLE.BIN/
 .worktree/
 pubspec_overrides.yaml
 .codex/
-
-# Dart workspace (testing tools)
-.dart_tool/
