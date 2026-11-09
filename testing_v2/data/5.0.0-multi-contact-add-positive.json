@@ -36,6 +36,18 @@
       "params": {"userId": "$global.account.account1.userId"}
     },
     {
+      "id": "alice_contacts",
+      "api": "ChatContactManager.getAllContactIds",
+      "params": {},
+      "expect": {"success": true, "checks": [{"path": "", "contains": "$global.account.account2.userId"}]}
+    },
+    {
+      "id": "bob_contacts",
+      "api": "ChatContactManager.getAllContactIds",
+      "params": {},
+      "expect": {"success": true, "checks": [{"path": "", "contains": "$global.account.account1.userId"}]}
+    },
+    {
       "id": "delete_contact",
       "api": "ChatContactManager.deleteContact",
       "params": {"userId": "$global.account.account2.userId", "keepConversation": true}
@@ -57,6 +69,8 @@
     "global.biz.event.invited",
     "global.biz.result.acceptance",
     "global.biz.event.accepted",
+    "global.biz.result.alice_contacts",
+    "global.biz.result.bob_contacts",
     "global.biz.result.cleanup_contact",
     "global.biz.result.alice_logout",
     "global.biz.result.bob_logout"

@@ -66,6 +66,12 @@ steps:
               match: {userId: '$global.account.account2.userId'}
               as: global.biz.event.accepted
               onFail: abort_flow
+            - cmd: alice_contacts
+              agent: alice
+              as: global.biz.result.alice_contacts
+            - cmd: bob_contacts
+              agent: bob
+              as: global.biz.result.bob_contacts
   # Receipt timeout must not leave the successfully created relationship behind.
   - if: '$accepted'
     then:

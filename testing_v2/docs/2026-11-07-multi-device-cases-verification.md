@@ -8,7 +8,7 @@
 |---|---|---|
 | 消息送达 | Android 三轮通过；iOS 另有一轮通过 | [送达回执记录](../troubleshooting/2026-11-07-delivery-receipt-read-flag.md) |
 | 消息已读 | Android 连续三轮通过，每轮 13/13，任务故障 0 | 见轮次表 |
-| 联系人申请与接受 | Android 连续三轮通过，每轮 13/13，任务故障 0 | 见轮次表 |
+| 联系人申请与接受 | 原场景 Android 连续三轮 13/13；增加接受后双方本地联系人检查后，Android、iOS 各一轮 15/15，任务故障 0 | 见轮次表及 2026-11-09 记录 |
 | 公开群入群 | Android 连续三轮通过，每轮 12/12，任务故障 0 | 见轮次表 |
 | Presence | Android 连续三轮通过；iOS 全流程和分环节各通过一轮，均 16/16、任务故障 0 | 见轮次表及 README 实操验证 |
 | 同账号双设备消息同步 | Android 连续三轮通过，每轮 13/13，任务故障 0 | 见轮次表 |
@@ -185,3 +185,16 @@ Presence 三轮均在同一事件元素内匹配 B 与本轮唯一描述；辅�
 - 结果：设备准备、重新构建、安装启动及执行成功，CLI 退出码 0；Presence 16/16 步通过，任务故障 0。A 的 `onPresenceStatusChanged`（`seq=30`）同时匹配 B 与本轮唯一发布值；退订、恢复原状态、双方 logout 和 HTTP finish 成功。
 - 产物：`reports/<runId>/summary.md`、`statistics.csv`、`process.json` 自动生成；步骤报告及原始事件位置同上。过程记录的 33 个阶段证据引用均可读取，未清理产物。
 - 本轮抽验未发现 README 操作或场景执行问题，未修改代码和用例；仅验证一个场景的一轮，不代表全部 iOS 场景或多轮稳定性验证。
+
+## 2026-11-09：接受好友申请后检查双方本地联系人
+
+按用户确认范围，在 A 收到接受通知后，双方分别调用 `getAllContactIds`，断言本地列表包含对方。两项检查均列入必要绑定；任一端检查失败仍继续另一端检查、删除关系及双方退出。不增加添加前或删除后的本地状态检查。
+
+| 平台 | 轮次 | 结果 |
+|---|---|---|
+| 双 Android | `20261109-111043-contact-add-f5480c6b` | 15/15，任务故障 0，CLI 退出码 0 |
+| 双 iOS | `20261109-111302-contact-add-5c61c6d1` | 15/15，任务故障 0，CLI 退出码 0 |
+
+两轮原始查询结果均为 A（`zuoyu01`）得到 `[zuoyu02]`、B（`zuoyu02`）得到 `[zuoyu01]`；删除调用、双方退出通过。两端均重新构建并通过 `all` 入口执行，冻结的 YAML/JSON 与当前源文件逐字节一致。本次各验证一轮，不作为修改后连续三轮稳定性结论。
+
+证据：`reports/<runId>/summary.md` 及 `reports/<runId>/5.0.0-multi-contact-add-positive/1/flow-report.json`。流程回归 `dart test test/message_read_contact_cases_test.dart` 共 11 项通过，覆盖任一端缺少对方时断言失败且保留另一端检查和收尾；`dart analyze` 通过。

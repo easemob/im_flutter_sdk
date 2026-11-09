@@ -96,12 +96,13 @@ Native 5.0.0 的自动送达回执路径也要求消息 `isNeedReadReceipt: true
 | 2 | B | `onContactInvited` | 同时匹配 `userId=A` 和本轮 reason，才允许接受。 |
 | 3 | B | `ChatContactManager.acceptInvitation`：`userId=A` | 调用成功；不能预先由 REST 建立关系。 |
 | 4 | A | `onFriendRequestAccepted` | `userId=B`，结合步骤 1–3 的本轮邀请链路判定。 |
-| 5 | A | `ChatContactManager.deleteContact`：`userId=B`、`keepConversation=true` | 接受已成功时，无论通知是否通过都尝试解除关系；仅以调用成功判断清理。 |
-| 6 | 已登录的 A、B | `ChatClient.logout` | 两端独立退出。 |
+| 5 | A、B | `ChatContactManager.getAllContactIds` | 收到接受通知后，分别检查 A 的本地联系人列表包含 B、B 的本地联系人列表包含 A；任一检查失败不阻止另一端检查及收尾。 |
+| 6 | A | `ChatContactManager.deleteContact`：`userId=B`、`keepConversation=true` | 接受已成功时，无论通知或联系人检查是否通过都尝试解除关系；仅以调用成功判断清理。 |
+| 7 | 已登录的 A、B | `ChatClient.logout` | 两端独立退出。 |
 
 数据模块只能证明非好友，不能证明没有历史待处理申请。使用专用账号、唯一 reason 和先邀请后接受的完整证据链；发现历史申请干扰或上一轮结果未知时，记录后暂停本例，不能将无法观测的状态记为已核验。已收到本轮邀请但未尝试接受时，可对 A 调用 `declineInvitation` 清理该申请；写操作结果未知时不盲目重发，记录待处置状态。
 
-初始化、登录、连接、申请、邀请事件、接受、接受事件、解除关系和正常退出均列入必要绑定。不追加本地联系人同步、会话或 REST 删除后断言；下一次执行仍核验非好友前置。
+初始化、登录、连接、申请、邀请事件、接受、接受事件、双方本地联系人包含对方、解除关系和正常退出均列入必要绑定。不追加添加前或删除后的本地联系人检查、会话或 REST 删除后断言；下一次执行仍核验非好友前置。
 
 ### 3.4 公开群入群通知
 

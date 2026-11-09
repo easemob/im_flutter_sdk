@@ -215,6 +215,7 @@ void main() {
     bool omitAcceptanceEvent = false,
     bool uncertainAcceptance = false,
     bool cleanupFails = false,
+    String? missingContactRole,
   }) {
     for (final role in agents.keys) {
       agents[role]!.respond = (api, params) async {
@@ -250,6 +251,17 @@ void main() {
                 payload: {'userId': 'user-b'}));
           }
         }
+        if (api == 'ChatContactManager.getAllContactIds') {
+          expect(agents['bob']!.calls,
+              contains('ChatContactManager.acceptInvitation'));
+          expect(agents['alice']!.calls,
+              isNot(contains('ChatContactManager.deleteContact')));
+          return Envelope(success: true, status: 'ok', data: [
+            'unrelated-user',
+            if (role != missingContactRole)
+              role == 'alice' ? 'user-b' : 'user-a',
+          ]);
+        }
         if (api == 'ChatContactManager.deleteContact') {
           expect(params, {'userId': 'user-b', 'keepConversation': true});
           if (cleanupFails) {
@@ -270,7 +282,7 @@ void main() {
       () async {
     contactResponses();
     final report = await execute('contact-add');
-    expect(report.records, hasLength(13));
+    expect(report.records, hasLength(15));
     expect(report.records.every((record) => record.status == 'passed'), isTrue);
     expect(
         report.records
@@ -283,6 +295,31 @@ void main() {
         agents.values.every((agent) => agent.calls.last == 'ChatClient.logout'),
         isTrue);
   });
+
+  for (final role in ['alice', 'bob']) {
+    test('$role missing its peer fails without skipping checks or cleanup',
+        () async {
+      contactResponses(missingContactRole: role);
+      final report = await execute('contact-add');
+      for (final checkedRole in ['alice', 'bob']) {
+        expect(
+            report.records
+                .singleWhere(
+                    (record) => record.name == '${checkedRole}_contacts')
+                .status,
+            checkedRole == role ? 'failed' : 'passed');
+      }
+      expect(
+          report.records
+              .singleWhere((record) => record.name == 'delete_contact')
+              .status,
+          'passed');
+      expect(
+          agents.values
+              .every((agent) => agent.calls.last == 'ChatClient.logout'),
+          isTrue);
+    });
+  }
 
   test(
       'a historical invitation cannot trigger acceptance or relationship cleanup',
