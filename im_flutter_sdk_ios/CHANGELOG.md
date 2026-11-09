@@ -1,3 +1,13 @@
+## 5.1.0
+
+### 中文
+
+- `loadAllConversations` 将 `isSort` 传给 native 会话查询 API，默认排序。
+
+### English
+
+- `loadAllConversations` forwards `isSort` to the native conversation API, defaulting to sorting.
+
 ## 5.0.0
 - Upgraded the iOS native SDK dependency to 5.0.0, keeping CocoaPods and SPM consistent;
 - Added the PushKit (VoIP push) route: `bindPushKitToken` calls `registerPushKitToken:completion:` and `unbindPushKitToken` calls `unRegisterPushKitTokenWithCompletion:`;

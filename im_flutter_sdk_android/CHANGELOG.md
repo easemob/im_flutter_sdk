@@ -1,3 +1,13 @@
+## 5.1.0
+
+### 中文
+
+- `loadAllConversations` 根据 `isSort` 选择 native 排序或未排序 API，默认排序。
+
+### English
+
+- `loadAllConversations` selects the sorted or unsorted native API based on `isSort`, defaulting to sorting.
+
 ## 5.0.0
 - Upgraded the Android native SDK dependency to 5.0.0;
 - Registered the iOS-only PushKit method keys (`bindPushKitToken`, `unbindPushKitToken`) to keep the cross-end contract aligned; Android has no PushKit API, so both routes answer with `EMError.OPERATION_UNSUPPORTED` and the Dart API never dispatches them on Android;

@@ -756,7 +756,9 @@
 - (void)loadAllConversations:(NSDictionary *)param
                  channelName:(NSString *)aChannelName
                       result:(FlutterResult)result {
-    NSArray *conversations = [EMClient.sharedClient.chatManager getAllConversations:YES];
+    // 5.1.0
+    BOOL isSort = param[@"isSort"] ? [param[@"isSort"] boolValue] : YES;
+    NSArray *conversations = [EMClient.sharedClient.chatManager getAllConversations:isSort];
     
     NSMutableArray *conList = [NSMutableArray array];
     for (EMConversation *conversation in conversations) {

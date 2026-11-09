@@ -34,10 +34,12 @@ final chatApis = <ApiEntry>[
   ApiEntry(
     name: 'ChatManager.loadAllConversations',
     group: 'ChatManager',
-    description: '从本地数据库读取全部会话；5.0.0 已移除旧服务端会话拉取接口。',
-    paramsTemplate: '{}',
-    invoke: (_) async =>
-        (await ChatClient.getInstance.chatManager.loadAllConversations())
+    description: '读取全部本地会话；isSort 默认为 true，传 false 时不排序。',
+    paramsTemplate: '{"isSort": true}',
+    invoke: (p) async =>
+        (await ChatClient.getInstance.chatManager.loadAllConversations(
+      isSort: p['isSort'] as bool? ?? true,
+    ))
             .map(conversationToScriptJson)
             .toList(),
   ),

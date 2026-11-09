@@ -1,3 +1,13 @@
+## 5.1.0
+
+### 中文
+
+- `ChatManager.loadAllConversations` 新增 `isSort` 参数，默认为 `true`；传 `false` 获取未排序的本地会话列表。
+
+### English
+
+- Added the `isSort` parameter to `ChatManager.loadAllConversations`, defaulting to `true`; pass `false` to get the unsorted local conversation list.
+
 ## 5.0.0
 
 - Upgraded the iOS/Android native SDK dependencies to 5.0.0;

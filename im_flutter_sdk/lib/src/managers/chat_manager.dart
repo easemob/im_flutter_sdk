@@ -875,6 +875,10 @@ class ChatManager {
   ///
   /// Conversations will be first loaded from the cache. If no conversation is found, the SDK loads from the local database.
   ///
+  /// Param [isSort] Whether to sort the conversations. Defaults to `true`.
+  /// Pinned conversations come first, followed by unpinned conversations, in descending order of the latest message timestamp.
+  /// If `false`, the order is unspecified.
+  ///
   /// **Return** All the conversations from the cache or local database.
   ///
   /// **Throws** A description of the exception. See [ChatError].
@@ -885,14 +889,23 @@ class ChatManager {
   ///
   /// 会先从内存中获取，如果没有会从本地数据库获取。
   ///
+  /// Param [isSort] 是否对会话排序，默认为 `true`。
+  /// 按最近一条消息的时间戳倒序返回会话，置顶会话在前，非置顶会话在后。
+  /// 为 `false` 时不保证会话顺序。
+  ///
   /// **Return**  返回获取的会话。
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
   /// ~end
-  Future<List<ChatConversation>> loadAllConversations() async {
+  // 5.1.0
+  Future<List<ChatConversation>> loadAllConversations({
+    bool isSort = true,
+  }) async {
     try {
       Map result = await platform_interface.Client.instance.chatManager
-          .callNativeMethod(ChatMethodKeys.loadAllConversations);
+          .callNativeMethod(ChatMethodKeys.loadAllConversations, {
+        'isSort': isSort,
+      });
       ChatError.hasErrorFromResult(result);
       List<ChatConversation> conversationList = [];
       result[ChatMethodKeys.loadAllConversations]?.forEach((element) {

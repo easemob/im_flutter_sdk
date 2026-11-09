@@ -688,12 +688,16 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void loadAllConversations(JSONObject params, String channelName, Result result) throws JSONException {
+        // 5.1.0
+        boolean isSort = params == null || params.optBoolean("isSort", true);
         asyncHeavyWorkRunnable(()->{
             if (EMClient.getInstance().getCurrentUser() == null || EMClient.getInstance().getCurrentUser().isEmpty()) {
                 onSuccess(result, channelName, new ArrayList<>());
                 return;
             }
-            List<EMConversation> list = EMClient.getInstance().chatManager().getAllConversationsBySort();
+            List<EMConversation> list = isSort
+                    ? EMClient.getInstance().chatManager().getAllConversationsBySort()
+                    : new ArrayList<>(EMClient.getInstance().chatManager().getAllConversations().values());
             List<Map> conversations = new ArrayList<>();
             for (EMConversation conversation : list) {
                 conversations.add(ConversationHelper.toJson(conversation));
