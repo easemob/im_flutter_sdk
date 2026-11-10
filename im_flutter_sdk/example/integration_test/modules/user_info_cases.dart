@@ -15,6 +15,9 @@ void registerUserInfoCases({
   // Test: Subscribe to a fresh offline non-friend, query the actual user list,
   // unsubscribe, and verify that the target disappears. Never edit user info
   // or use this historically defective query to snapshot existing relations.
+  // Expected: With user-info support enabled, fetchSubscribedUsers contains
+  // the peer exactly once after subscription and excludes it after removal.
+  // Cleanup removes any remaining subscription and deletes the fresh peer.
   ciTestWidgets(
     'FL-USERINFO-001 subscribed user list includes and removes a fresh peer',
     (_) async {
@@ -59,6 +62,10 @@ void registerUserInfoCases({
   // Test: Change one reversible own attribute, then read it through the own,
   // ID-based, and native local APIs. Clear only the Dart cache before remote
   // reads so updateUserInfo's cached return cannot satisfy these assertions.
+  // Expected: With user-info support enabled, the update result, fetchOwnInfo,
+  // fetchUserInfoById, and getLocalUserInfoByIds return our ID and new gender;
+  // ID-based query results contain only our ID. Cleanup restores and verifies
+  // the original gender, then clears the Dart cache.
   ciTestWidgets(
     'FL-USERINFO-002 own attribute update is returned by remote and local queries',
     (_) async {

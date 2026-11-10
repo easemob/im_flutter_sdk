@@ -115,6 +115,9 @@ void registerContactCases({
 
   // Test: Update a prepared contact's remark and verify the local detail and
   // list. Restore the old remark before restoring the original relationship.
+  // Expected: getContact returns the peer with the new remark; getAllContacts
+  // contains that peer exactly once with the same remark. Cleanup verifies the
+  // restored remark before the relationship is restored.
   ciTestWidgets('FL-CONTACT-011 positive sets and reads a contact remark',
       (_) async {
     const id = 'FL-CONTACT-011';

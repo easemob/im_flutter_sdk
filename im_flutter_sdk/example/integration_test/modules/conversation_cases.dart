@@ -466,7 +466,10 @@ void registerConversationCases({
     );
 
     // Test: Pin and unpin a newly seeded conversation, rereading native state
-    // after each operation. The unrelated control conversation stays unpinned.
+    // after each operation alongside a separately seeded control conversation.
+    // Expected: getConversation and loadAllConversations reflect each requested
+    // isPinned value; the control stays unpinned and both messages are unchanged.
+    // Cleanup unpins the target and deletes both local fixtures.
     ciTestWidgets(
       'FL-CONV-014 positive pin and unpin persist without changing a control',
       (_) async {

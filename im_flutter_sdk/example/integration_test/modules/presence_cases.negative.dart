@@ -11,6 +11,8 @@ void registerLoggedOutPresenceCases({required ChatClient client}) {
     );
   }
 
+  // Test: While logged out, publish a nonempty presence description.
+  // Expected: ChatError 201 (not logged in).
   ciTestWidgets('FL-PRESENCE-001 rejects publish while logged out', (
     tester,
   ) async {
@@ -19,6 +21,8 @@ void registerLoggedOutPresenceCases({required ChatClient client}) {
     );
   });
 
+  // Test: While logged out, fetch presence for a nonempty peer ID.
+  // Expected: ChatError 201 (not logged in).
   ciTestWidgets('FL-PRESENCE-002 rejects status fetch while logged out', (
     tester,
   ) async {
@@ -29,6 +33,8 @@ void registerLoggedOutPresenceCases({required ChatClient client}) {
     );
   });
 
+  // Test: While logged out, subscribe to a peer's presence for 60 seconds.
+  // Expected: ChatError 201 (not logged in).
   ciTestWidgets('FL-PRESENCE-003 rejects subscribe while logged out', (
     tester,
   ) async {
@@ -40,6 +46,8 @@ void registerLoggedOutPresenceCases({required ChatClient client}) {
     );
   });
 
+  // Test: While logged out, unsubscribe from a nonempty peer ID's presence.
+  // Expected: ChatError 201 (not logged in).
   ciTestWidgets('FL-PRESENCE-004 rejects unsubscribe while logged out', (
     tester,
   ) async {
@@ -50,6 +58,8 @@ void registerLoggedOutPresenceCases({required ChatClient client}) {
     );
   });
 
+  // Test: While logged out, fetch the first subscription page with size 20.
+  // Expected: ChatError 201 (not logged in).
   ciTestWidgets('FL-PRESENCE-005 rejects subscription query while logged out', (
     tester,
   ) async {

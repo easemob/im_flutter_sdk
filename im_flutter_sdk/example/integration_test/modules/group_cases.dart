@@ -175,6 +175,9 @@ void registerGroupCases({
 
   // Each metadata case owns a separate group, so failures do not leave shared
   // account state behind or prevent other metadata APIs from being exercised.
+  // Test: As the owner of a fresh group, update its name and fetch server detail.
+  // Expected: The name matches the update; description and owner are unchanged.
+  // Teardown deletes this case's group.
   ciTestWidgets('FL-GROUP-009 positive updates the group name', (_) async {
     final group = await createOwnedGroup('FL-GROUP-009', invitePeer: false);
     final name = 'renamed_${group.groupId}';
@@ -185,6 +188,9 @@ void registerGroupCases({
     expect(detail.owner, userId);
   });
 
+  // Test: As the owner of a fresh group, update its description and fetch detail.
+  // Expected: The server returns the new description with the original name
+  // and owner. Teardown deletes this case's group.
   ciTestWidgets('FL-GROUP-010 positive updates the group description',
       (_) async {
     final group = await createOwnedGroup('FL-GROUP-010', invitePeer: false);
@@ -196,6 +202,9 @@ void registerGroupCases({
     expect(detail.owner, userId);
   });
 
+  // Test: Update a fresh owned group's extension, then fetch server detail.
+  // Expected: ChatGroup.extension equals the supplied string and the group name
+  // is unchanged. Teardown deletes this case's group.
   ciTestWidgets('FL-GROUP-011 positive updates the group extension', (_) async {
     final group = await createOwnedGroup('FL-GROUP-011', invitePeer: false);
     final extension = '{"case":"FL-GROUP-011","group":"${group.groupId}"}';
@@ -207,7 +216,10 @@ void registerGroupCases({
     expect(detail.groupName, group.groupName);
   });
 
-  // Updating twice distinguishes a current server read from a stale snapshot.
+  // Test: Update a fresh owned group's announcement twice, fetching it from
+  // the server after each update to distinguish current data from stale data.
+  // Expected: Each fetch returns the corresponding revision exactly.
+  // Teardown deletes this case's group.
   ciTestWidgets('FL-GROUP-012 positive updates and fetches group announcements',
       (_) async {
     final group = await createOwnedGroup('FL-GROUP-012', invitePeer: false);
@@ -219,6 +231,9 @@ void registerGroupCases({
     }
   });
 
+  // Test: Update a fresh owned group's avatar URL, then fetch server detail.
+  // Expected: The update returns the same group ID and requested URL; server
+  // detail retains that URL and the original name. Teardown deletes the group.
   ciTestWidgets('FL-GROUP-013 positive updates and reads the group avatar',
       (_) async {
     final group = await createOwnedGroup('FL-GROUP-013', invitePeer: false);
@@ -232,6 +247,11 @@ void registerGroupCases({
     expect(detail.groupName, group.groupName);
   });
 
+  // Test: In a fresh owned group, set and locally read our namecard, then pass
+  // null to remove it and poll the local getter for up to five seconds.
+  // Expected: The initial read matches the supplied namecard; after removal
+  // the getter returns null, not the previous value or an empty string.
+  // Teardown deletes this case's group, including when the assertion fails.
   ciTestWidgets('FL-GROUP-014 positive sets, reads, and removes own namecard',
       (_) async {
     final group = await createOwnedGroup('FL-GROUP-014', invitePeer: false);
@@ -272,8 +292,12 @@ void registerGroupCases({
     }
   });
 
-  // Select only allowInvites; the supplied other fields must not overwrite
-  // the original group configuration. This does not test invitee acceptance.
+  // Test: Update a fresh owned group with only allowInvites selected in types,
+  // while also supplying other configuration values.
+  // Expected: The returned group ID matches; the update result and server
+  // detail report allowInvites=false. Unselected server config fields retain
+  // their original values. This does not test invitee acceptance.
+  // Teardown deletes this case's group.
   ciTestWidgets('FL-GROUP-015 positive updates only the selected config field',
       (_) async {
     final group = await createOwnedGroup('FL-GROUP-015', invitePeer: false);
@@ -303,8 +327,11 @@ void registerGroupCases({
         group.configs!.joinApprovalRequired);
   });
 
-  // The group explicitly disables invitation confirmation. The owner's
-  // server-side membership operation therefore needs no second live client.
+  // Test: As owner, add an offline peer to a fresh group with invitation
+  // confirmation disabled, then remove the peer; query REST and SDK members.
+  // Expected: REST reports exactly owner+peer after addition and only owner
+  // after removal; the SDK list includes then excludes the peer. No second
+  // live client is needed. Teardown deletes this case's group.
   ciTestWidgets('FL-GROUP-016 positive adds and removes a group member',
       (_) async {
     final group = await createOwnedGroup('FL-GROUP-016', invitePeer: false);
@@ -324,6 +351,10 @@ void registerGroupCases({
     expect(removed.data, isNot(contains(peerId)));
   });
 
+  // Test: In a fresh owned group containing a non-admin peer, promote then
+  // demote the peer and fetch server detail after each operation.
+  // Expected: The admin list includes then excludes the peer, the owner stays
+  // unchanged, and REST still reports both members. Teardown deletes the group.
   ciTestWidgets('FL-GROUP-017 positive promotes and demotes a group admin',
       (_) async {
     final group = await createOwnedGroup('FL-GROUP-017');
@@ -339,6 +370,10 @@ void registerGroupCases({
     expect(await rest.groupMembers(group.groupId), {userId, peerId});
   });
 
+  // Test: Fetch the first member-info page for a fresh owned group with one peer.
+  // Expected: The peer appears exactly once as Member with a positive joinedTs;
+  // there are no outsiders or duplicate IDs, and the cursor is null or empty.
+  // Teardown deletes this case's group.
   ciTestWidgets('FL-GROUP-018 positive fetches typed group member information',
       (_) async {
     final group = await createOwnedGroup('FL-GROUP-018');
@@ -354,6 +389,11 @@ void registerGroupCases({
     expect(result.cursor == null || result.cursor!.isEmpty, isTrue);
   });
 
+  // Test: Set attributes for owner and peer in a fresh group, read each member,
+  // query only ci_role for both, then remove only the peer's ci_role.
+  // Expected: Individual reads match the supplied maps; the selected query
+  // returns only ci_role per user. Removal preserves the peer's ci_marker and
+  // all owner attributes. Teardown deletes this case's group.
   ciTestWidgets(
       'FL-GROUP-019 positive sets, queries, and selectively removes member attributes',
       (_) async {
@@ -390,6 +430,11 @@ void registerGroupCases({
         ownAttributes);
   });
 
+  // Test: In a fresh owned group with an empty blocklist, block the member peer,
+  // query the blocklist and REST membership, then unblock and query again.
+  // Expected: The blocklist contains only the peer after blocking and is empty
+  // after unblocking; REST confirms blocking removes the peer from the group.
+  // Teardown deletes this case's group.
   ciTestWidgets(
       'FL-GROUP-020 positive adds and removes a group blocklist entry',
       (_) async {
@@ -405,6 +450,11 @@ void registerGroupCases({
     expect(await manager.fetchBlockListFromServer(group.groupId), isEmpty);
   });
 
+  // Test: In a fresh owned group with an empty mute list, mute the peer for
+  // 600000 ms, query the list, then unmute and query again.
+  // Expected: Only the peer is muted with a positive expiry value; unmuting
+  // empties the list and REST membership is unchanged. Teardown deletes the
+  // group. This checks mute-list state, not the peer's ability to send messages.
   ciTestWidgets('FL-GROUP-021 positive adds and removes a group mute entry',
       (_) async {
     final group = await createOwnedGroup('FL-GROUP-021');
@@ -418,6 +468,11 @@ void registerGroupCases({
     expect(await rest.groupMembers(group.groupId), {userId, peerId});
   });
 
+  // Test: Snapshot a fresh owned group's allowlist, add its peer, query the list,
+  // then remove the peer and query again.
+  // Expected: Addition preserves existing entries and includes the peer;
+  // removal restores the original list and REST membership stays unchanged.
+  // Teardown deletes this case's group.
   ciTestWidgets(
       'FL-GROUP-022 positive adds and removes a group allowlist entry',
       (_) async {

@@ -54,7 +54,8 @@ void registerConversationPaginationNegativeCases({
   required ChatClient client,
 }) {
   // Test: Pass a malformed nonempty pagination cursor after initialization
-  // with autoLoadConversations=false. Expected: Native invalid-param code 110.
+  // with autoLoadConversations=false.
+  // Expected: ChatError 110 (invalid parameter).
   ciTestWidgets(
       'FL-CONV-012 negative database pagination rejects invalid cursor',
       (_) async {

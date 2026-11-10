@@ -1,6 +1,6 @@
 # 第一批登录 CI API 补充与验证
 
-日期：2026-11-10。状态：19 个用例已实现；首轮 17 个已接入并执行，15 通过、2 失败；后续 FL-GROUP-011 已修复并定向复验通过，FL-GROUP-014 仍待处理；Presence 2 个用例等待接线确认，未执行。
+日期：2026-11-10。状态：19 个用例已实现；首轮 17 个已接入并执行，15 通过、2 失败；后续 FL-GROUP-011 已修复并定向复验通过，提交 `90b68b0d`；FL-GROUP-014 已定位 core 同秒缓存更新及 iOS 空值转换两层问题，未修复；Presence 2 个用例等待接线确认，未执行。
 
 ## 范围与执行决策
 
@@ -60,8 +60,8 @@
 
 | 问题 ID | 用例 | 实际现象 | 失败次数 | 状态／归因 |
 |---|---|---|---:|---|
-| B1-01 | FL-GROUP-011 | 更新 extension 后 detail.extension 为 null；configs.ext 为正确新值 | 修复前 2 | iOS wrapper 漏字段已修复，修复后定向复验 1/1 通过，未提交 |
-| B1-02 | FL-GROUP-014 | namecard:null 删除后读取仍为原名片，5 秒有界等待仍不更新 | 2 | native 行为异常候选；Flutter 参数透传符合契约，core／服务端／本地缓存的具体根因待确认 |
+| B1-01 | FL-GROUP-011 | 更新 extension 后 detail.extension 为 null；configs.ext 为正确新值 | 修复前 2 | iOS wrapper 漏字段已修复，复验 1/1 通过，提交 `90b68b0d` |
+| B1-02 | FL-GROUP-014 | 同秒删除后保留旧名片；跨秒删除后返回空字符串而非 null | 3 | 已定位 core 时间精度丢失导致缓存更新被忽略，以及 iOS 空字符串未转 nil；停止重跑，未修复 |
 
 两项的本轮测试群均已通过 REST 删除并验证不存在。失败不影响后续入口前置。
 
@@ -88,7 +88,7 @@ E2E_CONFIG_PATH=/path/to/e2e.json MAX_ATTEMPTS=1 CI_TEST_NAME='FL-GROUP-(011|014
 
 **B1-01（修复前证据）**：Flutter [ChatGroup](../../im_flutter_sdk/lib/src/models/chat_group.dart) 公开 `extension`，读取顶层 `ext`；[iOS GroupHelper](../../im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/GroupHelper.m) 原先未输出顶层 `ext`，仅输出 `configs.ext`。Android `EMHelper.java` 输出顶层 `ext`。诊断日志明确显示 `extension=null`、`configs.ext` 为本轮设置值，因此更新动作成功，但公开对象字段断裂；不能把断言迁到 `configs.ext` 就称全部正常。后续修复及验证见下节。
 
-**B1-02**：公开 Dart/iOS 契约均规定 null/nil 删除名片。Dart 省略 null 参数，iOS wrapper 取缺失 key 得到 nil 并传给 native，没有发现 Flutter 误传。只读核对 native iOS tag `5.1.0`（`e88b1dcc9`）：删除转换为空串进入 core，getter 读取本地数据库。两次删除 API 成功后仍读到原值，第二次已等待 5 秒。随后诊断 `fetchGroupMembersInfo` 返回的列表没有 owner（打印 `server own namecards=[]`），**这不能证明服务端名片已删除**。仍需在后续 SDK 排查中区分服务端状态和 core 本地缓存；不猜根因、不放宽 null 断言。建议确认 SDK 排查范围后继续。
+**B1-02（前两轮证据）**：公开 Dart/iOS 契约均规定 null/nil 删除名片。Dart 省略 null 参数，iOS wrapper 取缺失 key 得到 nil 并传给 native，没有发现 Flutter 误传。native iOS tag `5.1.0`（`e88b1dcc9`）将删除转换为空串进入 core，getter 读取本地名片缓存。两次删除 API 成功后仍读到原值，第二次已等待 5 秒。随后诊断 `fetchGroupMembersInfo` 返回的列表没有 owner（打印 `server own namecards=[]`），**这不能证明服务端名片已删除**。后续第三轮使用服务端自身名片接口及跨秒对照，根因见末节。
 
 两次运行均验证本轮测试群删除成功。联系人备注／关系、用户资料 gender、置顶状态及本地夹具均完成恢复；suite logout 成功。没有后续前置或清理方面的严重阻塞。
 
@@ -107,3 +107,39 @@ E2E_CONFIG_PATH=/path/to/e2e.json MAX_ATTEMPTS=1 CI_TEST_NAME='FL-GROUP-(011|014
 - [正式复验报告](../../artifacts/ci/20261110-134124-ios-g2cx8yov/summary.md) · [原始设备日志](../../artifacts/ci/20261110-134124-ios-g2cx8yov/attempt-1.log)。报告由现有 runner 生成，Git 忽略；未覆盖首轮报告。
 - 执行命令：`E2E_CONFIG_PATH=<临时配置> MAX_ATTEMPTS=1 CI_TEST_NAME=FL-GROUP-011 bash tool/ci/run_ios_simulator_test.sh integration_test/logged_in_group_test.dart ios-group011-fix.log`。临时凭据文件执行后已删除。
 - Android 源码已包含顶层 `ext` 映射，没有发现相同漏字段问题；本轮未执行 Android，不宣称 Android 实测通过。FL-GROUP-014 未改、未重跑。
+
+## FL-GROUP-014 native/core 根因调查（2026-11-10 13:48）
+
+011 修复已按用户要求提交 `90b68b0d`；本节是随后授权的 014 调研，未实施修复。
+
+已创建 native/core 缺陷工单 [HIM-24170](https://j1.private.easemob.com/browse/HIM-24170)，组件 SDK、状态 To Do，未指定处理人。工单包含复现、源码定位、证据边界、修复建议及回归范围，诊断日志摘录附件上传成功；已回读核对正文和附件。截止日期暂填 2026-11-13、预估 2d，正文注明供负责人调整。
+
+### 源码依据
+
+核对 native iOS tag `5.1.0`（`e88b1dcc9af41e57fa3d219986addfdc800367a4`）及 core `emclient-linux` tag `SDK_5.1.0`（`e5d925cb5589e2c7be304d47b0eafc5c7c2b1c60`）。标签源码不等同于已核验 framework 内嵌 core SHA；实际 iOS 5.1.0 framework 行为由下述设备诊断验证。
+
+1. **参数透传正常**：Flutter null → wrapper nil → native `EMGroupManager.mm:2884` → `EMStringUtil.mm:55` 转空字符串 → core `src/emgroupmanager.cpp:2640` 的 `updateSelfNameCard` → `EMMucManager::updateMucSelfNameCard`，发送 `PUT /sdk/chatgroups/<id>/nameCard`。
+2. **core 同秒更新被忽略**：`src/emmucmanager.cpp:296/303` 将响应 `update_timestamp`（或顶层 `timestamp`）转为秒，`src/utils/emutils.cpp:551` 实际执行整数除以 1000；`src/emmucmanager.cpp:328` 只在 `existing->updateTime() < updateTime` 时更新缓存。同秒设置和删除被截成同一时间，删除响应成功却不应用到本地，且不返回错误。事后等待不能重新应用已被忽略的响应。问题也可能影响同秒连续修改，不限于删除。
+3. **iOS 空值语义不一致**：跨秒时 core 在 `src/emmucmanager.cpp:331–333` 将记录写为空字符串，并未移除记录。`src/emdatabase.cpp:10557` 的 getter 直接读内存缓存；native iOS `EMGroupManager.mm:2902` 发现记录就调用 `EMStringUtil.mm:65` 的 `stdToNSString`，返回 `""`。Flutter wrapper 原样返回，与 Flutter 文档“未设置名片返回 null”不一致。native iOS 文档只承诺“缓存未找到返回 nil”，已有空串记录并非未找到，不能将其表述为 native 文档已保证空串转 nil。
+4. **平台差异**：Android JNI `src/android/com_hyphenate_chat_adapter_EMAGroupManager.cpp:1418` 已将空字符串转 Java null。第二层转换差异在 iOS 路径；第一层共享 core 问题同样存在于 Android 源码调用链。本轮未运行 Android。
+
+### 第三轮诊断
+
+复用原群组入口，仅临时在 014 内加入 `GET /sdk/chatgroups/<id>/nameCard?version=v3`（当前用户 token）的独立观察和跨秒对照，保留原 null 断言；对照在原断言失败后执行。全部 GET 返回 HTTP 200，不再用不包含 owner 的成员列表判断服务端名片。
+
+测试群 `330187457757185`，原名片 `ci_330187457757185`：
+
+| 阶段 | 服务端观察 | 本地 getter |
+|---|---|---|
+| 设置后 | 原名片；update_timestamp=`1794289699232`；GET timestamp=`1794289699308` | 原名片 |
+| 紧接着删除后 | 不再返回 name_card；GET timestamp=`1794289699422` | **仍为原名片** |
+| 等待 5 秒 | 仍无 name_card；GET timestamp=`1794289704596` | **仍为原名片** |
+| 重新设置对照名片 | 原名片加 `_control`；update_timestamp=`1794289704655` | 对照名片 |
+| 间隔 1.2 秒再删除 | 不再返回 name_card；GET timestamp=`1794289706032` | **空字符串 `""`** |
+
+GET 时间不是 PUT 原始响应时间，本轮未捕获 PUT 响应；实测从设置完成到删除后观察均处在同一个服务端秒内，跨秒对照恢复本地清空行为，与标签源码的精度截断及严格比较吻合。服务端无名片而本地保留旧值的分歧已经独立验证。
+
+- [诊断报告](../../artifacts/ci/20261110-134742-ios-hr6jvjde/summary.md) · [设备日志](../../artifacts/ci/20261110-134742-ios-hr6jvjde/attempt-1.log) · [临时诊断源码](../../artifacts/diagnostics/20261110-134742-group014/group_cases.diagnostic.dart)，均为 Git 忽略产物。
+- 本轮 **1 项、0 通过、1 失败**，014 累计 **3 次失败**后停止。未覆盖前两轮记录，也未宣称修复通过。
+- 临时诊断源码已恢复提交版本；测试群删除、退出登录成功，临时凭据已删除。native 两仓库未修改，既有未跟踪 `dailylog/` 保持原状。
+- 建议修复 core 时间精度或主动更新成功后的缓存应用规则；不能草率将 `<` 改为 `<=`，否则同秒乱序旧响应仍可能覆盖新值。另需统一 iOS getter 与 Flutter/Android 的空值语义。涉及 core 数据表示／更新规则的方案需另行确认；本轮仅调研，不改 SDK 或架构。

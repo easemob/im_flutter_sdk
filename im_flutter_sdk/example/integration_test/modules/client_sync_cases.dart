@@ -11,9 +11,13 @@ void registerConversationSyncCase({
   required String userId,
   required String token,
 }) {
-  // The base entry initializes once before this cold-login case. Other
-  // baseline cases log in independently through their own group setup.
-  // The events prove the explicitly configured sync mask, not the contents of server history.
+  // Test: After cold initialization with only conversation sync explicitly
+  // enabled, register connection/sync listeners and log in with a valid token.
+  // Expected: Within 75 seconds, sync start/finish events report only the
+  // conversation mask, finish without errors, and the client is connected as
+  // the requested user. Cleanup logs out and removes the listener.
+  // This checks sync events, not server-history contents. Other baseline cases
+  // log in independently through their own group setup.
   ciTestWidgets('FL-AUTH-007 explicit conversation sync completes successfully',
       (_) async {
     final started = <int>[];

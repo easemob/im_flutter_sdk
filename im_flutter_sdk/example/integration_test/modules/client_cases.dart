@@ -85,6 +85,9 @@ Future<void> _waitForConnection(
 }
 
 void registerLoggedOutClientCases({required ChatClient client}) {
+  // Test: Read currentUserId after native SDK initialization on a clean app
+  // installation, before logging in.
+  // Expected: The Dart client's currentUserId is null.
   ciTestWidgets('FL-APP-001 initializes the native SDK while logged out', (
     tester,
   ) async {

@@ -446,9 +446,12 @@ void registerMessageCases({
   });
   // Test: Consume one correlated REST group message, delete only that local
   // message, then prime the conversation cache with an older local sentinel.
-  // Fetch history once with needSave=true and require latestMessage to advance
-  // to the returned server message. An empty cache alone would miss the old
-  // Android bug because latestMessage could read the new message from the DB.
+  // Fetch history once with needSave=true.
+  // Expected: The fetched history contains the correlated server message and
+  // latestMessage advances from the sentinel to that message after saving.
+  // Cleanup removes this case's remote group and local conversation.
+  // An empty cache would miss the old Android bug because latestMessage could
+  // read the new message from the DB.
   // The peer is an offline REST sender, not a second running SDK client.
   ciTestWidgets(
     'FL-MSG-010 saved server history replaces a stale latest message',
