@@ -12,10 +12,9 @@
 #   bash tool/ci/smoke_local.sh ios       # boots a simulator if none is booted
 #
 # Logs are written to artifacts/{android,ios}-no-login-smoke.log.
+# The runner also writes artifacts/ci/<run-id>/summary.md and report.json,
+# including preparation failures; it prints the report path on exit.
 set -euo pipefail
-
-# Keep in sync with FLUTTER_VERSION in .github/workflows/*.yml.
-EXPECTED_FLUTTER_VERSION="3.47.0"
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PLATFORM="${1:-}"
@@ -27,24 +26,8 @@ case "$PLATFORM" in
     ;;
 esac
 
-command -v flutter >/dev/null 2>&1 || {
-  echo "error: flutter not found in PATH" >&2
-  exit 2
-}
-flutter_version="$(flutter --version 2>/dev/null | sed -n 's/^Flutter \([^ ]*\).*/\1/p' | head -1)"
-if [ "$flutter_version" != "$EXPECTED_FLUTTER_VERSION" ]; then
-  echo "warning: local Flutter is '$flutter_version', CI pins $EXPECTED_FLUTTER_VERSION" >&2
-fi
-
 if [ "$PLATFORM" = "android" ]; then
-  # run_android_emulator_test.sh hardcodes -d emulator-5554 (the serial the
-  # emulator-runner action uses on CI, and the default for the first local
-  # emulator too).
-  adb -s emulator-5554 get-state >/dev/null 2>&1 || {
-    echo "error: no Android emulator online at emulator-5554" >&2
-    echo "       start one first (e.g. via Android Studio or 'flutter emulators --launch ...')" >&2
-    exit 2
-  }
+  # Runners check prerequisites after creating the report directory.
   exec bash "$REPO_ROOT/tool/ci/run_android_emulator_test.sh" \
     integration_test/no_login_presence_test.dart android-no-login-smoke.log
 fi

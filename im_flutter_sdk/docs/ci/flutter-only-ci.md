@@ -32,6 +32,13 @@ an app restart. Separate logs are written under `artifacts/`; a failed suite doe
 not prevent the remaining suites from running, and the final summary and exit code
 retain any failure. No extra suite dispatcher is used.
 
+Each run also writes a human-readable case summary and JSON statistics under
+`artifacts/ci/<run-id>/`, with links to per-attempt logs and Flutter JSON events.
+The existing device runners accept `CI_TEST_NAME` for a single-test name regex;
+full suites and selected tests both produce reports. Output files, counting rules
+and regeneration commands are documented in the
+[report guide](../../../docs/testing/2026-11-09-reports.md).
+
 | Entry | Explicit initialization | Cases | Log suffix |
 |---|---|---|---|
 | `single_account_local_test.dart` | `dataSyncType=contacts\|joinedGroups`, `autoLoadConversations=true`, `enableChatroomConversation=false`, `enableUserInfo=false` | Existing modules, including FL-MSG-010 and FL-CONV-013 with chatroom creation disabled | `single-account.log` |

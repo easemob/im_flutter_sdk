@@ -23,6 +23,7 @@ class TestingCli {
       DeviceService? devices,
       BuildService? builds,
       LaunchService? launches,
+      this.upgradeReporter,
       this.output = print})
       : data = data ?? DataService(),
         devices = devices ?? DeviceService() {
@@ -39,6 +40,7 @@ class TestingCli {
   final DataService data;
   final DeviceService devices;
   final void Function(String) output;
+  final Future<List<String>> Function(Directory)? upgradeReporter;
   late final BuildService builds;
   late final LaunchService launches;
   late final CaseLoader loader;
@@ -91,6 +93,7 @@ class TestingCli {
 
   Future<int> run(List<String> args) async {
     RunState? state;
+    String? commandName;
     var success = false;
     try {
       final parsed = parser.parse(args);
@@ -103,6 +106,7 @@ class TestingCli {
       }
       _validateOptions(command);
       final name = command.name!;
+      commandName = name;
       final runId = command['run-id'] as String?;
       final casesFile = command['cases'] as String?;
       if (runId != null && casesFile != null)
@@ -182,6 +186,7 @@ class TestingCli {
           final result =
               await _execute(state, entry, attempt, launchId, command);
           success = result.isSuccess && result.data?.verdict == '是';
+          if (!await _report(state)) success = false;
         case 'report':
           success = await _report(state);
         case 'clean':
@@ -205,6 +210,9 @@ class TestingCli {
                   ? 'unknown'
                   : 'stopped';
           await state.save();
+          if (commandName == 'all' || commandName == 'run') {
+            await _report(state);
+          }
         } catch (saveError) {
           output(redactor.text('Failed to persist diagnostics: $saveError'));
         }
@@ -239,6 +247,8 @@ class TestingCli {
         'all --cases <selection.json>; report --run-id ID; clean --run-id ID --type logs.');
     output(
         'Inputs are explicit; results: tmp/<runId>/run.json, build/<runId>/, reports/<runId>/.');
+    output(
+        'all/run/report produce upgrade-report.md/json plus summary.md, statistics.csv, process.json and per-attempt flow-report.json; outputs are Git-ignored.');
     output(
         'Exit 0: selected operation succeeded and any test passed; nonzero: failure, rejection or incomplete finalization.');
     output(name == null ? parser.usage : parser.commands[name]!.usage);
@@ -1042,6 +1052,21 @@ class TestingCli {
     state.json['reporting'] = result.toJson();
     await state.save();
     if (!result.isSuccess) await _recordFailure(state, 'report', result);
+    final directory = Directory(p.join(root.path, 'reports', state.id));
+    if (result.data != null && upgradeReporter != null) {
+      try {
+        for (final path in await upgradeReporter!(directory)) {
+          state.register(path, 'reports', 'report', result.operationId);
+        }
+        await state.save();
+      } catch (error) {
+        await state.issue(
+            'report', 'Upgrade report generation failed: $error', redactor);
+        output(redactor.text('Upgrade report generation failed: $error'));
+        return false;
+      }
+    }
+    output('Multi-device evidence: ${directory.path}');
     return result.isSuccess;
   }
 

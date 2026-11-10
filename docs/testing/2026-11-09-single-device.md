@@ -17,3 +17,5 @@
 从仓库根运行 `make auto-report PLATFORM=android SCRIPT=testing/single/cases/<文件>.json`，iOS 使用 `PLATFORM=ios`。先按 [example 配置说明](../../im_flutter_sdk/example/README.md#setup) 准备测试环境。
 
 当前默认仍是 5.0.0 正向脚本，报告仍在 `reports/5.0.0/`；目录归属不代表完成了 5.1.0 验收。其他场景必须显式指定 `SCRIPT`。具体参数及结果文件见 [单设备入口](../../testing/single/README.md)。
+
+每次执行自动生成 Git 忽略的 `upgrade-report.md` 和 `upgrade-report.json`，终端打印路径。单个 JSON 为一个场景，步骤统计另列；多批次通过显式输入目录合并为版本升级报告，单设备与多设备分别统计。报告与原始数据说明见[测试报告](2026-11-09-reports.md)。

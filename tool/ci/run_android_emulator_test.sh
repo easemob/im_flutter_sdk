@@ -13,6 +13,13 @@ log_name="${2:?usage: run_android_emulator_test.sh TEST_TARGET LOG_NAME}"
 app_id="com.example.example"
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$repo_root/tool/ci/report.sh"
+ci_report_start android "$test_target"
+report_device="emulator-5554"
+adb -s emulator-5554 get-state >/dev/null 2>&1 || {
+  echo "error: no Android emulator online at emulator-5554" >&2
+  exit 2
+}
 bash "$repo_root/tool/use_local_packages.sh"
 mkdir -p "$repo_root/artifacts"
 log_file="$repo_root/artifacts/$log_name"
@@ -37,6 +44,11 @@ adb -s emulator-5554 uninstall "$app_id" >/dev/null 2>&1 || true
 # Keep the array non-empty: expanding an empty array under set -u fails
 # on bash 3.2 (e.g. when this script is run locally on macOS).
 command=(flutter test "$test_target" -d emulator-5554)
+ci_report_attempt_start 1
+command+=(--file-reporter "json:$report_dir/attempt-1.events.jsonl")
+if [[ -n "${CI_TEST_NAME:-}" ]]; then
+  command+=(--name "$CI_TEST_NAME")
+fi
 if [[ "${GITHUB_ACTIONS:-}" != "true" ]]; then
   command+=(--reporter expanded)
 fi
@@ -45,4 +57,7 @@ if [[ -n "${E2E_CONFIG_PATH:-}" ]]; then
 fi
 
 set -o pipefail
-"${command[@]}" 2>&1 | tee "$log_file"
+status=0
+"${command[@]}" 2>&1 | tee "$log_file" "$report_dir/attempt-1.log" || status=$?
+ci_report_attempt "$status"
+exit "$status"

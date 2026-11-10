@@ -44,6 +44,10 @@ The positive path is the default script ($_positiveScriptRelativePath);
 pass --script $_negativeScriptRelativePath
 for the negative path. A run captures only APITEST events and crash evidence and
 writes a local report under $_reportsRelativePath/<run-id>/.
+Each execution also writes upgrade-report.md (human statistics) and
+upgrade-report.json (structured statistics). Raw evidence: run.json,
+steps.json, events.jsonl, crash.log, issues.md, summary.md.
+All outputs are Git-ignored. Python 3 is required for report rendering.
 
 The comparison mode reads two finished run directories on the same path and
 writes $_reportsRelativePath/comparison-<timestamp>.md.
@@ -96,9 +100,9 @@ writes $_reportsRelativePath/comparison-<timestamp>.md.
       _ScriptStep.fromJson(Map<String, dynamic>.from(raw as Map)),
   ];
 
-  final device = await _resolveDevice(platform, options['device']);
   final startedAt = DateTime.now().toUtc();
-  final runId = '${_timestamp(startedAt)}-$platform-${_safeName(device)}';
+  final runId =
+      '${_timestamp(startedAt)}-${startedAt.microsecondsSinceEpoch}-$platform-${_safeName(options['device'] ?? 'auto')}';
   final reportDir = Directory('${root.path}/$_reportsRelativePath/$runId');
   await reportDir.create(recursive: true);
   final eventsFile = File('${reportDir.path}/events.jsonl');
@@ -107,7 +111,7 @@ writes $_reportsRelativePath/comparison-<timestamp>.md.
   final crashSink = crashFile.openWrite();
   final state = _RunState(
     platform: platform,
-    device: device,
+    device: options['device'] ?? 'unresolved',
     runId: runId,
     reportDir: reportDir,
     eventsSink: eventsSink,
@@ -119,9 +123,13 @@ writes $_reportsRelativePath/comparison-<timestamp>.md.
   );
 
   try {
-    await _prepareDevice(platform, device, example, script, runId);
     await _writeRunMetadata(reportDir, root, script, state, startedAt);
+    state.device = await _resolveDevice(platform, options['device']);
+    await _prepareDevice(platform, state.device, example, script, runId);
     await _runFlutter(state, example);
+  } catch (error) {
+    state.executionErrors.add(_sanitize('$error'));
+    stderr.writeln('Execution failed: ${state.executionErrors.last}');
   } finally {
     await eventsSink.flush();
     await eventsSink.close();
@@ -132,6 +140,16 @@ writes $_reportsRelativePath/comparison-<timestamp>.md.
   final finishedAt = DateTime.now().toUtc();
   await _writeSummary(reportDir, state, startedAt, finishedAt);
   stdout.writeln('Auto report: ${reportDir.path}');
+  final report = await Process.run('python3', [
+    '${root.path}/testing/report_upgrade.py',
+    '--single',
+    reportDir.path,
+    '--output',
+    reportDir.path,
+  ]);
+  stdout.write(report.stdout);
+  stderr.write(report.stderr);
+  if (report.exitCode != 0) exitCode = report.exitCode;
   if (state.hasFailure) exitCode = 1;
 }
 
@@ -573,7 +591,7 @@ Future<void> _runFlutter(_RunState state, Directory example) async {
     process.kill(ProcessSignal.sigint);
   });
 
-  await process.exitCode;
+  state.processExitCode = await process.exitCode;
   timeout.cancel();
   await Future.wait([stdoutDone, stderrDone]);
 }
@@ -714,6 +732,26 @@ Future<void> _writeRunMetadata(
     'scriptSha256': (scriptHash.stdout as String).split(' ').first,
     'runnerSha256': (runnerHash.stdout as String).split(' ').first,
     'sensitiveValues': 'not included',
+    'initOptions': {
+      for (final entry
+          in (jsonDecode(await script.readAsString())['init'] as Map? ??
+                  const {})
+              .entries)
+        if (const [
+              'dataSyncType',
+              'debugMode',
+              'enableUserInfo',
+              'autoLoadConversations',
+              'enableChatroomConversation',
+            ].contains(entry.key) &&
+            (entry.value is bool || entry.value is int))
+          entry.key as String: entry.value,
+    },
+    'sdkVersion': RegExp(r'^version:\s*(\S+)', multiLine: true)
+        .firstMatch(
+          await File('${root.path}/im_flutter_sdk/pubspec.yaml').readAsString(),
+        )
+        ?.group(1),
   };
   await File('${reportDir.path}/run.json')
       .writeAsString(const JsonEncoder.withIndent('  ').convert(metadata));
@@ -727,6 +765,27 @@ Future<void> _writeSummary(
 ) async {
   state.finalizeOutcomes();
   final done = state.scriptDone;
+  final metadataFile = File('${reportDir.path}/run.json');
+  final metadata = await metadataFile.exists()
+      ? Map<String, dynamic>.from(
+          jsonDecode(await metadataFile.readAsString()) as Map,
+        )
+      : <String, dynamic>{
+          'runId': state.runId,
+          'platform': state.platform,
+          'script': state.scriptRelativePath,
+          'scriptKind': state.scriptKind.name,
+          'startedAt': startedAt.toIso8601String(),
+        };
+  metadata.addAll({
+    'device': state.device,
+    'finishedAt': finishedAt.toIso8601String(),
+    'processExitCode': state.processExitCode,
+    'executionErrors': state.executionErrors,
+  });
+  await metadataFile.writeAsString(
+    const JsonEncoder.withIndent('  ').convert(metadata),
+  );
   final counts = <String, int>{};
   for (final outcome in state.outcomes) {
     counts.update(outcome.status, (value) => value + 1, ifAbsent: () => 1);
@@ -1231,7 +1290,7 @@ class _RunState {
   });
 
   final String platform;
-  final String device;
+  String device;
   final String runId;
   final Directory reportDir;
   final IOSink eventsSink;
@@ -1244,6 +1303,8 @@ class _RunState {
   final crashLines = <String>[];
   final malformedLines = <String>[];
   final outcomes = <_StepOutcome>[];
+  final executionErrors = <String>[];
+  int? processExitCode;
   final scriptDoneFuture = Completer<void>();
   int crashLinesRemaining = 0;
   int nextStepIndex = 0;
@@ -1251,7 +1312,9 @@ class _RunState {
   Map<String, dynamic>? scriptDone;
 
   bool get hasFailure =>
-      scriptDone == null || outcomes.any((item) => item.status != 'passed');
+      scriptDone == null ||
+      executionErrors.isNotEmpty ||
+      outcomes.any((item) => item.status != 'passed');
 
   bool get hasConversationSerializationGap => outcomes.any((item) {
     if (item.step.id != 'conversations') return false;

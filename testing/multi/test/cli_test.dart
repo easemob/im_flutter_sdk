@@ -74,6 +74,49 @@ void main() {
     await root.delete(recursive: true);
   });
 
+  test('report renders and registers human outputs without device execution',
+      () async {
+    final state = await RunStore(root).create('report-only');
+    var rendered = false;
+    cli = TestingCli(
+        root: root,
+        devices: devices,
+        output: output.add,
+        upgradeReporter: (directory) async {
+          expect(await File(p.join(directory.path, 'statistics.csv')).exists(),
+              isTrue);
+          expect(await File(p.join(directory.path, 'process.json')).exists(),
+              isTrue);
+          rendered = true;
+          final paths = ['upgrade-report.md', 'upgrade-report.json']
+              .map((name) => p.join(directory.path, name))
+              .toList();
+          for (final path in paths) {
+            await File(path).writeAsString('report fixture');
+          }
+          return paths;
+        });
+    expect(await cli.run(['report', '--run-id', state.id]), 0);
+    expect(rendered, isTrue);
+    expect(devices.calls, 0);
+    final saved = await RunStore(root).load(state.id);
+    expect(
+        saved.artifacts.where((item) =>
+            p.basename(item['path'] as String).startsWith('upgrade-report.')),
+        hasLength(2));
+  });
+
+  test('human renderer failure remains a nonzero reporting result', () async {
+    final state = await RunStore(root).create('report-only');
+    cli = TestingCli(
+        root: root,
+        devices: devices,
+        output: output.add,
+        upgradeReporter: (_) async => throw StateError('renderer unavailable'));
+    expect(await cli.run(['report', '--run-id', state.id]), 1);
+    expect(output.join('\n'), contains('Upgrade report generation failed'));
+  });
+
   test(
       'all help pages work without generated accounts and have no side effects',
       () async {

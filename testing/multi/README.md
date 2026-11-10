@@ -173,18 +173,24 @@ dart run bin/cli.dart all --cases config/cases.json
 把命令输出的 `runId` 填入下面的路径，先看汇总：
 
 ```bash
-cat reports/<runId>/summary.md
+cat reports/<runId>/upgrade-report.md
 ```
 
 | 文件 | 查看内容 |
 |---|---|
+| `reports/<runId>/upgrade-report.md` | 正式版本升级报告，按多设备场景统计总数/通过/失败/未执行/未完成，展示角色、步骤、收尾与原始证据链接；单设备未选则单列未纳入。 |
+| `reports/<runId>/upgrade-report.json` | 正式报告的结构化统计与显式输入批次列表，可用于核对和重建。 |
 | `reports/<runId>/summary.md` | 本轮用例数、执行次数、通过／失败次数及任务故障；当前以“是／否”表示用例是否通过。 |
 | `reports/<runId>/statistics.csv` | 场景明细，每行一次执行，含用例编号、预期、实际、是否通过及原因；可用表格软件打开。 |
 | `reports/<runId>/process.json` | 各环节结果及证据引用，用于追溯。 |
 | `reports/<runId>/<用例名>/<执行序号>/flow-report.json` | 该用例每一步的执行结果。 |
 | `tmp/<runId>/run.log` | 阶段进度与错误；其他日志按过程记录中的路径查找。 |
 
-`all` 已自动生成汇总。需要重新生成时执行 `dart run bin/cli.dart report --run-id <runId>`；此命令成功时终端无输出，仍需打开文件查看。`tmp/<runId>/run.json` 是私有状态，不随报告分享。
+`all`、单场景 `run` 和 `report` 均自动生成正式报告并打印完整路径，宿主机需有 `python3`（仅标准库）。需要重新生成时执行 `dart run bin/cli.dart report --run-id <runId>`。`tmp/<runId>/run.json` 是私有状态，不随报告分享。报告展示的设备会话收尾与业务资源销毁/登出步骤分别列出；发起端调用成功不代表协同场景通过。
+
+同场景复验保留所有尝试，正式报告的场景数不随重试增加；最新结果与历史失败均可查看。`summary.md`/CSV 保持按原始执行记录统计，可用于核对。只执行一个场景也有完整报告；报告范围以固定选择和已有执行记录为准，未执行项不会计为通过。输入错误导致无法建立运行记录时会报错退出。
+
+跨多次运行或合并单设备证据时，在仓库根显式执行 `python3 testing/report_upgrade.py --version 5.1.0 --single reports/5.0.0/<runId> --multi testing/multi/reports/<runId> --output reports/5.1.0/<汇总目录>`。每类参数可重复，按旧到新排列，不自动收集目录中的历史结果。此命令仅重建报告，不执行设备场景。规则见[报告说明](../../docs/testing/2026-11-09-reports.md)。
 
 ## 分环节执行同一个场景
 
@@ -200,7 +206,7 @@ dart run bin/cli.dart run data/5.0.0-multi-presence-positive.yaml --run-id <runI
 dart run bin/cli.dart report --run-id <runId>
 ```
 
-`run` 只执行参数指定的场景，并生成原始报告；最后的 `report` 生成汇总、CSV 和过程索引，仍按“打开结果”一节查看。
+`run` 只执行参数指定的场景，随后自动生成正式报告、原始汇总、CSV 和过程索引；最后的 `report` 可用于手动重新生成，仍按“打开结果”一节查看。
 
 每次复验须重新 `launch`，原结果保留并增加执行序号。输入账号、用例副本、账号及设备映射在建轮时固定；修改后重新建轮。多个兼容构建通过 `--build <构建操作ID>` 选择；`--build-result <结果JSON>` 可导入已有构建，导入时校验并复制到本轮。
 

@@ -35,6 +35,8 @@ max_attempts="${MAX_ATTEMPTS:-2}"
 app_id="com.example.example"
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$repo_root/tool/ci/report.sh"
+ci_report_start ios "$test_target"
 bash "$repo_root/tool/use_local_packages.sh"
 mkdir -p "$repo_root/artifacts"
 log_file="$repo_root/artifacts/$log_name"
@@ -44,6 +46,7 @@ echo "Test log: $log_file"
 bash "$repo_root/tool/ci/ensure_example_env.sh"
 
 simulator_udid="$("$repo_root/tool/ci/boot_ios_simulator.sh")"
+report_device="$simulator_udid"
 echo "Using iOS simulator $simulator_udid"
 
 cd "$repo_root/im_flutter_sdk/example"
@@ -52,6 +55,9 @@ flutter pub get
 # Note: keep the array non-empty; expanding an empty array under set -u
 # fails on macOS's bash 3.2, which is what the GitHub macOS runners use.
 command=(flutter test "$test_target" -d "$simulator_udid")
+if [[ -n "${CI_TEST_NAME:-}" ]]; then
+  command+=(--name "$CI_TEST_NAME")
+fi
 # Preserve GitHub's reporter: the watchdog below relies on its zero-test summary.
 if [[ "${GITHUB_ACTIONS:-}" != "true" ]]; then
   command+=(--reporter expanded)
@@ -65,7 +71,7 @@ fi
 # forever) or when it exceeds the watchdog timeout.
 run_attempt() {
   local attempt_log="$1"
-  "${command[@]}" >"$attempt_log" 2>&1 &
+  "${command[@]}" --file-reporter "json:$report_dir/attempt-$report_attempt.events.jsonl" >"$attempt_log" 2>&1 &
   local test_pid=$!
   (
     elapsed=0
@@ -103,15 +109,17 @@ status=0
 attempt=1
 while (( attempt <= max_attempts )); do
   if (( attempt == 1 )); then
-    attempt_log="$log_file"
+    compatibility_log="$log_file"
   else
-    attempt_log="$log_file.attempt$attempt"
+    compatibility_log="$log_file.attempt$attempt"
     echo "Rebooting simulator before attempt $attempt" >&2
     xcrun simctl shutdown "$simulator_udid" 2>/dev/null || true
     xcrun simctl boot "$simulator_udid"
     xcrun simctl bootstatus "$simulator_udid" -b >&2
   fi
+  attempt_log="$report_dir/attempt-$attempt.log"
   echo "Attempt $attempt of $max_attempts"
+  ci_report_attempt_start "$attempt"
   # Cold-start precondition, same rationale as in run_android_emulator_test.sh:
   # a simulator keeps app data across installs, so a login left behind by an
   # earlier local run would survive into this attempt. Retries reboot the
@@ -120,6 +128,8 @@ while (( attempt <= max_attempts )); do
   xcrun simctl uninstall "$simulator_udid" "$app_id" >/dev/null 2>&1 || true
   status=0
   run_attempt "$attempt_log" || status=$?
+  cp "$attempt_log" "$compatibility_log"
+  ci_report_attempt "$status"
   if [[ "$status" -eq 0 ]]; then
     break
   fi
@@ -131,10 +141,9 @@ while (( attempt <= max_attempts )); do
   fi
 done
 
-cat "$log_file"
-for extra_log in "$log_file".attempt*; do
+for extra_log in "$report_dir"/attempt-*.log; do
   if [[ -e "$extra_log" ]]; then
-    echo "=== retry log: $extra_log ==="
+    echo "Test attempt log: $extra_log"
     cat "$extra_log"
   fi
 done

@@ -210,6 +210,30 @@ steps:
         isNot(contains('private-secret')));
   });
 
+  test('report metadata preserves roles and safe initialization options only',
+      () async {
+    await attempt(1);
+    final registered = (snapshot['attempts'] as List).single as JsonObject;
+    registered['caseData'] = {
+      'initConfig': {
+        'dataSyncType': 6,
+        'enableUserInfo': false,
+        'token': 'do-not-copy'
+      }
+    };
+    final result =
+        await service.generate(context(), snapshot, reportDirectory());
+    expect(result.isSuccess, true);
+    final text = await File(result.data!.process.single.path).readAsString();
+    final process = jsonDecode(text) as Map;
+    final record = (process['attempts'] as List).single as Map;
+    expect((record['roles'] as Map)['alice'], {'platform': 'ios'});
+    expect((record['configuration'] as Map)['baseOptions'],
+        {'dataSyncType': 6, 'enableUserInfo': false});
+    expect(text, isNot(contains('do-not-copy')));
+    expect(process['selection'], hasLength(1));
+  });
+
   test(
       'replaced report and missing raw event retain rows with incomplete verdict',
       () async {

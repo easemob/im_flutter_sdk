@@ -17,7 +17,9 @@
 # into a mktemp file outside the repo and deleted on exit (trap). An existing
 # E2E_CONFIG_PATH belongs to its caller and is preserved on exit.
 #
-# Logs are written separately for each suite under artifacts/.
+# Logs remain under artifacts/. Each invocation also generates a Git-ignored
+# artifacts/ci/<run-id>/summary.md with per-case counts and evidence links.
+# Individual suites/tests use the existing device runner with CI_TEST_NAME.
 set -euo pipefail
 
 # Keep in sync with FLUTTER_VERSION in .github/workflows/*.yml.
@@ -32,6 +34,34 @@ case "$PLATFORM" in
     exit 2
     ;;
 esac
+
+targets=(
+  single_account_local_test
+  native_defaults_test
+  user_info_subscription_test
+  conversation_config_test
+)
+logs=(single-account native-defaults user-info-subscription conversation-config)
+mkdir -p "$REPO_ROOT/artifacts/ci"
+nightly_dir="$(mktemp -d "$REPO_ROOT/artifacts/ci/$(date +%Y%m%d-%H%M%S)-nightly-$PLATFORM.XXXXXX")"
+CONFIG=""
+finish_nightly() {
+  local result="$?"
+  local report_args=(merge --output "$nightly_dir")
+  local target
+  trap - EXIT
+  if [[ -n "$CONFIG" ]]; then rm -f "$CONFIG"; fi
+  for target in "${targets[@]}"; do
+    report_args+=(--run "$nightly_dir/$target")
+  done
+  python3 "$REPO_ROOT/tool/ci/report.py" "${report_args[@]}" || result=1
+  exit "$result"
+}
+trap finish_nightly EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+exec > >(tee "$nightly_dir/runner.log") 2>&1
+echo "Nightly report directory: $nightly_dir"
 
 command -v flutter >/dev/null 2>&1 || {
   echo "error: flutter not found in PATH" >&2
@@ -63,7 +93,6 @@ else
     }
   done
   CONFIG="$(mktemp "${TMPDIR:-/tmp}/flutter-e2e-config.XXXXXX.json")"
-  trap 'rm -f "$CONFIG"' EXIT
   bash "$REPO_ROOT/tool/ci/write_e2e_dart_defines.sh" "$CONFIG"
   export E2E_CONFIG_PATH="$CONFIG"
 fi
@@ -83,19 +112,11 @@ if [ "$PLATFORM" = "android" ]; then
 else
   runner="$REPO_ROOT/tool/ci/run_ios_simulator_test.sh"
 fi
-targets=(
-  single_account_local_test
-  native_defaults_test
-  user_info_subscription_test
-  conversation_config_test
-)
-logs=(single-account native-defaults user-info-subscription conversation-config)
-
 status=0
 passed=0
 failed=0
 for index in "${!targets[@]}"; do
-  if bash "$runner" "integration_test/${targets[$index]}.dart" \
+  if CI_REPORT_DIR="$nightly_dir/${targets[$index]}" bash "$runner" "integration_test/${targets[$index]}.dart" \
       "$PLATFORM-${logs[$index]}.log"; then
     echo "PASS $PLATFORM ${targets[$index]}"
     passed=$((passed + 1))

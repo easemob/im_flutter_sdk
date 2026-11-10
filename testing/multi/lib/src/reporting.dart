@@ -78,6 +78,16 @@ ${rows.any((row) => row.cells[9] != '是') ? '未通过的正式执行须结合�
           context.redactor.sanitize({
             'runId': context.runId,
             'operationId': context.operationId,
+            'selection': [
+              for (final raw in _list(snapshot, 'cases'))
+                {
+                  'caseName':
+                      CaseDefinition.fromJson(readObject(raw)['definition'])
+                          .name,
+                  'roles': _reportRoles(
+                      readObject(raw)['devices'] ?? readObject(raw)['roles']),
+                },
+            ],
             'attempts': [
               for (final row in rows)
                 {
@@ -85,6 +95,13 @@ ${rows.any((row) => row.cells[9] != '是') ? '未通过的正式执行须结合�
                   'attempt': row.reference.attempt,
                   'verdict': row.cells[9],
                   'reason': row.cells[10],
+                  'roles': _reportRoles(_attempts(snapshot).firstWhere((item) =>
+                      item['caseName'] == row.reference.caseName &&
+                      item['attempt'] == row.reference.attempt)['roles']),
+                  'configuration': await _reportConfiguration(
+                      _attempts(snapshot).firstWhere((item) =>
+                          item['caseName'] == row.reference.caseName &&
+                          item['attempt'] == row.reference.attempt)),
                   'evidence':
                       row.evidence.map((item) => item.toJson()).toList(),
                 }
@@ -380,6 +397,58 @@ ${rows.any((row) => row.cells[9] != '是') ? '未通过的正式执行须结合�
     }
     return rows;
   }
+}
+
+JsonObject _reportRoles(Object? raw) => {
+      if (raw is Map<String, Object?>)
+        for (final entry in raw.entries)
+          if (entry.value is Map<String, Object?>)
+            entry.key: {
+              for (final field in ['platform', 'instance'])
+                if ((entry.value as Map<String, Object?>)[field] is String)
+                  field: (entry.value as Map<String, Object?>)[field],
+            },
+    };
+
+JsonObject _reportOptions(Object? raw) => {
+      if (raw is Map<String, Object?>)
+        for (final entry in raw.entries)
+          if (const [
+                'dataSyncType',
+                'debugMode',
+                'enableUserInfo',
+                'autoLoadConversations',
+                'enableChatroomConversation',
+                'autoAcceptGroupInvitation',
+                'autoAcceptFriendInvitation'
+              ].contains(entry.key) &&
+              (entry.value is bool || entry.value is int))
+            entry.key: entry.value,
+    };
+
+Future<JsonObject> _reportConfiguration(JsonObject attempt) async {
+  final definition = CaseDefinition.fromJson(attempt['definition']);
+  final caseData = attempt['caseData'];
+  final result = <String, Object?>{
+    'definitionSha256': definition.json.sha256,
+    'baseOptions': _reportOptions(
+        caseData is Map<String, Object?> ? caseData['initConfig'] : null),
+  };
+  try {
+    final metadata =
+        readObject(jsonDecode(await File(definition.json.path).readAsString()));
+    result['initCommands'] = {
+      for (final raw in (metadata['steps'] as List? ?? const []))
+        if (raw is Map<String, Object?> && raw['api'] == 'ChatClient.init')
+          raw['id'] as String: _reportOptions(
+              raw['params'] is Map<String, Object?>
+                  ? (raw['params'] as Map<String, Object?>)['overrides']
+                  : null),
+    };
+  } catch (_) {
+    result['optionsRecorded'] = false;
+  }
+  return result;
 }
 
 Future<void> validateEvidence(EvidenceRef reference) async {
