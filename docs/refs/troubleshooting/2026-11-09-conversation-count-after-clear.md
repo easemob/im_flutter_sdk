@@ -7,7 +7,7 @@
 
 ## 结论
 
-`deleteAllMessages()` 后，列表和单条读取均不再返回该消息，`messagesCount()` 却仍返回 1。当前证据指向 SDK 的消息计数与可查询内容不一致，不能误写成“消息没有删除”。具体 JNI/core 根因尚未确定。
+`deleteAllMessages()` 后，列表和单条读取均不再返回该消息，`messagesCount()` 却仍返回 1。当前证据指向 SDK 的消息计数与可查询内容不一致，不能误写成“消息没有删除”。初次排查未确定 JNI/core 根因；2026-11-10 已在 core tag 源码中确认异步删除提前返回的竞争窗口，见下文补充。
 
 ## 现象与证据
 
@@ -37,3 +37,42 @@
 ```bash
 rg -n 'FL-CONV-006 after|Expected:|Actual:' reports/5.1.0/test-coverage/*006*.log reports/5.1.0/test-coverage/nightly-android-r2.log
 ```
+
+## 2026-11-10 源码定位及 Jira
+
+工单：[HIM-24174](https://j1.private.easemob.com/browse/HIM-24174)。Android/iOS 历史日志摘录已上传并回读核验。
+
+只读核查 core `SDK_5.1.0`（`e5d925cb5589e2c7be304d47b0eafc5c7c2b1c60`），使用 `git show` 排除 native 工作区未提交改动：
+
+- `src/emconversationprivate.cpp:711` 的 `clearAllMessages()` 清理最新消息引用和未读数后，将数据库删除加入 `mTaskQueue`，立即返回 `true`；后台删除失败只 `reload()`，不回传原调用者。
+- `src/emtaskqueue.cpp:247` / `:115` 仅入队并唤醒工作线程，不等待删除完成。
+- `src/emconversationprivate.cpp:306` 的 `messagesCount()` 直接查询数据库；`src/emdatabase.cpp:2274` 执行 `SELECT count(*)`，删除则由 `:1885` 执行。
+- Android JNI 和 iOS native 均转发至这些 core 方法。Dart 正确 await，两端 Flutter wrapper 在 native 方法返回后回传；未发现 Flutter 计数缓存或参数映射错误。
+
+**更准确的解释**：清空入队后提前返回，计数查询可能先读到 1；随后后台完成删除，再执行的列表/单条查询为空。这些查询先后执行，不能认定计数永久不更新。该竞争机制与双端历史现象、偶发通过一致，但未对历史二进制进行线程/SQL 打点，实际故障执行顺序仍需 native 复现确认。
+
+修复建议：由 core 维护者确认线程/锁约束，使成功返回代表数据库删除完成，或提供真实完成/失败回调供上层等待；验证入队失败和删除失败的错误传播，不盲目阻塞队列或添加固定延时。已有正确断言保留，未修改 SDK、未重新运行设备测试。
+
+## 2026-11-10 最小场景与延迟读取复验
+
+用户要求验证“直接插入 4 条 → 清空 → 立即读取总数”，并对照延迟几秒是否恢复。使用既有 `logged_in_base_test.dart` 入口，仅临时替换 FL-CONV-006 的模块内容；测试后逐字节恢复原源码，未改 SDK、入口或初始化配置。
+
+环境：iOS 18.2 iPhone 16 Pro 模拟器，Flutter 3.47.0 / Dart 3.13.0；`Podfile.lock` HyphenateChat 5.1.0；代码基线 `c0fc7a9c`，`autoLoadConversations=true`，仅会话列表同步。Android 本轮未测。
+
+| 场景 | 清空前数量 | 清空返回后立即数量 | 再等 3 秒后的数量 | 延迟后的列表 |
+|---|---:|---:|---:|---|
+| 最小：插入 4 条，直接清空 | 4 | 4 | 0 | `[]` |
+| 原流程：按 ID/时间先删到 1 条，再清空 | 1 | 1 | 0 | `[]` |
+
+从调用清空开始计时：最小场景返回耗时 578 微秒，立即计数返回于 743 微秒，延迟计数返回于 3003994 微秒；原流程对应 466 / 686 / 3003632 微秒。这是 Dart 侧观测耗时，不是 core SQL 执行时间。
+
+结论：前置的按 ID/时间删除不是复现必要条件；本轮两场景均观察到旧计数随后恢复为 0，支持“清空提前返回、后续读取与后台删除竞争”的源码分析，不是计数永久不更新。3 秒只是本次观察点，不是必要延迟阈值或稳定修复方案。未对 core 线程/SQL 打点，不把 Dart 观察冒充数据库精确调度证据。
+
+统计：执行 2 项，0 通过 / 2 失败，均因立即计数不为 0；延迟计数和空列表断言均通过，夹具清理、退出登录通过。不将延迟恢复作为原契约通过。
+
+- 正式报告：`artifacts/ci/20261110-155329-ios-iiqmuzaw/summary.md`
+- 原始日志：同目录 `attempt-1.log`，结构化事件 `attempt-1.events.jsonl`
+- 临时诊断源码与恢复校验：`artifacts/diagnostics/20261110-155251-conv006-minimal/`
+- 命令：`CI_TEST_NAME='FL-CONV-006 diagnostic' MAX_ATTEMPTS=1 E2E_CONFIG_PATH=<临时凭据文件> bash tool/ci/run_ios_simulator_test.sh integration_test/logged_in_base_test.dart conv006-minimal-ios.log`；凭据文件已删除。
+
+HIM-24174 的长流程仍是有效复现；本轮获得了可替换它的最小复现和延迟对照证据。随后按用户要求更新 HIM-24174 的 `description`，加入最小步骤、iOS 实测数据及证据边界；回读正文完全一致，其他字段未修改。

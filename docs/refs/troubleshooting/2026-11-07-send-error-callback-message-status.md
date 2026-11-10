@@ -45,3 +45,11 @@ rg -n 'message.status = MessageStatus.PROGRESS|onMessageError' im_flutter_sdk/li
 ## 2026-11-09：5.1.0 验证补充
 
 Flutter 四包及 native 依赖升级到 5.1.0 后，FL-MSG-006/007 在本轮 Android/iOS 仍收到预期错误码 201/500，但回调消息状态为 PROGRESS，FAIL 断言失败。证据见[5.1.0 验证统计与问题表](../../porting/5.1.0/2026-11-09-test-verification.md)中的 `smoke-{android,ios}.log`、`nightly-android-r2.log`、`nightly-ios.log`。用户要求记录后跳过，恢复任务没有再次执行这两个用例，也未改 SDK 或放宽断言。旧版源码分析不能替代本轮二进制根因确认，具体层次仍待确认。
+
+## 2026-11-10：Jira 跟踪与 5.1.0 源码核对
+
+已创建 [HIM-24173](https://j1.private.easemob.com/browse/HIM-24173)：未登录或收件人为空时发送失败，错误回调消息状态仍为 PROGRESS。两个触发场景作为同一发送错误回调状态一致性问题跟踪，不据此认定内部根因必然相同。组件 SDK，创建后回读状态 To Do、未指派；截止 2026-11-13、预估 2d 为供负责人调整的暂估。
+
+本次仅核对历史四份双端日志，未重跑设备。已上传 `send-error-status-evidence.log`，包含原始用例名、localId、201/500、PROGRESS 及 FAIL 断言，附原日志路径和 SHA256；正文与附件均回读确认。建单产物位于 Git 忽略的 `artifacts/jira/20261110-153354-send-error-status/`。
+
+只读核对 core tag `SDK_5.1.0`（`e5d925cb5589e2c7be304d47b0eafc5c7c2b1c60`）：`src/emchatmanager.cpp:2040` 的发送前校验中，未登录与空收件人分支直接调用 `callbackError` 后返回，未设置 FAIL；`:5879` 的通用回调函数只分发错误，且还用于附件下载。该路径是优先核查点，不能无条件在通用 helper 中设置发送失败状态。仍需核验实际发布二进制、native 回调与序列化边界；用户此前另一套 iOS 调试源码的状态 3 不作为本轮已修复证据。工单包含复现、定位建议、修复方向与双端回归范围；未修改 SDK 或断言。
