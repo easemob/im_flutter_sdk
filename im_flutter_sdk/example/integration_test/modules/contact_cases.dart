@@ -113,6 +113,53 @@ void registerContactCases({
     debugPrint('CI $id verify passed');
   });
 
+  // Test: Update a prepared contact's remark and verify the local detail and
+  // list. Restore the old remark before restoring the original relationship.
+  ciTestWidgets('FL-CONTACT-011 positive sets and reads a contact remark',
+      (_) async {
+    const id = 'FL-CONTACT-011';
+    await prepareRelation(id);
+    await rest.setContacts(userId, peerId, true);
+    await reloadRelation(id, true);
+    final original = await client.contactManager
+        .getContact(userId: peerId)
+        .timeout(const Duration(seconds: 20));
+    expect(original?.userId, peerId);
+    final originalRemark = original!.remark;
+
+    Future<void> verifyRemark(String expected) async {
+      final detail = await waitForCi(
+        'Contact $peerId detail has the expected remark',
+        () => client.contactManager.getContact(userId: peerId),
+        (value) => value?.userId == peerId && value?.remark == expected,
+      );
+      expect(detail?.remark, expected);
+      final records = await waitForCi(
+        'Contact $peerId list has the expected remark',
+        () => client.contactManager.getAllContacts(),
+        (values) => values
+            .any((value) => value.userId == peerId && value.remark == expected),
+      );
+      expect(records.where((value) => value.userId == peerId), hasLength(1));
+      expect(records.singleWhere((value) => value.userId == peerId).remark,
+          expected);
+    }
+
+    addTearDown(() async {
+      await client.contactManager
+          .setContactRemark(userId: peerId, remark: originalRemark)
+          .timeout(const Duration(seconds: 20));
+      await verifyRemark(originalRemark);
+      debugPrint('CI $id cleanup verified: original contact remark');
+    });
+    final remark = 'ci_remark_${DateTime.now().microsecondsSinceEpoch}';
+    await client.contactManager
+        .setContactRemark(userId: peerId, remark: remark)
+        .timeout(const Duration(seconds: 20));
+    await verifyRemark(remark);
+    debugPrint('CI $id verify passed');
+  });
+
   for (final keep in [true, false]) {
     final id = keep ? 'FL-CONTACT-002' : 'FL-CONTACT-003';
     // Test: Delete a prepared friend with keepConversation=true (002) or

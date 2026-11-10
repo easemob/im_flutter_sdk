@@ -55,6 +55,76 @@ void registerUserInfoCases({
       debugPrint('CI FL-USERINFO-001 verify: unsubscribed peer absent');
     },
   );
+
+  // Test: Change one reversible own attribute, then read it through the own,
+  // ID-based, and native local APIs. Clear only the Dart cache before remote
+  // reads so updateUserInfo's cached return cannot satisfy these assertions.
+  ciTestWidgets(
+    'FL-USERINFO-002 own attribute update is returned by remote and local queries',
+    (_) async {
+      final manager = client.userInfoManager;
+      final userId = await client.getCurrentUserId();
+      expect(userId, isNotNull);
+      manager.clearUserInfoCache();
+      final original = await manager
+          .fetchOwnInfo(expireTime: 0)
+          .timeout(const Duration(seconds: 20));
+      expect(original?.userId, userId);
+      final originalGender = original!.gender;
+      // Gender always has a concrete value; nullable string attributes cannot
+      // be restored by passing null because null means "leave unchanged".
+      final changedGender = originalGender == 1 ? 2 : 1;
+      addTearDown(() async {
+        try {
+          await manager
+              .updateUserInfo(gender: originalGender)
+              .timeout(const Duration(seconds: 20));
+          manager.clearUserInfoCache();
+          final restored = await manager
+              .fetchOwnInfo(expireTime: 0)
+              .timeout(const Duration(seconds: 20));
+          expect(restored?.userId, userId);
+          expect(restored?.gender, originalGender);
+          debugPrint('CI FL-USERINFO-002 cleanup verified: original gender');
+        } finally {
+          manager.clearUserInfoCache();
+        }
+      });
+
+      final updated = await manager
+          .updateUserInfo(gender: changedGender)
+          .timeout(const Duration(seconds: 20));
+      expect(updated.userId, userId);
+      expect(updated.gender, changedGender);
+
+      manager.clearUserInfoCache();
+      final own = await manager
+          .fetchOwnInfo(expireTime: 0)
+          .timeout(const Duration(seconds: 20));
+      expect(own?.userId, userId);
+      expect(own?.gender, changedGender);
+
+      manager.clearUserInfoCache();
+      final fetched = await manager.fetchUserInfoById([userId!],
+          expireTime: 0).timeout(const Duration(seconds: 20));
+      expect(fetched.keys, unorderedEquals([userId]));
+      expect(fetched[userId]?.userId, userId);
+      expect(fetched[userId]?.gender, changedGender);
+
+      manager.clearUserInfoCache();
+      final local = await waitForCi(
+        'Native local user attributes contain the updated own gender',
+        () => manager.getLocalUserInfoByIds([userId]),
+        (values) =>
+            values[userId]?.userId == userId &&
+            values[userId]?.gender == changedGender,
+        timeout: const Duration(seconds: 20),
+      );
+      expect(local.keys, unorderedEquals([userId]));
+      expect(local[userId]?.gender, changedGender);
+      debugPrint('CI FL-USERINFO-002 verify passed');
+    },
+  );
 }
 
 Future<void> _expectMembership(

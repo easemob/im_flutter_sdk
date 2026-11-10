@@ -170,4 +170,266 @@ void registerGroupCases({
       expect(local.configs!.inviteNeedConfirm, required);
     }
   });
+
+  final manager = client.groupManager;
+
+  // Each metadata case owns a separate group, so failures do not leave shared
+  // account state behind or prevent other metadata APIs from being exercised.
+  ciTestWidgets('FL-GROUP-009 positive updates the group name', (_) async {
+    final group = await createOwnedGroup('FL-GROUP-009', invitePeer: false);
+    final name = 'renamed_${group.groupId}';
+    await manager.updateGroupName(group.groupId, name);
+    final detail = await manager.fetchGroupInfoFromServer(group.groupId);
+    expect(detail.groupName, name);
+    expect(detail.desc, group.desc);
+    expect(detail.owner, userId);
+  });
+
+  ciTestWidgets('FL-GROUP-010 positive updates the group description',
+      (_) async {
+    final group = await createOwnedGroup('FL-GROUP-010', invitePeer: false);
+    final description = 'updated description ${group.groupId}';
+    await manager.updateGroupDesc(group.groupId, description);
+    final detail = await manager.fetchGroupInfoFromServer(group.groupId);
+    expect(detail.desc, description);
+    expect(detail.groupName, group.groupName);
+    expect(detail.owner, userId);
+  });
+
+  ciTestWidgets('FL-GROUP-011 positive updates the group extension', (_) async {
+    final group = await createOwnedGroup('FL-GROUP-011', invitePeer: false);
+    final extension = '{"case":"FL-GROUP-011","group":"${group.groupId}"}';
+    await manager.updateGroupExtension(group.groupId, extension);
+    final detail = await manager.fetchGroupInfoFromServer(group.groupId);
+    debugPrint('CI FL-GROUP-011 observation: extension=${detail.extension} '
+        'configs.ext=${detail.configs?.ext}');
+    expect(detail.extension, extension);
+    expect(detail.groupName, group.groupName);
+  });
+
+  // Updating twice distinguishes a current server read from a stale snapshot.
+  ciTestWidgets('FL-GROUP-012 positive updates and fetches group announcements',
+      (_) async {
+    final group = await createOwnedGroup('FL-GROUP-012', invitePeer: false);
+    for (final revision in [1, 2]) {
+      final announcement = 'announcement ${group.groupId} revision $revision';
+      await manager.updateGroupAnnouncement(group.groupId, announcement);
+      expect(await manager.fetchAnnouncementFromServer(group.groupId),
+          announcement);
+    }
+  });
+
+  ciTestWidgets('FL-GROUP-013 positive updates and reads the group avatar',
+      (_) async {
+    final group = await createOwnedGroup('FL-GROUP-013', invitePeer: false);
+    final avatar = 'https://example.com/ci/${group.groupId}.png';
+    final updated = await manager.updateGroupAvatar(
+        groupId: group.groupId, avatarUrl: avatar);
+    expect(updated.groupId, group.groupId);
+    expect(updated.avatarUrl, avatar);
+    final detail = await manager.fetchGroupInfoFromServer(group.groupId);
+    expect(detail.avatarUrl, avatar);
+    expect(detail.groupName, group.groupName);
+  });
+
+  ciTestWidgets('FL-GROUP-014 positive sets, reads, and removes own namecard',
+      (_) async {
+    final group = await createOwnedGroup('FL-GROUP-014', invitePeer: false);
+    final namecard = 'ci_${group.groupId}';
+    await manager.updateGroupNamecard(
+        groupId: group.groupId, namecard: namecard);
+    expect(
+        await manager.getGroupNamecard(groupId: group.groupId, userId: userId),
+        namecard);
+    await manager.updateGroupNamecard(groupId: group.groupId, namecard: null);
+    try {
+      final removed = await waitForCi(
+        'FL-GROUP-014 cleared own namecard',
+        () => manager.getGroupNamecard(groupId: group.groupId, userId: userId),
+        (namecard) => namecard == null,
+        timeout: const Duration(seconds: 5),
+      );
+      expect(removed, isNull);
+    } catch (_) {
+      // Observe server member information only after the local assertion has
+      // failed; a diagnostic fetch must not make the assertion pass by warming
+      // the cache or replace the original failure with its own error.
+      try {
+        final members = await manager
+            .fetchGroupMembersInfo(
+                groupId: group.groupId, cursor: null, limit: 20)
+            .timeout(const Duration(seconds: 5));
+        final own = members.data
+            .where((member) => member.userId == userId)
+            .map((member) => member.namecard)
+            .toList();
+        debugPrint('CI FL-GROUP-014 diagnostic: server own namecards=$own '
+            'cursor=${members.cursor}');
+      } catch (diagnosticError) {
+        debugPrint('CI FL-GROUP-014 diagnostic fetch failed: $diagnosticError');
+      }
+      rethrow;
+    }
+  });
+
+  // Select only allowInvites; the supplied other fields must not overwrite
+  // the original group configuration. This does not test invitee acceptance.
+  ciTestWidgets('FL-GROUP-015 positive updates only the selected config field',
+      (_) async {
+    final group = await createOwnedGroup('FL-GROUP-015', invitePeer: false);
+    final updated = await manager.updateGroupConfigs(
+      groupId: group.groupId,
+      types: ChatGroupConfigsType.allowInvites,
+      configs: const ChatGroupConfigs(
+        allowInvites: false,
+        maxCount: 80,
+        inviteNeedConfirm: true,
+        isPublic: false,
+        joinApprovalRequired: false,
+        ext: 'must_not_replace_original_extension',
+      ),
+    );
+    expect(updated.groupId, group.groupId);
+    expect(updated.configs, isNotNull);
+    expect(updated.configs!.allowInvites, isFalse);
+    final detail = await manager.fetchGroupInfoFromServer(group.groupId);
+    expect(detail.configs, isNotNull);
+    expect(detail.configs!.allowInvites, isFalse);
+    expect(detail.configs!.maxCount, group.configs!.maxCount);
+    expect(detail.configs!.inviteNeedConfirm, group.configs!.inviteNeedConfirm);
+    expect(detail.configs!.ext, group.configs!.ext);
+    expect(detail.configs!.isPublic, group.configs!.isPublic);
+    expect(detail.configs!.joinApprovalRequired,
+        group.configs!.joinApprovalRequired);
+  });
+
+  // The group explicitly disables invitation confirmation. The owner's
+  // server-side membership operation therefore needs no second live client.
+  ciTestWidgets('FL-GROUP-016 positive adds and removes a group member',
+      (_) async {
+    final group = await createOwnedGroup('FL-GROUP-016', invitePeer: false);
+    await manager.addMembers(group.groupId, [peerId], welcome: 'CI member');
+    await waitForCi(
+        'FL-GROUP-016 member added',
+        () => rest.groupMembers(group.groupId),
+        (members) => setEquals(members, {userId, peerId}));
+    final added = await manager.fetchMemberListFromServer(group.groupId);
+    expect(added.data, contains(peerId));
+    await manager.removeMembers(group.groupId, [peerId]);
+    await waitForCi(
+        'FL-GROUP-016 member removed',
+        () => rest.groupMembers(group.groupId),
+        (members) => setEquals(members, {userId}));
+    final removed = await manager.fetchMemberListFromServer(group.groupId);
+    expect(removed.data, isNot(contains(peerId)));
+  });
+
+  ciTestWidgets('FL-GROUP-017 positive promotes and demotes a group admin',
+      (_) async {
+    final group = await createOwnedGroup('FL-GROUP-017');
+    expect(group.adminList, isNot(contains(peerId)));
+    await manager.addAdmin(group.groupId, peerId);
+    final promoted = await manager.fetchGroupInfoFromServer(group.groupId);
+    expect(promoted.adminList, contains(peerId));
+    expect(promoted.owner, userId);
+    await manager.removeAdmin(group.groupId, peerId);
+    final demoted = await manager.fetchGroupInfoFromServer(group.groupId);
+    expect(demoted.adminList, isNot(contains(peerId)));
+    expect(demoted.owner, userId);
+    expect(await rest.groupMembers(group.groupId), {userId, peerId});
+  });
+
+  ciTestWidgets('FL-GROUP-018 positive fetches typed group member information',
+      (_) async {
+    final group = await createOwnedGroup('FL-GROUP-018');
+    final result = await manager.fetchGroupMembersInfo(
+        groupId: group.groupId, cursor: null, limit: 20);
+    final ids = result.data.map((member) => member.userId).toList();
+    expect(ids, contains(peerId));
+    expect(ids.toSet().difference({userId, peerId}), isEmpty);
+    expect(ids.toSet().length, ids.length);
+    final peer = result.data.singleWhere((member) => member.userId == peerId);
+    expect(peer.role, ChatGroupPermissionType.Member);
+    expect(peer.joinedTs, greaterThan(0));
+    expect(result.cursor == null || result.cursor!.isEmpty, isTrue);
+  });
+
+  ciTestWidgets(
+      'FL-GROUP-019 positive sets, queries, and selectively removes member attributes',
+      (_) async {
+    final group = await createOwnedGroup('FL-GROUP-019');
+    final ownAttributes = {'ci_role': 'owner', 'ci_marker': group.groupId};
+    final peerAttributes = {'ci_role': 'peer', 'ci_marker': group.groupId};
+    await manager.setMemberAttributes(
+        groupId: group.groupId, userId: userId, attributes: ownAttributes);
+    await manager.setMemberAttributes(
+        groupId: group.groupId, userId: peerId, attributes: peerAttributes);
+    expect(
+        await manager.fetchMemberAttributes(
+            groupId: group.groupId, userId: userId),
+        ownAttributes);
+    expect(
+        await manager.fetchMemberAttributes(
+            groupId: group.groupId, userId: peerId),
+        peerAttributes);
+    final selected = await manager.fetchMembersAttributes(
+        groupId: group.groupId, userIds: [userId, peerId], keys: ['ci_role']);
+    expect(selected, {
+      userId: {'ci_role': 'owner'},
+      peerId: {'ci_role': 'peer'},
+    });
+    await manager.removeMemberAttributes(
+        groupId: group.groupId, userId: peerId, keys: ['ci_role']);
+    expect(
+        await manager.fetchMemberAttributes(
+            groupId: group.groupId, userId: peerId),
+        {'ci_marker': group.groupId});
+    expect(
+        await manager.fetchMemberAttributes(
+            groupId: group.groupId, userId: userId),
+        ownAttributes);
+  });
+
+  ciTestWidgets(
+      'FL-GROUP-020 positive adds and removes a group blocklist entry',
+      (_) async {
+    final group = await createOwnedGroup('FL-GROUP-020');
+    expect(await manager.fetchBlockListFromServer(group.groupId), isEmpty);
+    await manager.blockMembers(group.groupId, [peerId]);
+    expect(await manager.fetchBlockListFromServer(group.groupId), [peerId]);
+    await waitForCi(
+        'FL-GROUP-020 blocked peer removed from group',
+        () => rest.groupMembers(group.groupId),
+        (members) => setEquals(members, {userId}));
+    await manager.unblockMembers(group.groupId, [peerId]);
+    expect(await manager.fetchBlockListFromServer(group.groupId), isEmpty);
+  });
+
+  ciTestWidgets('FL-GROUP-021 positive adds and removes a group mute entry',
+      (_) async {
+    final group = await createOwnedGroup('FL-GROUP-021');
+    expect(await manager.fetchMuteListFromServer(group.groupId), isEmpty);
+    await manager.muteMembers(group.groupId, [peerId], duration: 600000);
+    final muted = await manager.fetchMuteListFromServer(group.groupId);
+    expect(muted.keys, unorderedEquals([peerId]));
+    expect(muted[peerId], greaterThan(0));
+    await manager.unMuteMembers(group.groupId, [peerId]);
+    expect(await manager.fetchMuteListFromServer(group.groupId), isEmpty);
+    expect(await rest.groupMembers(group.groupId), {userId, peerId});
+  });
+
+  ciTestWidgets(
+      'FL-GROUP-022 positive adds and removes a group allowlist entry',
+      (_) async {
+    final group = await createOwnedGroup('FL-GROUP-022');
+    final original = await manager.fetchAllowListFromServer(group.groupId);
+    expect(original, isNot(contains(peerId)));
+    await manager.addAllowList(group.groupId, [peerId]);
+    final added = await manager.fetchAllowListFromServer(group.groupId);
+    expect(added, unorderedEquals({...original, peerId}));
+    await manager.removeAllowList(group.groupId, [peerId]);
+    expect(await manager.fetchAllowListFromServer(group.groupId),
+        unorderedEquals(original));
+    expect(await rest.groupMembers(group.groupId), {userId, peerId});
+  });
 }

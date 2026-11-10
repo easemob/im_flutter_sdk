@@ -1096,6 +1096,348 @@
         "ChatConversation.deleteMessage",
         "ChatConversation.insertMessage"
       ]
+    },
+    {
+      "id": "FL-GROUP-009",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.updateGroupName"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Updated group name is read back without changing description or owner"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart"
+    },
+    {
+      "id": "FL-GROUP-010",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.updateGroupDesc"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Updated description is read back without changing name or owner"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart"
+    },
+    {
+      "id": "FL-GROUP-011",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.updateGroupExtension"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Updated extension is read back without changing name"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart"
+    },
+    {
+      "id": "FL-GROUP-012",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.updateGroupAnnouncement",
+        "ChatGroupManager.fetchAnnouncementFromServer"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Two successive announcement revisions are read back exactly"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart"
+    },
+    {
+      "id": "FL-GROUP-013",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.updateGroupAvatar"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Avatar update return and server detail contain the requested URL"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart"
+    },
+    {
+      "id": "FL-GROUP-014",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.updateGroupNamecard",
+        "ChatGroupManager.getGroupNamecard"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Own namecard is read back after setting and is null after removal"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart"
+    },
+    {
+      "id": "FL-GROUP-015",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.updateGroupConfigs"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Only the selected allowInvites field changes; unselected config values are retained"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart"
+    },
+    {
+      "id": "FL-GROUP-016",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.addMembers",
+        "ChatGroupManager.removeMembers"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Added peer appears in SDK and REST member lists then disappears after removal"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart"
+    },
+    {
+      "id": "FL-GROUP-017",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.addAdmin",
+        "ChatGroupManager.removeAdmin"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Promoted peer appears in admins, demoted peer leaves admins but remains a member"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart"
+    },
+    {
+      "id": "FL-GROUP-018",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.fetchGroupMembersInfo"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Typed member query returns the peer with Member role and positive joined timestamp without unknown or duplicate IDs"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart"
+    },
+    {
+      "id": "FL-GROUP-019",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.setMemberAttributes",
+        "ChatGroupManager.removeMemberAttributes",
+        "ChatGroupManager.fetchMemberAttributes",
+        "ChatGroupManager.fetchMembersAttributes"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Own and peer attributes are distinct, multi-user key filtering is exact, and selective deletion preserves the other key and user"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart"
+    },
+    {
+      "id": "FL-GROUP-020",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.blockMembers",
+        "ChatGroupManager.unblockMembers",
+        "ChatGroupManager.fetchBlockListFromServer"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Blocked peer appears in blocklist and leaves membership; unblock removes only the block entry"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart"
+    },
+    {
+      "id": "FL-GROUP-021",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.muteMembers",
+        "ChatGroupManager.unMuteMembers",
+        "ChatGroupManager.fetchMuteListFromServer"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Mute list contains the peer with positive expiry and becomes empty after unmute while membership remains"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart"
+    },
+    {
+      "id": "FL-GROUP-022",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatGroupManager.addAllowList",
+        "ChatGroupManager.removeAllowList",
+        "ChatGroupManager.fetchAllowListFromServer"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Allowlist adds the peer and removal restores the original list without changing membership"
+      ],
+      "testFile": "example/integration_test/modules/group_cases.dart"
+    },
+    {
+      "id": "FL-CONTACT-011",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatContactManager.setContactRemark"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "New remark is read back in contact detail and list; original remark and relationship are restored"
+      ],
+      "testFile": "example/integration_test/modules/contact_cases.dart"
+    },
+    {
+      "id": "FL-USERINFO-002",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatUserInfoManager.updateUserInfo",
+        "ChatUserInfoManager.fetchOwnInfo",
+        "ChatUserInfoManager.fetchUserInfoById",
+        "ChatUserInfoManager.getLocalUserInfoByIds"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Updated own gender is returned by update, uncached remote reads and native local query; original value is restored"
+      ],
+      "testFile": "example/integration_test/modules/user_info_cases.dart"
+    },
+    {
+      "id": "FL-CONV-014",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatManager.pinConversation"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Pin/unpin state is reread from native detail and list while control and message contents remain unchanged"
+      ],
+      "testFile": "example/integration_test/modules/conversation_cases.dart"
+    },
+    {
+      "id": "FL-PRESENCE-006",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatPresenceManager.publishPresence",
+        "ChatPresenceManager.fetchPresenceStatus"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Own unique published description is fetched and original description restored"
+      ],
+      "testFile": "example/integration_test/modules/presence_cases.dart"
+    },
+    {
+      "id": "FL-PRESENCE-007",
+      "priority": "P1",
+      "origin": "flutter-only",
+      "sourceCases": [],
+      "flutterApis": [
+        "ChatPresenceManager.subscribe",
+        "ChatPresenceManager.unsubscribe",
+        "ChatPresenceManager.fetchSubscribedMembers"
+      ],
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "assertions": [
+        "Fresh offline peer is returned by subscribe, appears exactly once in paged subscriptions, disappears after unsubscribe, and is deleted"
+      ],
+      "testFile": "example/integration_test/modules/presence_cases.dart"
     }
   ]
 }

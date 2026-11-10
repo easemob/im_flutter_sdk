@@ -465,6 +465,49 @@ void registerConversationCases({
       },
     );
 
+    // Test: Pin and unpin a newly seeded conversation, rereading native state
+    // after each operation. The unrelated control conversation stays unpinned.
+    ciTestWidgets(
+      'FL-CONV-014 positive pin and unpin persist without changing a control',
+      (_) async {
+        final fixture = await prepare();
+        final control = await prepare();
+        final seed = fixture.text('pin fixture', timestamp: 1000);
+        final controlSeed = control.text('pin control', timestamp: 2000);
+        await fixture.conversation.insertMessage(seed);
+        await control.conversation.insertMessage(controlSeed);
+        final manager = client.chatManager;
+        final id = fixture.conversation.id;
+        var pinAttempted = false;
+        // Registered after local cleanup, so unpin runs before deletion.
+        addTearDown(() async {
+          if (!pinAttempted) return;
+          await manager.pinConversation(conversationId: id, isPinned: false);
+          final restored =
+              await manager.getConversation(id, createIfNeed: false);
+          expect(restored, isNotNull);
+          expect(restored!.isPinned, isFalse);
+        });
+        for (final pinned in [true, false]) {
+          pinAttempted = true;
+          await manager.pinConversation(conversationId: id, isPinned: pinned);
+          final reread = await manager.getConversation(id, createIfNeed: false);
+          expect(reread, isNotNull);
+          expect(reread!.isPinned, pinned);
+          final all = await manager.loadAllConversations();
+          expect(all.where((item) => item.id == id).single.isPinned, pinned);
+          expect(
+              all
+                  .where((item) => item.id == control.conversation.id)
+                  .single
+                  .isPinned,
+              isFalse);
+          await _expectMessages(fixture.conversation, [seed]);
+          await _expectMessages(control.conversation, [controlSeed]);
+        }
+      },
+    );
+
     registerChatroomConversationCases(
       client: client,
       userId: userId,

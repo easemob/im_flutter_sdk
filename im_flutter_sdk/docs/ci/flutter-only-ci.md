@@ -24,10 +24,10 @@ shared helpers. IDs, assertions, and implementation files are listed in
 | Entry | Explicit `dataSyncType` | `enableUserInfo` | Existing cases |
 |---|---|---|---|
 | `logged_out_test.dart` | `conversations` | `false` | 17: APP-001; PRESENCE-001–005; AUTH-004/005; CONTACT-005–009; GROUP-003–005; MSG-006 |
-| `logged_in_base_test.dart` | `conversations` | `false` | 25: AUTH-001/002/003/006/007; CONV-001–010 and CONV-013 with chatroom conversations disabled; MSG-001–005 and MSG-007–010 |
-| `logged_in_group_test.dart` | `conversations \| joinedGroups` | `false` | 5: GROUP-001/002/006/007/008 |
-| `logged_in_contact_test.dart` | `conversations \| contacts` | `false` | 5: CONTACT-001–004/010 |
-| `logged_in_user_info_test.dart` | `conversations` | `true` | 1: USERINFO-001 |
+| `logged_in_base_test.dart` | `conversations` | `false` | 26: AUTH-001/002/003/006/007; CONV-001–010, CONV-014, and CONV-013 with chatroom conversations disabled; MSG-001–005 and MSG-007–010 |
+| `logged_in_group_test.dart` | `conversations \| joinedGroups` | `false` | 19: GROUP-001/002/006/007/008–022 |
+| `logged_in_contact_test.dart` | `conversations \| contacts` | `false` | 6: CONTACT-001–004/010/011 |
+| `logged_in_user_info_test.dart` | `conversations` | `true` | 2: USERINFO-001/002 |
 
 All IDs have the `FL-` prefix. The normal entries explicitly use
 `autoLoadConversations=true` and `enableChatroomConversation=false`. Group and
@@ -39,8 +39,11 @@ contact synchronization are independent from conversation synchronization;
 `autoLoadConversations=false`; FL-CONV-013 also has an execution with
 `enableChatroomConversation=true`. Preserve these three execution items and their
 assertions until their destination is agreed. They are not included in the normal
-entry counts above. Before migration, the inventory contains 55 distinct IDs and
-56 execution items; this is an inventory, not a new execution result.
+entry counts above. The registered inventory contains 72 distinct IDs and
+73 execution items; this is an inventory, not an execution result. Two additional
+Presence cases (FL-PRESENCE-006/007) are implemented but await confirmation of
+base-entry wiring and are excluded from these registered counts. See the
+[batch-one coverage and validation record](../../../docs/testing/2026-11-10-ci-api-batch1.md).
 
 Login classification describes the scenario's precondition, not a requirement to
 remain logged in or out throughout a test. Logout/relogin belongs to base; invalid
