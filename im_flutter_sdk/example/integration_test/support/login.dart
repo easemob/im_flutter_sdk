@@ -6,11 +6,14 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'rest_fixture.dart';
 
 Future<void> loginForCi(ChatClient client, String userId, String token) async {
-  const requiredTypes =
-      ChatDataSyncType.contacts | ChatDataSyncType.joinedGroups;
-  if (client.options?.dataSyncType != requiredTypes) {
-    throw StateError(
-        'CI login requires explicit contacts and joinedGroups sync');
+  final requiredTypes = client.options?.dataSyncType;
+  const supportedTypes = ChatDataSyncType.conversations |
+      ChatDataSyncType.contacts |
+      ChatDataSyncType.joinedGroups;
+  if (requiredTypes == null ||
+      requiredTypes == ChatDataSyncType.none ||
+      (requiredTypes & ~supportedTypes) != 0) {
+    throw StateError('CI login requires an explicit supported data sync mask');
   }
 
   const budget = Duration(seconds: 45);
@@ -85,7 +88,7 @@ Future<void> loginForCi(ChatClient client, String userId, String token) async {
     );
     if (syncFailure != null) throw syncFailure!;
     debugPrint('CI login prepare verified: connected and data sync '
-        'completed for contacts and joinedGroups');
+        'completed for mask=$requiredTypes');
   } finally {
     client.removeConnectionEventHandler(handlerId);
   }

@@ -29,10 +29,10 @@ esac
 if [ "$PLATFORM" = "android" ]; then
   # Runners check prerequisites after creating the report directory.
   exec bash "$REPO_ROOT/tool/ci/run_android_emulator_test.sh" \
-    integration_test/no_login_presence_test.dart android-no-login-smoke.log
+    integration_test/logged_out_test.dart android-no-login-smoke.log
 fi
 
 # ios: run_ios_simulator_test.sh boots an available iPhone simulator itself
 # (and retries once on the iOS 26 VM-Service race; see that script's header).
 exec bash "$REPO_ROOT/tool/ci/run_ios_simulator_test.sh" \
-  integration_test/no_login_presence_test.dart ios-no-login-smoke.log
+  integration_test/logged_out_test.dart ios-no-login-smoke.log

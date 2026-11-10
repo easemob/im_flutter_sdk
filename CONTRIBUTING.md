@@ -128,8 +128,8 @@ Every device task on CI has an equivalent local script; the scripts first compar
 | Workflow | Trigger | Content | Local equivalent |
 |----------|---------|---------|------------------|
 | `.github/workflows/ci.yml` | PR, push to `flutter2_stable` / `4.*` / `5.*`, manual | Quality gate + Android debug build + iOS simulator build | `bash tool/ci/run_quality.sh` |
-| `.github/workflows/device-smoke.yml` | Daily schedule + manual | Android / iOS login-free Presence smoke (`integration_test/no_login_presence_test.dart`, uses the test's built-in public demo appKey, no credentials needed) | `bash tool/ci/smoke_local.sh android\|ios` |
-| `.github/workflows/single-account-nightly.yml` | Daily schedule + manual | Client, contact, group, conversation, and message cases (`integration_test/single_account_local_test.dart`) | `bash tool/ci/nightly_local.sh android\|ios` |
+| `.github/workflows/device-smoke.yml` | Daily schedule + manual | Android / iOS logged-out smoke (`integration_test/logged_out_test.dart`, uses the test's built-in public demo appKey, no credentials needed) | `bash tool/ci/smoke_local.sh android\|ios` |
+| `.github/workflows/single-account-nightly.yml` | Daily schedule + manual | Four fixed logged-in categories: base, group, contact, and user info | `bash tool/ci/nightly_local.sh android\|ios` |
 
 > The cron in `single-account-nightly.yml` (`37 18 * * *`, one hour earlier than RN's nightly) only takes effect on the **default branch** (`flutter2_stable`) — GitHub scheduled workflows "run the latest commit of the default branch using the default branch's workflow file", so before this file lands on the default branch, scheduled triggers on the 5.0.0 branch will not happen; only manual dispatch works.
 
@@ -141,16 +141,40 @@ Both `run_*_test.sh` scripts uninstall the app before running to avoid leftover 
 
 #### Cases and inputs
 
-The two entry files remain under `im_flutter_sdk/example/integration_test/`:
+Five stable entry files live under `im_flutter_sdk/example/integration_test/`:
 
-| Entry | Cases | Scope |
-|---|---|---|
-| `no_login_presence_test.dart` | 17 | Cold-start initialization, five existing Presence errors, and 11 client/contact/group/message negative cases |
-| `single_account_local_test.dart` | 30 | 22 positive cases and eight negative cases registered from `modules/`; negative implementations use `*_cases.negative.dart` |
+| Entry | Existing cases | Explicit synchronization / scope |
+|---|---:|---|
+| `logged_out_test.dart` | 17 | Conversations only; initialization and logged-out boundaries |
+| `logged_in_base_test.dart` | 25 | Conversations only; authentication, messages, conversations, and local database |
+| `logged_in_group_test.dart` | 5 | Conversations + joined groups; group APIs |
+| `logged_in_contact_test.dart` | 5 | Conversations + contacts; contacts and blacklists |
+| `logged_in_user_info_test.dart` | 1 | Conversations only + `enableUserInfo=true`; user info |
 
-`support/` contains shared test timeout, login synchronization, and REST fixture helpers. Case IDs and assertions are recorded in [native-case-mapping.json](im_flutter_sdk/docs/ci/native-case-mapping.json); selection rules and exclusions are in the [API selection](docs/refs/ci-basic-api-tests/2026-11-07-api-selection.md).
+Initialization options are explicit; the base configuration does not depend on SDK
+defaults. Login classification describes the precondition, so a base case may test
+logout/relogin. Group message sending and friendship preparation do not move a
+message case out of base. Normal cases are added to existing registration functions in `modules/`, with
+negative cases in `*_cases.negative.dart`. Ordinary additions must not edit the five
+stable entry files, change shared configuration, or modify execution scripts. If
+a new module needs entry imports or registration wiring, explain the need and
+obtain confirmation before editing the entry; this wiring is not an automatic
+exception.
 
-The logged-in entry requires all six dart-defines:
+**Special-configuration migration pending confirmation:** three existing execution
+items remain outside the normal counts above: FL-CONV-011/012 require
+`autoLoadConversations=false`, and FL-CONV-013 also runs with
+`enableChatroomConversation=true`. Preserve their assertions until the migration
+choice is confirmed. The inventory remains 55 distinct IDs / 56 execution items;
+these counts do not claim a new successful execution.
+
+`support/` contains shared test timeout, login synchronization, and REST fixture
+helpers. Current configuration and case allocation are in the [CI guide](im_flutter_sdk/docs/ci/flutter-only-ci.md),
+and IDs and assertions are in [native-case-mapping.json](im_flutter_sdk/docs/ci/native-case-mapping.json).
+The [API selection](docs/refs/ci-basic-api-tests/2026-11-07-api-selection.md) records
+the earlier scope decisions, not the current entry layout.
+
+The shared logged-in configuration provides six dart-defines; each entry validates the fields its cases need:
 
 | Fields | Purpose |
 |---|---|
@@ -170,10 +194,10 @@ For direct device execution with an already prepared, complete temporary JSON, r
 ```bash
 E2E_CONFIG_PATH="$PWD/reports/ci-basic-api/local/e2e-config.json" \
   bash tool/ci/run_android_emulator_test.sh \
-  integration_test/single_account_local_test.dart android-basic-r1.log
+  integration_test/logged_in_base_test.dart android-basic-r1.log
 ```
 
-For iOS, use `run_ios_simulator_test.sh` and a distinct log name. Keep the token file local with mode `0600` and delete it after execution. Tests verify prepared relations and group membership, restore changed relations/blacklists, and destroy temporary groups. Preparation or cleanup failure fails the run; it must not be hidden by weakening SDK assertions.
+For group, contact, or user-info cases, choose the corresponding entry above. For iOS, use `run_ios_simulator_test.sh` and a distinct log name. Keep the token file local with mode `0600` and delete it after execution. Tests verify prepared relations and group membership, restore changed relations/blacklists, and destroy temporary groups. Preparation or cleanup failure fails the run; it must not be hidden by weakening SDK assertions.
 
 #### Results and evidence
 

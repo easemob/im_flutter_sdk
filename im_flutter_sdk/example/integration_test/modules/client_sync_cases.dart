@@ -3,31 +3,19 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:integration_test/integration_test.dart';
 
-import 'support/ci_test.dart';
+import '../support/ci_test.dart';
 
-const _appKey = String.fromEnvironment('E2E_APP_KEY');
-const _userId = String.fromEnvironment('E2E_USER_ID');
-const _token = String.fromEnvironment('E2E_USER_TOKEN');
-
-void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  final missing = {
-    'E2E_APP_KEY': _appKey,
-    'E2E_USER_ID': _userId,
-    'E2E_USER_TOKEN': _token,
-  }.entries.where((entry) => entry.value.isEmpty).map((entry) => entry.key);
-  if (missing.isNotEmpty) {
-    throw StateError('Missing dart-defines: ${missing.join(', ')}');
-  }
-
-  // Run with a cold app through the generic CI device runners. This separate
-  // process deliberately does not use loginForCi, which selects contacts/groups.
+void registerConversationSyncCase({
+  required ChatClient client,
+  required String userId,
+  required String token,
+}) {
+  // The base entry initializes once before this cold-login case. Other
+  // baseline cases log in independently through their own group setup.
   // The events prove the explicitly configured sync mask, not the contents of server history.
   ciTestWidgets('FL-AUTH-007 explicit conversation sync completes successfully',
       (_) async {
-    final client = ChatClient.getInstance;
     final started = <int>[];
     final finished = <int>[];
     final syncErrors = <ChatError>[];
@@ -46,22 +34,14 @@ void main() {
       return value;
     }
 
-    final options = ChatOptions.withAppKey(
-      _appKey,
-      debugMode: false,
-      dataSyncType: ChatDataSyncType.conversations,
-      autoLoadConversations: true,
-      enableChatroomConversation: false,
-      enableUserInfo: false,
-    );
+    final options = client.options!;
     expect(options.dataSyncType, ChatDataSyncType.conversations);
     expect(options.toJson()['dataSyncType'], ChatDataSyncType.conversations);
-    await client.init(options).timeout(remaining());
     expect(await client.getCurrentUserId().timeout(remaining()), isNull,
         reason: 'Explicit conversation-sync verification requires a cold app');
 
     final handler =
-        'ci_native_defaults_${DateTime.now().microsecondsSinceEpoch}';
+        'ci_conversation_sync_${DateTime.now().microsecondsSinceEpoch}';
     client.addConnectionEventHandler(
         handler,
         ConnectionEventHandler(
@@ -95,7 +75,7 @@ void main() {
     });
 
     await client.startCallback().timeout(remaining());
-    await client.loginWithToken(_userId, _token).timeout(remaining());
+    await client.loginWithToken(userId, token).timeout(remaining());
     await syncDone.future.timeout(remaining(), onTimeout: () {
       throw TimeoutException(
           'No conversation sync finish: starts=$started '
@@ -113,7 +93,7 @@ void main() {
         reason:
             'Explicit conversation synchronization must finish without error');
     expect(await client.isConnected().timeout(remaining()), isTrue);
-    expect(await client.getCurrentUserId().timeout(remaining()), _userId);
+    expect(await client.getCurrentUserId().timeout(remaining()), userId);
     debugPrint(
         'CI FL-AUTH-007 verify passed: explicit conversation sync mask=1; '
         'server history contents are not asserted');

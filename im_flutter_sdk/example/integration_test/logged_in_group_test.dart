@@ -3,16 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:integration_test/integration_test.dart';
 
-import 'modules/client_cases.dart';
-import 'modules/client_cases.negative.dart';
-import 'modules/contact_cases.dart';
-import 'modules/contact_cases.negative.dart';
-import 'modules/conversation_cases.dart';
-import 'modules/conversation_cases.negative.dart';
 import 'modules/group_cases.dart';
 import 'modules/group_cases.negative.dart';
-import 'modules/message_cases.dart';
-import 'modules/message_cases.negative.dart';
 import 'support/login.dart';
 import 'support/rest_fixture.dart';
 
@@ -52,7 +44,8 @@ void main() {
   var initialized = false;
 
   setUpAll(() async {
-    debugPrint('CI suite prepare: initialize with contacts and groups sync');
+    debugPrint(
+        'CI group suite prepare: initialize with conversations and joinedGroups sync');
     await client
         .init(ChatOptions.withAppKey(
           _appKey,
@@ -61,18 +54,18 @@ void main() {
           enableChatroomConversation: false,
           enableUserInfo: false,
           dataSyncType:
-              ChatDataSyncType.contacts | ChatDataSyncType.joinedGroups,
+              ChatDataSyncType.conversations | ChatDataSyncType.joinedGroups,
         ))
         .timeout(const Duration(seconds: 30));
     initialized = true;
     await loginForCi(client, _userId, _token);
-    debugPrint('CI suite prepare: verified');
+    debugPrint('CI group suite prepare: verified');
   });
 
   tearDownAll(() async {
     try {
       if (initialized) {
-        debugPrint('CI suite cleanup: logout');
+        debugPrint('CI group suite cleanup: logout');
         await client.logout(false).timeout(const Duration(seconds: 30));
         expect(client.currentUserId, isNull);
         expect(
@@ -82,28 +75,14 @@ void main() {
             isNull);
         await waitForCi('SDK disconnected after logout', client.isConnected,
             (connected) => !connected);
-        debugPrint('CI suite cleanup: verified');
+        debugPrint('CI group suite cleanup: verified');
       }
     } finally {
       rest.close();
     }
   });
 
-  registerClientCases(client: client, userId: _userId, token: _token);
-  registerContactCases(
-      client: client,
-      userId: _userId,
-      token: _token,
-      peerId: _peerId,
-      rest: rest);
   registerGroupCases(
       client: client, userId: _userId, peerId: _peerId, rest: rest);
-  registerConversationCases(client: client, userId: _userId, rest: rest);
-  registerMessageCases(
-      client: client, userId: _userId, peerId: _peerId, rest: rest);
-  registerClientNegativeCases(client: client, userId: _userId, token: _token);
-  registerContactNegativeCases(client: client);
   registerGroupNegativeCases(client: client);
-  registerConversationNegativeCases(client: client, userId: _userId);
-  registerMessageNegativeCases(client: client, userId: _userId);
 }

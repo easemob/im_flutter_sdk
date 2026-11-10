@@ -1,47 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-import 'package:integration_test/integration_test.dart';
+import '../support/ci_test.dart';
 
-import 'modules/client_cases.negative.dart';
-import 'modules/contact_cases.negative.dart';
-import 'modules/group_cases.negative.dart';
-import 'modules/message_cases.negative.dart';
-import 'support/ci_test.dart';
-
-const _publicAppKey = String.fromEnvironment(
-  'E2E_APP_KEY',
-  defaultValue: 'easemob#easeim',
-);
-
-void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-
-  final client = ChatClient.getInstance;
-
-  setUpAll(() async {
-    await client
-        .init(ChatOptions.withAppKey(_publicAppKey, debugMode: false))
-        .timeout(const Duration(seconds: 30));
-  });
-
+void registerLoggedOutPresenceCases({required ChatClient client}) {
   Future<void> expectNotLoggedIn(Future<void> Function() operation) async {
     await expectLater(
       operation,
       throwsA(isA<ChatError>().having((error) => error.code, 'code', 201)),
     );
   }
-
-  ciTestWidgets('FL-APP-001 initializes the native SDK while logged out', (
-    tester,
-  ) async {
-    // Assumes a cold install. The Android SDK reports its persisted last-login
-    // user (SharedPreferences `easemob.chat.loginuser`) after a restart without
-    // logout, so a login left on the device by an earlier run makes this fail
-    // even though the SDK has no session. tool/ci/run_{android,ios}_*_test.sh
-    // clear the app before running, and CI starts from a fresh device.
-    expect(client.currentUserId, isNull);
-  });
 
   ciTestWidgets('FL-PRESENCE-001 rejects publish while logged out', (
     tester,
@@ -92,9 +60,4 @@ void main() {
       ),
     );
   });
-
-  registerLoggedOutClientNegativeCases(client: client);
-  registerLoggedOutContactNegativeCases(client: client);
-  registerLoggedOutGroupNegativeCases(client: client);
-  registerLoggedOutMessageNegativeCases(client: client);
 }

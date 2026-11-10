@@ -34,7 +34,7 @@ flutter pub get
 # Integration tests assume a cold app. `flutter test` installs over any existing
 # installation (which keeps /data/data) and only uninstalls after the run, so a
 # login left on the device by an earlier `flutter run` / auto-report / nightly
-# run survives into this run: FL-APP-001 in no_login_presence_test.dart failed
+# run survives into this run: FL-APP-001 in logged_out_test.dart failed
 # with 'zuoyu01' this way, because the Android SDK reports its persisted
 # last-login user from SharedPreferences. CI always starts from a fresh
 # emulator, so there this is a no-op (the uninstall of an absent package fails,

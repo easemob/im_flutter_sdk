@@ -21,7 +21,7 @@ if os.environ.get('FAKE_RETRY') and 'attempt-1.' in str(destination):
     destination.write_text('')
     print('0 tests passed.')
     sys.exit(1)
-failed = os.environ.get('FAKE_FAIL_FIRST') and 'single_account_local_test' in sys.argv[2]
+failed = os.environ.get('FAKE_FAIL_FIRST') and 'logged_in_base_test' in sys.argv[2]
 events = [
   {'type': 'group', 'group': {'parentID': None, 'suiteID': 0, 'testCount': 1}},
   {'type': 'testStart', 'test': {'id': 1, 'suiteID': 0, 'name': 'FL-FAKE-001 reporting fixture'}, 'time': 0},
@@ -75,10 +75,10 @@ class RunnerTests(unittest.TestCase):
         result = self.run_script('nightly_local.sh', 'android')
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         report = json.loads(self.reports()[0].read_text())
-        self.assertEqual(report['knownTotal'], 4)
-        self.assertEqual(report['counts']['passed'], 3)
+        self.assertEqual(report['knownTotal'], 5)
+        self.assertEqual(report['counts']['passed'], 4)
         self.assertEqual(report['counts']['failed'], 1)
-        self.assertEqual(len(report['batches']), 4)
+        self.assertEqual(len(report['batches']), 5)
         self.assertTrue(self.config.exists())
 
     def test_individual_suite_and_preparation_failure_both_report(self):
@@ -110,7 +110,7 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         path = Path((self.root / 'config-path.txt').read_text())
         self.assertFalse(path.exists())
-        self.assertEqual(json.loads(self.reports()[0].read_text())['counts']['passed'], 4)
+        self.assertEqual(json.loads(self.reports()[0].read_text())['counts']['passed'], 5)
 
     def test_smoke_device_precheck_failure_still_has_report(self):
         (self.root / 'bin/adb').write_text('#!/bin/bash\nexit 1\n')

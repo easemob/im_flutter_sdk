@@ -17,7 +17,7 @@
       "assertions": [
         "Native plugin registers and initializes while logged out"
       ],
-      "testFile": "example/integration_test/no_login_presence_test.dart"
+      "testFile": "example/integration_test/modules/client_cases.dart"
     },
     {
       "id": "FL-PRESENCE-001",
@@ -36,7 +36,7 @@
       "assertions": [
         "Logged-out call throws ChatError code 201"
       ],
-      "testFile": "example/integration_test/no_login_presence_test.dart"
+      "testFile": "example/integration_test/modules/presence_cases.negative.dart"
     },
     {
       "id": "FL-PRESENCE-002",
@@ -55,7 +55,7 @@
       "assertions": [
         "Logged-out call throws ChatError code 201"
       ],
-      "testFile": "example/integration_test/no_login_presence_test.dart"
+      "testFile": "example/integration_test/modules/presence_cases.negative.dart"
     },
     {
       "id": "FL-PRESENCE-003",
@@ -74,7 +74,7 @@
       "assertions": [
         "Logged-out call throws ChatError code 201"
       ],
-      "testFile": "example/integration_test/no_login_presence_test.dart"
+      "testFile": "example/integration_test/modules/presence_cases.negative.dart"
     },
     {
       "id": "FL-PRESENCE-004",
@@ -93,7 +93,7 @@
       "assertions": [
         "Logged-out call throws ChatError code 201"
       ],
-      "testFile": "example/integration_test/no_login_presence_test.dart"
+      "testFile": "example/integration_test/modules/presence_cases.negative.dart"
     },
     {
       "id": "FL-PRESENCE-005",
@@ -112,7 +112,7 @@
       "assertions": [
         "Logged-out call throws ChatError code 201"
       ],
-      "testFile": "example/integration_test/no_login_presence_test.dart"
+      "testFile": "example/integration_test/modules/presence_cases.negative.dart"
     },
     {
       "id": "FL-AUTH-001",
@@ -1048,7 +1048,7 @@
       "assertions": [
         "With dataSyncType explicitly set to conversations (1), cold-app login emits start and successful finish events with exactly mask 1 and connects; logout clears identity and connection; omitted-parameter defaults and server-history contents are not asserted"
       ],
-      "testFile": "example/integration_test/native_defaults_test.dart",
+      "testFile": "example/integration_test/modules/client_sync_cases.dart",
       "preparationApis": [
         "ChatClient.startCallback"
       ]
@@ -1072,7 +1072,7 @@
         "The peer disappears after unsubscribe; existing accounts, profiles, contacts and subscriptions are not modified",
         "Cleanup deletes only the freshly created REST account and verifies its absence"
       ],
-      "testFile": "example/integration_test/user_info_subscription_test.dart"
+      "testFile": "example/integration_test/modules/user_info_cases.dart"
     },
     {
       "id": "FL-MSG-010",

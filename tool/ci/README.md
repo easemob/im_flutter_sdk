@@ -20,7 +20,7 @@ Android 设备入口固定使用已启动的 `emulator-5554`，运行前可用 `
 |---|---|---|
 | `run_quality.sh` | 格式、静态分析、SDK 单元测试及映射/契约/版本检查 | 否，无需设备 |
 | `smoke_local.sh` | 未登录设备冒烟测试 | 否 |
-| `nightly_local.sh` | 单账号设备回归，包含四种初始化批次 | 是 |
+| `nightly_local.sh` | 单账号设备回归，按基础、群组、联系人、用户资料四类执行 | 是 |
 
 ### 质量检查
 
@@ -60,14 +60,22 @@ bash tool/ci/nightly_local.sh ios
 
 如果已有有效的 CI dart-define JSON，可用 `E2E_CONFIG_PATH=/绝对路径/e2e-config.json` 执行 Nightly，脚本直接使用它并保留文件，不再自动刷新 Token。格式及凭据说明见 [CI 配置](../../CONTRIBUTING.md)。
 
-Nightly 自动按顺序执行以下四批，每批重启应用后重新初始化，无需人工逐批操作：
+Nightly 通过现有设备 runner 冷启动四个固定登录入口，无需人工逐批操作：
 
-1. `single_account_local_test.dart`
-2. `native_defaults_test.dart`
-3. `user_info_subscription_test.dart`
-4. `conversation_config_test.dart`
+| 入口 | 同步配置 | 用例归属 |
+|---|---|---|
+| `logged_in_base_test.dart` | 会话 | 认证、消息、会话、本地数据库等基础行为 |
+| `logged_in_group_test.dart` | 会话＋已加入群组 | 群组相关 API 和群组列表同步 |
+| `logged_in_contact_test.dart` | 会话＋联系人 | 联系人、好友关系和黑名单 |
+| `logged_in_user_info_test.dart` | 会话；另开 `enableUserInfo` | 用户资料读写、查询和订阅 |
 
-其中一批失败仍继续后续批次，最终返回失败并汇总各批结果。
+未登录入口固定为 `logged_out_test.dart`，由 Smoke 执行。基础配置显式开启会话同步，关闭群组、联系人同步和用户资料；其他登录入口只开启对应能力。所有初始化选项显式设置，“基础”不表示依赖 SDK 默认值。
+
+入口表示登录前置与初始化配置，用例仍按业务放在 `modules/`。群消息收发不要求开启群组列表同步，消息测试准备好友关系也不改变其基础类归属。用例可以在验证过程中退出、重新登录。普通新增用例只补对应业务模块的现有注册函数，不修改五个稳定入口、不改变共享配置。若新增业务模块确需修改入口 import 或注册接线，也须先说明原因并取得确认，不能默认豁免。完整配置和编号归属见 [CI 说明](../../im_flutter_sdk/docs/ci/flutter-only-ci.md)。
+
+**特殊配置迁移待确认：** FL-CONV-011/012 需要 `autoLoadConversations=false`，FL-CONV-013 还包含 `enableChatroomConversation=true` 的执行项。它们无法直接合并到常规配置，迁移方案未确认前保留原有用例与断言，Nightly 暂时继续在最后执行原有 `conversation_config_test.dart` 三项（当前共五个登录批次）。不将五个稳定入口视为已包含这些特殊执行项，也不将临时保留视为已批准第六个稳定入口。
+
+其中一批失败仍继续后续批次，最终返回失败并汇总各批结果。初始化参数改变后必须重启应用，不能在同一进程中改 options 代替重新初始化。
 
 ## 只运行一个用例或套件
 
@@ -75,16 +83,16 @@ Nightly 自动按顺序执行以下四批，每批重启应用后重新初始化
 
 ```bash
 CI_TEST_NAME=FL-APP-001 bash tool/ci/run_android_emulator_test.sh \
-  integration_test/no_login_presence_test.dart android-single-case.log
+  integration_test/logged_out_test.dart android-single-case.log
 
 # iOS 对应入口：
 CI_TEST_NAME=FL-APP-001 bash tool/ci/run_ios_simulator_test.sh \
-  integration_test/no_login_presence_test.dart ios-single-case.log
+  integration_test/logged_out_test.dart ios-single-case.log
 ```
 
 第一个参数是相对 example 的测试入口，第二个参数是 `artifacts/` 下的兼容日志文件名。不传 `CI_TEST_NAME` 则执行该入口的全部用例。
 
-单个登录用例需额外提供有效的 `E2E_CONFIG_PATH`。可以在上述五项环境变量设置后先生成配置，再调用设备 runner：
+单个登录用例需额外提供完整有效的 `E2E_CONFIG_PATH`，包括 `FL-AUTH-007`；基础入口统一检查账号、peer 和 REST 配置。可以在上述五项环境变量设置后先生成配置，再调用设备 runner：
 
 ```bash
 mkdir -p artifacts
@@ -93,10 +101,10 @@ bash tool/ci/write_e2e_dart_defines.sh "$PWD/artifacts/e2e-config.json"
 # 将 <用例ID> 替换成该入口中的实际用例编号。
 E2E_CONFIG_PATH="$PWD/artifacts/e2e-config.json" CI_TEST_NAME='<用例ID>' \
   bash tool/ci/run_android_emulator_test.sh \
-  integration_test/single_account_local_test.dart android-single-case.log
+  integration_test/logged_in_base_test.dart android-single-case.log
 ```
 
-特殊初始化用例需要指定其对应测试入口。该配置含凭据，保存在 Git 忽略目录，不要分享；Token 过期后重新生成，用完可自行删除。
+群组、联系人和用户资料用例应将上述入口替换为对应的固定入口；不能用基础入口筛选其他入口内的用例。该配置含凭据，保存在 Git 忽略目录，不要分享；Token 过期后重新生成，用完可自行删除。
 
 ## 报告与日志在哪里
 
@@ -110,7 +118,7 @@ E2E_CONFIG_PATH="$PWD/artifacts/e2e-config.json" CI_TEST_NAME='<用例ID>' \
 | 同目录 `runner.log` | 准备、构建及执行过程日志 |
 | 同目录 `attempt-N.log` / `attempt-N.events.jsonl` | 各次尝试的原始输出与 Flutter 结构化事件 |
 
-Nightly 顶层报告汇总四批，各批次证据放在子目录。原有 `artifacts/<日志名>` 仍保留，但重复运行可能覆盖，追溯优先使用独立运行目录。运行产物均被 Git 忽略。
+Nightly 顶层报告汇总本次实际调度的批次，各批次证据放在子目录。原有 `artifacts/<日志名>` 仍保留，但重复运行可能覆盖，追溯优先使用独立运行目录。运行产物均被 Git 忽略。
 
 先看报告中的失败用例，再从链接进入原始证据；准备或构建失败不代表业务用例已执行。定向通过只代表选中的范围，历史已知问题仍以本次实际结果呈现。手动裸跑 `flutter test` 不会自动生成这里的正式报告。
 

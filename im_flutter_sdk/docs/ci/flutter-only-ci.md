@@ -10,48 +10,69 @@ and manual example usage have separate entry points; see the
 2. `Flutter Device Smoke` runs 17 cases: SDK initialization, five existing
    Presence errors, and 11 negative client/contact/group/message cases on
    Android Emulator and iOS Simulator. It needs no account or secret.
-3. `Flutter Single Account Nightly` runs the shared logged-in suite covering client
-   state, contacts/blacklists, group lifecycle and configuration, local conversations,
-   chatroom conversation visibility, and messages. One account logs into the device;
-   prepared offline peers and REST fixtures do not require a second client.
-   Android and iOS are serialized. Independent initialization suites additionally
-   verify explicit conversation synchronization, subscribed-user list membership,
-   database pagination and enabled chatroom conversations. Saved-history cache
-   updates run in the shared message module.
+3. `Flutter Single Account Nightly` runs the four stable logged-in categories:
+   base, group, contact, and user info. One account logs into the device; prepared
+   offline peers and REST fixtures do not require a second running client.
+   Android and iOS are serialized.
 
-The smoke entry is `example/integration_test/no_login_presence_test.dart`;
-`single_account_local_test.dart` registers logged-in cases from `modules/`.
-New negative cases use `*_cases.negative.dart`, and `support/` supplies shared helpers.
-IDs, assertions, and source files are listed in
+The five stable entries under `example/integration_test/` classify tests by login
+precondition and explicit synchronization settings. Cases remain in business
+`modules/`; negative cases use `*_cases.negative.dart`, and `support/` supplies
+shared helpers. IDs, assertions, and implementation files are listed in
 [native-case-mapping.json](native-case-mapping.json).
 
-Both local and hosted nightly commands use `tool/ci/nightly_local.sh`. Its loop
-runs all four suites on the selected platform through the existing device runner.
-Each suite starts a fresh app because changing SDK initialization options requires
-an app restart. Separate logs are written under `artifacts/`; a failed suite does
-not prevent the remaining suites from running, and the final summary and exit code
-retain any failure. No extra suite dispatcher is used.
+| Entry | Explicit `dataSyncType` | `enableUserInfo` | Existing cases |
+|---|---|---|---|
+| `logged_out_test.dart` | `conversations` | `false` | 17: APP-001; PRESENCE-001–005; AUTH-004/005; CONTACT-005–009; GROUP-003–005; MSG-006 |
+| `logged_in_base_test.dart` | `conversations` | `false` | 25: AUTH-001/002/003/006/007; CONV-001–010 and CONV-013 with chatroom conversations disabled; MSG-001–005 and MSG-007–010 |
+| `logged_in_group_test.dart` | `conversations \| joinedGroups` | `false` | 5: GROUP-001/002/006/007/008 |
+| `logged_in_contact_test.dart` | `conversations \| contacts` | `false` | 5: CONTACT-001–004/010 |
+| `logged_in_user_info_test.dart` | `conversations` | `true` | 1: USERINFO-001 |
 
-Each run also writes a human-readable case summary and JSON statistics under
+All IDs have the `FL-` prefix. The normal entries explicitly use
+`autoLoadConversations=true` and `enableChatroomConversation=false`. Group and
+contact synchronization are independent from conversation synchronization;
+`autoLoadConversations` and `enableChatroomConversation` are separate options.
+“Base” is the selected explicit CI configuration, not a test of omitted SDK defaults.
+
+**Special-configuration migration pending confirmation:** FL-CONV-011/012 require
+`autoLoadConversations=false`; FL-CONV-013 also has an execution with
+`enableChatroomConversation=true`. Preserve these three execution items and their
+assertions until their destination is agreed. They are not included in the normal
+entry counts above. Before migration, the inventory contains 55 distinct IDs and
+56 execution items; this is an inventory, not a new execution result.
+
+Login classification describes the scenario's precondition, not a requirement to
+remain logged in or out throughout a test. Logout/relogin belongs to base; invalid
+login parameters belong to logged out. Message tests stay in base even when their
+recipient is a group or REST preparation establishes friendship. Group list sync
+is not a prerequisite for sending group messages, and friendship is not a universal
+prerequisite for sending messages.
+
+Add ordinary cases only to their business module's existing registration function.
+Do not edit the five stable entries, change their shared initialization, add or
+rename an entry, or modify workflows/runners as part of adding cases. If a new
+business module requires entry imports or registration wiring, explain the need
+and obtain confirmation before editing the entry; wiring is not exempt. If a
+case needs an incompatible configuration, document the conflict and obtain
+confirmation before changing batches; never remove a valid assertion to make the
+case fit.
+
+Both local and hosted nightly commands use `tool/ci/nightly_local.sh`. Its loop
+calls the existing device runner for each selected logged-in category. Each batch
+starts a fresh app because changing SDK initialization options requires an app
+restart. A failed batch does not prevent later batches from running, and the final
+summary and exit code retain any failure. No extra suite dispatcher is used.
+
+Each run writes a human-readable case summary and JSON statistics under
 `artifacts/ci/<run-id>/`, with links to per-attempt logs and Flutter JSON events.
 The existing device runners accept `CI_TEST_NAME` for a single-test name regex;
-full suites and selected tests both produce reports. Output files, counting rules
-and regeneration commands are documented in the
-[report guide](../../../docs/testing/2026-11-09-reports.md).
-
-| Entry | Explicit initialization | Cases | Log suffix |
-|---|---|---|---|
-| `single_account_local_test.dart` | `dataSyncType=contacts\|joinedGroups`, `autoLoadConversations=true`, `enableChatroomConversation=false`, `enableUserInfo=false` | Existing modules, including FL-MSG-010 and FL-CONV-013 with chatroom creation disabled | `single-account.log` |
-| `native_defaults_test.dart` | `dataSyncType=conversations`, `autoLoadConversations=true`, `enableChatroomConversation=false`, `enableUserInfo=false` | FL-AUTH-007; validates explicit conversation synchronization, not an omitted native default | `native-defaults.log` |
-| `user_info_subscription_test.dart` | `dataSyncType=contacts\|joinedGroups`, `autoLoadConversations=true`, `enableChatroomConversation=false`, `enableUserInfo=true` | FL-USERINFO-001 | `user-info-subscription.log` |
-| `conversation_config_test.dart` | `dataSyncType=contacts\|joinedGroups`, `autoLoadConversations=false`, `enableChatroomConversation=true`, `enableUserInfo=false` | FL-CONV-011/012/013 | `conversation-config.log` |
-
-Log filenames have the platform prefix, for example
-`artifacts/android-conversation-config.log`. Initialization-compatible tests stay
-in `modules/`; only incompatible initialization configurations justify separate
-suite entries. For focused verification, invoke the existing platform runner with
-the desired entry and a distinct log name. Do not rerun the entire nightly suite
-when the current task has explicitly skipped a known failure.
+full suites and selected tests both produce reports. Select the entry that actually
+registers the requested case. Output files, counting rules, and regeneration
+commands are documented in the [report guide](../../../docs/testing/2026-11-09-reports.md);
+commands and configuration are in the [CI operating guide](../../../tool/ci/README.md).
+Do not rerun the entire nightly suite when the current task has explicitly skipped
+a known failure.
 
 Contacts and groups are verifiable on one device with prepared resources and
 independent REST checks. Contact deletion checks only successful API completion

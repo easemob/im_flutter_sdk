@@ -36,12 +36,14 @@ case "$PLATFORM" in
 esac
 
 targets=(
-  single_account_local_test
-  native_defaults_test
-  user_info_subscription_test
+  logged_in_base_test
+  logged_in_group_test
+  logged_in_contact_test
+  logged_in_user_info_test
+  # Retain the existing special batch until its migration is confirmed.
   conversation_config_test
 )
-logs=(single-account native-defaults user-info-subscription conversation-config)
+logs=(base group contact user-info conversation-config)
 mkdir -p "$REPO_ROOT/artifacts/ci"
 nightly_dir="$(mktemp -d "$REPO_ROOT/artifacts/ci/$(date +%Y%m%d-%H%M%S)-nightly-$PLATFORM.XXXXXX")"
 CONFIG=""
