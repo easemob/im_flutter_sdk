@@ -1,6 +1,6 @@
 # 第一批登录 CI API 补充与验证
 
-日期：2026-11-10。状态：19 个用例已实现；17 个已接入并执行，15 通过、2 失败；Presence 2 个用例等待接线确认，未执行。
+日期：2026-11-10。状态：19 个用例已实现；首轮 17 个已接入并执行，15 通过、2 失败；后续 FL-GROUP-011 已修复并定向复验通过，FL-GROUP-014 仍待处理；Presence 2 个用例等待接线确认，未执行。
 
 ## 范围与执行决策
 
@@ -60,7 +60,7 @@
 
 | 问题 ID | 用例 | 实际现象 | 失败次数 | 状态／归因 |
 |---|---|---|---:|---|
-| B1-01 | FL-GROUP-011 | 更新 extension 后 detail.extension 为 null；configs.ext 为正确新值 | 2 | 已确认 iOS wrapper 漏字段；非测试夹具错误，未修改 SDK |
+| B1-01 | FL-GROUP-011 | 更新 extension 后 detail.extension 为 null；configs.ext 为正确新值 | 修复前 2 | iOS wrapper 漏字段已修复，修复后定向复验 1/1 通过，未提交 |
 | B1-02 | FL-GROUP-014 | namecard:null 删除后读取仍为原名片，5 秒有界等待仍不更新 | 2 | native 行为异常候选；Flutter 参数透传符合契约，core／服务端／本地缓存的具体根因待确认 |
 
 两项的本轮测试群均已通过 REST 删除并验证不存在。失败不影响后续入口前置。
@@ -86,7 +86,7 @@ E2E_CONFIG_PATH=/path/to/e2e.json MAX_ATTEMPTS=1 CI_TEST_NAME='FL-GROUP-(011|014
 
 ### 失败归因证据与边界
 
-**B1-01**：Flutter [ChatGroup](../../im_flutter_sdk/lib/src/models/chat_group.dart) 公开 `extension`，读取顶层 `ext`；[iOS GroupHelper](../../im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/GroupHelper.m) 未输出顶层 `ext`，仅输出 `configs.ext`。Android `EMHelper.java` 输出顶层 `ext`。诊断日志明确显示 `extension=null`、`configs.ext` 为本轮设置值，因此更新动作成功，但公开对象字段断裂；不能把断言迁到 `configs.ext` 就称全部正常。建议后续独立修复 iOS 序列化并复验，当前未改 SDK。
+**B1-01（修复前证据）**：Flutter [ChatGroup](../../im_flutter_sdk/lib/src/models/chat_group.dart) 公开 `extension`，读取顶层 `ext`；[iOS GroupHelper](../../im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/GroupHelper.m) 原先未输出顶层 `ext`，仅输出 `configs.ext`。Android `EMHelper.java` 输出顶层 `ext`。诊断日志明确显示 `extension=null`、`configs.ext` 为本轮设置值，因此更新动作成功，但公开对象字段断裂；不能把断言迁到 `configs.ext` 就称全部正常。后续修复及验证见下节。
 
 **B1-02**：公开 Dart/iOS 契约均规定 null/nil 删除名片。Dart 省略 null 参数，iOS wrapper 取缺失 key 得到 nil 并传给 native，没有发现 Flutter 误传。只读核对 native iOS tag `5.1.0`（`e88b1dcc9`）：删除转换为空串进入 core，getter 读取本地数据库。两次删除 API 成功后仍读到原值，第二次已等待 5 秒。随后诊断 `fetchGroupMembersInfo` 返回的列表没有 owner（打印 `server own namecards=[]`），**这不能证明服务端名片已删除**。仍需在后续 SDK 排查中区分服务端状态和 core 本地缓存；不猜根因、不放宽 null 断言。建议确认 SDK 排查范围后继续。
 
@@ -98,3 +98,12 @@ E2E_CONFIG_PATH=/path/to/e2e.json MAX_ATTEMPTS=1 CI_TEST_NAME='FL-GROUP-(011|014
 - 原有 55 个 ID 均保留，新增 19 个 ID，无重复；其中 Presence 2 个仅模块实现，未接入入口。
 - 当前已注册清单为 72 个唯一 ID／73 个配置执行项；待 Presence 接入后为 74／75（含原有特殊配置），这只是清单，不是执行通过数。
 - 未修改五个稳定入口、特殊入口、共享初始化／support、workflow、tool/ci、SDK 实现，也未提交。后续 Presence 仅拟新增基础入口 import 与一次注册调用，须取得确认后落地及验证。
+
+## FL-GROUP-011 修复与复验（2026-11-10 13:42）
+
+- 用户单独授权修复 B1-01、记录并复验，要求不提交。上文首轮执行范围及统计保留为历史证据。
+- 修复：iOS `GroupHelper.m` 的 `EMGroup.toJson` 在已有 settings 分支中增加 `ret[@"ext"] = self.settings.ext`，恢复 Dart `ChatGroup.extension` 所需的顶层字段；保留 `configs.ext`。同步 iOS CHANGELOG，原用例和断言未改，未调整入口或测试架构。
+- 使用原群组入口在 iOS 模拟器重新构建并执行 `FL-GROUP-011`，`MAX_ATTEMPTS=1`。结果 **1 总数、1 通过、0 失败**，日志确认 `extension` 与 `configs.ext` 均为本轮设置值；测试群删除及退出登录成功。
+- [正式复验报告](../../artifacts/ci/20261110-134124-ios-g2cx8yov/summary.md) · [原始设备日志](../../artifacts/ci/20261110-134124-ios-g2cx8yov/attempt-1.log)。报告由现有 runner 生成，Git 忽略；未覆盖首轮报告。
+- 执行命令：`E2E_CONFIG_PATH=<临时配置> MAX_ATTEMPTS=1 CI_TEST_NAME=FL-GROUP-011 bash tool/ci/run_ios_simulator_test.sh integration_test/logged_in_group_test.dart ios-group011-fix.log`。临时凭据文件执行后已删除。
+- Android 源码已包含顶层 `ext` 映射，没有发现相同漏字段问题；本轮未执行 Android，不宣称 Android 实测通过。FL-GROUP-014 未改、未重跑。

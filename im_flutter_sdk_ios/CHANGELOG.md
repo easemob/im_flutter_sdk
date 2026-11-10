@@ -2,6 +2,7 @@
 - Upgraded both CocoaPods and SPM native dependencies to 5.1.0.
 - Added local conversation pagination and initialization mappings for `autoLoadConversations` and `enableChatroomConversation`.
 - `loadAllConversations` forwards `isSort` to the native conversation API, defaulting to sorting.
+- Fixed group serialization omitting the top-level `ext` field, causing Dart `ChatGroup.extension` to return null even when group extension data existed.
 
 ## 5.0.0
 - Upgraded the iOS native SDK dependency to 5.0.0, keeping CocoaPods and SPM consistent;

@@ -28,6 +28,7 @@
     ret[@"isPublic"] = @(self.isPublic);
 
     if (self.settings != nil) {
+        ret[@"ext"] = self.settings.ext;
         ret[@"configs"] = [self.settings toJson];
         ret[@"isJoinApprovalRequired"] = @(self.settings.joinApprovalRequired);
         ret[@"isMemberAllowToInvite"] = @(self.settings.allowInvites);
