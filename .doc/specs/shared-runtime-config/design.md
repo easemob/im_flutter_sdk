@@ -345,3 +345,9 @@ Red/green resolver tests: all precedence levels, explicit module propagation, ru
 
 ## Full dependency audit
 Use source call-effect inventory (mutations, observations, reads, explicit waits) with local/imported helper resolution. Inspect all test functions including branches and finite business loops; exclude cleanup/finally and deadline polling internals. Add explicit pauses only in case/flow source before dependent operations, never transport interception. Ordinary intervals remain 1s; shared offline pre-login remains 3s. Preserve legacy per-boundary aliases and all original timeout values. Store per-case evidence in docs/case-dependency-audit.md; validate helper resolution, boundary placement, assertions and device-free tools.
+
+## 2026-11-12 MSync TLS 映射与解析整理
+
+在测试 App `EnvConfigLoader` 中新增严格布尔解析 helper，接受 true/false、1/0 与相应大小写不敏感字符串。缺失、null、空字符串默认 false；无效输入用固定字段路径返回配置错误，避免静默降为明文。`parseOptions` 将结果传入已有 `EMOptions.enableTLS`；沿用现有原生接口，不修改发布 SDK。模板提供默认 `use_ssl: "0"`，WSS 环境显式设为 "1"。
+
+范围：配置解析、回归、模板与本 spec；运行时按所选端点分别配置 TCP 或 WebSocket 地址及 TLS 开关。采用 TDD 验证原生初始化 JSON；执行 Flutter 测试、analyze、speckit check、Android release 构建。本地依赖缺失后，按用户授权沿用 Release CI 临时使用 Maven 4.23.0，完成构建后逐字节恢复 build.gradle，不提交依赖切换。

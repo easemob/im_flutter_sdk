@@ -9,6 +9,8 @@ String _env({
   String tcpPort = '',
   String wsHost = '""',
   String wsPort = '',
+  String? msyncSsl,
+  String datasyncSsl = '',
   String datasyncHost = '""',
   String datasyncPort = '',
 }) {
@@ -25,9 +27,11 @@ app:
       tcp_port: $tcpPort
       websocket_host: $wsHost
       websocket_port: $wsPort
+${msyncSsl == null ? "" : "      use_ssl: $msyncSsl"}
   datasync:
     websocket_host: $datasyncHost
     websocket_port: $datasyncPort
+    use_ssl: $datasyncSsl
 ''';
 }
 
@@ -46,15 +50,15 @@ void main() {
 
   group('enableDNSConfig 派生', () {
     test('tcp_host 非空 -> 关闭 DNS', () {
-      final options =
-          EnvConfigLoader.parseOptions(_env(tcpHost: '"1.2.3.4"', tcpPort: '6717'))
-              .options!;
+      final options = EnvConfigLoader.parseOptions(
+              _env(tcpHost: '"1.2.3.4"', tcpPort: '6717'))
+          .options!;
       expect(options.enableDNSConfig, isFalse);
     });
 
     test('websocket_host 非空 -> 关闭 DNS', () {
-      final options = EnvConfigLoader
-          .parseOptions(_env(wsHost: '"im-api.example.com"', wsPort: '"443"'))
+      final options = EnvConfigLoader.parseOptions(
+              _env(wsHost: '"im-api.example.com"', wsPort: '"443"'))
           .options!;
       expect(options.enableDNSConfig, isFalse);
     });
@@ -65,9 +69,9 @@ void main() {
     });
 
     test('仅 rest_host 不影响 DNS 判定', () {
-      final options =
-          EnvConfigLoader.parseOptions(_env(restHost: '"https://rest.example.com"'))
-              .options!;
+      final options = EnvConfigLoader.parseOptions(
+              _env(restHost: '"https://rest.example.com"'))
+          .options!;
       expect(options.enableDNSConfig, isTrue);
     });
 
@@ -127,6 +131,62 @@ void main() {
         _env(tcpHost: '"h"', tcpPort: '"not-a-port"'),
       ).options!;
       expect(invalid.imPort, isNull);
+    });
+  });
+
+  group('MSync TLS 初始化', () {
+    for (final value in ['true', '1', '"1"', '" TRUE "']) {
+      test('use_ssl=$value 开启原生初始化 TLS 参数', () {
+        final result = EnvConfigLoader.parseOptions(_env(
+          wsHost: '"ws.example.com"',
+          wsPort: '"8443"',
+          msyncSsl: value,
+        ));
+        expect(result.ok, isTrue);
+        expect(result.options!.toJson()['enableTLS'], isTrue);
+      });
+    }
+    for (final value in [
+      null,
+      '',
+      'null',
+      '""',
+      'false',
+      '0',
+      '"0"',
+      '" FALSE "'
+    ]) {
+      test('use_ssl=$value 不被 REST HTTPS、端口和 DataSync TLS 覆盖', () {
+        final result = EnvConfigLoader.parseOptions(_env(
+          wsHost: '"ws.example.com"',
+          wsPort: '"8443"',
+          msyncSsl: value,
+          datasyncSsl: '"1"',
+        ));
+        expect(result.ok, isTrue);
+        expect(result.options!.toJson()['enableTLS'], isFalse);
+      });
+    }
+    for (final value in ['"private-invalid-value"', '2', '[]', '{}']) {
+      test('非法 use_ssl=$value 拒绝配置且不回显原值', () {
+        final result = EnvConfigLoader.parseOptions(_env(msyncSsl: value));
+        expect(result.ok, isFalse);
+        expect(result.options, isNull);
+        expect(
+            result.reason, '环境配置 app.sdk.msync.use_ssl 必须为 true/false 或 1/0');
+      });
+    }
+    test('TCP 转发未指定 TLS 时保留非 TLS 初始化参数', () {
+      final result = EnvConfigLoader.parseOptions(_env(
+        tcpHost: '"10.0.2.2"',
+        tcpPort: '14300',
+      ));
+      expect(result.ok, isTrue);
+      final json = result.options!.toJson();
+      expect(json['imServer'], '10.0.2.2');
+      expect(json['imPort'], 14300);
+      expect(json['enableTLS'], isFalse);
+      expect(json['enableDNSConfig'], isFalse);
     });
   });
 
