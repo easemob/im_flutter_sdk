@@ -107,3 +107,9 @@ User Story: As a maintainer I want dependent operations paced even through helpe
 - WHEN a successful mutation or its validated callback batch precedes a dependent business operation THEN cases shall pause step unless an explicit settling pause already covers the boundary.
 - WHEN offline cases use nested preparation/relogin helpers THEN the audit shall resolve those helpers rather than rely on test names.
 - WHILE receiving callback batches or polling a deadline THEN pacing shall not consume that budget or replace assertions.
+
+## 2026-11-12 MSync TLS 配置补全
+
+- 测试 App 应将可选 `app.sdk.msync.use_ssl` 映射为 SDK 初始化参数 `enableTLS`：true/1 开启、false/0 关闭；接受布尔、整数及相应字符串，缺失或空值默认 false，非法值应拒绝配置且不回显输入。
+- MSync TLS 不从 REST、端口或 DataSync 推断；未配置 TLS 的既有 TCP 行为及发布 SDK 默认值保持不变。
+- 验证配置到初始化 JSON 的 TLS 参数，完成测试 App Android 构建；缺构建依赖应据实记录，不能用单测代替构建或真实登录。

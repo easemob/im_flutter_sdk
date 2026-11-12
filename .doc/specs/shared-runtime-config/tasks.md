@@ -181,3 +181,34 @@ Architecture: seconds(key, *, module) / pause(key='step.interval', *, module), 5
 
 ### 2026-09-15 索引数量说明
 上述543函数是原审计时点数量。用例精简后依赖索引更新为524个函数（参数化展开为781个节点）；本次删除状态见 `../release-test-automation/tasks.md`“用例精简”章节，既有等待配置和操作链规则保持。
+
+## 14. MSync TLS 恢复、解析整理与构建（2026-11-12）
+
+- [x] 14.1 增加 TLS 开关、非法值、默认值及 DataSync 隔离回归，观察 red。
+- [x] 14.2 恢复配置到 `enableTLS` 的映射，提取严格布尔解析，更新模板。
+- [x] 14.3 执行 Flutter 测试、analyze、speckit check，构建 Android release APK。
+- [x] 14.4 审阅实际 diff，记录产物、哈希或依赖阻塞。真实登录与独立人审不以自评代替。
+
+### 14 验证证据
+
+- 修复前新增回归：8 failed / 22 passed（TLS true 未传递、非法开关未拒绝）；修复后测试 App 全套 `flutter test --no-pub --reporter expanded`：60 passed。
+- `flutter analyze --no-pub lib/env_config.dart test/env_config_test.dart`：No issues found；全 App analyze 非零，仅原有 `event_bridge_handler.dart:599/605` 的两处 deprecated_member_use info。
+- 模板 YAML 默认 use_ssl="0" 检查通过，当前 Lite TCP 10.0.2.2:14300、WebSocket 空、use_ssl="0" 保持不变。
+- `speckit.sh check` exit 1：当前本地 Android hyphenatechat_4.23.0.jar 缺失，各架构 so 目录也为空。仅找到历史 Gradle 转换缓存，不据此宣称找回完整同源 SDK；已询问依赖路径。
+- Android release 构建在 Gradle 8.3 下载阶段主动停止，未进入原生编译、未生成 APK。随后查明 `.github/workflows/build-release.yml:34–40` 已采用临时 Maven 4.23.0；已就按该方式构建并恢复 build.gradle 向用户请求依赖切换确认。未提交、推送、发布或执行共享环境业务测试。
+
+- 用户已确认：按 Release CI 临时切换到 Maven 4.23.0，构建完成恢复 build.gradle。使用独立备份和 finally 恢复；仅当前构建进程使用 JDK 17，不改全局 Java/Flutter 配置。
+
+### 14 构建交付
+
+- 用户授权后，按 CI 临时使用 `io.hyphenate:hyphenate-chat:4.23.0`，`flutter build apk --release --no-pub` 在 Java 17 下 exit 0，assembleRelease 288.4 秒。build.gradle 与备份逐字节一致，临时依赖切换无残留。
+- APK：`im_flutter_test/build/app/outputs/flutter-apk/app-release.apk`；SHA-256：`6217ae117559e2c8766d8d321bec80fee7bfec2c36c6ebc3ee41b7c48a8974cb`；大小 58977422 bytes。ZIP 完整性通过；armeabi-v7a/arm64-v8a/x86_64 的 hyphenate/aosl/cipherdb 原生库齐全，打包环境配置无业务 appkey 或 client 凭据。
+- 构建日志：`/tmp/im-flutter-tls-maven-2kj2nqlx/build.log`。构建有 SDK XML 版本提示、已有原生 deprecated/unchecked 提示，无编译错误。全 App analyze 仍有原有两条 deprecated info；修改文件 analyze 通过。
+- `speckit check` 的本地 JAR 缺失问题保留（恢复后的本地依赖资产仍为空）；本次 APK 已用经授权的 Maven 依赖构建。不宣称本地依赖构建通过。
+- 已自审 diff：TLS 参数映射、非法输入拒绝、TCP 默认和 DataSync 隔离由回归覆盖，发布 SDK 默认不变；未提交、推送或发布。未运行真实登录/E2E、iOS 构建；独立人审仍待合并/发布前完成。后续运行须以 APK_PATH 指向本产物，默认下载 Release 不含本地修复。
+
+### 14 提交前复验与发布状态
+
+- 提交前重新运行测试 App 全套 Flutter 测试：60 passed；修改的解析及测试文件 analyze：No issues found；`git diff --check` 通过。
+- 后续本地 Lite 环境已按所选公网 WebSocket 端点配置 8443/TLS，TCP 字段清空；真实环境文件由 Git 忽略，不入提交。该文件解析到原生初始化 JSON 的临时检查通过；此前用户运行仍报 353，最后端点修正后的真实登录/E2E 尚无通过证据。
+- 用户授权本地提交并仅推送符合项目规范的 tag；核对远端最新测试自动化发布为 `v1.5.1-e2e-automation`，本次准备 patch tag `v1.5.2-e2e-automation`。用户选择人工审查后确认发布，故远端 tag 推送暂缓，分支不推送；独立人审仍待确认。

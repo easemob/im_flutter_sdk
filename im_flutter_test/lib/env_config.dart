@@ -37,6 +37,7 @@ class EnvConfigResult {
 /// - sdk.rest_host（空则 server.base_url）-> restServer
 /// - sdk.msync.tcp_host/tcp_port -> imServer/imPort
 /// - sdk.msync.websocket_host/websocket_port -> webSocketServer/webSocketPort
+/// - sdk.msync.use_ssl -> enableTLS（缺失默认 false）
 /// - datasync.websocket_host/websocket_port -> syncDataWebSocketServer/syncDataWebSocketPort
 /// - enableDNSConfig 由 msync 是否给出 tcp/websocket 主机派生
 class EnvConfigLoader {
@@ -76,7 +77,8 @@ class EnvConfigLoader {
     if (result.ok) {
       return EnvConfigResult(result.options, null, source: raw.source);
     }
-    return EnvConfigResult(null, '${result.reason}（来源: ${raw.source}）', source: raw.source);
+    return EnvConfigResult(null, '${result.reason}（来源: ${raw.source}）',
+        source: raw.source);
   }
 
   /// 纯函数：从环境文件内容构建 [EMOptions]，便于单元测试。
@@ -114,6 +116,12 @@ class EnvConfigLoader {
     );
     final tcpHost = _str(msync, 'tcp_host');
     final wsHost = _str(msync, 'websocket_host');
+    final bool enableTLS;
+    try {
+      enableTLS = _bool(msync, 'use_ssl', path: 'app.sdk.msync.use_ssl');
+    } on FormatException catch (error) {
+      return EnvConfigResult(null, error.message);
+    }
 
     // DNS 派生：msync 显式给出 tcp 或 websocket 主机时关闭 DNS 自动发现。
     final enableDNSConfig = !(_nonEmpty(tcpHost) || _nonEmpty(wsHost));
@@ -125,6 +133,7 @@ class EnvConfigLoader {
       imPort: _int(msync, 'tcp_port'),
       webSocketServer: wsHost,
       webSocketPort: _int(msync, 'websocket_port'),
+      enableTLS: enableTLS,
       syncDataWebSocketServer: _str(datasync, 'websocket_host'),
       syncDataWebSocketPort: _int(datasync, 'websocket_port'),
       // 固定测试开关，不读取配置。
@@ -153,6 +162,21 @@ class EnvConfigLoader {
     if (value == null) return null;
     if (value is int) return value;
     return int.tryParse(value.toString().trim());
+  }
+
+  /// 严格解析配置开关；非法值不能静默退回 false，错误不回显原值。
+  static bool _bool(YamlMap? map, String key, {required String path}) {
+    switch (_str(map, key)?.toLowerCase()) {
+      case null:
+      case 'false':
+      case '0':
+        return false;
+      case 'true':
+      case '1':
+        return true;
+      default:
+        throw FormatException('环境配置 $path 必须为 true/false 或 1/0');
+    }
   }
 
   static bool _nonEmpty(String? value) => value != null && value.isNotEmpty;
