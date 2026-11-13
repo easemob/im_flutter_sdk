@@ -122,6 +122,7 @@ bash skills/im-flutter-run/scripts/run.sh --config config/ngi.yaml --lanes 2 --r
 - 重试**在已就绪的环境上就地进行**：复用已启动的模拟器、已安装的 APK 与已运行的桥接，用新的 pytest 进程仅重跑失败用例，**不重启模拟器、不重装 APK、不重启桥接**；每次重试的额外开销只有 pytest 启动与会话 fixture（如登录）。
 - 多 lane 时把 `--retries` 透传给每个 lane，各 lane 在各自环境内重试自己的失败分片；合并报告仍以每个用例最后一次执行为准。
 - 全程只获取一次 APK、只出一份 Allure 报告（早期尝试作为 Allure retries 展示，主状态与统计取最新一次）。
+- Allure 按仓库相对的完整 pytest nodeid 合并重试，不使用集合等参数的字符串顺序区分用例；相同参数值但不同显式 id 的用例仍分别统计。报告保留原参数和每次尝试的证据。升级后 historyId 会迁移一次，旧报告不会自动修正；下一次完整运行无需重建 APK。
 - **首次失败、重试后通过**的用例会在报告中标记为 flaky（Allure 炸弹图标）并打上 `reran-passed` 标签，方便定位不稳定的业务场景；其主状态仍为通过，早期失败可在该用例的 retries 中查看。始终失败的用例仍为 failed，一次通过的用例不受影响。
 - 仅 failed/error 参与重跑；unreported/INCOMPLETE（如 mDNS 门禁、收集失败等基础设施中断）不自动重跑，会在汇总中暴露并以非零码退出。
 - 不带 `--retries` 时流程与报告完全不变；可与 `--lanes`、`--config`/`--bridge-config`、`--repo`、`--build`/`--refresh-apk`/`APK_PATH`、`--keep-emulator` 组合。

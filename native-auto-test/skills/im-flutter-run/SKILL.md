@@ -217,6 +217,12 @@ Semantics:
 - The APK is obtained once (download/build/`APK_PATH`) and shared with all lanes.
 - `out/allure-results` is cleared once before the run; every attempt only appends, so
   Allure keeps the latest run per case as the primary result.
+- The repository Allure metadata plugin derives `historyId` from the full repository-relative
+  pytest nodeid (including parameter IDs), matching lane selection. Unordered parameter repr
+  cannot split retries, and separate explicit IDs remain separate even with equal values.
+  Raw parameters and attempt evidence are preserved. This migrates history IDs once; existing
+  reports are not rewritten. Use a fresh runner invocation to collect consistent new IDs;
+  no APK rebuild is needed for this Python-only change.
 - Cases that failed on an earlier attempt but passed on a later one are flagged as **flaky**
   in the report (Allure's flaky "bomb" marker) and tagged `reran-passed`, so unstable
   business cases are easy to locate/filter. Their headline status stays "passed"; the

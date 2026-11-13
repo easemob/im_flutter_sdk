@@ -1,5 +1,14 @@
 # release APK 测试自动化实施计划
 
+## RT-7：Allure 重试标识稳定性（2026-11-13）
+
+- [x] 以不同 hash seed 的真实 pytest 子进程复现集合参数重试被拆分：4 条合成用例、7 次执行生成 6 个 historyId，新增回归观察到断言失败。
+- [x] 在现有 Allure metadata 插件中按完整 nodeid 固定 historyId，同步使用文档；保留原参数、状态、证据和模块树。
+- [x] 真实 Allure generate 验证 4 条用例为 3 passed / 1 failed，重跑通过的用例 flaky 且保留 1 次旧尝试，始终失败保留 2 次旧尝试；同值不同显式 id 不合并，跨 rootdir/hash seed 重试不拆分。
+- 相关 metadata/evidence/pytest_lane/lane_summary/retry_keeps_test_users 回归：31 passed，1 条既有 websockets.legacy 弃用告警。metadata 原有两条测试引用已删除的参数化业务节点，在隔离 HEAD 副本中确认同样失败；改用现存已定级节点构造无设备 skip 场景，保留原跨目录/独立代码复制断言。
+- 既有 runner 的 mark_flaky 回归追加验证：1 passed（合计 32 项工具检查通过）；`git diff --check` 通过。已按需求和反例自审实际 diff：不同参数 id 不合并、同一 nodeid 的失败记录不删除、未开启 Allure 时不注册插件。
+- `speckit.sh check` exit 1：本地 Android hyphenatechat JAR 仍缺失；未修改构建依赖。Python 报告修复无需重建 APK。未运行共享 QA 业务测试、未修改当前业务报告、未提交或发布；旧报告需保留原统计，下一次完整运行使用新标识。
+
 ## Clean installation tasks
 - [x] Reproduced stale-UID cleanup denial on `im_flutter_test_a`: package absent, external directory owned by an old UID, shell removal denied. Verified same-APK install → pm clear → uninstall removes the residual directory. Added bounded recovery and safe operation diagnostics; new regressions first failed (9 failed, 10 passed), then `test_clean_install.py`, `test_im_flutter_run_apk.py`, and `test_lane_summary.py` passed (76 passed). Updated helper recovered the still-affected `im_flutter_test_a_lane1` and verified clean installation; lane 0 normal installation also passed. Diagnostic emulators stopped; unrelated lane 2 devices untouched. `git diff --check` passed. Business E2E cases were not rerun.
 - [x] Implement clean_install.py with identity, uninstall, safe residual cleanup and timeout checks.

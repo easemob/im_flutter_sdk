@@ -53,9 +53,10 @@ def prepare_suite(directory, *, enabled=True):
     return directory
 
 
-def start_suite(directory, results, *args, source_root=ROOT):
+def start_suite(directory, results, *args, source_root=ROOT, env_overrides=None):
     env = {**os.environ, 'PYTHONPATH': str(source_root), 'PYTEST_DISABLE_PLUGIN_AUTOLOAD': '1',
            'PYTEST_ADDOPTS': '', 'PYTEST_PLUGINS': ''}
+    env.update(env_overrides or {})
     command = [sys.executable, '-m', 'pytest', '-q', '-p', 'allure_pytest.plugin', '-p', 'no:cacheprovider']
     if results is not None: command += ['--alluredir', str(results)]
     return subprocess.Popen(command + list(args or ('tests',)), cwd=directory, env=env,
@@ -90,7 +91,8 @@ def test_real_allure_preserves_outcomes_identity_evidence_and_static_skip(tmp_pa
     assert actual.keys() == before.keys()
     assert {r['status'] for r in actual.values()} == {'passed', 'failed', 'skipped', 'broken'}
     for key, result in actual.items():
-        for field in ['status', 'fullName', 'historyId', 'parameters', 'description', 'descriptionHtml']:
+        # historyId intentionally migrates to pytest-nodeid-v1; raw evidence stays identical.
+        for field in ['status', 'fullName', 'testCaseId', 'parameters', 'description', 'descriptionHtml']:
             assert result.get(field) == before[key].get(field), (key, field)
         assert result.get('statusDetails', {}).get('message') == before[key].get('statusDetails', {}).get('message')
         assert [s['name'] for s in result.get('steps', [])] == [s['name'] for s in before[key].get('steps', [])]
@@ -98,6 +100,7 @@ def test_real_allure_preserves_outcomes_identity_evidence_and_static_skip(tmp_pa
             for attachment in step.get('attachments', []):
                 assert (results / attachment['source']).read_text() == 'evidence-preserved'
         label = labels(result)
+        assert len(label['pytest_nodeid']) == 1
         for name in ['parentSuite', 'suite', 'subSuite', 'epic', 'feature', 'story', 'package']:
             assert label.get(name) == labels(before[key]).get(name), (key, name)
         if result['fullName'].endswith('#test_sample'):
@@ -112,6 +115,7 @@ def test_real_allure_preserves_outcomes_identity_evidence_and_static_skip(tmp_pa
         else:
             assert 'priority' not in label and 'severity' not in label
             assert result['name'] == before[key]['name']
+    assert len({r['historyId'] for r in actual.values()}) == 11
 
 
 def test_no_allure_does_not_require_reporting_documents(tmp_path):
@@ -142,18 +146,17 @@ def test_repository_registration_and_priority_work_from_another_root(tmp_path):
     (clone / 'conftest.py').write_text(
         'from pathlib import Path\nfrom src.tools import allure_metadata\n'
         'allure_metadata.ROOT = Path(__file__).parent\n')
-    test = tests / 'chat/test_chat_typed_message_pin_flows.py'
+    test = tests / 'chat/test_chat_s4_load_messages_by_ids.py'
     test.parent.mkdir()
     test.write_text('import pytest\n@pytest.mark.skip(reason="synthetic no-device case")\n'
-                    '@pytest.mark.parametrize("p", ["sender-location-payload0"])\n'
-                    'def test_chat_typed_message_pin_and_cross_user_unpin(p): pass\n')
-    node = str(test) + '::test_chat_typed_message_pin_and_cross_user_unpin[sender-location-payload0]'
+                    'def test_chat_load_messages_with_ids_single_and_multi_success(): pass\n')
+    node = str(test) + '::test_chat_load_messages_with_ids_single_and_multi_success'
     results = tmp_path / 'results'
     finish(start_suite(tmp_path, results, '--rootdir', str(tmp_path), node), expected=0)
     result = next(iter(results_by_case(results).values()))
     assert result['status'] == 'skipped'
-    assert labels(result)['priority'] == ['P1']
-    assert result['name'] == '[P1] test_chat_typed_message_pin_and_cross_user_unpin[sender-location-payload0]'
+    assert labels(result)['priority'] == ['P0']
+    assert result['name'] == '[P0] test_chat_load_messages_with_ids_single_and_multi_success'
 
 
 def test_code_only_copy_needs_no_statistics_documents(tmp_path):
@@ -163,16 +166,15 @@ def test_code_only_copy_needs_no_statistics_documents(tmp_path):
     for name in ['allure_metadata.py', 'case_priorities.py', 'allure_steps.py', 'allure_evidence.py']:
         shutil.copy2(ROOT / 'src/tools' / name, tools / name)
     (clone / 'conftest.py').write_text('pytest_plugins = ("src.tools.allure_metadata",)\n')
-    test = clone / 'tests/chat/test_chat_typed_message_pin_flows.py'
+    test = clone / 'tests/chat/test_chat_s4_load_messages_by_ids.py'
     test.parent.mkdir(parents=True)
     test.write_text('import pytest\n@pytest.mark.skip(reason="no devices")\n'
-                    '@pytest.mark.parametrize("p", ["sender-location-payload0"])\n'
-                    'def test_chat_typed_message_pin_and_cross_user_unpin(p): pass\n')
+                    'def test_chat_load_messages_with_ids_single_and_multi_success(): pass\n')
     results = tmp_path / 'results'
     finish(start_suite(clone, results, source_root=clone), expected=0)
     result = next(iter(results_by_case(results).values()))
     assert result['status'] == 'skipped'
-    assert result['name'] == '[P1] test_chat_typed_message_pin_and_cross_user_unpin[sender-location-payload0]'
+    assert result['name'] == '[P0] test_chat_load_messages_with_ids_single_and_multi_success'
     assert not (clone / 'docs').exists()
 
 
@@ -235,3 +237,69 @@ def test_test_body_has_real_numbered_actions_and_failed_expectations(tmp_path):
     assert all(b['steps'][0]['name'] == '前置：用户 A 登录 IM' for b in setups)
     assert all(b['steps'][0]['name'] == '清理：用户 A 退出 IM 登录' for b in cleanups)
     assert all('private-sentinel' not in p.read_text() for p in results.glob('*-attachment.*'))
+
+
+def test_retries_with_unordered_parameters_merge_by_exact_case(tmp_path):
+    """Changing process hash seeds must not split retries or collapse equal-value IDs."""
+    directory = prepare_suite(tmp_path / 'suite')
+    with (directory / 'conftest.py').open('a') as out:
+        out.write('from pathlib import Path\nallure_metadata.ROOT = Path(__file__).parent\n')
+    (directory / 'tests/chat/test_retry.py').write_text('''import os
+import allure
+import pytest
+@pytest.mark.parametrize("kind,payload", [
+    pytest.param("recovered", {"ignored": {"timestamp", "serverTime", "localTime", "sequence"}}, id="recovered"),
+    pytest.param("persistent", {"ignored": {"timestamp", "serverTime", "localTime", "sequence"}}, id="persistent"),
+    pytest.param("equal", {"ignored": {"timestamp", "serverTime"}}, id="duplicate-a"),
+    pytest.param("equal", {"ignored": {"timestamp", "serverTime"}}, id="duplicate-b"),
+])
+def test_retry(kind, payload):
+    with allure.step("preserved attempt evidence"):
+        allure.attach("attempt-" + os.environ["ATTEMPT"], "attempt", allure.attachment_type.TEXT)
+        assert kind != "persistent" and (kind != "recovered" or os.environ["ATTEMPT"] != "0")
+''')
+    results = tmp_path / 'results'
+    selection = 'tests/chat/test_retry.py'
+    finish(start_suite(directory, results, selection,
+                       env_overrides={'PYTHONHASHSEED': '1', 'ATTEMPT': '0'}))
+    # A different pytest root changes raw item.nodeid; repository-relative keys must survive.
+    nodes = [str(directory / selection) + '::test_retry[' + name + ']'
+             for name in ('recovered', 'persistent')]
+    finish(start_suite(tmp_path, results, '--rootdir', str(tmp_path), *nodes,
+                       env_overrides={'PYTHONHASHSEED': '2', 'ATTEMPT': '1'}))
+    finish(start_suite(directory, results, selection + '::test_retry[persistent]',
+                       env_overrides={'PYTHONHASHSEED': '3', 'ATTEMPT': '2'}))
+    rows = [json.loads(p.read_text()) for p in results.glob('*-result.json')]
+    assert len(rows) == 7  # Keep every attempt, including evidence and failed statuses.
+    assert len({r['historyId'] for r in rows}) == 4
+    for name, count in [('recovered', 2), ('persistent', 3), ('duplicate-a', 1), ('duplicate-b', 1)]:
+        attempts = [r for r in rows if r['name'] == f'test_retry[{name}]']
+        assert len(attempts) == count
+        assert len({r['historyId'] for r in attempts}) == 1
+        assert all(r['steps'][0]['attachments'] for r in attempts)
+
+    flaky = subprocess.run([sys.executable, str(ROOT / 'skills/im-flutter-run/scripts/mark_flaky.py'),
+                            str(results)], capture_output=True, text=True, timeout=15)
+    assert flaky.returncode == 0, flaky.stdout + flaky.stderr
+    assert 'Flaky-marked 1 case(s)' in flaky.stdout
+    rows = [json.loads(p.read_text()) for p in results.glob('*-result.json')]
+    marked = [r for r in rows if r.get('statusDetails', {}).get('flaky')]
+    assert len(marked) == 1 and marked[0]['name'] == 'test_retry[recovered]'
+    assert marked[0]['status'] == 'passed'
+    assert 'reran-passed' in labels(marked[0])['tag']
+
+    # Exercise Allure itself, not a test-side imitation of its retry grouping.
+    if shutil.which('allure'):
+        report = tmp_path / 'report'
+        generated = subprocess.run(['allure', 'generate', str(results), '-o', str(report)],
+                                   capture_output=True, text=True, timeout=60)
+        assert generated.returncode == 0, generated.stdout + generated.stderr
+        summary = json.loads((report / 'widgets/summary.json').read_text())['statistic']
+        assert summary == {'failed': 1, 'broken': 0, 'skipped': 0, 'passed': 3, 'unknown': 0, 'total': 4}
+        cases = [json.loads(p.read_text()) for p in (report / 'data/test-cases').glob('*.json')]
+        cases = [r for r in cases if not r.get('retry')]
+        assert len(cases) == 4
+        recovered = next(r for r in cases if r['name'] == 'test_retry[recovered]')
+        persistent = next(r for r in cases if r['name'] == 'test_retry[persistent]')
+        assert recovered['flaky'] is True and recovered['retriesCount'] == 1 and len(recovered['extra']['retries']) == 1
+        assert persistent['retriesCount'] == 2 and len(persistent['extra']['retries']) == 2

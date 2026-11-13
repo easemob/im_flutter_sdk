@@ -1,5 +1,13 @@
 # release APK 测试自动化设计
 
+## Allure 重试标识修复（2026-11-13）
+
+根因：Allure 默认将参数原值 repr 纳入 historyId；集合在独立 pytest 进程中的顺序变化，导致同一 nodeid 被拆成多条。现有 flaky helper 按 historyId 分组，亦受到影响。
+
+沿用 allure_metadata 的 setup hook，为全部结果增加仓库相对的完整 pytest_nodeid label；通过 Allure report_result wrapper 在文件写入前将 historyId 设为带版本前缀的 nodeid SHA-256。使用公开插件 hook，不改 site-packages、参数值、用例断言、运行器选择或业务执行。插件仅在启用 Allure 输出时注册，并在 pytest 清理时注销。保留 testCaseId/fullName 和已有证据。历史趋势标识迁移一次；旧报告不修改。
+
+验证：无设备独立 pytest 进程使用不同 PYTHONHASHSEED，覆盖参数集合/嵌套对象、相同参数不同 id、静态跳过和 setup/teardown 失败；调用真实 mark_flaky 与 Allure generate，验证唯一 case 数、最终状态、重试记录及 flaky 标记。既有 metadata、runner/flaky/lane 工具回归不得访问 QA 服务。
+
 ## Clean installation design
 
 ### Overview / Architecture
