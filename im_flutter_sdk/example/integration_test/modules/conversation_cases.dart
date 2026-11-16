@@ -602,7 +602,7 @@ void registerConversationCases(ChatClient client) {
     // (inclusive) become read, the newer message stays unread, and the unread
     // count drops to 1.
     // 1.16.0
-    ciTestWidgets('FL-CONV-021 marks messages as read up to a timestamp',
+    ciTestWidgets('FL-CONV-034 marks messages as read up to a timestamp',
         (tester) async {
       final first = textMessage('timestamp first', timestamp: 1000);
       final second = textMessage('timestamp second', timestamp: 2000);
