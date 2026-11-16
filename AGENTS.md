@@ -20,7 +20,7 @@
 | 包 | 职责 |
 |---|---|
 | `im_flutter_sdk/` | 主包（发布包）：公开 API、Model、Manager；鸿蒙线只声明 HarmonyOS 平台 |
-| `im_flutter_sdk_ohos/` | HarmonyOS 平台实现（发布包）：ArkTS Wrapper，基于 `@easemob/chatsdk` 1.15.0 |
+| `im_flutter_sdk_ohos/` | HarmonyOS 平台实现（发布包）：ArkTS Wrapper，基于 `@easemob/chatsdk` 1.16.0 |
 | `im_flutter_sdk_interface/` | 平台接口层：MethodChannel 抽象；pub.dev 已发布 4.25.0，**不发布新版本** |
 | `im_flutter_sdk_android/` | Android 平台实现；pub.dev 已发布 4.25.0，**不发布新版本** |
 | `im_flutter_sdk_ios/` | iOS 平台实现；pub.dev 已发布 4.25.0，**不发布新版本** |
@@ -32,11 +32,12 @@
 ## ohos 分支与鸿蒙线版本规则
 
 - 本仓库的 `ohos` 分支（本 worktree）是环信 IM Flutter SDK 的鸿蒙线：主包 `im_flutter_sdk` 只声明 HarmonyOS 平台，HarmonyOS 实现由 `im_flutter_sdk_ohos` 提供；仓库共 5 个包，其中 2 个发布包、3 个复用包。
-- 2 个发布包：主包 `im_flutter_sdk`（文件夹 `im_flutter_sdk/`，按 Git tag 分发）与实现包 `im_flutter_sdk_ohos`（文件夹 `im_flutter_sdk_ohos/`，发布到 pub.dev）；两者版本号必须严格一致，当前 `1.15.0-ohos`。
+- 2 个发布包：主包 `im_flutter_sdk`（文件夹 `im_flutter_sdk/`，按 Git tag 分发）与实现包 `im_flutter_sdk_ohos`（文件夹 `im_flutter_sdk_ohos/`，发布到 pub.dev）；两者版本号必须严格一致，当前 `1.16.0-ohos`。
 - 3 个复用包：`im_flutter_sdk_interface`、`im_flutter_sdk_android`、`im_flutter_sdk_ios` 使用 pub.dev 已发布的 **4.25.0**，**不发布新版本**，不参与发布包版本一致性检查；发布包依赖 interface `^4.25.0`。
-- 版本号采用 semver 预发布形式 `1.15.0-ohos` 标识鸿蒙线（低于稳定版 `1.15.0`，不会与官方线混淆）；不能写 `ohos-1.15.0`（pub 要求以 `X.Y.Z` 开头）。
-- 版本号跟随 HarmonyOS native chatsdk（`@easemob/chatsdk`）：native 1.15.0 对应 Flutter `1.15.0-ohos`；采用 1.x 规则，不再使用 4.x 版本号。
-- 发布顺序：先发布实现包 `im_flutter_sdk_ohos 1.15.0-ohos` 到 pub.dev，再打主包 Git tag `1.15.0-ohos`；主包不进 pub.dev（官方同名包已占据 latest，且预发布版本更低）。
+- 版本号采用 semver 预发布形式 `1.16.0-ohos` 标识鸿蒙线（低于稳定版 `1.16.0`，不会与官方线混淆）；不能写 `ohos-1.16.0`（pub 要求以 `X.Y.Z` 开头）。
+- 版本号跟随 HarmonyOS native chatsdk（`@easemob/chatsdk`）：native 1.16.0 对应 Flutter `1.16.0-ohos`；采用 1.x 规则，不再使用 4.x 版本号。
+- chatsdk 1.16.0 尚未发布到 ohpm，`im_flutter_sdk_ohos/ohos/oh-package.json5` 临时以 `file:./libs/chatsdk-1.16.0.har` 本地 har 接入（har 随仓库提交）；ohpm 发布后改回版本号依赖并删除本地 har，不要反向"修复"这个 file 依赖。
+- 发布顺序：先发布实现包 `im_flutter_sdk_ohos 1.16.0-ohos` 到 pub.dev，再打主包 Git tag `1.16.0-ohos`；主包不进 pub.dev（官方同名包已占据 latest，且预发布版本更低）。
 - Android/iOS 使用 pub.dev 官方发布线（4.25.0 / 5.0.0），不随本仓库鸿蒙线发布。
 - Dart API 与 Flutter 4.25.0 线对齐：`ChatClient` + 8 个 Manager（会话、消息、群组、聊天室、联系人、用户属性、推送、在线状态）。
 
@@ -178,14 +179,14 @@ hdc install build/ohos/hap/entry-default-unsigned.hap
 
 ## 版本与 CHANGELOG
 
-- 2 个发布包版本号必须严格一致：`im_flutter_sdk` 与 `im_flutter_sdk_ohos`，当前 `1.15.0-ohos`；3 个复用包保持 pub.dev 已发布的 **4.25.0**，**不发布新版本**，不参与一致性检查。
-- 鸿蒙线版本号跟随 HarmonyOS native chatsdk（`@easemob/chatsdk` 1.15.0 → Flutter `1.15.0-ohos`），采用 1.x 规则 + `-ohos` 预发布后缀，不再使用 4.x。
-- 主包与实现包 CHANGELOG 当前保留 `1.15.0-ohos`、`1.5.4`、`1.5.3` 三个版本；格式为 `## 版本号` 标题 + `- 新增…` / `- 修复…` / `- 优化…` 条目。
+- 2 个发布包版本号必须严格一致：`im_flutter_sdk` 与 `im_flutter_sdk_ohos`，当前 `1.16.0-ohos`；3 个复用包保持 pub.dev 已发布的 **4.25.0**，**不发布新版本**，不参与一致性检查。
+- 鸿蒙线版本号跟随 HarmonyOS native chatsdk（`@easemob/chatsdk` 1.16.0 → Flutter `1.16.0-ohos`），采用 1.x 规则 + `-ohos` 预发布后缀，不再使用 4.x。
+- 主包与实现包 CHANGELOG 当前保留 `1.16.0-ohos`、`1.15.0-ohos`、`1.5.4`、`1.5.3` 四个版本；格式为 `## 版本号` 标题 + `- 新增…` / `- 修复…` / `- 优化…` 条目。
 - 新增 API 时：主包与实现包 CHANGELOG 记录对应条目；interface / android / ios 为复用包，不随鸿蒙线改动。
 
 ## Git 分支管理
 
-- 本 worktree 位于 `ohos` 分支（鸿蒙线），发布版本使用同名 Git tag（当前 `1.15.0-ohos`），用户按 tag 依赖主包；4.x/5.x 主线「每个版本一个同名分支、不使用 tag」的规则不适用于本线。
+- 本 worktree 位于 `ohos` 分支（鸿蒙线），发布版本使用同名 Git tag（当前 `1.16.0-ohos`），用户按 tag 依赖主包；4.x/5.x 主线「每个版本一个同名分支、不使用 tag」的规则不适用于本线。
 - 主线默认分支为 `flutter2_stable`；`alpha`、`dev`、`customMsg` 等为特性或历史分支，勿在其上做版本开发。
 - **切换分支前先确认工作区干净**（`git status` 无未提交改动）；不干净则停止操作并告知用户，由用户决定如何处理
 - **创建 worktree 时，统一放在仓库根目录的 `.worktree/` 文件夹下**（如 `git worktree add .worktree/agora-1.4.0 agora-1.4.0`），不要放在仓库外部
@@ -195,10 +196,10 @@ hdc install build/ohos/hap/entry-default-unsigned.hap
 本仓库的 `ohos` 分支（鸿蒙线）主包 `im_flutter_sdk` 只声明 HarmonyOS 平台；Android/iOS 请使用 pub.dev 官方发布线。
 
 - 官方线（pub.dev `im_flutter_sdk` 4.25.0 / 5.0.0）：Android minSdk 21（HyphenateChat 4.25.1）、iOS 13.0（HyphenateChat 4.25.0，CocoaPods 与 SPM 共用同一份源码，两条链路原生版本一致）。
-- 鸿蒙线（本分支）：HarmonyOS 5.0.0 (API 12) 及以上，原生 SDK `@easemob/chatsdk` 1.15.0；使用鸿蒙版 Flutter `3.41.9+ohos`（fvm `custom_ohos`）构建。
+- 鸿蒙线（本分支）：HarmonyOS 5.0.0 (API 12) 及以上，原生 SDK `@easemob/chatsdk` 1.16.0；使用鸿蒙版 Flutter `3.41.9+ohos`（fvm `custom_ohos`）构建。
 
 | 平台 | 最低版本 | 原生 SDK |
 |---|---|---|
-| HarmonyOS | HarmonyOS 5.0.0 (API 12) | @easemob/chatsdk 1.15.0 |
+| HarmonyOS | HarmonyOS 5.0.0 (API 12) | @easemob/chatsdk 1.16.0 |
 | Dart | >=3.3.0 <4.0.0 | — |
 | Flutter | >=3.3.0（鸿蒙构建用 3.41.9+ohos） | — |

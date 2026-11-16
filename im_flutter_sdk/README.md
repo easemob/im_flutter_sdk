@@ -1,12 +1,12 @@
 # 环信即时通讯 IM Flutter SDK
 
-环信 IM 的 Flutter 插件，基于 Federated Plugin 架构，通过本插件可以在 Flutter 应用中快速集成单聊、群聊、聊天室等即时通讯能力。当前 `ohos` 分支（鸿蒙线）版本为 `1.15.0-ohos`，主包只声明 HarmonyOS 平台。仓库共 5 个包：**2 个发布包**——`im_flutter_sdk`（主包，按 Git tag 分发）、`im_flutter_sdk_ohos`（HarmonyOS 实现包，发布到 pub.dev）；**3 个复用包**——`im_flutter_sdk_interface`、`im_flutter_sdk_android`、`im_flutter_sdk_ios`（使用 pub.dev 已发布 **4.25.0**，**不发布新版本**）。
+环信 IM 的 Flutter 插件，基于 Federated Plugin 架构，通过本插件可以在 Flutter 应用中快速集成单聊、群聊、聊天室等即时通讯能力。当前 `ohos` 分支（鸿蒙线）版本为 `1.16.0-ohos`，主包只声明 HarmonyOS 平台。仓库共 5 个包：**2 个发布包**——`im_flutter_sdk`（主包，按 Git tag 分发）、`im_flutter_sdk_ohos`（HarmonyOS 实现包，发布到 pub.dev）；**3 个复用包**——`im_flutter_sdk_interface`、`im_flutter_sdk_android`、`im_flutter_sdk_ios`（使用 pub.dev 已发布 **4.25.0**，**不发布新版本**）。
 
 ## 平台支持
 
 | 平台 | 最低版本 | 原生 SDK |
 |---|---|---|
-| HarmonyOS | HarmonyOS 5.0.0 (API 12) | @easemob/chatsdk 1.15.0 |
+| HarmonyOS | HarmonyOS 5.0.0 (API 12) | @easemob/chatsdk 1.16.0 |
 
 环境要求：Flutter >= 3.3.0，Dart >= 3.3.0 且 < 4.0.0。HarmonyOS 构建/运行需使用鸿蒙版 Flutter `3.41.9+ohos`（见[鸿蒙支持](#鸿蒙支持)）。Android/iOS 集成请使用 pub.dev 官方发布线（`im_flutter_sdk` 4.25.0 / 5.0.0）。
 
@@ -23,19 +23,19 @@ Android/iOS 可继续使用 pub.dev 上的主线版本：
 flutter pub add im_flutter_sdk
 ```
 
-鸿蒙线（当前 `1.15.0-ohos`）按 Git tag 依赖主包，实现包由主包自动带入，无需逐个声明：
+鸿蒙线（当前 `1.16.0-ohos`）按 Git tag 依赖主包，实现包由主包自动带入，无需逐个声明：
 
 ```yaml
 dependencies:
   im_flutter_sdk:
     git:
       url: https://github.com/easemob/im_flutter_sdk.git
-      ref: 1.15.0-ohos   # 以仓库实际发布的 tag 为准
+      ref: 1.16.0-ohos   # 以仓库实际发布的 tag 为准
       path: im_flutter_sdk
 ```
 
 - `im_flutter_sdk_interface`（接口包）与 `im_flutter_sdk_ohos`（鸿蒙实现包）由主包自动引入，无需显式添加；interface 为 pub.dev 已发布 4.25.0。
-- `im_flutter_sdk_ohos` 需先发布 `1.15.0-ohos` 到 pub.dev，主包 `pub get` 才能解析；主包本身不发布到 pub.dev。
+- `im_flutter_sdk_ohos` 需先发布 `1.16.0-ohos` 到 pub.dev，主包 `pub get` 才能解析；主包本身不发布到 pub.dev。
 - `im_flutter_sdk_android` / `im_flutter_sdk_ios` 为 4.25.0 复用包，**不随鸿蒙线发布**，无需显式依赖。
 - 主包按版本号解析上述子包。若对应版本的子包尚未发布到 pub.dev，`pub get` 会解析失败；此时需等待子包发布，或用 `dependency_overrides` 将这些包指向同一 tag 下的对应路径。
 - 鸿蒙构建请使用鸿蒙版 Flutter，并确认 `pub get` 后 `.flutter-plugins-dependencies` 中包含 `plugins.ohos` 段。
@@ -161,13 +161,13 @@ void dispose() {
 
 ## 鸿蒙支持
 
-从 `1.15.0-ohos` 起，HarmonyOS 支持由本仓库的 `im_flutter_sdk_ohos` 实现包提供，使用鸿蒙版 Flutter 构建。版本号跟随 HarmonyOS native chatsdk `@easemob/chatsdk`，当前为 `1.15.0-ohos`（1.x 规则 + `-ohos` 预发布后缀）。
+从 `1.15.0-ohos` 起，HarmonyOS 支持由本仓库的 `im_flutter_sdk_ohos` 实现包提供，使用鸿蒙版 Flutter 构建。版本号跟随 HarmonyOS native chatsdk `@easemob/chatsdk`，当前为 `1.16.0-ohos`（1.x 规则 + `-ohos` 预发布后缀）。
 
 ### 环境与依赖
 
 - Flutter：鸿蒙版 `3.41.9+ohos`（fvm 版本名 `custom_ohos`）。官方 Flutter 3.47.0 仅用于 Android/iOS 构建与质量门禁，不要用于鸿蒙构建。
 - HarmonyOS：5.0.0 (API 12) 及以上；已在 DevEco Studio 模拟器（OpenHarmony 5.0.2.125 / API 14）验证，真机需配置签名。
-- 依赖写法见上方[集成 SDK](#集成-sdk) 的 Git tag 示例，`ref: 1.15.0-ohos`，只需依赖主包。
+- 依赖写法见上方[集成 SDK](#集成-sdk) 的 Git tag 示例，`ref: 1.16.0-ohos`，只需依赖主包。
 
 ### 构建与运行
 

@@ -1,3 +1,13 @@
+## 1.16.0-ohos
+
+### 中文
+
+随主包 `1.16.0-ohos` 一起发布，原生基线升级为 `@easemob/chatsdk` 1.16.0（平版 native 4.26.1 开发基线）。chatsdk 1.16.0 尚未发布到 ohpm，临时以本地 har（`ohos/libs/chatsdk-1.16.0.har`）接入，ohpm 发布后改回版本号依赖。chatsdk 1.16.0 新增能力（`getConnectionState`、`markMessagesAsReadWithTimestamp`、`disconnectNotifyThreshold`、`usePushInBackground` 等）的 wrapper 平版随本版本推进，详见主包 CHANGELOG。
+
+### English
+
+Shipped together with the main package `1.16.0-ohos`; the native baseline is upgraded to `@easemob/chatsdk` 1.16.0 (ported from the native 4.26.1 development baseline). chatsdk 1.16.0 is not yet published on ohpm; it is temporarily integrated as a local har (`ohos/libs/chatsdk-1.16.0.har`) and will switch back to a versioned ohpm dependency once published. Wrapper porting of the new chatsdk 1.16.0 capabilities (`getConnectionState`, `markMessagesAsReadWithTimestamp`, `disconnectNotifyThreshold`, `usePushInBackground`, etc.) proceeds within this release; see the main package CHANGELOG for details.
+
 ## 1.15.0-ohos
 
 ### 中文

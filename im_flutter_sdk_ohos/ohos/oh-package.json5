@@ -1,12 +1,12 @@
 {
   "name": "im_flutter_sdk_ohos",
-  "version": "1.15.0-ohos",
+  "version": "1.16.0-ohos",
   "description": "OHOS implementation of the im_flutter_sdk plugin.",
   "main": "index.ets",
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
     "@ohos/flutter_ohos": "file:./har/flutter.har",
-    "@easemob/chatsdk": "1.15.0"
+    "@easemob/chatsdk": "file:./libs/chatsdk-1.16.0.har"
   }
 }

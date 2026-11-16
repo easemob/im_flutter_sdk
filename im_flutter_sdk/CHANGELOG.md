@@ -1,3 +1,41 @@
+## 1.16.0-ohos
+
+### 中文
+
+原生基线升级为 HarmonyOS `@easemob/chatsdk` 1.16.0（平版 native 4.26.1 开发基线）。chatsdk 1.16.0 尚未发布到 ohpm，临时以本地 har（`im_flutter_sdk_ohos/ohos/libs/chatsdk-1.16.0.har`）接入，ohpm 发布后改回版本号依赖。
+
+**新增**（chatsdk 1.16.0 原生新增能力，Dart 侧平版随本版本推进）
+
+- `ChatClient.getConnectionState`：获取 SDK 与服务器的连接状态（新增枚举 `ConnectionState`），`isConnected` 标记废弃；
+- `ChatOptions` 断开通知阈值 `disconnectNotifyThreshold` 与断开通知平滑（可恢复错误按阈值延迟 `onDisconnected` 回调）；
+- `Conversation.markMessagesAsReadWithTimestamp`：按时间戳置已读，本地操作、不发已读回执；
+- `ChatClient.addConnectionListener` 注册时异步回放当前连接状态；
+- `ChatOptions.usePushInBackground`：退后台且已绑定推送 token 时延迟 10 秒主动断连，回前台自动重连。
+
+**修复**（随原生 1.16.0 获得）
+
+- 修复流式消息后续分片未整表覆盖本地 ext 的问题；
+- 修复聊天室跨登录会话 join/leave 竞态问题；
+- 修复自动登录/重连时 host 列表耗尽直接登出的问题，改为刷新 DNS 退避重连（HIM-24079）。
+
+### English
+
+The native baseline is upgraded to HarmonyOS `@easemob/chatsdk` 1.16.0 (ported from the native 4.26.1 development baseline). chatsdk 1.16.0 is not yet published on ohpm; it is temporarily integrated as a local har (`im_flutter_sdk_ohos/ohos/libs/chatsdk-1.16.0.har`) and will switch back to a versioned ohpm dependency once published.
+
+**Added** (new chatsdk 1.16.0 native capabilities; Dart-side porting proceeds within this release)
+
+- `ChatClient.getConnectionState`: returns the SDK connection state (new `ConnectionState` enum); `isConnected` is deprecated;
+- `ChatOptions.disconnectNotifyThreshold` and disconnect-notification smoothing (recoverable errors defer the `onDisconnected` callback within the threshold);
+- `Conversation.markMessagesAsReadWithTimestamp`: marks messages as read up to a timestamp; local operation, no read receipt sent;
+- `ChatClient.addConnectionListener` replays the current connection state asynchronously on registration;
+- `ChatOptions.usePushInBackground`: disconnects proactively after a 10-second delay when the app moves to the background with a push token bound, and reconnects on returning to the foreground.
+
+**Fixed** (inherited from native 1.16.0)
+
+- Fixed stream-message subsequent chunks not overwriting the local ext table;
+- Fixed a chat room join/leave race across login sessions;
+- Fixed direct logout on host list exhaustion during auto-login/reconnect; now refreshes DNS and reconnects with backoff (HIM-24079).
+
 ## 1.15.0-ohos
 
 ### 中文
