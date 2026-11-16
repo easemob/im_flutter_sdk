@@ -596,6 +596,38 @@ void registerConversationCases(ChatClient client) {
       }
     });
 
+    // Test: insert three unread incoming messages at timestamps 1000/2000/3000
+    // and call markMessagesAsReadWithTimestamp(2000).
+    // Expected: the call returns true, messages up to the timestamp
+    // (inclusive) become read, the newer message stays unread, and the unread
+    // count drops to 1.
+    // 1.16.0
+    ciTestWidgets('FL-CONV-021 marks messages as read up to a timestamp',
+        (tester) async {
+      final first = textMessage('timestamp first', timestamp: 1000);
+      final second = textMessage('timestamp second', timestamp: 2000);
+      final third = textMessage('timestamp third', timestamp: 3000);
+      await conversation.insertMessage(first);
+      await conversation.insertMessage(second);
+      await conversation.insertMessage(third);
+      expect(await conversation.unreadCount(), 3);
+
+      expect(
+        await conversation.markMessagesAsReadWithTimestamp(2000),
+        isTrue,
+      );
+
+      final unread = await waitForCi<int>(
+        'unread count drops after markMessagesAsReadWithTimestamp',
+        () => conversation.unreadCount(),
+        (count) => count == 1,
+      );
+      expect(unread, 1);
+      expect((await conversation.loadMessage(first.msgId))?.hasRead, isTrue);
+      expect((await conversation.loadMessage(second.msgId))?.hasRead, isTrue);
+      expect((await conversation.loadMessage(third.msgId))?.hasRead, isFalse);
+    });
+
     // Test: insert messages in the order 3000, 1000, 2000 by timestamp.
     // Expected: the database orders them newest-first regardless of insertion
     // order; messagesCount is 3, latestMessage is the 3000 message, and the

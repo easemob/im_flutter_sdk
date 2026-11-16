@@ -42,6 +42,9 @@ export default class ChatOptionsHelper {
     ChatOptionsHelper.applyBoolean(args, 'enableAutoSyncContacts', (v) => options.setEnableAutoSyncContacts(v));
     ChatOptionsHelper.applyBoolean(args, 'enableChatroomConversation', (v) => options.setEnableChatroomConversation(v));
     ChatOptionsHelper.applyBoolean(args, 'autoLoadConversations', (v) => options.setAutoLoadAllConversations(v));
+    // 1.16.0
+    ChatOptionsHelper.applyNumber(args, 'disconnectNotifyThreshold', (v) => options.setDisconnectNotifyThreshold(v));
+    ChatOptionsHelper.applyBoolean(args, 'usePushInBackground', (v) => options.setUsePushInBackground(v));
     ChatOptionsHelper.applyBoolean(args, 'enableTLS', (v) => options.setEnableTLSConnection(v));
     ChatOptionsHelper.applyBoolean(args, 'useReplacedMessageContents', (v) => options.setUseReplacedMessageContents(v));
     ChatOptionsHelper.applyBoolean(args, 'messagesReceiveCallbackIncludeSend',

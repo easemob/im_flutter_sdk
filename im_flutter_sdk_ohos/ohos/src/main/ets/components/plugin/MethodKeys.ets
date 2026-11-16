@@ -16,6 +16,7 @@ export default class MethodKey {
   static readonly getCurrentUser: string = "getCurrentUser";
   static readonly getCurrentDeviceId: string = "getCurrentDeviceId";
   static readonly isConnected: string = "isConnected";
+  static readonly getConnectionState: string = "getConnectionState";
   static readonly onMultiDeviceGroupEvent: string = "onMultiDeviceGroupEvent";
   static readonly onMultiDeviceContactEvent: string = "onMultiDeviceContactEvent";
   static readonly onMultiDeviceRemoveMessagesEvent: string = "onMultiDeviceRemoveMessagesEvent";
@@ -107,6 +108,7 @@ export default class MethodKey {
   static readonly getUnreadMsgCount: string = "getUnreadMsgCount";
   static readonly markAllMessagesAsRead: string = "markAllMessagesAsRead";
   static readonly markMessageAsRead: string = "markMessageAsRead";
+  static readonly markMessagesAsReadWithTimestamp: string = "markMessagesAsReadWithTimestamp";
   static readonly syncConversationExt: string = "syncConversationExt";
   static readonly removeMessage: string = "removeMessage";
   static readonly getLatestMessage: string = "getLatestMessage";

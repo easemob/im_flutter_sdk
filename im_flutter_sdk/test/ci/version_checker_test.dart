@@ -53,6 +53,10 @@ void main() {
       'im_flutter_sdk_android/android/build.gradle',
       "implementation 'io.hyphenate:hyphenate-chat:4.25.1'\n",
     );
+    write(
+      'im_flutter_sdk_ohos/ohos/oh-package.json5',
+      '{\n  "dependencies": {\n    "@easemob/chatsdk": "1.15.0"\n  }\n}\n',
+    );
   }
 
   test('accepts aligned release versions with reused packages at 4.25.0', () {
@@ -212,5 +216,52 @@ void main() {
     final result = checkVersions(fixture.path);
 
     expect(result.errors, isEmpty);
+  });
+
+  test('accepts a temporary local har chatsdk dependency', () {
+    writeValidFixture();
+    // Before the ohpm release the chatsdk dependency is a local har file; the
+    // version in the file name stays on the release line's major.minor.
+    write(
+      'im_flutter_sdk_ohos/ohos/oh-package.json5',
+      '{\n  "dependencies": {\n'
+          '    "@easemob/chatsdk": "file:./libs/chatsdk-1.15.0.har"\n  }\n}\n',
+    );
+
+    final result = checkVersions(fixture.path);
+
+    expect(result.errors, isEmpty);
+    expect(result.ohosNativeVersion, '1.15.0');
+  });
+
+  test('ignores the patch digit of the chatsdk dependency', () {
+    writeValidFixture();
+    write(
+      'im_flutter_sdk_ohos/ohos/oh-package.json5',
+      '{\n  "dependencies": {\n    "@easemob/chatsdk": "1.15.2"\n  }\n}\n',
+    );
+
+    final result = checkVersions(fixture.path);
+
+    expect(result.errors, isEmpty);
+    expect(result.ohosNativeVersion, '1.15.2');
+  });
+
+  test('reports the chatsdk dependency drifting off the release line', () {
+    writeValidFixture();
+    write(
+      'im_flutter_sdk_ohos/ohos/oh-package.json5',
+      '{\n  "dependencies": {\n    "@easemob/chatsdk": "1.16.0"\n  }\n}\n',
+    );
+
+    final result = checkVersions(fixture.path);
+
+    expect(result.errors, hasLength(1));
+    expect(
+      result.errors.single,
+      contains('HarmonyOS chatsdk dependency mismatch'),
+    );
+    expect(result.errors.single, contains('1.16.0'));
+    expect(result.errors.single, contains(releaseVersion));
   });
 }

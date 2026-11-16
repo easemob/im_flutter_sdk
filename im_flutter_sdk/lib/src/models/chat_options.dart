@@ -527,6 +527,58 @@ class ChatOptions {
   /// ~end
   final bool autoLoadConversations;
 
+  // 1.16.0
+  /// ~english
+  /// The time threshold (in seconds) for the disconnect notification.
+  ///
+  /// Defaults to `10` on the native side. If the connection is restored within
+  /// the threshold after a recoverable disconnect (for example, frequent
+  /// network fluctuations, or a disconnect-then-reconnect during
+  /// reconnection), the SDK does not notify the app of the disconnect.
+  /// A value less than or equal to `0` disables disconnect notification
+  /// smoothing: `onDisconnected` is called back immediately upon disconnect.
+  ///
+  /// It is recommended to set this option before [ChatClient.init]; setting it
+  /// after init takes effect for the next disconnect.
+  ///
+  /// The option is not sent to the native side when it is `null`, in which
+  /// case the native default applies.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 断开连接通知的时间阈值，单位为秒。
+  ///
+  /// 原生默认值为 `10`。若可恢复断开（例如短时间内频繁闪断，或重连时先断开再重连导致的断开）
+  /// 在该阈值内恢复连接，SDK 不会通知用户连接已断开。
+  /// 设置小于等于 `0` 的值将关闭断开通知平滑，断开时立即回调 `onDisconnected`。
+  ///
+  /// 建议在调用 [ChatClient.init] 之前设置；init 之后设置对下一次断开生效。
+  ///
+  /// 为 `null` 时不下发到原生侧，使用原生默认值。
+  /// ~end
+  final int? disconnectNotifyThreshold;
+
+  // 1.16.0
+  /// ~english
+  /// Whether the SDK proactively disconnects when the app moves to the
+  /// background and receives messages through offline push instead.
+  ///
+  /// - `true`: Enabled. When the app moves to the background with a push token
+  /// bound, the SDK proactively disconnects after a 10-second delay, during
+  /// which messages are delivered through offline push; it reconnects
+  /// automatically when the app returns to the foreground.
+  /// - (Default) `false`: Disabled.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 应用退到后台时 SDK 是否主动断开连接（依赖离线推送接收消息）。
+  ///
+  /// - `true`：开启。应用退到后台且已绑定推送 token 时，SDK 延迟 10 秒主动断开连接，
+  /// 期间消息通过离线推送送达；回到前台时自动重连。
+  /// - （默认）`false`：关闭。
+  /// ~end
+  final bool usePushInBackground;
+
   final Map<String, dynamic>? _extSettings;
 
   final ChatPushConfig _pushConfig;
@@ -774,6 +826,12 @@ class ChatOptions {
   /// - (Default) `false`: No. Excludes chatroom conversations.
   ///
   /// Param [autoLoadConversations] Whether to automatically load the conversation list from the local database during initialization. Set it to `false` before using [ChatManager.fetchConversationsFromDB] to load conversations with pagination.
+  ///
+  /// Param [disconnectNotifyThreshold] The time threshold (in seconds) for the disconnect notification. Defaults to `10` on the native side; a value less than or equal to `0` disables disconnect notification smoothing. Recommended to set before [ChatClient.init]; when `null`, the native default applies. (Since 1.16.0)
+  ///
+  /// Param [usePushInBackground] Whether the SDK proactively disconnects when the app moves to the background with a push token bound, so that messages are delivered through offline push; the SDK reconnects when the app returns to the foreground. (Since 1.16.0)
+  /// - `true`: Enabled.
+  /// - (Default) `false`: Disabled.
   /// - (Default) `true`: Yes.
   /// - `false`: No.
   ///
@@ -881,6 +939,12 @@ class ChatOptions {
   /// - （默认）`false`：否。本地会话列表中不包含聊天室会话。
   ///
   /// Param [autoLoadConversations] 初始化时是否自动加载本地会话列表。使用 [ChatManager.fetchConversationsFromDB] 分页加载会话前需将该选项设置为 `false`。
+  ///
+  /// Param [disconnectNotifyThreshold] 断开连接通知的时间阈值，单位为秒。原生默认值为 `10`；设置小于等于 `0` 的值将关闭断开通知平滑。建议在调用 [ChatClient.init] 之前设置；为 `null` 时使用原生默认值。（1.16.0 起）
+  ///
+  /// Param [usePushInBackground] 应用退到后台且已绑定推送 token 时，SDK 是否延迟 10 秒主动断开连接，期间消息通过离线推送送达，回到前台时自动重连。（1.16.0 起）
+  /// - `true`：开启；
+  /// - （默认）`false`：关闭。
   /// - （默认）`true`：是；
   /// - `false`：否。
   ///
@@ -924,6 +988,8 @@ class ChatOptions {
     String? pushKitCertName,
     bool enableChatroomConversation = false,
     bool autoLoadConversations = true,
+    int? disconnectNotifyThreshold,
+    bool usePushInBackground = false,
     Map<String, dynamic>? extSettings,
   }) : this._(
           appId: appId,
@@ -965,6 +1031,8 @@ class ChatOptions {
           pushKitCertName: pushKitCertName,
           enableChatroomConversation: enableChatroomConversation,
           autoLoadConversations: autoLoadConversations,
+          disconnectNotifyThreshold: disconnectNotifyThreshold,
+          usePushInBackground: usePushInBackground,
           extSettings: extSettings,
         );
 
@@ -1071,6 +1139,12 @@ class ChatOptions {
   /// - (Default) `false`: No. Excludes chatroom conversations.
   ///
   /// Param [autoLoadConversations] Whether to automatically load the conversation list from the local database during initialization. Set it to `false` before using [ChatManager.fetchConversationsFromDB] to load conversations with pagination.
+  ///
+  /// Param [disconnectNotifyThreshold] The time threshold (in seconds) for the disconnect notification. Defaults to `10` on the native side; a value less than or equal to `0` disables disconnect notification smoothing. Recommended to set before [ChatClient.init]; when `null`, the native default applies. (Since 1.16.0)
+  ///
+  /// Param [usePushInBackground] Whether the SDK proactively disconnects when the app moves to the background with a push token bound, so that messages are delivered through offline push; the SDK reconnects when the app returns to the foreground. (Since 1.16.0)
+  /// - `true`: Enabled.
+  /// - (Default) `false`: Disabled.
   /// - (Default) `true`: Yes.
   /// - `false`: No.
   ///
@@ -1178,6 +1252,12 @@ class ChatOptions {
   /// - （默认）`false`：否。本地会话列表中不包含聊天室会话。
   ///
   /// Param [autoLoadConversations] 初始化时是否自动加载本地会话列表。使用 [ChatManager.fetchConversationsFromDB] 分页加载会话前需将该选项设置为 `false`。
+  ///
+  /// Param [disconnectNotifyThreshold] 断开连接通知的时间阈值，单位为秒。原生默认值为 `10`；设置小于等于 `0` 的值将关闭断开通知平滑。建议在调用 [ChatClient.init] 之前设置；为 `null` 时使用原生默认值。（1.16.0 起）
+  ///
+  /// Param [usePushInBackground] 应用退到后台且已绑定推送 token 时，SDK 是否延迟 10 秒主动断开连接，期间消息通过离线推送送达，回到前台时自动重连。（1.16.0 起）
+  /// - `true`：开启；
+  /// - （默认）`false`：关闭。
   /// - （默认）`true`：是；
   /// - `false`：否。
   ///
@@ -1221,6 +1301,8 @@ class ChatOptions {
     String? pushKitCertName,
     bool enableChatroomConversation = false,
     bool autoLoadConversations = true,
+    int? disconnectNotifyThreshold,
+    bool usePushInBackground = false,
     Map<String, dynamic>? extSettings,
   }) : this._(
           appKey: appKey,
@@ -1262,6 +1344,8 @@ class ChatOptions {
           pushKitCertName: pushKitCertName,
           enableChatroomConversation: enableChatroomConversation,
           autoLoadConversations: autoLoadConversations,
+          disconnectNotifyThreshold: disconnectNotifyThreshold,
+          usePushInBackground: usePushInBackground,
           extSettings: extSettings,
         );
 
@@ -1370,6 +1454,12 @@ class ChatOptions {
   /// - (Default) `false`: No. Excludes chatroom conversations.
   ///
   /// Param [autoLoadConversations] Whether to automatically load the conversation list from the local database during initialization. Set it to `false` before using [ChatManager.fetchConversationsFromDB] to load conversations with pagination.
+  ///
+  /// Param [disconnectNotifyThreshold] The time threshold (in seconds) for the disconnect notification. Defaults to `10` on the native side; a value less than or equal to `0` disables disconnect notification smoothing. Recommended to set before [ChatClient.init]; when `null`, the native default applies. (Since 1.16.0)
+  ///
+  /// Param [usePushInBackground] Whether the SDK proactively disconnects when the app moves to the background with a push token bound, so that messages are delivered through offline push; the SDK reconnects when the app returns to the foreground. (Since 1.16.0)
+  /// - `true`: Enabled.
+  /// - (Default) `false`: Disabled.
   /// - (Default) `true`: Yes.
   /// - `false`: No.
   ///
@@ -1477,6 +1567,12 @@ class ChatOptions {
   /// - （默认）`false`：否。本地会话列表中不包含聊天室会话。
   ///
   /// Param [autoLoadConversations] 初始化时是否自动加载本地会话列表。使用 [ChatManager.fetchConversationsFromDB] 分页加载会话前需将该选项设置为 `false`。
+  ///
+  /// Param [disconnectNotifyThreshold] 断开连接通知的时间阈值，单位为秒。原生默认值为 `10`；设置小于等于 `0` 的值将关闭断开通知平滑。建议在调用 [ChatClient.init] 之前设置；为 `null` 时使用原生默认值。（1.16.0 起）
+  ///
+  /// Param [usePushInBackground] 应用退到后台且已绑定推送 token 时，SDK 是否延迟 10 秒主动断开连接，期间消息通过离线推送送达，回到前台时自动重连。（1.16.0 起）
+  /// - `true`：开启；
+  /// - （默认）`false`：关闭。
   /// - （默认）`true`：是；
   /// - `false`：否。
   ///
@@ -1520,6 +1616,8 @@ class ChatOptions {
     String? pushKitCertName,
     bool enableChatroomConversation = false,
     bool autoLoadConversations = true,
+    int? disconnectNotifyThreshold,
+    bool usePushInBackground = false,
   }) : this._(
           appKey: appKey,
           autoLogin: autoLogin,
@@ -1560,6 +1658,8 @@ class ChatOptions {
           pushKitCertName: pushKitCertName,
           enableChatroomConversation: enableChatroomConversation,
           autoLoadConversations: autoLoadConversations,
+          disconnectNotifyThreshold: disconnectNotifyThreshold,
+          usePushInBackground: usePushInBackground,
         );
 
   ChatOptions._({
@@ -1602,6 +1702,8 @@ class ChatOptions {
     this.pushKitCertName,
     this.enableChatroomConversation = false,
     this.autoLoadConversations = true,
+    this.disconnectNotifyThreshold,
+    this.usePushInBackground = false,
     Map<String, dynamic>? extSettings,
     ChatPushConfig? pushConfig,
   })  : _extSettings = extSettings,
@@ -1668,6 +1770,10 @@ class ChatOptions {
     data.putIfNotNull('autoLoadConversations', autoLoadConversations);
     data.putIfNotNull('apnsCertName', apnsCertName);
     data.putIfNotNull('pushKitCertName', pushKitCertName);
+
+    // 1.16.0
+    data.putIfNotNull('disconnectNotifyThreshold', disconnectNotifyThreshold);
+    data.putIfNotNull('usePushInBackground', usePushInBackground);
 
     return data;
   }
@@ -1750,6 +1856,8 @@ class ChatOptions {
       ntpServers: ntpServers,
       enableChatroomConversation: enableChatroomConversation,
       autoLoadConversations: autoLoadConversations,
+      disconnectNotifyThreshold: disconnectNotifyThreshold,
+      usePushInBackground: usePushInBackground,
       extSettings: extSettings ?? _extSettings,
       pushConfig: _pushConfig,
     );

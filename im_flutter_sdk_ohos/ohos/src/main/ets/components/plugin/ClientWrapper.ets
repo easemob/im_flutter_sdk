@@ -74,6 +74,8 @@ export default class ClientWrapper extends Wrapper {
       this.getCurrentDeviceId(call, result);
     } else if (MethodKey.isConnected === call.method) {
       this.isConnected(call, result);
+    } else if (MethodKey.getConnectionState === call.method) {
+      this.getConnectionState(call, result);
     } else if (MethodKey.startCallback === call.method) {
       this.startCallback(call, result);
     } else if (MethodKey.updateUsingHttpsOnlySetting === call.method) {
@@ -205,6 +207,11 @@ export default class ClientWrapper extends Wrapper {
 
   private isConnected(call: MethodCall, result: MethodResult): void {
     this.onSuccess(result, call.method, ChatClient.getInstance().isConnected());
+  }
+
+  // 1.16.0
+  private getConnectionState(call: MethodCall, result: MethodResult): void {
+    this.onSuccess(result, call.method, ChatClient.getInstance().getConnectionState() as number);
   }
 
   private startCallback(call: MethodCall, result: MethodResult): void {

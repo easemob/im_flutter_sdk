@@ -57,6 +57,12 @@ void registerLoggedOutClientCases(ChatClient client) {
     });
   });
 
+  // 1.16.0
+  ciTestWidgets('FL-CLIENT-018 reports a disconnected state while logged out',
+      (tester) async {
+    expect(await client.getConnectionState(), ChatConnectionState.disconnected);
+  });
+
   ciTestWidgets('FL-CLIENT-040 reports a token only when logged in',
       (tester) async {
     try {

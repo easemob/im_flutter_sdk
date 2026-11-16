@@ -18,6 +18,7 @@ void main() {
       return switch (method) {
         'getCurrentUser' => <String, Object>{'getCurrentUser': 'unit-user'},
         'isConnected' => <String, Object>{'isConnected': true},
+        'getConnectionState' => <String, Object>{'getConnectionState': 2},
         'getToken' => <String, Object>{'getToken': 'token-value'},
         _ => <String, Object>{},
       };
@@ -57,6 +58,26 @@ void main() {
     expect(await EMClient.getInstance.getCurrentUserId(), 'unit-user');
     expect(await EMClient.getInstance.isConnected(), isTrue);
     expect(await EMClient.getInstance.getAccessToken(), 'token-value');
+  });
+
+  test('getConnectionState maps the native ordinal', () async {
+    expect(
+      await EMClient.getInstance.getConnectionState(),
+      ChatConnectionState.connected,
+    );
+    expect(recordingClient.calls.single.method, 'getConnectionState');
+  });
+
+  test('getConnectionState falls back to disconnected without a payload',
+      () async {
+    Client.instance = RecordingClient((manager, method, arguments) async {
+      return <String, Object>{};
+    });
+
+    expect(
+      await EMClient.getInstance.getConnectionState(),
+      ChatConnectionState.disconnected,
+    );
   });
 
   test('logout forwards unbind flag and clears current user', () async {
