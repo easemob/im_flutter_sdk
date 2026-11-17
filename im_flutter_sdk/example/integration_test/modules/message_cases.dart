@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -93,6 +95,39 @@ void registerMessageCases({
         message,
       );
     }
+  }
+
+  /// Sends [message] and waits for the final callback correlated by local ID.
+  /// Method completion alone only acknowledges submission.
+  Future<ChatMessage> sendAndAwait(ChatMessage message, String caseId) async {
+    final localId = message.msgId;
+    final handlerId = unique('${caseId}_send_handler');
+    final completion = Completer<({ChatMessage message, ChatError? error})>();
+    manager.addMessageEvent(
+      handlerId,
+      ChatMessageEvent(
+        onSuccess: (id, confirmed) {
+          if (id == localId && !completion.isCompleted) {
+            completion.complete((message: confirmed, error: null));
+          }
+        },
+        onError: (id, failed, error) {
+          if (id == localId && !completion.isCompleted) {
+            completion.complete((message: failed, error: error));
+          }
+        },
+      ),
+    );
+    addTearDown(() => manager.removeMessageEvent(handlerId));
+    await manager.sendMessage(message).timeout(const Duration(seconds: 30));
+    final result = await completion.future.timeout(
+      const Duration(seconds: 90),
+      onTimeout: () => throw TimeoutException(
+        'No final send callback for $caseId local message $localId',
+      ),
+    );
+    expect(result.error, isNull, reason: '$caseId server rejected the message');
+    return result.message;
   }
 
   group('message positive', () {
@@ -604,6 +639,371 @@ void registerMessageCases({
       expect((latest!.body as ChatTextMessageBody).content, run);
       debugPrint(
           'CI FL-MSG-010 verify passed: stale cache advanced to REST ID');
+    },
+  );
+
+  // Test: Upload one real file and one real image to the prepared peer and
+  // await each correlated final callback.
+  // Expected: Both final callbacks succeed with server IDs; stored file and
+  // image bodies carry server paths, secrets and sizes, and loading them back
+  // keeps the server attachment fields. This is local persistence plus upload
+  // confirmation, not delivery to a second online client.
+  ciTestWidgets(
+    'FL-MSG-011 positive file and image uploads expose server attachment',
+    (_) async {
+      final dir = Directory.systemTemp.createTempSync('ci_msg11_');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final run = unique('upload');
+      final payload = List<int>.generate(512, (index) => index % 251);
+      final source = File('${dir.path}/$run.txt');
+      await source.writeAsBytes(payload);
+      final fileMessage = ChatMessage.createFileSendMessage(
+        targetId: peerId,
+        filePath: source.path,
+        displayName: '$run.txt',
+        fileSize: payload.length,
+      );
+      final fileConfirmed = await sendAndAwait(fileMessage, 'FL-MSG-011 file');
+      expect(fileConfirmed.status, MessageStatus.SUCCESS);
+      expect(fileConfirmed.msgId, isNotEmpty);
+      final fileBody = fileConfirmed.body as ChatFileMessageBody;
+      expect(fileBody.type, MessageType.FILE);
+      expect(fileBody.displayName, '$run.txt');
+      expect(fileBody.fileSize, payload.length);
+      expect(fileBody.remotePath, isNotNull);
+      expect(fileBody.secret, isNotNull);
+      final storedFile = await manager.loadMessage(fileConfirmed.msgId);
+      expect(storedFile, isNotNull);
+      final storedFileBody = storedFile!.body as ChatFileMessageBody;
+      expect(storedFileBody.remotePath, fileBody.remotePath);
+      expect(storedFileBody.secret, fileBody.secret);
+      expect(storedFileBody.fileSize, payload.length);
+
+      final png = base64Decode(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4'
+        '2mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      );
+      final image = File('${dir.path}/$run.png');
+      await image.writeAsBytes(png);
+      final imageMessage = ChatMessage.createImageSendMessage(
+        targetId: peerId,
+        filePath: image.path,
+        displayName: '$run.png',
+        fileSize: png.length,
+        width: 1,
+        height: 1,
+      );
+      final imageConfirmed =
+          await sendAndAwait(imageMessage, 'FL-MSG-011 image');
+      expect(imageConfirmed.status, MessageStatus.SUCCESS);
+      final imageBody = imageConfirmed.body as ChatImageMessageBody;
+      expect(imageBody.type, MessageType.IMAGE);
+      // Native may normalize or re-encode an image, so only the presence and
+      // positivity of the reported size are guaranteed here.
+      expect(imageBody.fileSize, isNotNull);
+      expect(imageBody.fileSize, greaterThan(0));
+      expect(imageBody.remotePath, isNotNull);
+      expect(imageBody.secret, isNotNull);
+      expect(imageBody.width, 1);
+      expect(imageBody.height, 1);
+    },
+  );
+
+  // Test: Upload a real file to the peer, import a received copy pointing at a
+  // fresh local path, remove that file, then download the attachment.
+  // Expected: downloadAttachment reports a terminal success callback and the
+  // local file is restored with bytes identical to the uploaded payload; the
+  // returned method result alone is not used as completion evidence.
+  ciTestWidgets(
+    'FL-MSG-012 positive attachment download restores the local file',
+    (_) async {
+      final dir = Directory.systemTemp.createTempSync('ci_msg12_');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final run = unique('download');
+      final payload = List<int>.generate(256, (index) => 255 - index % 256);
+      final source = File('${dir.path}/$run.source');
+      await source.writeAsBytes(payload);
+      final draft = ChatMessage.createFileSendMessage(
+        targetId: peerId,
+        filePath: source.path,
+        displayName: '$run.source',
+        fileSize: payload.length,
+      );
+      final confirmed = await sendAndAwait(draft, 'FL-MSG-012 upload');
+      final uploaded = confirmed.body as ChatFileMessageBody;
+      expect(uploaded.remotePath, isNotNull);
+      expect(uploaded.secret, isNotNull);
+
+      final conversationId = ownedConversation('download_target');
+      final localPath = '${dir.path}/$run.received';
+      final localId = unique('download_received');
+      final json = Map<String, dynamic>.from(confirmed.toJson());
+      final body = Map<String, dynamic>.from(json['body'] as Map);
+      body['localPath'] = localPath;
+      body['fileStatus'] = DownloadStatus.PENDING.index;
+      json['body'] = body;
+      json['msgId'] = localId;
+      json['conversationId'] = conversationId;
+      json['from'] = peerId;
+      json['to'] = userId;
+      json['direction'] = MessageDirection.RECEIVE.index;
+      json['status'] = MessageStatus.SUCCESS.index;
+      final received = ChatMessage.fromJson(json);
+      await manager.importMessages(<ChatMessage>[received]);
+      final loaded = await manager.loadMessage(localId);
+      expect(loaded, isNotNull);
+      final loadedBody = loaded!.body as ChatFileMessageBody;
+      expect(loadedBody.remotePath, uploaded.remotePath);
+      expect(loadedBody.secret, uploaded.secret);
+      final target = File(localPath);
+      if (target.existsSync()) {
+        target.deleteSync();
+      }
+      expect(target.existsSync(), isFalse);
+
+      final handlerId = unique('download_handler');
+      final completion = Completer<({ChatMessage message, ChatError? error})>();
+      manager.addMessageEvent(
+        handlerId,
+        ChatMessageEvent(
+          onSuccess: (id, message) {
+            if (id == localId && !completion.isCompleted) {
+              completion.complete((message: message, error: null));
+            }
+          },
+          onError: (id, message, error) {
+            if (id == localId && !completion.isCompleted) {
+              completion.complete((message: message, error: error));
+            }
+          },
+        ),
+      );
+      addTearDown(() => manager.removeMessageEvent(handlerId));
+      await manager
+          .downloadAttachment(loaded)
+          .timeout(const Duration(seconds: 30));
+      final result = await completion.future.timeout(
+        const Duration(seconds: 90),
+        onTimeout: () => throw TimeoutException(
+          'No attachment download callback for $localId',
+        ),
+      );
+      expect(result.error, isNull);
+      final downloadedBody = result.message.body as ChatFileMessageBody;
+      expect(downloadedBody.fileStatus, DownloadStatus.SUCCESS);
+      expect(downloadedBody.localPath, isNotEmpty);
+      // Native may resolve the payload path itself, so verify the file at the
+      // path it reports rather than assuming the requested path was kept.
+      final restored = downloadedBody.localPath == localPath
+          ? target
+          : File(downloadedBody.localPath);
+      await waitForCi(
+        'downloaded file exists at the reported local path',
+        () async => restored.existsSync(),
+        (value) => value,
+      );
+      expect(await restored.readAsBytes(), payload);
+    },
+  );
+
+  // Test: Deliver five real one-to-one messages from the offline peer over
+  // REST, then page server history with pageSize=2 until the empty cursor.
+  // Expected: Each delivered ID appears exactly once, pages respect the limit
+  // and cursors never repeat, every timestamp sequence stays monotonic across
+  // pages, and the traversal needs more than one page.
+  ciTestWidgets(
+    'FL-MSG-013 positive server history pagination is complete and ordered',
+    (_) async {
+      final run = unique('history_page');
+      final ids = <String>[];
+      for (var index = 0; index < 5; index++) {
+        ids.add(await rest.sendTextMessage(
+          from: peerId,
+          to: userId,
+          text: '$run $index',
+        ));
+      }
+      expect(ids.toSet(), hasLength(5));
+      await waitForCi(
+        'server history contains all five delivered messages',
+        () async {
+          final page = await manager.fetchHistoryMessagesByOption(
+            peerId,
+            ChatConversationType.Chat,
+            pageSize: 25,
+          );
+          final seen = page.data.map((message) => message.msgId).toSet();
+          return ids.every(seen.contains);
+        },
+        (value) => value,
+      );
+
+      final seen = <String>{};
+      final ordered = <ChatMessage>[];
+      var cursor = '';
+      var reachedEnd = false;
+      var pageCount = 0;
+      for (var index = 0; index < 200; index++) {
+        final page = cursor.isEmpty
+            ? await manager.fetchHistoryMessagesByOption(
+                peerId,
+                ChatConversationType.Chat,
+                pageSize: 2,
+              )
+            : await manager.fetchHistoryMessagesByOption(
+                peerId,
+                ChatConversationType.Chat,
+                cursor: cursor,
+                pageSize: 2,
+              );
+        pageCount++;
+        expect(page.data.length, lessThanOrEqualTo(2));
+        for (final message in page.data) {
+          expect(seen.add(message.msgId), isTrue,
+              reason: 'Server history repeated ${message.msgId}');
+          ordered.add(message);
+        }
+        final next = page.cursor;
+        if (next == null || next.isEmpty) {
+          reachedEnd = true;
+          break;
+        }
+        expect(next, isNot(cursor), reason: 'Server history repeated a cursor');
+        cursor = next;
+      }
+      expect(reachedEnd, isTrue,
+          reason: 'Server history did not terminate within 200 pages');
+      expect(pageCount, greaterThan(1),
+          reason: 'Fixture must span more than one server page');
+      final ours =
+          ordered.where((message) => ids.contains(message.msgId)).toList();
+      expect(ours, hasLength(5));
+
+      var descending = true;
+      var ascending = true;
+      for (var index = 1; index < ordered.length; index++) {
+        if (ordered[index].serverTime > ordered[index - 1].serverTime) {
+          descending = false;
+        }
+        if (ordered[index].serverTime < ordered[index - 1].serverTime) {
+          ascending = false;
+        }
+      }
+      expect(descending || ascending, isTrue,
+          reason: 'Server history pages must not interleave timestamps');
+    },
+  );
+
+  // Test: Send one real message, pin it, read the server pinned list and the
+  // pin metadata, then unpin it.
+  // Expected: The pinned list reports the message with this operator and a
+  // positive pin time, and drops it after unpinning. This is the server pin
+  // round-trip; it does not prove another client's pinned view.
+  ciTestWidgets(
+    'FL-MSG-014 positive pins and unpins a server message',
+    (_) async {
+      final run = unique('pin');
+      final sent = await sendAndAwait(
+        ChatMessage.createTxtSendMessage(
+          targetId: peerId,
+          content: '$run text',
+        ),
+        'FL-MSG-014 send',
+      );
+      expect(sent.status, MessageStatus.SUCCESS);
+      final id = sent.msgId;
+      var pinned = false;
+      addTearDown(() async {
+        if (!pinned) return;
+        try {
+          await manager.unpinMessage(messageId: id);
+        } catch (_) {
+          // Best effort; the primary assertion already ran.
+        }
+      });
+      await manager.pinMessage(messageId: id);
+      pinned = true;
+      final pinnedList = await waitForCi(
+        'server pinned list contains the sent message',
+        () => manager.fetchPinnedMessages(conversationId: peerId),
+        (list) => list.any((message) => message.msgId == id),
+      );
+      final stored = pinnedList.singleWhere((message) => message.msgId == id);
+      final info = await stored.pinInfo();
+      expect(info, isNotNull);
+      expect(info!.operatorId, userId);
+      expect(info.pinTime, greaterThan(0));
+      await manager.unpinMessage(messageId: id);
+      pinned = false;
+      await waitForCi(
+        'server pinned list drops the unpinned message',
+        () => manager.fetchPinnedMessages(conversationId: peerId),
+        (list) => !list.any((message) => message.msgId == id),
+      );
+    },
+  );
+
+  // Test: Send one real message, add a Reaction, read it through the server
+  // list, the detail page and the loaded local message, then remove it.
+  // Expected: The Reaction is reported once as added by this user with the
+  // user in the detail page and disappears from the server list on removal.
+  ciTestWidgets(
+    'FL-MSG-015 positive adds and removes a message reaction',
+    (_) async {
+      final run = unique('reaction');
+      const reaction = 'ci_like';
+      final sent = await sendAndAwait(
+        ChatMessage.createTxtSendMessage(
+          targetId: peerId,
+          content: '$run text',
+        ),
+        'FL-MSG-015 send',
+      );
+      final id = sent.msgId;
+      var added = false;
+      addTearDown(() async {
+        if (!added) return;
+        try {
+          await manager.removeReaction(messageId: id, reaction: reaction);
+        } catch (_) {
+          // Best effort; the primary assertion already ran.
+        }
+      });
+      await manager.addReaction(messageId: id, reaction: reaction);
+      added = true;
+      final reactions = await waitForCi(
+        'server reaction list reports the added reaction',
+        () => manager
+            .fetchReactionList(messageIds: [id], chatType: ChatType.Chat),
+        (map) => (map[id] ?? const <ChatMessageReaction>[]).any((item) =>
+            item.reaction == reaction &&
+            item.isAddedBySelf &&
+            item.userCount >= 1),
+      );
+      final item = (reactions[id] ?? const <ChatMessageReaction>[])
+          .singleWhere((entry) => entry.reaction == reaction);
+      expect(item.userCount, greaterThanOrEqualTo(1));
+      final detail = await manager.fetchReactionDetail(
+        messageId: id,
+        reaction: reaction,
+      );
+      expect(detail.data.map((entry) => entry.reaction), contains(reaction));
+      expect(detail.data.expand((entry) => entry.userList), contains(userId));
+      final local = await manager.loadMessage(id);
+      expect(local, isNotNull);
+      expect(
+        (await local!.reactionList()).map((entry) => entry.reaction),
+        contains(reaction),
+      );
+      await manager.removeReaction(messageId: id, reaction: reaction);
+      added = false;
+      await waitForCi(
+        'server reaction list drops the removed reaction',
+        () => manager
+            .fetchReactionList(messageIds: [id], chatType: ChatType.Chat),
+        (map) => !(map[id] ?? const <ChatMessageReaction>[])
+            .any((entry) => entry.reaction == reaction && entry.isAddedBySelf),
+      );
     },
   );
 }

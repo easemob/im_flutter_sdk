@@ -8,8 +8,10 @@ import 'modules/client_sync_cases.dart';
 import 'modules/client_cases.negative.dart';
 import 'modules/conversation_cases.dart';
 import 'modules/conversation_cases.negative.dart';
+import 'modules/chat_room_cases.dart';
 import 'modules/message_cases.dart';
 import 'modules/message_cases.negative.dart';
+import 'modules/presence_cases.dart';
 import 'support/login.dart';
 import 'support/rest_fixture.dart';
 
@@ -96,9 +98,19 @@ void main() {
     // Each selection logs in independently; it never relies on FL-AUTH-007.
     setUpAll(() => loginForCi(client, _userId, _token));
     registerClientCases(client: client, userId: _userId, token: _token);
-    registerConversationCases(client: client, userId: _userId, rest: rest);
+    registerConversationCases(
+        client: client, userId: _userId, peerId: _peerId, rest: rest);
+    registerChatRoomCases(
+        client: client, userId: _userId, peerId: _peerId, rest: rest);
     registerMessageCases(
         client: client, userId: _userId, peerId: _peerId, rest: rest);
+    registerLoggedInPresenceCases(
+      client: client,
+      userId: _userId,
+      restApi: _restApi,
+      appKey: _appKey,
+      appToken: _appToken,
+    );
     registerClientNegativeCases(client: client, userId: _userId, token: _token);
     registerConversationNegativeCases(client: client, userId: _userId);
     registerMessageNegativeCases(client: client, userId: _userId);

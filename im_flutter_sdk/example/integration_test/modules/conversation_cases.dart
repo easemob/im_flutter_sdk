@@ -10,6 +10,7 @@ import '../support/rest_fixture.dart';
 void registerConversationCases({
   required ChatClient client,
   required String userId,
+  required String peerId,
   required CiRestFixture rest,
 }) {
   Future<_ConversationFixture> prepare() =>
@@ -511,6 +512,195 @@ void registerConversationCases({
       },
     );
 
+    // Test: Make the prepared peer a friend, clear this conversation's unread
+    // count, then deliver two real one-to-one messages through REST.
+    // Expected: unreadCount reaches exactly 2 and the account total rises by 2;
+    // clearing this conversation returns the conversation to zero and the
+    // account total to its baseline without deleting account history.
+    // Cleanup restores friendship and clears unread.
+    ciTestWidgets(
+      'FL-CONV-016 positive real inbound messages update unread counts',
+      (_) async {
+        final snapshot = await rest.snapshotContacts(userId, peerId);
+        addTearDown(() => rest.restoreContacts(userId, peerId, snapshot));
+        addTearDown(() async {
+          await client.chatManager
+              .clearConversationUnreadMessageCount(peerId)
+              .timeout(const Duration(seconds: 15));
+        });
+        await rest.setContacts(userId, peerId, true);
+        final manager = client.chatManager;
+        await manager
+            .clearConversationUnreadMessageCount(peerId)
+            .timeout(const Duration(seconds: 15));
+        final baseline = await manager.getUnreadMessageCount();
+        final run = 'ci_unread_${DateTime.now().microsecondsSinceEpoch}';
+        for (final text in ['$run first', '$run second']) {
+          await rest.sendTextMessage(from: peerId, to: userId, text: text);
+        }
+        final unread = await waitForCi(
+          'conversation $peerId unread reaches 2',
+          () async {
+            final conversation = await manager.getConversation(
+              peerId,
+              createIfNeed: false,
+            );
+            return conversation == null ? -1 : conversation.unreadCount();
+          },
+          (value) => value == 2,
+        );
+        expect(unread, 2);
+        expect(
+          await manager.getUnreadMessageCount(),
+          greaterThanOrEqualTo(baseline + 2),
+        );
+        await manager.clearConversationUnreadMessageCount(peerId);
+        final cleared =
+            await manager.getConversation(peerId, createIfNeed: false);
+        expect(cleared, isNotNull);
+        expect(await cleared!.unreadCount(), 0);
+        await waitForCi(
+          'account unread total returns to the baseline',
+          manager.getUnreadMessageCount,
+          (value) => value == baseline,
+        );
+      },
+    );
+
+    // Test: Send one real message to the prepared peer, confirm it through the
+    // final callback and server history, then delete it from local and server.
+    // Expected: The message is readable locally and present in server history
+    // before the call; neither read path returns it afterward. Only this
+    // message is reclaimed; account history and friendship stay untouched.
+    ciTestWidgets(
+      'FL-CONV-017 positive deletes a message from local and server',
+      (_) async {
+        final manager = client.chatManager;
+        final run =
+            'ci_conv_server_delete_${DateTime.now().microsecondsSinceEpoch}';
+        final handlerId = '${run}_event';
+        final completion = Completer<ChatMessage>();
+        final draft =
+            ChatMessage.createTxtSendMessage(targetId: peerId, content: run);
+        final localId = draft.msgId;
+        manager.addMessageEvent(
+          handlerId,
+          ChatMessageEvent(
+            onSuccess: (messageId, message) {
+              if (messageId == localId && !completion.isCompleted) {
+                completion.complete(message);
+              }
+            },
+            onError: (messageId, message, error) {
+              if (messageId == localId && !completion.isCompleted) {
+                completion.completeError(error);
+              }
+            },
+          ),
+        );
+        addTearDown(() => manager.removeMessageEvent(handlerId));
+        await manager.sendMessage(draft).timeout(const Duration(seconds: 30));
+        final confirmed =
+            await completion.future.timeout(const Duration(seconds: 30));
+        expect(confirmed.status, MessageStatus.SUCCESS);
+        expect(confirmed.msgId, isNotEmpty);
+
+        Future<bool> inServerHistory() async {
+          final page = await manager.fetchHistoryMessagesByOption(
+            peerId,
+            ChatConversationType.Chat,
+            pageSize: 50,
+          );
+          return page.data.any((message) => message.msgId == confirmed.msgId);
+        }
+
+        await waitForCi(
+          'server history contains the ready message',
+          inServerHistory,
+          (value) => value,
+        );
+        expect(await manager.loadMessage(confirmed.msgId), isNotNull);
+        final conversation =
+            await manager.getConversation(peerId, createIfNeed: false);
+        expect(conversation, isNotNull);
+        await conversation!
+            .deleteLocalAndServerMessages(msgIds: [confirmed.msgId]);
+        await waitForCi(
+          'local message is removed',
+          () => manager.loadMessage(confirmed.msgId),
+          (value) => value == null,
+        );
+        await waitForCi(
+          'server history drops the message',
+          inServerHistory,
+          (value) => !value,
+        );
+      },
+    );
+
+    // Test: Mark and unmark the prepared peer conversation through the SDK.
+    // Expected: The local conversation reports the mark after adding it and no
+    // longer reports it after removal; the conversation itself is untouched.
+    // Teardown removes any leftover mark and restores the friendship snapshot.
+    ciTestWidgets(
+      'FL-CONV-018 positive adds and removes a conversation mark',
+      (_) async {
+        const mark = ConversationMarkType.Type0;
+        final manager = client.chatManager;
+        final snapshot = await rest.snapshotContacts(userId, peerId);
+        addTearDown(() => rest.restoreContacts(userId, peerId, snapshot));
+        addTearDown(() async {
+          try {
+            await manager.deleteRemoteAndLocalConversationsMark(
+              conversationIds: [peerId],
+              mark: mark,
+            );
+          } catch (_) {
+            // Best effort; the assertion below still proves the main path.
+          }
+        });
+        await rest.setContacts(userId, peerId, true);
+        final run = 'ci_mark_${DateTime.now().microsecondsSinceEpoch}';
+        await rest.sendTextMessage(from: peerId, to: userId, text: run);
+        await waitForCi(
+          'peer conversation exists locally',
+          () async =>
+              (await manager.getConversation(peerId, createIfNeed: false))?.id,
+          (id) => id == peerId,
+        );
+        final before =
+            await manager.getConversation(peerId, createIfNeed: false);
+        expect(before, isNotNull);
+        expect(before!.marks ?? const <ConversationMarkType>[],
+            isNot(contains(mark)));
+        await manager.addRemoteAndLocalConversationsMark(
+          conversationIds: [peerId],
+          mark: mark,
+        );
+        final marked = await waitForCi(
+          'local conversation reports the added mark',
+          () async =>
+              (await manager.getConversation(peerId, createIfNeed: false))
+                  ?.marks ??
+              const <ConversationMarkType>[],
+          (marks) => marks.contains(mark),
+        );
+        expect(marked, contains(mark));
+        await manager.deleteRemoteAndLocalConversationsMark(
+          conversationIds: [peerId],
+          mark: mark,
+        );
+        await waitForCi(
+          'local conversation drops the removed mark',
+          () async =>
+              (await manager.getConversation(peerId, createIfNeed: false))
+                  ?.marks ??
+              const <ConversationMarkType>[],
+          (marks) => !marks.contains(mark),
+        );
+      },
+    );
+
     registerChatroomConversationCases(
       client: client,
       userId: userId,
@@ -594,6 +784,106 @@ void registerConversationPaginationCases({
         });
       expect(owned.map((item) => item.id), orderedEquals(expectedIds));
       expect(owned.every((item) => !item.isPinned), isTrue);
+    },
+  );
+
+  // Test: Pin the oldest of three owned conversations (the two newer ones tie
+  // on message time) and page the real database before and after unpinning.
+  // Expected: The pinned conversation sorts first regardless of message time;
+  // the remaining conversations keep time-then-ID descending order, and
+  // unpinning restores pure time order. Existing cases exclude pinned
+  // conversations through the inverse premise, so this is the only
+  // pinned-first ordering assertion.
+  ciTestWidgets(
+    'FL-CONV-015 positive pinned conversation sorts first across pages',
+    (_) async {
+      expect(client.options!.autoLoadConversations, isFalse);
+      final fixtures = [await prepare(), await prepare(), await prepare()];
+      final timestamps = <String, int>{};
+      for (var index = 0; index < fixtures.length; index++) {
+        final fixture = fixtures[index];
+        final timestamp = index == 0 ? 1000 : 2000;
+        timestamps[fixture.conversation.id] = timestamp;
+        await fixture.conversation.insertMessage(
+          fixture.text('pinned page seed', timestamp: timestamp),
+        );
+      }
+      final pinnedId = fixtures.first.conversation.id;
+      final manager = client.chatManager;
+
+      List<String> timeOrder() {
+        final ids = timestamps.keys.toList()
+          ..sort((a, b) {
+            final byTime = timestamps[b]!.compareTo(timestamps[a]!);
+            return byTime != 0
+                ? byTime
+                : b.toLowerCase().compareTo(a.toLowerCase());
+          });
+        return ids;
+      }
+
+      Future<List<ChatConversation>> orderedOwned() async {
+        final seen = <String>{};
+        final owned = <ChatConversation>[];
+        var page = await manager.getConversationsFromDB(pageSize: 2);
+        for (var index = 0; index < 200; index++) {
+          for (final conversation in page.data) {
+            expect(seen.add(conversation.id), isTrue,
+                reason: 'Database pagination repeated ${conversation.id}');
+            if (timestamps.containsKey(conversation.id)) {
+              owned.add(conversation);
+            }
+          }
+          final cursor = page.cursor;
+          if (cursor == null || cursor.isEmpty) {
+            return owned;
+          }
+          page = await manager.getConversationsFromDB(
+            cursor: cursor,
+            pageSize: 2,
+          );
+        }
+        throw StateError(
+            'Database pagination did not terminate within 200 pages');
+      }
+
+      var pinAttempted = false;
+      addTearDown(() async {
+        if (!pinAttempted) return;
+        await manager
+            .pinConversation(conversationId: pinnedId, isPinned: false)
+            .timeout(const Duration(seconds: 15));
+      });
+      pinAttempted = true;
+      await manager
+          .pinConversation(conversationId: pinnedId, isPinned: true)
+          .timeout(const Duration(seconds: 15));
+
+      final pinnedExpected = [
+        pinnedId,
+        ...timeOrder().where((id) => id != pinnedId),
+      ];
+      final pinnedOrder = await waitForCi(
+        'pinned conversation sorts first',
+        orderedOwned,
+        (list) => list.length == timestamps.length && list.first.id == pinnedId,
+      );
+      expect(pinnedOrder.map((item) => item.id), orderedEquals(pinnedExpected));
+      expect(pinnedOrder.first.isPinned, isTrue);
+      expect(pinnedOrder.skip(1).every((item) => !item.isPinned), isTrue);
+
+      await manager
+          .pinConversation(conversationId: pinnedId, isPinned: false)
+          .timeout(const Duration(seconds: 15));
+      final restoredOrder = timeOrder();
+      final restored = await waitForCi(
+        'unpinned conversation returns to time order',
+        orderedOwned,
+        (list) =>
+            list.length == timestamps.length &&
+            list.map((item) => item.id).join(',') == restoredOrder.join(','),
+      );
+      expect(restored.every((item) => !item.isPinned), isTrue);
     },
   );
 }

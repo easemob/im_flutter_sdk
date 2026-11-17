@@ -118,10 +118,60 @@ final class CiRestFixture {
     required String owner,
     required String name,
     required String description,
+    List<String> members = const [],
   }) =>
       _resources
-          .createChatRoom(owner: owner, name: name, description: description)
+          .createChatRoom(
+            owner: owner,
+            name: name,
+            description: description,
+            members: members,
+          )
           .timeout(const Duration(seconds: 15));
+
+  /// Creates a group through REST so cases can prepare a group owned by an
+  /// account that is not logged in on this device.
+  Future<String> createGroup({
+    required String owner,
+    required String name,
+    String description = '',
+    List<String> members = const [],
+    bool isPublic = false,
+    bool inviteNeedConfirm = false,
+  }) =>
+      _resources
+          .createGroup(
+            owner: owner,
+            name: name,
+            description: description,
+            members: members,
+            isPublic: isPublic,
+            inviteNeedConfirm: inviteNeedConfirm,
+          )
+          .timeout(const Duration(seconds: 15));
+
+  /// Sends a one-to-one text message as [from], which may be an offline peer.
+  Future<String> sendTextMessage({
+    required String from,
+    required String to,
+    required String text,
+  }) async {
+    final response = await _request(
+      'POST',
+      'messages/users',
+      body: {
+        'from': from,
+        'to': [to],
+        'type': 'txt',
+        'body': {'msg': text},
+      },
+    );
+    final data = response['data'];
+    if (data is! Map || data[to] is! String) {
+      throw const FormatException('REST message response missing msgId');
+    }
+    return data[to] as String;
+  }
 
   Future<void> deleteChatRoom(String roomId) =>
       _resources.deleteChatRoom(roomId).timeout(const Duration(seconds: 15));

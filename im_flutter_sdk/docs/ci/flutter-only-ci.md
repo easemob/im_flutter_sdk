@@ -10,10 +10,11 @@ and manual example usage have separate entry points; see the
 2. `Flutter Device Smoke` runs 17 cases: SDK initialization, five existing
    Presence errors, and 11 negative client/contact/group/message cases on
    Android Emulator and iOS Simulator. It needs no account or secret.
-3. `Flutter Single Account Nightly` runs the four stable logged-in categories:
-   base, group, contact, and user info. One account logs into the device; prepared
-   offline peers and REST fixtures do not require a second running client.
-   Android and iOS are serialized.
+3. `Flutter Single Account Nightly` runs the five batches wired in
+   `tool/ci/nightly_local.sh`: base, group, contact, user info, and the
+   special-configuration `conversation_config` batch. One account logs into the
+   device; prepared offline peers and REST fixtures do not require a second
+   running client. Android and iOS are serialized.
 
 The five stable entries under `example/integration_test/` classify tests by login
 precondition and explicit synchronization settings. Cases remain in business
@@ -24,8 +25,8 @@ shared helpers. IDs, assertions, and implementation files are listed in
 | Entry | Explicit `dataSyncType` | `enableUserInfo` | Existing cases |
 |---|---|---|---|
 | `logged_out_test.dart` | `conversations` | `false` | 17: APP-001; PRESENCE-001–005; AUTH-004/005; CONTACT-005–009; GROUP-003–005; MSG-006 |
-| `logged_in_base_test.dart` | `conversations` | `false` | 26: AUTH-001/002/003/006/007; CONV-001–010, CONV-014, and CONV-013 with chatroom conversations disabled; MSG-001–005 and MSG-007–010 |
-| `logged_in_group_test.dart` | `conversations \| joinedGroups` | `false` | 19: GROUP-001/002/006/007/008–022 |
+| `logged_in_base_test.dart` | `conversations` | `false` | 41: AUTH-001/002/003/006/007; CONV-001–010, CONV-013 with chatroom conversations disabled, CONV-014/016/017/018; MSG-001–005 and MSG-007–015; PRESENCE-006/007; ROOM-001–005 |
+| `logged_in_group_test.dart` | `conversations \| joinedGroups` | `false` | 25: GROUP-001/002/006/007/008–028 |
 | `logged_in_contact_test.dart` | `conversations \| contacts` | `false` | 6: CONTACT-001–004/010/011 |
 | `logged_in_user_info_test.dart` | `conversations` | `true` | 2: USERINFO-001/002 |
 
@@ -35,15 +36,15 @@ contact synchronization are independent from conversation synchronization;
 `autoLoadConversations` and `enableChatroomConversation` are separate options.
 “Base” is the selected explicit CI configuration, not a test of omitted SDK defaults.
 
-**Special-configuration migration pending confirmation:** FL-CONV-011/012 require
-`autoLoadConversations=false`; FL-CONV-013 also has an execution with
-`enableChatroomConversation=true`. Preserve these three execution items and their
-assertions until their destination is agreed. They are not included in the normal
-entry counts above. The registered inventory contains 72 distinct IDs and
-73 execution items; this is an inventory, not an execution result. Two additional
-Presence cases (FL-PRESENCE-006/007) are implemented but await confirmation of
-base-entry wiring and are excluded from these registered counts. See the
-[batch-one coverage and validation record](../../../docs/testing/2026-11-10-ci-api-batch1.md).
+**Special-configuration batch:** the fifth nightly batch
+(`conversation_config_test.dart`) keeps `autoLoadConversations=false` for
+FL-CONV-011/012, runs FL-CONV-013 with `enableChatroomConversation=true`, and
+covers pinned-first database ordering with FL-CONV-015. FL-CONV-013 also runs in
+base with chatroom conversations disabled, so the registered inventory contains
+94 distinct IDs and 95 execution items; this is an inventory, not an execution
+result. FL-PRESENCE-006/007 are wired into base and execute with it. See the
+[batch-one record](../../../docs/testing/2026-11-10-ci-api-batch1.md) and
+[batch-two record](../../../docs/testing/2026-11-16-ci-api-batch2.md).
 
 Login classification describes the scenario's precondition, not a requirement to
 remain logged in or out throughout a test. Logout/relogin belongs to base; invalid

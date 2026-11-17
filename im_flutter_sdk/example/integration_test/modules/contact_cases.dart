@@ -181,6 +181,9 @@ void registerContactCases({
       await client.contactManager
           .deleteContact(peerId, keepConversation: keep)
           .timeout(const Duration(seconds: 30));
+      // The local roster update is not part of the deleteContact contract:
+      // keepConversation=true can retain the local entry beyond the call, and
+      // roster refresh timing is a sync concern covered elsewhere.
       debugPrint('CI $id verify passed');
     });
   }

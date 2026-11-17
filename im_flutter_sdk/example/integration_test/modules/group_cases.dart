@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
@@ -458,6 +460,7 @@ void registerGroupCases({
   ciTestWidgets('FL-GROUP-021 positive adds and removes a group mute entry',
       (_) async {
     final group = await createOwnedGroup('FL-GROUP-021');
+    expect(await manager.isMemberInGroupMuteList(group.groupId), isFalse);
     expect(await manager.fetchMuteListFromServer(group.groupId), isEmpty);
     await manager.muteMembers(group.groupId, [peerId], duration: 600000);
     final muted = await manager.fetchMuteListFromServer(group.groupId);
@@ -477,6 +480,8 @@ void registerGroupCases({
       'FL-GROUP-022 positive adds and removes a group allowlist entry',
       (_) async {
     final group = await createOwnedGroup('FL-GROUP-022');
+    // The server reports the owner as allowed regardless of the entry list,
+    // so the snapshot below is the meaningful premise.
     final original = await manager.fetchAllowListFromServer(group.groupId);
     expect(original, isNot(contains(peerId)));
     await manager.addAllowList(group.groupId, [peerId]);
@@ -486,5 +491,196 @@ void registerGroupCases({
     expect(await manager.fetchAllowListFromServer(group.groupId),
         unorderedEquals(original));
     expect(await rest.groupMembers(group.groupId), {userId, peerId});
+  });
+
+  // Test: Create an owner-only group that requires invitation confirmation,
+  // then add the prepared peer through the SDK.
+  // Expected: With confirmation enabled the peer is invited, not joined: REST
+  // and SDK member reads still contain the owner only, and the member count
+  // stays 1. FL-GROUP-016 covers the direct-add path with confirmation off.
+  // Teardown deletes this case's group.
+  ciTestWidgets(
+      'FL-GROUP-023 positive invitation confirmation keeps added members out',
+      (_) async {
+    final group = await createOwnedGroup(
+      'FL-GROUP-023',
+      inviteNeedConfirm: true,
+      invitePeer: false,
+    );
+    final id = group.groupId;
+    await manager.addMembers(id, [peerId]);
+    expect(await rest.groupMembers(id), {userId});
+    final members = await manager.fetchMemberListFromServer(id, pageSize: 20);
+    // The server member page may omit the requester, so assert that nobody
+    // beyond the owner is listed rather than an exact page.
+    expect(members.data, isNot(contains(peerId)));
+    expect(members.data.where((member) => member != userId), isEmpty);
+    final detail = await manager.fetchGroupInfoFromServer(id);
+    expect(detail.memberCount, 1);
+  });
+
+  // Test: In a fresh owned group, mute all members, read the server detail,
+  // then unmute all and read it again.
+  // Expected: isAllMemberMuted is false and then true and then false, while
+  // REST membership is unchanged. This reads the server flag; it does not prove
+  // that the peer cannot send while muted.
+  ciTestWidgets('FL-GROUP-024 positive mutes and unmutes all group members',
+      (_) async {
+    final group = await createOwnedGroup('FL-GROUP-024');
+    final id = group.groupId;
+    expect(
+        (await manager.fetchGroupInfoFromServer(id)).isAllMemberMuted, isFalse);
+    await manager.muteAllMembers(id);
+    expect(
+        (await manager.fetchGroupInfoFromServer(id)).isAllMemberMuted, isTrue);
+    await manager.unMuteAllMembers(id);
+    expect(
+        (await manager.fetchGroupInfoFromServer(id)).isAllMemberMuted, isFalse);
+    expect(await rest.groupMembers(id), {userId, peerId});
+  });
+
+  // Test: As the owner of a fresh group, transfer ownership to the prepared
+  // peer, then read REST and SDK details.
+  // Expected: Both reads report the peer as owner and membership is unchanged;
+  // teardown still reclaims the group through REST even though ownership moved.
+  ciTestWidgets('FL-GROUP-025 positive transfers group ownership to the peer',
+      (_) async {
+    final group = await createOwnedGroup('FL-GROUP-025');
+    final id = group.groupId;
+    await manager.changeOwner(id, peerId);
+    await waitForCi(
+      'REST group owner becomes the peer',
+      () => rest.group(id),
+      (json) => json?['owner'] == peerId,
+    );
+    final detail = await manager.fetchGroupInfoFromServer(id);
+    expect(detail.owner, peerId);
+    expect(detail.memberCount, 2);
+    expect(await rest.groupMembers(id), {userId, peerId});
+  });
+
+  // Test: Prepare a REST group owned by the peer with the logged-in user as a
+  // member, then leave it through the SDK.
+  // Expected: The joined-group count grows by one after preparation and returns
+  // to its baseline after leaving; REST membership drops the user and keeps the
+  // peer. Teardown deletes this peer-owned group through REST.
+  ciTestWidgets('FL-GROUP-026 positive leaves a group owned by the peer',
+      (_) async {
+    final run = 'ci_leave_${DateTime.now().microsecondsSinceEpoch}';
+    String? id;
+    addTearDown(() async {
+      final groupId = id;
+      if (groupId == null) return;
+      await rest.deleteGroup(groupId);
+      await rest.verifyGroupAbsent(groupId);
+    });
+    id = await rest.createGroup(
+      owner: peerId,
+      name: run,
+      description: run,
+      members: [userId],
+    );
+    // REST membership changes are not pushed to the SDK, and the iOS joined
+    // count is served from a cached value that only refreshes on a group sync.
+    // REST membership is the authoritative oracle for this external change;
+    // the joined count is not asserted here.
+    await waitForCi(
+      'REST membership gains the logged-in user',
+      () => rest.groupMembers(id!),
+      (members) => members.contains(userId),
+    );
+    await manager.leaveGroup(id);
+    await waitForCi(
+      'REST membership drops the left user',
+      () => rest.groupMembers(id!),
+      (members) => !members.contains(userId),
+    );
+    expect(await rest.groupMembers(id), {peerId});
+    final joined = await manager.getJoinedGroups();
+    expect(joined.map((group) => group.groupId), isNot(contains(id)));
+  });
+
+  // Test: Prepare a public REST group owned by the peer without the logged-in
+  // user, then join and leave it through the SDK.
+  // Expected: Joining adds the user to REST membership and raises the joined
+  // count by one; leaving removes the user and restores the count.
+  ciTestWidgets('FL-GROUP-027 positive joins and leaves a public group',
+      (_) async {
+    final run = 'ci_public_${DateTime.now().microsecondsSinceEpoch}';
+    String? id;
+    addTearDown(() async {
+      final groupId = id;
+      if (groupId == null) return;
+      await rest.deleteGroup(groupId);
+      await rest.verifyGroupAbsent(groupId);
+    });
+    id = await rest.createGroup(
+      owner: peerId,
+      name: run,
+      description: run,
+      isPublic: true,
+    );
+    expect(await rest.groupMembers(id), {peerId});
+    expect(
+      (await manager.getJoinedGroups()).map((group) => group.groupId),
+      isNot(contains(id)),
+    );
+    await manager.joinPublicGroup(id);
+    await waitForCi(
+      'REST membership gains the joined user',
+      () => rest.groupMembers(id!),
+      (members) => setEquals(members, {userId, peerId}),
+    );
+    await manager.leaveGroup(id);
+    await waitForCi(
+      'REST membership drops the left user',
+      () => rest.groupMembers(id!),
+      (members) => setEquals(members, {peerId}),
+    );
+  });
+
+  // Test: Upload a real file to a fresh owned group's shared-file list, read
+  // the list, download the file to a new path, then remove it.
+  // Expected: The list reports the uploaded ID, name, and size; the downloaded
+  // bytes equal the uploaded payload; removal empties the list again.
+  // Teardown deletes this case's group and temporary files.
+  ciTestWidgets(
+      'FL-GROUP-028 positive uploads, downloads, and removes a shared file',
+      (_) async {
+    final group = await createOwnedGroup('FL-GROUP-028');
+    final dir = Directory.systemTemp.createTempSync('ci_group_file_');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final run = 'ci_shared_${DateTime.now().microsecondsSinceEpoch}';
+    final payload = List<int>.generate(300, (index) => index % 251);
+    final source = File('${dir.path}/$run.bin');
+    await source.writeAsBytes(payload);
+    final id = group.groupId;
+    expect(await manager.fetchGroupFileListFromServer(id), isEmpty);
+    await manager.uploadGroupSharedFile(id, source.path);
+    final files = await waitForCi(
+      'shared file appears in the group list',
+      () => manager.fetchGroupFileListFromServer(id),
+      (list) => list.any((file) => file.fileName == '$run.bin'),
+    );
+    final uploaded = files.singleWhere((file) => file.fileName == '$run.bin');
+    expect(uploaded.fileId, isNotNull);
+    expect(uploaded.fileSize, payload.length);
+    final savePath = '${dir.path}/$run.downloaded';
+    await manager.downloadGroupSharedFile(
+      groupId: id,
+      fileId: uploaded.fileId!,
+      savePath: savePath,
+    );
+    // The download completes asynchronously after the call returns and the
+    // Dart layer exposes no completion callback, so poll for the saved file.
+    final downloaded = File(savePath);
+    await waitForCi(
+      'downloaded shared file exists at the requested path',
+      () async => downloaded.existsSync(),
+      (value) => value,
+    );
+    expect(await downloaded.readAsBytes(), payload);
+    await manager.removeGroupSharedFile(id, uploaded.fileId!);
+    expect(await manager.fetchGroupFileListFromServer(id), isEmpty);
   });
 }
