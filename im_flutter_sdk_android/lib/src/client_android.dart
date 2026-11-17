@@ -17,8 +17,8 @@ class ClientAndroid extends Client {
   final UserInfoManager _userInfoManager = UserInfoManagerAndroid();
   final ConversationManager _conversationManager = ConversationManagerAndroid();
   final MessageManager _messageManager = MessageManagerAndroid();
-  // ignore: unused_field
-  ProgressManager? _progressManager;
+  // 5.1.0
+  final ProgressManager _progressManager = ProgressManager();
 
   @override
   ChatManager get chatManager => _chatManager;
@@ -49,6 +49,9 @@ class ClientAndroid extends Client {
 
   @override
   MessageManager get messageManager => _messageManager;
+
+  @override
+  ProgressManager get progressManager => _progressManager;
 
   @override
   Future<dynamic> callNativeMethod(String method, [dynamic params]) async {

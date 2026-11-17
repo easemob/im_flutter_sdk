@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -666,19 +667,35 @@ void registerGroupCases({
     expect(uploaded.fileId, isNotNull);
     expect(uploaded.fileSize, payload.length);
     final savePath = '${dir.path}/$run.downloaded';
+    // The method future completes when the download starts; the terminal
+    // state arrives through ChatGroupManager.downloadCallback.
+    final downloadDone = Completer<String>();
+    manager.downloadCallback = ChatDownloadCallback(
+      onSuccess: (fileId, path) {
+        if (fileId == uploaded.fileId && !downloadDone.isCompleted) {
+          downloadDone.complete(path);
+        }
+      },
+      onError: (fileId, error) {
+        if (fileId == uploaded.fileId && !downloadDone.isCompleted) {
+          downloadDone.completeError(error);
+        }
+      },
+    );
+    addTearDown(() => manager.downloadCallback = null);
     await manager.downloadGroupSharedFile(
       groupId: id,
       fileId: uploaded.fileId!,
       savePath: savePath,
     );
-    // The download completes asynchronously after the call returns and the
-    // Dart layer exposes no completion callback, so poll for the saved file.
-    final downloaded = File(savePath);
-    await waitForCi(
-      'downloaded shared file exists at the requested path',
-      () async => downloaded.existsSync(),
-      (value) => value,
+    final reportedPath = await downloadDone.future.timeout(
+      const Duration(seconds: 60),
+      onTimeout: () => throw TimeoutException(
+        'No group shared file download callback for ${uploaded.fileId}',
+      ),
     );
+    expect(reportedPath, savePath);
+    final downloaded = File(savePath);
     expect(await downloaded.readAsBytes(), payload);
     await manager.removeGroupSharedFile(id, uploaded.fileId!);
     expect(await manager.fetchGroupFileListFromServer(id), isEmpty);

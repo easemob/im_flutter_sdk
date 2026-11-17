@@ -1,5 +1,6 @@
 ## 5.1.0
 - Synchronized the federated package version to 5.1.0; the existing MethodChannel interface is unchanged.
+- Wired the `file_progress_manager` MethodChannel through `ProgressManager` and exposed it as `Client.progressManager`, so native group shared file download events reach the upper layer.
 
 ## 5.0.0
 - Bumped the federated plugin version in sync with Flutter SDK 5.0.0;

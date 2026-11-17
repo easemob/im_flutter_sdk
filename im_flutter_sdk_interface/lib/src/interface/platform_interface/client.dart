@@ -1,6 +1,7 @@
 import 'package:im_flutter_sdk_interface/src/event_handler/channel_manager.dart';
 import 'package:im_flutter_sdk_interface/src/interface/manager_mixin.dart';
 import 'package:im_flutter_sdk_interface/src/interface/method_channel/default_channels.dart';
+import 'package:im_flutter_sdk_interface/src/interface/platform_interface/progress_manager.dart';
 
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -25,6 +26,8 @@ abstract class Client extends PlatformInterface with ManagerMixin {
   ChatThreadManager get chatThreadManager => ChatThreadManager();
   ConversationManager get conversationManager => ConversationManager();
   MessageManager get messageManager => MessageManager();
+  // 5.1.0
+  ProgressManager get progressManager => ProgressManager();
 
   @override
   void updateNativeHandler(handler) {

@@ -25,6 +25,55 @@ class ChatGroupManager {
         return _onGroupChanged(argMap);
       }
     });
+    // 5.1.0: the native sides report group shared file download events on
+    // the file progress channel; forward them to [downloadCallback].
+    platform_interface.Client.instance.progressManager.updateNativeHandler((
+      MethodCall call,
+    ) async {
+      ChatLog.d("${call.method}: arguments: ${call.arguments}");
+      return _onDownloadEvent(call);
+    });
+  }
+
+  /// ~english
+  /// The group shared file download callback.
+  ///
+  /// Set it before calling [ChatGroupManager.downloadGroupSharedFile] to
+  /// receive the download progress, success, and error events. The
+  /// [ChatGroupManager.downloadGroupSharedFile] future completes when the
+  /// download starts; the terminal state is reported through this callback.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 群共享文件下载回调。
+  ///
+  /// 在调用 [ChatGroupManager.downloadGroupSharedFile] 前设置，用于接收下载
+  /// 进度、成功和失败事件。[ChatGroupManager.downloadGroupSharedFile] 返回的
+  /// Future 在下载开始时完成，下载的最终结果通过该回调通知。
+  /// ~end
+  ChatDownloadCallback? downloadCallback;
+
+  void _onDownloadEvent(MethodCall call) {
+    final callback = downloadCallback;
+    if (callback == null) {
+      return;
+    }
+    final Map? arg = call.arguments;
+    if (arg == null) {
+      return;
+    }
+    final String fileId = arg['fileId'];
+    switch (call.method) {
+      case ChatDownloadEvent.ON_SUCCESS:
+        callback.onSuccess?.call(fileId, arg['savePath']);
+        break;
+      case ChatDownloadEvent.ON_PROGRESS:
+        callback.onProgress?.call(fileId, arg['progress']);
+        break;
+      case ChatDownloadEvent.ON_ERROR:
+        callback.onError?.call(fileId, ChatError.fromJson(arg['error']));
+        break;
+    }
   }
 
   Future<void> _onGroupChanged(Map? map) async {
@@ -1452,6 +1501,10 @@ class ChatGroupManager {
   /// ~english
   /// Downloads group shared files.
   ///
+  /// The returned future completes when the download starts. Set
+  /// [ChatGroupManager.downloadCallback] to receive the progress and the
+  /// terminal success or error event.
+  ///
   /// Param [groupId]   The group ID.
   /// Param [fileId]    The shared file ID.
   /// Param [savePath]  The local save path of the file.
@@ -1463,6 +1516,9 @@ class ChatGroupManager {
   ///
   /// ~chinese
   /// 下载群共享文件。
+  ///
+  /// 返回的 Future 在下载开始时完成。设置
+  /// [ChatGroupManager.downloadCallback] 可接收下载进度及最终的成功或失败事件。
   ///
   /// Param [groupId]   群组 ID。
   /// Param [fileId]    共享文件 ID。

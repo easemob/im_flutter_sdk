@@ -13,6 +13,7 @@
 - Added `ChatOptions.autoLoadConversations` (default `true`) and `enableChatroomConversation` (default `false`).
 - Android group configs now return the native `inviteNeedConfirm` value; multi-device `GROUP_UPDATE` (34) is supported on both platforms.
 - Added the `isSort` parameter to `ChatManager.loadAllConversations`, defaulting to `true`; pass `false` to get the unsorted local conversation list.
+- Added `ChatGroupManager.downloadCallback` (`ChatDownloadCallback`) reporting group shared file download progress and terminal success/error events; `downloadGroupSharedFile`'s future completes when the download starts, and its final state is delivered through this callback.
 
 ### Native SDK Improvements and Fixes
 

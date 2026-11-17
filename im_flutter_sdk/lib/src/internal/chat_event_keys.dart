@@ -74,3 +74,10 @@ class ChatUserInfoChangeEvent {
   static const String ON_SELF_USER_INFO_UPDATE = 'onSelfUserInfoUpdate';
   static const String ON_USER_INFO_UPDATE = 'onUserInfoUpdate';
 }
+
+// 5.1.0
+class ChatDownloadEvent {
+  static const String ON_SUCCESS = 'onSuccess';
+  static const String ON_PROGRESS = 'onProgress';
+  static const String ON_ERROR = 'onError';
+}

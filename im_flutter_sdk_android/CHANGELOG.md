@@ -4,6 +4,7 @@
 - Added local conversation pagination and initialization mappings for `autoLoadConversations` and `enableChatroomConversation`.
 - Group configs read `inviteNeedConfirm` from the native getter instead of returning a fixed `false`.
 - `loadAllConversations` selects the sorted or unsorted native API based on `isSort`, defaulting to sorting.
+- Instantiated `ProgressManager` in `ClientAndroid` so native group shared file download events on the `file_progress_manager` channel reach Dart.
 
 ## 5.0.0
 - Upgraded the Android native SDK dependency to 5.0.0;
