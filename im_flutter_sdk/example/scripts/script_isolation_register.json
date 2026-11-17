@@ -1,0 +1,25 @@
+{
+  "init": {
+    "appKey": "easemob-demo#testngi02",
+    "enableDNSConfig": false,
+    "enableTLS": true,
+    "restServer": "https://isolation-asteriskzuo.easemob.net",
+    "webSocketServer": "isolation-asteriskzuo.easemob.net",
+    "webSocketPort": 8443
+  },
+  "login": {
+    "userId": "isotest01",
+    "password": "123456"
+  },
+  "steps": [
+    {
+      "api": "ChatClient.createAccount",
+      "id": "register1",
+      "params": {
+        "userId": "isotest01",
+        "password": "123456"
+      },
+      "delayAfterMs": 500
+    }
+  ]
+}
