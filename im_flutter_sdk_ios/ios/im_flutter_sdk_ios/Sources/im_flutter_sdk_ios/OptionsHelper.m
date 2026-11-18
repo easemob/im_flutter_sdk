@@ -64,7 +64,12 @@
 
     options.platform = EMSDKPlatformFlutter;
 
-    options.enableConsoleLog = YES;// [aJson[@"debugModel"] boolValue];
+    // Core stdout (cout) logging is permanently disabled here: it only reaches
+    // the Xcode console and duplicates the OSLogForwarder output there. Console
+    // observability is provided by OSLogForwarder (unified log), gated by the
+    // Dart-side `enableConsoleLog` option. The log file is written by core
+    // regardless of this switch.
+    options.enableConsoleLog = NO;
     options.enableDeliveryAck = [aJson[@"requireDeliveryAck"] boolValue];
     options.sortMessageByServerTime = [aJson[@"sortMessageByServerTime"] boolValue];
     options.autoAcceptFriendInvitation = [aJson[@"acceptInvitationAlways"] boolValue];

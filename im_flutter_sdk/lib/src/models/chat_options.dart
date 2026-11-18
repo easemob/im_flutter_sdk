@@ -56,6 +56,24 @@ class ChatOptions {
   final bool debugMode;
 
   /// ~english
+  /// Whether to output SDK logs to the platform console facility (unified log on iOS, logcat on Android).
+  ///
+  /// - (Default) `true`: Yes;
+  /// - `false`: No.
+  ///
+  /// Note: on Android the native logcat bridge is always on, so this option has no effect there. The SDK log file is not affected by this option on either platform.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否将 SDK 日志输出到平台控制台设施（iOS 为 unified log，Android 为 logcat）。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// 注意：Android 平台 native logcat 桥常开，此配置在 Android 不生效。该配置不影响两个平台的 SDK 日志文件输出。
+  /// ~end
+  final bool enableConsoleLog;
+
+  /// ~english
   /// Whether to accept friend invitations from other users automatically.
   ///
   /// - (Default) `true`: Yes;
@@ -501,6 +519,8 @@ class ChatOptions {
   /// Param [appId] The app Id that you get from the console when creating an app.
   ///
   /// Param [debugMode] Whether to enable debug logging. Configure this option when creating [ChatOptions] and pass the options to [ChatClient.init].
+  ///
+  /// Param [enableConsoleLog] Whether to output SDK logs to the platform console (unified log on iOS). On Android the logcat bridge is always on and this option has no effect. The SDK log file is not affected.
   /// - `true`: Yes.
   /// - (Default) `false`: No.
   /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically.
@@ -597,6 +617,8 @@ class ChatOptions {
   /// Param [appKey] 创建 app 时在 console 后台上注册的 app 唯一识别符。
   ///
   /// Param [debugMode] 是否开启调试日志。创建 [ChatOptions] 时配置，并将该配置传给 [ChatClient.init]。
+  ///
+  /// Param [enableConsoleLog] 是否将 SDK 日志输出到平台控制台（iOS 为 unified log）。Android 的 logcat 桥常开，此配置不生效。不影响 SDK 日志文件输出。
   /// - `true`：SDK 会在 log 里输出调试信息；
   /// - （默认）`false`：不会输出调试信息。
   ///
@@ -689,6 +711,7 @@ class ChatOptions {
   ChatOptions.withAppId(
     String appId, {
     bool debugMode = false,
+    bool enableConsoleLog = true,
     bool acceptInvitationAlways = false,
     bool autoAcceptGroupInvitation = false,
     bool requireDeliveryAck = false,
@@ -727,6 +750,7 @@ class ChatOptions {
   }) : this._(
           appId: appId,
           debugMode: debugMode,
+          enableConsoleLog: enableConsoleLog,
           acceptInvitationAlways: acceptInvitationAlways,
           autoAcceptGroupInvitation: autoAcceptGroupInvitation,
           requireDeliveryAck: requireDeliveryAck,
@@ -771,6 +795,8 @@ class ChatOptions {
   /// Param [appKey] The app key that you get from the console when creating an app.
   ///
   /// Param [debugMode] Whether to enable debug logging. Configure this option when creating [ChatOptions] and pass the options to [ChatClient.init].
+  ///
+  /// Param [enableConsoleLog] Whether to output SDK logs to the platform console (unified log on iOS). On Android the logcat bridge is always on and this option has no effect. The SDK log file is not affected.
   /// - `true`: Yes.
   /// - (Default) `false`: No.
   /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically.
@@ -867,6 +893,8 @@ class ChatOptions {
   /// Param [appKey] 创建 app 时在 console 后台上注册的 app 唯一识别符。
   ///
   /// Param [debugMode] 是否开启调试日志。创建 [ChatOptions] 时配置，并将该配置传给 [ChatClient.init]。
+  ///
+  /// Param [enableConsoleLog] 是否将 SDK 日志输出到平台控制台（iOS 为 unified log）。Android 的 logcat 桥常开，此配置不生效。不影响 SDK 日志文件输出。
   /// - `true`：SDK 会在 log 里输出调试信息；
   /// - （默认）`false`：不会输出调试信息。
   ///
@@ -959,6 +987,7 @@ class ChatOptions {
   ChatOptions.withAppKey(
     String appKey, {
     bool debugMode = false,
+    bool enableConsoleLog = true,
     bool acceptInvitationAlways = false,
     bool autoAcceptGroupInvitation = false,
     bool requireDeliveryAck = false,
@@ -997,6 +1026,7 @@ class ChatOptions {
   }) : this._(
           appKey: appKey,
           debugMode: debugMode,
+          enableConsoleLog: enableConsoleLog,
           acceptInvitationAlways: acceptInvitationAlways,
           autoAcceptGroupInvitation: autoAcceptGroupInvitation,
           requireDeliveryAck: requireDeliveryAck,
@@ -1043,6 +1073,8 @@ class ChatOptions {
   /// Param [appKey] The app key that you get from the console when creating an app.
   ///
   /// Param [debugMode] Whether to enable debug logging. Configure this option when creating [ChatOptions] and pass the options to [ChatClient.init].
+  ///
+  /// Param [enableConsoleLog] Whether to output SDK logs to the platform console (unified log on iOS). On Android the logcat bridge is always on and this option has no effect. The SDK log file is not affected.
   /// - `true`: Yes.
   /// - (Default) `false`: No.
   /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically.
@@ -1138,6 +1170,8 @@ class ChatOptions {
   /// Param [appKey] 创建 app 时在 console 后台上注册的 app 唯一识别符。
   ///
   /// Param [debugMode] 是否开启调试日志。创建 [ChatOptions] 时配置，并将该配置传给 [ChatClient.init]。
+  ///
+  /// Param [enableConsoleLog] 是否将 SDK 日志输出到平台控制台（iOS 为 unified log）。Android 的 logcat 桥常开，此配置不生效。不影响 SDK 日志文件输出。
   /// - `true`：SDK 会在 log 里输出调试信息；
   /// - （默认）`false`：不会输出调试信息。
   ///
@@ -1230,6 +1264,7 @@ class ChatOptions {
   ChatOptions({
     required String appKey,
     bool debugMode = false,
+    bool enableConsoleLog = true,
     bool acceptInvitationAlways = false,
     bool autoAcceptGroupInvitation = false,
     bool requireDeliveryAck = false,
@@ -1267,6 +1302,7 @@ class ChatOptions {
   }) : this._(
           appKey: appKey,
           debugMode: debugMode,
+          enableConsoleLog: enableConsoleLog,
           acceptInvitationAlways: acceptInvitationAlways,
           autoAcceptGroupInvitation: autoAcceptGroupInvitation,
           requireDeliveryAck: requireDeliveryAck,
@@ -1308,6 +1344,7 @@ class ChatOptions {
     this.appId,
     this.appKey,
     this.debugMode = false,
+    this.enableConsoleLog = true,
     this.acceptInvitationAlways = false,
     this.autoAcceptGroupInvitation = false,
     this.requireDeliveryAck = false,
@@ -1350,6 +1387,7 @@ class ChatOptions {
     data.putIfNotNull("appKey", appKey);
     data.putIfNotNull("appId", appId);
     data.putIfNotNull("debugModel", debugMode);
+    data.putIfNotNull("enableConsoleLog", enableConsoleLog);
     data.putIfNotNull("acceptInvitationAlways", acceptInvitationAlways);
     data.putIfNotNull("autoAcceptGroupInvitation", autoAcceptGroupInvitation);
     data.putIfNotNull("deleteMessagesAsExitGroup", deleteMessagesAsExitGroup);
@@ -1463,6 +1501,7 @@ class ChatOptions {
       appKey: appKey,
       appId: appId,
       debugMode: debugMode,
+      enableConsoleLog: enableConsoleLog,
       acceptInvitationAlways:
           acceptInvitationAlways ?? this.acceptInvitationAlways,
       autoAcceptGroupInvitation:

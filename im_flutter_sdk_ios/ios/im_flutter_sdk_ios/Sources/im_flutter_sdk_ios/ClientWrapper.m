@@ -23,6 +23,7 @@
 #import "ProgressManager.h"
 #import "ListenerHandle.h"
 #import "EnumTools.h"
+#import "OSLogForwarder.h"
 
 static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 
@@ -263,6 +264,12 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     
     _options = [EMOptions fromJson:param];
     [self analyzeExtSettings:param];
+
+    // The Dart-side `enableConsoleLog` option (default YES) gates the unified
+    // log forwarding. Absent key keeps the default.
+    if (param[@"enableConsoleLog"] != nil) {
+        [OSLogForwarder setEnabled:[param[@"enableConsoleLog"] boolValue]];
+    }
 
     EMError *aError = [EMClient.sharedClient initializeSDKWithOptions:_options];
     if (aError) {

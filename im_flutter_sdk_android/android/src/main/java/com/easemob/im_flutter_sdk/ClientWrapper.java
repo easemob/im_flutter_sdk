@@ -293,6 +293,11 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
         options = OptionsHelper.fromJson(param, this.context);
         EMClient.getInstance().init(this.context, options);
         EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
+        // The Dart-side `enableConsoleLog` option is intentionally not honored on
+        // Android: the native logcat bridge (EMNDKLogCallback) is registered in the
+        // JNI layer at client creation and cannot be gated from Java. It is always
+        // on, matching the documented platform behavior. The SDK log file is
+        // unaffected either way.
 
         bindingManagers();
         registerEaseListener();

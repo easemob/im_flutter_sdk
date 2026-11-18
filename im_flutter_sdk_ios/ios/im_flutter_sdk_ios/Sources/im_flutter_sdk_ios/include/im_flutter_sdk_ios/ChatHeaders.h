@@ -170,6 +170,7 @@
 
 #define EMClientDelegate AgoraChatClientDelegate
 #define EMMultiDevicesDelegate AgoraChatMultiDevicesDelegate
+#define EMLogDelegate AgoraChatLogDelegate
 
 #define EMConnectionState AgoraChatConnectionState
 #define EMConnectionConnected AgoraChatConnectionConnected
