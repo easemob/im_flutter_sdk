@@ -255,6 +255,12 @@ void registerGroupCases({
   // Expected: The initial read matches the supplied namecard; after removal
   // the getter returns null, not the previous value or an empty string.
   // Teardown deletes this case's group, including when the assertion fails.
+  // Note: the poll-and-diagnose structure exists because of the native bug
+  // HIM-24170: the group member namecard update time is truncated between
+  // second and millisecond units on the native side, so a stale cached
+  // namecard can win over the removal update and the getter keeps returning
+  // the old value. A native fix branch based on 5.1.0 is in progress;
+  // re-verify this case once the fixed native SDK is integrated.
   ciTestWidgets('FL-GROUP-014 positive sets, reads, and removes own namecard',
       (_) async {
     final group = await createOwnedGroup('FL-GROUP-014', invitePeer: false);

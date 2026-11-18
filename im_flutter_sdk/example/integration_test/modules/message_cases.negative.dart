@@ -44,8 +44,11 @@ void registerLoggedOutMessageNegativeCases({required ChatClient client}) {
   // Test: Send text to a nonempty recipient while logged out, with the message
   // listener registered before sending and correlated by the local message ID.
   // Expected: onError reports ChatError 201 and preserves the recipient.
-  // The retained FAIL status assertion is pending contract confirmation;
-  // SDK 5.0.0 was observed to return PROGRESS on both Android and iOS.
+  // Note: the FAIL status assertion is the target contract. SDK 5.0.0 was
+  // observed to keep PROGRESS on both Android and iOS; this is the native bug
+  // HIM-24173, for which fix branches based on native 5.1.0 are in progress
+  // (linux/android; iOS already handles the equivalent path). Re-verify this
+  // case once the fixed native SDK is integrated.
   ciTestWidgets(
       'FL-MSG-006 negative send reports not logged in through callback',
       (_) async {
@@ -96,8 +99,11 @@ void registerMessageNegativeCases({
   // Test: Send text to an empty recipient while logged in, with a listener
   // registered before sending and correlated by the local message ID.
   // Expected: onError reports ChatError 500 and preserves the empty recipient.
-  // The retained FAIL status assertion is pending contract confirmation;
-  // SDK 5.0.0 was observed to return PROGRESS on both Android and iOS.
+  // Note: the FAIL status assertion is the target contract. SDK 5.0.0 was
+  // observed to keep PROGRESS on both Android and iOS; this is the native bug
+  // HIM-24173, for which fix branches based on native 5.1.0 are in progress
+  // (linux/android; iOS already handles the equivalent path). Re-verify this
+  // case once the fixed native SDK is integrated.
   ciTestWidgets(
       'FL-MSG-007 negative send rejects an empty recipient in callback',
       (_) async {
