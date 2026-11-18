@@ -151,7 +151,8 @@ def parse_attempt(directory, attempt):
             faults.append(f"准备/收尾：{check['name']}：{'; '.join(check['errors']) or check['status']}")
     return {**attempt, "cases": cases, "checks": checks, "counts": counts,
             "total": total, "faults": faults, "events": str(events_file),
-            "log": str(directory / f"attempt-{attempt['number']}.log")}
+            "log": str(directory / f"attempt-{attempt['number']}.log"),
+            "logcat": str(directory / f"attempt-{attempt['number']}.logcat.log.gz")}
 
 
 def load_run(directory):
@@ -226,7 +227,7 @@ def render(directories, output):
             lines.append(f"- **执行异常**：{cell(fault)}")
         for attempt in batch["attempts"]:
             lines += ["", f"### 尝试 {attempt['number']} {'（最终统计）' if attempt is batch['attempts'][-1] else '（历史，保留失败）'}", "",
-                      f"原始证据：{link(attempt['events'], output, 'Flutter JSON 事件')} · {link(attempt['log'], output, '设备日志')}", "",
+                      f"原始证据：{link(attempt['events'], output, 'Flutter JSON 事件')} · {link(attempt['log'], output, '设备日志')} · {link(attempt['logcat'], output, 'native 日志')}", "",
                       "| 用例 | 结果 | 耗时 ms | 原因 / 失败断言 |", "|---|---|---:|---|"]
             for case in attempt["cases"]:
                 lines.append("| " + " | ".join([cell(case["name"]), LABELS[case["status"]], cell(case.get("durationMs")),
@@ -238,6 +239,7 @@ def render(directories, output):
             for fault in attempt["faults"]:
                 lines.append(f"\n执行异常：{cell(fault)}")
     lines += ["", "本报告只覆盖显式纳入的批次；未选平台不计通过。准备/收尾不计业务用例。",
+              "native 日志仅 Android 批次采集（adb logcat 全量）；iOS 卸载即删容器且无等价通道，显示为未生成。",
               "用例内的 addTearDown 失败由 Flutter 归入该用例，具体断言见错误与原始日志。",
               f"结构化统计：{link(output / 'report.json', output)}", ""]
     (output / "summary.md").write_text("\n".join(lines))
