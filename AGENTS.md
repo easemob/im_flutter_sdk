@@ -57,8 +57,8 @@ make setup   # config + deps + pods
 |--------|---------|
 | `make config` | Creates `im_flutter_sdk/example/config.local.json` and placeholder `example/lib/env.dart` (both gitignored) |
 | `make env-gettoken` | Fetches a User Token for each account per `im_flutter_sdk/example/config.local.json` and generates `example/lib/env.dart` directly (the project configures only one environment; switching environments = editing this file) |
-| `make auto-report PLATFORM=<android\|ios> [DEVICE=<id>] [SCRIPT=<json>]` | Runs the 5.0.0 auto script (defaults to the positive path `script_500_apis_positive.json`; use `SCRIPT=` to specify the negative script), explicitly boots the emulator, and produces sanitized events, crash evidence, and issue candidates under the Git-ignored `reports/5.0.0/<run-id>/` |
-| `make auto-compare ANDROID=<run-dir> IOS=<run-dir>` | Compares two Android/iOS runs of the same path, writes `reports/5.0.0/comparison-<path>-<timestamp>.md`, and exits non-zero when steps diverge |
+| `make auto-report PLATFORM=<android\|ios> [DEVICE=<id>] [SCRIPT=<json>]` | Runs the 5.0.0 auto script (defaults to the positive path `script_500_apis_positive.json`; use `SCRIPT=` to specify the negative script), explicitly boots the emulator, and produces sanitized events, crash evidence, and issue candidates under the Git-ignored `artifacts/single/<timestamp>/<platform>/` |
+| `make auto-compare ANDROID=<run-dir> IOS=<run-dir>` | Compares two Android/iOS runs of the same path, writes `artifacts/single/comparison-<path>-<timestamp>.md`, and exits non-zero when steps diverge |
 | `make local-deps` | Creates local dependency overrides for the main package, Android, iOS, and example; preserves existing override files |
 | `make deps` | Creates local overrides, then runs `flutter pub get` in the example directory |
 | `make pods` | `pod install` (runs only when Podfile/podspec changed, detected via mtime) |

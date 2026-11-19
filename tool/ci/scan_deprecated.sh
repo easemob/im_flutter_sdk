@@ -5,7 +5,7 @@
 # clang report every deprecated API they still call. Each platform is cleaned and
 # compiled from scratch because an incremental build skips unchanged files and
 # re-emits none of their warnings; the full log is kept under
-# reports/<version>/deprecated/ and parsed by
+# artifacts/ci/<timestamp>/deprecated/ and parsed by
 # im_flutter_sdk/tool/ci/check_deprecated_api.dart.
 #
 # The scan only reports: findings do not fail the run. It fails when the build
@@ -17,10 +17,10 @@
 #   bash tool/ci/scan_deprecated.sh android    # Android wrapper only
 #   bash tool/ci/scan_deprecated.sh ios        # iOS wrapper only
 #
-# Output (gitignored; <version> is the current branch, e.g. 5.0.0):
-#   reports/<version>/deprecated/{android,ios}-raw.log
-#   reports/<version>/deprecated/{android,ios}-deprecated-api.json
-#   reports/<version>/deprecated/native-deprecated-api.md
+# Output (gitignored):
+#   artifacts/ci/<timestamp>/deprecated/{android,ios}-raw.log
+#   artifacts/ci/<timestamp>/deprecated/{android,ios}-deprecated-api.json
+#   artifacts/ci/<timestamp>/deprecated/native-deprecated-api.md
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -43,22 +43,24 @@ case "$PLATFORM" in
     ;;
 esac
 
-for command in dart flutter git; do
+for command in dart flutter; do
   command -v "$command" >/dev/null 2>&1 || {
     echo "error: $command not found in PATH" >&2
     exit 2
   }
 done
 
-# The reports are version-scoped local evidence, and the version is the current
-# branch (see AGENTS.md "Git 分支管理"): branch 5.0.0 writes reports/5.0.0/
-# deprecated/, next to the auto-mode reports.
-if ! VERSION_BRANCH="$(git -C "$REPO_ROOT" symbolic-ref --short -q HEAD)"; then
-  echo "error: HEAD is not on a branch, so the report directory is unknown." >&2
-  echo "       check out the version branch (e.g. 5.0.0) and re-run the scan." >&2
-  exit 2
-fi
-REPORT_DIR="$REPO_ROOT/reports/$VERSION_BRANCH/deprecated"
+# One timestamp directory per scan, matching the artifacts/ci/<timestamp>/
+# convention of the device runners; a numeric suffix disambiguates same-second
+# runs.
+stamp="$(date +%Y%m%d%H%M%S)"
+REPORT_ROOT="$REPO_ROOT/artifacts/ci/$stamp"
+suffix=2
+while [[ -e "$REPORT_ROOT" ]]; do
+  REPORT_ROOT="$REPO_ROOT/artifacts/ci/$stamp.$suffix"
+  suffix=$((suffix + 1))
+done
+REPORT_DIR="$REPORT_ROOT/deprecated"
 
 mkdir -p "$REPORT_DIR"
 

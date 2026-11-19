@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Quality diagnostics and SDK unit-test counts: artifacts/ci/<run-id>/summary.md.
+# Quality diagnostics and SDK unit-test counts:
+# artifacts/ci/<timestamp>/unit/<suite>/summary.md.
 # Preparation/static checks are reported separately from business test counts.
 set -euo pipefail
 

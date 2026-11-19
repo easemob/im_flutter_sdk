@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Report collection only; execution and retry policy belong to the caller.
 # Each run writes summary.md, report.json, run.json, runner.log and per-attempt
-# Flutter JSON events/logs under artifacts/ci/. All outputs are Git-ignored.
+# Flutter JSON events/logs under artifacts/ci/<timestamp>/<platform>/<suite>/.
+# All outputs are Git-ignored.
 # CI_TEST_NAME optionally selects one test (Flutter --name regex).
 
 ci_report_start() {

@@ -5,7 +5,7 @@ import 'dart:io';
 import '../../im_flutter_sdk/example/lib/auto/step_expectation.dart';
 
 const _packageName = 'com.example.example';
-const _reportsRelativePath = 'reports/5.0.0';
+const _reportsRelativePath = 'artifacts/single';
 const _stdoutPrefix = '[APITEST]';
 const _markerPrefix = '[APITEST';
 const _positiveScriptRelativePath =
@@ -43,7 +43,7 @@ Usage:
 The positive path is the default script ($_positiveScriptRelativePath);
 pass --script $_negativeScriptRelativePath
 for the negative path. A run captures only APITEST events and crash evidence and
-writes a local report under $_reportsRelativePath/<run-id>/.
+writes a local report under $_reportsRelativePath/<timestamp>/<platform>/.
 Each execution also writes upgrade-report.md (human statistics) and
 upgrade-report.json (structured statistics). Raw evidence: run.json,
 steps.json, events.jsonl, crash.log, issues.md, summary.md, plus the full
@@ -102,9 +102,19 @@ writes $_reportsRelativePath/comparison-<timestamp>.md.
   ];
 
   final startedAt = DateTime.now().toUtc();
-  final runId =
-      '${_timestamp(startedAt)}-${startedAt.microsecondsSinceEpoch}-$platform-${_safeName(options['device'] ?? 'auto')}';
-  final reportDir = Directory('${root.path}/$_reportsRelativePath/$runId');
+  // One timestamp directory per task; the platform directory below it holds
+  // all evidence of that run. A numeric suffix disambiguates same-second runs.
+  final stamp = _timestamp(startedAt);
+  var runDirName = stamp;
+  var suffix = 2;
+  while (Directory('${root.path}/$_reportsRelativePath/$runDirName')
+      .existsSync()) {
+    runDirName = '$stamp.$suffix';
+    suffix++;
+  }
+  final runId = '$runDirName-$platform';
+  final reportDir =
+      Directory('${root.path}/$_reportsRelativePath/$runDirName/$platform');
   await reportDir.create(recursive: true);
   final eventsFile = File('${reportDir.path}/events.jsonl');
   final crashFile = File('${reportDir.path}/crash.log');
@@ -1068,9 +1078,6 @@ String _candidateNote(_StepOutcome outcome) {
 
 String _timestamp(DateTime date) =>
     date.toIso8601String().replaceAll(RegExp(r'[^0-9]'), '').substring(0, 14);
-
-String _safeName(String value) =>
-    value.replaceAll(RegExp(r'[^A-Za-z0-9_-]'), '_');
 
 String _markdownCell(Object? value) =>
     (value ?? '').toString().replaceAll('|', r'\|').replaceAll('\n', ' ');

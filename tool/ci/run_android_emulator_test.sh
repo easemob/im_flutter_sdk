@@ -6,8 +6,7 @@
 # wrapper with a single-line script instead.
 set -euo pipefail
 
-test_target="${1:?usage: run_android_emulator_test.sh TEST_TARGET LOG_NAME}"
-log_name="${2:?usage: run_android_emulator_test.sh TEST_TARGET LOG_NAME}"
+test_target="${1:?usage: run_android_emulator_test.sh TEST_TARGET}"
 # Keep in sync with applicationId in
 # im_flutter_sdk/example/android/app/build.gradle.kts.
 app_id="com.example.example"
@@ -21,9 +20,6 @@ adb -s emulator-5554 get-state >/dev/null 2>&1 || {
   exit 2
 }
 bash "$repo_root/tool/use_local_packages.sh"
-mkdir -p "$repo_root/artifacts"
-log_file="$repo_root/artifacts/$log_name"
-echo "Test log: $log_file"
 
 # The example app only compiles with the gitignored lib/env.dart in place.
 bash "$repo_root/tool/ci/ensure_example_env.sh"
@@ -68,7 +64,7 @@ logcat_pid=$!
 
 set -o pipefail
 status=0
-"${command[@]}" 2>&1 | tee "$log_file" "$report_dir/attempt-1.log" || status=$?
+"${command[@]}" 2>&1 | tee "$report_dir/attempt-1.log" || status=$?
 
 kill "$logcat_pid" 2>/dev/null || true
 wait "$logcat_pid" 2>/dev/null || true

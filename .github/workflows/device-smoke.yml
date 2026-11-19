@@ -57,7 +57,7 @@ jobs:
           disable-animations: true
           # Multi-line scripts are not run in one shell session by the
           # runner, so the real steps live in a wrapper script.
-          script: bash tool/ci/run_android_emulator_test.sh integration_test/logged_out_test.dart android-no-login-smoke.log
+          script: bash tool/ci/run_android_emulator_test.sh integration_test/logged_out_test.dart
 
       - name: Upload Android smoke log
         if: always()
@@ -65,7 +65,6 @@ jobs:
         with:
           name: flutter-device-smoke-android-${{ github.run_id }}
           path: |
-            artifacts/android-no-login-smoke.log
             artifacts/ci/
           if-no-files-found: warn
           retention-days: 7
@@ -102,7 +101,7 @@ jobs:
             ${{ runner.os }}-spm-
 
       - name: Run no-login smoke on iOS simulator
-        run: ./tool/ci/run_ios_simulator_test.sh integration_test/logged_out_test.dart ios-no-login-smoke.log
+        run: ./tool/ci/run_ios_simulator_test.sh integration_test/logged_out_test.dart
 
       - name: Collect iOS diagnostics after failure
         if: failure()
@@ -117,7 +116,6 @@ jobs:
         with:
           name: flutter-device-smoke-ios-${{ github.run_id }}
           path: |
-            artifacts/ios-no-login-smoke.log*
             artifacts/ci/
             artifacts/*diagnose*.tar.gz
           if-no-files-found: warn

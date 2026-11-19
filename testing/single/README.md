@@ -39,7 +39,7 @@ make auto-report PLATFORM=android SCRIPT=testing/single/cases/script_510_apis_ne
 
 `SCRIPT=<json>` 选择一个完整场景，不是筛选其中的某个步骤。需要运行多个场景时，分别指定对应脚本执行；已有 5.0.0 场景可将文件名替换为 `script_500_apis_positive.json` 或 `script_500_apis_negative.json`。每次执行的范围以所选 JSON 为准，不等同于整个版本的验收范围。
 
-**不要省略 `SCRIPT` 来表示全部测试**：省略时只运行 5.0.0 正向场景。报告固定在 Git 忽略的 `reports/5.0.0/<run-id>/`，即使运行的是 5.1.0 脚本也使用这个目录。
+**不要省略 `SCRIPT` 来表示全部测试**：省略时只运行 5.0.0 正向场景。报告固定在 Git 忽略的 `artifacts/single/<时间戳>/<平台>/`，一次任务一个纯时间戳目录，平台目录在其下一级。
 
 ## 查看报告和日志
 
@@ -58,10 +58,10 @@ make auto-report PLATFORM=android SCRIPT=testing/single/cases/script_510_apis_ne
 
 ```bash
 python3 testing/report_upgrade.py --version 5.1.0 \
-  --single reports/5.0.0/<正向运行目录> \
-  --single reports/5.0.0/<逆向运行目录> \
+  --single artifacts/single/<时间戳>/android \
+  --single artifacts/single/<时间戳>/ios \
   --multi testing/multi/reports/<多设备运行目录> \
-  --output reports/5.1.0/<本轮汇总目录>
+  --output artifacts/multi/<时间戳>/
 ```
 
 `--single`、`--multi` 均可重复，仅传其中一类也有效。参数按旧到新排列；同场景、平台、设备及配置的最新一次计入场景结果，历史失败保留，尝试次数另计。`--version` 是目标标签，不替代实际 native 依赖证明。重新执行相同报告命令只重建报告，不运行测试；旧证据缺少的时间、配置显示“未记录”。统计口径见[报告说明](../../docs/testing/2026-11-09-reports.md)。

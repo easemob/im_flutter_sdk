@@ -90,10 +90,6 @@ jobs:
         with:
           name: flutter-single-account-android-${{ github.run_id }}
           path: |
-            artifacts/android-single-account.log
-            artifacts/android-native-defaults.log
-            artifacts/android-user-info-subscription.log
-            artifacts/android-conversation-config.log
             artifacts/ci/
           if-no-files-found: warn
           retention-days: 7
@@ -167,10 +163,6 @@ jobs:
         with:
           name: flutter-single-account-ios-${{ github.run_id }}
           path: |
-            artifacts/ios-single-account.log*
-            artifacts/ios-native-defaults.log*
-            artifacts/ios-user-info-subscription.log*
-            artifacts/ios-conversation-config.log*
             artifacts/ci/
             artifacts/*diagnose*.tar.gz
           if-no-files-found: warn

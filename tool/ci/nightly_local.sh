@@ -17,9 +17,9 @@
 # into a mktemp file outside the repo and deleted on exit (trap). An existing
 # E2E_CONFIG_PATH belongs to its caller and is preserved on exit.
 #
-# Logs remain under artifacts/. Each invocation also generates a Git-ignored
-# artifacts/ci/<run-id>/summary.md with per-case counts and evidence links,
-# plus a merged run.json recording the scheduled suites and their exit codes.
+# Reports are written to artifacts/ci/<timestamp>/<platform>/: summary.md with
+# per-case counts and evidence links, a merged run.json recording the scheduled
+# suites and their exit codes, runner.log, and one subdirectory per suite.
 # Individual suites/tests use the existing device runner with CI_TEST_NAME.
 set -euo pipefail
 
@@ -44,9 +44,17 @@ targets=(
   # Retain the existing special batch until its migration is confirmed.
   conversation_config_test
 )
-logs=(base group contact user-info conversation-config)
-mkdir -p "$REPO_ROOT/artifacts/ci"
-nightly_dir="$(mktemp -d "$REPO_ROOT/artifacts/ci/$(date +%Y%m%d-%H%M%S)-nightly-$PLATFORM.XXXXXX")"
+# Run layout: artifacts/ci/<timestamp>/<platform>/<suite>/, one timestamp
+# directory per invocation (numeric suffix only on a same-second collision).
+stamp="$(date +%Y%m%d%H%M%S)"
+nightly_root="$REPO_ROOT/artifacts/ci/$stamp"
+suffix=2
+while [[ -e "$nightly_root" ]]; do
+  nightly_root="$REPO_ROOT/artifacts/ci/$stamp.$suffix"
+  suffix=$((suffix + 1))
+done
+nightly_dir="$nightly_root/$PLATFORM"
+mkdir -p "$nightly_dir"
 CONFIG=""
 finish_nightly() {
   local result="$?"
@@ -119,8 +127,7 @@ status=0
 passed=0
 failed=0
 for index in "${!targets[@]}"; do
-  if CI_REPORT_DIR="$nightly_dir/${targets[$index]}" bash "$runner" "integration_test/${targets[$index]}.dart" \
-      "$PLATFORM-${logs[$index]}.log"; then
+  if CI_REPORT_DIR="$nightly_dir/${targets[$index]}" bash "$runner" "integration_test/${targets[$index]}.dart"; then
     echo "PASS $PLATFORM ${targets[$index]}"
     passed=$((passed + 1))
   else

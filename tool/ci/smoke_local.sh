@@ -11,9 +11,9 @@
 #   bash tool/ci/smoke_local.sh android   # needs a booted emulator (emulator-5554)
 #   bash tool/ci/smoke_local.sh ios       # boots a simulator if none is booted
 #
-# Logs are written to artifacts/{android,ios}-no-login-smoke.log.
-# The runner also writes artifacts/ci/<run-id>/summary.md and report.json,
-# including preparation failures; it prints the report path on exit.
+# Reports are written to artifacts/ci/<timestamp>/<platform>/logged_out_test/:
+# summary.md and report.json, including preparation failures; the runner prints
+# the report path on exit.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -29,10 +29,10 @@ esac
 if [ "$PLATFORM" = "android" ]; then
   # Runners check prerequisites after creating the report directory.
   exec bash "$REPO_ROOT/tool/ci/run_android_emulator_test.sh" \
-    integration_test/logged_out_test.dart android-no-login-smoke.log
+    integration_test/logged_out_test.dart
 fi
 
 # ios: run_ios_simulator_test.sh boots an available iPhone simulator itself
 # (and retries once on the iOS 26 VM-Service race; see that script's header).
 exec bash "$REPO_ROOT/tool/ci/run_ios_simulator_test.sh" \
-  integration_test/logged_out_test.dart ios-no-login-smoke.log
+  integration_test/logged_out_test.dart

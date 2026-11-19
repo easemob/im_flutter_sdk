@@ -83,14 +83,14 @@ Nightly 通过现有设备 runner 冷启动四个固定登录入口，无需人�
 
 ```bash
 CI_TEST_NAME=FL-APP-001 bash tool/ci/run_android_emulator_test.sh \
-  integration_test/logged_out_test.dart android-single-case.log
+  integration_test/logged_out_test.dart
 
 # iOS 对应入口：
 CI_TEST_NAME=FL-APP-001 bash tool/ci/run_ios_simulator_test.sh \
-  integration_test/logged_out_test.dart ios-single-case.log
+  integration_test/logged_out_test.dart
 ```
 
-第一个参数是相对 example 的测试入口，第二个参数是 `artifacts/` 下的兼容日志文件名。不传 `CI_TEST_NAME` 则执行该入口的全部用例。
+参数只有相对 example 的测试入口。不传 `CI_TEST_NAME` 则执行该入口的全部用例。
 
 单个登录用例需额外提供完整有效的 `E2E_CONFIG_PATH`，包括 `FL-AUTH-007`；基础入口统一检查账号、peer 和 REST 配置。可以在上述五项环境变量设置后先生成配置，再调用设备 runner：
 
@@ -101,24 +101,25 @@ bash tool/ci/write_e2e_dart_defines.sh "$PWD/artifacts/e2e-config.json"
 # 将 <用例ID> 替换成该入口中的实际用例编号。
 E2E_CONFIG_PATH="$PWD/artifacts/e2e-config.json" CI_TEST_NAME='<用例ID>' \
   bash tool/ci/run_android_emulator_test.sh \
-  integration_test/logged_in_base_test.dart android-single-case.log
+  integration_test/logged_in_base_test.dart
 ```
 
 群组、联系人和用户资料用例应将上述入口替换为对应的固定入口；不能用基础入口筛选其他入口内的用例。该配置含凭据，保存在 Git 忽略目录，不要分享；Token 过期后重新生成，用完可自行删除。
 
 ## 报告与日志在哪里
 
-全部范围和单用例执行都会生成报告，终端打印本轮路径：
+全部范围和单用例执行都会生成报告，终端打印本轮路径。产物统一放在 `artifacts/ci/<时间戳>/<平台>/` 下：一次任务一个纯时间戳目录，其下按平台分目录（单平台任务只有其中一个），平台目录内是报告与过程记录，每个套件一个子目录：
 
 | 文件 | 用途 |
 |---|---|
-| `artifacts/ci/<run-id>/summary.md` | 首先打开：总数、通过、失败、跳过、未完成、未执行及证据链接 |
+| `artifacts/ci/<时间戳>/<平台>/summary.md` | 首先打开：总数、通过、失败、跳过、未完成、未执行及证据链接 |
 | 同目录 `report.json` | 机器可读的统计结果 |
 | 同目录 `run.json` | 单批次平台、配置、筛选条件及执行信息 |
 | 同目录 `runner.log` | 准备、构建及执行过程日志 |
-| 同目录 `attempt-N.log` / `attempt-N.events.jsonl` | 各次尝试的原始输出与 Flutter 结构化事件 |
+| `<套件>/attempt-N.log` / `attempt-N.events.jsonl` | 各次尝试的原始输出与 Flutter 结构化事件 |
+| `<套件>/attempt-N.logcat.log.gz` | Android 全量 native 日志（iOS 无等价通道，不生成） |
 
-Nightly 顶层报告汇总本次实际调度的批次，各批次证据放在子目录。原有 `artifacts/<日志名>` 仍保留，但重复运行可能覆盖，追溯优先使用独立运行目录。运行产物均被 Git 忽略。
+单独执行设备 runner（非 Nightly 调度）时，报告在 `artifacts/ci/<时间戳>/<平台>/<套件>/`；质量检查在 `artifacts/ci/<时间戳>/unit/<套件>/`。Nightly 的平台目录汇总本次实际调度的批次，各批次证据放在其子目录。运行产物均被 Git 忽略。
 
 先看报告中的失败用例，再从链接进入原始证据；准备或构建失败不代表业务用例已执行。定向通过只代表选中的范围，历史已知问题仍以本次实际结果呈现。手动裸跑 `flutter test` 不会自动生成这里的正式报告。
 

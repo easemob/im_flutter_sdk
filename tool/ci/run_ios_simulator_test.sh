@@ -26,8 +26,7 @@
 # the workflow collects evidence.
 set -euo pipefail
 
-test_target="${1:?usage: run_ios_simulator_test.sh TEST_TARGET LOG_NAME}"
-log_name="${2:?usage: run_ios_simulator_test.sh TEST_TARGET LOG_NAME}"
+test_target="${1:?usage: run_ios_simulator_test.sh TEST_TARGET}"
 watchdog_seconds="${WATCHDOG_SECONDS:-720}"
 max_attempts="${MAX_ATTEMPTS:-2}"
 # Keep in sync with PRODUCT_BUNDLE_IDENTIFIER in
@@ -38,9 +37,6 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "$repo_root/tool/ci/report.sh"
 ci_report_start ios "$test_target"
 bash "$repo_root/tool/use_local_packages.sh"
-mkdir -p "$repo_root/artifacts"
-log_file="$repo_root/artifacts/$log_name"
-echo "Test log: $log_file"
 
 # The example app only compiles with the gitignored lib/env.dart in place.
 bash "$repo_root/tool/ci/ensure_example_env.sh"
@@ -108,10 +104,7 @@ run_attempt() {
 status=0
 attempt=1
 while (( attempt <= max_attempts )); do
-  if (( attempt == 1 )); then
-    compatibility_log="$log_file"
-  else
-    compatibility_log="$log_file.attempt$attempt"
+  if (( attempt > 1 )); then
     echo "Rebooting simulator before attempt $attempt" >&2
     xcrun simctl shutdown "$simulator_udid" 2>/dev/null || true
     xcrun simctl boot "$simulator_udid"
@@ -128,7 +121,6 @@ while (( attempt <= max_attempts )); do
   xcrun simctl uninstall "$simulator_udid" "$app_id" >/dev/null 2>&1 || true
   status=0
   run_attempt "$attempt_log" || status=$?
-  cp "$attempt_log" "$compatibility_log"
   ci_report_attempt "$status"
   if [[ "$status" -eq 0 ]]; then
     break

@@ -109,8 +109,8 @@ scripts/multi.sh report --run-id <runId>
 
 ```bash
 python3 testing/report_upgrade.py --version 5.1.0 \
-  --single reports/5.0.0/<runId> --multi <IMTO>/multi/reports/<runId> \
-  --output reports/5.1.0/<汇总目录>
+  --single artifacts/single/<时间戳>/<平台> --multi <IMTO>/multi/reports/<runId> \
+  --output artifacts/multi/<时间戳>/
 ```
 
 ## 4. 场景清单

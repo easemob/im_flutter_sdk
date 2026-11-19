@@ -68,7 +68,14 @@ class RunnerTests(unittest.TestCase):
                               env=self.env, capture_output=True, text=True, timeout=25)
 
     def reports(self):
-        return sorted((self.root / 'artifacts/ci').glob('*/report.json'))
+        # A nightly merge report lives at <timestamp>/<platform>/report.json and
+        # its suite reports one level deeper; a standalone run only has the
+        # suite-level report. Collect the topmost report per run directory.
+        base = self.root / 'artifacts/ci'
+        found = sorted(base.glob('*/*/report.json'))
+        found += [path for path in sorted(base.glob('*/*/*/report.json'))
+                  if not (path.parent.parent / 'report.json').exists()]
+        return found
 
     def test_nightly_failure_continues_all_batches_and_reports_cases(self):
         self.env['FAKE_FAIL_FIRST'] = '1'
@@ -82,10 +89,10 @@ class RunnerTests(unittest.TestCase):
         self.assertTrue(self.config.exists())
 
     def test_individual_suite_and_preparation_failure_both_report(self):
-        result = self.run_script('run_android_emulator_test.sh', 'integration_test/test.dart', 'single.log')
+        result = self.run_script('run_android_emulator_test.sh', 'integration_test/test.dart')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.env['FAKE_PREPARE_FAIL'] = '1'
-        result = self.run_script('run_android_emulator_test.sh', 'integration_test/test.dart', 'single.log')
+        result = self.run_script('run_android_emulator_test.sh', 'integration_test/test.dart')
         self.assertEqual(result.returncode, 7, result.stdout + result.stderr)
         values = [json.loads(path.read_text()) for path in self.reports()]
         self.assertEqual(len(values), 2)
@@ -93,7 +100,7 @@ class RunnerTests(unittest.TestCase):
 
     def test_ios_retry_reports_history_without_doubling_cases(self):
         self.env['FAKE_RETRY'] = '1'
-        result = self.run_script('run_ios_simulator_test.sh', 'integration_test/test.dart', 'ios.log')
+        result = self.run_script('run_ios_simulator_test.sh', 'integration_test/test.dart')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         value = json.loads(self.reports()[0].read_text())
         self.assertEqual(value['knownTotal'], 1)

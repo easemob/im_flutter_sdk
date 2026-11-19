@@ -14,7 +14,6 @@ import os
 from pathlib import Path
 import re
 import subprocess
-import tempfile
 from urllib.parse import quote
 
 
@@ -66,10 +65,19 @@ def start(args):
         directory = Path(args.output).resolve()
         directory.mkdir(parents=True, exist_ok=False)
     else:
+        # Default layout: artifacts/ci/<timestamp>/<platform>/<suite>/, with a
+        # numeric suffix on the timestamp directory only when two runs start
+        # within the same second.
         parent = ROOT / "artifacts/ci"
-        parent.mkdir(parents=True, exist_ok=True)
-        prefix = datetime.now().strftime("%Y%m%d-%H%M%S-") + args.platform + "-"
-        directory = Path(tempfile.mkdtemp(prefix=prefix, dir=parent))
+        stamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        slug = re.sub(r"[^A-Za-z0-9_-]+", "-", Path(args.target).stem).strip("-") or "run"
+        root_dir = parent / stamp
+        suffix = 2
+        while (root_dir / args.platform / slug).exists():
+            root_dir = parent / f"{stamp}.{suffix}"
+            suffix += 1
+        directory = root_dir / args.platform / slug
+        directory.mkdir(parents=True, exist_ok=False)
     commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True)
     dirty = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True)
     version = re.search(r"^version:\s*(\S+)", (ROOT / "im_flutter_sdk/pubspec.yaml").read_text(), re.M)
