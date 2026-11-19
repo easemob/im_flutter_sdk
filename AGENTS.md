@@ -35,13 +35,13 @@ Test selection and design rules: [testing guide](docs/testing/README.md).
 | Mode | Responsibility | Implementation and entry |
 |---|---|---|
 | CI tests | Protect basic SDK behavior, stability, and regression coverage | Flutter unit/contract tests in `im_flutter_sdk/test/` and device tests in `im_flutter_sdk/example/integration_test/`; workflows in `.github/workflows/`, local entry points in `tool/ci/`. See [CONTRIBUTING.md](CONTRIBUTING.md#running-and-verification). |
-| AI tests | Verify API additions, behavior changes, and interactions for SDK version ports | Single-device JSON scripts via `make auto-report` / `API_SCRIPT`; multi-device YAML flows and JSON commands via `testing/multi` and `tool/flow_runner`. See the [example guide](im_flutter_sdk/example/README.md#script-mode-ai-friendly) and [multi-device guide](testing/multi/README.md). |
+| AI tests | Verify API additions, behavior changes, and interactions for SDK version ports | Single-device JSON scripts via `make auto-report` / `API_SCRIPT`; multi-device YAML flows and JSON commands via the standalone im-test-orchestrator repository (a separate repo checked out next to this one; entry through [scripts/multi.sh](scripts/multi.sh)). See the [example guide](im_flutter_sdk/example/README.md#script-mode-ai-friendly). |
 | Manual mode | Allow free API spot checks and provide usable, extractable examples | Run the [example app](im_flutter_sdk/example/README.md) without `API_SCRIPT` or `API_CONTROL`; initialize, log in, and select APIs in the UI. |
 
 - Keep CI and AI test architectures independent. Their case formats and execution engines are maintained separately; API coverage may overlap, and a pass in one mode does not replace verification in another. Manual mode is an interactive usage path, not an automated test suite.
 - For each SDK version port, pass the relevant single-device and multi-device scenarios on the affected platforms. Then add CI regression tests for basic behavior, important boundaries, and fixed defects that need lasting protection; do not mechanically duplicate every AI script.
 - AI scenarios are executed by the script runner. AI authors cases, initiates runs, and analyzes evidence; it does not control each step of a fixed workflow. Investigate failed cases and never weaken correct assertions to accommodate an SDK defect.
-- Select the entry point that supports the case: `testing/multi` handles multi-device execution; single-device scripts use `make auto-report`. Changes to `testing/multi` must follow [its scope and collaboration rules](testing/multi/spec.md).
+- Select the entry point that supports the case: multi-device execution goes through the standalone im-test-orchestrator repository (invoked via `scripts/multi.sh`); single-device scripts use `make auto-report`. Changes to the multi-device tool must follow its own scope and collaboration rules (see the orchestrator repository's `multi/spec.md`).
 
 ## Development Environment Setup
 

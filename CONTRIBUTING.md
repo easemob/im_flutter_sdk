@@ -52,7 +52,7 @@ For release validation, use a checkout without overrides, or temporarily move th
 
 ## Test Data Preparation
 
-Manual and single-device script modes use [the example environment](im_flutter_sdk/example/README.md#setup). Multi-device execution uses [multi-device tool](testing/multi/README.md) and its own account preparation. `make config` creates `im_flutter_sdk/example/config.local.json` without overwriting an existing file.
+Manual and single-device script modes use [the example environment](im_flutter_sdk/example/README.md#setup). Multi-device execution uses the standalone im-test-orchestrator repository, invoked through [scripts/multi.sh](scripts/multi.sh), with case files in `testing/multi-cases/` and its own account preparation. `make config` creates `im_flutter_sdk/example/config.local.json` without overwriting an existing file.
 
 Example run data is prepared in two steps; both products are local files and neither is committed:
 
