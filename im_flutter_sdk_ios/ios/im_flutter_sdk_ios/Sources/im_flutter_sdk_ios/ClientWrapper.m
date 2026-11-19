@@ -266,9 +266,10 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     [self analyzeExtSettings:param];
 
     // The Dart-side `debugMode` option gates the unified log forwarding
-    // (default off). Core's own console output stays disabled regardless
+    // (default off). The wire key is `debugModel` (ChatOptions.toJson).
+    // Core's own console output stays disabled regardless
     // (OptionsHelper forces EMOptions.enableConsoleLog = NO).
-    [OSLogForwarder setEnabled:[param[@"debugMode"] boolValue]];
+    [OSLogForwarder setEnabled:[param[@"debugModel"] boolValue]];
 
     EMError *aError = [EMClient.sharedClient initializeSDKWithOptions:_options];
     if (aError) {

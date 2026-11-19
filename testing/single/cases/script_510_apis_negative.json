@@ -5,7 +5,7 @@
     "autoLoadConversations": false,
     "enableChatroomConversation": false,
     "enableUserInfo": false,
-    "debugMode": false
+    "debugMode": true
   },
   "steps": [
     {

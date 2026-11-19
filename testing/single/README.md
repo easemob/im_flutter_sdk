@@ -52,6 +52,7 @@ make auto-report PLATFORM=android SCRIPT=testing/single/cases/script_510_apis_ne
 | `run.json` | 版本标签、脚本哈希、平台/设备、显式初始化选项、时间与执行异常；不保存账号凭据 |
 | `steps.json`、`summary.md` | 原始逐步断言结果与执行摘要 |
 | `events.jsonl`、`crash.log`、`issues.md` | API 事件、崩溃/超时证据与候选问题 |
+| `device.log.gz`（Android）/ `device.log`（iOS） | 运行全程的完整设备日志。Android 为全量 logcat（含 native `ONE SDK` 输出，可直接 grep 追溯）；iOS 按子系统过滤（`com.hyphenate.chatsdk` + `Flutter`），只保留 SDK native 日志与 APITEST 事件流，Apple 框架噪声不采集；与多设备报告的 `device-*.log(.gz)` 同约定。脚本的 `debugMode` 控制 iOS native 日志是否经回调桥写入（`true` 时才有 `ONE SDK` 内容） |
 
 单个脚本与多个脚本的每次执行都会产出报告。执行多个脚本后，用显式目录汇总，不自动扫描旧批次：
 

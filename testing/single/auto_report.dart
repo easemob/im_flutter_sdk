@@ -46,7 +46,8 @@ for the negative path. A run captures only APITEST events and crash evidence and
 writes a local report under $_reportsRelativePath/<run-id>/.
 Each execution also writes upgrade-report.md (human statistics) and
 upgrade-report.json (structured statistics). Raw evidence: run.json,
-steps.json, events.jsonl, crash.log, issues.md, summary.md.
+steps.json, events.jsonl, crash.log, issues.md, summary.md, plus the full
+device log (device.log.gz on Android, device.log on iOS).
 All outputs are Git-ignored. Python 3 is required for report rendering.
 
 The comparison mode reads two finished run directories on the same path and
@@ -122,15 +123,20 @@ writes $_reportsRelativePath/comparison-<timestamp>.md.
     scriptKind: scriptKind,
   );
 
+  _DeviceLogCapture? deviceLog;
   try {
     await _writeRunMetadata(reportDir, root, script, state, startedAt);
     state.device = await _resolveDevice(platform, options['device']);
     await _prepareDevice(platform, state.device, example, script, runId);
+    deviceLog = await _startDeviceLogCapture(state);
     await _runFlutter(state, example);
   } catch (error) {
     state.executionErrors.add(_sanitize('$error'));
     stderr.writeln('Execution failed: ${state.executionErrors.last}');
   } finally {
+    if (deviceLog != null) {
+      state.deviceLogFile = await deviceLog.stop(state.platform);
+    }
     await eventsSink.flush();
     await eventsSink.close();
     await crashSink.flush();
@@ -564,6 +570,101 @@ Future<void> _tryActivateAndroidWindow(String device) async {
   }
 }
 
+/// Streams the device log into `device.log` under the report directory for
+/// the whole app run, mirroring the multi-device convention: Android captures
+/// the full logcat (no tag filter, so ONE SDK lines survive) and is archived
+/// as `device.log.gz`; iOS streams the simulator log of the example app
+/// process and stays plain text.
+class _DeviceLogCapture {
+  _DeviceLogCapture(this._process, this._sink, this._logPath);
+
+  final Process _process;
+  final IOSink _sink;
+  final String _logPath;
+  final _subscriptions = <StreamSubscription<String>>[];
+
+  static Future<_DeviceLogCapture> start(_RunState state) async {
+    final logPath = '${state.reportDir.path}/device.log';
+    final sink = File(logPath).openWrite();
+    final Process process;
+    if (state.platform == 'android') {
+      process = await Process.start('adb', [
+        '-s',
+        state.device,
+        'logcat',
+        '-v',
+        'epoch',
+        '-T',
+        '1',
+      ]);
+    } else {
+      process = await Process.start('xcrun', [
+        'simctl',
+        'spawn',
+        state.device,
+        'log',
+        'stream',
+        '--style',
+        'compact',
+        '--level',
+        'debug',
+        '--predicate',
+        // Flutter prints carry no subsystem (NSLog-style, eventMessage starts
+        // with "flutter:"); bridged native logs use the chatsdk subsystem.
+        'process == "Runner" AND '
+            '(subsystem == "com.hyphenate.chatsdk" OR '
+            'eventMessage BEGINSWITH "flutter:")',
+      ]);
+    }
+    final capture = _DeviceLogCapture(process, sink, logPath);
+    for (final stream in <Stream<List<int>>>[process.stdout, process.stderr]) {
+      capture._subscriptions.add(
+        stream
+            .transform(utf8.decoder)
+            .transform(const LineSplitter())
+            .listen(sink.writeln),
+      );
+    }
+    return capture;
+  }
+
+  /// Stops the collector and returns the archived log file name
+  /// (`device.log.gz` on Android, `device.log` on iOS), or null when nothing
+  /// usable was captured.
+  Future<String?> stop(String platform) async {
+    for (final subscription in _subscriptions) {
+      await subscription.cancel();
+    }
+    _process.kill(ProcessSignal.sigint);
+    final exited = await _process.exitCode
+        .timeout(const Duration(seconds: 5), onTimeout: () {
+      _process.kill(ProcessSignal.sigkill);
+      return -1;
+    });
+    await _sink.flush();
+    await _sink.close();
+    final logFile = File(_logPath);
+    if (exited == -1 ||
+        !await logFile.exists() ||
+        await logFile.length() == 0) {
+      return null;
+    }
+    if (platform == 'android') {
+      final bytes = await logFile.readAsBytes();
+      final archived = File('${logFile.path}.gz');
+      await archived.writeAsBytes(gzip.encode(bytes));
+      return archived.path.split('/').last;
+    }
+    return logFile.path.split('/').last;
+  }
+}
+
+Future<_DeviceLogCapture> _startDeviceLogCapture(_RunState state) async {
+  final capture = await _DeviceLogCapture.start(state);
+  stdout.writeln('Capturing device log to ${state.reportDir.path}/device.log');
+  return capture;
+}
+
 Future<void> _runFlutter(_RunState state, Directory example) async {
   final scriptArgument = state.platform == 'android'
       ? _androidScriptPath(state.runId)
@@ -782,6 +883,7 @@ Future<void> _writeSummary(
     'finishedAt': finishedAt.toIso8601String(),
     'processExitCode': state.processExitCode,
     'executionErrors': state.executionErrors,
+    'deviceLog': state.deviceLogFile,
   });
   await metadataFile.writeAsString(
     const JsonEncoder.withIndent('  ').convert(metadata),
@@ -805,6 +907,9 @@ Future<void> _writeSummary(
     ..writeln('- Malformed APITEST lines: `${state.malformedLines.length}`')
     ..writeln(
       '- Crash evidence: `${state.crashLines.isEmpty ? 'none' : 'see crash.log'}`',
+    )
+    ..writeln(
+      '- Device log: `${state.deviceLogFile ?? 'not captured'}`',
     )
     ..writeln()
     ..writeln('## Step outcomes')
@@ -1305,6 +1410,11 @@ class _RunState {
   final outcomes = <_StepOutcome>[];
   final executionErrors = <String>[];
   int? processExitCode;
+
+  /// Archived device log file name inside the report directory
+  /// (`device.log.gz` on Android, `device.log` on iOS); null when the
+  /// capture was unavailable.
+  String? deviceLogFile;
   final scriptDoneFuture = Completer<void>();
   int crashLinesRemaining = 0;
   int nextStepIndex = 0;
