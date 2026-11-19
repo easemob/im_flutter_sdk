@@ -1,6 +1,6 @@
 # CI 测试操作说明
 
-本目录运行持续回归测试。版本升级的场景测试分别见[单设备](../../testing/single/README.md)和[多设备](../../testing/multi-cases/README.md)（用例目录；编排工具为独立仓 im-test-orchestrator，经 `scripts/multi.sh` 调用），分类规则见[测试指南](../../docs/testing/README.md)。
+本目录运行持续回归测试。版本升级的场景测试分别见[单设备](../../testing/single/README.md)和[多设备](../../testing/multi/README.md)（用例目录 `testing/multi/cases/`；编排工具为独立仓 im-test-orchestrator，经 `scripts/multi.sh` 调用），分类规则见[测试指南](../../docs/testing/README.md)。
 
 ## 运行前准备
 

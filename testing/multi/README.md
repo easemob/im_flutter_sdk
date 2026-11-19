@@ -50,7 +50,7 @@ scripts/multi.sh generate --platform android
 scripts/multi.sh generate --platform ios --case 5.0.0-multi-presence-positive
 ```
 
-脚本扫描本目录（`--cases-dir` 默认 `testing/multi-cases`），从 `config/accounts-input.json` 读账号、自动发现模拟器，生成 `<IMTO>/multi/config/cases.json`：账号按顺序编号为 `account1..N`，设备按 YAML 的 `agents` 角色分配。常用可选参数：
+脚本扫描本目录（`--cases-dir` 默认 `testing/multi/cases`），从 `config/accounts-input.json` 读账号、自动发现模拟器，生成 `<IMTO>/multi/config/cases.json`：账号按顺序编号为 `account1..N`，设备按 YAML 的 `agents` 角色分配。常用可选参数：
 
 | 参数 | 作用 |
 |---|---|
@@ -81,12 +81,12 @@ scripts/multi.sh all --cases <IMTO>/multi/config/cases.json \
 ### 2.2 分环节执行（调试用）
 
 ```bash
-scripts/multi.sh prepare testing/multi-cases/5.0.0-multi-presence-positive.yaml \
+scripts/multi.sh prepare testing/multi/cases/5.0.0-multi-presence-positive.yaml \
   --cases <IMTO>/multi/config/cases.json          # 输出新的 runId
 scripts/multi.sh devices start --platform ios --instance <UDID> --run-id <runId>   # 每个角色一台
 scripts/multi.sh build --platform ios --run-id <runId>
-scripts/multi.sh launch testing/multi-cases/5.0.0-multi-presence-positive.yaml --run-id <runId>   # 输出 launch=...
-scripts/multi.sh run testing/multi-cases/5.0.0-multi-presence-positive.yaml --run-id <runId> --launch <launchId>
+scripts/multi.sh launch testing/multi/cases/5.0.0-multi-presence-positive.yaml --run-id <runId>   # 输出 launch=...
+scripts/multi.sh run testing/multi/cases/5.0.0-multi-presence-positive.yaml --run-id <runId> --launch <launchId>
 scripts/multi.sh report --run-id <runId>
 ```
 
@@ -145,7 +145,7 @@ python3 testing/report_upgrade.py --version 5.1.0 \
 端间对账（核对 Flutter/RN 副本一致）：
 
 ```bash
-scripts/multi.sh cases diff testing/multi-cases <RN仓>/example/multi_cases
+scripts/multi.sh cases diff testing/multi/cases <RN仓>/example/multi_cases
 ```
 
 退出码：0 一致，1 有差异，2 用法错误。确因一端 SDK 能力缺失需要差异时，必须显式声明并在本 README 记录例外。

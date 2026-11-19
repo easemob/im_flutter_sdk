@@ -10,13 +10,13 @@
 # Usage:
 #   scripts/multi.sh generate --platform ios [--case <name>] [--instance <id>] ...
 #       Runs scripts/generate_cases.dart; defaults --cases-dir to
-#       testing/multi-cases.
+#       testing/multi/cases.
 #   scripts/multi.sh prepare|devices|build|launch|run|report|clean|all ...
 #       Runs bin/cli.dart; defaults --app-dir to im_flutter_sdk/example.
 # Example:
-#   scripts/multi.sh all --cases testing/multi/config/cases.json
-#   scripts/multi.sh prepare testing/multi-cases/5.0.0-multi-presence-positive.yaml \
-#       --cases testing/multi/config/cases.json
+#   scripts/multi.sh all --cases <IMTO>/multi/config/cases.json
+#   scripts/multi.sh prepare testing/multi/cases/5.0.0-multi-presence-positive.yaml \
+#       --cases <IMTO>/multi/config/cases.json
 # Relative path arguments are resolved against this repository root.
 set -euo pipefail
 
@@ -89,7 +89,7 @@ for arg in "$@"; do
 done
 
 if [[ "$command" == "generate" && $has_cases_dir -eq 0 ]]; then
-  args+=(--cases-dir "$REPO_ROOT/testing/multi-cases")
+  args+=(--cases-dir "$REPO_ROOT/testing/multi/cases")
 fi
 # Only commands whose CLI accepts --app-dir get the default (build/all).
 if [[ "$command" == "build" || "$command" == "all" ]] && [[ $has_app_dir -eq 0 ]]; then

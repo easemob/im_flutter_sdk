@@ -8,4 +8,4 @@ logcatTags:
   - flutter:I
   - testing_v2:I
   - '*:S'
-casesDir: testing/multi-cases
+casesDir: testing/multi/cases

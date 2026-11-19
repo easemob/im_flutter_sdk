@@ -6,7 +6,7 @@
 |---|---|---|---|
 | CI 回归 | 基础行为、关键边界、已修复缺陷的持续回归 | `im_flutter_sdk/test/`、`im_flutter_sdk/example/integration_test/`；`tool/ci/` | [CI](2026-11-09-ci.md) |
 | 单设备平版 | 一台客户端即可验证的参数、返回值、本地状态和错误行为 | `testing/single/cases/`；`make auto-report` | [单设备](2026-11-09-single-device.md) |
-| 多设备平版 | 接收方通知、申请与接受、回执、订阅、同账号多端同步 | `testing/multi-cases/`；im-test-orchestrator 仓经 `scripts/multi.sh` | [多设备](2026-11-09-multi-device.md) |
+| 多设备平版 | 接收方通知、申请与接受、回执、订阅、同账号多端同步 | `testing/multi/cases/`；im-test-orchestrator 仓经 `scripts/multi.sh` | [多设备](2026-11-09-multi-device.md) |
 
 `im_flutter_sdk/example/lib/` 提供共用 API 注册、事件观测、脚本执行和人工界面。人工模式用于自由抽验，不是另一套自动用例。`tool/flow_runner/` 保持独立解释器；CI 保持 Flutter 标准测试入口。
 
