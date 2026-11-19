@@ -18,7 +18,8 @@
 # E2E_CONFIG_PATH belongs to its caller and is preserved on exit.
 #
 # Logs remain under artifacts/. Each invocation also generates a Git-ignored
-# artifacts/ci/<run-id>/summary.md with per-case counts and evidence links.
+# artifacts/ci/<run-id>/summary.md with per-case counts and evidence links,
+# plus a merged run.json recording the scheduled suites and their exit codes.
 # Individual suites/tests use the existing device runner with CI_TEST_NAME.
 set -euo pipefail
 
@@ -49,7 +50,7 @@ nightly_dir="$(mktemp -d "$REPO_ROOT/artifacts/ci/$(date +%Y%m%d-%H%M%S)-nightly
 CONFIG=""
 finish_nightly() {
   local result="$?"
-  local report_args=(merge --output "$nightly_dir")
+  local report_args=(merge --output "$nightly_dir" --exit-code "$result")
   local target
   trap - EXIT
   if [[ -n "$CONFIG" ]]; then rm -f "$CONFIG"; fi

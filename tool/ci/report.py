@@ -174,6 +174,41 @@ def load_run(directory):
     return result
 
 
+def write_merge_metadata(directories, output, exit_code):
+    output = Path(output).resolve()
+    output.mkdir(parents=True, exist_ok=True)
+    metadatas = []
+    for directory in directories:
+        run_file = Path(directory).resolve() / "run.json"
+        metadatas.append(read(run_file) if run_file.exists() else None)
+    present = [metadata for metadata in metadatas if metadata]
+
+    def uniform(key):
+        values = {json.dumps(metadata.get(key), sort_keys=True, ensure_ascii=False)
+                  for metadata in present if key in metadata}
+        return present[0].get(key) if len(values) == 1 else None
+
+    started = [metadata.get("startedAt") for metadata in present if metadata.get("startedAt")]
+    batches = []
+    for directory, metadata in zip(directories, metadatas):
+        directory = Path(directory).resolve()
+        batches.append({
+            "target": metadata.get("target") if metadata else directory.name,
+            "platform": metadata.get("platform") if metadata else "未知",
+            "exitCode": metadata.get("exitCode") if metadata else None,
+            "directory": str(directory),
+        })
+    write(output / "run.json", {
+        "schemaVersion": 1, "kind": "merge",
+        "startedAt": min(started) if started else None,
+        "finishedAt": now(), "platform": uniform("platform"),
+        "targets": [batch["target"] for batch in batches],
+        "sdkPackageVersion": uniform("sdkPackageVersion"),
+        "commit": uniform("commit"), "worktreeDirty": uniform("worktreeDirty"),
+        "batches": batches, "exitCode": exit_code,
+    })
+
+
 def render(directories, output):
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -209,6 +244,9 @@ def render(directories, output):
                      link(directory / "run.json", output, "运行信息") if (directory / "run.json").exists() else "未启动"]) + " |")
     if (output / "runner.log").exists():
         lines += ["", f"入口过程日志：{link(output / 'runner.log', output)}"]
+    merged_metadata = output / "run.json"
+    if merged_metadata.exists() and read(merged_metadata).get("kind") == "merge":
+        lines += ["", f"汇总运行信息：{link(merged_metadata, output)}"]
     for batch in batches:
         directory = Path(batch["directory"])
         duration = "未知"
@@ -268,12 +306,16 @@ def main():
     merge = sub.add_parser("merge")
     merge.add_argument("--run", action="append", required=True)
     merge.add_argument("--output", required=True)
+    merge.add_argument("--exit-code", type=int)
     args = parser.parse_args()
     if args.action == "start":
         start(args)
     elif args.action == "merge":
         if len(set(map(os.path.realpath, args.run))) != len(args.run):
             parser.error("同一运行目录不能重复计入")
+        inputs = set(map(os.path.realpath, args.run))
+        if os.path.realpath(args.output) not in inputs:
+            write_merge_metadata(args.run, args.output, args.exit_code)
         render(args.run, args.output)
     elif args.action == "render":
         render([args.run], args.run)

@@ -120,6 +120,54 @@ class ReportTests(unittest.TestCase):
         report.write(duplicate / "run.json", metadata)
         with self.assertRaisesRegex(ValueError, "重复合计"):
             report.render([self.directory, duplicate], self.directory / "merged")
+    def test_merge_writes_metadata_and_links_it_in_summary(self):
+        first = self.directory / "suite_a"
+        second = self.directory / "suite_b"
+        for directory, target, code in ((first, "integration_test/a_test.dart", 0),
+                                        (second, "integration_test/b_test.dart", 1)):
+            directory.mkdir()
+            report.write(directory / "run.json", {
+                "schemaVersion": 1, "startedAt": "2026-11-19T03:47:38+00:00",
+                "finishedAt": "2026-11-19T03:48:51+00:00", "platform": "android",
+                "target": target, "device": "emulator-5554", "sdkPackageVersion": "5.1.0",
+                "commit": "abc123", "worktreeDirty": True, "exitCode": code, "attempts": []})
+        merged = self.directory / "merged"
+        with contextlib.redirect_stdout(io.StringIO()):
+            report.write_merge_metadata([first, second], merged, 1)
+            report.render([first, second], merged)
+        metadata = report.read(merged / "run.json")
+        self.assertEqual(metadata["kind"], "merge")
+        self.assertEqual(metadata["exitCode"], 1)
+        self.assertEqual(metadata["platform"], "android")
+        self.assertEqual(metadata["commit"], "abc123")
+        self.assertEqual(metadata["sdkPackageVersion"], "5.1.0")
+        self.assertEqual([batch["target"] for batch in metadata["batches"]],
+                         ["integration_test/a_test.dart", "integration_test/b_test.dart"])
+        self.assertEqual([batch["exitCode"] for batch in metadata["batches"]], [0, 1])
+        self.assertIn("汇总运行信息", (merged / "summary.md").read_text())
+
+    def test_merge_metadata_tolerates_missing_and_divergent_batches(self):
+        started = self.directory / "started"
+        started.mkdir()
+        report.write(started / "run.json", {
+            "schemaVersion": 1, "startedAt": "2026-11-19T03:47:38+00:00",
+            "platform": "android", "target": "integration_test/a_test.dart",
+            "sdkPackageVersion": "5.1.0", "commit": "abc123", "attempts": []})
+        other = self.directory / "other"
+        other.mkdir()
+        report.write(other / "run.json", {
+            "schemaVersion": 1, "startedAt": "2026-11-19T03:48:52+00:00",
+            "platform": "ios", "target": "integration_test/b_test.dart",
+            "sdkPackageVersion": "5.2.0", "commit": "def456", "attempts": []})
+        absent = self.directory / "not-started"
+        merged = self.directory / "merged-mixed"
+        report.write_merge_metadata([started, other, absent], merged, None)
+        metadata = report.read(merged / "run.json")
+        self.assertIsNone(metadata["platform"])
+        self.assertIsNone(metadata["commit"])
+        self.assertEqual(metadata["startedAt"], "2026-11-19T03:47:38+00:00")
+        self.assertEqual(metadata["batches"][2]["target"], "not-started")
+        self.assertIsNone(metadata["batches"][2]["exitCode"])
 
 
 if __name__ == "__main__":
