@@ -265,11 +265,10 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     _options = [EMOptions fromJson:param];
     [self analyzeExtSettings:param];
 
-    // The Dart-side `enableConsoleLog` option (default YES) gates the unified
-    // log forwarding. Absent key keeps the default.
-    if (param[@"enableConsoleLog"] != nil) {
-        [OSLogForwarder setEnabled:[param[@"enableConsoleLog"] boolValue]];
-    }
+    // The Dart-side `debugMode` option gates the unified log forwarding
+    // (default off). Core's own console output stays disabled regardless
+    // (OptionsHelper forces EMOptions.enableConsoleLog = NO).
+    [OSLogForwarder setEnabled:[param[@"debugMode"] boolValue]];
 
     EMError *aError = [EMClient.sharedClient initializeSDKWithOptions:_options];
     if (aError) {

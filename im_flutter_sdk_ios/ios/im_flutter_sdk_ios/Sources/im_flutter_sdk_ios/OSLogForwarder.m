@@ -21,7 +21,7 @@ static os_log_t EMOSLogInstance(void) {
 
 @implementation OSLogForwarder
 
-static BOOL _enabled = YES;
+static BOOL _enabled = NO;
 
 + (void)install {
     static dispatch_once_t onceToken;
