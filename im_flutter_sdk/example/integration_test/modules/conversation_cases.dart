@@ -315,6 +315,9 @@ void registerConversationCases({
     // second by its timestamp range, then delete all remaining messages.
     // Expected: Lists and counts contain exactly the survivors after each step;
     // the fourth message retains its content until the final deletion leaves none.
+    // Note: the final clear is verified by polling, because the native layer
+    // removes the rows asynchronously after deleteAllMessages returns
+    // (HIM-24174, accepted as a known issue on the native side).
     ciTestWidgets(
       'FL-CONV-006 positive deletions preserve each remaining message set',
       (tester) async {
@@ -336,7 +339,17 @@ void registerConversationCases({
         _expectStoredMessage(
             await conversation.loadMessage(seeds[3].msgId), seeds[3]);
         await conversation.deleteAllMessages();
-        final remainingCount = await conversation.messagesCount();
+        // HIM-24174 (native known issue, decided not to fix): a successful
+        // deleteAllMessages() return does not mean the DB rows are gone yet,
+        // so an immediate messagesCount() can still observe the old rows.
+        // Poll until the async deletion lands rather than sleeping a fixed
+        // delay; remove this wait if the native side ever makes it synchronous.
+        final remainingCount = await waitForCi(
+          'FL-CONV-006 deleteAllMessages eventually clears all message rows',
+          () => conversation.messagesCount(),
+          (count) => count == 0,
+          timeout: const Duration(seconds: 5),
+        );
         final remainingMessages =
             await conversation.loadMessages(loadCount: 20);
         Object? remainingLast;

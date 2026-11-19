@@ -1,7 +1,7 @@
 # 清空会话后消息列表为空，但消息计数仍为 1
 
 - 日期：2026-11-09。
-- 状态：双端实际复现；用户决定先记录、跳过，不修改 SDK 或放宽断言。
+- 状态：已知问题（won't fix）。2026-11-17 经与领导协商确认：影响面大、收益小，native 侧不修复，PR 关闭；Flutter 用例改为轮询等待通过。
 - 触发仓库：`im_flutter_sdk`，5.1.0 worktree，基线 `adf9764b`。
 - 适用环境：Flutter 3.47.0，Android/iOS native 5.1.0，Android Pixel_9、iOS 18.2 模拟器。
 
@@ -76,3 +76,11 @@ rg -n 'FL-CONV-006 after|Expected:|Actual:' reports/5.1.0/test-coverage/*006*.lo
 - 命令：`CI_TEST_NAME='FL-CONV-006 diagnostic' MAX_ATTEMPTS=1 E2E_CONFIG_PATH=<临时凭据文件> bash tool/ci/run_ios_simulator_test.sh integration_test/logged_in_base_test.dart conv006-minimal-ios.log`；凭据文件已删除。
 
 HIM-24174 的长流程仍是有效复现；本轮获得了可替换它的最小复现和延迟对照证据。随后按用户要求更新 HIM-24174 的 `description`，加入最小步骤、iOS 实测数据及证据边界；回读正文完全一致，其他字段未修改。
+
+## 2026-11-17 最终处置：已知问题，native 不修复
+
+经用户与领导协商确认：该问题为"清空后极短窗口内读到旧计数"，无数据错误、无崩溃，仅影响低频操作的即时读取；修复需改动 core 会话存储的同步语义（曾评估 `fix-him_24174` 分支，PR #2442），影响面大、收益小，决定不修复，作为已知问题关闭，PR 由用户手动关闭。
+
+Flutter 侧配套处置：`FL-CONV-006` 的最终清空断言由"立即读 `messagesCount()` 断言为 0"改为经 `waitForCi` 轮询（200ms 间隔、5 秒超时）等待异步删除落地后再断言，并在代码注释中标注 HIM-24174 为 native 已知问题、该等待是 workaround 而非功能语义；不用固定 sleep，避免慢机器上的偶发失败。若未来 native 修复使删除同步完成，可移除该轮询。
+
+测试语义边界：轮询通过不代表契约"返回成功即删除完成"成立，仅证明删除最终完成；原契约差异由本节记录兜底。
