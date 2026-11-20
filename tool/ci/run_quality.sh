@@ -1,9 +1,19 @@
 #!/usr/bin/env bash
+# Quality diagnostics and SDK unit-test counts:
+# artifacts/ci/<timestamp>/unit/<suite>/summary.md.
+# Preparation/static checks are reported separately from business test counts.
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$repo_root/tool/ci/report.sh"
+ci_report_start unit "im_flutter_sdk/test (quality)"
+report_device="host"
 
 bash "$repo_root/tool/use_local_packages.sh"
+
+# im_flutter_sdk/example imports the gitignored lib/env.dart; without it the
+# example analysis below fails to resolve the file (see the script's header).
+bash "$repo_root/tool/ci/ensure_example_env.sh"
 
 packages=(
   im_flutter_sdk_interface
@@ -49,9 +59,16 @@ for package in "${packages[@]}"; do
   )
 done
 
+ci_report_attempt_start 1
 (
   cd "$repo_root/im_flutter_sdk"
-  flutter test --coverage
+  test_command=(flutter test --coverage --file-reporter "json:$report_dir/attempt-1.events.jsonl")
+  if [[ -n "${CI_TEST_NAME:-}" ]]; then test_command+=(--name "$CI_TEST_NAME"); fi
+  "${test_command[@]}" 2>&1 | tee "$report_dir/attempt-1.log"
+)
+ci_report_attempt 0
+(
+  cd "$repo_root/im_flutter_sdk"
   dart run tool/ci/check_case_mapping.dart .
   dart run tool/ci/check_contracts.dart ..
   dart run tool/ci/check_versions.dart ..
