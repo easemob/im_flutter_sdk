@@ -73,7 +73,7 @@
 | D3 | C→登记 | modules/group_cases.dart FL-GROUP-014 | 清除自己群名片后，getGroupNamecard 在 5s 轮询内仍返回旧值 | 用例不改、SDK 不改，等 native 修复 | 用例注释已注明 native bug HIM-24170（群成员名片更新时间秒/毫秒截断，旧缓存胜过删除更新）；5.1.0 与 4.25.0 用例代码完全一致，非迁移引入；ci-device 双平台一致复现 |
 | D4 | B→已适配 | modules/conversation_cases.dart FL-CONV-002 | 本地插入 2 条接收消息后 unreadCount 为 2 而非 0（用例假设为 5.x 行为「本地插入不增加未读」） | 已适配：断言改为插入后 unread=2（4.25.0 native 语义：本地插入的接收消息计未读），markAllMessagesAsRead 两轮归零验证幂等 | ci-device 双平台一致 Actual: 2；4.25.0 无 clearConversationUnreadMessageCount，T2-7 已适配为 markAllMessagesAsRead |
 | D5 | D | ci-device Android lane 基础设施 | ①logged-out smoke：Gradle 解析 kotlin-stdlib:2.2.21 在 plugins.gradle.org 404（第二轮自行恢复，属瞬时仓库同步问题）；②logged_in_user_info_test：Failed to start Dart Development Service；③conversation_config_test：模拟器离线（前两者的级联） | 不改代码，重跑验证 | iOS lane 无此现象；失败均发生在用例执行之前 |
-| D6 | D | ci-device 第二轮 Android logged-in 时序 flake | FL-ROOM-001（fetchChatRoomInfoFromServer 成功后 getChatRoomWithId 本地缓存未就绪返回 null）、FL-CONTACT-001/011（REST 变更后重新登录同步，联系人列表 30s 内仍为空）——三个用例在 Android 第一轮通过、iOS 第二轮通过，仅 Android 第二轮失败 | 不改代码，rerun 验证；再复现才升级为待查项 | 失败模式均为同步/缓存时序；用例代码与 5.1.0 一致 |
+| D6 | D→已验证 | ci-device 第二轮 Android logged-in 时序 flake | FL-ROOM-001（fetchChatRoomInfoFromServer 成功后 getChatRoomWithId 本地缓存未就绪返回 null）、FL-CONTACT-001/011（REST 变更后重新登录同步，联系人列表 30s 内仍为空）——三个用例在 Android 第一轮通过、iOS 第二轮通过，仅 Android 第二轮失败 | rerun 后三者全部通过，确认为时序 flake，不改代码 | 失败模式均为同步/缓存时序；用例代码与 5.1.0 一致；rerun（job 136281732762）Android logged-in 74/76，仅剩 FL-MSG-007/FL-GROUP-014 两个已登记 native bug |
 
 ## T5 example 与账号机制
 
