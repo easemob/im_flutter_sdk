@@ -128,10 +128,11 @@ Every device task on CI has an equivalent local script; the scripts first compar
 | Workflow | Trigger | Content | Local equivalent |
 |----------|---------|---------|------------------|
 | `.github/workflows/ci.yml` | PR, push to `flutter2_stable` / `4.*` / `5.*`, manual | Quality gate + Android debug build + iOS simulator build | `bash tool/ci/run_quality.sh` |
-| `.github/workflows/device-smoke.yml` | Daily schedule + manual | Android / iOS logged-out smoke (`integration_test/logged_out_test.dart`, uses the test's built-in public demo appKey, no credentials needed) | `bash tool/ci/smoke_local.sh android\|ios` |
-| `.github/workflows/single-account-nightly.yml` | Daily schedule + manual | Four fixed logged-in categories: base, group, contact, and user info | `bash tool/ci/nightly_local.sh android\|ios` |
+| `.github/workflows/ci-device.yml` | Daily schedule + manual | Four independent parallel lanes: Android/iOS logged-out smoke (`integration_test/logged_out_test.dart`, built-in public demo appKey, no credentials needed) and Android/iOS logged-in regression (base, group, contact, user info suites) | `bash tool/ci/smoke_local.sh android\|ios` and `bash tool/ci/nightly_local.sh android\|ios` |
 
-> The cron in `single-account-nightly.yml` (`37 18 * * *`, one hour earlier than RN's nightly) only takes effect on the **default branch** (`flutter2_stable`) — GitHub scheduled workflows "run the latest commit of the default branch using the default branch's workflow file", so before this file lands on the default branch, scheduled triggers on the 5.0.0 branch will not happen; only manual dispatch works.
+> `ci-device.yml` replaces the former `device-smoke.yml` and `single-account-nightly.yml`: all four lanes are independent and run in parallel, so a failing test case or lane never delays or blocks the others. The two logged-in lanes share one test account across platforms and require multi-device login enabled on the console (the React Native device regression already runs this way).
+
+> The cron in `ci-device.yml` (`37 18 * * *`, one hour earlier than RN's device regression) only takes effect on the **default branch** (`flutter2_stable`) — GitHub scheduled workflows "run the latest commit of the default branch using the default branch's workflow file", so before this file lands on the default branch, scheduled triggers on the 5.x branches will not happen; only manual dispatch works.
 
 Android requires a booted emulator (the scripts hard-connect to `emulator-5554`); on iOS, `run_ios_simulator_test.sh` boots the simulator itself, with logs written to `artifacts/*.log` (gitignored).
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # One-command local run of the single-account nightly test. Mirrors the steps
-# of .github/workflows/single-account-nightly.yml so a local run exercises
-# exactly what CI runs.
+# of the logged-in lanes of .github/workflows/ci-device.yml so a local run
+# exercises exactly what CI runs.
 #
 # Without E2E_CONFIG_PATH, required environment (same names as GitHub secrets;
 # the user token is fetched fresh by tool/ci/fetch_e2e_user_token.sh):

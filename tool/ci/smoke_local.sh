@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # One-command local run of the device smoke test. Mirrors the steps of
-# .github/workflows/device-smoke.yml so a local run exercises exactly what
-# CI runs (the actual test execution lives in run_{android,ios}_*_test.sh,
-# which the workflows also call).
+# the logged-out lanes of .github/workflows/ci-device.yml so a local run
+# exercises exactly what CI runs (the actual test execution lives in
+# run_{android,ios}_*_test.sh, which the workflows also call).
 #
 # No credentials needed: the no-login test uses the public demo app key
 # built into the test as its default.
