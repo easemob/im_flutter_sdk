@@ -1,0 +1,22 @@
+{
+ "_comment": "4.25.0 逆向路径（auto 模式，自 5.1.0 script_510_apis_negative 迁移）。初始化关闭自动加载后，验证本地会话分页非法 cursor 的 110 契约；init 移除 5.x 专属 dataSyncType，api 名适配为 4.25.0 的 fetchConversationsFromDB。",
+ "init": {
+  "autoLoadConversations": false,
+  "enableChatroomConversation": false,
+  "enableUserInfo": false,
+  "debugMode": true
+ },
+ "steps": [
+  {
+   "api": "ChatManager.fetchConversationsFromDB",
+   "id": "invalid_conversation_cursor",
+   "params": {
+    "cursor": "not-a-valid-conversation-cursor",
+    "pageSize": 20
+   },
+   "expect": {
+    "errorCode": 110
+   }
+  }
+ ]
+}

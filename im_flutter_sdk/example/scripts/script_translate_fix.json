@@ -1,1 +1,0 @@
-{"steps": [{"api": "EMChatManager.translateMessage", "id": "trans_not_exist", "params": {"message": {"msgId": "not-exist-msg-id-000000", "to": "zuoyu02", "chatType": 0, "direction": 0, "status": 2, "body": {"type": 0, "content": "hello"}}, "languages": ["zh-Hans"]}, "delayAfterMs": 2000}]}

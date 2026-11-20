@@ -1,9 +1,9 @@
 {
   "steps": [
     {
-      "api": "EMChatManager.sendMessage",
+      "api": "ChatManager.sendMessage",
       "params": {
-        "to": "$config.userId01",
+        "to": "$config.accounts.1.id",
         "chatType": 0,
         "direction": 0,
         "status": 0,
@@ -11,38 +11,38 @@
       }
     },
     {
-      "api": "EMUserInfoManager.subscribeUsersInfo",
-      "params": {"userIds": ["$config.userId01"]}
+      "api": "ChatUserInfoManager.subscribeUsersInfo",
+      "params": {"userIds": ["$config.accounts.1.id"]}
     },
     {
-      "api": "EMUserInfoManager.fetchSubscribedUsers",
+      "api": "ChatUserInfoManager.fetchSubscribedUsers",
       "params": {}
     },
     {
-      "api": "EMUserInfoManager.getLocalUserInfoByIds",
-      "params": {"userIds": ["$config.userId01"]}
+      "api": "ChatUserInfoManager.getLocalUserInfoByIds",
+      "params": {"userIds": ["$config.accounts.1.id"]}
     },
     {
-      "api": "EMUserInfoManager.unsubscribeUsersInfo",
-      "params": {"userIds": ["$config.userId01"]}
+      "api": "ChatUserInfoManager.unsubscribeUsersInfo",
+      "params": {"userIds": ["$config.accounts.1.id"]}
     },
     {
-      "api": "EMGroupManager.updateGroupNamecard",
-      "params": {"groupId": "$config.groupId01", "namecard": "api-test-名片"},
+      "api": "ChatGroupManager.updateGroupNamecard",
+      "params": {"groupId": "$config.groups.0.id", "namecard": "api-test-名片"},
       "delayAfterMs": 800
     },
     {
-      "api": "EMGroupManager.getGroupNamecard",
-      "params": {"groupId": "$config.groupId01", "userId": "$config.loginUser"}
+      "api": "ChatGroupManager.getGroupNamecard",
+      "params": {"groupId": "$config.groups.0.id", "userId": "$config.accounts.0.id"}
     },
     {
-      "api": "EMGroupManager.updateGroupNamecard",
-      "params": {"groupId": "$config.groupId01"},
+      "api": "ChatGroupManager.updateGroupNamecard",
+      "params": {"groupId": "$config.groups.0.id"},
       "delayAfterMs": 800
     },
     {
-      "api": "EMGroupManager.getGroupNamecard",
-      "params": {"groupId": "$config.groupId01", "userId": "$config.loginUser"}
+      "api": "ChatGroupManager.getGroupNamecard",
+      "params": {"groupId": "$config.groups.0.id", "userId": "$config.accounts.0.id"}
     },
     {
       "api": "TestUtil.writeBase64File",
@@ -53,10 +53,10 @@
       }
     },
     {
-      "api": "EMChatManager.sendMessage",
+      "api": "ChatManager.sendMessage",
       "id": "imgMsg",
       "params": {
-        "to": "$config.userId01",
+        "to": "$config.accounts.1.id",
         "chatType": 0,
         "direction": 0,
         "status": 0,
@@ -65,7 +65,7 @@
       "delayAfterMs": 1000
     },
     {
-      "api": "EMChatManager.downloadBigImage",
+      "api": "ChatManager.downloadBigImage",
       "params": {"message": "$step.imgMsg"},
       "delayAfterMs": 1500
     },
@@ -78,10 +78,10 @@
       }
     },
     {
-      "api": "EMChatManager.sendMessage",
+      "api": "ChatManager.sendMessage",
       "id": "voiceMsg",
       "params": {
-        "to": "$config.userId01",
+        "to": "$config.accounts.1.id",
         "chatType": 0,
         "direction": 0,
         "status": 0,
@@ -90,11 +90,11 @@
       "delayAfterMs": 1000
     },
     {
-      "api": "EMChatManager.voiceMessageToText",
+      "api": "ChatManager.voiceMessageToText",
       "params": {"message": "$step.voiceMsg"}
     },
     {
-      "api": "EMChatManager.voiceFileToText",
+      "api": "ChatManager.voiceFileToText",
       "params": {"filePath": "$step.voiceFile.path"}
     }
   ]

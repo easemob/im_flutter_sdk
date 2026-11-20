@@ -4,8 +4,60 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import '../api_entry.dart';
 
+Map<String, Object?> conversationToScriptJson(
+  ChatConversation conversation,
+) =>
+    {
+      'id': conversation.id,
+      'type': conversation.type.index,
+    };
+
 /// ChatManager related entries.
 final chatApis = <ApiEntry>[
+  ApiEntry(
+    name: 'ChatManager.loadMessage',
+    group: 'ChatManager',
+    description: '从本地数据库读取消息，核对正文、attributes 和已读状态；不存在时返回 null。',
+    paramsTemplate: '{"messageId": "messageId"}',
+    invoke: (p) => ChatClient.getInstance.chatManager
+        .loadMessage(p['messageId'] as String),
+  ),
+  ApiEntry(
+    name: 'ChatManager.getUnreadMessageCount',
+    group: 'ChatManager',
+    description: '获取所有会话未读消息总数。5.0.0 起不统计聊天室和免打扰会话。',
+    paramsTemplate: '{}',
+    invoke: (_) => ChatClient.getInstance.chatManager.getUnreadMessageCount(),
+  ),
+  ApiEntry(
+    name: 'ChatManager.loadAllConversations',
+    group: 'ChatManager',
+    description: '读取全部本地会话，按原生默认排序返回。',
+    paramsTemplate: '{}',
+    invoke: (p) async =>
+        (await ChatClient.getInstance.chatManager.loadAllConversations())
+            .map(conversationToScriptJson)
+            .toList(),
+  ),
+  ApiEntry(
+    name: 'ChatManager.fetchConversationsFromDB',
+    group: 'ChatManager',
+    description: '分页读取本地会话。初始化时须设置 autoLoadConversations=false；'
+        'cursor 为空时读取首页，返回 cursor 为空表示末页；pageSize 范围 1–100，默认 20。'
+        '按置顶状态、最新消息服务器时间、会话 ID（忽略大小写）依次降序。',
+    paramsTemplate: '{"cursor": "", "pageSize": 20}',
+    invoke: (p) async {
+      final result =
+          await ChatClient.getInstance.chatManager.fetchConversationsFromDB(
+        cursor: p['cursor'] as String?,
+        pageSize: p['pageSize'] as int? ?? 20,
+      );
+      return {
+        'cursor': result.cursor,
+        'list': result.data.map(conversationToScriptJson).toList(),
+      };
+    },
+  ),
   ApiEntry(
     name: 'ChatManager.sendMessage',
     group: 'ChatManager',
@@ -26,13 +78,10 @@ final chatApis = <ApiEntry>[
 }''',
     invoke: (p) async {
       final msg = ChatMessage.fromJson(p);
-      final sent = await ChatClient.getInstance.chatManager.sendMessage(msg);
-      // sendMessage returns the pre-send message (local msgId); on success the server rewrites
-      // the msgId, and the local DB stores it with the new id. downloadBigImage / voiceMessageToText
-      // wrappers look up DB by msgId, so we must wait for the message status event to get the new id,
-      // otherwise subsequent steps cannot find it (direct NPE / 500 on Android).
-      final localId = sent.msgId;
-      const eventId = 'api_tester_send_message';
+      // Register before sending: the status callback can precede the method reply.
+      // Its localId correlates the original message with the server-assigned ID.
+      final localId = msg.msgId;
+      final eventId = 'api_tester_send_message_$localId';
       final completer = Completer<ChatMessage>();
       ChatClient.getInstance.chatManager.addMessageEvent(
         eventId,
@@ -50,7 +99,15 @@ final chatApis = <ApiEntry>[
         ),
       );
       try {
-        return await completer.future.timeout(const Duration(seconds: 30));
+        // Observe both futures immediately, including an early error callback.
+        final results = await Future.wait<ChatMessage>(
+          [
+            ChatClient.getInstance.chatManager.sendMessage(msg),
+            completer.future
+          ],
+          eagerError: true,
+        ).timeout(const Duration(seconds: 30));
+        return results[1];
       } finally {
         ChatClient.getInstance.chatManager.removeMessageEvent(eventId);
       }
@@ -87,6 +144,38 @@ final chatApis = <ApiEntry>[
     },
   ),
   ApiEntry(
+    name: 'ChatManager.recallMessage',
+    group: 'ChatManager',
+    description: '撤回发送成功的消息；可通过 ext 透传本次撤回的标识。',
+    paramsTemplate: '{"messageId": "messageId", "ext": "recall reason"}',
+    invoke: (p) => ChatClient.getInstance.chatManager.recallMessage(
+      p['messageId'] as String,
+      ext: p['ext'] as String?,
+    ),
+  ),
+  ApiEntry(
+    name: 'ChatManager.modifyMessage',
+    group: 'ChatManager',
+    description: '修改消息正文和/或扩展属性。5.0.0 起支持 attributes 参数。',
+    paramsTemplate: '''{
+  "messageId": "messageId",
+  "content": "modified content",
+  "attributes": {"key": "value"}
+}''',
+    invoke: (p) async {
+      final attributes = p['attributes'];
+      final result = await ChatClient.getInstance.chatManager.modifyMessage(
+        messageId: p['messageId'] as String,
+        msgBody: p['content'] == null
+            ? null
+            : ChatTextMessageBody(content: p['content'] as String),
+        attributes:
+            attributes is Map ? Map<String, dynamic>.from(attributes) : null,
+      );
+      return result.toJson();
+    },
+  ),
+  ApiEntry(
     name: 'ChatManager.searchMessagesFromServer',
     group: 'ChatManager',
     description: '服务端消息搜索（4.24 新增，需 Console 开通「消息搜索」增值服务，未开通时调用报错）。'
@@ -118,30 +207,6 @@ final chatApis = <ApiEntry>[
       );
       return {
         'count': result.pageCount,
-        'list': result.data.map((e) => e.toJson()).toList(),
-      };
-    },
-  ),
-  ApiEntry(
-    name: 'ChatManager.fetchConversationsFromDB',
-    group: 'ChatManager',
-    description: '分页从本地数据库获取会话列表（4.25 新增）。'
-        '前置条件：初始化时需将 ChatOptions.autoLoadConversations 设为 false。'
-        '排序：置顶状态倒序 > 最新一条消息的服务器时间倒序 > 会话 ID 倒序（不区分大小写）。'
-        'cursor 传空从第一页开始，结果中 cursor 为空串表示最后一页；pageSize 取值 [1,100]，'
-        'cursor 无效抛 ChatError（INVALID_PARAM）。返回 {"cursor": "...", "list": [...]}。',
-    paramsTemplate: '''{
-  "cursor": "",
-  "pageSize": 20
-}''',
-    invoke: (p) async {
-      String? cursor = p['cursor'] as String?;
-      if (cursor != null && cursor.isEmpty) cursor = null;
-      final pageSize = p['pageSize'] as int? ?? 20;
-      final result = await ChatClient.getInstance.chatManager
-          .fetchConversationsFromDB(cursor: cursor, pageSize: pageSize);
-      return {
-        'cursor': result.cursor,
         'list': result.data.map((e) => e.toJson()).toList(),
       };
     },

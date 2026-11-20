@@ -1,0 +1,150 @@
+{
+ "_comment": "4.25.0 正向路径（auto 模式，自 5.1.0 script_500_apis_positive 迁移）。已移除 5.x 专属步骤：清除未读数、updateGroupConfigs、已读回执链（4.25.0 无这些 API）；createGroup 参数由 configs 改为 options。覆盖自聊收发/改消息、未读数、会话列表、建群与群消息、设备列表/续期/踢设备。",
+ "steps": [
+  {
+   "api": "ChatManager.getUnreadMessageCount",
+   "id": "unread_before",
+   "params": {},
+   "expect": {
+    "success": true
+   }
+  },
+  {
+   "api": "ChatManager.sendMessage",
+   "id": "msg_self",
+   "params": {
+    "to": "$config.accounts.0.id",
+    "chatType": 0,
+    "direction": 0,
+    "status": 0,
+    "body": {
+     "type": 0,
+     "content": "flutter-port-4.25.0 positive self-chat"
+    }
+   },
+   "delayAfterMs": 1000,
+   "expect": {
+    "success": true
+   }
+  },
+  {
+   "api": "ChatManager.modifyMessage",
+   "id": "modify_self",
+   "params": {
+    "messageId": "$step.msg_self.msgId",
+    "content": "flutter-port-4.25.0 positive self-chat (modified)",
+    "attributes": {
+     "port": "4.25.0",
+     "path": "positive"
+    }
+   },
+   "expect": {
+    "success": true
+   }
+  },
+  {
+   "api": "ChatManager.getUnreadMessageCount",
+   "id": "unread_after",
+   "params": {},
+   "expect": {
+    "success": true
+   }
+  },
+  {
+   "api": "ChatManager.loadAllConversations",
+   "id": "conversations",
+   "params": {},
+   "expect": {
+    "success": true
+   }
+  },
+  {
+   "api": "ChatGroupManager.createGroup",
+   "id": "group",
+   "params": {
+    "groupName": "flutter-port-500-positive",
+    "desc": "5.0.0 positive-path verification",
+    "options": {
+     "maxCount": 200,
+     "inviteNeedConfirm": false,
+     "ext": ""
+    }
+   },
+   "expect": {
+    "success": true
+   }
+  },
+  {
+   "api": "ChatManager.sendMessage",
+   "id": "group_message",
+   "params": {
+    "to": "$step.group.groupId",
+    "chatType": 1,
+    "direction": 0,
+    "status": 0,
+    "body": {
+     "type": 0,
+     "content": "flutter-port-4.25.0 positive group message"
+    }
+   },
+   "delayAfterMs": 1000,
+   "expect": {
+    "success": true
+   }
+  },
+  {
+   "api": "ChatClient.fetchLoggedInDevices",
+   "id": "devices",
+   "params": {
+    "userId": "$config.accounts.0.id",
+    "token": "$config.accounts.0.token"
+   },
+   "expect": {
+    "success": true
+   }
+  },
+  {
+   "api": "ChatClient.renewToken",
+   "id": "renew",
+   "params": {
+    "token": "$config.accounts.0.token"
+   },
+   "expect": {
+    "success": true
+   }
+  },
+  {
+   "api": "ChatGroupManager.destroyGroup",
+   "id": "group_destroy",
+   "params": {
+    "groupId": "$step.group.groupId"
+   },
+   "expect": {
+    "success": true
+   }
+  },
+  {
+   "api": "ChatClient.kickDevice",
+   "id": "kick_current_device",
+   "params": {
+    "userId": "$config.accounts.0.id",
+    "token": "$config.accounts.0.token",
+    "resource": "$step.devices.0.resource"
+   },
+   "expect": {
+    "success": true
+   }
+  },
+  {
+   "api": "ChatClient.kickAllDevices",
+   "id": "kick_all",
+   "params": {
+    "userId": "$config.accounts.0.id",
+    "token": "$config.accounts.0.token"
+   },
+   "expect": {
+    "success": true
+   }
+  }
+ ]
+}

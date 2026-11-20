@@ -66,6 +66,8 @@ class AttachmentPicker {
 
   /// Pick an attachment of the specified kind; returns the record.
   static Future<AttachmentRecord?> pick(AttachmentKind kind) async {
+    // file_picker ^8 API: pickFiles + PlatformFile.size. The 13.x
+    // FilePicker.pickFile API is not available at this constraint.
     final result = await FilePicker.platform.pickFiles(
       type: switch (kind) {
         AttachmentKind.image => FileType.image,

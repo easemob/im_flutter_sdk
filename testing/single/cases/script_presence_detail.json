@@ -1,0 +1,15 @@
+{
+  "steps": [
+    { "api": "ChatPresenceManager.subscribe", "id": "sub1",
+      "params": { "members": ["$config.accounts.1.id"], "expiry": 2592000 },
+      "delayAfterMs": 2000 },
+    { "api": "ChatPresenceManager.fetchPresenceStatus", "id": "status1",
+      "params": { "members": ["$config.accounts.1.id"] },
+      "delayAfterMs": 1000 },
+    { "api": "ChatPresenceManager.publishPresence", "id": "pubNormal",
+      "params": { "desc": "api-test-rerun" },
+      "delayAfterMs": 4000 },
+    { "api": "ChatPresenceManager.fetchSubscribedMembers", "id": "members0",
+      "params": { "pageNum": 1, "pageSize": 0 } }
+  ]
+}
