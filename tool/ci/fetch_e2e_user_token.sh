@@ -17,6 +17,13 @@
 #   E2E_CLIENT_SECRET app client secret
 #   E2E_USER_ID       account user id to fetch a token for
 #
+# Optional environment:
+#   E2E_USER_SUFFIX   appended to E2E_USER_ID to derive the effective account
+#                     (e.g. _flutter_android / _flutter_ios per CI lane), so
+#                     parallel lanes use isolated accounts; the peer id derives
+#                     from the effective id as well. Unset or empty keeps the
+#                     base id unchanged.
+#
 # Without arguments, stdout contains only the user token. --json prepares a
 # reusable peer account and returns the six dart-defines for integration tests.
 # Diagnostics go to stderr. Exit code is non-zero on failure.
@@ -51,6 +58,10 @@ for tool in curl jq; do
     exit 2
   }
 done
+
+# Effective account: optional per-lane suffix keeps parallel CI lanes on
+# isolated accounts (and isolated derived peers) without new secrets.
+effective_user_id="${E2E_USER_ID}${E2E_USER_SUFFIX:-}"
 
 invalid_app_key() {
   printf 'fetch_e2e_user_token: invalid E2E_APP_KEY (expect orgName#appName)\n' \
@@ -133,7 +144,7 @@ fetch_user_token() {
     '{grant_type: "client_credentials", client_id: $client_id, client_secret: $client_secret}')")" ||
     return 1
   user_token="$(post_token "$token_url" "$(jq -n \
-    --arg username "$E2E_USER_ID" \
+    --arg username "$effective_user_id" \
     '{username: $username, grant_type: "inherit", autoCreateUser: true}')" \
     "$app_token")" || return 1
   if [[ "$output_format" == token ]]; then
@@ -141,15 +152,15 @@ fetch_user_token() {
     return 0
   fi
 
-  # Stable per primary account: repeated runs do not accumulate new users.
-  peer_id="${E2E_USER_ID}_ci_peer"
+  # Stable per effective account: repeated runs do not accumulate new users.
+  peer_id="${effective_user_id}_ci_peer"
   post_token "$token_url" "$(jq -n --arg username "$peer_id" \
     '{username: $username, grant_type: "inherit", autoCreateUser: true}')" \
     "$app_token" >/dev/null || return 1
 
   jq -n \
     --arg app_key "$E2E_APP_KEY" \
-    --arg user_id "$E2E_USER_ID" \
+    --arg user_id "$effective_user_id" \
     --arg user_token "$user_token" \
     --arg peer_id "$peer_id" \
     --arg rest_api "$E2E_REST_API" \
@@ -163,7 +174,7 @@ attempt=1
 while [ "$attempt" -le "$max_attempts" ]; do
   if prepared="$(fetch_user_token)"; then
     printf 'fetch_e2e_user_token: prepared %s (attempt %s)\n' \
-      "$E2E_USER_ID" "$attempt" >&2
+      "$effective_user_id" "$attempt" >&2
     printf '%s\n' "$prepared"
     exit 0
   fi

@@ -6,6 +6,9 @@
 #
 # Required environment:
 #   E2E_APP_KEY  E2E_USER_ID  E2E_REST_API  E2E_CLIENT_ID  E2E_CLIENT_SECRET
+# Optional environment:
+#   E2E_USER_SUFFIX  account suffix deriving the effective id and peer (see
+#                    fetch_e2e_user_token.sh); passed through untouched.
 # Tokens and the reusable peer account are prepared automatically.
 #
 # Usage:
