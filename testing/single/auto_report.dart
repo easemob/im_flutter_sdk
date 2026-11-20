@@ -113,8 +113,9 @@ writes $_reportsRelativePath/comparison-<timestamp>.md.
     suffix++;
   }
   final runId = '$runDirName-$platform';
-  final reportDir =
-      Directory('${root.path}/$_reportsRelativePath/$runDirName/$platform');
+  final reportDir = Directory(
+    '${root.path}/$_reportsRelativePath/$runDirName/$platform',
+  );
   await reportDir.create(recursive: true);
   final eventsFile = File('${reportDir.path}/events.jsonl');
   final crashFile = File('${reportDir.path}/crash.log');
@@ -646,11 +647,13 @@ class _DeviceLogCapture {
       await subscription.cancel();
     }
     _process.kill(ProcessSignal.sigint);
-    final exited = await _process.exitCode
-        .timeout(const Duration(seconds: 5), onTimeout: () {
-      _process.kill(ProcessSignal.sigkill);
-      return -1;
-    });
+    final exited = await _process.exitCode.timeout(
+      const Duration(seconds: 5),
+      onTimeout: () {
+        _process.kill(ProcessSignal.sigkill);
+        return -1;
+      },
+    );
     await _sink.flush();
     await _sink.close();
     final logFile = File(_logPath);
@@ -917,9 +920,7 @@ Future<void> _writeSummary(
     ..writeln(
       '- Crash evidence: `${state.crashLines.isEmpty ? 'none' : 'see crash.log'}`',
     )
-    ..writeln(
-      '- Device log: `${state.deviceLogFile ?? 'not captured'}`',
-    )
+    ..writeln('- Device log: `${state.deviceLogFile ?? 'not captured'}`')
     ..writeln()
     ..writeln('## Step outcomes')
     ..writeln();

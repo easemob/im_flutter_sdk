@@ -27,14 +27,14 @@ class AgentCommandError implements Exception {
 /// Business API executor: `(api, params) -> envelope map`. Production wires
 /// [runApi]; tests inject fakes. The envelope shape is the runApi contract:
 /// `{success: bool, data?: ...}` or `{success: false, failureKind, error}`.
-typedef AgentExecutor =
-    Future<Map<String, dynamic>> Function(String api, Map<String, dynamic> params);
+typedef AgentExecutor = Future<Map<String, dynamic>> Function(
+    String api, Map<String, dynamic> params);
 
 /// ChatClient.init is the single agent-side special case (agent-service §6):
 /// config/overrides are merged by the app's options assembly, then listeners
 /// are registered and the SDK state marked initialized.
-typedef AgentInitHandler =
-    Future<Map<String, dynamic>> Function(Map<String, dynamic> params);
+typedef AgentInitHandler = Future<Map<String, dynamic>> Function(
+    Map<String, dynamic> params);
 
 class CommandRecord {
   CommandRecord(this.commandId, this.api, this.canonical);
@@ -103,8 +103,8 @@ class CommandService extends ChangeNotifier {
       throw AgentCommandError(410, 'closed', '控制服务已关闭（finish）');
     }
     if (_state == AgentServiceState.uncertain) {
-      throw AgentCommandError(503, 'uncertain',
-          '上一命令超时后底层状态未知；显式 finish 放弃，或重启 App');
+      throw AgentCommandError(
+          503, 'uncertain', '上一命令超时后底层状态未知；显式 finish 放弃，或重启 App');
     }
 
     final commandId = command['commandId'];
@@ -151,11 +151,12 @@ class CommandService extends ChangeNotifier {
     final record = CommandRecord(commandId, api, canonical);
     _records[commandId] = record;
     _inFlight = record;
-    logger('agent.command', {'event': 'accepted', 'commandId': commandId, 'api': api});
+    logger('agent.command',
+        {'event': 'accepted', 'commandId': commandId, 'api': api});
 
     // Detached execution: the HTTP layer already answered 202.
-    unawaited(_execute(record, params, timeoutMs, isInit,
-        expect: command['expect']));
+    unawaited(
+        _execute(record, params, timeoutMs, isInit, expect: command['expect']));
     return record;
   }
 
@@ -168,7 +169,8 @@ class CommandService extends ChangeNotifier {
   }) async {
     final fromSeq = _currentSeq();
     var timedOut = false;
-    final future = isInit ? initHandler(params) : executeApi(record.api, params);
+    final future =
+        isInit ? initHandler(params) : executeApi(record.api, params);
 
     // Late completion after a timeout stays visible in the evidence stream
     // as an ordinary event; it never overwrites the first terminal state.
@@ -263,7 +265,8 @@ class CommandService extends ChangeNotifier {
   CommandRecord? lookup(String commandId) => _records[commandId];
 
   /// Snapshot for the HTTP layer (running or terminal).
-  Map<String, Object?> recordJson(CommandRecord record) => record.result ??
+  Map<String, Object?> recordJson(CommandRecord record) =>
+      record.result ??
       {
         'commandId': record.commandId,
         'status': 'running',

@@ -86,7 +86,8 @@ class ControlServer {
       if (!req.uri.path.startsWith('/v1/')) {
         return _json(res, 404, _err('not_found', '未知路径 ${req.uri.path}'));
       }
-      if (req.headers.value(HttpHeaders.authorizationHeader) != 'Bearer $token') {
+      if (req.headers.value(HttpHeaders.authorizationHeader) !=
+          'Bearer $token') {
         return _json(res, 401, _err('unauthorized', '缺少或错误的控制凭据'));
       }
 
@@ -115,12 +116,10 @@ class ControlServer {
       }
     } catch (e) {
       if (e is AgentCommandError) {
-        return _json(
-            req.response, e.statusCode, _err(e.code, e.message));
+        return _json(req.response, e.statusCode, _err(e.code, e.message));
       }
       try {
-        return _json(req.response, 500,
-            _err('internal', '内部错误：$e'));
+        return _json(req.response, 500, _err('internal', '内部错误：$e'));
       } catch (_) {
         // response already closed; nothing more we can do
       }
@@ -173,8 +172,11 @@ class ControlServer {
     final waitMs = (int.tryParse(q['waitMs'] ?? '0') ?? 0).clamp(0, maxWaitMs);
 
     if (evidence.degraded && afterSeq < evidence.firstAvailableSeq) {
-      return _json(res, 410, _err('evidence_gap',
-          '证据缓冲已溢出：firstAvailableSeq=${evidence.firstAvailableSeq}'));
+      return _json(
+          res,
+          410,
+          _err('evidence_gap',
+              '证据缓冲已溢出：firstAvailableSeq=${evidence.firstAvailableSeq}'));
     }
 
     final events = await evidence.queryWithWait(
@@ -216,8 +218,9 @@ class ControlServer {
     return utf8.decode(builder.takeBytes());
   }
 
-  static Map<String, Object?> _err(String code, String message) =>
-      {'error': {'code': code, 'message': message}};
+  static Map<String, Object?> _err(String code, String message) => {
+        'error': {'code': code, 'message': message}
+      };
 
   static void _json(HttpResponse res, int status, Object? body) {
     res.statusCode = status;

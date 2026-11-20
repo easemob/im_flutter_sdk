@@ -69,7 +69,9 @@ class _AgentHomePageState extends State<AgentHomePage> {
     return Scaffold(
       appBar: AppBar(title: const Text('监听交互模式（agent）')),
       body: _error != null
-          ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Text(_error!)))
+          ? Center(
+              child: Padding(
+                  padding: const EdgeInsets.all(24), child: Text(_error!)))
           : server == null
               ? const Center(child: CircularProgressIndicator())
               : ListenableBuilder(
@@ -156,7 +158,8 @@ class _AgentHomePageState extends State<AgentHomePage> {
           children: [
             SizedBox(
               width: 96,
-              child: Text(k, style: const TextStyle(fontWeight: FontWeight.bold)),
+              child:
+                  Text(k, style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
             Expanded(
               child: SelectableText(
@@ -174,7 +177,8 @@ class _AgentHomePageState extends State<AgentHomePage> {
 /// merges them (business knowledge stays in the app). On success listeners
 /// are registered and the SDK state marked initialized — same behavior as
 /// AutoMode.
-Future<Map<String, dynamic>> agentInitHandler(Map<String, dynamic> params) async {
+Future<Map<String, dynamic>> agentInitHandler(
+    Map<String, dynamic> params) async {
   try {
     final config = params['config'] is Map
         ? Map<String, dynamic>.from(params['config'] as Map)
