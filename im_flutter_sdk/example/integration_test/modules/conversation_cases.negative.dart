@@ -1,0 +1,71 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
+import '../support/ci_test.dart';
+
+void registerConversationNegativeCases({
+  required ChatClient client,
+  required String userId,
+}) {
+  // Test: In a conversation containing one stored message, call the conversation
+  // updateMessage API with a different message that has never been persisted.
+  // Expected: ChatError 500; no new message is inserted, the count remains one,
+  // and the original message ID/content are unchanged.
+  ciTestWidgets('FL-CONV-009 negative update rejects an unpersisted message',
+      (_) async {
+    final manager = client.chatManager;
+    final id = 'ci_conv_negative_${DateTime.now().microsecondsSinceEpoch}';
+    addTearDown(() async {
+      await manager.deleteConversation(id, deleteMessages: true);
+      expect(await manager.getConversation(id, createIfNeed: false), isNull);
+    });
+    final conversation =
+        (await manager.getConversation(id, createIfNeed: true))!;
+    ChatMessage message(String suffix) {
+      final draft =
+          ChatMessage.createTxtSendMessage(targetId: id, content: suffix)
+            ..from = userId
+            ..conversationId = id
+            ..status = MessageStatus.SUCCESS
+            ..localTime = 1000
+            ..serverTime = 1000;
+      return ChatMessage.fromJson(
+          {...draft.toJson(), 'msgId': '${id}_$suffix'});
+    }
+
+    final stored = message('stored');
+    final absent = message('absent');
+    await conversation.insertMessage(stored);
+    expect(await conversation.messagesCount(), 1);
+    expect(await manager.loadMessage(absent.msgId), isNull);
+
+    await expectCiError(() => conversation.updateMessage(absent), 500);
+
+    expect(await manager.loadMessage(absent.msgId), isNull);
+    expect(await conversation.messagesCount(), 1);
+    expect((await conversation.loadMessages()).map((item) => item.msgId),
+        [stored.msgId]);
+    final reloaded = await conversation.loadMessage(stored.msgId);
+    expect((reloaded!.body as ChatTextMessageBody).content, 'stored');
+  });
+}
+
+void registerConversationPaginationNegativeCases({
+  required ChatClient client,
+}) {
+  // Test: Pass a malformed nonempty pagination cursor after initialization
+  // with autoLoadConversations=false.
+  // Expected: ChatError 110 (invalid parameter).
+  ciTestWidgets(
+      'FL-CONV-012 negative database pagination rejects invalid cursor',
+      (_) async {
+    expect(client.options!.autoLoadConversations, isFalse);
+    await expectCiError(
+      () => client.chatManager.fetchConversationsFromDB(
+        cursor: 'ci-invalid-cursor-not-generated-by-sdk',
+        pageSize: 2,
+      ),
+      110,
+    );
+  });
+}

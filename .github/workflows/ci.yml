@@ -47,7 +47,9 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: flutter-unit-coverage-${{ github.run_id }}
-          path: im_flutter_sdk/coverage/lcov.info
+          path: |
+            im_flutter_sdk/coverage/lcov.info
+            artifacts/ci/
           if-no-files-found: warn
           retention-days: 7
 
@@ -76,6 +78,12 @@ jobs:
       - name: Use local SDK packages
         run: bash tool/use_local_packages.sh
 
+      - name: Create the example env placeholder
+        # im_flutter_sdk/example imports the gitignored lib/env.dart, and no
+        # earlier step creates it in a fresh checkout, so the example does not
+        # compile without this placeholder (see the script's header).
+        run: ./tool/ci/ensure_example_env.sh
+
       - name: Build Android example
         working-directory: im_flutter_sdk/example
         run: |
@@ -101,6 +109,10 @@ jobs:
 
       - name: Use local SDK packages
         run: bash tool/use_local_packages.sh
+
+      - name: Create the example env placeholder
+        # Same reason as in the Android job: the placeholder is gitignored.
+        run: ./tool/ci/ensure_example_env.sh
 
       - name: Build iOS example
         working-directory: im_flutter_sdk/example

@@ -54,6 +54,12 @@ app.*.map.json
 /scripts/im_flutter_sdk
 .workbuddy/
 
+# Local auto-mode run reports may contain account/resource identifiers.
+/reports/
+
+# Local CI logs, retry output, and device diagnostics.
+/artifacts/
+
 # Created by https://www.toptal.com/developers/gitignore/api/windows,macos,linux,flutter
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows,macos,linux,flutter
 
@@ -199,3 +205,5 @@ $RECYCLE.BIN/
 
 .worktree/
 pubspec_overrides.yaml
+.codex/
+/testing/.im-test-orchestrator/

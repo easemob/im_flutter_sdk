@@ -1,0 +1,78 @@
+{
+  "data": {
+    "unique": {"inviteReason": "contact-invite-"},
+    "prepare": [{"contacts": {"between": ["account1", "account2"], "state": "none"}}]
+  },
+  "steps": [
+    {
+      "id": "init",
+      "api": "ChatClient.init",
+      "params": {"config": "$global.biz.config.initConfig", "overrides": {"acceptInvitationAlways": false}}
+    },
+    {
+      "id": "login_alice",
+      "api": "ChatClient.loginWithToken",
+      "params": {"userId": "$global.account.account1.userId", "token": "$global.account.account1.userToken"}
+    },
+    {
+      "id": "login_bob",
+      "api": "ChatClient.loginWithToken",
+      "params": {"userId": "$global.account.account2.userId", "token": "$global.account.account2.userToken"}
+    },
+    {
+      "id": "connected",
+      "api": "ChatClient.isConnected",
+      "params": {},
+      "expect": {"success": true, "checks": [{"path": "", "equals": true}]}
+    },
+    {
+      "id": "invite",
+      "api": "ChatContactManager.addContact",
+      "params": {"userId": "$global.account.account2.userId", "reason": "$global.biz.input.inviteReason"}
+    },
+    {
+      "id": "accept",
+      "api": "ChatContactManager.acceptInvitation",
+      "params": {"userId": "$global.account.account1.userId"}
+    },
+    {
+      "id": "alice_contacts",
+      "api": "ChatContactManager.getAllContactIds",
+      "params": {},
+      "expect": {"success": true, "checks": [{"path": "", "contains": "$global.account.account2.userId"}]}
+    },
+    {
+      "id": "bob_contacts",
+      "api": "ChatContactManager.getAllContactIds",
+      "params": {},
+      "expect": {"success": true, "checks": [{"path": "", "contains": "$global.account.account1.userId"}]}
+    },
+    {
+      "id": "delete_contact",
+      "api": "ChatContactManager.deleteContact",
+      "params": {"userId": "$global.account.account2.userId", "keepConversation": true}
+    },
+    {
+      "id": "logout",
+      "api": "ChatClient.logout",
+      "params": {"unbindDeviceToken": true}
+    }
+  ],
+  "requiredBindings": [
+    "global.biz.result.alice_init",
+    "global.biz.result.bob_init",
+    "global.biz.result.alice_login",
+    "global.biz.result.bob_login",
+    "global.biz.result.alice_connected",
+    "global.biz.result.bob_connected",
+    "global.biz.result.invitation",
+    "global.biz.event.invited",
+    "global.biz.result.acceptance",
+    "global.biz.event.accepted",
+    "global.biz.result.alice_contacts",
+    "global.biz.result.bob_contacts",
+    "global.biz.result.cleanup_contact",
+    "global.biz.result.alice_logout",
+    "global.biz.result.bob_logout"
+  ]
+}

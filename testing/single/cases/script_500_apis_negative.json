@@ -1,0 +1,83 @@
+{
+ "_comment": "4.25.0 逆向路径（auto 模式，自 5.1.0 script_500_apis_negative 迁移）。已移除 5.x 专属步骤：updateGroupConfigs、清除未读数、已读回执（4.25.0 无这些 API）；createGroup 参数由 configs 改为 options。覆盖非法建群、改不存在消息、非法 token 设备操作。",
+ "steps": [
+  {
+   "api": "ChatGroupManager.createGroup",
+   "id": "create_group_invalid_member",
+   "params": {
+    "groupName": "flutter-port-500-negative",
+    "desc": "invalid member must reject group creation",
+    "inviteMembers": [
+     "flutter-ci-nonexistent-user"
+    ],
+    "options": {
+     "maxCount": 200,
+     "inviteNeedConfirm": false,
+     "ext": "negative"
+    }
+   },
+   "expect": {
+    "errorCode": 600
+   }
+  },
+  {
+   "api": "ChatManager.modifyMessage",
+   "id": "modify_message_missing",
+   "params": {
+    "messageId": "not-exist-msg-id-500",
+    "content": "must not be applied",
+    "attributes": {
+     "port": "4.25.0",
+     "path": "negative"
+    }
+   },
+   "expect": {
+    "errorCode": 500
+   }
+  },
+  {
+   "api": "ChatClient.fetchLoggedInDevices",
+   "id": "devices_invalid_token",
+   "params": {
+    "userId": "$config.accounts.0.id",
+    "token": "flutter-ci-invalid-token"
+   },
+   "expect": {
+    "errorCode": 303
+   }
+  },
+  {
+   "api": "ChatClient.renewToken",
+   "id": "renew_invalid_token",
+   "params": {
+    "token": ""
+   },
+   "expect": {
+    "errorCode": 104
+   }
+  },
+  {
+   "api": "ChatClient.kickDevice",
+   "id": "kick_device_invalid_token",
+   "params": {
+    "userId": "$config.accounts.0.id",
+    "token": "flutter-ci-invalid-token",
+    "resource": "flutter-ci-nonexistent-resource"
+   },
+   "expect": {
+    "errorCode": 303
+   }
+  },
+  {
+   "api": "ChatClient.kickAllDevices",
+   "id": "kick_all_invalid_token",
+   "params": {
+    "userId": "$config.accounts.0.id",
+    "token": "flutter-ci-invalid-token"
+   },
+   "expect": {
+    "errorCode": 303
+   }
+  }
+ ]
+}

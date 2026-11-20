@@ -4,45 +4,44 @@ import 'dart:io';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../env.dart';
 import '../listeners.dart';
 import '../log/log_store.dart';
 import '../options_codec.dart';
 import '../registry/api_entry.dart';
 import '../registry/registry.dart';
 import '../sdk_state.dart';
+import 'step_dependencies.dart';
+import 'step_expectation.dart';
 
 /// AI automation script mode: enter via `--dart-define=API_SCRIPT=<host file absolute path>`.
 /// Automatically executes init -> login -> sequential steps; all results go through the same structured log channel;
-/// no step failure interrupts the flow; outputs script.done on completion; App keeps running.
+/// independent step failures do not interrupt the flow; steps that reference failed
+/// producers are skipped; outputs script.done on completion; App keeps running.
 ///
-/// Test data is separated from the script: `--dart-define=API_CONFIG=<config.json absolute path>`,
-/// defaults to config.json in the same directory as the script (empty config if not found).
-/// - init: ChatOptions keys in config (see [_optionKeys]) as base, script init overrides;
-/// - login: script login takes priority, otherwise derived from config loginUser + loginToken/loginPassword.
+/// Test data defaults to the generated env.dart. An external JSON file passed with
+/// `--dart-define=API_CONFIG=<absolute path>` overrides the generated environment.
+/// - init: ChatOptions keys in the environment as base, script init overrides;
+/// - login: script login takes priority, otherwise the first environment account is used.
 ///
 /// Parameter string references (replaced only on exact full-string match, preserving original value types):
-/// - `$config.key` / `$config.key.sub`: value from config.json;
+/// - `$config.key` / `$config.key.sub`: value from env.dart or API_CONFIG;
 /// - `$prev` / `$prev.a.b`: data returned by the previous step, dot path for nesting (numeric index for lists);
 /// - `$step.id` / `$step.id.a.b`: data from a step with "id", cross-step reference.
 class AutoMode {
-  static const String scriptPath =
-      String.fromEnvironment('API_SCRIPT', defaultValue: '');
-  static const String configPath =
-      String.fromEnvironment('API_CONFIG', defaultValue: '');
+  static const String scriptPath = String.fromEnvironment(
+    'API_SCRIPT',
+    defaultValue: '',
+  );
+  static const String configPath = String.fromEnvironment(
+    'API_CONFIG',
+    defaultValue: '',
+  );
 
   static bool get enabled => scriptPath.isNotEmpty;
 
   /// Default per-step timeout (can be overridden by step's "timeoutMs").
   static const int defaultStepTimeoutMs = 30000;
-
-  /// ChatOptions keys that init can inherit from config.json.
-  static const List<String> _optionKeys = [
-    'appKey',
-    'autoLogin',
-    'debugMode',
-    'enableUserInfo',
-    'enableAutoSyncContacts',
-  ];
 
   static Object? _dig(Object? v, List<String> path) {
     var cur = v;
@@ -112,36 +111,33 @@ class AutoMode {
         'data': {'path': file.path, 'bytes': bytes.length},
       };
     } catch (e) {
-      return {
-        'success': false,
-        'error': errorToJson(e),
-      };
+      return {'success': false, 'error': errorToJson(e)};
     }
   }
 
   static Future<void> run() async {
     final store = LogStore.instance;
 
-    // config.json: default init/login and $config reference data source for the script.
-    var config = <String, dynamic>{};
-    var effectiveConfigPath = configPath;
-    if (effectiveConfigPath.isEmpty) {
-      final sibling = '${File(scriptPath).parent.path}/config.json';
-      if (File(sibling).existsSync()) effectiveConfigPath = sibling;
-    }
-    if (effectiveConfigPath.isNotEmpty) {
+    // Generated env.dart is the default source for init/login and $config refs.
+    var config = Map<String, dynamic>.from(environment);
+    if (configPath.isNotEmpty) {
       try {
-        config = await _loadJsonFile(effectiveConfigPath);
+        config = await _loadJsonFile(configPath);
         store.log('config.load', {
-          'path': effectiveConfigPath,
+          'path': configPath,
           'keys': config.keys.toList(),
         });
       } catch (e) {
         store.log('config.load', {
-          'path': effectiveConfigPath,
+          'path': configPath,
           'error': errorToJson(e),
         });
       }
+    } else {
+      store.log('config.load', {
+        'source': 'env.dart',
+        'keys': config.keys.toList(),
+      });
     }
 
     Map<String, dynamic> script;
@@ -156,16 +152,15 @@ class AutoMode {
 
     // init: ChatOptions keys from config as base, script init overrides.
     try {
-      final initJson = <String, dynamic>{
-        for (final k in _optionKeys)
-          if (config.containsKey(k)) k: config[k],
-      };
+      final initJson = chatOptionsJsonFromEnvironment(config);
       final sInit = script['init'];
       if (sInit is Map) initJson.addAll(Map<String, dynamic>.from(sInit));
       final resolved = Map<String, dynamic>.from(
         _resolveRefs(initJson, null, config, const {}) as Map,
       );
       await ChatClient.getInstance.init(emOptionsFromJson(resolved));
+      // SDK contract: open the native event gate (see agentInitHandler note).
+      await ChatClient.getInstance.startCallback();
       registerAllListeners();
       SdkState.instance.markInitialized(jsonEncode(resolved));
       store.log('api.ChatClient.init', {'success': true});
@@ -176,7 +171,7 @@ class AutoMode {
       });
     }
 
-    // login: script login takes priority; otherwise derived from config (loginToken over loginPassword).
+    // login: script login takes priority; otherwise use the first generated account.
     // Observed in 4.22: SDK internals not ready after native init method channel returns
     //(login reports "SDK has not initialize" 2ms after init succeeds); auto-retry on failure.
     const maxLoginAttempts = 5;
@@ -187,25 +182,23 @@ class AutoMode {
         if (sLogin is Map) {
           loginJson = Map<String, dynamic>.from(sLogin);
         } else {
-          loginJson = {'userId': config['loginUser'] ?? ''};
-          final token = config['loginToken'];
-          if (token is String && token.isNotEmpty) {
-            loginJson['token'] = token;
-          } else {
-            loginJson['password'] = config['loginPassword'] ?? '';
-          }
+          final accounts = config['accounts'];
+          final account = accounts is List && accounts.isNotEmpty
+              ? accounts.first
+              : const <String, dynamic>{};
+          loginJson = account is Map
+              ? {
+                  'userId': account['id'] ?? '',
+                  'token': account['token'] ?? '',
+                }
+              : {'userId': '', 'token': ''};
         }
         final resolved = Map<String, dynamic>.from(
           _resolveRefs(loginJson, null, config, const {}) as Map,
         );
         final userId = resolved['userId'] as String? ?? '';
-        final password = resolved['password'] as String?;
         final token = resolved['token'] as String?;
-        if (password != null) {
-          await ChatClient.getInstance.loginWithPassword(userId, password);
-        } else {
-          await ChatClient.getInstance.loginWithToken(userId, token ?? '');
-        }
+        await ChatClient.getInstance.loginWithToken(userId, token ?? '');
         SdkState.instance.markLoggedIn(userId);
         store.log('api.ChatClient.login', {
           'success': true,
@@ -228,49 +221,68 @@ class AutoMode {
     final rawSteps = script['steps'];
     final steps = rawSteps is List ? rawSteps : const [];
     var failed = 0;
+    var blocked = 0;
     Object? prev;
     final stepData = <String, Object?>{};
+    final stepSucceeded = <String, bool>{};
     for (final raw in steps) {
       var name = '';
+      String? id;
       try {
         final step = Map<String, dynamic>.from(raw as Map);
         name = step['api'] as String? ?? '';
-        final id = step['id'] as String?;
-        final params = Map<String, dynamic>.from(
-          _resolveRefs(step['params'] as Map? ?? {}, prev, config, stepData)
-              as Map,
-        );
+        id = step['id'] as String?;
+        final rawParams = step['params'] as Map? ?? {};
+        final blockedBy = failedStepDependency(rawParams, stepSucceeded);
         Map<String, dynamic> result;
-        if (name == 'TestUtil.writeBase64File') {
-          result = await _writeBase64File(params);
+        if (blockedBy != null) {
+          result = skippedStepResult(blockedBy);
+          blocked++;
         } else {
-          final entry = findApi(name);
-          if (entry == null) {
-            result = {
-              'success': false,
-              'error': {'code': -1, 'message': '未注册的 API：$name'},
-            };
+          final params = Map<String, dynamic>.from(
+            _resolveRefs(rawParams, prev, config, stepData) as Map,
+          );
+          if (name == 'TestUtil.writeBase64File') {
+            result = await _writeBase64File(params);
           } else {
-            // Per-step timeout guard: native may never call back in certain states
-            //(e.g. subscribeUsersInfo hangs when not logged in); prevents the entire script from stalling.
-            // Timeout does not cancel the underlying call; just logs and continues.
-            final timeoutMs = step['timeoutMs'] as int? ?? defaultStepTimeoutMs;
-            result = await runApi(entry, params).timeout(
-              Duration(milliseconds: timeoutMs),
-              onTimeout: () => {
+            final entry = findApi(name);
+            if (entry == null) {
+              result = {
                 'success': false,
                 'error': {
-                  'code': -2,
-                  'message': 'timeout after ${timeoutMs}ms'
+                  'code': -1,
+                  'message': '未注册的 API：$name',
                 },
-              },
-            );
+              };
+            } else {
+              // Per-step timeout guard: native may never call back in certain states
+              //(e.g. subscribeUsersInfo hangs when not logged in); prevents the entire script from stalling.
+              // Timeout does not cancel the underlying call; just logs and continues.
+              final timeoutMs =
+                  step['timeoutMs'] as int? ?? defaultStepTimeoutMs;
+              result = await runApi(entry, params).timeout(
+                Duration(milliseconds: timeoutMs),
+                onTimeout: () => {
+                  'success': false,
+                  'error': {
+                    'code': -2,
+                    'message': 'timeout after ${timeoutMs}ms',
+                  },
+                },
+              );
+            }
           }
         }
         store.log('api.$name', result);
         prev = result['data'];
-        if (id != null) stepData[id] = result['data'];
-        if (result['success'] != true) failed++;
+        if (id != null) {
+          stepData[id] = result['data'];
+          stepSucceeded[id] = result['success'] == true;
+        }
+        if (blockedBy == null &&
+            !stepResultMatchesExpectation(result, step['expect'])) {
+          failed++;
+        }
         final delay = step['delayAfterMs'] as int?;
         if (delay != null && delay > 0) {
           await Future.delayed(Duration(milliseconds: delay));
@@ -278,12 +290,14 @@ class AutoMode {
       } catch (e) {
         // Per-step parse/execution errors do not interrupt the script; counted as failed.
         failed++;
-        store.log('api.$name', {
-          'success': false,
-          'error': errorToJson(e),
-        });
+        if (id != null) stepSucceeded[id] = false;
+        store.log('api.$name', {'success': false, 'error': errorToJson(e)});
       }
     }
-    store.log('script.done', {'total': steps.length, 'failed': failed});
+    store.log('script.done', {
+      'total': steps.length,
+      'failed': failed,
+      'blocked': blocked,
+    });
   }
 }

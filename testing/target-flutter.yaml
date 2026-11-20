@@ -1,0 +1,11 @@
+# Flutter example 目标登记（im-test-orchestrator 多设备编排的 target 信息）。
+# 当前为薄够用形态，仅供查阅；scripts/multi.sh 直接按下列值传参。
+# T7 会收敛为完整 target 格式并由工具消费。
+appDir: im_flutter_sdk/example
+flutterVersion: 3.47.0
+iosProcessName: Runner
+logcatTags:
+  - flutter:I
+  - testing_v2:I
+  - '*:S'
+casesDir: testing/multi/cases

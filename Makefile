@@ -3,15 +3,14 @@
 
 EXAMPLE_DIR := im_flutter_sdk/example
 IOS_DIR     := $(EXAMPLE_DIR)/ios
-CONFIG_SRC  := $(EXAMPLE_DIR)/templates/config.example.json
-CONFIG_DST  := $(EXAMPLE_DIR)/scripts/config.json
+ENV_TOOL    := $(EXAMPLE_DIR)/tool/env_tool.dart
 PODSPEC     := im_flutter_sdk_ios/ios/im_flutter_sdk_ios.podspec
 PODFILE     := $(IOS_DIR)/Podfile
 PODLOCK     := $(IOS_DIR)/Podfile.lock
 
 .DEFAULT_GOAL := help
 
-.PHONY: help setup config local-deps deps pods clean
+.PHONY: help setup config env-gettoken auto-report auto-compare scan-deprecated local-deps deps pods clean
 
 help: ## Show this help
 	@echo "im_flutter_sdk - project setup"
@@ -22,15 +21,23 @@ setup: config deps pods ## Run all setup steps
 	@echo ""
 	@echo "Setup complete. Next: cd $(EXAMPLE_DIR) && flutter run -d <device>"
 
-config: ## Copy config template if not exists
-	@if [ ! -f "$(CONFIG_DST)" ]; then \
-		mkdir -p $(dir $(CONFIG_DST)); \
-		cp "$(CONFIG_SRC)" "$(CONFIG_DST)"; \
-		echo "Created: $(CONFIG_DST)"; \
-		echo "Edit it with your appKey / credentials"; \
-	else \
-		echo "Skip: $(CONFIG_DST) already exists"; \
-	fi
+config: ## Create local config and placeholder env.dart if missing
+	dart run $(ENV_TOOL) ensure
+
+env-gettoken: ## Fetch tokens from example/config.local.json and write example/lib/env.dart
+	dart run $(ENV_TOOL) gettoken
+
+auto-report: local-deps ## Run 5.0.0 auto mode and write a local report: make auto-report PLATFORM=android [DEVICE=...] [SCRIPT=...]
+	@test "$(PLATFORM)" = "android" || test "$(PLATFORM)" = "ios" || (echo "Usage: make auto-report PLATFORM=<android|ios> [DEVICE=<id>] [SCRIPT=<json>]" && exit 2)
+	dart run testing/single/auto_report.dart --platform "$(PLATFORM)" $(if $(DEVICE),--device "$(DEVICE)",) $(if $(SCRIPT),--script "$(SCRIPT)",)
+
+auto-compare: ## Compare two finished runs: make auto-compare ANDROID=<run-dir> IOS=<run-dir>
+	@test -n "$(ANDROID)" -a -n "$(IOS)" || (echo "Usage: make auto-compare ANDROID=<run-dir> IOS=<run-dir>" && exit 2)
+	dart run testing/single/auto_report.dart --android-report "$(ANDROID)" --ios-report "$(IOS)"
+
+scan-deprecated: ## Scan wrapper code for deprecated native APIs: make scan-deprecated [PLATFORM=android|ios]
+	@test -z "$(PLATFORM)" || test "$(PLATFORM)" = "android" || test "$(PLATFORM)" = "ios" || (echo "Usage: make scan-deprecated [PLATFORM=<android|ios>]" && exit 2)
+	bash tool/ci/scan_deprecated.sh $(PLATFORM)
 
 local-deps: ## Create gitignored pubspec_overrides.yaml files for local SDK packages
 	bash tool/use_local_packages.sh

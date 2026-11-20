@@ -1,0 +1,146 @@
+{
+  "data": {
+    "unique": {
+      "groupName": "invite-confirm-"
+    }
+  },
+  "steps": [
+    {
+      "id": "init_alice",
+      "api": "ChatClient.init",
+      "params": {
+        "config": "$global.biz.config.initConfig",
+        "overrides": {}
+      }
+    },
+    {
+      "id": "init_bob",
+      "api": "ChatClient.init",
+      "params": {
+        "config": "$global.biz.config.initConfig",
+        "overrides": {
+          "autoAcceptGroupInvitation": false
+        }
+      }
+    },
+    {
+      "id": "login_alice",
+      "api": "ChatClient.loginWithToken",
+      "params": {
+        "userId": "$global.account.account1.userId",
+        "token": "$global.account.account1.userToken"
+      }
+    },
+    {
+      "id": "login_bob",
+      "api": "ChatClient.loginWithToken",
+      "params": {
+        "userId": "$global.account.account2.userId",
+        "token": "$global.account.account2.userToken"
+      }
+    },
+    {
+      "id": "connected",
+      "api": "ChatClient.isConnected",
+      "params": {},
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "create_group",
+      "api": "ChatGroupManager.createGroup",
+      "params": {
+        "groupName": "$global.biz.input.groupName",
+        "configs": {
+          "maxCount": 200,
+          "isPublic": false,
+          "joinApprovalRequired": false,
+          "inviteNeedConfirm": true,
+          "allowInvites": true
+        }
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "groupId",
+            "notEmpty": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "invite_bob",
+      "api": "ChatGroupManager.addMembers",
+      "params": {
+        "groupId": "$global.biz.result.created.data.groupId",
+        "members": [
+          "$global.account.account2.userId"
+        ]
+      }
+    },
+    {
+      "id": "accept_invitation",
+      "api": "ChatGroupManager.acceptInvitation",
+      "params": {
+        "groupId": "$global.biz.result.created.data.groupId",
+        "inviter": "$global.account.account1.userId"
+      }
+    },
+    {
+      "id": "fetch_members",
+      "api": "ChatGroupManager.fetchMemberListFromServer",
+      "params": {
+        "groupId": "$global.biz.result.created.data.groupId",
+        "pageSize": 200
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "list",
+            "contains": "$global.account.account2.userId"
+          }
+        ]
+      }
+    },
+    {
+      "id": "destroy_group",
+      "api": "ChatGroupManager.destroyGroup",
+      "params": {
+        "groupId": "$global.biz.result.created.data.groupId"
+      }
+    },
+    {
+      "id": "logout",
+      "api": "ChatClient.logout",
+      "params": {
+        "unbindDeviceToken": true
+      }
+    }
+  ],
+  "requiredBindings": [
+    "global.biz.result.alice_init",
+    "global.biz.result.bob_init",
+    "global.biz.result.alice_login",
+    "global.biz.result.bob_login",
+    "global.biz.result.alice_connected",
+    "global.biz.result.bob_connected",
+    "global.biz.result.created",
+    "global.biz.result.invited",
+    "global.biz.event.invitation",
+    "global.biz.result.accepted",
+    "global.biz.result.alice_members",
+    "global.biz.result.bob_members",
+    "global.biz.result.group_destroyed",
+    "global.biz.result.alice_logout",
+    "global.biz.result.bob_logout"
+  ]
+}

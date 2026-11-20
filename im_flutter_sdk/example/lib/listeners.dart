@@ -4,7 +4,6 @@ import 'log/log_store.dart';
 import 'registry/api_entry.dart';
 
 /// Register all event listeners after init succeeds; all callbacks are written to logs (floating + stdout + file).
-/// Deprecated callbacks (onMessagesRecalled, singular onMemberExited/JoinedFromGroup) are not registered.
 void registerAllListeners() {
   const id = 'api_tester';
   void log(String source, [Map<String, Object?>? args]) =>
@@ -15,10 +14,11 @@ void registerAllListeners() {
     ConnectionEventHandler(
       onConnected: () => log('ConnectionEventHandler.onConnected'),
       onDisconnected: () => log('ConnectionEventHandler.onDisconnected'),
-      onUserDidLoginFromOtherDevice: (info) => log(
-        'ConnectionEventHandler.onUserDidLoginFromOtherDevice',
-        {'info': toJsonSafe(info)},
-      ),
+      onUserDidLoginFromOtherDevice: (info) =>
+          log('ConnectionEventHandler.onUserDidLoginFromOtherDevice', {
+        'deviceName': info.deviceName,
+        'ext': info.ext,
+      }),
       onUserDidRemoveFromServer: () =>
           log('ConnectionEventHandler.onUserDidRemoveFromServer'),
       onUserDidForbidByServer: () =>
@@ -29,12 +29,8 @@ void registerAllListeners() {
           log('ConnectionEventHandler.onUserDidLoginTooManyDevice'),
       onUserKickedByOtherDevice: () =>
           log('ConnectionEventHandler.onUserKickedByOtherDevice'),
-      onUserAuthenticationFailed: () =>
-          log('ConnectionEventHandler.onUserAuthenticationFailed'),
       onTokenWillExpire: () => log('ConnectionEventHandler.onTokenWillExpire'),
       onTokenDidExpire: () => log('ConnectionEventHandler.onTokenDidExpire'),
-      onAppActiveNumberReachLimit: () =>
-          log('ConnectionEventHandler.onAppActiveNumberReachLimit'),
       onOfflineMessageSyncStart: () =>
           log('ConnectionEventHandler.onOfflineMessageSyncStart'),
       onOfflineMessageSyncFinish: () =>
@@ -61,14 +57,12 @@ void registerAllListeners() {
         'ChatMultiDeviceEventHandler.onRemoteMessagesRemoved',
         {'conversationId': conversationId, 'deviceId': deviceId},
       ),
-      onConversationEvent: (event, conversationId, type) => log(
-        'ChatMultiDeviceEventHandler.onConversationEvent',
-        {
-          'event': event.name,
-          'conversationId': conversationId,
-          'type': type.name,
-        },
-      ),
+      onConversationEvent: (event, conversationId, type) =>
+          log('ChatMultiDeviceEventHandler.onConversationEvent', {
+        'event': event.name,
+        'conversationId': conversationId,
+        'type': type.name,
+      }),
     ),
   );
 
@@ -87,16 +81,6 @@ void registerAllListeners() {
         'ChatEventHandler.onCmdMessagesReceived',
         {'messages': toJsonSafe(messages)},
       ),
-      onMessagesRead: (messages) => log(
-        'ChatEventHandler.onMessagesRead',
-        {'messages': toJsonSafe(messages)},
-      ),
-      onGroupMessageRead: (acks) => log(
-        'ChatEventHandler.onGroupMessageRead',
-        {'groupMessageAcks': toJsonSafe(acks)},
-      ),
-      onReadAckForGroupMessageUpdated: () =>
-          log('ChatEventHandler.onReadAckForGroupMessageUpdated'),
       onMessagesDelivered: (messages) => log(
         'ChatEventHandler.onMessagesDelivered',
         {'messages': toJsonSafe(messages)},
@@ -107,32 +91,23 @@ void registerAllListeners() {
       ),
       onConversationsUpdate: () =>
           log('ChatEventHandler.onConversationsUpdate'),
-      onConversationRead: (from, to) => log(
-        'ChatEventHandler.onConversationRead',
-        {'from': from, 'to': to},
-      ),
       onMessageReactionDidChange: (events) => log(
         'ChatEventHandler.onMessageReactionDidChange',
         {'events': toJsonSafe(events)},
       ),
-      onMessageContentChanged: (message, operatorId, operationTime) => log(
-        'ChatEventHandler.onMessageContentChanged',
-        {
-          'message': toJsonSafe(message),
-          'operatorId': operatorId,
-          'operationTime': operationTime,
-        },
-      ),
+      onMessageContentChanged: (message, operatorId, operationTime) =>
+          log('ChatEventHandler.onMessageContentChanged', {
+        'message': toJsonSafe(message),
+        'operatorId': operatorId,
+        'operationTime': operationTime,
+      }),
       onMessagePinChanged: (messageId, conversationId, pinOperation, pinInfo) =>
-          log(
-        'ChatEventHandler.onMessagePinChanged',
-        {
-          'messageId': messageId,
-          'conversationId': conversationId,
-          'pinOperation': pinOperation.name,
-          'pinInfo': toJsonSafe(pinInfo),
-        },
-      ),
+          log('ChatEventHandler.onMessagePinChanged', {
+        'messageId': messageId,
+        'conversationId': conversationId,
+        'pinOperation': pinOperation.name,
+        'pinInfo': toJsonSafe(pinInfo),
+      }),
     ),
   );
 
@@ -187,15 +162,13 @@ void registerAllListeners() {
         'ChatRoomEventHandler.onOwnerChangedFromChatRoom',
         {'roomId': roomId, 'newOwner': newOwner, 'oldOwner': oldOwner},
       ),
-      onRemovedFromChatRoom: (roomId, roomName, participant, reason) => log(
-        'ChatRoomEventHandler.onRemovedFromChatRoom',
-        {
-          'roomId': roomId,
-          'roomName': roomName,
-          'participant': participant,
-          'reason': reason?.name,
-        },
-      ),
+      onRemovedFromChatRoom: (roomId, roomName, participant, reason) =>
+          log('ChatRoomEventHandler.onRemovedFromChatRoom', {
+        'roomId': roomId,
+        'roomName': roomName,
+        'participant': participant,
+        'reason': reason?.name,
+      }),
       onSpecificationChanged: (room) => log(
         'ChatRoomEventHandler.onSpecificationChanged',
         {'room': toJsonSafe(room)},
@@ -252,12 +225,6 @@ void registerAllListeners() {
         'ChatContactEventHandler.onFriendRequestDeclined',
         {'userId': userId},
       ),
-      onContactSyncStart: () =>
-          log('ChatContactEventHandler.onContactSyncStart'),
-      onContactSyncFinish: (error) => log(
-        'ChatContactEventHandler.onContactSyncFinish',
-        {'error': error == null ? null : errorToJson(error)},
-      ),
       onContactInfoUpdate: (contact) => log(
         'ChatContactEventHandler.onContactInfoUpdate',
         {'contact': toJsonSafe(contact)},
@@ -292,14 +259,12 @@ void registerAllListeners() {
         'ChatGroupEventHandler.onAnnouncementChangedFromGroup',
         {'groupId': groupId, 'announcement': announcement},
       ),
-      onAutoAcceptInvitationFromGroup: (groupId, inviter, inviteMessage) => log(
-        'ChatGroupEventHandler.onAutoAcceptInvitationFromGroup',
-        {
-          'groupId': groupId,
-          'inviter': inviter,
-          'inviteMessage': inviteMessage
-        },
-      ),
+      onAutoAcceptInvitationFromGroup: (groupId, inviter, inviteMessage) =>
+          log('ChatGroupEventHandler.onAutoAcceptInvitationFromGroup', {
+        'groupId': groupId,
+        'inviter': inviter,
+        'inviteMessage': inviteMessage,
+      }),
       onGroupDestroyed: (groupId, groupName) => log(
         'ChatGroupEventHandler.onGroupDestroyed',
         {'groupId': groupId, 'groupName': groupName},
@@ -313,15 +278,12 @@ void registerAllListeners() {
         {'groupId': groupId, 'invitee': invitee, 'reason': reason},
       ),
       onInvitationReceivedFromGroup: (groupId, groupName, inviter, reason) =>
-          log(
-        'ChatGroupEventHandler.onInvitationReceivedFromGroup',
-        {
-          'groupId': groupId,
-          'groupName': groupName,
-          'inviter': inviter,
-          'reason': reason,
-        },
-      ),
+          log('ChatGroupEventHandler.onInvitationReceivedFromGroup', {
+        'groupId': groupId,
+        'groupName': groupName,
+        'inviter': inviter,
+        'reason': reason,
+      }),
       onMuteListAddedFromGroup: (groupId, mutes, muteExpire) => log(
         'ChatGroupEventHandler.onMuteListAddedFromGroup',
         {'groupId': groupId, 'mutes': mutes, 'muteExpire': muteExpire},
@@ -339,26 +301,22 @@ void registerAllListeners() {
         {'groupId': groupId, 'groupName': groupName, 'accepter': accepter},
       ),
       onRequestToJoinDeclinedFromGroup:
-          (groupId, groupName, decliner, reason, applicant) => log(
-        'ChatGroupEventHandler.onRequestToJoinDeclinedFromGroup',
-        {
-          'groupId': groupId,
-          'groupName': groupName,
-          'decliner': decliner,
-          'reason': reason,
-          'applicant': applicant,
-        },
-      ),
+          (groupId, groupName, decliner, reason, applicant) =>
+              log('ChatGroupEventHandler.onRequestToJoinDeclinedFromGroup', {
+        'groupId': groupId,
+        'groupName': groupName,
+        'decliner': decliner,
+        'reason': reason,
+        'applicant': applicant,
+      }),
       onRequestToJoinReceivedFromGroup:
-          (groupId, groupName, applicant, reason) => log(
-        'ChatGroupEventHandler.onRequestToJoinReceivedFromGroup',
-        {
-          'groupId': groupId,
-          'groupName': groupName,
-          'applicant': applicant,
-          'reason': reason,
-        },
-      ),
+          (groupId, groupName, applicant, reason) =>
+              log('ChatGroupEventHandler.onRequestToJoinReceivedFromGroup', {
+        'groupId': groupId,
+        'groupName': groupName,
+        'applicant': applicant,
+        'reason': reason,
+      }),
       onSharedFileAddedFromGroup: (groupId, sharedFile) => log(
         'ChatGroupEventHandler.onSharedFileAddedFromGroup',
         {'groupId': groupId, 'sharedFile': toJsonSafe(sharedFile)},
@@ -380,15 +338,13 @@ void registerAllListeners() {
         {'groupId': groupId, 'isDisable': isDisable},
       ),
       onAttributesChangedOfGroupMember:
-          (groupId, userId, attributes, operatorId) => log(
-        'ChatGroupEventHandler.onAttributesChangedOfGroupMember',
-        {
-          'groupId': groupId,
-          'userId': userId,
-          'attributes': attributes,
-          'operatorId': operatorId,
-        },
-      ),
+          (groupId, userId, attributes, operatorId) =>
+              log('ChatGroupEventHandler.onAttributesChangedOfGroupMember', {
+        'groupId': groupId,
+        'userId': userId,
+        'attributes': attributes,
+        'operatorId': operatorId,
+      }),
       onMembersJoinedFromGroup: (groupId, userIds) => log(
         'ChatGroupEventHandler.onMembersJoinedFromGroup',
         {'groupId': groupId, 'userIds': userIds},

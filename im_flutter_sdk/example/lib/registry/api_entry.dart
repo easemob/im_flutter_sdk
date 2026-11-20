@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 /// API registry entry. Flutter has no runtime reflection; API name -> call must be manually registered.
@@ -21,16 +23,6 @@ class ApiEntry {
 Object? toJsonSafe(Object? v) {
   if (v == null || v is num || v is bool || v is String) return v;
   if (v is Enum) return v.name;
-  // ChatPresence does not implement toJson; serialized with special handling.
-  if (v is ChatPresence) {
-    return {
-      'publisher': v.publisher,
-      'statusDescription': v.statusDescription,
-      'lastTime': v.lastTime,
-      'expiryTime': v.expiryTime,
-      'statusDetails': v.statusDetails,
-    };
-  }
   if (v is Map) {
     return v.map((k, val) => MapEntry(k.toString(), toJsonSafe(val)));
   }
@@ -65,6 +57,14 @@ Future<Map<String, dynamic>> runApi(
     if (data != null) result['data'] = data;
     return result;
   } catch (e) {
-    return {'success': false, 'error': errorToJson(e)};
+    return {
+      'success': false,
+      'failureKind': e is ChatError
+          ? 'sdk'
+          : e is TimeoutException
+              ? 'timeout'
+              : 'tool',
+      'error': errorToJson(e),
+    };
   }
 }

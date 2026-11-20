@@ -1,0 +1,101 @@
+{
+  "steps": [
+    {
+      "api": "ChatManager.sendMessage",
+      "params": {
+        "to": "$config.accounts.1.id",
+        "chatType": 0,
+        "direction": 0,
+        "status": 0,
+        "body": {"type": 0, "content": "4.22 API 自动验证：文本消息"}
+      }
+    },
+    {
+      "api": "ChatUserInfoManager.subscribeUsersInfo",
+      "params": {"userIds": ["$config.accounts.1.id"]}
+    },
+    {
+      "api": "ChatUserInfoManager.fetchSubscribedUsers",
+      "params": {}
+    },
+    {
+      "api": "ChatUserInfoManager.getLocalUserInfoByIds",
+      "params": {"userIds": ["$config.accounts.1.id"]}
+    },
+    {
+      "api": "ChatUserInfoManager.unsubscribeUsersInfo",
+      "params": {"userIds": ["$config.accounts.1.id"]}
+    },
+    {
+      "api": "ChatGroupManager.updateGroupNamecard",
+      "params": {"groupId": "$config.groups.0.id", "namecard": "api-test-名片"},
+      "delayAfterMs": 800
+    },
+    {
+      "api": "ChatGroupManager.getGroupNamecard",
+      "params": {"groupId": "$config.groups.0.id", "userId": "$config.accounts.0.id"}
+    },
+    {
+      "api": "ChatGroupManager.updateGroupNamecard",
+      "params": {"groupId": "$config.groups.0.id"},
+      "delayAfterMs": 800
+    },
+    {
+      "api": "ChatGroupManager.getGroupNamecard",
+      "params": {"groupId": "$config.groups.0.id", "userId": "$config.accounts.0.id"}
+    },
+    {
+      "api": "TestUtil.writeBase64File",
+      "id": "imgFile",
+      "params": {
+        "fileName": "api_test.png",
+        "base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+      }
+    },
+    {
+      "api": "ChatManager.sendMessage",
+      "id": "imgMsg",
+      "params": {
+        "to": "$config.accounts.1.id",
+        "chatType": 0,
+        "direction": 0,
+        "status": 0,
+        "body": {"type": 1, "localPath": "$step.imgFile.path", "displayName": "api_test.png", "fileStatus": 0, "thumbnailStatus": 0}
+      },
+      "delayAfterMs": 1000
+    },
+    {
+      "api": "ChatManager.downloadBigImage",
+      "params": {"message": "$step.imgMsg"},
+      "delayAfterMs": 1500
+    },
+    {
+      "api": "TestUtil.writeBase64File",
+      "id": "voiceFile",
+      "params": {
+        "fileName": "api_test.amr",
+        "base64": "IyFBTVIKBAAAAAAAAAAAAAAAAA=="
+      }
+    },
+    {
+      "api": "ChatManager.sendMessage",
+      "id": "voiceMsg",
+      "params": {
+        "to": "$config.accounts.1.id",
+        "chatType": 0,
+        "direction": 0,
+        "status": 0,
+        "body": {"type": 4, "localPath": "$step.voiceFile.path", "duration": 1, "fileStatus": 0}
+      },
+      "delayAfterMs": 1000
+    },
+    {
+      "api": "ChatManager.voiceMessageToText",
+      "params": {"message": "$step.voiceMsg"}
+    },
+    {
+      "api": "ChatManager.voiceFileToText",
+      "params": {"filePath": "$step.voiceFile.path"}
+    }
+  ]
+}

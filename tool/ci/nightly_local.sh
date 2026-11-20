@@ -1,20 +1,33 @@
 #!/usr/bin/env bash
 # One-command local run of the single-account nightly test. Mirrors the steps
-# of .github/workflows/single-account-nightly.yml so a local run exercises
-# exactly what CI runs.
+# of the logged-in lanes of .github/workflows/ci-device.yml so a local run
+# exercises exactly what CI runs.
 #
-# Required environment (same names as the GitHub secrets):
-#   E2E_APP_KEY  E2E_USER_ID  E2E_USER_PASSWORD
+# Without E2E_CONFIG_PATH, required environment (same names as GitHub secrets;
+# the user token is fetched fresh by tool/ci/fetch_e2e_user_token.sh):
+#   E2E_APP_KEY  E2E_USER_ID  E2E_REST_API  E2E_CLIENT_ID  E2E_CLIENT_SECRET
+#
+# Optional environment:
+#   E2E_USER_SUFFIX  account suffix for isolation (see fetch_e2e_user_token.sh).
+#     When this script prepares the configuration itself (no E2E_CONFIG_PATH),
+#     an unset suffix defaults to _flutter_<platform> — matching the CI lanes —
+#     so two local platforms run in parallel on isolated accounts. Pass an
+#     explicit empty value (E2E_USER_SUFFIX= ...) to keep the base account.
 #
 # Usage:
-#   E2E_APP_KEY=... E2E_USER_ID=... E2E_USER_PASSWORD=... \
+#   E2E_APP_KEY=... E2E_USER_ID=... E2E_REST_API=... \
+#   E2E_CLIENT_ID=... E2E_CLIENT_SECRET=... \
 #     bash tool/ci/nightly_local.sh android   # needs a booted emulator (emulator-5554)
-#     ... ios                               # boots a simulator if none is booted
+#     ... ios                                 # boots a simulator if none is booted
 #
 # The generated config contains real credentials; it is written with mode 0600
-# into a mktemp file outside the repo and deleted on exit (trap).
+# into a mktemp file outside the repo and deleted on exit (trap). An existing
+# E2E_CONFIG_PATH belongs to its caller and is preserved on exit.
 #
-# Logs are written to artifacts/{android,ios}-single-account.log.
+# Reports are written to artifacts/ci/<timestamp>/<platform>/: summary.md with
+# per-case counts and evidence links, a merged run.json recording the scheduled
+# suites and their exit codes, runner.log, and one subdirectory per suite.
+# Individual suites/tests use the existing device runner with CI_TEST_NAME.
 set -euo pipefail
 
 # Keep in sync with FLUTTER_VERSION in .github/workflows/*.yml.
@@ -30,19 +43,46 @@ case "$PLATFORM" in
     ;;
 esac
 
-for var in E2E_APP_KEY E2E_USER_ID E2E_USER_PASSWORD; do
-  if [ -z "${!var:-}" ]; then
-    echo "error: environment variable $var is not set" >&2
-    exit 2
-  fi
+targets=(
+  logged_in_base_test
+  logged_in_group_test
+  logged_in_contact_test
+  logged_in_user_info_test
+  # Retain the existing special batch until its migration is confirmed.
+  conversation_config_test
+)
+# Run layout: artifacts/ci/<timestamp>/<platform>/<suite>/, one timestamp
+# directory per invocation (numeric suffix only on a same-second collision).
+stamp="$(date +%Y%m%d%H%M%S)"
+nightly_root="$REPO_ROOT/artifacts/ci/$stamp"
+suffix=2
+while [[ -e "$nightly_root" ]]; do
+  nightly_root="$REPO_ROOT/artifacts/ci/$stamp.$suffix"
+  suffix=$((suffix + 1))
 done
+nightly_dir="$nightly_root/$PLATFORM"
+mkdir -p "$nightly_dir"
+CONFIG=""
+finish_nightly() {
+  local result="$?"
+  local report_args=(merge --output "$nightly_dir" --exit-code "$result")
+  local target
+  trap - EXIT
+  if [[ -n "$CONFIG" ]]; then rm -f "$CONFIG"; fi
+  for target in "${targets[@]}"; do
+    report_args+=(--run "$nightly_dir/$target")
+  done
+  python3 "$REPO_ROOT/tool/ci/report.py" "${report_args[@]}" || result=1
+  exit "$result"
+}
+trap finish_nightly EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+exec > >(tee "$nightly_dir/runner.log") 2>&1
+echo "Nightly report directory: $nightly_dir"
 
 command -v flutter >/dev/null 2>&1 || {
   echo "error: flutter not found in PATH" >&2
-  exit 2
-}
-command -v jq >/dev/null 2>&1 || {
-  echo "error: jq not found (needed by write_e2e_dart_defines.sh)" >&2
   exit 2
 }
 flutter_version="$(flutter --version 2>/dev/null | sed -n 's/^Flutter \([^ ]*\).*/\1/p' | head -1)"
@@ -50,10 +90,33 @@ if [ "$flutter_version" != "$EXPECTED_FLUTTER_VERSION" ]; then
   echo "warning: local Flutter is '$flutter_version', CI pins $EXPECTED_FLUTTER_VERSION" >&2
 fi
 
-CONFIG="$(mktemp "${TMPDIR:-/tmp}/flutter-e2e-config.XXXXXX.json")"
-trap 'rm -f "$CONFIG"' EXIT
-bash "$REPO_ROOT/tool/ci/write_e2e_dart_defines.sh" "$CONFIG"
-export E2E_CONFIG_PATH="$CONFIG"
+if [ -n "${E2E_CONFIG_PATH:-}" ]; then
+  if [ ! -r "$E2E_CONFIG_PATH" ]; then
+    echo "error: E2E_CONFIG_PATH is not readable" >&2
+    exit 2
+  fi
+  # Runners change directory to the example; resolve relative caller paths now.
+  export E2E_CONFIG_PATH="$(cd "$(dirname "$E2E_CONFIG_PATH")" && pwd)/$(basename "$E2E_CONFIG_PATH")"
+else
+  for var in E2E_APP_KEY E2E_USER_ID E2E_REST_API E2E_CLIENT_ID E2E_CLIENT_SECRET; do
+    if [ -z "${!var:-}" ]; then
+      echo "error: environment variable $var is not set" >&2
+      exit 2
+    fi
+  done
+  for dependency in jq curl; do
+    command -v "$dependency" >/dev/null 2>&1 || {
+      echo "error: $dependency not found (needed to prepare E2E configuration)" >&2
+      exit 2
+    }
+  done
+  CONFIG="$(mktemp "${TMPDIR:-/tmp}/flutter-e2e-config.XXXXXX.json")"
+  # Default to the per-platform lane account so two local platforms run in
+  # parallel on isolated accounts; an explicit (even empty) caller value wins.
+  export E2E_USER_SUFFIX="${E2E_USER_SUFFIX-_flutter_$PLATFORM}"
+  bash "$REPO_ROOT/tool/ci/write_e2e_dart_defines.sh" "$CONFIG"
+  export E2E_CONFIG_PATH="$CONFIG"
+fi
 
 if [ "$PLATFORM" = "android" ]; then
   adb -s emulator-5554 get-state >/dev/null 2>&1 || {
@@ -61,12 +124,27 @@ if [ "$PLATFORM" = "android" ]; then
     echo "       start one first (e.g. via Android Studio or 'flutter emulators --launch ...')" >&2
     exit 2
   }
-  bash "$REPO_ROOT/tool/ci/run_android_emulator_test.sh" \
-    integration_test/single_account_local_test.dart android-single-account.log
-  exit 0
 fi
 
-# ios: run_ios_simulator_test.sh boots an available iPhone simulator itself
-# (and retries once on the iOS 26 VM-Service race; see that script's header).
-bash "$REPO_ROOT/tool/ci/run_ios_simulator_test.sh" \
-  integration_test/single_account_local_test.dart ios-single-account.log
+# Each existing device runner cold-starts the app before SDK initialization.
+# Keep all initialization-dependent suites here for both local and hosted CI.
+if [ "$PLATFORM" = "android" ]; then
+  runner="$REPO_ROOT/tool/ci/run_android_emulator_test.sh"
+else
+  runner="$REPO_ROOT/tool/ci/run_ios_simulator_test.sh"
+fi
+status=0
+passed=0
+failed=0
+for index in "${!targets[@]}"; do
+  if CI_REPORT_DIR="$nightly_dir/${targets[$index]}" bash "$runner" "integration_test/${targets[$index]}.dart"; then
+    echo "PASS $PLATFORM ${targets[$index]}"
+    passed=$((passed + 1))
+  else
+    echo "FAIL $PLATFORM ${targets[$index]}" >&2
+    failed=$((failed + 1))
+    status=1
+  fi
+done
+echo "Nightly suites: passed=$passed failed=$failed total=${#targets[@]}"
+exit "$status"
