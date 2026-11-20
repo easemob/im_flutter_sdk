@@ -79,10 +79,12 @@ void registerConversationCases({
     );
 
     // Test: Insert two received messages and a newer sent message, query latest,
-    // last received, and by ID, then clear the zero unread count twice.
+    // last received, and by ID, then clear the unread count twice.
     // Expected: Reads match the seeded messages, latest is the sent message,
-    // last received is the second received message, and unread stays zero.
-    // This covers the zero boundary, not clearing a nonzero unread count.
+    // last received is the second received message. The 4.25.0 native counts
+    // locally inserted received messages as unread (unlike 5.x, where local
+    // insertion leaves the count untouched), so the count starts at 2 and
+    // markAllMessagesAsRead brings it to zero idempotently.
     ciTestWidgets(
       'FL-CONV-002 positive latest and received messages with zero unread state',
       (tester) async {
@@ -103,9 +105,10 @@ void registerConversationCases({
         _expectStoredMessage(
             await conversation.loadMessage(first.msgId), first);
 
-        // Local insertion does not increment unread count. These assertions
-        // cover only the zero boundary and idempotence, not nonzero clearing.
-        expect(await conversation.unreadCount(), 0);
+        // 4.25.0 native semantics: locally inserted received messages are
+        // unread until read. These assertions also cover nonzero clearing
+        // and its idempotence through markAllMessagesAsRead.
+        expect(await conversation.unreadCount(), 2);
         for (var attempt = 0; attempt < 2; attempt++) {
           await conversation.markAllMessagesAsRead();
           expect(await conversation.unreadCount(), 0);
