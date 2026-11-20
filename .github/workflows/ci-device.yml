@@ -6,8 +6,11 @@ name: Flutter Device Regression
 # independent and run in parallel: a failing test case — an expected signal
 # while known native bugs are tracked — must never delay or block another
 # lane, and a workflow-level failure on one platform must not starve the
-# other. Local runs match CI exactly: tool/ci/smoke_local.sh and
-# tool/ci/nightly_local.sh call the same runner scripts the lanes use.
+# other. The iOS lanes additionally patch the pinned flutter tool with the
+# upstream fix for the iOS simulator VM Service race (see
+# tool/ci/patch_flutter_ios_log_stream.sh). Local runs match CI exactly:
+# tool/ci/smoke_local.sh and tool/ci/nightly_local.sh call the same runner
+# scripts the lanes use.
 
 on:
   schedule:
@@ -177,6 +180,12 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Patch flutter tool (iOS simulator log stream race)
+        # Applies the upstream fix for flutter/flutter#181771 to the pinned
+        # SDK; no stable release carries it yet. Idempotent and bound to
+        # FLUTTER_VERSION — see tool/ci/patch_flutter_ios_log_stream.sh.
+        run: bash tool/ci/patch_flutter_ios_log_stream.sh
+
       - name: Cache Swift Package Manager dependencies
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         # iOS dependencies resolve via SPM (no CocoaPods in this repo). Their
@@ -229,6 +238,12 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
+
+      - name: Patch flutter tool (iOS simulator log stream race)
+        # Applies the upstream fix for flutter/flutter#181771 to the pinned
+        # SDK; no stable release carries it yet. Idempotent and bound to
+        # FLUTTER_VERSION — see tool/ci/patch_flutter_ios_log_stream.sh.
+        run: bash tool/ci/patch_flutter_ios_log_stream.sh
 
       - name: Prepare protected test configuration
         # 5.0.0 has no password login, and user tokens expire in ~24h so they
