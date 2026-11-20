@@ -1,0 +1,21 @@
+name: Flutter Device Regression
+
+# Placeholder on the default branch. GitHub only lists a workflow in the
+# Actions UI (and allows manual dispatch) when the file exists on the default
+# branch; the real device regression workflow lives on the release branch
+# (currently 5.1.0). To run it: Actions -> Flutter Device Regression -> Run
+# workflow -> select the release branch. A dispatched run executes the
+# workflow file from the selected ref, so this notice job only runs if the
+# workflow is dispatched against flutter2_stable itself.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  notice:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo "Placeholder only. Re-run this workflow with the release branch (e.g. 5.1.0) selected as the ref."
