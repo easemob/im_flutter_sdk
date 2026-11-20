@@ -20,10 +20,10 @@
 | T1-10 | B | test/contracts/chat_message_send_contract_test.dart | 5.x 消息字段重命名 isRead/isPeerRead/isNeedReadReceipt | 改回 hasRead/hasReadAck/needGroupAck | 4.25.0 `chat_message.dart:950-953` |
 | T1-11 | B | test/models/em_message_test.dart | 同上 + 5.x 图片 body 丢弃 thumbnailSecret | 改回 hasRead；图片断言改为「保留 secret 与 thumbnailSecret」 | 4.25.0 图片 body 保留 thumbnailSecret（版本差异，非缺陷） |
 | T1-12 | B | test/handlers/connection_event_test.dart | 5.x 统一 `onDisconnected(errorCode, info)` + `ChatDisconnectErrorCode` | 整体改写为 4.25.0 分散回调模型（含 other-device LoginExtensionInfo、onUserAuthenticationFailed→onDisconnected） | 4.25.0 `chat_client.dart:24-121`、`manager_event_handler.dart:41-130` |
-| T1-13 | B | test/handlers/multi_device_event_test.dart | 5.x 事件集（34 GROUP_UPDATE、30-33 投递、99/null 兜底） | 事件集改为 4.25.0 映射值；44/45 语义断言、30-33 投递用例、UnKnow 兜底线用例移除（见 T1-14/15/16） | 4.25.0 `chat_transform_tools.dart:3-87` |
-| T1-14 | C | lib SDK | 多端 group 事件 30-33（白名单/全员禁言）在转换层无映射，且 `chat_client.dart` 对 null 转换结果用 `!` 直接抛异常 | 不改 SDK、不钉缺陷行为；移除对应用例，待裁决 | 枚举已声明 GROUP_ADD_USER_ALLOW_LIST 等（`chat_enums.dart`），转换层缺 case 30-33；5.1.0 已修复同类崩溃（fallback UnKnow） |
-| T1-15 | C | lib SDK | 44/45 映射疑似 swapped：4.25.0 为 44→KICK、45→UPDATE；5.1.0 修复为 44→UPDATE、45→KICK | 不钉缺陷行为；投递覆盖改用 40-43，语义断言移除，待裁决 | 4.25.0 `chat_transform_tools.dart:67-70` vs 5.1.0 修复说明 |
-| T1-16 | C | lib SDK | 未映射多端事件值（如 99）无 UnKnow 兜底，handler 抛 "Null check operator" | 兜底用例移除，待裁决 | 同 T1-14，5.1.0 已有兜底修复 |
+| T1-13 | B | test/handlers/multi_device_event_test.dart | 5.x 事件集（34 GROUP_UPDATE、30-33 投递、99/null 兜底） | 事件集按 4.25.0 枚举声明（无 34 GROUP_UPDATE、65/66 成员）；44/45 语义断言、30-33 投递用例、UnKnow 兜底线用例已恢复并钉住修复（见 T1-14/15/16 裁决） | 4.25.0 `chat_transform_tools.dart`（修复后） |
+| T1-14 | C→已修复 | lib SDK | 多端 group 事件 30-33（白名单/全员禁言）在转换层无映射，且 `chat_client.dart` 对 null 转换结果用 `!` 直接抛异常 | 用户裁决（2026-11-20）：改 SDK。转换层补 case 30-33 映射，移植 5.1.0 修复 | 枚举已声明 GROUP_ADD_USER_ALLOW_LIST 等（`chat_enums.dart`），转换层原缺 case 30-33 |
+| T1-15 | C→已修复 | lib SDK | 44/45 映射疑似 swapped：4.25.0 为 44→KICK、45→UPDATE；5.1.0 修复为 44→UPDATE、45→KICK | 用户裁决：改 SDK。44→CHAT_THREAD_UPDATE、45→CHAT_THREAD_KICK，与 5.1.0 修复一致 | 4.25.0 `chat_transform_tools.dart` vs 5.1.0 修复说明 |
+| T1-16 | C→已修复 | lib SDK | 未映射多端事件值（如 99）无 UnKnow 兜底，handler 抛 "Null check operator" | 用户裁决：改 SDK。未映射值/ null 记录 ChatLog 并兜底返回 UnKnow，移植 5.1.0 修复 | 同 T1-14 |
 | T1-17 | B | test/contracts/legacy_api_removal_contract_test.dart | pushConfig 移除为 5.x 行为 | 移除该用例，其余契约（ChatGroup name/desc、FetchMessageOptions senders、loadMessagesWithKeyword senders）4.25.0 均通过，保留 | 4.25.0 `chat_options.dart` 仍发送 pushConfig（版本差异） |
 | T1-18 | B | test/ci/version_checker_test.dart + tool/ci/version_checker.dart | 4.25.0 版本检查器比 5.1.0 新（含 SPM Package.swift 对齐、major.minor 比较） | 保留 4.25.0 原实现与原测试，不做覆盖 | 4.25.0 检查器为超集，覆盖会丢失 SPM 检查 |
 | T1-19 | B | tool/ci/ | 5.1.0 `deprecated_api_checker.dart`/`check_deprecated_api.dart` 为新增 | 随单测一并迁入（T3 的 tool/ci 覆盖范围提前落地，T3 不再重复处理） | deprecated_api_checker_test 依赖 |
@@ -68,7 +68,7 @@
 
 | # | 级别 | 文件 | 问题 | 处置 | 归因/契约依据 |
 |---|---|---|---|---|---|
-| D1 | C | modules/message_cases.negative.dart FL-MSG-006 | 登出态发消息：onError 回调 201 正常到达，但消息状态保持 PROGRESS 而非 FAIL | 不改断言不改 SDK，登记待裁决 | 与 5.1.0 用例内注释记录一致：native bug HIM-24173（5.0.0 已观察，修复基于 native 5.1.0 进行中）；4.25.0 native 4.22 同样表现。早验 17 例 16 过，仅此 1 例失败 |
+| D1 | C→已裁决 | modules/message_cases.negative.dart FL-MSG-006 | 登出态发消息：onError 回调 201 正常到达，但消息状态保持 PROGRESS 而非 FAIL | 用户裁决（2026-11-20）：用例不改、SDK 不改，等 native 修复 | 与 5.1.0 用例内注释记录一致：native bug HIM-24173（5.0.0 已观察，修复基于 native 5.1.0 进行中）；4.25.0 native 4.22 同样表现。早验 17 例 16 过，仅此 1 例失败 |
 
 ## T5 example 与账号机制
 

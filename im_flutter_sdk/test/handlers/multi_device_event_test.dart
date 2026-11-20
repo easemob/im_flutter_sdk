@@ -109,6 +109,10 @@ void main() {
       27,
       28,
       29,
+      30,
+      31,
+      32,
+      33,
       40,
       41,
       42,
@@ -129,6 +133,15 @@ void main() {
         reason: 'native value $value has no Dart mapping',
       );
     }
+    // 44 and 45 were swapped: native 44 is the thread update and 45 the kick.
+    expect(
+      convertIntToChatMultiDevicesEvent(44),
+      ChatMultiDevicesEvent.CHAT_THREAD_UPDATE,
+    );
+    expect(
+      convertIntToChatMultiDevicesEvent(45),
+      ChatMultiDevicesEvent.CHAT_THREAD_KICK,
+    );
   });
 
   test('delivers group events', () async {
@@ -136,6 +149,10 @@ void main() {
       10: ChatMultiDevicesEvent.GROUP_CREATE,
       11: ChatMultiDevicesEvent.GROUP_DESTROY,
       20: ChatMultiDevicesEvent.GROUP_KICK,
+      30: ChatMultiDevicesEvent.GROUP_ADD_USER_ALLOW_LIST,
+      31: ChatMultiDevicesEvent.GROUP_REMOVE_USER_ALLOW_LIST,
+      32: ChatMultiDevicesEvent.GROUP_ALL_BAN,
+      33: ChatMultiDevicesEvent.GROUP_REMOVE_ALL_BAN,
     };
     for (final entry in expected.entries) {
       received.clear();
@@ -151,6 +168,8 @@ void main() {
       41: ChatMultiDevicesEvent.CHAT_THREAD_DESTROY,
       42: ChatMultiDevicesEvent.CHAT_THREAD_JOIN,
       43: ChatMultiDevicesEvent.CHAT_THREAD_LEAVE,
+      44: ChatMultiDevicesEvent.CHAT_THREAD_UPDATE,
+      45: ChatMultiDevicesEvent.CHAT_THREAD_KICK,
     };
     for (final entry in expected.entries) {
       received.clear();
@@ -161,6 +180,21 @@ void main() {
           reason: 'native value ${entry.key}');
       expect(receivedChatThreadUserIds, <String>['member-id'],
           reason: 'native value ${entry.key}');
+    }
+  });
+
+  test('unmapped native values fall back to UnKnow instead of throwing',
+      () async {
+    // 99 is not declared by any SDK version; a null value covers a payload
+    // without an "event" key. Neither may throw out of the handler.
+    for (final value in <int?>[99, null]) {
+      received.clear();
+      await sendGroupEvent(value);
+      expect(
+        received,
+        <ChatMultiDevicesEvent>[ChatMultiDevicesEvent.UnKnow],
+        reason: 'native value $value',
+      );
     }
   });
 }
