@@ -526,7 +526,9 @@ void registerConversationCases({
     );
 
     // Test: Make the prepared peer a friend, clear this conversation's unread
-    // count, then deliver two real one-to-one messages through REST.
+    // count (a fresh account may have no such conversation yet; a code-110
+    // response already satisfies the clean baseline), then deliver two real
+    // one-to-one messages through REST.
     // Expected: unreadCount reaches exactly 2 and the account total rises by 2;
     // clearing this conversation returns the conversation to zero and the
     // account total to its baseline without deleting account history.
@@ -534,18 +536,27 @@ void registerConversationCases({
     ciTestWidgets(
       'FL-CONV-016 positive real inbound messages update unread counts',
       (_) async {
+        final manager = client.chatManager;
+        // Clears the peer conversation's unread count for a clean baseline.
+        // A fresh account has no conversation with the peer yet; the native
+        // SDK then fails with code 110 (conversation not found), which
+        // already satisfies the no-unread precondition, so only that code
+        // is ignored.
+        Future<void> clearPeerUnread() async {
+          try {
+            await manager
+                .clearConversationUnreadMessageCount(peerId)
+                .timeout(const Duration(seconds: 15));
+          } on ChatError catch (error) {
+            if (error.code != 110) rethrow;
+          }
+        }
+
         final snapshot = await rest.snapshotContacts(userId, peerId);
         addTearDown(() => rest.restoreContacts(userId, peerId, snapshot));
-        addTearDown(() async {
-          await client.chatManager
-              .clearConversationUnreadMessageCount(peerId)
-              .timeout(const Duration(seconds: 15));
-        });
+        addTearDown(clearPeerUnread);
         await rest.setContacts(userId, peerId, true);
-        final manager = client.chatManager;
-        await manager
-            .clearConversationUnreadMessageCount(peerId)
-            .timeout(const Duration(seconds: 15));
+        await clearPeerUnread();
         final baseline = await manager.getUnreadMessageCount();
         final run = 'ci_unread_${DateTime.now().microsecondsSinceEpoch}';
         for (final text in ['$run first', '$run second']) {
