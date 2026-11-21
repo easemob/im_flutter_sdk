@@ -1,7 +1,7 @@
 # ci-device 时序类失败详细记录：联系人同步 / 消息下行投递
 
 - 日期：2026-11-21
-- 状态：已定位（服务端同步/投递链路时序，环境侧 D 级）；**已处置（2026-11-21 用户裁决）**——时序敏感断言挂起并标记，待服务端修复后恢复
+- 状态：已定位（服务端同步/投递链路时序，环境侧 D 级）；**已处置（2026-11-21 用户裁决）**——时序敏感断言挂起并标记，待服务端修复后恢复；**二轮 dispatch（11-21 13:25 UTC）新增 FL-CONV-017 / FL-PRESENCE-006 两名受害者，登记待裁决**（见文末补充观察）
 - 适用范围：ci-device 四 lane（ci.yml 不受影响）；5.1.0 / 4.25.0 / flutter2_stable 三个分支均观察到
 - 关联：差异登记表 D5/D6/D7（`2026-11-20-migration-issue-register.md`）；本文是 D6 同类问题的扩展立案，证据达可提交工单标准
 
@@ -23,7 +23,7 @@
 ci-device 存在两类**结果不稳定**的失败，根因均指向**服务端同步/投递链路时序抖动**，与代码、测试用例、SDK 版本、账号无关：
 
 - **问题 A：登录后 roster 同步不落地**——FL-CONTACT-001 / FL-CONTACT-011
-- **问题 B：REST 真实消息的下行投递不落地**——FL-CONV-016 / FL-MSG-010（同基类还有 FL-CONV-002、FL-AUTH-003、FL-ROOM-001）
+- **问题 B：REST 真实消息的下行投递不落地**——FL-CONV-016 / FL-MSG-010（同基类还有 FL-CONV-002、FL-AUTH-003、FL-ROOM-001；11-21 二轮 dispatch 新增 FL-CONV-017、FL-PRESENCE-006，见文末补充观察）
 
 核心证据：三个不同 native 版本的 SDK（5.1.0 = native 5.x；4.25.0 与 flutter2_stable 为同一 commit、SDK 零 diff）+ 不同的用例代码（5.1.0 为迁移源头，与 4.25.0 用例相互独立）出现**完全相同的失败模式**，且失败用例集合每次 run 轮换、同一 run 内反向平台通过。共享变量只有账号池与服务端。
 
@@ -54,6 +54,8 @@ ci-device.yml 约定：logged-in lane 账号派生自 `E2E_USER_SUFFIX`（`_flut
 | 44729802560 | dispatch | 4.25.0 | 11-20 11:42 | Android logged-in 136281732762（D6；attempt 2 为 rerun 通过） |
 | 44746230976 | dispatch | flutter2_stable | 11-20 13:39 | Android logged-in 136322156441；iOS logged-in 136322156575 |
 | 44794920641 | **schedule（stable 合并后首轮 cron）** | flutter2_stable | 11-20 18:40 | Android logged-in 136491855483；iOS logged-in 136491855453 |
+| 44908749663 | dispatch | 4.x | 11-21 13:25 | Android logged-in 136859817681；iOS logged-in 136859817694 |
+| 44908763217 | dispatch | 5.x | 11-21 13:25 | Android logged-in 136859857340；iOS logged-in 136859857612 |
 
 拉取原始日志（日志在 GitHub 保留 90 天）：
 
@@ -146,8 +148,40 @@ stable dispatch run 44746230976：
 | 44729802560 | 4.25.0 Android | FL-ROOM-001（attempt 1，rerun 过） |
 | 44746230976 | stable Android | FL-ROOM-001 |
 | 44794920641 | stable Android / iOS | FL-CONV-016（A）/ FL-MSG-010（i） |
+| 44908749663 | 4.x Android | FL-CONV-017、FL-PRESENCE-006（见补充观察） |
 
 失败组合每次轮换、从不重复，叠加在恒定的 2 个 native bug（MSG-007/GROUP-014）之上。
+
+## 补充观察：2026-11-21 二轮 dispatch（run 44908749663 / 44908763217，13:25 UTC 同窗双跑）
+
+### 新受害用例（待裁决是否按同原则挂起）
+
+- **FL-CONV-017**（4.x Android logged-in，job 136859817681，13:29:45Z）：`TimeoutException after 0:00:30.000000`，栈顶 `conversation_cases.dart:584`——发消息后 REST 轮询等服务端历史落地（`waitForCi`）超时。探测链路与问题 B 相同（REST 状态服务端传播时序）。
+- **FL-PRESENCE-006**（同 job，13:31:40Z）：`TimeoutException after 0:00:00.047234`，栈顶 `rest_fixture.dart:390`——`waitForCi` 30s 总预算被前面发布+拉取步骤耗尽，走到断言轮询时只剩 47ms。根因同为服务端 presence 状态传播慢。
+
+### 通过对照（同时间窗、同账号池）
+
+| 用例 | 4.x Android | 4.x iOS | 5.x Android | 5.x iOS |
+|---|---|---|---|---|
+| FL-CONV-017 | ❌ 30s 超时 | ✅ | ✅ | ✅ |
+| FL-PRESENCE-006 | ❌ 预算耗尽 | ✅ | ✅ | ✅ |
+
+5.x run 原始日志：`✅ FL-CONV-017`（Android 第 844 行 / iOS 第 273 行）、`✅ FL-PRESENCE-006`（Android 第 888 行 / iOS 第 317 行）。
+
+### 轮次统计（baseline suite 对照）
+
+- 4.x Android baseline：38 过 3 挂（FL-CONV-017、FL-PRESENCE-006 + 恒挂的 FL-MSG-007）
+- 5.x Android baseline：40 过 1 挂（仅 FL-MSG-007）
+
+多出的 2 个挂只落在 4.x Android 一处，同窗其余三 lane 全过——失败集合继续轮换，符合本文基类特征。
+
+### 同轮 infra 事件（与用例无关，单独备忘）
+
+4.x Android 模拟器在 group suite 完成后**中途死亡**：`logged_in_user_info_test` 报 `Failed to start Dart Development Service`（0 用例执行），`conversation_config_test` 报 `no Android emulator online at emulator-5554`。该 job 显示 4/5 suite 失败，其中 2 个纯属环境事故，非用例失败；单次事件，另一 run 未复现，暂不升级，再出现再立案。
+
+### 判定
+
+FL-CONV-017 / FL-PRESENCE-006 与问题 B 同根因（服务端传播时序抽签），**登记为新增受害者，挂起与否待用户裁决**；尚未达到"同一用例相同代码连续 3 次失败"的升级线（各仅 1 次样本）。
 
 ## 排除项（均已验证）
 
