@@ -6,6 +6,18 @@
 
 ## 1. 背景与目标
 
+### 1.1 设计原则：三类测试分工
+
+| 类型 | 载体 | 侧重点 | 运行时机 |
+|---|---|---|---|
+| CI 回归 | integration_test 套件 + `nightly_local.harmony.sh`/`ohos_local.sh` | 已确认行为的防回归，贴近 CI 环境 | 每日 + 本地随手跑 |
+| single 平板 | `make auto-report` + JSON 脚本 | 版本平板验收：API 名、参数、错误码逐条过 | 平板开发期 + 发布前 |
+| multi 平板 | `scripts/multi.sh` + YAML 场景 | 多端交互语义（双设备账号互验） | 平板开发期 + 发布前 |
+
+三类测试用例可以重叠，但侧重点不同；由此推论：各类型保持**独立入口**，不合并进统一 runner（用户决策 2026-11-22，与 4.x/5.1.0 惯例一致）。
+
+### 1.2 背景与目标
+
 ohos 线的集成套件（integration_test）已经演进为新架构风格（modules + support 结构，
 与 4.x 套件入口同名），但三类测试中的另外两类完全缺失：
 
@@ -87,7 +99,7 @@ ohos 线的集成套件（integration_test）已经演进为新架构风格（mo
 
 ### 3.6 runner 与文档
 
-- `tool/ci/nightly_local.harmony.sh` 增加 multi/single 入口（multi 需双设备在线）
+- `tool/ci/nightly_local.harmony.sh` **不接** multi/single：与 4.x/5.1.0 惯例一致，三类测试保持独立入口——CI 回归（nightly_local.harmony.sh → ohos_local.sh）、single（`make auto-report`）、multi（`scripts/multi.sh`）（用户决策 2026-11-22，见设计原则 1.1）
 - ohos AGENTS.md"鸿蒙构建与验证入口"表补充 multi/single 用法
 
 ## 4. 验收

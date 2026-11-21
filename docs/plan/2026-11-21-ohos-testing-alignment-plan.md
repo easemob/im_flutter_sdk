@@ -47,6 +47,8 @@
 - 2026-11-22 00:35 T4a 完成提交 ed57b060：12 场景 1.16.0-multi-* 落地（JSON 字节级不变），README Platform skip 节、scripts/multi.sh、testing/target-flutter.yaml（platform: ohos + flutterBin）
 - 2026-11-22 00:55 T5 静态完成提交 894b99c2：script_1.16.0 正（16 步）/逆（6 步）脚本（API 名 16/16 经 ohos registry 核对）+ auto_report ohos 分支（自测与伪 hdc/flutter 端到端夹具全过）；实跑待设备（验收未闭环，不降级）。已知：ohos registry 仅 21 项，client/contact/thread 未注册
 - 2026-11-22 00:55 T4b 进行中（k3 子代理）：IMTO ohos 平台支持（hdc 发现/装包/启动/hilog + FLUTTER_BIN 构建 + fport），dart test 全绿为目标
+- 2026-11-22 01:40 T4b 完成：IMTO 提交 1e69503 并 push origin（230/230 测试通过，214 基线 + 16 新增；artifact 流 build hap + hdc install/aa start 与 apk 路同构；fport/bm dump/aa start 输出语义等按 fork flutter_tools 源码实现，标注待设备确认）；ohos 仓 testing/target-flutter.yaml 经 TargetConfig 解析验证。实跑待双鸿蒙设备（验收未闭环，不降级）
+- 2026-11-22 01:40 T6 偏差记录：nightly_local.harmony.sh 不接 single/multi（遵循 4.x 惯例：single 走 `make auto-report` 独立入口，multi 走 scripts/multi.sh），AGENTS.md 与 testing/README.md 已如实描述；hap 编译验证通过（T1-T3 鸿蒙工具链编译确认）
 
 ## 验证记录
 
