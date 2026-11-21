@@ -1,0 +1,29 @@
+{
+  "_comment": "Local secrets and test data for the one environment you test against. Run `make env-gettoken` after editing. This file is copied to example/config.local.json and is not tracked by Git. Private deployment is not a separate mode: set enablePrivateConfig to true and fill the server fields below. chatOptions only needs the keys the app should override: 4.25 supports appKey/autoLogin/debugMode/enableUserInfo/enableAutoSyncContacts/autoLoadConversations/enableChatroomConversation (dataSyncType belongs to 5.x and is ignored here).",
+  "restApi": "TODO",
+  "appKey": "TODO(orgName#appName)",
+  "clientId": "TODO",
+  "clientSecret": "TODO",
+  "tokenTtl": 86400,
+  "accounts": [
+    {"id": "TODO-user1"},
+    {"id": "TODO-user2"}
+  ],
+  "groups": [
+    {"id": "TODO", "owner": "TODO-user1", "name": "TODO"}
+  ],
+  "rooms": [
+    {"id": "TODO", "name": "TODO"}
+  ],
+  "chatOptions": {
+    "debugMode": true,
+    "enableUserInfo": true,
+    "enableAutoSyncContacts": false,
+    "autoLoadConversations": true,
+    "enableChatroomConversation": false
+  },
+  "enablePrivateConfig": false,
+  "webSocketServer": "TODO",
+  "restServer": "TODO",
+  "msyncServer": "TODO"
+}
