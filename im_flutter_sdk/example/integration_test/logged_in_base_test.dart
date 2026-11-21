@@ -11,7 +11,7 @@ import 'modules/presence_cases.dart';
 import 'modules/push_cases.dart';
 import 'support/env.dart';
 import 'support/login.dart';
-import 'support/rest.dart';
+import 'support/rest_fixture.dart';
 import 'support/session.dart';
 
 /// Stable entry: token login with the base option set.
@@ -27,7 +27,11 @@ void main() {
   requireCiEnvironment(requirePeer: true, requireRest: true);
 
   final client = ChatClient.getInstance;
-  final rest = CiRestClient.fromCiEnvironment();
+  final rest = CiRestFixture(
+    restApi: ciRestApi,
+    appKey: ciAppKey,
+    appToken: ciAppToken,
+  );
 
   setUpAll(() async {
     await initCiClient();

@@ -8,7 +8,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import '../support/ci_test.dart';
 import '../support/env.dart';
-import '../support/rest.dart';
+import '../support/rest_fixture.dart' show CiRestFixture;
 
 /// Message cases that exercise the real server path against the CI peer.
 void registerMessageCases(ChatClient client) {
@@ -213,7 +213,11 @@ void registerMessageCases(ChatClient client) {
   /// so these cases target a disposable account created through the REST
   /// fixture instead.
   Future<String> createDisposablePeer(String caseId) async {
-    final rest = CiRestClient.fromCiEnvironment();
+    final rest = CiRestFixture(
+      restApi: ciRestApi,
+      appKey: ciAppKey,
+      appToken: ciAppToken,
+    );
     final userId =
         'ci_msg_${caseId.toLowerCase()}_${DateTime.now().microsecondsSinceEpoch}';
     await rest.createUser(userId, 'Flutter_ci_123');

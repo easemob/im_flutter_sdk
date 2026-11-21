@@ -5,7 +5,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import '../support/ci_test.dart';
 import '../support/env.dart';
 import '../support/login.dart';
-import '../support/rest.dart';
+import '../support/rest_fixture.dart' show CiRestFixture;
 import '../support/session.dart';
 
 /// User info cases, FL-USERINFO-001..010 of the 4.25 ohos coverage draft.
@@ -344,20 +344,20 @@ final class _UserInfoFixtures {
     final micros = DateTime.now().microsecondsSinceEpoch;
     final userId = 'ci_${label}_${micros}_${_sequence++}'.toLowerCase();
     final password = 'Ci${micros}pass';
-    final rest = CiRestClient.fromCiEnvironment();
-    try {
-      await rest.createUser(userId, password);
-    } finally {
-      rest.close();
-    }
+    final rest = CiRestFixture(
+      restApi: ciRestApi,
+      appKey: ciAppKey,
+      appToken: ciAppToken,
+    );
+    await rest.createUser(userId, password);
     addTearDown(() async {
-      final cleanup = CiRestClient.fromCiEnvironment();
-      try {
-        await cleanup.removeContact(ciUserId, userId);
-        await cleanup.deleteUser(userId);
-      } finally {
-        cleanup.close();
-      }
+      final cleanup = CiRestFixture(
+        restApi: ciRestApi,
+        appKey: ciAppKey,
+        appToken: ciAppToken,
+      );
+      await cleanup.setContacts(ciUserId, userId, false);
+      await cleanup.deleteUser(userId);
     });
     return _TempAccount(userId, password);
   }

@@ -7,7 +7,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import '../support/ci_test.dart';
 import '../support/env.dart';
 import '../support/login.dart';
-import '../support/rest.dart';
+import '../support/rest_fixture.dart' show CiRestFixture;
 
 String _eventId(String prefix) =>
     '${prefix}_${DateTime.now().microsecondsSinceEpoch}';
@@ -60,7 +60,7 @@ class _EventCollector {
 /// token expiry) and the room member join/exit callbacks need a second logged
 /// in client or a server-side operation that this deployment does not expose,
 /// so they stay UNVERIFIED.
-void registerEventCallbackCases(ChatClient client, CiRestClient rest) {
+void registerEventCallbackCases(ChatClient client, CiRestFixture rest) {
   ciTestWidgets('FL-EVENT-202 dispatches chat message callbacks',
       (tester) async {
     final collector = _EventCollector();
@@ -80,7 +80,7 @@ void registerEventCallbackCases(ChatClient client, CiRestClient rest) {
     // emulator; the same callback is also dispatched for offline-sync
     // deliveries. Send one message, wait briefly for the realtime path, then
     // fall back to a logout/login sync cycle for the already-queued message.
-    await rest.sendUserTextMessage(
+    await rest.sendTextMessage(
       from: ciPeerId,
       to: ciUserId,
       text: _eventText('ci_event_message'),
@@ -128,7 +128,7 @@ void registerEventCallbackCases(ChatClient client, CiRestClient rest) {
 
   ciTestWidgets('FL-EVENT-203 dispatches contact added callback',
       (tester) async {
-    await rest.removeContact(ciPeerId, ciUserId);
+    await rest.setContacts(ciPeerId, ciUserId, false);
     final collector = _EventCollector();
     final id = _eventId('ci_evt_contact_added');
     client.contactManager.addEventHandler(
@@ -139,9 +139,9 @@ void registerEventCallbackCases(ChatClient client, CiRestClient rest) {
       ),
     );
     addTearDown(() => client.contactManager.removeEventHandler(id));
-    addTearDown(() => rest.removeContact(ciPeerId, ciUserId));
+    addTearDown(() => rest.setContacts(ciPeerId, ciUserId, false));
 
-    await rest.addContacts(ciPeerId, <String>[ciUserId]);
+    await rest.setContacts(ciPeerId, ciUserId, true);
 
     await collector.waitFor(
       'FL-EVENT-203 contact.onContactAdded fires for the peer',
@@ -151,7 +151,7 @@ void registerEventCallbackCases(ChatClient client, CiRestClient rest) {
 
   ciTestWidgets('FL-EVENT-204 dispatches contact deleted callback',
       (tester) async {
-    await rest.addContacts(ciPeerId, <String>[ciUserId]);
+    await rest.setContacts(ciPeerId, ciUserId, true);
     final collector = _EventCollector();
     final id = _eventId('ci_evt_contact_deleted');
     client.contactManager.addEventHandler(
@@ -163,7 +163,7 @@ void registerEventCallbackCases(ChatClient client, CiRestClient rest) {
     );
     addTearDown(() => client.contactManager.removeEventHandler(id));
 
-    await rest.removeContact(ciPeerId, ciUserId);
+    await rest.setContacts(ciPeerId, ciUserId, false);
 
     await collector.waitFor(
       'FL-EVENT-204 contact.onContactDeleted fires for the peer',
@@ -188,6 +188,7 @@ void registerEventCallbackCases(ChatClient client, CiRestClient rest) {
     final groupId = await rest.createGroup(
       owner: ciPeerId,
       name: _eventText('ci_event_group'),
+      isPublic: true,
       members: <String>[ciUserId],
     );
     addTearDown(() => rest.deleteGroup(groupId));
@@ -220,6 +221,7 @@ void registerEventCallbackCases(ChatClient client, CiRestClient rest) {
     final groupId = await rest.createGroup(
       owner: ciPeerId,
       name: _eventText('ci_event_group_removed'),
+      isPublic: true,
       members: <String>[ciUserId],
     );
     addTearDown(() => rest.deleteGroup(groupId));
@@ -257,6 +259,7 @@ void registerEventCallbackCases(ChatClient client, CiRestClient rest) {
     final groupId = await rest.createGroup(
       owner: ciPeerId,
       name: _eventText('ci_event_group_destroyed'),
+      isPublic: true,
       members: <String>[ciUserId],
     );
     addTearDown(() => rest.deleteGroup(groupId));
@@ -375,6 +378,7 @@ void registerEventCallbackCases(ChatClient client, CiRestClient rest) {
     final roomId = await rest.createChatRoom(
       owner: ciPeerId,
       name: _eventText('ci_event_room'),
+      description: 'flutter ci room',
       members: <String>[ciUserId],
     );
     addTearDown(() => rest.deleteChatRoom(roomId));

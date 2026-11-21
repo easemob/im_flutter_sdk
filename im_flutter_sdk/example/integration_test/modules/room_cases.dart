@@ -3,7 +3,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import '../support/ci_test.dart';
 import '../support/env.dart';
-import '../support/rest.dart';
+import '../support/rest_fixture.dart' show CiRestFixture;
 
 String _unique(String prefix) =>
     '${prefix}_${DateTime.now().microsecondsSinceEpoch}';
@@ -27,11 +27,11 @@ Future<void> _expectRoomError(
 /// Makes sure [userId] is an explicit member of the room; blocking or
 /// removing members leaves the fixture room in a modified state otherwise.
 Future<void> _ensureRoomMember(
-  CiRestClient rest,
+  CiRestFixture rest,
   String roomId,
   String userId,
 ) async {
-  final members = await rest.fetchChatRoomMembers(roomId);
+  final members = await rest.chatRoomMembers(roomId);
   if (!members.contains(userId)) {
     await rest.addChatRoomMembers(roomId, <String>[userId]);
   }
@@ -45,13 +45,13 @@ Future<void> _ensureRoomMember(
 class CiRoomFixture {
   CiRoomFixture(this.rest);
 
-  final CiRestClient rest;
+  final CiRestFixture rest;
   late String roomId;
 }
 
 void registerRoomCases(
   ChatClient client,
-  CiRestClient rest,
+  CiRestFixture rest,
   CiRoomFixture fixture,
 ) {
   ciTestWidgets('FL-ROOM-001 joins a chat room', (tester) async {
@@ -76,6 +76,7 @@ void registerRoomCases(
     final tempRoom = await rest.createChatRoom(
       owner: ciPeerId,
       name: _unique('ci_room_leave'),
+      description: 'flutter ci room',
     );
     addTearDown(() => rest.deleteChatRoom(tempRoom));
     await client.chatRoomManager.joinChatRoom(tempRoom);
@@ -85,7 +86,7 @@ void registerRoomCases(
     );
     await client.chatRoomManager.leaveChatRoom(tempRoom);
     expect(
-        await rest.fetchChatRoomMembers(tempRoom), isNot(contains(ciUserId)));
+        await rest.chatRoomMembers(tempRoom), isNot(contains(ciUserId)));
   });
 
   ciTestWidgets('FL-ROOM-003 fetches public chat rooms', (tester) async {
@@ -101,7 +102,7 @@ void registerRoomCases(
     final roomId = fixture.roomId;
     final name = _unique('ci_room_name');
     await client.chatRoomManager.changeChatRoomName(roomId, name);
-    final detail = await rest.fetchChatRoomDetail(roomId);
+    final detail = await rest.chatRoomDetail(roomId);
     expect(detail['name'], name);
   });
 
@@ -110,7 +111,7 @@ void registerRoomCases(
     final roomId = fixture.roomId;
     final description = _unique('ci_room_desc');
     await client.chatRoomManager.changeChatRoomDescription(roomId, description);
-    final detail = await rest.fetchChatRoomDetail(roomId);
+    final detail = await rest.chatRoomDetail(roomId);
     expect(detail['description'], description);
   });
 
@@ -163,14 +164,14 @@ void registerRoomCases(
     addTearDown(
       () => client.chatRoomManager.removeChatRoomAdmin(roomId, ciPeerId),
     );
-    expect(await rest.fetchChatRoomAdmins(roomId), contains(ciPeerId));
+    expect(await rest.chatRoomAdmins(roomId), contains(ciPeerId));
   });
 
   ciTestWidgets('FL-ROOM-011 removes a chat room admin', (tester) async {
     final roomId = fixture.roomId;
     await client.chatRoomManager.addChatRoomAdmin(roomId, ciPeerId);
     await client.chatRoomManager.removeChatRoomAdmin(roomId, ciPeerId);
-    expect(await rest.fetchChatRoomAdmins(roomId), isNot(contains(ciPeerId)));
+    expect(await rest.chatRoomAdmins(roomId), isNot(contains(ciPeerId)));
   });
 
   ciTestWidgets('FL-ROOM-012 fetches the chat room mute list', (tester) async {
@@ -185,7 +186,7 @@ void registerRoomCases(
     await client.chatRoomManager
         .removeChatRoomMembers(roomId, <String>[ciPeerId]);
     addTearDown(() => _ensureRoomMember(rest, roomId, ciPeerId));
-    expect(await rest.fetchChatRoomMembers(roomId), isNot(contains(ciPeerId)));
+    expect(await rest.chatRoomMembers(roomId), isNot(contains(ciPeerId)));
   });
 
   ciTestWidgets('FL-ROOM-014 blocks chat room members', (tester) async {
@@ -245,7 +246,7 @@ void registerRoomCases(
       await client.chatRoomManager.fetchChatRoomAnnouncement(roomId),
       announcement,
     );
-    expect(await rest.fetchChatRoomAnnouncement(roomId), announcement);
+    expect(await rest.chatRoomAnnouncement(roomId), announcement);
   });
 
   ciTestWidgets('FL-ROOM-019 fetches the chat room allow list', (tester) async {
@@ -296,7 +297,7 @@ void registerRoomCases(
     final roomId = fixture.roomId;
     await client.chatRoomManager.muteAllChatRoomMembers(roomId);
     addTearDown(() => client.chatRoomManager.unMuteAllChatRoomMembers(roomId));
-    final detail = await rest.fetchChatRoomDetail(roomId);
+    final detail = await rest.chatRoomDetail(roomId);
     expect(detail['mute'], isTrue);
   });
 
@@ -304,7 +305,7 @@ void registerRoomCases(
     final roomId = fixture.roomId;
     await client.chatRoomManager.muteAllChatRoomMembers(roomId);
     await client.chatRoomManager.unMuteAllChatRoomMembers(roomId);
-    final detail = await rest.fetchChatRoomDetail(roomId);
+    final detail = await rest.chatRoomDetail(roomId);
     expect(detail['mute'], isFalse);
   });
 
@@ -402,7 +403,7 @@ void registerRoomCases(
     final roomId = fixture.roomId;
     await client.chatRoomManager.changeOwner(roomId, ciPeerId);
     addTearDown(() => rest.changeChatRoomOwner(roomId, ciUserId));
-    final detail = await rest.fetchChatRoomDetail(roomId);
+    final detail = await rest.chatRoomDetail(roomId);
     expect(detail['owner'], ciPeerId);
   });
 }

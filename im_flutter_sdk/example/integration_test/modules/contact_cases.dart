@@ -4,7 +4,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import '../support/ci_test.dart';
 import '../support/env.dart';
 import '../support/login.dart';
-import '../support/rest.dart';
+import '../support/rest_fixture.dart' show CiRestFixture;
 import '../support/session.dart';
 
 /// Positive contact cases, FL-CONTACT-001..020 of the 4.25 ohos coverage draft.
@@ -406,14 +406,14 @@ final class _ContactFixtures {
 
   ChatContactManager get _contacts => client.contactManager;
 
-  /// Runs [body] against a short lived app-token REST client.
-  Future<T> _withRest<T>(Future<T> Function(CiRestClient rest) body) async {
-    final rest = CiRestClient.fromCiEnvironment();
-    try {
-      return await body(rest);
-    } finally {
-      rest.close();
-    }
+  /// Runs [body] against a short lived app-token REST fixture.
+  Future<T> _withRest<T>(Future<T> Function(CiRestFixture rest) body) async {
+    final rest = CiRestFixture(
+      restApi: ciRestApi,
+      appKey: ciAppKey,
+      appToken: ciAppToken,
+    );
+    return await body(rest);
   }
 
   /// Creates a throw-away account and registers its REST deletion.
@@ -428,7 +428,7 @@ final class _ContactFixtures {
     addTearDown(() async {
       await _withRest((rest) async {
         // Remove the relation from this side before the account is deleted.
-        await rest.removeContact(ciUserId, userId);
+        await rest.setContacts(ciUserId, userId, false);
         await rest.deleteUser(userId);
       });
     });
@@ -439,7 +439,7 @@ final class _ContactFixtures {
   Future<_TempAccount> friend(String label) async {
     final peer = await account(label);
     await _withRest(
-      (rest) => rest.addContacts(ciUserId, <String>[peer.userId]),
+      (rest) => rest.setContacts(ciUserId, peer.userId, true),
     );
     await expectFriendship(peer.userId, true);
     return peer;
@@ -472,12 +472,12 @@ final class _ContactFixtures {
         (rest) async {
           await waitForCi<List<String>>(
             'CI REST contacts of $ciUserId contain $peerId == $present',
-            () => rest.fetchContactIds(ciUserId),
+            () => rest.contactIds(ciUserId),
             (ids) => ids.contains(peerId) == present,
           );
           await waitForCi<List<String>>(
             'CI REST contacts of $peerId contain $ciUserId == $present',
-            () => rest.fetchContactIds(peerId),
+            () => rest.contactIds(peerId),
             (ids) => ids.contains(ciUserId) == present,
           );
         },

@@ -4,7 +4,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import '../support/ci_test.dart';
 import '../support/env.dart';
-import '../support/rest.dart';
+import '../support/rest_fixture.dart' show CiRestFixture;
 
 /// Negative contact cases, FL-CONTACT-021..023 of the 4.25 ohos coverage draft.
 ///
@@ -82,20 +82,20 @@ void registerContactNegativeCases(ChatClient client) {
 Future<String> _createInvitationlessPeer(String label) async {
   final micros = DateTime.now().microsecondsSinceEpoch;
   final userId = 'ci_${label}_$micros'.toLowerCase();
-  final rest = CiRestClient.fromCiEnvironment();
-  try {
-    await rest.createUser(userId, 'Ci${micros}pass');
-  } finally {
-    rest.close();
-  }
+  final rest = CiRestFixture(
+    restApi: ciRestApi,
+    appKey: ciAppKey,
+    appToken: ciAppToken,
+  );
+  await rest.createUser(userId, 'Ci${micros}pass');
   addTearDown(() async {
-    final cleanup = CiRestClient.fromCiEnvironment();
-    try {
-      await cleanup.removeContact(ciUserId, userId);
-      await cleanup.deleteUser(userId);
-    } finally {
-      cleanup.close();
-    }
+    final cleanup = CiRestFixture(
+      restApi: ciRestApi,
+      appKey: ciAppKey,
+      appToken: ciAppToken,
+    );
+    await cleanup.setContacts(ciUserId, userId, false);
+    await cleanup.deleteUser(userId);
   });
   return userId;
 }
