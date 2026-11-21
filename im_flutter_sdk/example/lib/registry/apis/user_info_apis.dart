@@ -87,4 +87,13 @@ final userInfoApis = <ApiEntry>[
       );
     },
   ),
+  ApiEntry(
+    name: 'ChatUserInfoManager.fetchOwnInfo',
+    group: 'UserInfoManager',
+    description: '读取当前用户属性，返回单个 ChatUserInfo；expireTime 为 Dart 缓存有效期（秒），默认 0。',
+    paramsTemplate: '{"expireTime": 0}',
+    invoke: (p) => ChatClient.getInstance.userInfoManager.fetchOwnInfo(
+      expireTime: (p['expireTime'] as int?) ?? 0,
+    ),
+  ),
 ];
