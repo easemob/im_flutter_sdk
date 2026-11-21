@@ -8,6 +8,13 @@ Document split: this document defines agent conventions; [README.md](README.md) 
 
 - When the investigation direction is unclear, or the same problem has been stuck for more than a few minutes, first sync the symptoms and your hypotheses with the user before deciding the next direction — do not drill down silently. The user may hold context the AI lacks (environment, historical decisions, server-side state).
 
+### Main/Subagent Execution and Model Assignment
+
+- The main agent chooses the execution strategy based on task size and difficulty; use the main/subagent mode only for medium and large tasks — small tasks are executed directly by the main agent.
+- Assign models by task profile: high-volume, mechanical, rule-clear tasks go to `deepseek-flash` (model and key configured in `~/.kimi-code/config.toml`; the key is filled in locally by the user and never committed); complex tasks requiring architectural understanding and trade-offs go to `k3`; a task that is both high-volume and complex may be split — deepseek executes in bulk, k3 or the main agent reviews.
+- While a subagent runs in the background, the main agent checks its progress every 15 minutes (keep checking until done); if a task fails review or its output has serious problems, redo it with a stronger model (`deepseek-flash` → `k2.8` → `k3`) instead of patching it locally.
+- Final quality responsibility rests with the main agent.
+
 ### Work Log
 
 - After completing a task, making an important decision, or receiving a correction from the user, append an entry to `dailylog/<GitHub login>/YYYY-MM-DD.md` using the local date. Create the file if it does not exist.
