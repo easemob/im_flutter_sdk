@@ -74,6 +74,7 @@
 | D4 | B→已适配 | modules/conversation_cases.dart FL-CONV-002 | 本地插入 2 条接收消息后 unreadCount 为 2 而非 0（用例假设为 5.x 行为「本地插入不增加未读」） | 已适配：断言改为插入后 unread=2（4.25.0 native 语义：本地插入的接收消息计未读），markAllMessagesAsRead 两轮归零验证幂等 | ci-device 双平台一致 Actual: 2；4.25.0 无 clearConversationUnreadMessageCount，T2-7 已适配为 markAllMessagesAsRead |
 | D5 | D | ci-device Android lane 基础设施 | ①logged-out smoke：Gradle 解析 kotlin-stdlib:2.2.21 在 plugins.gradle.org 404（第二轮自行恢复，属瞬时仓库同步问题）；②logged_in_user_info_test：Failed to start Dart Development Service；③conversation_config_test：模拟器离线（前两者的级联） | 不改代码，重跑验证 | iOS lane 无此现象；失败均发生在用例执行之前 |
 | D6 | D→已验证 | ci-device 第二轮 Android logged-in 时序 flake | FL-ROOM-001（fetchChatRoomInfoFromServer 成功后 getChatRoomWithId 本地缓存未就绪返回 null）、FL-CONTACT-001/011（REST 变更后重新登录同步，联系人列表 30s 内仍为空）——三个用例在 Android 第一轮通过、iOS 第二轮通过，仅 Android 第二轮失败 | rerun 后三者全部通过，确认为时序 flake，不改代码 | 失败模式均为同步/缓存时序；用例代码与 5.1.0 一致；rerun（job 136281732762）Android logged-in 74/76，仅剩 FL-MSG-007/FL-GROUP-014 两个已登记 native bug |
+| D7 | D→立案 | stable 合并后首轮 cron（run 44794920641）时序失败扩展观察 | 问题 A（FL-CONTACT-001/011 roster 同步不落地）与问题 B（FL-CONV-016/FL-MSG-010 下行投递不落地）在 stable 复现；5.1.0 分支同日出现同类（FL-CONV-016 双平台、FL-AUTH-003），失败组合逐 run 轮换 | 不改代码；按判定规则跟踪：同用例同代码连续 3 次失败升级为待裁决项 | 详细证据、run/job 清单、复验方法与工单草稿见 `2026-11-21-ci-device-timing-flake-analysis.md`；已证伪 convertInt 34 噪音关联、账号互踢、代码差异三类假设 |
 
 ## T5 example 与账号机制
 
