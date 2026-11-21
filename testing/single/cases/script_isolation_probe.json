@@ -1,0 +1,28 @@
+{
+  "init": {
+    "appKey": "easemob-demo#zuoyugc",
+    "enableDNSConfig": false,
+    "enableTLS": true,
+    "restServer": "https://isolation-asteriskzuo.easemob.net",
+    "webSocketServer": "isolation-asteriskzuo.easemob.net",
+    "webSocketPort": 8443
+  },
+  "login": {
+    "userId": "isotest01",
+    "password": "123456"
+  },
+  "steps": [
+    {
+      "api": "ChatManager.sendMessage",
+      "id": "send1",
+      "params": {
+        "to": "isotest01",
+        "chatType": 0,
+        "direction": 0,
+        "status": 0,
+        "body": {"type": 0, "content": "hello isolation"}
+      },
+      "delayAfterMs": 500
+    }
+  ]
+}
