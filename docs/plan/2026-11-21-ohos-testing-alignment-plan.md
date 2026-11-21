@@ -6,7 +6,7 @@
 
 ## 任务与验收
 
-- [ ] **T0 可行性核对表**：12 个 multi 场景 × 29 个 API × ohos registry/gap 台账核对，产出 `docs/testing/ohos-multi-api-matrix.md`（可跑/skip 及依据）。验收：modifyMessage 等疑点 API 有明确结论
+- [x] **T0 可行性核对表**：12 个 multi 场景 × 31 个 API × ohos registry/gap 台账核对，产出 `docs/testing/ohos-multi-api-matrix.md`（可跑/skip 及依据）。验收：modifyMessage 等疑点 API 有明确结论
 - [ ] **T1 REST 同构**：4.x `rest_fixture.dart` 吸收 ohos 写侧方法（4.x 提交，走 4 线到 main）；ohos 侧替换 support 层、删 rest/env/session、改 9 处调用点。验收：两线 diff 为空 + ohos 集成套件本地全量通过
 - [ ] **T2 auto step 引擎**：移植 3 个新文件，合并 auto_mode.dart（保内联 JSON）。验收：官方 flutter 质量门 + ohos 侧单设备可跑 step 脚本
 - [ ] **T3 agent 移植**：覆盖 `example/lib/agent/` + main.dart 三模式接线。验收：fvm 构建通过，控制端可对设备下发脚本
@@ -36,8 +36,9 @@
 
 ## 进度记录
 
-（每完成一项追加一行：`- YYYY-MM-DD HH:MM <任务> <提交号> <验证结果>`；此节与复选框同步更新，随任务提交持久化）
+- 2026-11-21 16:30 spec/plan 立项提交 b9214b68（grill-me 三轮复验后决策：IMTO 加 ohos 平台、自助建号、1.16.0 冠名）
+- 2026-11-21 17:00 T0 完成，提交见本次 commit。结论：31 API 中 30 runnable / 1 skip（ChatClient.fetchLoggedInDevices 已物理删除）；10 场景 runnable、2 个 device-sync 场景平台永久 skip；modifyMessage 可用（仅 Text/Custom 体）。产出 docs/testing/ohos-multi-api-matrix.md
 
 ## 验证记录
 
-（任务级验证证据：命令、设备、结果摘要）
+- T0：三层源码核查（Dart 公开 API → ArkTS Wrapper → gap 台账），辅以 ohos 自有集成用例实证；未做设备实跑，结论以源码与台账为准
