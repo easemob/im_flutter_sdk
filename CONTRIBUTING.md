@@ -246,7 +246,7 @@ scripts/gen-apidoc.sh en     # English version → output/apidoc-en/
 ## Branching and Release Process
 
 - Branch model and iron rules: see `AGENTS.md` "Git Branch Management (Iron Rules)". This section covers only release actions.
-- **Each release version corresponds to a branch with the same name** (e.g. `5.1.0`); tags are not used. 3.x leftover tags are history only.
+- **Each release version corresponds to a branch with the same name** (e.g. `5.1.0`), which is the development vehicle; when publishing to pub.dev, place a same-named tag on the release commit (e.g. `5.1.0`, with a build number for re-publishes) to pin the exact published version. 3.x leftover tags are history only.
 - The default branch is `main` (renamed from `flutter2_stable`); `4.x` / `5.x` are long-term lines and `ohos` is the independent HarmonyOS line; `alpha`, `dev` etc. are feature or historical branches — no version development on them.
 - Version development flow:
   1. After confirming the working tree is clean, create a branch named after the target version **from the corresponding long-term line** (4.x versions from `4.x`, 5.x versions from `5.x`);
