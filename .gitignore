@@ -54,6 +54,9 @@ app.*.map.json
 /scripts/im_flutter_sdk
 .workbuddy/
 
+# Local test evidence (testing/single auto reports, tool/ci logs)
+/artifacts/
+
 # Created by https://www.toptal.com/developers/gitignore/api/windows,macos,linux,flutter
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows,macos,linux,flutter
 
