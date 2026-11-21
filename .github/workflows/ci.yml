@@ -3,10 +3,17 @@ name: Flutter CI
 on:
   pull_request:
   push:
+    # Only the three long-term integration lines trigger CI on push; version
+    # branches (4.25.0/5.1.0/...) stay push-free so WIP pushes don't burn
+    # runner time. Pull requests trigger on every target branch.
     branches:
       - main
-      - '4.*'
-      - '5.*'
+      - 4.x
+      - 5.x
+    paths-ignore:
+      - 'dailylog/**'
+      - 'docs/**'
+      - '*.md'
   workflow_dispatch:
 
 permissions:
