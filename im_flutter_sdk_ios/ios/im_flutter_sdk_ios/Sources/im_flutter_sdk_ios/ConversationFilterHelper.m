@@ -9,7 +9,7 @@
 
 
 @implementation EMConversationFilter (Helper)
-// 不需要提供toJson
+// No toJson needed
 //- (NSDictionary *)toJson {
 //    NSMutableDictionary *ret = [NSMutableDictionary new];
 //    ret[@"mark"] = @(self.mark);

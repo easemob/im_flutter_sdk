@@ -219,7 +219,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
     private void getCurrentDeviceId(JSONObject param, String channelName, Result result) throws JSONException {
         asyncRunnable(()->{
-            // 手动构建 Map 对象，避免 EMDeviceInfo 只读属性问题
+            // Build the Map manually to work around EMDeviceInfo read-only property issues
             Map<String, Object> deviceInfo = new HashMap<>();
             deviceInfo.put("deviceName", "");
             deviceInfo.put("resource", "");
@@ -232,7 +232,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
                     DeviceUuidFactory factory = new DeviceUuidFactory(context);
                     deviceUuid = factory.getDeviceUuid().toString();
                 } catch (Exception e) {
-                    // 获取失败时使用空字符串
+                    // Use an empty string when the fetch fails
                 }
             }
 

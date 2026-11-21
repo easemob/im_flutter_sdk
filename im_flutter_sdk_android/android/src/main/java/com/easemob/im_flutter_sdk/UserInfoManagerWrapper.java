@@ -108,7 +108,7 @@ public class UserInfoManagerWrapper extends Wrapper implements MethodCallHandler
     }
     
 
-    //组装response map
+    // Build the response map
      Map<String,Map> generateMapFromMap(Map<String, EMUserInfo> aMap){
         Map<String,Map> resultMap = new HashMap<>();
 

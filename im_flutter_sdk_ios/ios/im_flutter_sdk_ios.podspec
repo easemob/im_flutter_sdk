@@ -19,7 +19,7 @@ A new flutter plugin project.
   s.dependency 'Flutter'
   s.dependency 'HyphenateChat','5.1.0'
   # s.dependency 'ShengwangChat_iOS','1.3.2'
-  # 注释掉本地 framework，使用 CocoaPods 依赖
+  # Local framework is commented out; use the CocoaPods dependency
   # s.ios.vendored_frameworks = 'framework/HyphenateChat.xcframework', 'framework/aosl.xcframework'
   s.ios.deployment_target = '13.0'
 

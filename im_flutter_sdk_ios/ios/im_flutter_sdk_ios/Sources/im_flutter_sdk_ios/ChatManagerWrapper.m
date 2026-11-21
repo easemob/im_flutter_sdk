@@ -703,7 +703,7 @@
                        object:msgDict];
 }
 
-// 用于修改下载状态。
+// Used to update the download status.
 - (NSDictionary *)updateDownloadStatus:(EMDownloadStatus)status
                                message:(EMChatMessage *)msg
                              thumbnail:(BOOL)isThumbnail

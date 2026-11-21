@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface EMConversationFilter (Helper)
 + (EMConversationFilter *)fromJson:(NSDictionary *)dict;
-// 不需要提供toJson
+// No toJson needed
 //- (NSDictionary *)toJson;
 + (NSString *)getCursor:(NSDictionary *)dict;
 + (BOOL)getPinned:(NSDictionary *)dict;

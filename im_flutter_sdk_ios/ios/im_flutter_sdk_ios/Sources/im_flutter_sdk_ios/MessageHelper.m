@@ -122,7 +122,7 @@
         ret[@"webhookEnv"] = self.webhookEnv;
     }
 
-    // flutter 使用 get 方法获取。
+    // Flutter retrieves it via the getter.
     // ret[@"pinnedInfo"] = [self.pinnedInfo toJson];
     return ret;
 }

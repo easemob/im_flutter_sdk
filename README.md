@@ -1,60 +1,60 @@
-# 环信 IM Flutter SDK
+# EaseMob IM Flutter SDK
 
-环信即时通讯 Flutter 插件，采用 Federated Plugin 架构。本仓库包含 Dart 公开接口、Android/iOS 实现、示例应用和测试工具；HarmonyOS 实现在独立仓库维护。
+The Flutter plugin for EaseMob instant messaging, built on the Federated Plugin architecture. This repository contains the Dart public APIs, the Android/iOS implementations, the example app, and the test tooling; HarmonyOS is maintained in a separate repository.
 
-调用链：`Dart API → MethodChannel → Native Wrapper → 原生 IM SDK`。
+Call chain: `Dart API → MethodChannel → Native Wrapper → native IM SDK`.
 
-## 验证模式与入口
+## Verification Modes and Entry Points
 
-| 模式 | 职责 | 使用入口 |
+| Mode | Responsibility | Entry point |
 |---|---|---|
-| CI 测试 | 守住基础功能、稳定性和回归覆盖 | `.github/workflows/`；本地入口为 `tool/ci/` 下的 `run_quality.sh`、`smoke_local.sh`、`nightly_local.sh`，见[开发指南](CONTRIBUTING.md#running-and-verification) |
-| AI 测试 | 验证每次平版的 API、行为变化及单设备、多设备场景 | 单设备：`make auto-report PLATFORM=<android\|ios> SCRIPT=<json>`，见[脚本模式](im_flutter_sdk/example/README.md#script-mode-ai-friendly)；多设备：进入 `testing/multi/`，使用 `dart run bin/cli.dart all --cases <选择文件>`，见[使用说明](testing/multi/README.md) |
-| 人工模式 | 自由抽验 API，理解、使用和提取示例代码 | 进入 `im_flutter_sdk/example/`，运行 `flutter run -d <设备ID>`，见[示例说明](im_flutter_sdk/example/README.md) |
+| CI tests | Guard basic behavior, stability, and regression coverage | `.github/workflows/`; local entry points `run_quality.sh`, `smoke_local.sh`, `nightly_local.sh` under `tool/ci/`, see [CONTRIBUTING](CONTRIBUTING.md#running-and-verification) |
+| AI tests | Verify the APIs, behavior changes, and single-/multi-device scenarios of each SDK version port | Single-device: `make auto-report PLATFORM=<android\|ios> SCRIPT=<json>`, see [script mode](im_flutter_sdk/example/README.md#script-mode-ai-friendly); multi-device: `testing/multi/` with `dart run bin/cli.dart all --cases <selector>`, see [usage](testing/multi/README.md) |
+| Manual mode | Freely spot-check APIs and extract usable example code | Go to `im_flutter_sdk/example/` and run `flutter run -d <device id>`, see [example README](im_flutter_sdk/example/README.md) |
 
-CI 使用 Flutter 单元、契约和设备集成测试；AI 使用 JSON 脚本及 YAML 控制流。两套测试架构独立维护，API 覆盖可以重叠，各自结果不相互替代。人工模式提供自由操作，不作为自动用例集。
+CI uses Flutter unit, contract, and on-device integration tests; AI tests use JSON scripts and YAML control flows. The two test architectures are maintained independently, their API coverage may overlap, and neither result replaces the other. Manual mode is free-form operation, not an automated case suite.
 
-每次平版先完成相关单设备、多设备场景验收，再将需要长期守护的基础行为、关键边界和已修复缺陷补充为 CI 回归用例。
+For each version port, complete the relevant single-device and multi-device scenario acceptance first, then promote basic behaviors, key boundaries, and fixed defects that need lasting protection into CI regression cases.
 
-## 目录
+## Directory Layout
 
 ```text
 .
-├── im_flutter_sdk/             # SDK 主包
-│   ├── lib/                    # 公开 API、模型与业务管理器
-│   ├── test/                   # SDK 单元及契约测试
-│   ├── example/                # 示例应用：人工操作、脚本执行、HTTP 控制服务
-│   │   ├── lib/                # 页面、API 注册表、日志及自动执行端
-│   │   ├── integration_test/   # CI 在设备上运行的 Flutter 集成测试
-│   │   └── test/               # 示例应用及执行端自身的测试
-│   ├── docs/                   # SDK 专项说明、CI 用例映射
-│   ├── scripts/                # API 文档生成工具
-│   └── tool/ci/                # 契约、版本与用例映射检查器
-├── im_flutter_sdk_interface/   # MethodChannel 平台接口
-├── im_flutter_sdk_android/     # Android 原生封装
-├── im_flutter_sdk_ios/         # iOS 原生封装及依赖配置
-├── testing/                    # 平版测试
-│   ├── single/                 # cases/ 单设备 JSON 场景、auto_report.dart
-│   └── multi/                  # 独立 Dart 工程、协同用例及执行工具
-├── tool/                       # 仓库开发工具与通用解释器
-│   ├── ci/                     # CI 检查与设备测试的执行入口
-│   └── flow_runner/            # YAML 控制流解释器
-├── .github/workflows/          # CI 触发条件和任务编排
-├── docs/                       # 规格、计划、版本平版记录及排查资料
-├── dailylog/                   # 协作工作日志
-└── Makefile                    # 环境准备和常用开发命令
+├── im_flutter_sdk/             # Main SDK package
+│   ├── lib/                    # Public APIs, models, and business managers
+│   ├── test/                   # SDK unit and contract tests
+│   ├── example/                # Example app: manual operation, script execution, HTTP control server
+│   │   ├── lib/                # Pages, API registry, logging, and the automated runner
+│   │   ├── integration_test/   # On-device Flutter integration tests run by CI
+│   │   └── test/               # Tests for the example app and runner itself
+│   ├── docs/                   # SDK-specific notes, CI case mapping
+│   ├── scripts/                # API documentation generation tools
+│   └── tool/ci/                # Contract, version, and case-mapping checkers
+├── im_flutter_sdk_interface/   # MethodChannel platform interface
+├── im_flutter_sdk_android/     # Android native wrapper
+├── im_flutter_sdk_ios/         # iOS native wrapper and dependency config
+├── testing/                    # Version-port testing
+│   ├── single/                 # cases/ single-device JSON scenarios, auto_report.dart
+│   └── multi/                  # Standalone Dart project, collaborative cases and runner
+├── tool/                       # Repo development tools and shared interpreters
+│   ├── ci/                     # CI check and device-test entry points
+│   └── flow_runner/            # YAML control-flow interpreter
+├── .github/workflows/          # CI triggers and job orchestration
+├── docs/                       # Specs, plans, version-port records, troubleshooting
+├── dailylog/                   # Collaboration work logs
+└── Makefile                    # Environment setup and common development commands
 ```
 
-`testing/multi` 用于多设备执行；单设备脚本使用 `make auto-report`。本地凭据、生成账号数据、构建缓存和运行报告由各工具管理，不纳入 Git。
+`testing/multi` is for multi-device execution; single-device scripts use `make auto-report`. Local credentials, generated account data, build caches, and run reports are managed by the tools and not committed to Git.
 
-## 文档
+## Documentation
 
-| 对象 | 入口 | 内容 |
+| Audience | Entry | Content |
 |---|---|---|
-| SDK 使用者 | [SDK 接入指南](im_flutter_sdk/README.md) | 集成、平台配置与快速开始 |
-| 开发维护者 | [CONTRIBUTING.md](CONTRIBUTING.md) | 开发环境、验证、分支与发布流程 |
-| CI 用例维护者 | [用例说明](im_flutter_sdk/docs/ci/flutter-only-ci.md)、[验证记录](docs/refs/ci-basic-api-tests/2026-11-07-positive-verification.md) | 覆盖范围、运行条件、报告与未完成项 |
-| AI 执行者 | [AGENTS.md](AGENTS.md) | 架构边界、任务选择与协作规则 |
-| 用例编写者 | [测试指南](docs/testing/README.md)、[测试入口](testing/README.md) | 三类测试的场景选择、设计原则与执行方式 |
+| SDK users | [SDK integration guide](im_flutter_sdk/README.md) | Integration, platform configuration, quick start |
+| Developers and maintainers | [CONTRIBUTING.md](CONTRIBUTING.md) | Dev environment, verification, branching and release process |
+| CI case maintainers | [Case notes](im_flutter_sdk/docs/ci/flutter-only-ci.md), [verification records](docs/refs/ci-basic-api-tests/2026-11-07-positive-verification.md) | Coverage, run conditions, reports, and open items |
+| AI agents | [AGENTS.md](AGENTS.md) | Architecture boundaries, task selection, collaboration rules |
+| Case authors | [Testing guide](docs/testing/README.md), [testing entry](testing/README.md) | Scenario selection, design principles, and execution for the three test modes |
 
-开发使用 Flutter 3.47.0。环境准备见开发指南，仓库根目录运行 `make help` 查看可用命令。
+Development uses Flutter 3.47.0. See the contributing guide for environment setup; run `make help` at the repo root for available commands.

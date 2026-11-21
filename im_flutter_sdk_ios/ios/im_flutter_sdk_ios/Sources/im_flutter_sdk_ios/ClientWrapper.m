@@ -273,8 +273,8 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 
     EMError *aError = [EMClient.sharedClient initializeSDKWithOptions:_options];
     if (aError) {
-        // init 失败（如 appKey 格式非法）时清空 _options，
-        // 否则重试 init 会因 _options 非空而直接返回假成功。
+        // When init fails (e.g. invalid appKey format), clear _options,
+        // otherwise a retried init returns fake success because _options is non-nil.
         _options = nil;
         [weakSelf wrapperCallBack:result
                       channelName:ChatInit
@@ -326,7 +326,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     [EMClient.sharedClient removeMultiDevicesDelegate:self];
 }
 
-// 由父类调用，不需要调用 clearAllListener方法，每个manager中都由父类调用。
+// Called by the superclass; no need to call clearAllListener, every manager is invoked by the superclass.
 - (void)unRegisterEaseListener {
     [EMClient.sharedClient removeDelegate:self];
     [EMClient.sharedClient removeMultiDevicesDelegate:self];
@@ -434,7 +434,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 
     NSDictionary *deviceInfo;
     if (currentDeviceConfig) {
-        // 手动构建字典，避免 nil 值导致崩溃
+        // Build the dictionary manually to avoid crashes from nil values
         NSString *resource = currentDeviceConfig.resource ?: @"";
         NSString *deviceUUID = currentDeviceConfig.deviceUUID ?: @"";
         NSString *deviceName = currentDeviceConfig.deviceName ?: @"";
@@ -445,7 +445,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
             @"deviceName": deviceName
         };
     } else {
-        // SDK 未初始化或获取失败时，返回空字段
+        // Return empty fields when the SDK is uninitialized or the fetch fails
         deviceInfo = @{
             @"resource": @"",
             @"deviceUUID": @"",
@@ -532,12 +532,12 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     [self.channel invokeMethod:ChatOnDisconnected arguments:data];
 }
 
-// 声网token即将过期
+// Agora token will expire soon
 - (void)tokenWillExpire:(EMErrorCode)aErrorCode {
     [self.channel invokeMethod:ChatOnTokenWillExpire arguments:nil];
 }
 
-// 声网token过期
+// Agora token expired
 - (void)tokenDidExpire:(EMErrorCode)aErrorCode {
     [ListenerHandle.sharedInstance clearHandle];
     [self.channel invokeMethod:ChatOnTokenDidExpire

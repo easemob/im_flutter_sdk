@@ -90,7 +90,7 @@ class ChatRoomManager {
             Map<String, int> mutes = {};
             mutesDynamic.forEach((key, value) {
               if (value is int) {
-                mutes[key] = value; // 只添加 int 类型的值
+                mutes[key] = value; // Only add int values.
               }
             });
             item.onMuteListAddedFromChatRoom?.call(roomId, mutes);

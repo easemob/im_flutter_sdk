@@ -292,7 +292,7 @@ class ContactHelper {
 
 class ChatRoomHelper {
 
-    // chatroom 都是native -> flutter, 不需要fromJson
+    // chatroom is always native -> flutter, no fromJson needed
     // static EMChatRoom fromJson(JSONObject json) throws JSONException {
     // EMChatRoom chatRoom = new EMChatRoom();
     // }
@@ -1086,7 +1086,7 @@ class ConversationHelper {
         } catch (JSONException e) {
 
         } finally {
-            // 不返回，每次取得时候都从原生取最新的
+            // Not returned here; always read the latest value from native on each access
 //            data.put("unreadCount", conversation.getUnreadMsgCount());
 //            data.put("latestMessage", EMMessageHelper.toJson(conversation.getLastMessage()));
 //            data.put("lastReceivedMessage", EMMessageHelper.toJson(conversation.getLatestMessageFromOthers()));

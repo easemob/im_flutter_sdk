@@ -84,9 +84,18 @@ After changing a native dependency version in a podspec, you must run `make pods
 - MethodChannel method names must use constants: `ChatMethodKeys` on the Dart side, `MethodKey.java` on Android, `MethodKeys.h` on iOS; hard-coding strings in code is forbidden. Native callback event names are uniformly defined in `chat_event_keys.dart`
 - Event handlers are stored in a `Map<String, Handler>` keyed by a unique id, managed via `addEventHandler(id, handler)` / `removeEventHandler(id)`
 
-## Documentation Comment Conventions
+## Language and Documentation Conventions
 
-Ordinary comments in code (implementation notes, version annotations, etc.) must be in English; the only exception is documentation comments on public APIs, which must be bilingual (Chinese + English).
+All user-facing content in this repository must be in English: code comments, log and exception messages, documentation, and commit messages. Rationale: the SDK is whitelabeled for overseas (Agora) distribution, so only English content ships safely to pub.dev.
+
+Exceptions to the English-only rule:
+
+- Documentation comments on public APIs must be bilingual (Chinese + English) — see below.
+- The CHANGELOG may keep bilingual sections (`### 中文` / `### English`, recommended) or be English-only; pick one style per line and stay consistent (the 5.x line currently uses English-only).
+- Historical records (dailylog, archived porting/spec docs) are grandfathered — do not rewrite them; write all new content in English.
+- Proper nouns (e.g. author names in file headers) may stay in their original language.
+
+Ordinary comments in code (implementation notes, version annotations, etc.) must be in English.
 
 Public APIs must use bilingual comments split by `~english` / `~chinese` / `~end` markers, with one blank line between the two language blocks:
 
@@ -137,7 +146,7 @@ Adding an event handler: define `Chat{Business}EventHandler` in `im_flutter_sdk/
 ## Versioning and CHANGELOG
 
 - The four sub-packages must keep identical version numbers; modifying only one of them is forbidden
-- The CHANGELOG is bilingual: each version keeps a `## <version>` heading with a `### 中文` section and an `### English` section; new entries must be added in both languages
+- The CHANGELOG keeps one entry per version (bilingual `### 中文` / `### English` sections, or English-only on the 5.x line); new entries must follow the established style
 - When adding an API: the main package's CHANGELOG records the new API entry; the interface / android / ios CHANGELOGs record their respective actual changes
 
 ## Git Branch Management (Iron Rules)
