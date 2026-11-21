@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# Thin wrapper around the im-test-orchestrator multi CLI.
+#
+# ohos line: the app must be built with the HarmonyOS fork Flutter (fvm
+# `custom_ohos`, resolved through .fvm/flutter_sdk, or set FLUTTER_BIN), and
+# devices are hdc targets (default 127.0.0.1:5555). Apart from that this
+# wrapper is identical to the 4.x line.
+#
+# Tool resolution order (D13):
+#   1. $IMTO_PATH: path to an im-test-orchestrator checkout
+#   2. Local checkout at /Users/asterisk/Codes/zuoyu/im-test-orchestrator
+#   3. Clone pinned by testing/multi-tool.json into testing/.im-test-orchestrator
+#      (gitignored; inactive until the pin file carries a real URL and ref)
+#
+# Usage:
+#   scripts/multi.sh generate --platform ios [--case <name>] [--instance <id>] ...
+#       Runs scripts/generate_cases.dart; defaults --cases-dir to
+#       testing/multi/cases.
+#   scripts/multi.sh prepare|devices|build|launch|run|report|clean|all ...
+#       Runs bin/cli.dart; defaults --app-dir to im_flutter_sdk/example.
+# Example:
+#   scripts/multi.sh all --cases <IMTO>/multi/config/cases.json
+#   scripts/multi.sh prepare testing/multi/cases/1.16.0-multi-presence-positive.yaml \
+#       --cases <IMTO>/multi/config/cases.json
+# Relative path arguments are resolved against this repository root.
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PIN_FILE="$REPO_ROOT/testing/multi-tool.json"
+LOCAL_CHECKOUT="/Users/asterisk/Codes/zuoyu/im-test-orchestrator"
+CLONE_DIR="$REPO_ROOT/testing/.im-test-orchestrator"
+
+resolve_tool() {
+  if [[ -n "${IMTO_PATH:-}" && -d "$IMTO_PATH/multi" ]]; then
+    echo "$IMTO_PATH"
+    return
+  fi
+  if [[ -d "$LOCAL_CHECKOUT/multi" ]]; then
+    echo "$LOCAL_CHECKOUT"
+    return
+  fi
+  if [[ -f "$PIN_FILE" ]]; then
+    local url ref
+    url="$(sed -n 's/.*"repo"[^"]*"\([^"]*\)".*/\1/p' "$PIN_FILE" | head -1)"
+    ref="$(sed -n 's/.*"ref"[^"]*"\([^"]*\)".*/\1/p' "$PIN_FILE" | head -1)"
+    if [[ "$url" == http* && -n "$ref" ]]; then
+      git clone --depth 1 --branch "$ref" "$url" "$CLONE_DIR" >&2
+      echo "$CLONE_DIR"
+      return
+    fi
+  fi
+  echo "error: im-test-orchestrator not found; set IMTO_PATH or fill in $PIN_FILE" >&2
+  return 1
+}
+
+IMTO="$(resolve_tool)"
+MULTI="$IMTO/multi"
+
+command="${1:-}"
+if [[ -z "$command" || "$command" == "-h" || "$command" == "--help" ]]; then
+  sed -n '2,25p' "${BASH_SOURCE[0]}"
+  exit 0
+fi
+shift
+
+entry="bin/cli.dart"
+args=()
+if [[ "$command" == "generate" ]]; then
+  entry="scripts/generate_cases.dart"
+else
+  args+=("$command")
+fi
+
+path_flags=(--cases-dir --app-dir --cases --data-input --build-result --target)
+expect_path=0
+has_cases_dir=0
+has_app_dir=0
+for arg in "$@"; do
+  if [[ $expect_path -eq 1 && "$arg" != /* ]]; then
+    arg="$REPO_ROOT/$arg"
+  fi
+  expect_path=0
+  for flag in "${path_flags[@]}"; do
+    if [[ "$arg" == "$flag" ]]; then
+      expect_path=1
+    fi
+  done
+  [[ "$arg" == "--cases-dir" ]] && has_cases_dir=1
+  [[ "$arg" == "--app-dir" ]] && has_app_dir=1
+  if [[ "$arg" == *.yaml && "$arg" != /* ]]; then
+    arg="$REPO_ROOT/$arg"
+  fi
+  args+=("$arg")
+done
+
+if [[ "$command" == "generate" && $has_cases_dir -eq 0 ]]; then
+  args+=(--cases-dir "$REPO_ROOT/testing/multi/cases")
+fi
+# Only commands whose CLI accepts --app-dir get the default (build/all).
+if [[ "$command" == "build" || "$command" == "all" ]] && [[ $has_app_dir -eq 0 ]]; then
+  args+=(--app-dir "$REPO_ROOT/im_flutter_sdk/example")
+fi
+
+cd "$MULTI"
+exec dart run "$entry" "${args[@]}"
