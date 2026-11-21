@@ -52,10 +52,10 @@ ohos 线的集成套件（integration_test）已经演进为新架构风格（mo
 
 ### 3.1 REST support 层同构
 
-- 规范文件：`im_flutter_sdk/example/integration_test/support/rest_fixture.dart`，方法面 = 4.x 读侧校验方法 + ohos 写侧生命周期方法
-- ohos 侧：删除 `support/rest.dart`、`support/env.dart`、`support/session.dart`；`waitForCi` 留在 `support/ci_test.dart`（与 4.x 对齐）；9 个调用点文件机械改方法名
-- 4.x 侧：纯加法（新增 ohos 写侧方法，无调用方），先落 4.x 并走 4 线工作流（4.x → main）
-- 落地后两线 `diff rest_fixture.dart` 必须为空，作为同构验收
+- 规范文件：`im_flutter_sdk/example/integration_test/support/rest_fixture.dart`（+ 依赖 `example/tool/rest_resource_client.dart`），方法面 = 4.x 读侧校验方法 + ohos 写侧生命周期方法；2026-11-22 T1 实测修正：ohos `env.dart`/`session.dart`/`login.dart`/`ci_test.dart` 是 ohos 演化的助手层（session.dart 被 16+ 文件使用、ci_test.dart 承载 ohos 专属的 expectCiSuccessOr505/skipCiServerDelay），**保留不删**，仅删除 `support/rest.dart`
+- ohos 侧调用点适配（8 个文件，非纯机械）：方法映射 fetchContactIds→contactIds、removeContact→removeContacts（4.x 双侧幂等）、addContacts(list)→addContacts(单 peer)、sendUserTextMessage→sendTextMessage、fetchChatRoomDetail→chatRoomDetail、fetchChatRoomMembers/Admins/Announcement→chatRoomMembers/Admins/Announcement；createChatRoom 需显式补 required 的 description、createGroup 需显式补 isPublic:true（ohos 旧默认 public）、close() 调用删除（新 fixture 无 close）；fixture 构造沿用 env.dart 的 ciRestApi/ciAppKey/ciAppToken（不走 dart-defines 工厂，保留 ohos env 驱动流程）
+- 4.x 侧：纯加法（新增 ohos 写侧方法，无调用方），已落 4.x 并走 4 线工作流（4.x → main，2026-11-22）
+- 落地后两线 `diff rest_fixture.dart` 与 `diff rest_resource_client.dart` 必须为空，作为同构验收
 
 ### 3.2 auto step 引擎
 
