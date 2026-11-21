@@ -21,7 +21,10 @@ on:
     # NOTE: scheduled workflows take the workflow file from the default
     # branch (main), so this cron only takes effect once this
     # file lands there. On 4.25.0 use workflow_dispatch. Runs one hour
-    # before the React Native device regression (19:37 UTC).
+    # before the React Native device regression (19:37 UTC). The 5.x line
+    # daily run is dispatched by ci-dispatch.yml (main-only, see AGENTS.md
+    # iron rule 8); do not add per-line cron entries here — schedule only
+    # fires on the default branch.
     - cron: '37 18 * * *'
   workflow_dispatch:
 
