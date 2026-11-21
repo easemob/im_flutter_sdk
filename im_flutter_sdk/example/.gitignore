@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# HarmonyOS local signing config (fill your own DevEco-generated material locally)
+/ohos/build-profile.json5
