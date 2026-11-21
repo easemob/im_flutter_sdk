@@ -94,6 +94,8 @@ hdc install build/ohos/hap/entry-default-unsigned.hap
 | 入口 | 用途 | 凭证 |
 |---|---|---|
 | `tool/ci/ohos_local.sh [suite...]` | 鸿蒙集成套件：`logged_out` / `logged_in_base` / `logged_in_contact` / `logged_in_group` / `logged_in_user_info` / `logged_in_special`；日志写入 `artifacts/ohos-<suite>.log` | 6 个 `E2E_*` 变量（`E2E_APP_KEY`、`E2E_USER_ID`、`E2E_USER_TOKEN`、`E2E_PEER_ID`、`E2E_REST_API`、`E2E_APP_TOKEN`）或 `E2E_CONFIG_PATH` |
+| `testing/single/auto_report.dart --platform ohos`（或 `make auto-report`） | 单设备 auto 脚本（`script_1.16.0_apis_positive/negative.json`），hilog 采集 + 结构化报告 | `FLUTTER_BIN`（fvm custom_ohos）、`OHOS_DEVICE`；登录账号取 `example/lib/env.dart`（`make env-gettoken` 生成） |
+| `scripts/multi.sh ...` | 多设备场景（`testing/multi/cases/1.16.0-multi-*`，12 场景其中 2 个 device-sync 永久 skip），编排工具为独立仓 im-test-orchestrator（需 ohos 平台支持） | 依赖 IMTO 的账号/设备配置；入口见 `testing/README.md` |
 | `tool/ci/smoke_local.harmony.sh` | 零凭证冒烟，仅跑 `logged_out` 套件 | 不需要 |
 | `tool/ci/nightly_local.harmony.sh [suite...]` | 全量鸿蒙套件；token 由脚本现场换取 | 5 个长期凭证，或回退 `example/config.local.json` |
 | `tool/ci/ensure_example_env.sh` | 全新检出时生成占位 `example/lib/env.dart` | 不需要 |

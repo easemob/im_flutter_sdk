@@ -44,6 +44,9 @@
 - 2026-11-22 00:18 T2 完成：script_values/step_dependencies/step_expectation 三字节级拷贝，auto_mode.dart 合并（4.x 依赖跳过+expect 校验+blocked 计数+startCallback 接入；ohos 内联 JSON/兄弟 config/密码登录链全保留），diff 复核与 4.x 差异仅剩 ohos 保留项
 - 2026-11-22 00:18 T3 完成：lib/agent/ 五文件字节级拷贝（仅 dart:io/flutter/im_flutter_sdk 依赖，鸿蒙可编译），main.dart 三模式接线（保留 file_picker ohos 守卫）；loopback 控制端运行时待设备实跑
 - 2026-11-22 00:18 T1d 实测补充：4.x 规范层 fixture 自带 close() 与顶层 waitForCi（30s/200ms），ohos 保留 ci_test.dart 的 waitForCi（20s/500ms）为生效版本
+- 2026-11-22 00:35 T4a 完成提交 ed57b060：12 场景 1.16.0-multi-* 落地（JSON 字节级不变），README Platform skip 节、scripts/multi.sh、testing/target-flutter.yaml（platform: ohos + flutterBin）
+- 2026-11-22 00:55 T5 静态完成提交 894b99c2：script_1.16.0 正（16 步）/逆（6 步）脚本（API 名 16/16 经 ohos registry 核对）+ auto_report ohos 分支（自测与伪 hdc/flutter 端到端夹具全过）；实跑待设备（验收未闭环，不降级）。已知：ohos registry 仅 21 项，client/contact/thread 未注册
+- 2026-11-22 00:55 T4b 进行中（k3 子代理）：IMTO ohos 平台支持（hdc 发现/装包/启动/hilog + FLUTTER_BIN 构建 + fport），dart test 全绿为目标
 
 ## 验证记录
 
