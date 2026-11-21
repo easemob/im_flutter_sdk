@@ -142,6 +142,7 @@ make setup   # config + deps + pods
 6. **tag 与同名分支共存，职责不同**：版本分支是开发载体；tag 仅在发布 pub.dev 时打在发布 commit 上，tag 名即 pub.dev 版本号（沿用 `4.25.0`、`4.0.0+6` 历史命名），用于精准对应已发布版本。同名分支与 tag 共存，任何引用必须带全命名空间（`refs/heads/4.25.0` / `refs/tags/4.25.0`），推送分支一律 `git push <remote> refs/heads/<branch>`。
 7. **切换或删除分支前确认工作区干净**（`git status` 无未提交改动）；不干净则停止操作并告知用户。**创建 worktree 统一放仓库根目录的 `.worktree/` 下**。
 8. **ci-dispatch.yml 仅存在于 `main`**：每日设备回归的跨线调度器（见 `.github/workflows/ci-dispatch.yml`），禁止复制/合并到其他分支、禁止删除。它是铁律 1「禁止直提 `main`」的刻意例外，直接在 `main` 上维护——因为它一旦被合并进其他分支，就会随该分支的合并流被覆盖（各分支 workflow 文件在合并时取源分支内容），调度能力静默丢失。
+9. **CI 触发范围以长期线为界**：`ci.yml`（质量门）push 触发白名单仅 `main`/`4.x`/`5.x` 三条长期线，文档类路径（`dailylog/**`、`docs/**`、`*.md`）不触发；pull request 对所有目标分支触发。版本分支 push 不触发任何 CI。`ci-device.yml`（设备回归）只有每日定时 + 手动 dispatch，任何 push/PR/merge 都不触发。需要当日设备验证时手动 dispatch。
 
 ## 平台支持
 
