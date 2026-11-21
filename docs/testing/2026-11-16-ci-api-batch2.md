@@ -19,7 +19,7 @@
 | 用例 | 目标 API | 模块／注册函数 | 入口 | 核心断言 |
 |---|---|---|---|---|
 | FL-CONV-015 | ChatManager.getConversationsFromDB、pinConversation | `conversation_cases.dart`<br>`registerConversationPaginationCases` | `conversation_config_test.dart` | 置顶会话在分页遍历中排在首位，其余按时间与 ID 降序；取消置顶后恢复纯时间序 |
-| FL-CONV-016 | ChatConversation.unreadCount、ChatManager.getUnreadMessageCount、clearConversationUnreadMessageCount | `conversation_cases.dart`<br>`registerConversationCases` | `logged_in_base_test.dart` | 两条真实入站消息使会话未读为 2、账号未读至少 +2；清除后会话归零且账号总数回到基线 |
+| FL-CONV-016 | ChatConversation.unreadCount、ChatManager.getUnreadMessageCount、clearConversationUnreadMessageCount | `conversation_cases.dart`<br>`registerConversationCases` | `logged_in_base_test.dart` | 经 REST 备好好友并经 REST 发送两条真实入站消息（REST 双向校验内建）；未读/投递断言挂起（PENDING server-sync-flake），见 `2026-11-21-ci-device-timing-flake-analysis.md`，在线投递由多设备场景覆盖 |
 | FL-CONV-017 | ChatConversation.deleteLocalAndServerMessages | 同上 | 同上 | 真实消息在本地与服务端历史均存在；按 ID 删除后两处都读不到，且只删除该条 |
 | FL-CONV-018 | ChatManager.addRemoteAndLocalConversationsMark、deleteRemoteAndLocalConversationsMark、ChatConversation.marks | 同上 | 同上 | 对端会话初始不含标记；添加后本地会话报出该标记，删除后消失 |
 | FL-MSG-011 | ChatMessage.createFileSendMessage、createImageSendMessage、ChatManager.loadMessage | `message_cases.dart`<br>`registerMessageCases` | 同上 | 文件与图片消息终态成功，回读消息带 remotePath/secret/fileSize，图片宽高保持 |

@@ -1,9 +1,22 @@
 # ci-device 时序类失败详细记录：联系人同步 / 消息下行投递
 
 - 日期：2026-11-21
-- 状态：已定位（服务端同步/投递链路时序，环境侧 D 级）；待 rerun 复验闭环
+- 状态：已定位（服务端同步/投递链路时序，环境侧 D 级）；**已处置（2026-11-21 用户裁决）**——时序敏感断言挂起并标记，待服务端修复后恢复
 - 适用范围：ci-device 四 lane（ci.yml 不受影响）；5.1.0 / 4.25.0 / flutter2_stable 三个分支均观察到
-- 关联：差异登记表 D5/D6（`2026-11-20-migration-issue-register.md`）；本文是 D6 同类问题的扩展立案，证据达可提交工单标准
+- 关联：差异登记表 D5/D6/D7（`2026-11-20-migration-issue-register.md`）；本文是 D6 同类问题的扩展立案，证据达可提交工单标准
+
+## 处置（2026-11-21 用户裁决）
+
+原则：用例只验证 REST 操作成功；依赖服务端同步/投递时序的 SDK 侧断言全部挂起，以 `PENDING(server-sync-flake)` 注释标记（可 grep），恢复条件统一指向本文。双方关系/投递的端到端正确性由多设备用例（testing/multi，如 contact-add、message-delivery 场景）覆盖。
+
+| 用例 | 挂起内容 | 保留内容 |
+|---|---|---|
+| FL-CONTACT-001 | 重登后 `getAllContactIds/getAllContacts/getContact` 同步断言（observeContact/reloadRelation 已删除） | REST 关系操作 + `setContacts` 内建双向校验 |
+| FL-CONTACT-011 | remark 读回（getContact/getAllContacts 轮询） | `setContactRemark` 调用完成性 + REST 好友准备；原 remark 经本地读捕获（无同步等待） |
+| FL-CONV-016 | 入站消息投递与 unread 断言 | REST 好友准备 + REST 发消息成功 |
+| FL-MSG-010 | 在线投递监听消费（onMessagesReceived 等待） | needSave 历史拉取替换 stale latest 的核心验证（改为本地构造 stale 前置，不再依赖投递） |
+
+恢复验证：服务端修复后，按上表回补被挂起断言（git 历史中与本次提交对比即可取回）， rerun ci-device 观察原失败签名是否消失。
 
 ## 结论速览
 
