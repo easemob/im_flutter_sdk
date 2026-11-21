@@ -223,11 +223,142 @@ final class RestResourceClient {
     );
   }
 
+  /// Account provisioning for suites that create throw-away peer accounts
+  /// (requires an app with open registration).
+  Future<void> createUser(String username, String password) async {
+    await _request(
+      'POST',
+      'users',
+      body: {'username': username, 'password': password},
+      ignoreConflict: true,
+    );
+  }
+
+  Future<void> deleteUser(String username) async {
+    await _request(
+      'DELETE',
+      'users/${Uri.encodeComponent(username)}',
+      ignoreNotFound: true,
+    );
+  }
+
+  Future<void> addGroupMembers(String groupId, List<String> userIds) async {
+    if (userIds.isEmpty) return;
+    await _request(
+      'POST',
+      'chatgroups/${Uri.encodeComponent(groupId)}/users',
+      body: {'usernames': userIds},
+    );
+  }
+
+  Future<void> removeGroupMember(String groupId, String userId) async {
+    await _request(
+      'DELETE',
+      'chatgroups/${Uri.encodeComponent(groupId)}/users/'
+          '${Uri.encodeComponent(userId)}',
+      ignoreNotFound: true,
+    );
+  }
+
+  Future<void> addChatRoomMembers(
+    String chatRoomId,
+    List<String> userIds,
+  ) async {
+    if (userIds.isEmpty) return;
+    await _request(
+      'POST',
+      'chatrooms/${Uri.encodeComponent(chatRoomId)}/users',
+      body: {'usernames': userIds},
+    );
+  }
+
+  Future<void> removeChatRoomMember(String chatRoomId, String userId) async {
+    await _request(
+      'DELETE',
+      'chatrooms/${Uri.encodeComponent(chatRoomId)}/users/'
+          '${Uri.encodeComponent(userId)}',
+      ignoreNotFound: true,
+    );
+  }
+
+  /// Transfers chat room ownership (`PUT chatrooms/{id}`, no `/owner`
+  /// sub-resource).
+  Future<void> changeChatRoomOwner(String chatRoomId, String newOwner) async {
+    await _request(
+      'PUT',
+      'chatrooms/${Uri.encodeComponent(chatRoomId)}',
+      body: {'newowner': newOwner},
+    );
+  }
+
+  /// Server-side chat room detail (the single-room GET wraps it in a
+  /// one-element list).
+  Future<Map<String, dynamic>> chatRoomDetail(String chatRoomId) async {
+    final response = await _request(
+      'GET',
+      'chatrooms/${Uri.encodeComponent(chatRoomId)}',
+    );
+    final data = response['data'];
+    final room = data is List && data.isNotEmpty ? data.first : data;
+    if (room is! Map) {
+      throw FormatException('GET chatroom "$chatRoomId": data must be a map');
+    }
+    return Map<String, dynamic>.from(room);
+  }
+
+  Future<List<String>> chatRoomMembers(String chatRoomId) async {
+    final response = await _request(
+      'GET',
+      'chatrooms/${Uri.encodeComponent(chatRoomId)}/users',
+    );
+    final data = response['data'];
+    if (data is! List) {
+      throw const FormatException('GET chatroom users: data must be a list');
+    }
+    return <String>[
+      for (final item in data)
+        if (item is String)
+          item
+        else if (item is Map) ...[
+          if (item['member'] is String) item['member'] as String,
+          if (item['owner'] is String) item['owner'] as String,
+        ],
+    ];
+  }
+
+  Future<List<String>> chatRoomAdmins(String chatRoomId) async {
+    final response = await _request(
+      'GET',
+      'chatrooms/${Uri.encodeComponent(chatRoomId)}/admin',
+    );
+    final data = response['data'];
+    if (data is! List) {
+      throw const FormatException('GET chatroom admins: data must be a list');
+    }
+    return <String>[
+      for (final item in data)
+        if (item is String) item,
+    ];
+  }
+
+  Future<String?> chatRoomAnnouncement(String chatRoomId) async {
+    final response = await _request(
+      'GET',
+      'chatrooms/${Uri.encodeComponent(chatRoomId)}/announcement',
+    );
+    final data = response['data'];
+    if (data is Map && data['announcement'] is String) {
+      return data['announcement'] as String;
+    }
+    return null;
+  }
+
   Future<Map<String, dynamic>> _request(
     String method,
     String path, {
     Map<String, Object?>? body,
     bool ignoreNotFound = false,
+    bool ignoreConflict = false,
   }) async {
     final uri = Uri.parse(
       '$_restApi/${Uri.encodeComponent(_appKey[0])}/'
@@ -259,7 +390,8 @@ final class RestResourceClient {
         );
       }
     }
-    if (response.statusCode == HttpStatus.notFound && ignoreNotFound) {
+    if ((response.statusCode == HttpStatus.notFound && ignoreNotFound) ||
+        (response.statusCode == HttpStatus.conflict && ignoreConflict)) {
       return decoded is Map
           ? Map<String, dynamic>.from(decoded)
           : <String, dynamic>{};

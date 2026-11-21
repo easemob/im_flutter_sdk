@@ -6,6 +6,23 @@ import '../../tool/rest_resource_client.dart';
 
 /// REST observations are independent of the SDK being tested.
 final class CiRestFixture {
+  /// Builds the fixture from the `E2E_REST_API` / `E2E_APP_KEY` /
+  /// `E2E_APP_TOKEN` dart-defines.
+  factory CiRestFixture.fromCiEnvironment() {
+    const restApi = String.fromEnvironment('E2E_REST_API');
+    const appKey = String.fromEnvironment('E2E_APP_KEY');
+    const appToken = String.fromEnvironment('E2E_APP_TOKEN');
+    final missing = <String>[
+      if (restApi.isEmpty) 'E2E_REST_API',
+      if (appKey.isEmpty) 'E2E_APP_KEY',
+      if (appToken.isEmpty) 'E2E_APP_TOKEN',
+    ];
+    if (missing.isNotEmpty) {
+      throw StateError('Missing dart-defines: ${missing.join(', ')}');
+    }
+    return CiRestFixture(restApi: restApi, appKey: appKey, appToken: appToken);
+  }
+
   CiRestFixture({
     required String restApi,
     required String appKey,
@@ -110,6 +127,64 @@ final class CiRestFixture {
     await waitForCi('REST blacklist $user / $peer = $present',
         () => blockIds(user), (ids) => ids.contains(peer) == present);
   }
+
+  /// Publishes the presence status of [userId] through REST so a signed-in
+  /// client can observe `presence.onPresenceStatusChanged`.
+  Future<void> publishPresence(String userId, String description) async {
+    await _request(
+      'POST',
+      'users/${_path(userId)}/presence',
+      body: {'description': description},
+    );
+  }
+
+  /// Creates a throw-away account (requires an app with open registration).
+  Future<void> createUser(String username, String password) => _resources
+      .createUser(username, password)
+      .timeout(const Duration(seconds: 15));
+
+  Future<void> deleteUser(String username) =>
+      _resources.deleteUser(username).timeout(const Duration(seconds: 15));
+
+  Future<void> addGroupMembers(String groupId, List<String> userIds) =>
+      _resources
+          .addGroupMembers(groupId, userIds)
+          .timeout(const Duration(seconds: 15));
+
+  Future<void> removeGroupMember(String groupId, String userId) => _resources
+      .removeGroupMember(groupId, userId)
+      .timeout(const Duration(seconds: 15));
+
+  Future<void> addChatRoomMembers(String chatRoomId, List<String> userIds) =>
+      _resources
+          .addChatRoomMembers(chatRoomId, userIds)
+          .timeout(const Duration(seconds: 15));
+
+  Future<void> removeChatRoomMember(String chatRoomId, String userId) =>
+      _resources
+          .removeChatRoomMember(chatRoomId, userId)
+          .timeout(const Duration(seconds: 15));
+
+  Future<void> changeChatRoomOwner(String chatRoomId, String newOwner) =>
+      _resources
+          .changeChatRoomOwner(chatRoomId, newOwner)
+          .timeout(const Duration(seconds: 15));
+
+  Future<Map<String, dynamic>> chatRoomDetail(String chatRoomId) => _resources
+      .chatRoomDetail(chatRoomId)
+      .timeout(const Duration(seconds: 15));
+
+  Future<List<String>> chatRoomMembers(String chatRoomId) => _resources
+      .chatRoomMembers(chatRoomId)
+      .timeout(const Duration(seconds: 15));
+
+  Future<List<String>> chatRoomAdmins(String chatRoomId) => _resources
+      .chatRoomAdmins(chatRoomId)
+      .timeout(const Duration(seconds: 15));
+
+  Future<String?> chatRoomAnnouncement(String chatRoomId) => _resources
+      .chatRoomAnnouncement(chatRoomId)
+      .timeout(const Duration(seconds: 15));
 
   Future<void> deleteGroup(String groupId) =>
       _resources.deleteGroup(groupId).timeout(const Duration(seconds: 15));
