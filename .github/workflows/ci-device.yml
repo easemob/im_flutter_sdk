@@ -19,7 +19,7 @@ name: Flutter Device Regression
 on:
   schedule:
     # NOTE: scheduled workflows take the workflow file from the default
-    # branch (flutter2_stable), so this cron only takes effect once this
+    # branch (main), so this cron only takes effect once this
     # file lands there. On 4.25.0 use workflow_dispatch. Runs one hour
     # before the React Native device regression (19:37 UTC).
     - cron: '37 18 * * *'
