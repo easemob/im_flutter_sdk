@@ -126,6 +126,7 @@ make setup   # config + deps + pods
 - 3.x 时代遗留的 tag（`3.8.x`/`3.9.x`）仅属历史，4.x 无 tag
 - 默认分支为 `flutter2_stable`；`alpha`、`dev`、`customMsg` 等为特性或历史分支，勿在其上做版本开发
 - 发布新版本：新建与版本号同名的分支
+- **改动流向：在当前版本工作分支（如 `4.25.0`）上提交修复与改动，确认后合并进默认分支 `flutter2_stable`；不要直接在 `flutter2_stable` 上提交代码或测试改动**（文档与记录类提交同样遵循，保证两分支始终可合并、历史可追溯）
 - **切换分支前先确认工作区干净**（`git status` 无未提交改动）；不干净则停止操作并告知用户，由用户决定如何处理
 - **创建 worktree 时，统一放在仓库根目录的 `.worktree/` 文件夹下**（如 `git worktree add .worktree/agora-1.4.0 agora-1.4.0`），不要放在仓库外部
 
