@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches:
-      - flutter2_stable
+      - main
       - '4.*'
       - '5.*'
   workflow_dispatch:

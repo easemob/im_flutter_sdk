@@ -127,12 +127,12 @@ Every device task on CI has an equivalent local script; the scripts first compar
 
 | Workflow | Trigger | Content | Local equivalent |
 |----------|---------|---------|------------------|
-| `.github/workflows/ci.yml` | PR, push to `flutter2_stable` / `4.*` / `5.*`, manual | Quality gate + Android debug build + iOS simulator build | `bash tool/ci/run_quality.sh` |
+| `.github/workflows/ci.yml` | PR, push to `main` / `4.*` / `5.*`, manual | Quality gate + Android debug build + iOS simulator build | `bash tool/ci/run_quality.sh` |
 | `.github/workflows/ci-device.yml` | Daily schedule + manual | Four independent parallel lanes: Android/iOS logged-out smoke (`integration_test/logged_out_test.dart`, built-in public demo appKey, no credentials needed) and Android/iOS logged-in regression (base, group, contact, user info suites) | `bash tool/ci/smoke_local.sh android\|ios` and `bash tool/ci/nightly_local.sh android\|ios` |
 
 > `ci-device.yml` replaces the former `device-smoke.yml` and `single-account-nightly.yml`: all four lanes are independent and run in parallel, so a failing test case or lane never delays or blocks the others. The two logged-in lanes share one test account across platforms and require multi-device login enabled on the console (the React Native device regression already runs this way).
 
-> The cron in `ci-device.yml` (`37 18 * * *`, one hour earlier than RN's device regression) only takes effect on the **default branch** (`flutter2_stable`) — GitHub scheduled workflows "run the latest commit of the default branch using the default branch's workflow file", so before this file lands on the default branch, scheduled triggers on the 5.x branches will not happen; only manual dispatch works.
+> The cron in `ci-device.yml` (`37 18 * * *`, one hour earlier than RN's device regression) only takes effect on the **default branch** (`main`) — GitHub scheduled workflows "run the latest commit of the default branch using the default branch's workflow file", so before this file lands on the default branch, scheduled triggers on the 5.x branches will not happen; only manual dispatch works.
 
 Android requires a booted emulator (the scripts hard-connect to `emulator-5554`); on iOS, `run_ios_simulator_test.sh` boots the simulator itself, with logs written to `artifacts/*.log` (gitignored).
 
@@ -245,10 +245,11 @@ scripts/gen-apidoc.sh en     # English version → output/apidoc-en/
 
 ## Branching and Release Process
 
-- **Since 4.x, each release version corresponds to a branch with the same name** (e.g. `4.22.0`); tags are not used. 3.x leftover tags are history only.
-- The default branch is `flutter2_stable`; `alpha`, `dev` etc. are feature or historical branches — no version development on them.
+- Branch model and iron rules: see `AGENTS.md` "Git Branch Management (Iron Rules)". This section covers only release actions.
+- **Each release version corresponds to a branch with the same name** (e.g. `5.1.0`); tags are not used. 3.x leftover tags are history only.
+- The default branch is `main` (renamed from `flutter2_stable`); `4.x` / `5.x` are long-term lines and `ohos` is the independent HarmonyOS line; `alpha`, `dev` etc. are feature or historical branches — no version development on them.
 - Version development flow:
-  1. After confirming the working tree is clean, create a branch named after the target version from `flutter2_stable`;
+  1. After confirming the working tree is clean, create a branch named after the target version **from the corresponding long-term line** (4.x versions from `4.x`, 5.x versions from `5.x`);
   2. Complete development and verification on that branch: pass the quality gate with `bash tool/ci/run_quality.sh`, build and run the example on both Android/iOS, and run through `script_500_apis_positive.json` / `script_500_apis_negative.json` (or `make auto-report`), keeping the reports;
-  3. After verification passes, merge back into `flutter2_stable`.
+  3. After verification passes, merge forward in the order version branch → long-term line → `main` (see the AGENTS.md iron rules).
 - Version upgrades (aligning with the public APIs of a new native SDK version) have a dedicated workflow and acceptance report template; see the `platform-sdk-porting-v2` skill in the team workspace and past upgrade reports.

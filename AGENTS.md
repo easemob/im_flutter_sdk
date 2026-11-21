@@ -140,14 +140,27 @@ Adding an event handler: define `Chat{Business}EventHandler` in `im_flutter_sdk/
 - The CHANGELOG is bilingual: each version keeps a `## <version>` heading with a `### 中文` section and an `### English` section; new entries must be added in both languages
 - When adding an API: the main package's CHANGELOG records the new API entry; the interface / android / ios CHANGELOGs record their respective actual changes
 
-## Git Branch Management
+## Git Branch Management (Iron Rules)
 
-- **Since 4.x, each release version corresponds to a branch with the same name** (e.g. `4.19.2`, `4.17.1`); tags are not used. To view or compare a version's code, use branch operations such as `git checkout 4.19.2` or `git diff 4.19.2..4.19.3`
-- Tags left over from the 3.x era (`3.8.x`/`3.9.x`) are history only; 4.x has no tags
-- The default branch is `flutter2_stable`; `alpha`, `dev`, `customMsg` etc. are feature or historical branches — do not do version development on them
-- Releasing a new version: create a branch named after the version number
-- **Before switching branches, confirm the working tree is clean** (`git status` shows no uncommitted changes); if it is not clean, stop and inform the user, letting the user decide how to proceed
-- **When creating a worktree, always place it under the `.worktree/` folder in the repository root** (e.g. `git worktree add .worktree/agora-1.4.0 agora-1.4.0`), not outside the repository
+Branch roles:
+
+| Branch | Role |
+|---|---|
+| `main` | Default branch, pointer to the current release line; always kept in sync with the current release line (renamed from `flutter2_stable` — historical references to it mean `main`) |
+| `4.x` | 4 long-term line: integration target for 4.x version branches |
+| `5.x` | 5 long-term line: integration target for 5.x version branches |
+| `ohos` | HarmonyOS long-term line, evolved independently; HarmonyOS Flutter is incompatible with official Flutter — merging between `ohos` and other lines is forbidden |
+| `4.25.0`, `5.1.0`, `ohos-1.16.0`, etc. | Version branches, created from their long-term line, carrying only that version's API porting and fixes |
+
+Iron rules (one-directional flow, non-negotiable):
+
+1. **Commit only to a working branch; merge forward, never backward**: fixes and changes are committed to the current version branch (or long-term line), verified, then merged in the order version branch → long-term line → `main`. Never commit code, test, or doc changes directly to `main`; never cherry-pick backward into an already-merged upstream branch (when a backport is explicitly needed, recommit on the target version branch and merge forward).
+2. **4-line flow**: `4.25.0` → `4.x` → `main`. `main` follows the 4 line by default; every update to `4.x` is merged into `main`.
+3. **5-line flow**: `5.1.0` → `5.x`. Do not merge `5.x` into `main` until the 5 line becomes the release line; switch the default branch semantics to the 5 line at that time.
+4. **ohos line is independent**: `ohos-x.y.z` version branches are created from `ohos` and merged back after release; merging between `ohos` and `4.x`/`5.x`/`main` is forbidden.
+5. **Test architecture changes land on long-term lines** (`4.x`/`5.x`/`ohos`), not on version branches; cross-line test architecture porting uses "cover + adapt", not blind cherry-picks.
+6. **No tags**: a version is a same-named branch (3.x tags are history only); historical local tags sharing a version branch's name are cleaned up progressively — always reference branches as `refs/heads/<branch>`.
+7. **Confirm a clean working tree before switching or deleting branches** (`git status` shows no uncommitted changes); if it is not clean, stop and inform the user. **Always create worktrees under `.worktree/` in the repository root** (e.g. `git worktree add .worktree/agora-1.4.0 agora-1.4.0`), not outside the repository
 
 ## Platform Support
 
