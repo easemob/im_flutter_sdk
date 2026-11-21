@@ -1,0 +1,47 @@
+# Nightly dispatcher: runs the daily device regression on long-term lines
+# that are NOT the repository's default branch.
+#
+# MAIN-ONLY FILE — this file must exist only on the default branch `main`.
+# Never copy or merge it to any other branch (4.x / 5.x / ohos / version
+# branches) and never delete it. See AGENTS.md "Git Branch Management
+# (Iron Rules)" rule 8: git merges always take the source branch's file
+# content, so if this dispatcher lived inside ci-device.yml it would be
+# silently overwritten on every 4.x -> main merge and the 5.x daily run
+# would disappear without any visible failure. This file is the deliberate,
+# documented exception to rule 1 (no direct commits to `main`).
+#
+# Coverage model: the default branch tracks the 4.x line, so the 4.x daily
+# run comes from the schedule trigger in ci-device.yml on this branch; this
+# dispatcher only covers the other long-term lines (5.x today). Add ohos
+# below once its CI is unified to ci-device.yml.
+#
+# NOTE: GitHub runs schedule triggers only from the default branch's copy
+# of a workflow file — per-line cron entries on other branches are inert.
+
+name: Nightly Dispatch
+
+on:
+  schedule:
+    # Same slot as ci-device.yml (one hour before RN's device regression,
+    # 19:37 UTC); both fire concurrently and run their lanes independently.
+    - cron: '37 18 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: nightly-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch-long-term-lines:
+    # Guard against accidental double-dispatch on manual triggers.
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch ci-device.yml on 5.x
+        run: gh workflow run ci-device.yml --repo "$GITHUB_REPOSITORY" --ref 5.x
+        env:
+          GH_TOKEN: ${{ github.token }}
