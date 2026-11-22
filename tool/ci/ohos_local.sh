@@ -30,7 +30,13 @@
 #                 haps, which requires the fork patch described in
 #                 docs/porting/ohos-4.25.0/2026-11-12-test-verification.md.
 #
-# Logs are written to artifacts/ohos-<suite>.log.
+# Run layout follows the shared three-category artifacts convention (same as
+# 4.x/5.x): one timestamp directory per invocation, platform directory below
+# it, one raw log directory per suite:
+#   artifacts/ci/<timestamp>/harmony/<suite>/flutter.log
+# plus artifacts/ci/<timestamp>/harmony/runner.log with the console output of
+# this script. Timestamped directories keep every run's raw logs; nothing is
+# overwritten by the next run.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -103,27 +109,40 @@ else
   echo "warning: hdc not found in PATH; make sure the HarmonyOS device is online" >&2
 fi
 
+stamp="$(date +%Y%m%d%H%M%S)"
+run_root="$REPO_ROOT/artifacts/ci/$stamp"
+suffix=2
+while [[ -e "$run_root" ]]; do
+  run_root="$REPO_ROOT/artifacts/ci/$stamp.$suffix"
+  suffix=$((suffix + 1))
+done
+nightly_dir="$run_root/harmony"
+mkdir -p "$nightly_dir"
+exec > >(tee "$nightly_dir/runner.log") 2>&1
+
 echo "ohos device: $OHOS_DEVICE"
 echo "flutter:     $("$FLUTTER_BIN" --version 2>/dev/null | head -1)"
 echo "suites:      ${SUITES[*]}"
+echo "ohos report directory: $nightly_dir"
 
-mkdir -p "$REPO_ROOT/artifacts"
 cd "$EXAMPLE_DIR"
 FAILED=()
 for suite in "${SUITES[@]}"; do
   echo
   echo "=== $suite ==="
+  suite_dir="$nightly_dir/$suite"
+  mkdir -p "$suite_dir"
   if OHOS_SKIP_CODESIGN="$OHOS_SKIP_CODESIGN" "$FLUTTER_BIN" test \
     "integration_test/${suite}_test.dart" \
     -d "$OHOS_DEVICE" \
     --no-pub \
     --dart-define-from-file="$CONFIG_PATH" \
-    > "$REPO_ROOT/artifacts/ohos-${suite}.log" 2>&1; then
-    tail -2 "$REPO_ROOT/artifacts/ohos-${suite}.log"
+    > "$suite_dir/flutter.log" 2>&1; then
+    tail -2 "$suite_dir/flutter.log"
   else
     FAILED+=("$suite")
-    echo "FAILED: $suite (see artifacts/ohos-${suite}.log)"
-    grep -E "\[E\]|Expected:|Actual:" "$REPO_ROOT/artifacts/ohos-${suite}.log" | head -10 || true
+    echo "FAILED: $suite (see $suite_dir/flutter.log)"
+    grep -E "\[E\]|Expected:|Actual:" "$suite_dir/flutter.log" | head -10 || true
   fi
 done
 

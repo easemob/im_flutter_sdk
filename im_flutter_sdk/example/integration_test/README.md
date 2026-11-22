@@ -165,7 +165,9 @@ verification record.
 - `tool/ci/nightly_local.sh` — Android/iOS single-account nightly only
   (`android|ios`); it is intentionally unchanged.
 - `tool/ci/ohos_local.sh` — the ohos device entry: runs the six suites on the
-  HarmonyOS emulator and writes `artifacts/ohos-<suite>.log`.
+  HarmonyOS emulator and writes raw logs to
+  `artifacts/ci/<timestamp>/harmony/<suite>/flutter.log` (console output in
+  `runner.log` next to the suite directories).
 - `tool/ci/smoke_local.harmony.sh` — harmony-only smoke wrapper; runs
   `ohos_local.sh logged_out` (the 21-case no-login suite).
 - `tool/ci/nightly_local.harmony.sh` — harmony-only nightly wrapper; runs all
