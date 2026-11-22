@@ -83,6 +83,8 @@ make setup   # config + deps + pods
 
 ## 鸿蒙构建与验证入口
 
+CI 集成套件的完整运行说明（执行命令、凭证流程、产物位置）见 [tool/ci/README.md](tool/ci/README.md)；下表为全量验证入口速查。
+
 构建 example（在 `im_flutter_sdk/example` 下，使用鸿蒙版 Flutter）：
 
 ```bash
