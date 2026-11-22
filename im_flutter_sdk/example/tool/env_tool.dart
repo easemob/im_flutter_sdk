@@ -160,8 +160,8 @@ Future<void> writeE2eConfig(EnvPaths paths, List<String> options) async {
 
 /// Options accepted by the `e2e-config` command.
 ///
-/// The nightly harmony wrapper mirrors `nightly_local.sh` and forwards the
-/// five long-lived values as flags; no token is accepted on purpose.
+/// The nightly harmony wrapper mirrors `nightly_local.harmony.sh` and forwards
+/// the five long-lived values as flags; no token is accepted on purpose.
 class E2eConfigOptions {
   const E2eConfigOptions({
     this.output,

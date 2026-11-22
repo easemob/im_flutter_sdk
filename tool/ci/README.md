@@ -80,12 +80,24 @@ bash tool/ci/nightly_local.harmony.sh logged_in_base logged_in_group
 E2E_CONFIG_PATH=/绝对路径/e2e-config.json bash tool/ci/ohos_local.sh logged_in_base
 ```
 
-鸿蒙 runner 暂不支持按用例名筛选（`CI_TEST_NAME` 仅 Android/iOS runner 可用）；最小执行粒度为套件。
+套件内筛选单个用例用 `CI_TEST_NAME`（传给 `flutter test --name` 的正则，与 Android/iOS runner 同契约）：
+
+```bash
+CI_TEST_NAME=FL-MSG-010 E2E_CONFIG_PATH=/绝对路径/e2e-config.json \
+  bash tool/ci/ohos_local.sh logged_in_base
+```
 
 ## 报告与日志在哪里
 
-每次执行生成带时间戳的目录，遵循与其他线一致的三类产物规范：集成套件产物在 `artifacts/ci/<时间戳>/harmony/<套件>/flutter.log`（Dart 测试完整输出）与同目录 `hilog.log.gz`（该套件运行期间的鸿蒙 native 原始日志，经 hdc 采集，对应 Android 侧的 logcat 产物；iOS 无等价通道），控制台过程日志在上一级 `artifacts/ci/<时间戳>/harmony/runner.log`。
+每次执行生成带时间戳的目录，报告层与其他线同构（report.py）：首先打开 `artifacts/ci/<时间戳>/harmony/summary.md`（各套件通过/失败/未完成计数与证据链接），机器可读结果在同目录 `report.json`，控制台过程日志在 `artifacts/ci/<时间戳>/harmony/runner.log`。每个套件一个子目录 `artifacts/ci/<时间戳>/harmony/<套件>/`：
 
-先看 runner 输出确认构建与安装成功，再进各套件 flutter.log 定位失败用例；准备或构建失败不代表业务用例已执行。运行产物均被 Git 忽略。
+| 文件 | 用途 |
+|---|---|
+| `summary.md` / `run.json` | 该套件的独立报告与运行信息（初始化、筛选、提交、设备） |
+| `attempt-N.log` | 第 N 次尝试的 flutter test 完整输出（含 hvigor 构建输出） |
+| `attempt-N.events.jsonl` | 第 N 次尝试的 Flutter 结构化 JSON 事件 |
+| `attempt-N.hilog.log.gz` | 第 N 次尝试的鸿蒙 native 原始日志（hdc hilog 关键词过滤：SDK/wrapper、进程生命周期、故障通道；过滤无匹配时保留全量兜底） |
+
+加载阶段失败（hvigor 构建被中断、VM-service 连接失败等导致**零用例完成**）会自动重试一次，两次尝试的证据都保留在套件目录；已有用例完成后的失败是真实结果，不重试。构建或设备类失败不代表业务用例已执行，先看 runner.log 与 attempt-N.log 再定位。运行产物均被 Git 忽略。
 
 测试遗留的 `flutter_ci_group_*` 孤儿群可用 `bash tool/ci/ohos_cleanup.sh` 经 REST 清理（需要 `E2E_APP_TOKEN`）。

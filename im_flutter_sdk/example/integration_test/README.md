@@ -137,12 +137,11 @@ bash tool/ci/nightly_local.harmony.sh   # all six suites (302 cases), no token i
 ```
 
 `smoke_local.harmony.sh` / `nightly_local.harmony.sh` are harmony-only entry
-wrappers around `ohos_local.sh`; the existing `smoke_local.sh` /
-`nightly_local.sh` (and their Android/iOS branches) are intentionally left
-untouched. Both wrappers fetch fresh tokens on every run, so no caller ever
-needs to obtain or export a user token.
+wrappers around `ohos_local.sh`. Both wrappers fetch fresh tokens on every
+run, so no caller ever needs to obtain or export a user token.
 
-Pass suite names (`logged_out logged_in_base ...`) to run a subset, and set
+Pass suite names (`logged_out logged_in_base ...`) to run a subset, set
+`CI_TEST_NAME=<regexp>` to select a single test within a suite, and set
 `FLUTTER_BIN` / `OHOS_DEVICE` when the defaults do not apply.
 
 Event listener callbacks are covered by `FL-EVENT-201..210` in
@@ -160,21 +159,23 @@ verification record.
 - `tool/ci/run_quality.sh` — host-only checks (format / analyze / Dart unit
   tests / mapping / contracts / versions). It runs with the official Flutter
   3.47.0 used by CI and does not touch a device; it passed for this branch.
-- `tool/ci/smoke_local.sh` — Android/iOS device smoke only (`android|ios`); it
-  is intentionally unchanged.
-- `tool/ci/nightly_local.sh` — Android/iOS single-account nightly only
-  (`android|ios`); it is intentionally unchanged.
+  The Android/iOS-only `smoke_local.sh` / `nightly_local.sh` wrappers do not
+  exist on this line; use the harmony wrappers below.
 - `tool/ci/ohos_local.sh` — the ohos device entry: runs the six suites on the
-  HarmonyOS emulator and writes raw logs to
-  `artifacts/ci/<timestamp>/harmony/<suite>/flutter.log` (console output in
-  `runner.log` next to the suite directories).
+  HarmonyOS emulator and writes report.py reports plus raw logs to
+  `artifacts/ci/<timestamp>/harmony/<suite>/` (attempt-N.log /
+  attempt-N.events.jsonl / attempt-N.hilog.log.gz; merged `summary.md` and
+  `report.json` at the harmony level; console output in
+  `artifacts/ci/<timestamp>/harmony/runner.log`). A suite that completes zero
+  tests (load-stage failure) is retried once; `CI_TEST_NAME` selects a single
+  test.
 - `tool/ci/smoke_local.harmony.sh` — harmony-only smoke wrapper; runs
   `ohos_local.sh logged_out` (the 21-case no-login suite).
 - `tool/ci/nightly_local.harmony.sh` — harmony-only nightly wrapper; runs all
   six suites (or the suite names passed as arguments) through
   `ohos_local.sh`.
 
-> Important: `run_quality.sh` / `smoke_local.sh` run `flutter pub get` with the
+> Important: `run_quality.sh` runs `flutter pub get` with the
 > official Flutter SDK. That rewrites `example/.flutter-plugins-dependencies`
 > without the `plugins.ohos` key, and the next fork build fails with hvigor
 > `TypeError ... reading 'filter'`. Re-run `flutter pub get` with the fork

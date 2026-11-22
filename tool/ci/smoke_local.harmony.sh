@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# One-command local run of the HarmonyOS device smoke suite. Mirrors
-# tool/ci/smoke_local.sh (android|ios) with the harmony platform added; the
-# android/ios entry is intentionally left untouched.
+# One-command local run of the HarmonyOS device smoke suite. Harmony
+# counterpart of the 4.25.0 line's smoke_local.sh (which does not exist on
+# this line).
 #
-# Like the android/ios smoke entry, callers pass no credentials. The logged_out
+# Callers pass no credentials. The logged_out
 # suite falls back to the public demo app key in
 # im_flutter_sdk/example/integration_test/support/env.dart (the same contract as
 # the 5.1.0 smoke entry), and only checks that a login attempt is rejected. The
@@ -20,8 +20,8 @@
 #   bash tool/ci/smoke_local.harmony.sh
 #   bash tool/ci/smoke_local.harmony.sh harmony
 #
-# Logs: artifacts/ci/<timestamp>/harmony/logged_out/flutter.log (written by
-# ohos_local.sh).
+# Reports: artifacts/ci/<timestamp>/harmony/summary.md + per-suite raw logs
+# (attempt-N.log / attempt-N.events.jsonl / attempt-N.hilog.log.gz).
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
