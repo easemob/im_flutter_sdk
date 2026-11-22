@@ -724,6 +724,19 @@ enum ChatMultiDevicesEvent {
   GROUP_REMOVE_ALL_BAN,
 
   /// ~english
+  /// If user A updates the chat group information on Device A1, this event is triggered on Device A2.
+  ///
+  /// Only the iOS SDK 4.25.0 reports this event (native value 34). Android SDK 4.25.1 does not report it; the event stays `UnKnow`-unreachable on Android.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 用户 A 在设备 A1 上更新了群组信息，则设备 A2 上会收到该事件。
+  ///
+  /// 仅 iOS SDK 4.25.0 上报此事件（native 值 34）；Android SDK 4.25.1 不上报，该事件在 Android 上不可达。
+  /// ~end
+  GROUP_UPDATE,
+
+  /// ~english
   /// If the group function is disabled for user A on Device A1, this event is triggered on Device A2.
   /// ~end
   ///
