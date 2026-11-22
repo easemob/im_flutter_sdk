@@ -166,13 +166,18 @@ writes $_reportsRelativePath/comparison-<timestamp>.md.
       state.deviceLogFile = await deviceLog.stop(state.platform);
     }
     // ohos fallback: `flutter run` does not always forward the app's print
-    // output. When the stdout channel produced no APITEST event at all, replay
-    // the `hdc shell hilog` capture into the same parser. The event sinks are
+    // output. When the stdout channel produced no APITEST event at all, first
+    // tail the live `hdc shell hilog` capture until script.done (the fork
+    // flutter run may exit right after launch while the app keeps running),
+    // then fall back to replaying whatever was captured. The event sinks are
     // still open here on purpose.
     if (state.platform == 'ohos' &&
         state.events.isEmpty &&
         state.deviceLogFile != null) {
-      await _replayDeviceLog(state);
+      await _tailDeviceLogForScriptDone(state);
+      if (state.events.isEmpty) {
+        await _replayDeviceLog(state);
+      }
     }
     await eventsSink.flush();
     await eventsSink.close();
@@ -712,6 +717,10 @@ class _DeviceLogCapture {
     } else if (state.platform == 'ohos') {
       // Full hilog (no tag filter): the ohos fallback replays the APITEST
       // lines from this file, and native chatsdk lines stay searchable.
+      // Clear the ring buffer first: hilog is device-global and still holds
+      // APITEST lines from earlier runs, which a replay would misattribute
+      // to this run.
+      await Process.run('hdc', ['-t', state.device, 'shell', 'hilog', '-r']);
       process = await Process.start('hdc', [
         '-t',
         state.device,
@@ -738,10 +747,13 @@ class _DeviceLogCapture {
       ]);
     }
     final capture = _DeviceLogCapture(process, sink, logPath);
+    // hilog carries non-UTF-8 bytes: decode leniently so one malformed chunk
+    // cannot tear down the whole run.
+    const lenientUtf8 = Utf8Decoder(allowMalformed: true);
     for (final stream in <Stream<List<int>>>[process.stdout, process.stderr]) {
       capture._subscriptions.add(
         stream
-            .transform(utf8.decoder)
+            .transform(lenientUtf8)
             .transform(const LineSplitter())
             .listen(sink.writeln),
       );
@@ -868,7 +880,9 @@ String _flutterExecutable(Directory root) {
 
 Future<void> _consumeLines(Stream<List<int>> stream, _RunState state) async {
   await for (final line
-      in stream.transform(utf8.decoder).transform(const LineSplitter())) {
+      in stream
+          .transform(const Utf8Decoder(allowMalformed: true))
+          .transform(const LineSplitter())) {
     _consumeLine(line, state);
   }
 }
@@ -883,13 +897,26 @@ void _consumeLine(String line, _RunState state) {
       _consumeChunk(rest.substring(1), state);
     } else {
       // Keep unexpected shapes visible instead of dropping the event silently.
+      // On ohos, hilog wraps long lines, so a torn chunk is a transport
+      // artifact, not crash evidence; it stays visible via malformedLines.
       final sanitized = _sanitize(line);
       state.malformedLines.add(sanitized);
-      state.crashSink.writeln(sanitized);
+      if (state.platform != 'ohos') {
+        state.crashSink.writeln(sanitized);
+      }
     }
     return;
   }
-  if (_isCrashEvidence(line, scriptCompleted: state.scriptDone != null)) {
+  // The ohos fork `flutter run` exits right after launching while the app
+  // keeps running on the device, so "Lost connection to device" on the
+  // flutter stdout is expected there and must not be read as a crash; the
+  // post-exit tail still catches real timeouts via REPORT_TIMEOUT.
+  final lostConnectionIsCrash = state.platform != 'ohos';
+  if (_isCrashEvidence(
+    line,
+    scriptCompleted: state.scriptDone != null,
+    lostConnectionIsCrash: lostConnectionIsCrash,
+  )) {
     state.crashLinesRemaining = 24;
   }
   if (state.crashLinesRemaining > 0) {
@@ -898,6 +925,47 @@ void _consumeLine(String line, _RunState state) {
     state.crashSink.writeln(sanitized);
     state.crashLinesRemaining--;
   }
+}
+
+/// ohos fallback: the fork `flutter run` may exit right after launching the
+/// app without forwarding any print output. The device-log capture keeps
+/// streaming `hdc shell hilog` into device.log, so tail that file until
+/// script.done shows up (8-minute budget, same as the stdout path).
+Future<void> _tailDeviceLogForScriptDone(_RunState state) async {
+  final logFile = File('${state.reportDir.path}/device.log');
+  if (!await logFile.exists()) return;
+  stdout.writeln(
+    'No APITEST lines from flutter run; tailing device.log for script.done '
+    '(8 min budget).',
+  );
+  final deadline = DateTime.now().add(const Duration(minutes: 8));
+  const lenientUtf8 = Utf8Decoder(allowMalformed: true);
+  var position = 0;
+  var buffer = '';
+  while (state.scriptDone == null && DateTime.now().isBefore(deadline)) {
+    final length = await logFile.length();
+    if (length > position) {
+      final chunk = await logFile
+          .openRead(position, length)
+          .transform(lenientUtf8)
+          .join();
+      position = length;
+      buffer += chunk;
+      final lines = buffer.split('\n');
+      buffer = lines.removeLast();
+      for (final line in lines) {
+        _consumeLine(line, state);
+      }
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+  }
+  if (state.scriptDone == null) {
+    state.recordCrash('REPORT_TIMEOUT: no script.done within 8 minutes');
+  }
+  stdout.writeln(
+    'Tailing captured ${state.events.length} APITEST event(s); '
+    'scriptDone=${state.scriptDone != null}.',
+  );
 }
 
 /// ohos fallback: replays the captured `hdc shell hilog` log through the same
@@ -911,7 +979,7 @@ Future<void> _replayDeviceLog(_RunState state) async {
   await for (final line
       in logFile
           .openRead()
-          .transform(utf8.decoder)
+          .transform(const Utf8Decoder(allowMalformed: true))
           .transform(const LineSplitter())) {
     _consumeLine(line, state);
   }
@@ -939,7 +1007,13 @@ void _handleEventText(String jsonText, _RunState state) {
       }
     }
   } catch (_) {
-    state.crashSink.writeln(_sanitize(jsonText));
+    // Torn chunks are expected on ohos (hilog wraps long lines); keep them
+    // visible as malformed lines without poisoning the crash evidence.
+    if (state.platform == 'ohos') {
+      state.malformedLines.add(_sanitize(jsonText));
+    } else {
+      state.crashSink.writeln(_sanitize(jsonText));
+    }
   }
 }
 
@@ -963,11 +1037,17 @@ void _consumeChunk(String text, _RunState state) {
   _handleEventText(pending.join(), state);
 }
 
-bool _isCrashEvidence(String line, {required bool scriptCompleted}) {
+bool _isCrashEvidence(
+  String line, {
+  required bool scriptCompleted,
+  bool lostConnectionIsCrash = true,
+}) {
   return line.contains('FATAL EXCEPTION') ||
       line.contains('NullPointerException') ||
       line.contains('SIGSEGV') ||
-      (!scriptCompleted && line.contains('Lost connection to device')) ||
+      (lostConnectionIsCrash &&
+          !scriptCompleted &&
+          line.contains('Lost connection to device')) ||
       line.contains('REPORT_TIMEOUT');
 }
 
