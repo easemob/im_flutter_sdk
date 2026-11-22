@@ -102,6 +102,18 @@ ohos 线的集成套件（integration_test）已经演进为新架构风格（mo
 - `tool/ci/nightly_local.harmony.sh` **不接** multi/single：与 4.x/5.1.0 惯例一致，三类测试保持独立入口——CI 回归（nightly_local.harmony.sh → ohos_local.sh）、single（`make auto-report`）、multi（`scripts/multi.sh`）（用户决策 2026-11-22，见设计原则 1.1）
 - ohos AGENTS.md"鸿蒙构建与验证入口"表补充 multi/single 用法
 
+### 3.7 输出目录结构（用户决策 2026-11-22）
+
+三类测试输出严格落在带时间戳的目录下，与 4.x/5.x 既有设计一致（`testing/single/README.md`、`tool/ci/nightly_local.sh`），一次运行一个时间戳目录、原始日志全量保留、互不覆盖：
+
+| 类型 | 位置 |
+|---|---|
+| CI 回归 | `artifacts/ci/<时间戳>/harmony/<套件>/flutter.log`（控制台输出在同目录 `runner.log`） |
+| single | `artifacts/single/<时间戳>/<平台>/`（run.json、steps.json、events.jsonl、crash.log、device.log 等，由 auto_report 产出） |
+| multi | `artifacts/multi/<时间戳>/`（device-*.log 等） |
+
+该结构由脚本执行保证，不靠文档约束；历史扁平日志（`artifacts/ohos-<套件>.log`）为旧布局证据，不再产生。
+
 ## 4. 验收
 
 - [ ] `diff 4.x/.../support/rest_fixture.dart ohos/.../support/rest_fixture.dart` 为空；ohos 集成套件本地全量通过

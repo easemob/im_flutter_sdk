@@ -41,7 +41,8 @@
 # run_quality/smoke run (the official pub get drops `plugins.ohos` from
 # example/.flutter-plugins-dependencies, which breaks the ohos hvigor build).
 #
-# Logs: artifacts/ohos-<suite>.log (written by ohos_local.sh).
+# Logs: artifacts/ci/<timestamp>/harmony/<suite>/flutter.log (written by
+# ohos_local.sh), console output in artifacts/ci/<timestamp>/harmony/runner.log.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

@@ -20,7 +20,8 @@
 #   bash tool/ci/smoke_local.harmony.sh
 #   bash tool/ci/smoke_local.harmony.sh harmony
 #
-# Logs: artifacts/ohos-logged_out.log (written by ohos_local.sh).
+# Logs: artifacts/ci/<timestamp>/harmony/logged_out/flutter.log (written by
+# ohos_local.sh).
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
