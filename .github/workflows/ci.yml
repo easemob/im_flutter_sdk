@@ -4,15 +4,16 @@ on:
   pull_request:
   push:
     branches:
-      # Long-term line only; version branches (ohos-1.16.0) stay push-free.
-      - ohos
+      # This 1.16.0 dev line only; other branches (long-term ohos line) are
+      # covered by their own copy of this workflow.
+      - ohos-1.16.0
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: flutter-ci-ohos-${{ github.event.pull_request.number || github.ref }}
+  group: flutter-ci-ohos-1.16.0-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
