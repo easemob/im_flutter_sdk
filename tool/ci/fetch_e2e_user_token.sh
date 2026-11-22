@@ -19,10 +19,11 @@
 #
 # Optional environment:
 #   E2E_USER_SUFFIX   appended to E2E_USER_ID to derive the effective account
-#                     (e.g. _flutter_android / _flutter_ios per CI lane), so
-#                     parallel lanes use isolated accounts; the peer id derives
-#                     from the effective id as well. Unset or empty keeps the
-#                     base id unchanged.
+#                     (e.g. _flutter_4x_android / _flutter_4x_ios per CI lane
+#                     on this line; other long-term lines use their own
+#                     marker), so parallel lanes use isolated accounts; the
+#                     peer id derives from the effective id as well. Unset or
+#                     empty keeps the base id unchanged.
 #
 # Without arguments, stdout contains only the user token. --json prepares a
 # reusable peer account and returns the six dart-defines for integration tests.

@@ -10,9 +10,10 @@
 # Optional environment:
 #   E2E_USER_SUFFIX  account suffix for isolation (see fetch_e2e_user_token.sh).
 #     When this script prepares the configuration itself (no E2E_CONFIG_PATH),
-#     an unset suffix defaults to _flutter_<platform> — matching the CI lanes —
-#     so two local platforms run in parallel on isolated accounts. Pass an
-#     explicit empty value (E2E_USER_SUFFIX= ...) to keep the base account.
+#     an unset suffix defaults to _flutter_4x_<platform> — matching the CI
+#     lanes of this line — so two local platforms run in parallel on isolated
+#     accounts, separate from the 5.x and ohos lines. Pass an explicit empty
+#     value (E2E_USER_SUFFIX= ...) to keep the base account.
 #
 # Usage:
 #   E2E_APP_KEY=... E2E_USER_ID=... E2E_REST_API=... \
@@ -113,7 +114,7 @@ else
   CONFIG="$(mktemp "${TMPDIR:-/tmp}/flutter-e2e-config.XXXXXX.json")"
   # Default to the per-platform lane account so two local platforms run in
   # parallel on isolated accounts; an explicit (even empty) caller value wins.
-  export E2E_USER_SUFFIX="${E2E_USER_SUFFIX-_flutter_$PLATFORM}"
+  export E2E_USER_SUFFIX="${E2E_USER_SUFFIX-_flutter_4x_$PLATFORM}"
   bash "$REPO_ROOT/tool/ci/write_e2e_dart_defines.sh" "$CONFIG"
   export E2E_CONFIG_PATH="$CONFIG"
 fi

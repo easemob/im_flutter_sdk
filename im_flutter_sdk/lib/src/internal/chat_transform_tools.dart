@@ -63,6 +63,8 @@ ChatMultiDevicesEvent? convertIntToChatMultiDevicesEvent(int? i) {
       return ChatMultiDevicesEvent.GROUP_ALL_BAN;
     case 33:
       return ChatMultiDevicesEvent.GROUP_REMOVE_ALL_BAN;
+    case 34:
+      return ChatMultiDevicesEvent.GROUP_UPDATE;
     case 40:
       return ChatMultiDevicesEvent.CHAT_THREAD_CREATE;
     case 41:
