@@ -2,6 +2,22 @@
 
 本目录运行鸿蒙线的持续回归测试。版本升级的场景测试见单设备（`testing/single/auto_report.dart --platform ohos`）与多设备（`testing/multi/cases/`，经 `scripts/multi.sh` 调用，编排工具为独立仓 im-test-orchestrator），入口速查见 [AGENTS.md](../../AGENTS.md) 的「鸿蒙构建与验证入口」表。
 
+## 启动与选择模拟器
+
+任选一种方式启动鸿蒙模拟器：
+
+**DevEco Studio 界面（常用）**：打开 DevEco Studio → 右上角设备选择器（或 Tools → Device Manager）选中虚拟设备（本机已验证 OpenHarmony 5.0.2.125 / API 14）点击启动，等待开机完成。
+
+**命令行**：DevEco 自带的模拟器 CLI 在 `/Applications/DevEco-Studio.app/Contents/tools/emulator/Emulator`：
+
+```bash
+EMULATOR=/Applications/DevEco-Studio.app/Contents/tools/emulator/Emulator
+"$EMULATOR" -list          # 列出已有实例（如 Huawei_Phone）
+"$EMULATOR" -start Huawei_Phone   # 启动；后台运行可加 -noWindow
+```
+
+模拟器启动后 hdc 会自动连接；`hdc list targets` 确认在线。已验证的镜像：OpenHarmony 5.0.2.125 / API 14。
+
 ## 运行前准备
 
 所有命令在业务仓库的 worktree 根目录执行，例如：
@@ -12,7 +28,13 @@ cd /Users/asterisk/Codes/zuoyu_flutter/im_flutter_sdk/.worktree/ohos-1.16.0
 
 鸿蒙构建/测试使用 fvm 的 `custom_ohos`（Flutter 3.41.9+ohos-1.0.2，Dart 3.11.5），worktree 已通过 `.fvmrc` 锁定；鸿蒙命令统一走 `fvm flutter ...`，本目录的 harmony 脚本默认优先使用 `.fvm/flutter_sdk/bin/flutter`，可用 `FLUTTER_BIN` 覆盖。**不要对鸿蒙线使用官方 Flutter 执行 `pub get`**——它会重写 `example/.flutter-plugins-dependencies`（丢失 `plugins.ohos`）导致 hvigor 构建失败；跑完质量门禁或 Android/iOS 命令后，鸿蒙构建前必须先 `fvm flutter pub get`。
 
-设备用 hdc 管理，默认目标 `127.0.0.1:5555`（模拟器漂移后用 `OHOS_DEVICE` 覆盖），运行前 `hdc list targets` 确认在线。本地模拟器使用无签名 hap，脚本默认 `OHOS_SKIP_CODESIGN=1`；项目已有真实签名配置时设为 `0`。
+设备用 hdc 管理，脚本默认目标 `127.0.0.1:5555`。鸿蒙模拟器的 hdc 端口会漂移（重启模拟器/DevEco 后可能变成 5557、5559 等），**运行前必须先 `hdc list targets` 确认实际端口**：如果列出的不是 `127.0.0.1:5555`，本次运行要用 `OHOS_DEVICE` 显式指定，例如：
+
+```bash
+OHOS_DEVICE=127.0.0.1:5559 bash tool/ci/smoke_local.harmony.sh
+```
+
+脚本启动时打印 `warning: hdc does not list target '127.0.0.1:5555' (continuing; ...)` 就说明设备不在默认端口——它会继续执行，但 flutter 找不到该设备，套件必然失败（flutter.log 里是 `No supported devices found`）。看到这条警告不要继续跑，先确认 `hdc list targets` 再用 `OHOS_DEVICE` 重跑。本地模拟器使用无签名 hap，脚本默认 `OHOS_SKIP_CODESIGN=1`；项目已有真实签名配置时设为 `0`。
 
 ## 选择执行范围
 
