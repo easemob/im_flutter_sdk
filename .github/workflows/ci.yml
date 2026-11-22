@@ -4,20 +4,24 @@ on:
   pull_request:
   push:
     branches:
-      - flutter2_stable
-      - '4.*'
-      - '5.*'
+      # Long-term line only; version branches (ohos-1.16.0) stay push-free.
+      - ohos
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: flutter-ci-${{ github.event.pull_request.number || github.ref }}
+  group: flutter-ci-ohos-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
+  # Official Flutter for the quality gate (must match run_quality.sh).
   FLUTTER_VERSION: 3.47.0
+  # HarmonyOS fork Flutter (see CONTRIBUTING.md "Flutter SDK 版本（fvm）").
+  # Pinned to the same revision as the local fvm custom_ohos SDK.
+  FLUTTER_OHOS_REPO: https://gitcode.com/CPF-Flutter/flutter_flutter.git
+  FLUTTER_OHOS_REVISION: 62357a93d65
 
 jobs:
   quality:
@@ -51,59 +55,79 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-  android-build:
-    name: Android debug build
+  ohos-build:
+    name: HarmonyOS hap build
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Restore fork Flutter and hvigor cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ~/flutter-ohos
+            ~/.hvigor
+            ~/.ohpm
+            im_flutter_sdk/example/ohos/oh_modules
+          key: ohos-toolchain-${{ env.FLUTTER_OHOS_REVISION }}-${{ hashFiles('tool/ci/ohos_flutter_tools_nocodesign.patch') }}
+          restore-keys: ohos-toolchain-${{ env.FLUTTER_OHOS_REVISION }}-
 
       - name: Set up Java
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
           java-version: '17'
-          cache: gradle
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
-          cache: true
+          node-version: '20'
+
+      - name: Configure hvigor npm registry
+        run: npm config set @ohos:registry=https://repo.harmonyos.com/npm/
+
+      - name: Resolve HarmonyOS SDK
+        env:
+          OHOS_CLI_TOOLS_URL: ${{ vars.OHOS_CLI_TOOLS_URL }}
+          OHOS_SDK_URL: ${{ vars.OHOS_SDK_URL }}
+          OHOS_SDK_PACKAGES: ${{ vars.OHOS_SDK_PACKAGES }}
+        run: bash tool/ci/setup_harmonyos_sdk.sh
+
+      - name: Set up HarmonyOS fork Flutter
+        env:
+          FLUTTER_OHOS_REPO: ${{ env.FLUTTER_OHOS_REPO }}
+          FLUTTER_OHOS_REVISION: ${{ env.FLUTTER_OHOS_REVISION }}
+        run: bash tool/ci/setup_ohos_flutter.sh
+
+      - name: Cache fork Flutter and hvigor
+        if: always()
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ~/flutter-ohos
+            ~/.hvigor
+            ~/.ohpm
+            im_flutter_sdk/example/ohos/oh_modules
+          key: ohos-toolchain-${{ env.FLUTTER_OHOS_REVISION }}-${{ hashFiles('tool/ci/ohos_flutter_tools_nocodesign.patch') }}
 
       - name: Use local SDK packages
         run: bash tool/use_local_packages.sh
 
-      - name: Build Android example
+      - name: Build HarmonyOS example hap
         working-directory: im_flutter_sdk/example
+        env:
+          OHOS_SKIP_CODESIGN: '1'
         run: |
-          flutter pub get
-          flutter build apk --debug
+          "$FLUTTER_BIN" pub get
+          "$FLUTTER_BIN" build hap --debug --no-codesign
 
-  ios-build:
-    name: iOS simulator build
-    runs-on: macos-26
-    timeout-minutes: 30
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
-    steps:
-      - name: Check out source
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Set up Flutter
-        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+      - name: Upload hap
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
-          cache: true
-
-      - name: Use local SDK packages
-        run: bash tool/use_local_packages.sh
-
-      - name: Build iOS example
-        working-directory: im_flutter_sdk/example
-        run: |
-          flutter pub get
-          flutter build ios --simulator --debug --no-codesign
+          name: ohos-example-hap-${{ github.run_id }}
+          path: im_flutter_sdk/example/build/ohos/hap/*.hap
+          if-no-files-found: warn
+          retention-days: 7

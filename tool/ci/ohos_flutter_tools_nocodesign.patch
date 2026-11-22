@@ -1,0 +1,25 @@
+diff --git a/packages/flutter_tools/lib/src/ohos/ohos_device.dart b/packages/flutter_tools/lib/src/ohos/ohos_device.dart
+index e5470e67c93..0daa5b9ac2b 100644
+--- a/packages/flutter_tools/lib/src/ohos/ohos_device.dart
++++ b/packages/flutter_tools/lib/src/ohos/ohos_device.dart
+@@ -265,7 +265,7 @@ class OhosDevice extends Device {
+           debuggingOptions.buildInfo,
+           targetArchs: <OhosArch>[ohosArch],
+           enableImpellerFlag: debuggingOptions.enableImpeller.asBool,
+-          shouldCodesign: true,
++          shouldCodesign: globals.platform.environment['OHOS_SKIP_CODESIGN'] != '1',
+         ),
+         target: mainPath ?? 'lib/main.dart',
+       );
+diff --git a/packages/flutter_tools/lib/src/project.dart b/packages/flutter_tools/lib/src/project.dart
+index 9315c0e23aa..a29e56ce24a 100644
+--- a/packages/flutter_tools/lib/src/project.dart
++++ b/packages/flutter_tools/lib/src/project.dart
+@@ -1295,6 +1295,7 @@ class OhosProject extends FlutterProjectPlatform {
+       modulePath: mainModuleDirectory.path,
+       moduleName: mainModuleName,
+       flavor: flavor,
++      shouldCodesign: globals.platform.environment['OHOS_SKIP_CODESIGN'] != '1',
+     );
+   }
+ 
