@@ -9,10 +9,13 @@ name: Flutter Device Regression
 # other. The iOS lanes additionally patch the pinned flutter tool with the
 # upstream fix for the iOS simulator VM Service race (see
 # tool/ci/patch_flutter_ios_log_stream.sh). The two logged-in lanes derive
-# isolated accounts via E2E_USER_SUFFIX (_flutter_android / _flutter_ios) so
-# their server-side state (user info, contacts, groups) never overlaps while
-# running in parallel; peers derive as <effective id>_ci_peer and no extra
-# secrets are needed. Local runs match CI exactly:
+# isolated accounts via E2E_USER_SUFFIX (_flutter_5x_android /
+# _flutter_5x_ios on this line) so their server-side state (user info,
+# contacts, groups) never overlaps while running in parallel, and the 5x
+# marker keeps this line's accounts separate from the 4.x and ohos lines,
+# whose nightly runs may execute concurrently on the same server; peers
+# derive as <effective id>_ci_peer and no extra secrets are needed (accounts
+# auto-create on first use). Local runs match CI exactly:
 # tool/ci/smoke_local.sh and tool/ci/nightly_local.sh call the same runner
 # scripts the lanes use.
 
@@ -130,7 +133,7 @@ jobs:
           E2E_USER_ID: ${{ secrets.E2E_USER_ID }}
           # Derives this lane's isolated account <id>_flutter_android (peer
           # <id>_flutter_android_ci_peer); see fetch_e2e_user_token.sh.
-          E2E_USER_SUFFIX: _flutter_android
+          E2E_USER_SUFFIX: _flutter_5x_android
           E2E_REST_API: ${{ secrets.E2E_REST_API }}
           E2E_CLIENT_ID: ${{ secrets.E2E_CLIENT_ID }}
           E2E_CLIENT_SECRET: ${{ secrets.E2E_CLIENT_SECRET }}
@@ -265,7 +268,7 @@ jobs:
           E2E_USER_ID: ${{ secrets.E2E_USER_ID }}
           # Derives this lane's isolated account <id>_flutter_ios (peer
           # <id>_flutter_ios_ci_peer); see fetch_e2e_user_token.sh.
-          E2E_USER_SUFFIX: _flutter_ios
+          E2E_USER_SUFFIX: _flutter_5x_ios
           E2E_REST_API: ${{ secrets.E2E_REST_API }}
           E2E_CLIENT_ID: ${{ secrets.E2E_CLIENT_ID }}
           E2E_CLIENT_SECRET: ${{ secrets.E2E_CLIENT_SECRET }}
