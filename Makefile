@@ -12,7 +12,7 @@ PODLOCK     := $(IOS_DIR)/Podfile.lock
 
 .DEFAULT_GOAL := help
 
-.PHONY: help setup config env-gettoken local-deps deps pods clean
+.PHONY: help setup config env-gettoken auto-report local-deps deps pods clean
 
 help: ## Show this help
 	@echo "im_flutter_sdk - project setup"
@@ -36,6 +36,9 @@ config: ## Create local env files (config.local.json + placeholder lib/env.dart)
 
 env-gettoken: ## Fetch tokens from example/config.local.json and write example/lib/env.dart
 	dart run $(ENV_TOOL) gettoken
+
+auto-report: ## Run 1.16.0 auto mode and write a local report: make auto-report [DEVICE=127.0.0.1:5555] [SCRIPT=testing/single/cases/script_1.16.0_apis_negative.json]
+	dart run testing/single/auto_report.dart --platform ohos $(if $(DEVICE),--device $(DEVICE),) $(if $(SCRIPT),--script $(SCRIPT),)
 
 local-deps: ## Create gitignored pubspec_overrides.yaml files for local SDK packages
 	bash tool/use_local_packages.sh

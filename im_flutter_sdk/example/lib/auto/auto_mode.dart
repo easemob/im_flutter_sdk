@@ -11,10 +11,13 @@ import '../options_codec.dart';
 import '../registry/api_entry.dart';
 import '../registry/registry.dart';
 import '../sdk_state.dart';
+import 'step_dependencies.dart';
+import 'step_expectation.dart';
 
 /// AI automation script mode: enter via `--dart-define=API_SCRIPT=<host file absolute path>`.
 /// Automatically executes init -> login -> sequential steps; all results go through the same structured log channel;
-/// no step failure interrupts the flow; outputs script.done on completion; App keeps running.
+/// independent step failures do not interrupt the flow; steps that reference failed
+/// producers are skipped; outputs script.done on completion; App keeps running.
 ///
 /// Test data is separated from the script: the generated lib/env.dart `environment`
 /// (see `make env-gettoken`) is the base config; `--dart-define=API_CONFIG=<config.json absolute path>`
@@ -174,6 +177,8 @@ class AutoMode {
         _resolveRefs(initJson, null, config, const {}) as Map,
       );
       await ChatClient.getInstance.init(emOptionsFromJson(resolved));
+      // SDK contract: open the native event gate (see agentInitHandler note).
+      await ChatClient.getInstance.startCallback();
       registerAllListeners();
       SdkState.instance.markInitialized(jsonEncode(resolved));
       store.log('api.ChatClient.init', {'success': true});
@@ -246,49 +251,65 @@ class AutoMode {
     final rawSteps = script['steps'];
     final steps = rawSteps is List ? rawSteps : const [];
     var failed = 0;
+    var blocked = 0;
     Object? prev;
     final stepData = <String, Object?>{};
+    final stepSucceeded = <String, bool>{};
     for (final raw in steps) {
       var name = '';
+      String? id;
       try {
         final step = Map<String, dynamic>.from(raw as Map);
         name = step['api'] as String? ?? '';
-        final id = step['id'] as String?;
-        final params = Map<String, dynamic>.from(
-          _resolveRefs(step['params'] as Map? ?? {}, prev, config, stepData)
-              as Map,
-        );
+        id = step['id'] as String?;
+        final rawParams = step['params'] as Map? ?? {};
+        final blockedBy = failedStepDependency(rawParams, stepSucceeded);
         Map<String, dynamic> result;
-        if (name == 'TestUtil.writeBase64File') {
-          result = await _writeBase64File(params);
+        if (blockedBy != null) {
+          result = skippedStepResult(blockedBy);
+          blocked++;
         } else {
-          final entry = findApi(name);
-          if (entry == null) {
-            result = {
-              'success': false,
-              'error': {'code': -1, 'message': '未注册的 API：$name'},
-            };
+          final params = Map<String, dynamic>.from(
+            _resolveRefs(rawParams, prev, config, stepData) as Map,
+          );
+          if (name == 'TestUtil.writeBase64File') {
+            result = await _writeBase64File(params);
           } else {
-            // Per-step timeout guard: native may never call back in certain states
-            //(e.g. subscribeUsersInfo hangs when not logged in); prevents the entire script from stalling.
-            // Timeout does not cancel the underlying call; just logs and continues.
-            final timeoutMs = step['timeoutMs'] as int? ?? defaultStepTimeoutMs;
-            result = await runApi(entry, params).timeout(
-              Duration(milliseconds: timeoutMs),
-              onTimeout: () => {
+            final entry = findApi(name);
+            if (entry == null) {
+              result = {
                 'success': false,
-                'error': {
-                  'code': -2,
-                  'message': 'timeout after ${timeoutMs}ms'
+                'error': {'code': -1, 'message': '未注册的 API：$name'},
+              };
+            } else {
+              // Per-step timeout guard: native may never call back in certain states
+              //(e.g. subscribeUsersInfo hangs when not logged in); prevents the entire script from stalling.
+              // Timeout does not cancel the underlying call; just logs and continues.
+              final timeoutMs =
+                  step['timeoutMs'] as int? ?? defaultStepTimeoutMs;
+              result = await runApi(entry, params).timeout(
+                Duration(milliseconds: timeoutMs),
+                onTimeout: () => {
+                  'success': false,
+                  'error': {
+                    'code': -2,
+                    'message': 'timeout after ${timeoutMs}ms'
+                  },
                 },
-              },
-            );
+              );
+            }
           }
         }
         store.log('api.$name', result);
         prev = result['data'];
-        if (id != null) stepData[id] = result['data'];
-        if (result['success'] != true) failed++;
+        if (id != null) {
+          stepData[id] = result['data'];
+          stepSucceeded[id] = result['success'] == true;
+        }
+        if (blockedBy == null &&
+            !stepResultMatchesExpectation(result, step['expect'])) {
+          failed++;
+        }
         final delay = step['delayAfterMs'] as int?;
         if (delay != null && delay > 0) {
           await Future.delayed(Duration(milliseconds: delay));
@@ -296,12 +317,17 @@ class AutoMode {
       } catch (e) {
         // Per-step parse/execution errors do not interrupt the script; counted as failed.
         failed++;
+        if (id != null) stepSucceeded[id] = false;
         store.log('api.$name', {
           'success': false,
           'error': errorToJson(e),
         });
       }
     }
-    store.log('script.done', {'total': steps.length, 'failed': failed});
+    store.log('script.done', {
+      'total': steps.length,
+      'failed': failed,
+      'blocked': blocked,
+    });
   }
 }

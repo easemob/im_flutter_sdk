@@ -4,6 +4,14 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import '../api_entry.dart';
 
+Map<String, Object?> conversationToScriptJson(
+  ChatConversation conversation,
+) =>
+    {
+      'id': conversation.id,
+      'type': conversation.type.index,
+    };
+
 /// ChatManager related entries.
 final chatApis = <ApiEntry>[
   ApiEntry(
@@ -219,6 +227,63 @@ final chatApis = <ApiEntry>[
         msg: msg,
         languages: (p['languages'] as List).cast<String>(),
       );
+    },
+  ),
+  ApiEntry(
+    name: 'ChatManager.loadMessage',
+    group: 'ChatManager',
+    description: '从本地数据库读取消息，核对正文、attributes 和已读状态；不存在时返回 null。',
+    paramsTemplate: '{"messageId": "messageId"}',
+    invoke: (p) => ChatClient.getInstance.chatManager
+        .loadMessage(p['messageId'] as String),
+  ),
+  ApiEntry(
+    name: 'ChatManager.getUnreadMessageCount',
+    group: 'ChatManager',
+    description: '获取所有会话未读消息总数。',
+    paramsTemplate: '{}',
+    invoke: (_) => ChatClient.getInstance.chatManager.getUnreadMessageCount(),
+  ),
+  ApiEntry(
+    name: 'ChatManager.loadAllConversations',
+    group: 'ChatManager',
+    description: '读取全部本地会话，按原生默认排序返回。',
+    paramsTemplate: '{}',
+    invoke: (p) async =>
+        (await ChatClient.getInstance.chatManager.loadAllConversations())
+            .map(conversationToScriptJson)
+            .toList(),
+  ),
+  ApiEntry(
+    name: 'ChatManager.recallMessage',
+    group: 'ChatManager',
+    description: '撤回发送成功的消息；可通过 ext 透传本次撤回的标识。',
+    paramsTemplate: '{"messageId": "messageId", "ext": "recall reason"}',
+    invoke: (p) => ChatClient.getInstance.chatManager.recallMessage(
+      p['messageId'] as String,
+      ext: p['ext'] as String?,
+    ),
+  ),
+  ApiEntry(
+    name: 'ChatManager.modifyMessage',
+    group: 'ChatManager',
+    description: '修改消息正文和/或扩展属性；支持 attributes 参数。',
+    paramsTemplate: '''{
+  "messageId": "messageId",
+  "content": "modified content",
+  "attributes": {"key": "value"}
+}''',
+    invoke: (p) async {
+      final attributes = p['attributes'];
+      final result = await ChatClient.getInstance.chatManager.modifyMessage(
+        messageId: p['messageId'] as String,
+        msgBody: p['content'] == null
+            ? null
+            : ChatTextMessageBody(content: p['content'] as String),
+        attributes:
+            attributes is Map ? Map<String, dynamic>.from(attributes) : null,
+      );
+      return result.toJson();
     },
   ),
 ];

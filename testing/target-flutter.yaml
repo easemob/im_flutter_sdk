@@ -1,0 +1,10 @@
+# Flutter example 目标登记（im-test-orchestrator 多设备编排的 target 信息，ohos 鸿蒙线）。
+# 当前为薄够用形态，仅供查阅；scripts/multi.sh 直接按下列值传参。
+# 鸿蒙构建必须使用 HarmonyOS fork Flutter（fvm custom_ohos），设备为 hdc target。
+appDir: im_flutter_sdk/example
+platform: ohos
+flutterVersion: 3.41.9+ohos
+flutterBin: .fvm/flutter_sdk/bin/flutter
+ohosBundleName: com.example.example
+ohosEntryAbility: EntryAbility
+casesDir: testing/multi/cases

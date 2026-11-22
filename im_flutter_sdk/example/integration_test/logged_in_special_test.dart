@@ -6,7 +6,7 @@ import 'modules/push_cases.dart';
 import 'modules/room_cases.dart';
 import 'support/env.dart';
 import 'support/login.dart';
-import 'support/rest.dart';
+import 'support/rest_fixture.dart';
 import 'support/session.dart';
 
 /// Special entry: chat-room conversation enabled, room and push edge cases.
@@ -18,7 +18,11 @@ void main() {
   requireCiEnvironment(requirePeer: true, requireRest: true);
 
   final client = ChatClient.getInstance;
-  final rest = CiRestClient.fromCiEnvironment();
+  final rest = CiRestFixture(
+    restApi: ciRestApi,
+    appKey: ciAppKey,
+    appToken: ciAppToken,
+  );
   final roomFixture = CiRoomFixture(rest);
 
   setUpAll(() async {
@@ -27,6 +31,7 @@ void main() {
     roomFixture.roomId = await rest.createChatRoom(
       owner: ciUserId,
       name: 'flutter_ci_room_${DateTime.now().microsecondsSinceEpoch}',
+      description: 'flutter ci room',
       members: <String>[ciPeerId],
     );
   });

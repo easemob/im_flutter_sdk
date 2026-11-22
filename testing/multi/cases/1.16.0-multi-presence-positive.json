@@ -1,0 +1,160 @@
+{
+  "data": {
+    "input": {
+      "expiry": 600
+    },
+    "unique": {
+      "presenceDescription": "presence-"
+    }
+  },
+  "steps": [
+    {
+      "id": "init",
+      "api": "ChatClient.init",
+      "params": {
+        "config": "$global.biz.config.initConfig",
+        "overrides": {}
+      }
+    },
+    {
+      "id": "login_alice",
+      "api": "ChatClient.loginWithToken",
+      "params": {
+        "userId": "$global.account.account1.userId",
+        "token": "$global.account.account1.userToken"
+      }
+    },
+    {
+      "id": "login_bob",
+      "api": "ChatClient.loginWithToken",
+      "params": {
+        "userId": "$global.account.account2.userId",
+        "token": "$global.account.account2.userToken"
+      }
+    },
+    {
+      "id": "connected",
+      "api": "ChatClient.isConnected",
+      "params": {},
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "subscribe",
+      "api": "ChatPresenceManager.subscribe",
+      "params": {
+        "members": [
+          "$global.account.account2.userId"
+        ],
+        "expiry": "$global.biz.input.expiry"
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "",
+            "containsItem": {
+              "publisher": "$global.account.account2.userId"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "unsubscribe",
+      "api": "ChatPresenceManager.unsubscribe",
+      "params": {
+        "members": [
+          "$global.account.account2.userId"
+        ]
+      }
+    },
+    {
+      "id": "capture_presence",
+      "api": "ChatPresenceManager.fetchPresenceStatus",
+      "params": {
+        "members": [
+          "$global.account.account2.userId"
+        ]
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "",
+            "containsItem": {
+              "publisher": "$global.account.account2.userId"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "publish",
+      "api": "ChatPresenceManager.publishPresence",
+      "params": {
+        "desc": "$global.biz.input.presenceDescription"
+      }
+    },
+    {
+      "id": "restore_presence",
+      "api": "ChatPresenceManager.publishPresence",
+      "params": {
+        "desc": "$inputs.desc"
+      }
+    },
+    {
+      "id": "verify_presence",
+      "api": "ChatPresenceManager.fetchPresenceStatus",
+      "params": {
+        "members": [
+          "$global.account.account2.userId"
+        ]
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "",
+            "containsItem": {
+              "publisher": "$global.account.account2.userId",
+              "statusDescription": "$global.biz.input.presenceDescription"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "logout",
+      "api": "ChatClient.logout",
+      "params": {
+        "unbindDeviceToken": true
+      }
+    }
+  ],
+  "requiredBindings": [
+    "global.biz.result.alice_init",
+    "global.biz.result.bob_init",
+    "global.biz.result.alice_login",
+    "global.biz.result.bob_login",
+    "global.biz.result.alice_connected",
+    "global.biz.result.bob_connected",
+    "global.biz.result.reset_subscription",
+    "global.biz.result.original",
+    "global.biz.result.subscription",
+    "global.biz.result.publication",
+    "global.biz.event.notification",
+    "global.biz.result.verification",
+    "global.biz.result.cleanup_subscription",
+    "global.biz.result.restoration",
+    "global.biz.result.alice_logout",
+    "global.biz.result.bob_logout"
+  ]
+}
