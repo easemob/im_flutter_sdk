@@ -106,7 +106,7 @@ hdc install build/ohos/hap/entry-default-unsigned.hap
 - nightly 的 5 个长期凭证：`E2E_APP_KEY`、`E2E_USER_ID`、`E2E_REST_API`、`E2E_CLIENT_ID`、`E2E_CLIENT_SECRET`；脚本调用 `example/tool/env_tool.dart e2e-config` 换取 app token + user token，写入 mode 600 的临时文件并在退出时删除。
 - 数据准备：`make config` 生成 `example/config.local.json`，填写后 `make env-gettoken` 生成 `example/lib/env.dart`（token 默认 24h 过期）。
 - 设备默认 `127.0.0.1:5555`，用 `OHOS_DEVICE` 覆盖；`OHOS_SKIP_CODESIGN` 默认 `1`。
-- 当前 CI（`.github/workflows/`）只有 Android/iOS 任务，没有 ohos job；鸿蒙验证走上述本机/设备入口。
+- 当前 CI（`.github/workflows/ci.yml`）：`quality`（质量门禁，ubuntu + 官方 Flutter 3.47.0 + run_quality.sh）与 `ohos-build`（ubuntu 云端 hap 构建，走 `tool/ci/setup_harmonyos_sdk.sh` + `tool/ci/setup_ohos_flutter.sh`，需要仓库变量 `OHOS_CLI_TOOLS_URL`/`OHOS_SDK_URL` 指向内部镜像的鸿蒙命令行工具/SDK）；push 触发仅限本长期分支。设备回归仍走上述本机/设备入口。
 
 ## 命名约定
 
