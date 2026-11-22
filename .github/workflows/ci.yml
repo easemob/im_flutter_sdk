@@ -137,6 +137,18 @@ jobs:
 
       - name: Build iOS example
         working-directory: im_flutter_sdk/example
+        # A cold SPM cache (first run after the cache key changes) must
+        # download the ShengwangInfra binary target from
+        # download.shengwang.cn, which has repeatedly timed out from GitHub
+        # runners. Retry a bounded number of times instead of failing the
+        # job on the first network flake; once a run succeeds the cache
+        # above makes the download unnecessary.
         run: |
-          flutter pub get
-          flutter build ios --simulator --debug --no-codesign
+          for attempt in 1 2 3; do
+            if flutter pub get && flutter build ios --simulator --debug --no-codesign; then
+              exit 0
+            fi
+            echo "iOS build attempt ${attempt} failed; retrying" >&2
+            sleep 15
+          done
+          exit 1
