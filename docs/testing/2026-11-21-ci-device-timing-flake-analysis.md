@@ -177,7 +177,15 @@ stable dispatch run 44746230976：
 
 ### 同轮 infra 事件（与用例无关，单独备忘）
 
-4.x Android 模拟器在 group suite 完成后**中途死亡**：`logged_in_user_info_test` 报 `Failed to start Dart Development Service`（0 用例执行），`conversation_config_test` 报 `no Android emulator online at emulator-5554`。该 job 显示 4/5 suite 失败，其中 2 个纯属环境事故，非用例失败；单次事件，另一 run 未复现，暂不升级，再出现再立案。
+4.x Android 模拟器在 group suite 完成后**中途死亡**：`logged_in_user_info_test` 报 `Failed to start Dart Development Service`（0 用例执行），`conversation_config_test` 报 `no Android emulator online at emulator-5554`。该 job 显示 4/5 suite 失败，其中 2 个纯属环境事故，非用例失败。
+
+**立案：问题 C（CI 基础设施类）——GitHub runner Android 模拟器/DDS 中途死亡**
+
+- **签名**：suite 加载报 `Failed to load ".../logged_in_XXX_test.dart": Failed to start Dart Development Service`，随后 `error: no Android emulator online at emulator-5554`，后续 suite 连锁 0 用例
+- **样本 1**：run 44908749663（4.x，2026-11-21 13:25 UTC），logged_in_user_info_test 触发，contact/conversation_config 连带
+- **样本 2**：run 44987228405（4.x，2026-11-22 04:56 UTC，job 137100349698），logged_in_contact_test 触发（`0 tests passed, 1 failed` + `unknown_batches=1`），user_info 报 `no Android emulator online` 连带，同 job 最终统计 `known_total=68 passed=66 failed=2 unknown_batches=2`
+- **定性**：runner 环境瞬态（模拟器进程或 adb 通道抖动），与分支代码、用例代码、账号均无关；4 天内 2 次，均落在 4.x Android logged-in job
+- **处置**：继续累积样本观察频率；若继续上升，给该 lane 的 suite 加载失败加单次重试（重跑单个 suite 成本低，重试整 job 30+ 分钟）。不影响用例判定基线：含此签名的 suite 失败不计入"同一用例连续 3 次失败"的升级线
 
 ### 判定
 
