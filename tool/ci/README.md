@@ -84,7 +84,7 @@ E2E_CONFIG_PATH=/绝对路径/e2e-config.json bash tool/ci/ohos_local.sh logged_
 
 ## 报告与日志在哪里
 
-每次执行生成带时间戳的目录，遵循与其他线一致的三类产物规范：集成套件产物在 `artifacts/ci/<时间戳>/harmony/<套件>/flutter.log`（设备侧完整输出），控制台过程日志在同目录 `artifacts/ci/<时间戳>/harmony/runner.log`。
+每次执行生成带时间戳的目录，遵循与其他线一致的三类产物规范：集成套件产物在 `artifacts/ci/<时间戳>/harmony/<套件>/flutter.log`（Dart 测试完整输出）与同目录 `hilog.log.gz`（该套件运行期间的鸿蒙 native 原始日志，经 hdc 采集，对应 Android 侧的 logcat 产物；iOS 无等价通道），控制台过程日志在上一级 `artifacts/ci/<时间戳>/harmony/runner.log`。
 
 先看 runner 输出确认构建与安装成功，再进各套件 flutter.log 定位失败用例；准备或构建失败不代表业务用例已执行。运行产物均被 Git 忽略。
 

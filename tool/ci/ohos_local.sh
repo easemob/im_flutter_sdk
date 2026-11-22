@@ -33,7 +33,10 @@
 # Run layout follows the shared three-category artifacts convention (same as
 # 4.x/5.x): one timestamp directory per invocation, platform directory below
 # it, one raw log directory per suite:
-#   artifacts/ci/<timestamp>/harmony/<suite>/flutter.log
+#   artifacts/ci/<timestamp>/harmony/<suite>/flutter.log   (Dart/test output)
+#   artifacts/ci/<timestamp>/harmony/<suite>/hilog.log.gz  (HarmonyOS native
+#     log captured via hdc, the counterpart of the Android logcat artifact;
+#     iOS has no equivalent channel)
 # plus artifacts/ci/<timestamp>/harmony/runner.log with the console output of
 # this script. Timestamped directories keep every run's raw logs; nothing is
 # overwritten by the next run.
@@ -132,6 +135,15 @@ for suite in "${SUITES[@]}"; do
   echo "=== $suite ==="
   suite_dir="$nightly_dir/$suite"
   mkdir -p "$suite_dir"
+  # Capture the HarmonyOS native log for this suite: clear the ring buffer,
+  # stream hilog in the background, stop after the test. Best effort — a
+  # missing hdc target must not fail the suite.
+  hilog_pid=""
+  if command -v hdc >/dev/null 2>&1; then
+    hdc -t "$OHOS_DEVICE" shell hilog -r >/dev/null 2>&1 || true
+    hdc -t "$OHOS_DEVICE" shell hilog > "$suite_dir/hilog.log" 2>/dev/null &
+    hilog_pid=$!
+  fi
   if OHOS_SKIP_CODESIGN="$OHOS_SKIP_CODESIGN" "$FLUTTER_BIN" test \
     "integration_test/${suite}_test.dart" \
     -d "$OHOS_DEVICE" \
@@ -143,6 +155,15 @@ for suite in "${SUITES[@]}"; do
     FAILED+=("$suite")
     echo "FAILED: $suite (see $suite_dir/flutter.log)"
     grep -E "\[E\]|Expected:|Actual:" "$suite_dir/flutter.log" | head -10 || true
+  fi
+  if [ -n "$hilog_pid" ]; then
+    kill "$hilog_pid" 2>/dev/null || true
+    wait "$hilog_pid" 2>/dev/null || true
+    if [ -s "$suite_dir/hilog.log" ]; then
+      gzip -f "$suite_dir/hilog.log"
+    else
+      rm -f "$suite_dir/hilog.log"
+    fi
   fi
 done
 
