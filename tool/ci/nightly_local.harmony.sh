@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# One-command local run of the HarmonyOS nightly suites. Mirrors
-# tool/ci/nightly_local.sh (android|ios) with the harmony platform added; the
-# android/ios entry is intentionally left untouched.
+# One-command local run of the HarmonyOS nightly suites. Harmony counterpart
+# of the 4.25.0 line's nightly_local.sh (which does not exist on this line).
 #
 # Callers never pass tokens (same contract as the 5.1.0 nightly entry): tokens
 # are short-lived, so the runner fetches them itself on every run from
@@ -38,11 +37,12 @@
 #   bash tool/ci/nightly_local.harmony.sh harmony logged_in_base logged_in_group
 #
 # Note: run `flutter pub get` with the harmony fork after any official-Flutter
-# run_quality/smoke run (the official pub get drops `plugins.ohos` from
+# run_quality run (the official pub get drops `plugins.ohos` from
 # example/.flutter-plugins-dependencies, which breaks the ohos hvigor build).
 #
-# Logs: artifacts/ci/<timestamp>/harmony/<suite>/flutter.log (written by
-# ohos_local.sh), console output in artifacts/ci/<timestamp>/harmony/runner.log.
+# Reports: artifacts/ci/<timestamp>/harmony/summary.md + report.json (merged),
+# per-suite raw logs in artifacts/ci/<timestamp>/harmony/<suite>/, console
+# output in artifacts/ci/<timestamp>/harmony/runner.log.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
