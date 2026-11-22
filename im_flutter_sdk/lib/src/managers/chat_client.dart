@@ -141,9 +141,25 @@ class ChatClient {
     }
   }
 
+  // The native SDK may forward server-pushed multi-device event codes that
+  // are not declared in the current version. Such events cannot be mapped to
+  // a public enum value, so they are dropped with an error log instead of
+  // crashing the platform channel handler.
+  ChatMultiDevicesEvent? _parseMultiDevicesEvent(Map map, String source) {
+    ChatMultiDevicesEvent? event =
+        convertIntToChatMultiDevicesEvent(map['event']);
+    if (event == null) {
+      ChatLog.e(
+        '$source: unknown multi-device event code: ${map['event']}, drop the event.',
+      );
+    }
+    return event;
+  }
+
   Future<void> _onMultiDeviceGroupEvent(Map map) async {
-    ChatMultiDevicesEvent event =
-        convertIntToChatMultiDevicesEvent(map['event'])!;
+    ChatMultiDevicesEvent? event =
+        _parseMultiDevicesEvent(map, 'onMultiDeviceGroupEvent');
+    if (event == null) return;
     String target = map['target'];
     List<String>? users = map.getList("userIds");
 
@@ -153,8 +169,9 @@ class ChatClient {
   }
 
   Future<void> _onMultiDeviceContactEvent(Map map) async {
-    ChatMultiDevicesEvent event =
-        convertIntToChatMultiDevicesEvent(map['event'])!;
+    ChatMultiDevicesEvent? event =
+        _parseMultiDevicesEvent(map, 'onMultiDeviceContactEvent');
+    if (event == null) return;
     String target = map['target'];
     String? ext = map['ext'];
 
@@ -172,8 +189,9 @@ class ChatClient {
   }
 
   Future<void> _onMultiDevicesConversationEvent(Map map) async {
-    ChatMultiDevicesEvent event =
-        convertIntToChatMultiDevicesEvent(map['event'])!;
+    ChatMultiDevicesEvent? event =
+        _parseMultiDevicesEvent(map, 'onMultiDevicesConversationEvent');
+    if (event == null) return;
     String convId = map['convId'];
     ChatConversationType type = ChatConversationType.values[map['convType']];
     for (var handler in _multiDeviceHandlers.values) {
