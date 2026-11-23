@@ -4,6 +4,7 @@
 - `loadAllConversations` forwards `isSort` to the native conversation API, defaulting to sorting.
 - Fixed group serialization omitting the top-level `ext` field, causing Dart `ChatGroup.extension` to return null even when group extension data existed.
 - Instantiated `ProgressManager` in `ClientIOS` so native group shared file download events on the `file_progress_manager` channel reach Dart.
+- Fixed `deleteContact` inverting the `keepConversation` behavior: the flag was passed straight to the native `isDeleteConversation` parameter, so conversations were deleted when they should have been retained and vice versa; the value is now negated to match the Dart contract.
 
 ## 5.0.0
 - Upgraded the iOS native SDK dependency to 5.0.0, keeping CocoaPods and SPM consistent;
