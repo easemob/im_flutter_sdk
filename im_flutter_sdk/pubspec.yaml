@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  im_flutter_sdk_interface: ^4.15.0+1
+  im_flutter_sdk_interface: ^5.1.0
 
   im_flutter_sdk_ios: 5.1.0
 
