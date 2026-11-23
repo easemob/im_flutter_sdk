@@ -15,6 +15,10 @@
 - Added the `isSort` parameter to `ChatManager.loadAllConversations`, defaulting to `true`; pass `false` to get the unsorted local conversation list.
 - Added `ChatGroupManager.downloadCallback` (`ChatDownloadCallback`) reporting group shared file download progress and terminal success/error events; `downloadGroupSharedFile`'s future completes when the download starts, and its final state is delivered through this callback.
 
+### Bug Fixes
+
+- iOS: Fixed `ChatContactManager.deleteContact` deleting the conversation when `keepConversation` was `true` and retaining it when `false`; the parameter now behaves as documented. Android was unaffected.
+
 ### Native SDK Improvements and Fixes
 
 The following changes are included through the native SDK 5.1.0 upgrade:
