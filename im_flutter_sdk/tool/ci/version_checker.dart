@@ -11,12 +11,14 @@ class VersionCheckResult {
     required this.flutterVersion,
     required this.androidNativeVersion,
     required this.iosNativeVersion,
+    required this.ohosNativeVersion,
   });
 
   final List<String> errors;
   final String flutterVersion;
   final String androidNativeVersion;
   final String iosNativeVersion;
+  final String ohosNativeVersion;
 }
 
 /// Checks the version invariants of the HarmonyOS-line release packages:
@@ -31,7 +33,10 @@ class VersionCheckResult {
 /// 3. native dependency versions are released independently of this repository, so **the patch
 ///    digit is never compared**: the release packages at `1.15.0-ohos` may depend on native
 ///    `4.25.x`, and the two iOS integration paths may differ in the patch digit (`4.25.0` against
-///    `4.25.1`), while a different major.minor line (4.24.1 against 4.25.0) is an error.
+///    `4.25.1`), while a different major.minor line (4.24.1 against 4.25.0) is an error;
+/// 4. the HarmonyOS chatsdk dependency in `im_flutter_sdk_ohos/ohos/oh-package.json5` stays on the
+///    release line's major.minor; before the ohpm release it may be a temporary local har
+///    (`file:./libs/chatsdk-x.y.z.har`), which carries the version in the file name.
 VersionCheckResult checkVersions(String repositoryRoot) {
   final errors = <String>[];
   final packageVersions = <String, String>{};
@@ -85,11 +90,29 @@ VersionCheckResult checkVersions(String repositoryRoot) {
     );
   }
 
+  // The HarmonyOS chatsdk dependency stays on the release line's major.minor. It is either a
+  // versioned ohpm dependency ("1.16.0") or, before the ohpm release, a temporary local har
+  // ("file:./libs/chatsdk-1.16.0.har"); both forms carry the version used for the comparison.
+  final ohosNativeVersion = _readMatch(
+    '$repositoryRoot/im_flutter_sdk_ohos/ohos/oh-package.json5',
+    RegExp(r'''"@easemob/chatsdk"\s*:\s*"[^"]*?(\d+\.\d+\.\d+)'''),
+    'HarmonyOS chatsdk version',
+    errors,
+  );
+  if (!_sameMajorMinor(flutterVersion, ohosNativeVersion)) {
+    errors.add(
+      'HarmonyOS chatsdk dependency mismatch: oh-package.json5 @easemob/chatsdk '
+      '$ohosNativeVersion is not on the same major.minor line as the release '
+      'packages $flutterVersion',
+    );
+  }
+
   return VersionCheckResult(
     errors: errors,
     flutterVersion: flutterVersion,
     androidNativeVersion: androidNativeVersion,
     iosNativeVersion: iosNativeVersion,
+    ohosNativeVersion: ohosNativeVersion,
   );
 }
 

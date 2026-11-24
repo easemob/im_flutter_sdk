@@ -34,4 +34,9 @@ void registerClientCases(ChatClient client) {
     expect(first, isNotEmpty);
     expect(await client.getCurrentDeviceId(), first);
   });
+
+  // 1.16.0
+  ciTestWidgets('FL-CLIENT-017 reports a connected state', (tester) async {
+    expect(await client.getConnectionState(), ChatConnectionState.connected);
+  });
 }

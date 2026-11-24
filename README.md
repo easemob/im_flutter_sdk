@@ -1,6 +1,6 @@
 # 环信 IM Flutter SDK
 
-环信即时通讯 IM 的 Flutter 插件仓库（当前 `ohos` 分支 = 鸿蒙线），Federated Plugin 架构。仓库共 5 个包，分两类：**2 个发布包**——主包 `im_flutter_sdk`（文件夹 `im_flutter_sdk/`，按 Git tag 分发）与 HarmonyOS 实现包 `im_flutter_sdk_ohos`（文件夹 `im_flutter_sdk_ohos/`，发布到 pub.dev），当前版本均为 `1.15.0-ohos`；**3 个复用包**——`im_flutter_sdk_interface`、`im_flutter_sdk_android`、`im_flutter_sdk_ios`，使用 pub.dev 已发布 **4.25.0**，**不发布新版本**。鸿蒙线主包只声明 HarmonyOS 平台，Android/iOS 使用 pub.dev 官方发布线；使用方只需依赖主包，实现包会被自动引入。
+环信即时通讯 IM 的 Flutter 插件仓库（当前 `ohos` 分支 = 鸿蒙线），Federated Plugin 架构。仓库共 5 个包，分两类：**2 个发布包**——主包 `im_flutter_sdk`（文件夹 `im_flutter_sdk/`，按 Git tag 分发）与 HarmonyOS 实现包 `im_flutter_sdk_ohos`（文件夹 `im_flutter_sdk_ohos/`，发布到 pub.dev），当前版本均为 `1.16.0-ohos`；**3 个复用包**——`im_flutter_sdk_interface`、`im_flutter_sdk_android`、`im_flutter_sdk_ios`，使用 pub.dev 已发布 **4.25.0**，**不发布新版本**。鸿蒙线主包只声明 HarmonyOS 平台，Android/iOS 使用 pub.dev 官方发布线；使用方只需依赖主包，实现包会被自动引入。
 
 ## 文档导航
 

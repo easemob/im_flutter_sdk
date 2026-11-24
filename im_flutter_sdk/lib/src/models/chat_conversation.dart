@@ -347,6 +347,55 @@ class ChatConversation {
     }
   }
 
+  // 1.16.0
+  /// ~english
+  /// Marks unread received messages whose timestamp is not later than the
+  /// specified time point as read.
+  ///
+  /// Only unread received messages are modified, and the unread count of the
+  /// conversation decreases accordingly. This is a local operation: no read
+  /// receipt is sent to the server.
+  ///
+  /// Param [timestamp] The specified time point (inclusive), a Unix timestamp
+  /// in milliseconds.
+  ///
+  /// **Return** Whether the operation succeeds:
+  /// - `false` if the timestamp is invalid or the database operation fails;
+  /// - otherwise, `true`.
+  ///
+  /// **Throws** A description of the exception. See [ChatError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 将会话中时间戳不晚于指定时间点的未读接收消息设置为已读。
+  ///
+  /// 只会修改未读的接收消息，会话的未读数会相应减少。该操作为本地操作，
+  /// 不会向服务器发送已读回执。
+  ///
+  /// Param [timestamp] 指定的时间点（包含该时间点的消息），Unix 时间戳，单位为毫秒。
+  ///
+  /// **Return** 消息是否设置成功：
+  /// - 若时间戳无效或数据库操作失败，返回 `false`；
+  /// - 否则，返回 `true`。
+  ///
+  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
+  /// ~end
+  Future<bool> markMessagesAsReadWithTimestamp(int timestamp) async {
+    try {
+      Map req = _toJson();
+      req['timestamp'] = timestamp;
+      Map result = await platform_interface.Client.instance.conversationManager
+          .callNativeMethod(
+        ChatMethodKeys.markMessagesAsReadWithTimestamp,
+        req,
+      );
+      ChatError.hasErrorFromResult(result);
+      return result.boolValue(ChatMethodKeys.markMessagesAsReadWithTimestamp);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// ~english
   /// Inserts a message to a conversation in the local database and the SDK will automatically update the last message.
   ///

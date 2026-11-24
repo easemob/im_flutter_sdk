@@ -1160,3 +1160,56 @@ extension ChatGroupPermissionTypeExtension on ChatGroupPermissionType {
     return ChatGroupPermissionType.values[type + 1];
   }
 }
+
+// 1.16.0
+/// ~english
+/// The connection state between the SDK and the chat server.
+///
+/// The values are strictly aligned with the native `ConnectionState` ordinals;
+/// do not insert or reorder.
+/// ~end
+///
+/// ~chinese
+/// SDK 与 Chat 服务器之间的连接状态枚举。
+///
+/// 数值与原生 `ConnectionState` 的 ordinal 严格对齐，不得插入或重排。
+/// ~end
+enum ChatConnectionState {
+  /// ~english
+  /// The SDK is not connected to the chat server.
+  ///
+  /// Covers the cases where the SDK is not initialized, the user is logged
+  /// out, or the connection is down. During the grace period of the deferred
+  /// disconnect notification, this state is also reported if the reconnection
+  /// has not started dialing yet.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 未连接。
+  ///
+  /// 包括 SDK 未初始化、已登出或连接已断开的情况。延迟断开通知的宽限期内，
+  /// 若重连尚未开始拨号，也返回该状态。
+  /// ~end
+  disconnected,
+
+  /// ~english
+  /// The SDK is connecting to the chat server, including automatic
+  /// reconnection dialing.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 连接中。
+  ///
+  /// SDK 正在与 Chat 服务器建立连接（包括自动重连拨号中）。
+  /// ~end
+  connecting,
+
+  /// ~english
+  /// The SDK is connected to the chat server.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 已连接。
+  /// ~end
+  connected,
+}

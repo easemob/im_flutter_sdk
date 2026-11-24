@@ -181,6 +181,9 @@ void registerEventCallbackCases(ChatClient client, CiRestFixture rest) {
         // ignore: deprecated_member_use
         onMemberJoinedFromGroup: (groupId, member) =>
             collector.record('group.onMemberJoinedFromGroup:$groupId:$member'),
+        onAutoAcceptInvitationFromGroup: (groupId, inviter, inviteMessage) =>
+            collector.record(
+                'group.onAutoAcceptInvitationFromGroup:$groupId:$inviter'),
       ),
     );
     addTearDown(() => client.groupManager.removeEventHandler(id));
@@ -193,10 +196,24 @@ void registerEventCallbackCases(ChatClient client, CiRestFixture rest) {
     );
     addTearDown(() => rest.deleteGroup(groupId));
 
+    // When the current user is added to a group directly via REST, the SDK
+    // delivers two callbacks (HIM-24345): onAutoAcceptInvitationFromGroup for
+    // the current user being added, and onMemberJoinedFromGroup only for
+    // other members (here the owner presence, member == ciPeerId). The
+    // member-joined callback never reports the current user itself.
     await collector.waitFor(
-      'FL-EVENT-205 group.onMemberJoinedFromGroup fires for the peer group',
+      'FL-EVENT-205 group.onAutoAcceptInvitationFromGroup fires when the current user is added',
+      (events) => events.any(
+        (event) =>
+            event.startsWith('group.onAutoAcceptInvitationFromGroup:$groupId:'),
+      ),
+      timeout: const Duration(seconds: 40),
+    );
+
+    await collector.waitFor(
+      'FL-EVENT-205 group.onMemberJoinedFromGroup fires for the group owner',
       (events) => events.contains(
-        'group.onMemberJoinedFromGroup:$groupId:$ciUserId',
+        'group.onMemberJoinedFromGroup:$groupId:$ciPeerId',
       ),
       timeout: const Duration(seconds: 40),
     );

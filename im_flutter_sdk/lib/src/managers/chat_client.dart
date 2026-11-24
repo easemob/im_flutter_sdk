@@ -403,6 +403,14 @@ class ChatClient {
   /// **Return** Whether the SDK is connected to the chat server.
   /// `true`: The SDK is connected to the chat server.
   /// `false`: The SDK is not connected to the chat server.
+  ///
+  /// Note: with disconnect notification smoothing enabled (see
+  /// [ChatOptions.disconnectNotifyThreshold]), this method returns `false`
+  /// during the grace period of a recoverable disconnect, while the app may
+  /// not have received the `onDisconnected` callback yet.
+  ///
+  /// Deprecated since 1.16.0. Use [getConnectionState] instead, which can
+  /// distinguish the "connecting" state.
   /// ~end
   ///
   /// ~chinese
@@ -410,6 +418,11 @@ class ChatClient {
   /// **Return** SDK 是否连接到 Chat 服务器。
   /// - `true`：是；
   /// - `false`：否。
+  ///
+  /// 注意：开启断连平滑（见 [ChatOptions.disconnectNotifyThreshold]）后，
+  /// 可恢复断开的宽限期内该方法返回 `false`，但 App 可能尚未收到 `onDisconnected` 回调。
+  ///
+  /// 自 1.16.0 起废弃，请改用 [getConnectionState]，可区分"连接中"状态。
   /// ~end
   Future<bool> isConnected() async {
     try {
@@ -418,6 +431,43 @@ class ChatClient {
       );
       ChatError.hasErrorFromResult(result);
       return result.boolValue(ChatMethodKeys.isConnected);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // 1.16.0
+  /// ~english
+  /// Gets the connection state between the SDK and the chat server.
+  ///
+  /// Unlike [isConnected], this method can distinguish the "connecting" state.
+  /// During the grace period of the deferred disconnect notification, it
+  /// returns [ChatConnectionState.disconnected] if the reconnection has not
+  /// started dialing yet, and [ChatConnectionState.connecting] once dialing
+  /// starts.
+  ///
+  /// **Return** The current connection state. Returns
+  /// [ChatConnectionState.disconnected] when the SDK is not initialized.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取 SDK 与 Chat 服务器之间的连接状态。
+  ///
+  /// 与 [isConnected] 不同，该方法可区分"连接中"状态。
+  /// 延迟断开通知的宽限期内，若重连尚未开始拨号，返回 [ChatConnectionState.disconnected]；
+  /// 重连开始拨号后返回 [ChatConnectionState.connecting]。
+  ///
+  /// **Return** 当前连接状态。SDK 未初始化时返回 [ChatConnectionState.disconnected]。
+  /// ~end
+  Future<ChatConnectionState> getConnectionState() async {
+    try {
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.getConnectionState,
+      );
+      ChatError.hasErrorFromResult(result);
+      final state = result[ChatMethodKeys.getConnectionState];
+      return ChatConnectionState.values[
+          state is int ? state : ChatConnectionState.disconnected.index];
     } catch (e) {
       rethrow;
     }

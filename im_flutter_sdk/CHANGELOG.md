@@ -1,3 +1,43 @@
+## 1.16.0-ohos
+
+### 中文
+
+原生基线升级为 HarmonyOS `@easemob/chatsdk` 1.16.0（平版 native 4.26.1 开发基线）。chatsdk 1.16.0 尚未发布到 ohpm，临时以本地 har（`im_flutter_sdk_ohos/ohos/libs/chatsdk-1.16.0.har`）接入，ohpm 发布后改回版本号依赖。
+
+**新增**（chatsdk 1.16.0 原生新增能力的 Dart 平版）
+
+- `ChatClient.getConnectionState`：获取 SDK 与服务器的连接状态，新增枚举 `ChatConnectionState`（`disconnected` / `connecting` / `connected`，数值与原生 ordinal 对齐），可区分"连接中"状态；`isConnected` 自本版本起在文档中标记废弃；
+- `ChatOptions.disconnectNotifyThreshold`：断开连接通知的时间阈值（秒），原生默认 `10`；小于等于 `0` 关闭断开通知平滑；为 `null` 时不下发，使用原生默认值；
+- 断开通知平滑（原生行为）：可恢复错误（如网络波动）导致的断开按阈值延迟回调 `onDisconnected`，阈值内恢复连接则不通知；致命错误（如被踢下线）立即回调；
+- `ChatConversation.markMessagesAsReadWithTimestamp`：将会话中时间戳不晚于指定时间的未读接收消息置为已读；本地操作，不发送已读回执，未读数相应扣减；
+- `ChatOptions.usePushInBackground`：退后台且已绑定推送 token 时，SDK 延迟 10 秒主动断连，期间消息通过离线推送送达，回前台自动重连，默认关闭；
+- 连接监听注册回放（原生行为）：`addConnectionListener` 注册时异步回放一次当前连接状态（已连接回调 `onConnected`；已登录未连接回调 `onDisconnected(NETWORK_ERROR)`）。
+
+**修复**（随原生 1.16.0 获得）
+
+- 修复流式消息后续分片未整表覆盖本地 ext 的问题；
+- 修复聊天室跨登录会话 join/leave 竞态问题；
+- 修复自动登录/重连时 host 列表耗尽直接登出的问题，改为刷新 DNS 退避重连（HIM-24079）。
+
+### English
+
+The native baseline is upgraded to HarmonyOS `@easemob/chatsdk` 1.16.0 (ported from the native 4.26.1 development baseline). chatsdk 1.16.0 is not yet published on ohpm; it is temporarily integrated as a local har (`im_flutter_sdk_ohos/ohos/libs/chatsdk-1.16.0.har`) and will switch back to a versioned ohpm dependency once published.
+
+**Added** (Dart porting of the new chatsdk 1.16.0 native capabilities)
+
+- `ChatClient.getConnectionState`: returns the SDK connection state via the new `ChatConnectionState` enum (`disconnected` / `connecting` / `connected`, aligned with the native ordinals), distinguishing the "connecting" state; `isConnected` is marked as deprecated in the documentation from this release;
+- `ChatOptions.disconnectNotifyThreshold`: the time threshold (in seconds) for the disconnect notification, natively defaulting to `10`; a value less than or equal to `0` disables disconnect-notification smoothing; when `null`, it is not sent and the native default applies;
+- Disconnect-notification smoothing (native behavior): recoverable errors (such as network fluctuations) defer the `onDisconnected` callback within the threshold, and no notification is sent if the connection recovers in time; fatal errors (such as being kicked offline) call back immediately;
+- `ChatConversation.markMessagesAsReadWithTimestamp`: marks unread received messages whose timestamp is not later than the specified time as read; a local operation that sends no read receipt and reduces the unread count accordingly;
+- `ChatOptions.usePushInBackground`: when the app moves to the background with a push token bound, the SDK proactively disconnects after a 10-second delay, delivers messages through offline push, and reconnects on returning to the foreground; disabled by default;
+- Connection-state replay on registration (native behavior): `addConnectionListener` asynchronously replays the current connection state once upon registration (`onConnected` when connected; `onDisconnected(NETWORK_ERROR)` when logged in but not connected).
+
+**Fixed** (inherited from native 1.16.0)
+
+- Fixed stream-message subsequent chunks not overwriting the local ext table;
+- Fixed a chat room join/leave race across login sessions;
+- Fixed direct logout on host list exhaustion during auto-login/reconnect; now refreshes DNS and reconnects with backoff (HIM-24079).
+
 ## 1.15.0-ohos
 
 ### 中文

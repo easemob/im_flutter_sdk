@@ -63,6 +63,8 @@ export default class ConversationWrapper extends Wrapper {
       this.markAllMessagesAsRead(call, result);
     } else if (MethodKey.markMessageAsRead === call.method) {
       this.markMessageAsRead(call, result);
+    } else if (MethodKey.markMessagesAsReadWithTimestamp === call.method) {
+      this.markMessagesAsReadWithTimestamp(call, result);
     } else if (MethodKey.syncConversationExt === call.method) {
       this.syncConversationExt(call, result);
     } else if (MethodKey.removeMessage === call.method) {
@@ -175,6 +177,21 @@ export default class ConversationWrapper extends Wrapper {
       this.onSuccess(result, call.method, true);
     } catch (e) {
       this.onErrorInfo(result, ChatError.GENERAL_ERROR, `markMessageAsRead failed: ${JSON.stringify(e)}`);
+    }
+  }
+
+  // 1.16.0
+  private markMessagesAsReadWithTimestamp(call: MethodCall, result: MethodResult): void {
+    let conversation = this.requireConversation(call, result);
+    if (conversation === undefined) {
+      return;
+    }
+    let timestamp = SafetyMapTool.getNumber(call.args, 'timestamp') ?? 0;
+    try {
+      let success = conversation.markMessagesAsReadWithTimestamp(timestamp);
+      this.onSuccess(result, call.method, success);
+    } catch (e) {
+      this.onErrorInfo(result, ChatError.GENERAL_ERROR, `markMessagesAsReadWithTimestamp failed: ${JSON.stringify(e)}`);
     }
   }
 

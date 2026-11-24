@@ -128,6 +128,77 @@ channel.callNativeMethod(ChatMethodKeys.updateHMSPushToken);
       expect(checkContracts(fixture.path), isEmpty);
     });
   });
+
+  group('MethodChannel contract checker (HarmonyOS line)', () {
+    late Directory fixture;
+
+    setUp(() {
+      fixture = Directory.systemTemp.createTempSync('flutter-contracts-ohos-');
+      _writeOhosFixture(fixture);
+    });
+
+    tearDown(() {
+      fixture.deleteSync(recursive: true);
+    });
+
+    test('accepts matching constants and registered routes', () {
+      expect(checkContracts(fixture.path), isEmpty);
+    });
+
+    test('reports a key missing from the ArkTS constants', () {
+      File('${fixture.path}/ohos/MethodKeys.ets').writeAsStringSync('''
+export default class MethodKey {
+  static readonly login: string = "login";
+}
+''');
+
+      expect(
+        checkContracts(fixture.path),
+        contains('Method key mismatch: logout dart=logout ohos=<missing>'),
+      );
+    });
+
+    test('reports a method missing from an ArkTS route', () {
+      File('${fixture.path}/ohos/ClientWrapper.ets').writeAsStringSync('''
+override onMethodCall(call: MethodCall, result: MethodResult): void {
+  if (MethodKey.login === call.method) {}
+}
+''');
+
+      expect(
+        checkContracts(fixture.path),
+        contains('HarmonyOS route missing: logout'),
+      );
+    });
+  });
+}
+
+void _writeOhosFixture(Directory fixture) {
+  Directory('${fixture.path}/dart').createSync(recursive: true);
+  Directory('${fixture.path}/ohos').createSync(recursive: true);
+
+  File('${fixture.path}/dart/chat_method_keys.dart').writeAsStringSync('''
+abstract final class ChatMethodKeys {
+  static const String login = 'login';
+  static const String logout = 'logout';
+}
+''');
+  File('${fixture.path}/dart/client.dart').writeAsStringSync('''
+Future<void> login() => channel.callNativeMethod(ChatMethodKeys.login);
+Future<void> logout() => channel.callNativeMethod(ChatMethodKeys.logout);
+''');
+  File('${fixture.path}/ohos/MethodKeys.ets').writeAsStringSync('''
+export default class MethodKey {
+  static readonly login: string = "login";
+  static readonly logout: string = "logout";
+}
+''');
+  File('${fixture.path}/ohos/ClientWrapper.ets').writeAsStringSync('''
+override onMethodCall(call: MethodCall, result: MethodResult): void {
+  if (MethodKey.login === call.method) {}
+  if (MethodKey.logout === call.method) {}
+}
+''');
 }
 
 void _writeFixture(Directory fixture) {

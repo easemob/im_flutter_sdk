@@ -4,7 +4,7 @@
 
 ## 说明
 
-- 原生层基于 HarmonyOS native chatsdk [`@easemob/chatsdk`](https://ohpm.openharmony.cn/) `1.15.0`，用 ArkTS 编写 Wrapper，通过 `com.chat.im/*` MethodChannel 与 Dart 侧通信。
+- 原生层基于 HarmonyOS native chatsdk [`@easemob/chatsdk`](https://ohpm.openharmony.cn/) `1.16.0`，用 ArkTS 编写 Wrapper，通过 `com.chat.im/*` MethodChannel 与 Dart 侧通信。
 - `pubspec.yaml` 中声明 `implements: im_flutter_sdk`；主包的 `flutter.plugin.platforms.ohos.default_package` 指向本包。**使用方只需依赖 `im_flutter_sdk`，接口包与本包会被自动引入，无需显式添加。** interface 为 pub.dev 已发布 4.25.0（复用，不随本线发版）；本包发布到 pub.dev 后，主包才能按版本号解析。
 - 目录结构：`lib/` 为 Dart 侧插件入口（`ClientOhos`），`ohos/` 为 ArkTS 实现与 `@easemob/chatsdk` 依赖声明（`oh-package.json5`）。
 
@@ -27,7 +27,7 @@
 
 ## 版本
 
-版本号与主包严格一致，当前 `1.15.0-ohos`（semver 预发布形式，跟随 native HarmonyOS chatsdk `1.15.0`，1.x 规则）。依赖 `im_flutter_sdk_interface ^4.25.0`（pub.dev 已发布，复用，不发布新版本）。本包发布到 pub.dev，主包按精确版本自动引入。
+版本号与主包严格一致，当前 `1.16.0-ohos`（semver 预发布形式，跟随 native HarmonyOS chatsdk `1.16.0`，1.x 规则）。依赖 `im_flutter_sdk_interface ^4.25.0`（pub.dev 已发布，复用，不发布新版本）。本包发布到 pub.dev，主包按精确版本自动引入。
 
 ## 相关文档
 

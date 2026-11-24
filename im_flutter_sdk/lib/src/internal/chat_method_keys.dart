@@ -12,6 +12,7 @@ class ChatMethodKeys {
   static const String getCurrentUser = "getCurrentUser";
   static const String getCurrentDeviceId = "getCurrentDeviceId";
   static const String isConnected = "isConnected";
+  static const String getConnectionState = "getConnectionState";
 
   /// ChatClient listener
   static const String onMultiDeviceGroupEvent = "onMultiDeviceGroupEvent";
@@ -35,6 +36,7 @@ class ChatMethodKeys {
   static const String onSendDataToFlutter = "onSendDataToFlutter";
   static const String onTokenWillExpire = "onTokenWillExpire";
   static const String onTokenDidExpire = "onTokenDidExpire";
+
   /// ChatContactManager methods
   static const String addContact = "addContact";
   static const String deleteContact = "deleteContact";
@@ -140,6 +142,8 @@ class ChatMethodKeys {
   static const String getUnreadMsgCount = "getUnreadMsgCount";
   static const String markAllMessagesAsRead = "markAllMessagesAsRead";
   static const String markMessageAsRead = "markMessageAsRead";
+  static const String markMessagesAsReadWithTimestamp =
+      "markMessagesAsReadWithTimestamp";
   static const String syncConversationExt = "syncConversationExt";
   static const String removeMessage = "removeMessage";
   static const String getLatestMessage = "getLatestMessage";
