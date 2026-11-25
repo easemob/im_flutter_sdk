@@ -8,7 +8,6 @@ The Flutter plugin for EaseMob IM, built on the Federated Plugin architecture. W
 |---|---|
 | Android | API 21 (Android 5.0) |
 | iOS | 13.0 |
-| HarmonyOS | See [HarmonyOS Support](#harmonyos-support) below |
 
 Environment requirements: Flutter >= 3.3.0, Dart >= 3.3.0 and < 4.0.0.
 
@@ -138,20 +137,6 @@ void dispose() {
 ## Example App
 
 The `example/` directory in the repository provides a visual API testing app that covers initialization, login, and invocation of common APIs with result viewing. It can be used as an integration reference and for feature verification.
-
-## HarmonyOS Support
-
-HarmonyOS is provided through a separate plugin. It requires the HarmonyOS version of Flutter (`https://gitee.com/harmonycommando_flutter/flutter`). Add the following to your `pubspec.yaml`:
-
-```yaml
-im_flutter_sdk: ^4.13.0
-im_flutter_sdk_ohos:
-  git:
-    url: "https://github.com/easemob/im_flutter_sdk_oh.git"
-    ref: 1.5.3
-```
-
-For the latest `ref`, see [im_flutter_sdk_oh releases](https://github.com/easemob/im_flutter_sdk_oh/releases).
 
 ## More Resources
 
