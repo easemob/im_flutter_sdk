@@ -2,7 +2,7 @@
 
 ### 中文
 
-原生基线升级为 HarmonyOS `@easemob/chatsdk` 1.16.0（平版 native 4.26.1 开发基线）。chatsdk 1.16.0 尚未发布到 ohpm，临时以本地 har（`im_flutter_sdk_ohos/ohos/libs/chatsdk-1.16.0.har`）接入，ohpm 发布后改回版本号依赖。
+原生基线升级为 HarmonyOS `@easemob/chatsdk` 1.16.0（平版 native 4.26.1 开发基线），以 ohpm 版本号依赖接入。
 
 **新增**（chatsdk 1.16.0 原生新增能力的 Dart 平版）
 
@@ -21,7 +21,7 @@
 
 ### English
 
-The native baseline is upgraded to HarmonyOS `@easemob/chatsdk` 1.16.0 (ported from the native 4.26.1 development baseline). chatsdk 1.16.0 is not yet published on ohpm; it is temporarily integrated as a local har (`im_flutter_sdk_ohos/ohos/libs/chatsdk-1.16.0.har`) and will switch back to a versioned ohpm dependency once published.
+The native baseline is upgraded to HarmonyOS `@easemob/chatsdk` 1.16.0 (ported from the native 4.26.1 development baseline), integrated as a versioned ohpm dependency.
 
 **Added** (Dart porting of the new chatsdk 1.16.0 native capabilities)
 

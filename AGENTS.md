@@ -36,7 +36,7 @@
 - 3 个复用包：`im_flutter_sdk_interface`、`im_flutter_sdk_android`、`im_flutter_sdk_ios` 使用 pub.dev 已发布的 **4.25.0**，**不发布新版本**，不参与发布包版本一致性检查；发布包依赖 interface `^4.25.0`。
 - 版本号采用 semver 预发布形式 `1.16.0-ohos` 标识鸿蒙线（低于稳定版 `1.16.0`，不会与官方线混淆）；不能写 `ohos-1.16.0`（pub 要求以 `X.Y.Z` 开头）。
 - 版本号跟随 HarmonyOS native chatsdk（`@easemob/chatsdk`）：native 1.16.0 对应 Flutter `1.16.0-ohos`；采用 1.x 规则，不再使用 4.x 版本号。
-- chatsdk 1.16.0 尚未发布到 ohpm，`im_flutter_sdk_ohos/ohos/oh-package.json5` 临时以 `file:./libs/chatsdk-1.16.0.har` 本地 har 接入（har 随仓库提交）；ohpm 发布后改回版本号依赖并删除本地 har，不要反向"修复"这个 file 依赖。
+- chatsdk 1.16.0 已发布到 ohpm，`im_flutter_sdk_ohos/ohos/oh-package.json5` 使用版本号依赖 `"@easemob/chatsdk": "1.16.0"`；新版本 chatsdk 未上架 ohpm 的过渡期可临时以 `file:./libs/chatsdk-x.y.z.har` 本地 har 接入（har 随仓库提交），上架后改回版本号依赖并删除本地 har。
 - 发布顺序：先发布实现包 `im_flutter_sdk_ohos 1.16.0-ohos` 到 pub.dev，再打主包 Git tag `1.16.0-ohos`；主包不进 pub.dev（官方同名包已占据 latest，且预发布版本更低）。
 - Android/iOS 使用 pub.dev 官方发布线（4.25.0 / 5.0.0），不随本仓库鸿蒙线发布。
 - Dart API 与 Flutter 4.25.0 线对齐：`ChatClient` + 8 个 Manager（会话、消息、群组、聊天室、联系人、用户属性、推送、在线状态）。

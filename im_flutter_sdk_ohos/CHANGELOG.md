@@ -2,7 +2,7 @@
 
 ### 中文
 
-随主包 `1.16.0-ohos` 一起发布，原生基线升级为 `@easemob/chatsdk` 1.16.0（平版 native 4.26.1 开发基线）。chatsdk 1.16.0 尚未发布到 ohpm，临时以本地 har（`ohos/libs/chatsdk-1.16.0.har`）接入，ohpm 发布后改回版本号依赖并删除本地 har。
+随主包 `1.16.0-ohos` 一起发布，原生基线升级为 `@easemob/chatsdk` 1.16.0（平版 native 4.26.1 开发基线），以 ohpm 版本号依赖接入。
 
 **新增**（chatsdk 1.16.0 新能力的 wrapper 平版，详见主包 CHANGELOG）
 
@@ -13,7 +13,7 @@
 
 ### English
 
-Shipped together with the main package `1.16.0-ohos`; the native baseline is upgraded to `@easemob/chatsdk` 1.16.0 (ported from the native 4.26.1 development baseline). chatsdk 1.16.0 is not yet published on ohpm; it is temporarily integrated as a local har (`ohos/libs/chatsdk-1.16.0.har`) and will switch back to a versioned ohpm dependency with the local har removed once published.
+Shipped together with the main package `1.16.0-ohos`; the native baseline is upgraded to `@easemob/chatsdk` 1.16.0 (ported from the native 4.26.1 development baseline), integrated as a versioned ohpm dependency.
 
 **Added** (wrapper porting of the new chatsdk 1.16.0 capabilities; see the main package CHANGELOG for details)
 
