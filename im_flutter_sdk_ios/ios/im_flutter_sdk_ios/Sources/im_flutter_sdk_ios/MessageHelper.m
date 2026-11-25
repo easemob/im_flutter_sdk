@@ -41,6 +41,10 @@
         if (!msg) {
             return nil;
         }
+        // The multi-body initializer takes current user as sender and the
+        // conversation ID as recipient, so restore the explicit from/to here.
+        msg.from = from;
+        msg.to = to;
     } else {
         EMMessageBody *body = [EMMessageBody fromJson:aJson[@"body"]];
         if (!body) {
