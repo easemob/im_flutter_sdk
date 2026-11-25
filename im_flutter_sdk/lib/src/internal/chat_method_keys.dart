@@ -17,6 +17,9 @@ class ChatMethodKeys {
   static const String getCurrentDeviceId = "getCurrentDeviceId";
   static const String isConnected = "isConnected";
 
+  // 5.2.0
+  static const String getConnectionState = "getConnectionState";
+
   /// ChatClient listener
   static const String onMultiDeviceGroupEvent = "onMultiDeviceGroupEvent";
   static const String onMultiDeviceContactEvent = "onMultiDeviceContactEvent";

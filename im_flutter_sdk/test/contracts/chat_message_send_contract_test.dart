@@ -64,6 +64,14 @@ void main() {
         'content': 'hello',
         'targetLanguages': <String>['zh-Hans', 'en'],
       },
+      // 5.2.0: the full ordered body list is sent alongside the first body.
+      'bodies': <Map<String, Object>>[
+        <String, Object>{
+          'type': MessageType.TXT.index,
+          'content': 'hello',
+          'targetLanguages': <String>['zh-Hans', 'en'],
+        },
+      ],
       'attributes': <String, Object>{
         'trace': 'trace-001',
         'retry': 2,

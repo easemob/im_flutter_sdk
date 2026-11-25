@@ -81,7 +81,8 @@ Future<void> loginForCi(ChatClient client, String userId, String token) async {
       'CI connected after data sync',
       () async {
         if (syncFailure != null) throw syncFailure!;
-        return client.isConnected();
+        final state = await client.getConnectionState();
+        return state == ChatConnectionState.connected;
       },
       (connected) => connected,
       timeout: remaining(),

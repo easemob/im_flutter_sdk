@@ -14,9 +14,20 @@ final clientApis = <ApiEntry>[
   ApiEntry(
     name: 'ChatClient.isConnected',
     group: 'ChatClient',
-    description: '检查当前 SDK 连接状态。',
+    description: '检查当前 SDK 连接状态。5.2.0 起废弃，请使用 ChatClient.getConnectionState。',
     paramsTemplate: '{}',
+    // ignore: deprecated_member_use
     invoke: (_) => ChatClient.getInstance.isConnected(),
+  ),
+  ApiEntry(
+    name: 'ChatClient.getConnectionState',
+    group: 'ChatClient',
+    description: '获取 SDK 三态连接状态（5.2.0 新增）：0 已连接/1 未连接/2 连接中。',
+    paramsTemplate: '{}',
+    invoke: (_) async {
+      final state = await ChatClient.getInstance.getConnectionState();
+      return {'state': state.index, 'name': state.name};
+    },
   ),
   ApiEntry(
     name: 'ChatClient.loginWithToken',

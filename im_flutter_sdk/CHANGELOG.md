@@ -1,3 +1,18 @@
+## 5.2.0
+
+- Upgraded the iOS/Android native SDKs to 5.2.0 and 5.2.1.
+
+### New Features
+
+- Added `ChatClient.getConnectionState()` returning the three-state `ChatConnectionState` (`connected` / `disconnected` / `connecting`); `ChatClient.isConnected()` is deprecated in favor of it.
+- Added `ChatOptions.disconnectNotifyThreshold` (default 10 seconds): the grace period before the SDK invokes the disconnect callback for recoverable disconnects; a value less than or equal to 0 disables the delay.
+- Added multi-body (composite) message support: `ChatMessage.bodies` exposes the complete ordered body list, `ChatMessage.appendBody` appends a body before sending, `ChatMessage.createMultiBodySendMessage` creates a composite message, and `ChatMessage.contentType` reports `MessageType.MULTIBODY` for messages with multiple bodies. Attachment upload and download progress for composite messages is aggregated at the message level.
+
+### Documentation
+
+- Corrected the `ChatOptions.enableChatroomConversation` documentation to match the native 5.2.0 semantics: it controls whether chat room conversations are included in the local conversation list; it does not control the creation or storage of chat room conversations, nor does it affect chat room message delivery.
+- Documented the multi-body behavior of `ChatManager.sendMessage`, `downloadAttachment`, `downloadThumbnail`, and `downloadBigImage`.
+
 ## 5.1.0
 
 - Upgraded the iOS/Android native SDKs to 5.1.0.

@@ -73,8 +73,11 @@ void registerConversationSyncCase({
       expect(
           await client.getCurrentUserId().timeout(const Duration(seconds: 10)),
           isNull);
-      expect(await client.isConnected().timeout(const Duration(seconds: 10)),
-          isFalse);
+      expect(
+          await client
+              .getConnectionState()
+              .timeout(const Duration(seconds: 10)),
+          ChatConnectionState.disconnected);
       debugPrint('CI FL-AUTH-007 cleanup verified: logged out');
     });
 
@@ -86,7 +89,8 @@ void registerConversationSyncCase({
           'finishes=$finished',
           budget);
     });
-    if (!await client.isConnected().timeout(remaining())) {
+    if ((await client.getConnectionState().timeout(remaining())) !=
+        ChatConnectionState.connected) {
       await connected.future.timeout(remaining());
     }
     expect(started, isNotEmpty);
@@ -96,7 +100,8 @@ void registerConversationSyncCase({
     expect(syncErrors, isEmpty,
         reason:
             'Explicit conversation synchronization must finish without error');
-    expect(await client.isConnected().timeout(remaining()), isTrue);
+    expect(await client.getConnectionState().timeout(remaining()),
+        ChatConnectionState.connected);
     expect(await client.getCurrentUserId().timeout(remaining()), userId);
     debugPrint(
         'CI FL-AUTH-007 verify passed: explicit conversation sync mask=1; '

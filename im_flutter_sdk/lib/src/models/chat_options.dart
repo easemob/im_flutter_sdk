@@ -356,16 +356,34 @@ class ChatOptions {
   final bool autoLoadConversations;
 
   /// ~english
-  /// Whether to create a conversation when chatroom messages are sent or received.
-  /// Defaults to `false`. This setting only takes effect during initialization.
+  /// Whether to include chat room conversations when the SDK gets the local conversation list.
+  ///
+  /// Defaults to `false`. This setting does not control the creation or storage of chat room conversations, and does not affect the sending and receiving of chat room messages. It only takes effect during initialization.
   /// ~end
   ///
   /// ~chinese
-  /// 是否在收发聊天室消息时创建对应的聊天室会话。
-  /// 默认为 `false`，仅在初始化时设置生效。
+  /// 获取本地会话列表时是否包含聊天室会话。
+  ///
+  /// 默认为 `false`。该设置不控制聊天室会话的创建或存储，也不影响聊天室消息的正常收发，仅在初始化时设置生效。
   /// ~end
   // 5.1.0
   final bool enableChatroomConversation;
+
+  // 5.2.0
+
+  /// ~english
+  /// The grace period, in seconds, for delaying the [ConnectionEventHandler.onDisconnected] callback when the connection between the SDK and the chat server is interrupted but recoverable.
+  ///
+  /// Defaults to `10`. A value less than or equal to `0` disables the delay, and the callback is fired immediately when the disconnection occurs.
+  /// This setting only takes effect during initialization.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 当 SDK 与聊天服务器之间的连接发生可恢复的断开时，延迟触发 [ConnectionEventHandler.onDisconnected] 回调的宽限时间，单位为秒。
+  ///
+  /// 默认为 `10`。小于或等于 `0` 时表示关闭延迟，断开连接后立即触发回调。仅在初始化时设置生效。
+  /// ~end
+  final int disconnectNotifyThreshold;
 
   /// ~english
   ///  Custom device name.
@@ -569,7 +587,9 @@ class ChatOptions {
   ///
   /// Param [autoLoadConversations] Whether to automatically load conversations. Defaults to `true`. Set to `false` to use [ChatManager.getConversationsFromDB].
   ///
-  /// Param [enableChatroomConversation] Whether to create conversations for chatroom messages. Defaults to `false`.
+  /// Param [enableChatroomConversation] Whether to include chat room conversations in the local conversation list. Defaults to `false`. It does not control the creation or storage of chat room conversations, nor does it affect the sending and receiving of chat room messages.
+  ///
+  /// Param [disconnectNotifyThreshold] The grace period, in seconds, for delaying the disconnection callback when the connection is recoverable. Defaults to `10`. A value less than or equal to `0` disables the delay.
   ///
   /// Param [deviceName] Custom device name.
   ///
@@ -666,7 +686,9 @@ class ChatOptions {
   ///
   /// Param [autoLoadConversations] 是否自动加载会话，默认为 `true`。使用 [ChatManager.getConversationsFromDB] 时需设为 `false`。
   ///
-  /// Param [enableChatroomConversation] 是否为聊天室消息创建会话，默认为 `false`。
+  /// Param [enableChatroomConversation] 获取本地会话列表时是否包含聊天室会话，默认为 `false`。不控制聊天室会话的创建或存储，也不影响聊天室消息的正常收发。
+  ///
+  /// Param [disconnectNotifyThreshold] 连接发生可恢复断开时延迟断开回调的宽限秒数，默认为 `10`。小于或等于 `0` 表示关闭延迟。
   ///
   /// Param [deviceName] 自定义设备名称。
   ///
@@ -712,6 +734,7 @@ class ChatOptions {
     bool enableEmptyConversation = false,
     bool autoLoadConversations = true,
     bool enableChatroomConversation = false,
+    int disconnectNotifyThreshold = 10,
     String? deviceName,
     int? osType,
     bool useReplacedMessageContents = false,
@@ -750,6 +773,7 @@ class ChatOptions {
           enableEmptyConversation: enableEmptyConversation,
           autoLoadConversations: autoLoadConversations,
           enableChatroomConversation: enableChatroomConversation,
+          disconnectNotifyThreshold: disconnectNotifyThreshold,
           deviceName: deviceName,
           osType: osType,
           useReplacedMessageContents: useReplacedMessageContents,
@@ -841,7 +865,9 @@ class ChatOptions {
   ///
   /// Param [autoLoadConversations] Whether to automatically load conversations. Defaults to `true`. Set to `false` to use [ChatManager.getConversationsFromDB].
   ///
-  /// Param [enableChatroomConversation] Whether to create conversations for chatroom messages. Defaults to `false`.
+  /// Param [enableChatroomConversation] Whether to include chat room conversations in the local conversation list. Defaults to `false`. It does not control the creation or storage of chat room conversations, nor does it affect the sending and receiving of chat room messages.
+  ///
+  /// Param [disconnectNotifyThreshold] The grace period, in seconds, for delaying the disconnection callback when the connection is recoverable. Defaults to `10`. A value less than or equal to `0` disables the delay.
   ///
   /// Param [deviceName] Custom device name.
   ///
@@ -938,7 +964,9 @@ class ChatOptions {
   ///
   /// Param [autoLoadConversations] 是否自动加载会话，默认为 `true`。使用 [ChatManager.getConversationsFromDB] 时需设为 `false`。
   ///
-  /// Param [enableChatroomConversation] 是否为聊天室消息创建会话，默认为 `false`。
+  /// Param [enableChatroomConversation] 获取本地会话列表时是否包含聊天室会话，默认为 `false`。不控制聊天室会话的创建或存储，也不影响聊天室消息的正常收发。
+  ///
+  /// Param [disconnectNotifyThreshold] 连接发生可恢复断开时延迟断开回调的宽限秒数，默认为 `10`。小于或等于 `0` 表示关闭延迟。
   ///
   /// Param [deviceName] 自定义设备名称。
   ///
@@ -984,6 +1012,7 @@ class ChatOptions {
     bool enableEmptyConversation = false,
     bool autoLoadConversations = true,
     bool enableChatroomConversation = false,
+    int disconnectNotifyThreshold = 10,
     String? deviceName,
     int? osType,
     bool useReplacedMessageContents = false,
@@ -1022,6 +1051,7 @@ class ChatOptions {
           enableEmptyConversation: enableEmptyConversation,
           autoLoadConversations: autoLoadConversations,
           enableChatroomConversation: enableChatroomConversation,
+          disconnectNotifyThreshold: disconnectNotifyThreshold,
           deviceName: deviceName,
           osType: osType,
           useReplacedMessageContents: useReplacedMessageContents,
@@ -1114,7 +1144,9 @@ class ChatOptions {
   ///
   /// Param [autoLoadConversations] Whether to automatically load conversations. Defaults to `true`. Set to `false` to use [ChatManager.getConversationsFromDB].
   ///
-  /// Param [enableChatroomConversation] Whether to create conversations for chatroom messages. Defaults to `false`.
+  /// Param [enableChatroomConversation] Whether to include chat room conversations in the local conversation list. Defaults to `false`. It does not control the creation or storage of chat room conversations, nor does it affect the sending and receiving of chat room messages.
+  ///
+  /// Param [disconnectNotifyThreshold] The grace period, in seconds, for delaying the disconnection callback when the connection is recoverable. Defaults to `10`. A value less than or equal to `0` disables the delay.
   ///
   /// Param [deviceName] Custom device name.
   ///
@@ -1211,7 +1243,9 @@ class ChatOptions {
   ///
   /// Param [autoLoadConversations] 是否自动加载会话，默认为 `true`。使用 [ChatManager.getConversationsFromDB] 时需设为 `false`。
   ///
-  /// Param [enableChatroomConversation] 是否为聊天室消息创建会话，默认为 `false`。
+  /// Param [enableChatroomConversation] 获取本地会话列表时是否包含聊天室会话，默认为 `false`。不控制聊天室会话的创建或存储，也不影响聊天室消息的正常收发。
+  ///
+  /// Param [disconnectNotifyThreshold] 连接发生可恢复断开时延迟断开回调的宽限秒数，默认为 `10`。小于或等于 `0` 表示关闭延迟。
   ///
   /// Param [deviceName] 自定义设备名称。
   ///
@@ -1257,6 +1291,7 @@ class ChatOptions {
     bool enableEmptyConversation = false,
     bool autoLoadConversations = true,
     bool enableChatroomConversation = false,
+    int disconnectNotifyThreshold = 10,
     String? deviceName,
     int? osType,
     bool useReplacedMessageContents = false,
@@ -1294,6 +1329,7 @@ class ChatOptions {
           enableEmptyConversation: enableEmptyConversation,
           autoLoadConversations: autoLoadConversations,
           enableChatroomConversation: enableChatroomConversation,
+          disconnectNotifyThreshold: disconnectNotifyThreshold,
           deviceName: deviceName,
           osType: osType,
           useReplacedMessageContents: useReplacedMessageContents,
@@ -1335,6 +1371,7 @@ class ChatOptions {
     this.enableEmptyConversation = false,
     this.autoLoadConversations = true,
     this.enableChatroomConversation = false,
+    this.disconnectNotifyThreshold = 10,
     this.deviceName,
     this.osType,
     this.useReplacedMessageContents = false,
@@ -1415,6 +1452,9 @@ class ChatOptions {
     data.putIfNotNull('autoLoadConversations', autoLoadConversations);
     data.putIfNotNull('enableChatroomConversation', enableChatroomConversation);
 
+    // 5.2.0
+    data['disconnectNotifyThreshold'] = disconnectNotifyThreshold;
+
     return data;
   }
 
@@ -1437,19 +1477,22 @@ class ChatOptions {
   /// ~english
   /// Copies these options with the specified values replaced.
   /// Param [autoLoadConversations] Whether to automatically load conversations.
-  /// Param [enableChatroomConversation] Whether to create conversations for chatroom messages.
-  /// These two options must be configured before SDK initialization.
+  /// Param [enableChatroomConversation] Whether to include chat room conversations in the local conversation list.
+  /// Param [disconnectNotifyThreshold] The grace period, in seconds, for delaying the disconnection callback when the connection is recoverable.
+  /// These options must be configured before SDK initialization.
   /// ~end
   ///
   /// ~chinese
   /// 复制配置并替换指定的值。
   /// Param [autoLoadConversations] 是否自动加载会话。
-  /// Param [enableChatroomConversation] 是否为聊天室消息创建会话。
-  /// 这两个配置项必须在 SDK 初始化前设置。
+  /// Param [enableChatroomConversation] 获取本地会话列表时是否包含聊天室会话。
+  /// Param [disconnectNotifyThreshold] 连接发生可恢复断开时延迟断开回调的宽限秒数。
+  /// 这些配置项必须在 SDK 初始化前设置。
   /// ~end
   ChatOptions copyWith({
     bool? autoLoadConversations,
     bool? enableChatroomConversation,
+    int? disconnectNotifyThreshold,
     bool? usingHttpsOnly,
     String? loginExtension,
     bool? deleteMessageWhenLeaveRoom,
@@ -1498,6 +1541,8 @@ class ChatOptions {
           autoLoadConversations ?? this.autoLoadConversations,
       enableChatroomConversation:
           enableChatroomConversation ?? this.enableChatroomConversation,
+      disconnectNotifyThreshold:
+          disconnectNotifyThreshold ?? this.disconnectNotifyThreshold,
       deviceName: deviceName,
       osType: osType,
       useReplacedMessageContents: useReplacedMessageContents,

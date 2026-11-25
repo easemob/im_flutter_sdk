@@ -386,8 +386,12 @@ class ChatClient {
     }
   }
 
+  @Deprecated('Use getConnectionState instead.')
+
   /// ~english
   /// Checks whether the SDK is connected to the chat server.
+  ///
+  /// Deprecated. Use [getConnectionState] instead.
   ///
   /// **Return** Whether the SDK is connected to the chat server.
   /// `true`: The SDK is connected to the chat server.
@@ -396,6 +400,9 @@ class ChatClient {
   ///
   /// ~chinese
   /// 检查 SDK 是否连接到 Chat 服务器。
+  ///
+  /// 已废弃，请使用 [getConnectionState]。
+  ///
   /// **Return** SDK 是否连接到 Chat 服务器。
   /// - `true`：是；
   /// - `false`：否。
@@ -407,6 +414,42 @@ class ChatClient {
       );
       ChatError.hasErrorFromResult(result);
       return result.boolValue(ChatMethodKeys.isConnected);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // 5.2.0
+
+  /// ~english
+  /// Gets the current connection state between the SDK and the chat server.
+  ///
+  /// **Return** The connection state. See [ChatConnectionState].
+  /// - [ChatConnectionState.connected]: The SDK is connected to the chat server.
+  /// - [ChatConnectionState.disconnected]: The SDK is disconnected from the chat server.
+  /// - [ChatConnectionState.connecting]: The SDK is connecting to the chat server.
+  ///
+  /// **Throws** A description of the exception. See [ChatError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取 SDK 与聊天服务器的当前连接状态。
+  ///
+  /// **Return** 连接状态，详见 [ChatConnectionState]。
+  /// - [ChatConnectionState.connected]：已连接；
+  /// - [ChatConnectionState.disconnected]：已断开；
+  /// - [ChatConnectionState.connecting]：正在连接。
+  ///
+  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [ChatError]。
+  /// ~end
+  Future<ChatConnectionState> getConnectionState() async {
+    try {
+      Map result = await platform_interface.Client.instance.callNativeMethod(
+        ChatMethodKeys.getConnectionState,
+      );
+      ChatError.hasErrorFromResult(result);
+      return ChatConnectionState
+          .values[result[ChatMethodKeys.getConnectionState]];
     } catch (e) {
       rethrow;
     }

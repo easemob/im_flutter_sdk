@@ -274,13 +274,87 @@ class ChatMessage {
   List<String>? receiverList;
 
   /// ~english
-  /// Message body. See [ChatMessageBody].
+  /// The first message body of the message. See [ChatMessageBody].
+  ///
+  /// A message can contain multiple bodies, see [bodies]. This property is always consistent with the first element of [bodies]: setting it replaces the first body, or inserts the body when the message has no bodies yet.
   /// ~end
   ///
   /// ~chinese
-  /// 消息体。请参见 [ChatMessageBody]。
+  /// 消息的首个消息体。请参见 [ChatMessageBody]。
+  ///
+  /// 一条消息可以包含多个消息体，详见 [bodies]。该属性始终与 [bodies] 的首元素保持一致：赋值时会替换首个消息体；当消息尚无消息体时，赋值的消息体将成为首个消息体。
   /// ~end
-  late ChatMessageBody body;
+  ChatMessageBody get body => _bodies.first;
+
+  set body(ChatMessageBody value) {
+    if (_bodies.isEmpty) {
+      _bodies.add(value);
+    } else {
+      _bodies[0] = value;
+    }
+  }
+
+  // 5.2.0
+
+  /// The ordered list of message bodies, which is the single source of truth for [body] and [contentType].
+  final List<ChatMessageBody> _bodies;
+
+  /// ~english
+  /// The complete ordered list of message bodies. See [ChatMessageBody].
+  ///
+  /// The first element is [body]. The list contains a single body for a regular single-body message.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 完整有序的消息体列表。请参见 [ChatMessageBody]。
+  ///
+  /// 列表首元素即 [body]。普通的单消息体消息列表长度为 1。
+  /// ~end
+  List<ChatMessageBody> get bodies => List.unmodifiable(_bodies);
+
+  /// ~english
+  /// The content type of the message, computed locally in real time according to the message bodies. See [MessageType].
+  ///
+  /// - If the message contains multiple bodies, [MessageType.MULTIBODY] is returned.
+  /// - If the message contains a single body, the type of that body is returned.
+  /// - If the message contains no bodies, [MessageType.TXT] is returned as a fallback.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 消息的内容类型，根据消息体在本地实时计算。详见 [MessageType]。
+  ///
+  /// - 消息包含多个消息体时返回 [MessageType.MULTIBODY]；
+  /// - 消息包含单个消息体时返回该消息体的类型；
+  /// - 消息不包含任何消息体时兜底返回 [MessageType.TXT]。
+  /// ~end
+  MessageType get contentType {
+    if (_bodies.length > 1) {
+      return MessageType.MULTIBODY;
+    }
+    if (_bodies.length == 1) {
+      return _bodies.first.type;
+    }
+    return MessageType.TXT;
+  }
+
+  /// ~english
+  /// Appends a message body to the end of the ordered body list of the message.
+  ///
+  /// Call this method before sending the message.
+  ///
+  /// Param [body] The message body to append. See [ChatMessageBody].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 在消息的有序消息体列表末尾追加一个消息体。
+  ///
+  /// 请在发送消息前调用该方法。
+  ///
+  /// Param [body] 要追加的消息体。请参见 [ChatMessageBody]。
+  /// ~end
+  void appendBody(ChatMessageBody body) {
+    _bodies.add(body);
+  }
 
   /// ~english
   /// Whether the message gets delivered to an online user.
@@ -373,7 +447,7 @@ class ChatMessage {
     _priority = priority;
   }
 
-  ChatMessage._private();
+  ChatMessage._private() : _bodies = [];
 
   /// ~english
   /// Creates a received message instance.
@@ -395,9 +469,9 @@ class ChatMessage {
   /// **Return** 消息实例。
   /// ~end
   ChatMessage.createReceiveMessage({
-    required this.body,
+    required ChatMessageBody body,
     this.chatType = ChatType.Chat,
-  }) {
+  }) : _bodies = [body] {
     onlineState = true;
     direction = MessageDirection.RECEIVE;
   }
@@ -432,10 +506,11 @@ class ChatMessage {
   /// **Return** 消息对象。
   /// ~end
   ChatMessage.createSendMessage({
-    required this.body,
+    required ChatMessageBody body,
     this.to,
     this.chatType = ChatType.Chat,
-  })  : from = ChatClient.getInstance.currentUserId,
+  })  : _bodies = [body],
+        from = ChatClient.getInstance.currentUserId,
         conversationId = to {
     _isRead = true;
     direction = MessageDirection.SEND;
@@ -971,11 +1046,77 @@ class ChatMessage {
           ),
         );
 
+  // 5.2.0
+
+  /// ~english
+  /// Creates a multi-body message for sending.
+  ///
+  /// Param [targetId] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the user ID of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
+  ///
+  /// Param [bodies] The ordered list of message bodies. It cannot be empty. See [ChatMessageBody].
+  ///
+  /// Param [chatType] The chat type. The default chat type is one-to-one chat. For the group chat or chat room, see [ChatType].
+  ///
+  /// Param [ext] The extension attributes of the message.
+  ///
+  /// **Return** The message instance.
+  ///
+  /// **Throws** An [ArgumentError] if [bodies] is empty.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 创建一条待发送的多消息体消息。
+  ///
+  /// Param [targetId] 消息接收方，可以是：
+  /// - 用户：用户 ID；
+  /// - 群组：群组 ID；
+  /// - 聊天室：聊天室 ID。
+  ///
+  /// Param [bodies] 有序的消息体列表，不能为空。请参见 [ChatMessageBody]。
+  ///
+  /// Param [chatType] 聊天类型，默认为单聊，如果是群聊或者聊天室，可以参考 [ChatType]。
+  ///
+  /// Param [ext] 消息的扩展字段。
+  ///
+  /// **Return** 消息实例。
+  ///
+  /// **Throws** 如果 [bodies] 为空，抛出 [ArgumentError]。
+  /// ~end
+  factory ChatMessage.createMultiBodySendMessage({
+    required String targetId,
+    required List<ChatMessageBody> bodies,
+    ChatType chatType = ChatType.Chat,
+    Map<String, dynamic>? ext,
+  }) {
+    if (bodies.isEmpty) {
+      throw ArgumentError.value(
+        bodies,
+        'bodies',
+        'The message body list cannot be empty.',
+      );
+    }
+    final message = ChatMessage.createSendMessage(
+      to: targetId,
+      chatType: chatType,
+      body: bodies.first,
+    );
+    for (final body in bodies.skip(1)) {
+      message.appendBody(body);
+    }
+    message.attributes = ext;
+    return message;
+  }
+
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data.putIfNotNull("from", from);
     data.putIfNotNull("to", to);
     data.putIfNotNull("body", body.toJson());
+    // 5.2.0
+    data.putIfNotNull("bodies", _bodies.map((e) => e.toJson()).toList());
     data.putIfNotNull("attributes", attributes);
     data.putIfNotNull("direction", direction.index);
     data.putIfNotNull("isRead", isRead);
@@ -1007,7 +1148,7 @@ class ChatMessage {
     return ChatMessage._private()
       ..to = map["to"]
       ..from = map["from"]
-      ..body = _bodyFromMap(map["body"])!
+      .._setBodiesFromMap(map)
       ..attributes = map.getMapValue("attributes")
       ..direction = MessageDirection
           .values[map["direction"] ?? MessageDirection.SEND.index]
@@ -1036,6 +1177,26 @@ class ChatMessage {
       ..senderInfo = map["senderInfo"] != null
           ? ChatMessageSenderInfo.fromJson(map["senderInfo"])
           : null;
+  }
+
+  // 5.2.0
+
+  /// Deserializes the message bodies from the channel map.
+  ///
+  /// Prefers the full ordered body list under the `bodies` key and falls back
+  /// to the single body under the legacy `body` key when the list is absent.
+  void _setBodiesFromMap(Map<String, dynamic> map) {
+    final list = map["bodies"];
+    if (list is List && list.isNotEmpty) {
+      for (final item in list) {
+        final body = _bodyFromMap(item as Map);
+        if (body != null) {
+          _bodies.add(body);
+        }
+      }
+    } else {
+      body = _bodyFromMap(map["body"])!;
+    }
   }
 
   static ChatMessageBody? _bodyFromMap(Map map) {
@@ -1068,6 +1229,10 @@ class ChatMessage {
         break;
       case MessageType.COMBINE:
         body = CombineMessageBody.fromJson(map: map);
+        break;
+      // 5.2.0
+      // MULTIBODY is a message-level marker, never a concrete body type.
+      case MessageType.MULTIBODY:
         break;
     }
 

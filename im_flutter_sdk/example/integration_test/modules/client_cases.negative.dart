@@ -10,7 +10,7 @@ void registerLoggedOutClientNegativeCases({required ChatClient client}) {
   Future<void> expectLoggedOut() async {
     expect(client.currentUserId, isNull);
     expect(await client.getCurrentUserId(), isNull);
-    expect(await client.isConnected(), isFalse);
+    expect(await client.getConnectionState(), ChatConnectionState.disconnected);
   }
 
   // Test: Call loginWithToken with an empty user ID while logged out.
@@ -49,10 +49,11 @@ void registerClientNegativeCases({
       'FL-AUTH-006 negative rejects login of the already logged in user',
       (_) async {
     expect(await client.getCurrentUserId(), userId);
-    expect(await client.isConnected(), isTrue);
+    expect(await client.getConnectionState(), ChatConnectionState.connected);
     addTearDown(() async {
       if (await client.getCurrentUserId() != userId ||
-          !await client.isConnected()) {
+          (await client.getConnectionState()) !=
+              ChatConnectionState.connected) {
         await client.logout(false);
         await loginForCi(client, userId, token);
       }
@@ -60,6 +61,6 @@ void registerClientNegativeCases({
     await expectCiError(() => client.loginWithToken(userId, token), 200);
     expect(client.currentUserId, userId);
     expect(await client.getCurrentUserId(), userId);
-    expect(await client.isConnected(), isTrue);
+    expect(await client.getConnectionState(), ChatConnectionState.connected);
   });
 }

@@ -23,6 +23,8 @@ static NSString *const ChatGetToken = @"getToken";
 static NSString *const ChatGetCurrentUser = @"getCurrentUser";
 static NSString *const ChatGetCurrentDeviceId = @"getCurrentDeviceId";
 static NSString *const ChatIsConnected = @"isConnected";
+// 5.2.0
+static NSString *const ChatGetConnectionState = @"getConnectionState";
 
 static NSString *const ChatOnMultiDeviceGroupEvent = @"onMultiDeviceGroupEvent";
 static NSString *const ChatOnMultiDeviceContactEvent = @"onMultiDeviceContactEvent";

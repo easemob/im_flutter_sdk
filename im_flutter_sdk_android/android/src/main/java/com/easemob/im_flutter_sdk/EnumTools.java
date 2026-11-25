@@ -31,6 +31,8 @@ public class EnumTools {
         return EMChatThreadEvent.TYPE.values()[iType];
     }
 
+    // 5.2.0: MULTIBODY is appended at the end of EMMessage.Type (ordinal 9), so the
+    // ordinal-based mapping already covers the channel value 9 for multi-body messages.
     static int messageBodyTypeToInt(@NonNull EMMessage.Type type) {
         return type.ordinal();
     }

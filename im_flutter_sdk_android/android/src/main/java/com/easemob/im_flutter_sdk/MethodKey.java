@@ -17,6 +17,8 @@ public class MethodKey {
     static final String getCurrentUser = "getCurrentUser";
     static final String getCurrentDeviceId = "getCurrentDeviceId";
     static final String isConnected = "isConnected";
+    // 5.2.0
+    static final String getConnectionState = "getConnectionState";
 
     static final String onConnected = "onConnected";
     static final String onDisconnected = "onDisconnected";

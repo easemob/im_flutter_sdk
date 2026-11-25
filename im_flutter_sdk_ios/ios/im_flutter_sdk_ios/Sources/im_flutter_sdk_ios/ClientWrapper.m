@@ -142,6 +142,13 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
               channelName:call.method
                    result:result];
     }
+    // 5.2.0
+    else if([ChatGetConnectionState isEqualToString:call.method])
+    {
+        [self getConnectionState:call.arguments
+                     channelName:call.method
+                          result:result];
+    }
     else if ([ChatRenewToken isEqualToString:call.method]){
         [self renewToken:call.arguments
              channelName:call.method
@@ -464,6 +471,26 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
                   channelName:aChannelName
                         error:nil
                        object:@(EMClient.sharedClient.isConnected)];
+}
+
+// 5.2.0
+- (void)getConnectionState:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+    NSInteger state;
+    switch (EMClient.sharedClient.connectionState) {
+        case EMConnectionConnected:
+            state = 0;
+            break;
+        case EMConnectionDisconnected:
+            state = 1;
+            break;
+        case EMConnectionConnecting:
+            state = 2;
+            break;
+    }
+    [self wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:@(state)];
 }
 
 - (void)renewToken:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{

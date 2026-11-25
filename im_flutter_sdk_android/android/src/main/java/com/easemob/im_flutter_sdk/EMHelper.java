@@ -137,6 +137,10 @@ class OptionsHelper {
         if (json.has("dataSyncType") && !json.isNull("dataSyncType")) {
             options.setDataSyncType(EMOptions.EMDataSyncType.fromNativeMask(json.getInt("dataSyncType")));
         }
+        // 5.2.0
+        if (json.has("disconnectNotifyThreshold") && !json.isNull("disconnectNotifyThreshold")) {
+            options.setDisconnectNotifyThreshold(json.getInt("disconnectNotifyThreshold"));
+        }
         // 4.24.0
         if (json.has("ntpServers")) {
             List<String> ntpServers = new ArrayList<>();
@@ -329,7 +333,21 @@ class MessageHelper {
         EMMessageBody body = MessageBodyHelper.fromJson(bodyJson);
         EMMessage.Type type = EnumTools.messageBodyTypeFromInt(bodyJson.getInt("type"));
         EMMessage.Direct direct = EnumTools.messageDirectFromInt(json.getInt("direction"));
-        if (direct == EMMessage.Direct.SEND) {
+        // 5.2.0: "bodies" carries the complete ordered body list for multi-body messages.
+        List<EMMessageBody> bodies = null;
+        if (json.has("bodies")) {
+            JSONArray bodiesJson = json.getJSONArray("bodies");
+            bodies = new ArrayList<>();
+            for (int i = 0; i < bodiesJson.length(); i++) {
+                bodies.add(MessageBodyHelper.fromJson(bodiesJson.getJSONObject(i)));
+            }
+        }
+        if (bodies != null && bodies.size() > 1) {
+            // 5.2.0: create the message with the full ordered bodies; the remaining fields
+            // are applied by the shared flow below, same as the single-body path.
+            message = EMMessage.createMultiBodySendMessage(json.getString("to"), bodies);
+        }
+        else if (direct == EMMessage.Direct.SEND) {
             switch (type) {
                 case TXT: {
                     message = EMMessage.createSendMessage(Type.TXT);
@@ -419,7 +437,11 @@ class MessageHelper {
                 message.setDirection(EMMessage.Direct.RECEIVE);
             }
         }
-        message.setBody(body);
+        // 5.2.0: the multi-body path already carries its bodies; setBody applies to the
+        // single-body path only.
+        if (bodies == null || bodies.size() <= 1) {
+            message.setBody(body);
+        }
         if (json.has("to")) {
             message.setTo(json.getString("to"));
         }
@@ -535,7 +557,19 @@ class MessageHelper {
                 data.put("body", MessageBodyHelper.combineBodyToJson((EMCombineMessageBody) message.getBody()));
             }
                 break;
+            // 5.2.0: a multi-body message still exposes its first body through "body".
+            case MULTIBODY: {
+                data.put("body", SearchServerMessageResultHelper.bodyToJson(message.getBody()));
+            }
+                break;
         }
+
+        // 5.2.0: emit the complete ordered body list next to "body" (the first body above).
+        List<Map<String, Object>> bodiesData = new ArrayList<>();
+        for (EMMessageBody msgBody : message.getBodies()) {
+            bodiesData.add(SearchServerMessageResultHelper.bodyToJson(msgBody));
+        }
+        data.put("bodies", bodiesData);
 
         if (message.ext().size() > 0 && null != message.ext()) {
             data.put("attributes", message.ext());

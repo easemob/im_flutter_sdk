@@ -15,12 +15,6 @@
 
 + (EMChatMessage *)fromJson:(NSDictionary *)aJson
 {
-    EMMessageBody *body = [EMMessageBody fromJson:aJson[@"body"]];
-    if (!body) {
-        return nil;
-    }
-    
-    
     NSString *from = aJson[@"from"];
     if (from.length == 0) {
         from = EMClient.sharedClient.currentUsername;
@@ -29,13 +23,35 @@
     NSString *to = aJson[@"to"];
     NSString *conversationId = aJson[@"convId"];
     
-
-    
-    EMChatMessage *msg = [[EMChatMessage alloc] initWithConversationID:conversationId
-                                                          from:from
-                                                            to:to
-                                                          body:body
-                                                           ext:nil];
+    EMChatMessage *msg = nil;
+    // 5.2.0: a "bodies" array denotes a multi-body message; otherwise fall back
+    // to the original single "body" path.
+    NSArray *bodiesJson = aJson[@"bodies"];
+    if ([bodiesJson isKindOfClass:[NSArray class]] && bodiesJson.count > 0) {
+        NSMutableArray<EMMessageBody *> *bodies = [NSMutableArray array];
+        for (NSDictionary *bodyJson in bodiesJson) {
+            EMMessageBody *aBody = [EMMessageBody fromJson:bodyJson];
+            if (aBody) {
+                [bodies addObject:aBody];
+            }
+        }
+        msg = [[EMChatMessage alloc] initWithConversationID:conversationId
+                                                     bodies:bodies
+                                                        ext:aJson[@"attributes"]];
+        if (!msg) {
+            return nil;
+        }
+    } else {
+        EMMessageBody *body = [EMMessageBody fromJson:aJson[@"body"]];
+        if (!body) {
+            return nil;
+        }
+        msg = [[EMChatMessage alloc] initWithConversationID:conversationId
+                                                       from:from
+                                                         to:to
+                                                       body:body
+                                                        ext:nil];
+    }
     if (aJson[@"msgId"]) {
         msg.messageId = aJson[@"msgId"];
     }
@@ -89,6 +105,13 @@
     ret[@"direction"] = [NSNumber numberWithInteger:[EnumTools messageDirectToInt:self.direction]];
     ret[@"isThread"] = @(self.isChatThreadMessage);
     ret[@"body"] = [self.body toJson];
+    // 5.2.0: full ordered body list; "body" above stays the first body for
+    // backward compatibility. Each element reuses the per-type toJson dispatch.
+    NSMutableArray *bodiesJson = [NSMutableArray array];
+    for (EMMessageBody *aBody in self.bodies) {
+        [bodiesJson addObject:[aBody toJson]];
+    }
+    ret[@"bodies"] = bodiesJson;
     ret[@"onlineState"] = @(self.onlineState);
     ret[@"deliverOnlineOnly"] = @(self.deliverOnlineOnly);
     ret[@"receiverList"] = self.receiverList;

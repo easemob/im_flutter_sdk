@@ -73,7 +73,11 @@ void main() {
                 .getCurrentUserId()
                 .timeout(const Duration(seconds: 10)),
             isNull);
-        await waitForCi('SDK disconnected after logout', client.isConnected,
+        await waitForCi(
+            'SDK disconnected after logout',
+            () async =>
+                (await client.getConnectionState()) ==
+                ChatConnectionState.connected,
             (connected) => !connected);
         debugPrint('CI group suite cleanup: verified');
       }

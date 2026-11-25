@@ -1,3 +1,7 @@
+## 5.2.0
+
+- Synchronized the federated package version to 5.2.0; the existing MethodChannel interface is unchanged.
+
 ## 5.1.0
 - Synchronized the federated package version to 5.1.0; the existing MethodChannel interface is unchanged.
 - Wired the `file_progress_manager` MethodChannel through `ProgressManager` and exposed it as `Client.progressManager`, so native group shared file download events reach the upper layer.

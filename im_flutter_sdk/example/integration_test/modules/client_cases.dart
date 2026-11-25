@@ -77,7 +77,9 @@ Future<void> _waitForConnection(
   final elapsed = Stopwatch()..start();
   bool? actual;
   while (elapsed.elapsed < budget) {
-    actual = await client.isConnected().timeout(budget - elapsed.elapsed);
+    actual =
+        (await client.getConnectionState().timeout(budget - elapsed.elapsed)) ==
+            ChatConnectionState.connected;
     if (actual == connected) return;
     await Future<void>.delayed(const Duration(milliseconds: 100));
   }

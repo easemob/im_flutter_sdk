@@ -1,3 +1,10 @@
+## 5.2.0
+
+- Upgraded the native dependency to 5.2.1.
+- Added the `getConnectionState` method channel, mapping the native `EMConnectionState` explicitly to the Dart `ChatConnectionState` indexes.
+- Mapped the `disconnectNotifyThreshold` option during initialization.
+- Message serialization now round-trips the ordered `bodies` list; multi-body messages are built with `EMMessage.createMultiBodySendMessage`.
+
 ## 5.1.0
 
 - Upgraded the native dependency to 5.1.0.

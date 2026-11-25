@@ -49,8 +49,12 @@ void main() {
     if (initialized) {
       await client.logout(false).timeout(const Duration(seconds: 30));
       expect(await client.getCurrentUserId(), isNull);
-      await waitForCi('User info suite disconnected after logout',
-          client.isConnected, (connected) => !connected);
+      await waitForCi(
+          'User info suite disconnected after logout',
+          () async =>
+              (await client.getConnectionState()) ==
+              ChatConnectionState.connected,
+          (connected) => !connected);
     }
   });
 

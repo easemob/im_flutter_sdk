@@ -79,6 +79,10 @@ class ChatSearchServerMessageResult {
       case MessageType.COMBINE:
         body = CombineMessageBody.fromJson(map: map);
         break;
+      // 5.2.0
+      // MULTIBODY is a message-level marker, never a concrete body type.
+      case MessageType.MULTIBODY:
+        break;
     }
 
     return body;

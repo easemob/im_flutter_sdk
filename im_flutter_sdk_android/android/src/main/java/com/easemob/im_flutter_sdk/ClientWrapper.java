@@ -20,6 +20,7 @@ import com.hyphenate.EMConnectionListener;
 import com.hyphenate.EMError;
 import com.hyphenate.EMMultiDeviceListener;
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMConnectionState;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMLoginExtensionInfo;
 import com.hyphenate.chat.EMOptions;
@@ -111,6 +112,10 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
             }
             else if (MethodKey.isConnected.equals(call.method)) {
                 isConnected(param, call.method, result);
+            }
+            // 5.2.0
+            else if (MethodKey.getConnectionState.equals(call.method)) {
+                getConnectionState(param, call.method, result);
             }
             else if (MethodKey.renewToken.equals(call.method)){
                 renewToken(param, call.method, result);
@@ -244,6 +249,25 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
     private void isConnected(JSONObject param, String channelName, Result result) throws JSONException{
         asyncRunnable(()-> onSuccess(result, channelName, EMClient.getInstance().isConnected()));
+    }
+
+    // 5.2.0
+    private void getConnectionState(JSONObject param, String channelName, Result result) throws JSONException{
+        asyncRunnable(()-> onSuccess(result, channelName, connectionStateToInt(EMClient.getInstance().getConnectionState())));
+    }
+
+    // 5.2.0: the channel values (connected=0, disconnected=1, connecting=2) are ordered
+    // differently from the native EMConnectionState ordinals, so map them explicitly.
+    private static int connectionStateToInt(EMConnectionState state) {
+        switch (state) {
+            case CONNECTED:
+                return 0;
+            case CONNECTING:
+                return 2;
+            case DISCONNECTED:
+            default:
+                return 1;
+        }
     }
 
     private void compressLogs(JSONObject param, String channelName, Result result) throws JSONException {

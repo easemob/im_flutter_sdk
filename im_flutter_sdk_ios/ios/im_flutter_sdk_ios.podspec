@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'im_flutter_sdk_ios'
-  s.version          = '5.1.0'
+  s.version          = '5.2.0'
   s.summary          = 'A new flutter plugin project.'
   s.description      = <<-DESC
 A new flutter plugin project.
@@ -17,7 +17,7 @@ A new flutter plugin project.
   s.public_header_files = 'im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/include/im_flutter_sdk_ios/**/*.h'
 
   s.dependency 'Flutter'
-  s.dependency 'HyphenateChat','5.1.0'
+  s.dependency 'HyphenateChat','5.2.0'
   # s.dependency 'ShengwangChat_iOS','1.3.2'
   # Local framework is commented out; use the CocoaPods dependency
   # s.ios.vendored_frameworks = 'framework/HyphenateChat.xcframework', 'framework/aosl.xcframework'

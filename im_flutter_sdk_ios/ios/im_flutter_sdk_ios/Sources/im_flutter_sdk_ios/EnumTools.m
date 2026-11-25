@@ -37,6 +37,10 @@
         case EMMessageBodyTypeCombine:
             return 8;
             break;
+        // 5.2.0
+        case EMMessageBodyTypeMultiBody:
+            return 9;
+            break;
         default:
             break;
     }
@@ -71,6 +75,10 @@
             break;
         case 8:
             return EMMessageBodyTypeCombine;
+            break;
+        // 5.2.0
+        case 9:
+            return EMMessageBodyTypeMultiBody;
             break;
         default:
             break;

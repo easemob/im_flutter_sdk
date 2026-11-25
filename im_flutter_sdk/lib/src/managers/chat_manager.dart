@@ -285,6 +285,8 @@ class ChatManager {
   ///
   /// To listen for the status of sending messages, call [ChatManager.addMessageEvent].
   ///
+  /// For a multi-body message (see [ChatMessage.bodies]), the SDK uploads the attachments of all bodies. The upload progress reported by [ChatMessageEvent.onProgress] is aggregated at the message level, weighted by the file size of each attachment, and ranges from 0 to 100.
+  ///
   /// Param [message] The message object to be sent: [ChatMessage].
   ///
   /// **Throws** A description of the exception. See [ChatError].
@@ -298,6 +300,8 @@ class ChatManager {
   /// 可以使用 [ChatOptions.serverTransfer] 设置是否将附件上传到聊天服务器。
   ///
   /// 添加发送状态监听使用 [ChatManager.addMessageEvent].
+  ///
+  /// 对于多消息体消息（详见 [ChatMessage.bodies]），SDK 会上传所有消息体的附件。[ChatMessageEvent.onProgress] 回调的上传进度为消息级聚合，按各附件的文件大小加权，取值范围为 0-100。
   ///
   /// Param [message] 需要发送的消息 [ChatMessage].
   ///
@@ -759,6 +763,12 @@ class ChatManager {
   ///
   /// You can call the method again if the attachment download fails.
   ///
+  /// For a multi-body message (see [ChatMessage.bodies]), this method applies to bodies of the following types: image, video, voice (treated as a regular attachment), file, and combine. Bodies of other types are silently skipped and are not treated as failures. If the message contains no body of an applicable type, the request succeeds without downloading anything.
+  ///
+  /// The download progress reported by [ChatMessageEvent.onProgress] is aggregated at the message level, weighted by the file size of each attachment, and ranges from 0 to 100.
+  ///
+  /// The download result is reported once for the whole request; if any attachment fails to download, the request fails immediately.
+  ///
   /// Param [message] The message with the attachment that is to be downloaded.
   ///
   /// **Throws** A description of the exception. See [ChatError].
@@ -768,6 +778,12 @@ class ChatManager {
   /// 下载消息的附件。
   ///
   /// 若附件自动下载失败，也可以调用此方法下载。
+  ///
+  /// 对于多消息体消息（详见 [ChatMessage.bodies]），该方法适用于以下类型的消息体：图片、视频、语音（按普通附件处理）、文件和合并消息。其他类型的消息体会被静默跳过，不视为失败。如果消息不包含任何适用类型的消息体，请求直接成功，不进行实际下载。
+  ///
+  /// [ChatMessageEvent.onProgress] 回调的下载进度为消息级聚合，按各附件的文件大小加权，取值范围为 0-100。
+  ///
+  /// 下载结果按请求回调一次；任一附件下载失败，整个请求立即失败。
   ///
   /// Param [message] 要下载附件的消息。
   ///
@@ -788,6 +804,12 @@ class ChatManager {
   /// ~english
   /// Downloads the thumbnail if the message has not been downloaded before or if the download fails.
   ///
+  /// For a multi-body message (see [ChatMessage.bodies]), this method downloads the thumbnails of image and video bodies. Bodies of other types are silently skipped and are not treated as failures. If the message contains no image or video body, the request succeeds without downloading anything.
+  ///
+  /// The download progress reported by [ChatMessageEvent.onProgress] is aggregated at the message level, weighted by the file size of each attachment, and ranges from 0 to 100.
+  ///
+  /// The download result is reported once for the whole request; if any thumbnail fails to download, the request fails immediately.
+  ///
   /// Param [message] The message object.
   ///
   /// **Throws** A description of the exception. See [ChatError].
@@ -795,6 +817,12 @@ class ChatManager {
   ///
   /// ~chinese
   /// 下载消息的缩略图。
+  ///
+  /// 对于多消息体消息（详见 [ChatMessage.bodies]），该方法下载图片和视频消息体的缩略图。其他类型的消息体会被静默跳过，不视为失败。如果消息不包含图片或视频消息体，请求直接成功，不进行实际下载。
+  ///
+  /// [ChatMessageEvent.onProgress] 回调的下载进度为消息级聚合，按各附件的文件大小加权，取值范围为 0-100。
+  ///
+  /// 下载结果按请求回调一次；任一缩略图下载失败，整个请求立即失败。
   ///
   /// Param [message] 要下载缩略图的消息，一般图片消息和视频消息有缩略图。
   ///
@@ -2079,6 +2107,12 @@ class ChatManager {
   ///
   /// You can call the method again if the download fails.
   ///
+  /// For a multi-body message (see [ChatMessage.bodies]), this method downloads the original (big) images of image bodies. Bodies of other types are silently skipped and are not treated as failures. If the message contains no image body, the request succeeds without downloading anything.
+  ///
+  /// The download progress reported by [ChatMessageEvent.onProgress] is aggregated at the message level, weighted by the file size of each attachment, and ranges from 0 to 100.
+  ///
+  /// The download result is reported once for the whole request; if any original image fails to download, the request fails immediately.
+  ///
   /// Param [message] The image message with the original image that is to be downloaded.
   ///
   /// **Throws** A description of the exception. See [ChatError].
@@ -2088,6 +2122,12 @@ class ChatManager {
   /// 下载图片消息的原图（大图）。
   ///
   /// 若下载失败，可以再次调用此方法下载。
+  ///
+  /// 对于多消息体消息（详见 [ChatMessage.bodies]），该方法下载图片消息体的原图（大图）。其他类型的消息体会被静默跳过，不视为失败。如果消息不包含图片消息体，请求直接成功，不进行实际下载。
+  ///
+  /// [ChatMessageEvent.onProgress] 回调的下载进度为消息级聚合，按各附件的文件大小加权，取值范围为 0-100。
+  ///
+  /// 下载结果按请求回调一次；任一原图下载失败，整个请求立即失败。
   ///
   /// Param [message] 要下载原图（大图）的图片消息。
   ///

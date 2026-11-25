@@ -1,3 +1,10 @@
+## 5.2.0
+
+- Upgraded both CocoaPods and SPM native dependencies to 5.2.0.
+- Added the `getConnectionState` method channel, mapping the native `EMConnectionState` explicitly to the Dart `ChatConnectionState` indexes.
+- Mapped the `disconnectNotifyThreshold` option during initialization.
+- Message serialization now round-trips the ordered `bodies` list; multi-body messages are created with `initWithConversationID:bodies:ext:`.
+
 ## 5.1.0
 - Upgraded both CocoaPods and SPM native dependencies to 5.1.0.
 - Added local conversation pagination and initialization mappings for `autoLoadConversations` and `enableChatroomConversation`.

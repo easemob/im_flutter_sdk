@@ -283,6 +283,21 @@ enum MessageType {
   /// 合并消息。
   /// ~end
   COMBINE,
+
+  // 5.2.0
+
+  /// ~english
+  /// The multi-body (combined) message identifier.
+  ///
+  /// This is not a concrete message body type. It is used only by the message-level [ChatMessage.contentType] semantics: a message containing multiple bodies is identified as a multi-body message.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 多消息体（复合）消息标识。
+  ///
+  /// 该值不是具体的消息体类型，仅由消息级 [ChatMessage.contentType] 语义使用：当一条消息包含多个消息体时，其内容类型标识为多消息体消息。
+  /// ~end
+  MULTIBODY,
 }
 
 /// ~english
@@ -1199,4 +1214,42 @@ extension ChatGroupPermissionTypeExtension on ChatGroupPermissionType {
   static ChatGroupPermissionType values(int type) {
     return ChatGroupPermissionType.values[type + 1];
   }
+}
+
+// 5.2.0
+
+/// ~english
+/// The connection states between the SDK and the chat server.
+/// ~end
+///
+/// ~chinese
+/// SDK 与聊天服务器的连接状态枚举。
+/// ~end
+enum ChatConnectionState {
+  /// ~english
+  /// The SDK is connected to the chat server.
+  /// ~end
+  ///
+  /// ~chinese
+  /// SDK 已连接到聊天服务器。
+  /// ~end
+  connected,
+
+  /// ~english
+  /// The SDK is disconnected from the chat server.
+  /// ~end
+  ///
+  /// ~chinese
+  /// SDK 与聊天服务器的连接已断开。
+  /// ~end
+  disconnected,
+
+  /// ~english
+  /// The SDK is connecting to the chat server.
+  /// ~end
+  ///
+  /// ~chinese
+  /// SDK 正在连接聊天服务器。
+  /// ~end
+  connecting,
 }

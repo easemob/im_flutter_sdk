@@ -84,6 +84,10 @@
     if (aJson[@"autoLoadConversations"] && ![aJson[@"autoLoadConversations"] isKindOfClass:[NSNull class]]) {
         options.autoLoadConversations = [aJson[@"autoLoadConversations"] boolValue];
     }
+    // 5.2.0
+    if (aJson[@"disconnectNotifyThreshold"] && ![aJson[@"disconnectNotifyThreshold"] isKindOfClass:[NSNull class]]) {
+        options.disconnectNotifyThreshold = [aJson[@"disconnectNotifyThreshold"] integerValue];
+    }
     if (aJson[@"enableChatroomConversation"] && ![aJson[@"enableChatroomConversation"] isKindOfClass:[NSNull class]]) {
         options.enableChatroomConversation = [aJson[@"enableChatroomConversation"] boolValue];
     }
