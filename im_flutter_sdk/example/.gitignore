@@ -46,3 +46,5 @@ app.*.map.json
 
 # HarmonyOS local signing config (fill your own DevEco-generated material locally)
 /ohos/build-profile.json5
+
+config.local.json.*
