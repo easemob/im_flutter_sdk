@@ -1,0 +1,103 @@
+{
+  "_comment": "5.2.0 正向路径（auto 模式）。验证复合消息（多消息体）发送：先发送双文本体消息，再经 TestUtil.writeBase64File 造真实文件后发送文本+文件体消息。核心断言为回写消息 bodies 数组长度与顺序、附件体的服务器 remotePath。无需其他在线客户端，不证明对端接收完整 bodies（见多设备 5.2.0-multi-message-multibody-positive）。每步独立可执行，无服务端资源需要清理。",
+  "init": {
+    "dataSyncType": 6,
+    "autoLoadConversations": true,
+    "enableChatroomConversation": false,
+    "enableUserInfo": false,
+    "debugMode": true
+  },
+  "steps": [
+    {
+      "api": "ChatManager.sendMessage",
+      "id": "send_multi_body_text",
+      "params": {
+        "to": "$config.accounts.1.id",
+        "chatType": 0,
+        "direction": 0,
+        "status": 0,
+        "bodies": [
+          {"type": 0, "content": "520 multibody first"},
+          {"type": 0, "content": "520 multibody second"}
+        ]
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "msgId",
+            "notEmpty": true
+          },
+          {
+            "path": "bodies",
+            "length": 2
+          },
+          {
+            "path": "bodies.0.content",
+            "equals": "520 multibody first"
+          },
+          {
+            "path": "bodies.1.content",
+            "equals": "520 multibody second"
+          },
+          {
+            "path": "body.content",
+            "equals": "520 multibody first"
+          }
+        ]
+      }
+    },
+    {
+      "api": "TestUtil.writeBase64File",
+      "id": "attachFile",
+      "params": {
+        "fileName": "api_test_520.txt",
+        "base64": "dGVzdCA1LjIuMCBtdWx0aS1ib2R5IGF0dGFjaG1lbnQK"
+      }
+    },
+    {
+      "api": "ChatManager.sendMessage",
+      "id": "send_multi_body_attachment",
+      "params": {
+        "to": "$config.accounts.1.id",
+        "chatType": 0,
+        "direction": 0,
+        "status": 0,
+        "bodies": [
+          {"type": 0, "content": "520 multibody with file"},
+          {
+            "type": 5,
+            "localPath": "$step.attachFile.path",
+            "displayName": "api_test_520.txt",
+            "fileStatus": 0
+          }
+        ]
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "msgId",
+            "notEmpty": true
+          },
+          {
+            "path": "bodies",
+            "length": 2
+          },
+          {
+            "path": "bodies.1.type",
+            "equals": 5
+          },
+          {
+            "path": "bodies.1.remotePath",
+            "notEmpty": true
+          },
+          {
+            "path": "bodies.0.content",
+            "equals": "520 multibody with file"
+          }
+        ]
+      }
+    }
+  ]
+}

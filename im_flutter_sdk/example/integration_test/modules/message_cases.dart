@@ -130,6 +130,60 @@ void registerMessageCases({
     return result.message;
   }
 
+  /// Unblocks both directions, ensures the friendship, and registers teardowns
+  /// that restore the original blocks and relationship. Teardowns run in reverse
+  /// registration order, so the relationship is restored before the blocks.
+  Future<void> prepareUnblockedFriendship(String caseId) async {
+    expect(peerId, isNotEmpty, reason: 'A prepared recipient is required');
+    expect(peerId, isNot(userId));
+    final relationship = await rest.snapshotContacts(userId, peerId);
+    final userBlocks = await rest.blockIds(userId);
+    final peerBlocks = await rest.blockIds(peerId);
+
+    addTearDown(() async {
+      await rest.setBlocked(userId, peerId, userBlocks.contains(peerId));
+      final restored = await waitForCi(
+        '$caseId original sender blacklist',
+        () => rest.blockIds(userId),
+        (ids) => setEquals(ids.toSet(), userBlocks.toSet()),
+      );
+      expect(restored, unorderedEquals(userBlocks));
+      expect(await client.contactManager.fetchBlockIds(),
+          unorderedEquals(userBlocks));
+      debugPrint('CI $caseId cleanup verified: sender blacklist');
+    });
+    addTearDown(() async {
+      await rest.setBlocked(peerId, userId, peerBlocks.contains(userId));
+      final restored = await waitForCi(
+        '$caseId original recipient blacklist',
+        () => rest.blockIds(peerId),
+        (ids) => setEquals(ids.toSet(), peerBlocks.toSet()),
+      );
+      expect(restored, unorderedEquals(peerBlocks));
+      debugPrint('CI $caseId cleanup verified: recipient blacklist');
+    });
+    addTearDown(() async {
+      await rest.restoreContacts(userId, peerId, relationship);
+      debugPrint('CI $caseId cleanup verified: bilateral friendship');
+    });
+
+    await rest.setBlocked(userId, peerId, false);
+    await rest.setBlocked(peerId, userId, false);
+    final unblockedUser = userBlocks.where((id) => id != peerId).toSet();
+    final unblockedPeer = peerBlocks.where((id) => id != userId).toSet();
+    expect(await rest.blockIds(userId), unorderedEquals(unblockedUser));
+    expect(await rest.blockIds(peerId), unorderedEquals(unblockedPeer));
+    expect(await client.contactManager.fetchBlockIds(),
+        unorderedEquals(unblockedUser));
+    await rest.setContacts(userId, peerId, true);
+    expect(await rest.contactIds(userId),
+        unorderedEquals({...relationship.userIds, peerId}));
+    expect(await rest.contactIds(peerId),
+        unorderedEquals({...relationship.peerIds, userId}));
+    debugPrint('CI $caseId prepare verified: bilateral friendship and '
+        'unblocked sender/recipient; unrelated members preserved');
+  }
+
   group('message positive', () {
     // Test: Prepare an unblocked friend, register a listener, and send it text
     // with known attributes; restore the original friendship/blacklists later.
@@ -1004,6 +1058,111 @@ void registerMessageCases({
         (map) => !(map[id] ?? const <ChatMessageReaction>[])
             .any((entry) => entry.reaction == reaction && entry.isAddedBySelf),
       );
+    },
+  );
+
+  // Test: With an unblocked friendship, send a message created by
+  // createMultiBodySendMessage with two text bodies and await the correlated
+  // final callback.
+  // Expected: The server-confirmed message keeps both bodies in order (the
+  // first body equals body), reports MULTIBODY as its content type, preserves
+  // content and attributes, and reads back identically from local storage.
+  // The send confirmation does not prove delivery to the peer device.
+  ciTestWidgets(
+    'FL-MSG-016 positive multi-body text send keeps ordered bodies',
+    (_) async {
+      await prepareUnblockedFriendship('FL-MSG-016');
+      final run = unique('multibody_text');
+      final message = ChatMessage.createMultiBodySendMessage(
+        targetId: peerId,
+        bodies: <ChatMessageBody>[
+          ChatTextMessageBody(content: '$run first'),
+          ChatTextMessageBody(content: '$run second'),
+        ],
+      )..attributes = <String, dynamic>{'ciCase': 'FL-MSG-016', 'run': run};
+
+      final confirmed = await sendAndAwait(message, 'FL-MSG-016');
+      expect(confirmed.status, MessageStatus.SUCCESS);
+      expect(confirmed.msgId, isNotEmpty);
+      expect(confirmed.from, userId);
+      expect(confirmed.to, peerId);
+      expect(confirmed.contentType, MessageType.MULTIBODY);
+      expect(confirmed.bodies.length, 2);
+      expect(confirmed.body.type, MessageType.TXT);
+      expect(
+        (confirmed.bodies[0] as ChatTextMessageBody).content,
+        '$run first',
+      );
+      expect(
+        (confirmed.bodies[1] as ChatTextMessageBody).content,
+        '$run second',
+      );
+      expect(confirmed.attributes, message.attributes);
+
+      final stored = await manager.loadMessage(confirmed.msgId);
+      expect(stored, isNotNull);
+      expect(stored!.bodies.length, 2);
+      expect(stored.body.type, MessageType.TXT);
+      expect(
+        (stored.bodies[1] as ChatTextMessageBody).content,
+        '$run second',
+      );
+      debugPrint('CI FL-MSG-016 verify passed');
+      // This peer can have preexisting history; keep its conversation intact.
+    },
+  );
+
+  // Test: With an unblocked friendship, send a message created by
+  // createMultiBodySendMessage with one text body and one real file body, and
+  // await the correlated final callback.
+  // Expected: The send succeeds; the file body inside the body list is really
+  // uploaded (server path and secret present, size preserved), both bodies
+  // stay ordered in the confirmed and locally stored message, and the content
+  // type stays MULTIBODY. This is sender-side upload confirmation, not
+  // delivery to a second online client.
+  ciTestWidgets(
+    'FL-MSG-017 positive multi-body attachment send uploads the file body',
+    (_) async {
+      await prepareUnblockedFriendship('FL-MSG-017');
+      final dir = Directory.systemTemp.createTempSync('ci_msg17_');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final run = unique('multibody_file');
+      final payload = List<int>.generate(512, (index) => index % 251);
+      final source = File('${dir.path}/$run.txt');
+      await source.writeAsBytes(payload);
+      final message = ChatMessage.createMultiBodySendMessage(
+        targetId: peerId,
+        bodies: <ChatMessageBody>[
+          ChatTextMessageBody(content: '$run text'),
+          ChatFileMessageBody(
+            localPath: source.path,
+            fileSize: payload.length,
+            displayName: '$run.txt',
+          ),
+        ],
+      );
+
+      final confirmed = await sendAndAwait(message, 'FL-MSG-017');
+      expect(confirmed.status, MessageStatus.SUCCESS);
+      expect(confirmed.msgId, isNotEmpty);
+      expect(confirmed.contentType, MessageType.MULTIBODY);
+      expect(confirmed.bodies.length, 2);
+      expect(confirmed.body.type, MessageType.TXT);
+      final fileBody = confirmed.bodies[1] as ChatFileMessageBody;
+      expect(fileBody.type, MessageType.FILE);
+      expect(fileBody.displayName, '$run.txt');
+      expect(fileBody.fileSize, payload.length);
+      expect(fileBody.remotePath, isNotNull);
+      expect(fileBody.secret, isNotNull);
+
+      final stored = await manager.loadMessage(confirmed.msgId);
+      expect(stored, isNotNull);
+      expect(stored!.bodies.length, 2);
+      final storedFile = stored.bodies[1] as ChatFileMessageBody;
+      expect(storedFile.remotePath, fileBody.remotePath);
+      expect(storedFile.fileSize, payload.length);
+      debugPrint('CI FL-MSG-017 verify passed');
+      // This peer can have preexisting history; keep its conversation intact.
     },
   );
 }

@@ -1,0 +1,80 @@
+# Send one multi-body message (two text bodies); require the peer to receive
+# the complete ordered body list.
+name: 5.2.0-multi-message-multibody-positive
+flowTimeoutMs: 240000
+agents:
+  alice: {script: 5.2.0-multi-message-multibody-positive.json}
+  bob: {script: 5.2.0-multi-message-multibody-positive.json}
+defaults:
+  stepTimeoutMs: 30000
+steps:
+  - set: {alice_logged_in: false, bob_logged_in: false, alice_ready: false, bob_ready: false}
+  - parallel:
+      alice_login:
+        - cmd: init_alice
+          agent: alice
+          as: global.biz.result.alice_init
+          onFail: abort_flow
+        - cmd: login_alice
+          agent: alice
+          as: global.biz.result.alice_login
+          onFail: abort_flow
+        - set: {alice_logged_in: true}
+        - cmd: connected
+          agent: alice
+          as: global.biz.result.alice_connected
+          onFail: abort_flow
+        - set: {alice_ready: true}
+      bob_login:
+        - cmd: init_bob
+          agent: bob
+          as: global.biz.result.bob_init
+          onFail: abort_flow
+        - cmd: login_bob
+          agent: bob
+          as: global.biz.result.bob_login
+          onFail: abort_flow
+        - set: {bob_logged_in: true}
+        - cmd: connected
+          agent: bob
+          as: global.biz.result.bob_connected
+          onFail: abort_flow
+        - set: {bob_ready: true}
+  - if: '$alice_ready and $bob_ready'
+    then:
+      - cmd: send
+        agent: alice
+        as: global.biz.result.sent
+        timeoutMs: 45000
+      - if: '$global.biz.result.sent.success == true'
+        then:
+          # The receive event may already be cached before the send result arrives.
+          - wait_event: onMessagesReceived
+            agent: bob
+            checks:
+              - path: messages
+                containsItem:
+                  msgId: '$global.biz.result.sent.data.msgId'
+                  from: '$global.account.account1.userId'
+                  to: '$global.account.account2.userId'
+                  body.type: 0
+                  body.content: '$global.biz.input.firstContent'
+                  bodies.0.type: 0
+                  bodies.0.content: '$global.biz.input.firstContent'
+                  bodies.1.type: 0
+                  bodies.1.content: '$global.biz.input.secondContent'
+            as: global.biz.event.received
+  # A failed branch must not prevent the other logged-in device from exiting.
+  - parallel:
+      alice_exit:
+        - if: '$alice_logged_in'
+          then:
+            - cmd: logout
+              agent: alice
+              as: global.biz.result.alice_logout
+      bob_exit:
+        - if: '$bob_logged_in'
+          then:
+            - cmd: logout
+              agent: bob
+              as: global.biz.result.bob_logout
