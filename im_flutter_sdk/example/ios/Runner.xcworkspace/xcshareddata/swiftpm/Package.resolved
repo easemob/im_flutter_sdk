@@ -1,0 +1,23 @@
+{
+  "pins" : [
+    {
+      "identity" : "hyphenatechat_ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/easemob/HyphenateChat_iOS.git",
+      "state" : {
+        "revision" : "27af80f00faa7661412ecfaf2e23395772c5e6c8",
+        "version" : "5.2.0"
+      }
+    },
+    {
+      "identity" : "shengwanginfra_ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Shengwang-Lab/ShengwangInfra_iOS.git",
+      "state" : {
+        "revision" : "99a1347e51e32843884f1977928866fafb7578fa",
+        "version" : "1.3.17"
+      }
+    }
+  ],
+  "version" : 2
+}
