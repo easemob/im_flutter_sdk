@@ -1,6 +1,6 @@
 # 单设备平版测试入口
 
-场景在 `cases/`，执行与报告工具为 `auto_report.dart`，共用 workbench 的 API 注册和脚本引擎。设计规则见 [单设备指南](../../docs/testing/2026-11-09-single-device.md)，JSON 语法和配置见 [workbench](../../workbench/README.md#script-mode-ai-friendly)。
+场景在 `cases/`，执行与报告工具为 `auto_report.dart`，共用 workbench 的 API 注册和脚本引擎。设计规则见 [单设备指南](../../docs/testing/2026-11-09-single-device.md)，JSON 语法和配置见 [workbench](../README.md#script-mode-ai-friendly)。
 
 ## 首次准备
 
@@ -24,15 +24,15 @@ make config
 make env-gettoken
 ```
 
-账号或应用配置变更、Token 过期后重新运行 `make env-gettoken`。这里的配置供 workbench 脚本使用，与 [CI 环境变量](../../tool/ci/README.md)不同。
+账号或应用配置变更、Token 过期后重新运行 `make env-gettoken`。这里的配置供 workbench 脚本使用，与 [CI 环境变量](../../ci/README.md)不同。
 
 ## 执行一个或多个场景
 
 以 5.1.0 为例，正向与逆向分别运行，每个命令独立生成报告：
 
 ```bash
-make auto-report PLATFORM=android SCRIPT=testing/single/cases/script_510_apis_positive.json
-make auto-report PLATFORM=android SCRIPT=testing/single/cases/script_510_apis_negative.json
+make auto-report PLATFORM=android SCRIPT=workbench/single/cases/script_510_apis_positive.json
+make auto-report PLATFORM=android SCRIPT=workbench/single/cases/script_510_apis_negative.json
 ```
 
 选择 iOS 时将 `PLATFORM=android` 改为 `PLATFORM=ios`，不必每次把所有场景在两个平台重复执行。工具负责启动模拟器和执行应用；可通过 `DEVICE=<id>` 指定模拟器，例如 Android 的 `DEVICE=emulator-5554` 或 iOS 的 `DEVICE=<模拟器UDID>`。
@@ -57,10 +57,10 @@ make auto-report PLATFORM=android SCRIPT=testing/single/cases/script_510_apis_ne
 单个脚本与多个脚本的每次执行都会产出报告。执行多个脚本后，用显式目录汇总，不自动扫描旧批次：
 
 ```bash
-python3 testing/report_upgrade.py --version 5.1.0 \
+python3 workbench/tool/report_upgrade.py --version 5.1.0 \
   --single artifacts/single/<时间戳>/android \
   --single artifacts/single/<时间戳>/ios \
-  --multi testing/multi/reports/<多设备运行目录> \
+  --multi <IMTO>/multi/reports/<多设备运行目录> \
   --output artifacts/multi/<时间戳>/
 ```
 
@@ -68,6 +68,6 @@ python3 testing/report_upgrade.py --version 5.1.0 \
 
 `make auto-compare ANDROID=<run-dir> IOS=<run-dir>` 仍用于比较相同脚本路径的双端结果。
 
-工具本身的非设备自检可运行 `dart run testing/single/auto_report.dart --self-test`，它不能代替上述设备场景验证。
+工具本身的非设备自检可运行 `dart run workbench/single/auto_report.dart --self-test`，它不能代替上述设备场景验证。
 
 负向 5.0.0 脚本中的 missing-message 群回执场景因已知 Android native 崩溃停用，报告会保留 candidate；不能把它计作通过。

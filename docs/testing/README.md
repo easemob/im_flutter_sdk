@@ -4,11 +4,11 @@
 
 | 类别 | 使用场景 | 用例及入口 | 设计说明 |
 |---|---|---|---|
-| CI 回归 | 基础行为、关键边界、已修复缺陷的持续回归 | `im_flutter_sdk/test/`、`workbench/integration_test/`；`tool/ci/` | [CI](2026-11-09-ci.md) |
-| 单设备平版 | 一台客户端即可验证的参数、返回值、本地状态和错误行为 | `testing/single/cases/`；`make auto-report` | [单设备](2026-11-09-single-device.md) |
-| 多设备平版 | 接收方通知、申请与接受、回执、订阅、同账号多端同步 | `testing/multi/cases/`；im-test-orchestrator 仓经 `scripts/multi.sh` | [多设备](2026-11-09-multi-device.md) |
+| CI 回归 | 基础行为、关键边界、已修复缺陷的持续回归 | `im_flutter_sdk/test/`、`workbench/integration_test/`；`ci/` | [CI](2026-11-09-ci.md) |
+| 单设备平版 | 一台客户端即可验证的参数、返回值、本地状态和错误行为 | `workbench/single/cases/`；`make auto-report` | [单设备](2026-11-09-single-device.md) |
+| 多设备平版 | 接收方通知、申请与接受、回执、订阅、同账号多端同步 | `workbench/multi/cases/`；im-test-orchestrator 仓经 `workbench/multi/multi.sh` | [多设备](2026-11-09-multi-device.md) |
 
-`workbench/lib/` 提供共用 API 注册、事件观测、脚本执行和人工界面。人工模式用于自由抽验，不是另一套自动用例。`tool/flow_runner/` 保持独立解释器；CI 保持 Flutter 标准测试入口。
+`workbench/lib/` 提供共用 API 注册、事件观测、脚本执行和人工界面。人工模式用于自由抽验，不是另一套自动用例。多设备编排与 flow_runner 解释器在独立仓 im-test-orchestrator；CI 保持 Flutter 标准测试入口。
 
 ## 共同原则
 
@@ -25,7 +25,7 @@
 
 每次运行自动生成且 Git 忽略的正式报告，见[自动测试报告](2026-11-09-reports.md)：CI 报告及版本升级报告分开，版本升级内再分别统计单设备、多设备；支持全部范围或单项执行，报告链接原始证据。
 
-运行命令见 [测试入口](../../testing/README.md) 和 [开发环境](../../CONTRIBUTING.md)。具体语法、配置、协议由各工具文档维护，版本覆盖和验证结论进入 `docs/porting/<版本>/`，原始日志进入各工具忽略的报告目录。历史报告只代表当时的执行结果。
+运行命令见 [单设备入口](../../workbench/single/README.md)、[多设备入口](../../workbench/multi/README.md) 和 [开发环境](../../CONTRIBUTING.md)。具体语法、配置、协议由各工具文档维护，版本覆盖和验证结论进入 `docs/porting/<版本>/`，原始日志进入各工具忽略的报告目录。历史报告只代表当时的执行结果。
 
 版本覆盖规划和历史分析：[5.1.0 覆盖表](../porting/5.1.0/2026-11-09-test-coverage.md)及[历史验证与问题表](../porting/5.1.0/2026-11-09-test-verification.md)。这些被追踪的文档不代替每次执行自动生成的报告。历史已知失败及 M2 免打扰同步暂缓决定仍保留；实际本次结果以运行目录内的正式报告为准。
 

@@ -2,15 +2,15 @@
 
 本目录是 Flutter 仓的多设备多账号测试用例集：每个场景一对同名文件——YAML 定义流程与角色，JSON 保存命令、数据与断言。文件名格式 `<引入版本>-multi-<场景>-positive.yaml/.json`，已有场景跨版本复用，新场景以首次引入的 SDK 版本冠名。
 
-用例本身没有运行能力，由独立仓 **im-test-orchestrator**（与本仓库同级的单独 git 仓库，Dart 实现）编排执行；本仓库经薄封装 `scripts/multi.sh` 调用它。契约与协议两端（Flutter/RN）通用，RN 仓持有逐字节一致的同名副本（`example/multi_cases/`）。
+用例本身没有运行能力，由独立仓 **im-test-orchestrator**（与本仓库同级的单独 git 仓库，Dart 实现）编排执行；本仓库经薄封装 `workbench/multi/multi.sh` 调用它。契约与协议两端（Flutter/RN）通用，RN 仓持有逐字节一致的同名副本（`example/multi_cases/`）。
 
 ## 0. 工具仓在哪里
 
-`scripts/multi.sh` 按以下顺序解析 im-test-orchestrator 的位置：
+`workbench/multi/multi.sh` 按以下顺序解析 im-test-orchestrator 的位置：
 
 1. 环境变量 `IMTO_PATH` 指向的 checkout（最高优先级）；
 2. 本地固定路径 `/Users/asterisk/Codes/zuoyu/im-test-orchestrator`；
-3. 按 `testing/multi-tool.json` 里的 `repo`/`ref` 克隆到 `testing/.im-test-orchestrator/`（gitignored；填上真实 URL 和 ref 后才生效）。
+3. 按 `workbench/multi/multi-tool.json` 里的 `repo`/`ref` 克隆到 `workbench/multi/.im-test-orchestrator/`（gitignored；填上真实 URL 和 ref 后才生效）。
 
 下文用 `<IMTO>` 表示解析到的工具仓目录。报告、运行状态、账号产物都写在 `<IMTO>/multi/` 下，**不写本仓库**。
 
@@ -44,20 +44,20 @@ dart run scripts/generate_accounts.dart --input config/accounts-input.json   # R
 
 ```bash
 # 跑全部未暂停的场景（推荐先全量跑通）
-scripts/multi.sh generate --platform android
+workbench/multi/multi.sh generate --platform android
 
 # 或只选指定场景（主文件名，不含 .yaml，可重复）
-scripts/multi.sh generate --platform ios --case 5.0.0-multi-presence-positive
+workbench/multi/multi.sh generate --platform ios --case 5.0.0-multi-presence-positive
 ```
 
-脚本扫描本目录（`--cases-dir` 默认 `testing/multi/cases`），从 `config/accounts-input.json` 读账号、自动发现模拟器，生成 `<IMTO>/multi/config/cases.json`：账号按顺序编号为 `account1..N`，设备按 YAML 的 `agents` 角色分配。常用可选参数：
+脚本扫描本目录（`--cases-dir` 默认 `workbench/multi/cases`），从 `config/accounts-input.json` 读账号、自动发现模拟器，生成 `<IMTO>/multi/config/cases.json`：账号按顺序编号为 `account1..N`，设备按 YAML 的 `agents` 角色分配。常用可选参数：
 
 | 参数 | 作用 |
 |---|---|
 | `--case <主名>` | 指定场景，可重复，按传入顺序执行；不传则全量 |
 | `--account <id>` | 指定账号池及顺序，可重复；不传用配置内顺序 |
-| `--instance <名>` | 指定设备及顺序，可重复；不传按发现排序。先查询可用设备：`scripts/multi.sh devices list --platform android` |
-| `--target testing/target-flutter.yaml` | 从 target yaml 读取 `casesDir` 等默认值 |
+| `--instance <名>` | 指定设备及顺序，可重复；不传按发现排序。先查询可用设备：`workbench/multi/multi.sh devices list --platform android` |
+| `--target workbench/tool/target-flutter.yaml` | 从 target yaml 读取 `casesDir` 等默认值 |
 
 每次成功生成后替换 `cases.json`，失败保留旧文件；不启动设备、不执行测试。
 
@@ -66,28 +66,28 @@ scripts/multi.sh generate --platform ios --case 5.0.0-multi-presence-positive
 ### 2.1 全流程（推荐）
 
 ```bash
-scripts/multi.sh all --cases <IMTO>/multi/config/cases.json
+workbench/multi/multi.sh all --cases <IMTO>/multi/config/cases.json
 ```
 
-`all` 依次完成数据准备、设备准备、构建、安装启动、执行、报告。`--app-dir` 默认 `workbench`，`--target testing/target-flutter.yaml` 可集中提供构建参数。终端首先输出 `runId=...`——这是找结果的钥匙。
+`all` 依次完成数据准备、设备准备、构建、安装启动、执行、报告。`--app-dir` 默认 `workbench`，`--target workbench/tool/target-flutter.yaml` 可集中提供构建参数。终端首先输出 `runId=...`——这是找结果的钥匙。
 
 联系人申请场景（contact-add）需要业务数据核验，命令追加：
 
 ```bash
-scripts/multi.sh all --cases <IMTO>/multi/config/cases.json \
+workbench/multi/multi.sh all --cases <IMTO>/multi/config/cases.json \
   --data-input <IMTO>/multi/config/accounts-input.json
 ```
 
 ### 2.2 分环节执行（调试用）
 
 ```bash
-scripts/multi.sh prepare testing/multi/cases/5.0.0-multi-presence-positive.yaml \
+workbench/multi/multi.sh prepare workbench/multi/cases/5.0.0-multi-presence-positive.yaml \
   --cases <IMTO>/multi/config/cases.json          # 输出新的 runId
-scripts/multi.sh devices start --platform ios --instance <UDID> --run-id <runId>   # 每个角色一台
-scripts/multi.sh build --platform ios --run-id <runId>
-scripts/multi.sh launch testing/multi/cases/5.0.0-multi-presence-positive.yaml --run-id <runId>   # 输出 launch=...
-scripts/multi.sh run testing/multi/cases/5.0.0-multi-presence-positive.yaml --run-id <runId> --launch <launchId>
-scripts/multi.sh report --run-id <runId>
+workbench/multi/multi.sh devices start --platform ios --instance <UDID> --run-id <runId>   # 每个角色一台
+workbench/multi/multi.sh build --platform ios --run-id <runId>
+workbench/multi/multi.sh launch workbench/multi/cases/5.0.0-multi-presence-positive.yaml --run-id <runId>   # 输出 launch=...
+workbench/multi/multi.sh run workbench/multi/cases/5.0.0-multi-presence-positive.yaml --run-id <runId> --launch <launchId>
+workbench/multi/multi.sh report --run-id <runId>
 ```
 
 每次复验须重新 `launch`；账号、设备映射在建轮（prepare）时固定，改了要重新建轮。相对路径参数由 `multi.sh` 自动换算为本仓库根的绝对路径。
@@ -108,7 +108,7 @@ scripts/multi.sh report --run-id <runId>
 跨多次运行或合并单设备证据时汇总（在本仓库根执行，可重复传入、按旧到新排列）：
 
 ```bash
-python3 testing/report_upgrade.py --version 5.1.0 \
+python3 workbench/tool/report_upgrade.py --version 5.1.0 \
   --single artifacts/single/<时间戳>/<平台> --multi <IMTO>/multi/reports/<runId> \
   --output artifacts/multi/<时间戳>/
 ```
@@ -145,7 +145,7 @@ python3 testing/report_upgrade.py --version 5.1.0 \
 端间对账（核对 Flutter/RN 副本一致）：
 
 ```bash
-scripts/multi.sh cases diff testing/multi/cases <RN仓>/example/multi_cases
+workbench/multi/multi.sh cases diff workbench/multi/cases <RN仓>/example/multi_cases
 ```
 
 退出码：0 一致，1 有差异，2 用法错误。确因一端 SDK 能力缺失需要差异时，必须显式声明并在本 README 记录例外。
@@ -153,7 +153,7 @@ scripts/multi.sh cases diff testing/multi/cases <RN仓>/example/multi_cases
 ## 6. 清理
 
 ```bash
-scripts/multi.sh clean --run-id <runId> --type logs --type build
+workbench/multi/multi.sh clean --run-id <runId> --type logs --type build
 ```
 
 已知限制：清理会保留用例执行证据，但部分准备、设备、构建、启动日志可能删除；需要完整过程追溯时不要清理。账号源码始终保留。详见工具仓 `multi/README.md`。

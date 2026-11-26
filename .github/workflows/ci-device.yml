@@ -8,7 +8,7 @@ name: Flutter Device Regression
 # lane, and a workflow-level failure on one platform must not starve the
 # other. The iOS lanes additionally patch the pinned flutter tool with the
 # upstream fix for the iOS simulator VM Service race (see
-# tool/ci/patch_flutter_ios_log_stream.sh). The two logged-in lanes derive
+# ci/patch_flutter_ios_log_stream.sh). The two logged-in lanes derive
 # isolated accounts via E2E_USER_SUFFIX (_flutter_5x_android /
 # _flutter_5x_ios on this line) so their server-side state (user info,
 # contacts, groups) never overlaps while running in parallel, and the 5x
@@ -16,7 +16,7 @@ name: Flutter Device Regression
 # whose nightly runs may execute concurrently on the same server; peers
 # derive as <effective id>_ci_peer and no extra secrets are needed (accounts
 # auto-create on first use). Local runs match CI exactly:
-# tool/ci/smoke_local.sh and tool/ci/nightly_local.sh call the same runner
+# ci/smoke_local.sh and ci/nightly_local.sh call the same runner
 # scripts the lanes use.
 
 on:
@@ -88,7 +88,7 @@ jobs:
           # runner, so the real steps live in a wrapper script.
           # No secrets in this lane: the no-login test uses the public demo
           # app key built into the test as its default.
-          script: bash tool/ci/run_android_emulator_test.sh integration_test/logged_out_test.dart
+          script: bash ci/run_android_emulator_test.sh integration_test/logged_out_test.dart
 
       - name: Upload Android logged-out evidence
         if: always()
@@ -138,7 +138,7 @@ jobs:
           E2E_CLIENT_ID: ${{ secrets.E2E_CLIENT_ID }}
           E2E_CLIENT_SECRET: ${{ secrets.E2E_CLIENT_SECRET }}
         run: |
-          ./tool/ci/write_e2e_dart_defines.sh "$RUNNER_TEMP/flutter-single-account.json"
+          ./ci/write_e2e_dart_defines.sh "$RUNNER_TEMP/flutter-single-account.json"
           echo "E2E_CONFIG_PATH=$RUNNER_TEMP/flutter-single-account.json" >> "$GITHUB_ENV"
 
       - name: Enable KVM group perms
@@ -160,7 +160,7 @@ jobs:
           disable-animations: true
           # Multi-line scripts are not run in one shell session by the
           # runner, so the real steps live in a wrapper script.
-          script: bash tool/ci/nightly_local.sh android
+          script: bash ci/nightly_local.sh android
 
       - name: Remove protected test configuration
         if: always()
@@ -196,8 +196,8 @@ jobs:
       - name: Patch flutter tool (iOS simulator log stream race)
         # Applies the upstream fix for flutter/flutter#181771 to the pinned
         # SDK; no stable release carries it yet. Idempotent and bound to
-        # FLUTTER_VERSION — see tool/ci/patch_flutter_ios_log_stream.sh.
-        run: bash tool/ci/patch_flutter_ios_log_stream.sh
+        # FLUTTER_VERSION — see ci/patch_flutter_ios_log_stream.sh.
+        run: bash ci/patch_flutter_ios_log_stream.sh
 
       - name: Cache Swift Package Manager dependencies
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -214,7 +214,7 @@ jobs:
             ${{ runner.os }}-spm-
 
       - name: Run logged-out smoke on iOS simulator
-        run: ./tool/ci/run_ios_simulator_test.sh integration_test/logged_out_test.dart
+        run: ./ci/run_ios_simulator_test.sh integration_test/logged_out_test.dart
 
       - name: Collect iOS diagnostics after failure
         if: failure()
@@ -255,8 +255,8 @@ jobs:
       - name: Patch flutter tool (iOS simulator log stream race)
         # Applies the upstream fix for flutter/flutter#181771 to the pinned
         # SDK; no stable release carries it yet. Idempotent and bound to
-        # FLUTTER_VERSION — see tool/ci/patch_flutter_ios_log_stream.sh.
-        run: bash tool/ci/patch_flutter_ios_log_stream.sh
+        # FLUTTER_VERSION — see ci/patch_flutter_ios_log_stream.sh.
+        run: bash ci/patch_flutter_ios_log_stream.sh
 
       - name: Prepare protected test configuration
         # 5.0.0 has no password login, and user tokens expire in ~24h so they
@@ -273,7 +273,7 @@ jobs:
           E2E_CLIENT_ID: ${{ secrets.E2E_CLIENT_ID }}
           E2E_CLIENT_SECRET: ${{ secrets.E2E_CLIENT_SECRET }}
         run: |
-          ./tool/ci/write_e2e_dart_defines.sh "$RUNNER_TEMP/flutter-single-account.json"
+          ./ci/write_e2e_dart_defines.sh "$RUNNER_TEMP/flutter-single-account.json"
           echo "E2E_CONFIG_PATH=$RUNNER_TEMP/flutter-single-account.json" >> "$GITHUB_ENV"
 
       - name: Cache Swift Package Manager dependencies
@@ -291,7 +291,7 @@ jobs:
             ${{ runner.os }}-spm-
 
       - name: Run logged-in regression on iOS simulator
-        run: bash tool/ci/nightly_local.sh ios
+        run: bash ci/nightly_local.sh ios
 
       - name: Collect iOS diagnostics after failure
         if: failure()

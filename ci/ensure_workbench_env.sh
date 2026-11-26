@@ -19,7 +19,7 @@
 # from the E2E_* credentials passed as dart-defines.
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 template="$repo_root/workbench/templates/env.example.dart"
 target="$repo_root/workbench/lib/env.dart"
 

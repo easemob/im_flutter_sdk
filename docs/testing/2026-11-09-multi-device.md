@@ -4,7 +4,7 @@
 
 ## 设计规则
 
-- YAML 表达流程，配对 JSON 保存命令、数据和必要验证；用例位于 `testing/multi/data/`。
+- YAML 表达流程，配对 JSON 保存命令、数据和必要验证；用例位于 `workbench/multi/cases/`。
 - 账号与设备分别映射，不硬编码账号、Token 或模拟器。不同账号交互和同账号多端同步必须明确区分。
 - 按业务因果组织步骤，以本轮消息 ID、群 ID、申请理由等关联事件。批量事件必须在同一元素内匹配关联条件。
 - 目标包含通知时检查实际通知，发起端成功或查询结果不能替代。目标包含本地状态时可以查询本地列表。
@@ -14,12 +14,12 @@
 
 ## 使用
 
-`all`、单场景 `run` 和 `report` 都在 `testing/multi/reports/<runId>/` 自动生成 Git 忽略的正式报告 `upgrade-report.md/json`，终端打印完整路径。以完整协同场景统计，步骤和尝试次数另计；报告包含角色、核心断言、设备会话收尾、业务资源销毁/登出操作与原始证据链接。多次运行及单设备结果可显式合并，规则见[测试报告](2026-11-09-reports.md)。
+`all`、单场景 `run` 和 `report` 都在 `<IMTO>/multi/reports/<runId>/` 自动生成 Git 忽略的正式报告 `upgrade-report.md/json`，终端打印完整路径。以完整协同场景统计，步骤和尝试次数另计；报告包含角色、核心断言、设备会话收尾、业务资源销毁/登出操作与原始证据链接。多次运行及单设备结果可显式合并，规则见[测试报告](2026-11-09-reports.md)。
 
-进入 `testing/multi/`，生成账号输入、账号源码与场景选择，再执行：
+进入 `<IMTO>/multi/`（独立仓 im-test-orchestrator，经本仓 `workbench/multi/multi.sh` 调用），生成账号输入、账号源码与场景选择，再执行：
 
 ```bash
 dart run bin/cli.dart all --cases config/cases.json --data-input config/accounts-input.json
 ```
 
-`all` 是执行全部环节，实际用例范围由选择文件决定。详细配置与命令见 [多设备工具](../../testing/multi/README.md)，语法见 [用例编写](../../testing/multi/docs/2026-11-06-test-case-authoring.md) 和 [flow_runner](../../tool/flow_runner/README.md)。查看 `reports/<runId>/summary.md` 和 `statistics.csv`，再按步骤报告定位失败。
+`all` 是执行全部环节，实际用例范围由选择文件决定。详细配置与命令见 [多设备工具](../../workbench/multi/README.md)，语法见 im-test-orchestrator 仓的 `docs/case-authoring.md` 和 `flow_runner/README.md`。查看 `<IMTO>/multi/reports/<runId>/summary.md` 和 `statistics.csv`，再按步骤报告定位失败。

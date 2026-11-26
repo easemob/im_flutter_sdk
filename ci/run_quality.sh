@@ -4,16 +4,16 @@
 # Preparation/static checks are reported separately from business test counts.
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-source "$repo_root/tool/ci/report.sh"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$repo_root/ci/report.sh"
 ci_report_start unit "im_flutter_sdk/test (quality)"
 report_device="host"
 
-bash "$repo_root/tool/use_local_packages.sh"
+bash "$repo_root/ci/use_local_packages.sh"
 
 # The workbench app imports the gitignored lib/env.dart; without it the
 # workbench analysis below fails to resolve the file (see the script's header).
-bash "$repo_root/tool/ci/ensure_workbench_env.sh"
+bash "$repo_root/ci/ensure_workbench_env.sh"
 
 packages=(
   im_flutter_sdk_interface

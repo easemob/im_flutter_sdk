@@ -17,7 +17,7 @@ import subprocess
 from urllib.parse import quote
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 LABELS = {"passed": "通过", "failed": "失败", "skipped": "跳过",
           "incomplete": "未完成", "not_run": "未执行"}
 

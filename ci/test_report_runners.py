@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 import unittest
 
-SOURCE = Path(__file__).resolve().parents[2]
+SOURCE = Path(__file__).resolve().parents[1]
 FLUTTER = r'''#!/usr/bin/env python3
 import json, os, pathlib, sys
 if '--version' in sys.argv:
@@ -39,17 +39,18 @@ class RunnerTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        (self.root / 'tool/ci').mkdir(parents=True)
+        (self.root / 'ci').mkdir(parents=True)
         (self.root / 'workbench').mkdir(parents=True)
+        (self.root / 'im_flutter_sdk').mkdir()
         (self.root / 'im_flutter_sdk/pubspec.yaml').write_text('version: 5.1.0\n')
         for name in ('report.py', 'report.sh', 'nightly_local.sh', 'smoke_local.sh', 'run_android_emulator_test.sh', 'run_ios_simulator_test.sh'):
-            shutil.copy(SOURCE / 'tool/ci' / name, self.root / 'tool/ci' / name)
-        for name in ('tool/use_local_packages.sh', 'tool/ci/ensure_workbench_env.sh'):
+            shutil.copy(SOURCE / 'ci' / name, self.root / 'ci' / name)
+        for name in ('ci/use_local_packages.sh', 'ci/ensure_workbench_env.sh'):
             (self.root / name).write_text('#!/bin/bash\nexit 0\n')
-        boot = self.root / 'tool/ci/boot_ios_simulator.sh'
+        boot = self.root / 'ci/boot_ios_simulator.sh'
         boot.write_text('#!/bin/bash\necho fake-ios-device\n')
         boot.chmod(0o755)
-        config_writer = self.root / 'tool/ci/write_e2e_dart_defines.sh'
+        config_writer = self.root / 'ci/write_e2e_dart_defines.sh'
         config_writer.write_text('#!/bin/bash\nprintf "{}" > "$1"\nprintf "%s" "$1" > "$CONFIG_PATH_CAPTURE"\n')
         (self.root / 'bin').mkdir()
         for name, body in {'flutter': FLUTTER, 'adb': '#!/bin/bash\nexit 0\n',
@@ -64,7 +65,7 @@ class RunnerTests(unittest.TestCase):
         self.env.pop('CI_REPORT_DIR', None)
 
     def run_script(self, name, *args):
-        return subprocess.run(['bash', 'tool/ci/' + name, *args], cwd=self.root,
+        return subprocess.run(['bash', 'ci/' + name, *args], cwd=self.root,
                               env=self.env, capture_output=True, text=True, timeout=25)
 
     def reports(self):

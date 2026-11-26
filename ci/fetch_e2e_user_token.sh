@@ -30,8 +30,8 @@
 # Diagnostics go to stderr. Exit code is non-zero on failure.
 #
 # Usage:
-#   E2E_USER_TOKEN="$(bash tool/ci/fetch_e2e_user_token.sh)"
-#   bash tool/ci/fetch_e2e_user_token.sh --json
+#   E2E_USER_TOKEN="$(bash ci/fetch_e2e_user_token.sh)"
+#   bash ci/fetch_e2e_user_token.sh --json
 set -euo pipefail
 
 output_format="${1:-token}"

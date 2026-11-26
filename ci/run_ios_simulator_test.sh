@@ -33,15 +33,15 @@ max_attempts="${MAX_ATTEMPTS:-2}"
 # workbench/ios/Runner.xcodeproj/project.pbxproj.
 app_id="com.example.example"
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-source "$repo_root/tool/ci/report.sh"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$repo_root/ci/report.sh"
 ci_report_start ios "$test_target"
-bash "$repo_root/tool/use_local_packages.sh"
+bash "$repo_root/ci/use_local_packages.sh"
 
 # The workbench app only compiles with the gitignored lib/env.dart in place.
-bash "$repo_root/tool/ci/ensure_workbench_env.sh"
+bash "$repo_root/ci/ensure_workbench_env.sh"
 
-simulator_udid="$("$repo_root/tool/ci/boot_ios_simulator.sh")"
+simulator_udid="$("$repo_root/ci/boot_ios_simulator.sh")"
 report_device="$simulator_udid"
 echo "Using iOS simulator $simulator_udid"
 

@@ -370,8 +370,7 @@ final class _Runner {
   }
 
   Future<void> _buildApp() async {
-    await _streamProcess(
-        'bash', ['tool/ci/ensure_workbench_env.sh'], root.path);
+    await _streamProcess('bash', ['ci/ensure_workbench_env.sh'], root.path);
     await _streamProcess(
         'flutter',
         [

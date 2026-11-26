@@ -49,4 +49,4 @@ FL-CONV-011/012 明确要求 autoLoadConversations=false；FL-CONV-013 另有 en
 - 上述 6 个执行项属于计划/决策记录，未混入正式报告的实际执行统计。
 - 未启动完整 nightly 设备运行，分别调用现有 runner 验证；nightly 新目标列表、失败后继续和报告汇总由现有 runner 工具测试验证。
 
-操作说明见 [CI README](../../tool/ci/README.md)，长期分类规则见 [CI 设计规则](2026-11-09-ci.md)。后续普通补用例只改现有模块注册函数，任何稳定入口修改（包括 import/注册接线）都须先确认。
+操作说明见 [CI README](../../ci/README.md)，长期分类规则见 [CI 设计规则](2026-11-09-ci.md)。后续普通补用例只改现有模块注册函数，任何稳定入口修改（包括 import/注册接线）都须先确认。

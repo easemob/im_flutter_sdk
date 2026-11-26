@@ -1,0 +1,57 @@
+{
+  "_comment": "Spot check: single case extracted from script_520_apis_positive.json (send_multi_body_text only), to verify the example->workbench rename did not break single-device Android runs.",
+  "init": {
+    "dataSyncType": 6,
+    "autoLoadConversations": true,
+    "enableChatroomConversation": false,
+    "enableUserInfo": false,
+    "debugMode": true
+  },
+  "steps": [
+    {
+      "api": "ChatManager.sendMessage",
+      "id": "send_multi_body_text",
+      "params": {
+        "to": "$config.accounts.1.id",
+        "chatType": 0,
+        "direction": 0,
+        "status": 0,
+        "bodies": [
+          {
+            "type": 0,
+            "content": "520 multibody first"
+          },
+          {
+            "type": 0,
+            "content": "520 multibody second"
+          }
+        ]
+      },
+      "expect": {
+        "success": true,
+        "checks": [
+          {
+            "path": "msgId",
+            "notEmpty": true
+          },
+          {
+            "path": "bodies",
+            "length": 2
+          },
+          {
+            "path": "bodies.0.content",
+            "equals": "520 multibody first"
+          },
+          {
+            "path": "bodies.1.content",
+            "equals": "520 multibody second"
+          },
+          {
+            "path": "body.content",
+            "equals": "520 multibody first"
+          }
+        ]
+      }
+    }
+  ]
+}

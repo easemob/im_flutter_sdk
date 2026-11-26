@@ -1,4 +1,4 @@
-"""Reporting regressions; run: python3 -m unittest discover -s tool/ci -p 'test_*.py'."""
+"""Reporting regressions; run: python3 -m unittest discover -s ci -p 'test_*.py'."""
 
 import contextlib
 import io

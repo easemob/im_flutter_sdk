@@ -22,7 +22,7 @@
 # Idempotent: if the marker string of the fix is already present (patch
 # already applied, or the pinned version ships the fix) the script is a
 # no-op. Retirement: once FLUTTER_VERSION moves to a stable that contains
-# the fix, delete this script, tool/ci/patches/, and the two workflow steps
+# the fix, delete this script, ci/patches/, and the two workflow steps
 # that call it (the marker check makes the steps harmless until then).
 set -euo pipefail
 
@@ -31,8 +31,8 @@ EXPECTED_FLUTTER_VERSION="3.47.0"
 # Present in simulators.dart once the fix (applied or shipped) is in place.
 MARKER="log stream did not start"
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-patch_file="$repo_root/tool/ci/patches/flutter-3.47.0-ios-simulator-log-stream.patch"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+patch_file="$repo_root/ci/patches/flutter-3.47.0-ios-simulator-log-stream.patch"
 
 command -v flutter >/dev/null 2>&1 || {
   echo "error: flutter not found in PATH" >&2

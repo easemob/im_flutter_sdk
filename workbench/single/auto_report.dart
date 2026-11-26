@@ -2,16 +2,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import '../../workbench/lib/auto/step_expectation.dart';
+import 'package:example/auto/step_expectation.dart';
 
 const _packageName = 'com.example.example';
 const _reportsRelativePath = 'artifacts/single';
 const _stdoutPrefix = '[APITEST]';
 const _markerPrefix = '[APITEST';
 const _positiveScriptRelativePath =
-    'testing/single/cases/script_500_apis_positive.json';
+    'workbench/single/cases/script_500_apis_positive.json';
 const _negativeScriptRelativePath =
-    'testing/single/cases/script_500_apis_negative.json';
+    'workbench/single/cases/script_500_apis_negative.json';
 const _defaultScriptRelativePath = _positiveScriptRelativePath;
 
 /// Absolute path of the auto script inside the app's internal files dir.
@@ -38,7 +38,7 @@ Usage:
   make auto-report PLATFORM=android [DEVICE=emulator-5554] [SCRIPT=<json>]
   make auto-report PLATFORM=ios [DEVICE=<simulator-udid>]
   make auto-compare ANDROID=<run-dir> IOS=<run-dir>
-  dart run testing/single/auto_report.dart --self-test
+  dart run workbench/single/auto_report.dart --self-test
 
 The positive path is the default script ($_positiveScriptRelativePath);
 pass --script $_negativeScriptRelativePath
@@ -158,7 +158,7 @@ writes $_reportsRelativePath/comparison-<timestamp>.md.
   await _writeSummary(reportDir, state, startedAt, finishedAt);
   stdout.writeln('Auto report: ${reportDir.path}');
   final report = await Process.run('python3', [
-    '${root.path}/testing/report_upgrade.py',
+    '${root.path}/workbench/tool/report_upgrade.py',
     '--single',
     reportDir.path,
     '--output',
@@ -463,11 +463,14 @@ Future<void> _ensureAndroidAppInstalled(
   );
   if (!await apk.exists()) {
     stdout.writeln('Building the debug APK to place the auto script...');
-    await _checkedProcess('flutter', [
-      'build',
-      'apk',
-      '--debug',
-    ], workingDirectory: workbench.path);
+    await _checkedProcess(
+        'flutter',
+        [
+          'build',
+          'apk',
+          '--debug',
+        ],
+        workingDirectory: workbench.path);
   }
   stdout.writeln('Installing $_packageName to place the auto script...');
   await _checkedProcess('adb', ['-s', device, 'install', '-r', '-t', apk.path]);
@@ -1111,9 +1114,9 @@ class _RunReport {
   final List<Map<String, dynamic>> steps;
 
   Map<String, Map<String, dynamic>> get byId => {
-    for (final step in steps)
-      if (step['id'] != null) step['id'].toString(): step,
-  };
+        for (final step in steps)
+          if (step['id'] != null) step['id'].toString(): step,
+      };
 }
 
 Future<_RunReport> _loadRunReport(String path) async {
@@ -1202,7 +1205,8 @@ List<String> _differentShapePaths(
   final keys = <String>{
     ...first.keys.map((key) => key.toString()),
     ...second.keys.map((key) => key.toString()),
-  }.toList()..sort();
+  }.toList()
+    ..sort();
   return [
     for (final key in keys)
       ..._differentShapePaths(
@@ -1355,12 +1359,12 @@ class _StepOutcome {
   final Map<String, dynamic>? result;
 
   Map<String, Object?> toJson() => {
-    'id': step.id,
-    'api': step.api,
-    'status': status,
-    'expected': step.expectation,
-    'actual': result,
-  };
+        'id': step.id,
+        'api': step.api,
+        'status': status,
+        'expected': step.expectation,
+        'actual': result,
+      };
 }
 
 bool _matchesExpectation(
@@ -1435,24 +1439,25 @@ class _RunState {
       outcomes.any((item) => item.status != 'passed');
 
   bool get hasConversationSerializationGap => outcomes.any((item) {
-    if (item.step.id != 'conversations') return false;
-    final data = item.result?['data'];
-    return data is List &&
-        data.any(
-          (value) =>
-              value.toString().startsWith("Instance of 'ChatConversation'"),
-        );
-  });
+        if (item.step.id != 'conversations') return false;
+        final data = item.result?['data'];
+        return data is List &&
+            data.any(
+              (value) =>
+                  value.toString().startsWith("Instance of 'ChatConversation'"),
+            );
+      });
 
   /// A successful group-receipt pagination that does not forward `totalCount`
   /// as a number; observed on Android 5.0.0 while iOS returns `0`.
   bool get groupReceiptTotalCountMissing => outcomes.any((item) {
-    if (item.step.id != 'group_receipts_server' || item.status != 'passed') {
-      return false;
-    }
-    final data = item.result?['data'];
-    return data is Map && data['totalCount'] == null;
-  });
+        if (item.step.id != 'group_receipts_server' ||
+            item.status != 'passed') {
+          return false;
+        }
+        final data = item.result?['data'];
+        return data is Map && data['totalCount'] == null;
+      });
 
   void observeEvent(Map<String, dynamic> event) {
     if (nextStepIndex >= scriptSteps.length) return;
@@ -1464,8 +1469,8 @@ class _RunState {
     final status = _matchesExpectation(payload, step.expectation)
         ? 'passed'
         : _isBlockedResult(payload, outcomes)
-        ? 'blocked'
-        : 'failed';
+            ? 'blocked'
+            : 'failed';
     outcomes.add(_StepOutcome(step: step, status: status, result: payload));
     nextStepIndex++;
   }

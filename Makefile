@@ -29,18 +29,18 @@ env-gettoken: ## Fetch tokens from workbench/config.local.json and write workben
 
 auto-report: local-deps ## Run 5.0.0 auto mode and write a local report: make auto-report PLATFORM=android [DEVICE=...] [SCRIPT=...]
 	@test "$(PLATFORM)" = "android" || test "$(PLATFORM)" = "ios" || (echo "Usage: make auto-report PLATFORM=<android|ios> [DEVICE=<id>] [SCRIPT=<json>]" && exit 2)
-	dart run testing/single/auto_report.dart --platform "$(PLATFORM)" $(if $(DEVICE),--device "$(DEVICE)",) $(if $(SCRIPT),--script "$(SCRIPT)",)
+	dart run workbench/single/auto_report.dart --platform "$(PLATFORM)" $(if $(DEVICE),--device "$(DEVICE)",) $(if $(SCRIPT),--script "$(SCRIPT)",)
 
 auto-compare: ## Compare two finished runs: make auto-compare ANDROID=<run-dir> IOS=<run-dir>
 	@test -n "$(ANDROID)" -a -n "$(IOS)" || (echo "Usage: make auto-compare ANDROID=<run-dir> IOS=<run-dir>" && exit 2)
-	dart run testing/single/auto_report.dart --android-report "$(ANDROID)" --ios-report "$(IOS)"
+	dart run workbench/single/auto_report.dart --android-report "$(ANDROID)" --ios-report "$(IOS)"
 
 scan-deprecated: ## Scan wrapper code for deprecated native APIs: make scan-deprecated [PLATFORM=android|ios]
 	@test -z "$(PLATFORM)" || test "$(PLATFORM)" = "android" || test "$(PLATFORM)" = "ios" || (echo "Usage: make scan-deprecated [PLATFORM=<android|ios>]" && exit 2)
-	bash tool/ci/scan_deprecated.sh $(PLATFORM)
+	bash ci/scan_deprecated.sh $(PLATFORM)
 
 local-deps: ## Create gitignored pubspec_overrides.yaml files for local SDK packages
-	bash tool/use_local_packages.sh
+	bash ci/use_local_packages.sh
 
 deps: local-deps ## flutter pub get with local SDK packages
 	@echo "Running flutter pub get..."

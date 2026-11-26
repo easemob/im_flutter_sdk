@@ -4,26 +4,27 @@
 # Tool resolution order (D13):
 #   1. $IMTO_PATH: path to an im-test-orchestrator checkout
 #   2. Local checkout at /Users/asterisk/Codes/zuoyu/im-test-orchestrator
-#   3. Clone pinned by testing/multi-tool.json into testing/.im-test-orchestrator
+#   3. Clone pinned by workbench/multi/multi-tool.json into
+#      workbench/multi/.im-test-orchestrator
 #      (gitignored; inactive until the pin file carries a real URL and ref)
 #
 # Usage:
-#   scripts/multi.sh generate --platform ios [--case <name>] [--instance <id>] ...
+#   workbench/multi/multi.sh generate --platform ios [--case <name>] [--instance <id>] ...
 #       Runs scripts/generate_cases.dart; defaults --cases-dir to
-#       testing/multi/cases.
-#   scripts/multi.sh prepare|devices|build|launch|run|report|clean|all ...
+#       workbench/multi/cases.
+#   workbench/multi/multi.sh prepare|devices|build|launch|run|report|clean|all ...
 #       Runs bin/cli.dart; defaults --app-dir to workbench.
 # Example:
-#   scripts/multi.sh all --cases <IMTO>/multi/config/cases.json
-#   scripts/multi.sh prepare testing/multi/cases/5.0.0-multi-presence-positive.yaml \
+#   workbench/multi/multi.sh all --cases <IMTO>/multi/config/cases.json
+#   workbench/multi/multi.sh prepare workbench/multi/cases/5.0.0-multi-presence-positive.yaml \
 #       --cases <IMTO>/multi/config/cases.json
 # Relative path arguments are resolved against this repository root.
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PIN_FILE="$REPO_ROOT/testing/multi-tool.json"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+PIN_FILE="$REPO_ROOT/workbench/multi/multi-tool.json"
 LOCAL_CHECKOUT="/Users/asterisk/Codes/zuoyu/im-test-orchestrator"
-CLONE_DIR="$REPO_ROOT/testing/.im-test-orchestrator"
+CLONE_DIR="$REPO_ROOT/workbench/multi/.im-test-orchestrator"
 
 resolve_tool() {
   if [[ -n "${IMTO_PATH:-}" && -d "$IMTO_PATH/multi" ]]; then
@@ -89,7 +90,7 @@ for arg in "$@"; do
 done
 
 if [[ "$command" == "generate" && $has_cases_dir -eq 0 ]]; then
-  args+=(--cases-dir "$REPO_ROOT/testing/multi/cases")
+  args+=(--cases-dir "$REPO_ROOT/workbench/multi/cases")
 fi
 # Only commands whose CLI accepts --app-dir get the default (build/all).
 if [[ "$command" == "build" || "$command" == "all" ]] && [[ $has_app_dir -eq 0 ]]; then

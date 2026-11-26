@@ -96,7 +96,7 @@ void registerLoggedOutClientCases({required ChatClient client}) {
     // Assumes a cold install. The Android SDK reports its persisted last-login
     // user (SharedPreferences `easemob.chat.loginuser`) after a restart without
     // logout, so a login left on the device by an earlier run makes this fail
-    // even though the SDK has no session. tool/ci/run_{android,ios}_*_test.sh
+    // even though the SDK has no session. ci/run_{android,ios}_*_test.sh
     // clear the app before running, and CI starts from a fresh device.
     expect(client.currentUserId, isNull);
   });

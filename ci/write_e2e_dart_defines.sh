@@ -14,7 +14,7 @@
 # Usage:
 #   E2E_APP_KEY=... E2E_USER_ID=... E2E_REST_API=... \
 #   E2E_CLIENT_ID=... E2E_CLIENT_SECRET=... \
-#     bash tool/ci/write_e2e_dart_defines.sh OUTPUT_PATH
+#     bash ci/write_e2e_dart_defines.sh OUTPUT_PATH
 set -euo pipefail
 
 output_path="${1:?usage: write_e2e_dart_defines.sh OUTPUT_PATH}"

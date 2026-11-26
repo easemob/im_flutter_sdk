@@ -47,7 +47,7 @@ jobs:
       - name: Run quality gates
         env:
           FORMAT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: ./tool/ci/run_quality.sh
+        run: ./ci/run_quality.sh
 
       - name: Upload Dart coverage
         if: always()
@@ -83,13 +83,13 @@ jobs:
           cache: true
 
       - name: Use local SDK packages
-        run: bash tool/use_local_packages.sh
+        run: bash ci/use_local_packages.sh
 
       - name: Create the workbench env placeholder
         # workbench imports the gitignored lib/env.dart, and no
         # earlier step creates it in a fresh checkout, so the workbench does not
         # compile without this placeholder (see the script's header).
-        run: ./tool/ci/ensure_workbench_env.sh
+        run: ./ci/ensure_workbench_env.sh
 
       - name: Build Android workbench
         working-directory: workbench
@@ -115,11 +115,11 @@ jobs:
           cache: true
 
       - name: Use local SDK packages
-        run: bash tool/use_local_packages.sh
+        run: bash ci/use_local_packages.sh
 
       - name: Create the workbench env placeholder
         # Same reason as in the Android job: the placeholder is gitignored.
-        run: ./tool/ci/ensure_workbench_env.sh
+        run: ./ci/ensure_workbench_env.sh
 
       - name: Cache Swift Package Manager dependencies
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0

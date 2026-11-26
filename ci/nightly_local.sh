@@ -4,7 +4,7 @@
 # exercises exactly what CI runs.
 #
 # Without E2E_CONFIG_PATH, required environment (same names as GitHub secrets;
-# the user token is fetched fresh by tool/ci/fetch_e2e_user_token.sh):
+# the user token is fetched fresh by ci/fetch_e2e_user_token.sh):
 #   E2E_APP_KEY  E2E_USER_ID  E2E_REST_API  E2E_CLIENT_ID  E2E_CLIENT_SECRET
 #
 # Optional environment:
@@ -18,7 +18,7 @@
 # Usage:
 #   E2E_APP_KEY=... E2E_USER_ID=... E2E_REST_API=... \
 #   E2E_CLIENT_ID=... E2E_CLIENT_SECRET=... \
-#     bash tool/ci/nightly_local.sh android   # needs a booted emulator (emulator-5554)
+#     bash ci/nightly_local.sh android   # needs a booted emulator (emulator-5554)
 #     ... ios                                 # boots a simulator if none is booted
 #
 # The generated config contains real credentials; it is written with mode 0600
@@ -34,12 +34,12 @@ set -euo pipefail
 # Keep in sync with FLUTTER_VERSION in .github/workflows/*.yml.
 EXPECTED_FLUTTER_VERSION="3.47.0"
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PLATFORM="${1:-}"
 case "$PLATFORM" in
   android|ios) ;;
   *)
-    echo "usage: bash tool/ci/nightly_local.sh <android|ios>" >&2
+    echo "usage: bash ci/nightly_local.sh <android|ios>" >&2
     exit 2
     ;;
 esac
@@ -73,7 +73,7 @@ finish_nightly() {
   for target in "${targets[@]}"; do
     report_args+=(--run "$nightly_dir/$target")
   done
-  python3 "$REPO_ROOT/tool/ci/report.py" "${report_args[@]}" || result=1
+  python3 "$REPO_ROOT/ci/report.py" "${report_args[@]}" || result=1
   exit "$result"
 }
 trap finish_nightly EXIT
@@ -115,7 +115,7 @@ else
   # Default to the per-platform lane account so two local platforms run in
   # parallel on isolated accounts; an explicit (even empty) caller value wins.
   export E2E_USER_SUFFIX="${E2E_USER_SUFFIX-_flutter_5x_$PLATFORM}"
-  bash "$REPO_ROOT/tool/ci/write_e2e_dart_defines.sh" "$CONFIG"
+  bash "$REPO_ROOT/ci/write_e2e_dart_defines.sh" "$CONFIG"
   export E2E_CONFIG_PATH="$CONFIG"
 fi
 
@@ -130,9 +130,9 @@ fi
 # Each existing device runner cold-starts the app before SDK initialization.
 # Keep all initialization-dependent suites here for both local and hosted CI.
 if [ "$PLATFORM" = "android" ]; then
-  runner="$REPO_ROOT/tool/ci/run_android_emulator_test.sh"
+  runner="$REPO_ROOT/ci/run_android_emulator_test.sh"
 else
-  runner="$REPO_ROOT/tool/ci/run_ios_simulator_test.sh"
+  runner="$REPO_ROOT/ci/run_ios_simulator_test.sh"
 fi
 status=0
 passed=0

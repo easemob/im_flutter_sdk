@@ -37,7 +37,7 @@ separate mode: set the top-level `enablePrivateConfig` to `true` and fill
 `webSocketServer` / `restServer` / `msyncServer`; `msyncServer` is then mapped to
 Flutter's `imServer` and `enableDNSConfig` is forced to `false`.
 
-Multi-device scenarios use [multi-device tool](../testing/multi/README.md) and its own
+Multi-device scenarios use [multi-device tool](multi/README.md) and its own
 account preparation. The manual and single-device script modes below use this
 workbench environment.
 
@@ -140,7 +140,7 @@ mode 0770 and the app cannot even traverse it). Write the script as the app uid
 instead:
 
 ```
-adb shell "run-as com.example.example sh -c 'cat > /data/data/com.example.example/files/script_422_apis.json'" < ../testing/single/cases/script_422_apis.json
+adb shell "run-as com.example.example sh -c 'cat > /data/data/com.example.example/files/script_422_apis.json'" < single/cases/script_422_apis.json
 flutter run --dart-define=API_SCRIPT=/data/data/com.example.example/files/script_422_apis.json
 ```
 
@@ -148,12 +148,12 @@ flutter run --dart-define=API_SCRIPT=/data/data/com.example.example/files/script
 exist, so run the app once (or `adb install -r` a debug APK) before pushing.
 `make auto-report PLATFORM=android` does all of this by itself.
 
-A full example covering the 4.22 additions lives at `../testing/single/cases/script_422_apis.json`
+A full example covering the 4.22 additions lives at `single/cases/script_422_apis.json`
 (expects at least two accounts and one group in the generated environment).
 The 5.0.0 login-state scenario is split into two single-account scripts:
-`../testing/single/cases/script_500_apis_positive.json` (20 steps, each expecting success,
+`single/cases/script_500_apis_positive.json` (20 steps, each expecting success,
 including batches that mix an unresolvable message id) and
-`../testing/single/cases/script_500_apis_negative.json` (10 steps, each expecting an error code).
+`single/cases/script_500_apis_negative.json` (10 steps, each expecting an error code).
 Receipt results are decided by native: Flutter builds no error codes and does not
 drop a batch because of an unresolvable id. The missing-message case of
 `fetchGroupMessageReadReceipts` crashes the Android native process, so it is not
@@ -165,19 +165,19 @@ For a traceable local run, execute from the worktree root:
 ```bash
 make auto-report PLATFORM=android DEVICE=emulator-5554
 make auto-report PLATFORM=ios DEVICE=<booted-simulator-udid>
-make auto-report PLATFORM=android SCRIPT=testing/single/cases/script_500_apis_negative.json
-make auto-compare ANDROID=reports/5.0.0/<android-run> IOS=reports/5.0.0/<ios-run>
+make auto-report PLATFORM=android SCRIPT=workbench/single/cases/script_500_apis_negative.json
+make auto-compare ANDROID=artifacts/single/<ts>/android IOS=artifacts/single/<ts>/ios
 ```
 
 The runner brings the simulator app to the foreground where possible, pushes the
 script to Android's app-specific directory, and writes a timestamped report to
-`reports/5.0.0/<run-id>/`. Reports are Git-ignored because local events may
+`artifacts/single/<timestamp>/<platform>/`. Reports are Git-ignored because local events may
 contain account or resource identifiers. Each report contains `run.json`,
 `events.jsonl`, `crash.log`, `summary.md`, `steps.json`, and `issues.md`; only
 confirmed, sanitized conclusions belong in `docs/porting/`.
 
 `make auto-compare` reads two finished runs of the same path and writes
-`reports/5.0.0/comparison-<path>-<timestamp>.md`: step status, result semantics,
+`artifacts/single/comparison-<path>-<timestamp>.md`: step status, result semantics,
 and response shape for both paths, plus an `expected / Android / iOS` error-code
 table for the negative path. It exits non-zero when steps disagree.
 

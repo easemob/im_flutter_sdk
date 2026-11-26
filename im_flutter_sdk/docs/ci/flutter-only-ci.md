@@ -11,7 +11,7 @@ and manual workbench usage have separate entry points; see the
    Presence errors, and 11 negative client/contact/group/message cases on
    Android Emulator and iOS Simulator. It needs no account or secret.
 3. `Flutter Single Account Nightly` runs the five batches wired in
-   `tool/ci/nightly_local.sh`: base, group, contact, user info, and the
+   `ci/nightly_local.sh`: base, group, contact, user info, and the
    special-configuration `conversation_config` batch. One account logs into the
    device; prepared offline peers and REST fixtures do not require a second
    running client. Android and iOS are serialized.
@@ -62,7 +62,7 @@ case needs an incompatible configuration, document the conflict and obtain
 confirmation before changing batches; never remove a valid assertion to make the
 case fit.
 
-Both local and hosted nightly commands use `tool/ci/nightly_local.sh`. Its loop
+Both local and hosted nightly commands use `ci/nightly_local.sh`. Its loop
 calls the existing device runner for each selected logged-in category. Each batch
 starts a fresh app because changing SDK initialization options requires an app
 restart. A failed batch does not prevent later batches from running, and the final
@@ -74,7 +74,7 @@ The existing device runners accept `CI_TEST_NAME` for a single-test name regex;
 full suites and selected tests both produce reports. Select the entry that actually
 registers the requested case. Output files, counting rules, and regeneration
 commands are documented in the [report guide](../../../docs/testing/2026-11-09-reports.md);
-commands and configuration are in the [CI operating guide](../../../tool/ci/README.md).
+commands and configuration are in the [CI operating guide](../../../ci/README.md).
 Do not rerun the entire nightly suite when the current task has explicitly skipped
 a known failure.
 
@@ -100,7 +100,7 @@ and deletes only its own temporary file. Peer and token Secrets are not required
 The input contract, direct device command, and log handling are documented in
 [CONTRIBUTING.md](../../../CONTRIBUTING.md#device-integration-tests).
 
-`tool/ci/ensure_workbench_env.sh` creates the missing gitignored `workbench/lib/env.dart`
+`ci/ensure_workbench_env.sh` creates the missing gitignored `workbench/lib/env.dart`
 placeholder for compilation and preserves an existing file. Integration tests
 take credentials from dart-defines, independently of the workbench's local data
 under `workbench/config.local.json`.

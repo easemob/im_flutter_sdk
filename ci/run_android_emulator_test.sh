@@ -11,18 +11,18 @@ test_target="${1:?usage: run_android_emulator_test.sh TEST_TARGET}"
 # workbench/android/app/build.gradle.kts.
 app_id="com.example.example"
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-source "$repo_root/tool/ci/report.sh"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$repo_root/ci/report.sh"
 ci_report_start android "$test_target"
 report_device="emulator-5554"
 adb -s emulator-5554 get-state >/dev/null 2>&1 || {
   echo "error: no Android emulator online at emulator-5554" >&2
   exit 2
 }
-bash "$repo_root/tool/use_local_packages.sh"
+bash "$repo_root/ci/use_local_packages.sh"
 
 # The workbench app only compiles with the gitignored lib/env.dart in place.
-bash "$repo_root/tool/ci/ensure_workbench_env.sh"
+bash "$repo_root/ci/ensure_workbench_env.sh"
 
 cd "$repo_root/workbench"
 flutter pub get

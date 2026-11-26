@@ -8,31 +8,31 @@
 # built into the test as its default.
 #
 # Usage:
-#   bash tool/ci/smoke_local.sh android   # needs a booted emulator (emulator-5554)
-#   bash tool/ci/smoke_local.sh ios       # boots a simulator if none is booted
+#   bash ci/smoke_local.sh android   # needs a booted emulator (emulator-5554)
+#   bash ci/smoke_local.sh ios       # boots a simulator if none is booted
 #
 # Reports are written to artifacts/ci/<timestamp>/<platform>/logged_out_test/:
 # summary.md and report.json, including preparation failures; the runner prints
 # the report path on exit.
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PLATFORM="${1:-}"
 case "$PLATFORM" in
   android|ios) ;;
   *)
-    echo "usage: bash tool/ci/smoke_local.sh <android|ios>" >&2
+    echo "usage: bash ci/smoke_local.sh <android|ios>" >&2
     exit 2
     ;;
 esac
 
 if [ "$PLATFORM" = "android" ]; then
   # Runners check prerequisites after creating the report directory.
-  exec bash "$REPO_ROOT/tool/ci/run_android_emulator_test.sh" \
+  exec bash "$REPO_ROOT/ci/run_android_emulator_test.sh" \
     integration_test/logged_out_test.dart
 fi
 
 # ios: run_ios_simulator_test.sh boots an available iPhone simulator itself
 # (and retries once on the iOS 26 VM-Service race; see that script's header).
-exec bash "$REPO_ROOT/tool/ci/run_ios_simulator_test.sh" \
+exec bash "$REPO_ROOT/ci/run_ios_simulator_test.sh" \
   integration_test/logged_out_test.dart

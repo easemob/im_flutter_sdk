@@ -7,7 +7,7 @@
 //
 // Passed to Gradle with -I (init script) so no repository build file changes and
 // consumers of the plugin keep their own warning setup. Used by
-// tool/ci/scan_deprecated.sh; the same idea as the iOS side, where clang emits
+// ci/scan_deprecated.sh; the same idea as the iOS side, where clang emits
 // -Wdeprecated-declarations by default.
 import org.gradle.api.tasks.compile.JavaCompile
 

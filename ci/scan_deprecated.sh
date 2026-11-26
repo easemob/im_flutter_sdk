@@ -13,9 +13,9 @@
 # result meaningless (see docs/spec/2026-09-21-deprecated-api-scan-spec.md).
 #
 # Usage:
-#   bash tool/ci/scan_deprecated.sh            # both platforms
-#   bash tool/ci/scan_deprecated.sh android    # Android wrapper only
-#   bash tool/ci/scan_deprecated.sh ios        # iOS wrapper only
+#   bash ci/scan_deprecated.sh            # both platforms
+#   bash ci/scan_deprecated.sh android    # Android wrapper only
+#   bash ci/scan_deprecated.sh ios        # iOS wrapper only
 #
 # Output (gitignored):
 #   artifacts/ci/<timestamp>/deprecated/{android,ios}-raw.log
@@ -23,11 +23,11 @@
 #   artifacts/ci/<timestamp>/deprecated/native-deprecated-api.md
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORKBENCH_DIR="$REPO_ROOT/workbench"
 IOS_DIR="$WORKBENCH_DIR/ios"
 CHECKER="$REPO_ROOT/im_flutter_sdk/tool/ci/check_deprecated_api.dart"
-LINT_INIT="$REPO_ROOT/tool/ci/enable_deprecation_lint.gradle"
+LINT_INIT="$REPO_ROOT/ci/enable_deprecation_lint.gradle"
 
 # CocoaPods compiles the iOS wrapper as a target of the workbench app's Pods project.
 IOS_POD_TARGET="im_flutter_sdk_ios"
@@ -38,7 +38,7 @@ PLATFORM="${1:-all}"
 case "$PLATFORM" in
   all | android | ios) ;;
   *)
-    echo "usage: bash tool/ci/scan_deprecated.sh [all|android|ios]" >&2
+    echo "usage: bash ci/scan_deprecated.sh [all|android|ios]" >&2
     exit 2
     ;;
 esac
@@ -67,7 +67,7 @@ mkdir -p "$REPORT_DIR"
 # Resolves the workbench app's plugins: Gradle needs .flutter-plugins-dependencies and
 # CocoaPods needs Flutter/Generated.xcconfig, both written by pub get.
 resolve_dependencies() {
-  bash "$REPO_ROOT/tool/use_local_packages.sh"
+  bash "$REPO_ROOT/ci/use_local_packages.sh"
   (
     cd "$WORKBENCH_DIR"
     flutter pub get

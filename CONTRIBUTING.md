@@ -15,7 +15,7 @@ Federated Plugin architecture; package pubspecs declare hosted version dependenc
 
 Call chain: `Dart API → MethodChannel (interface) → Native Wrapper → HyphenateChat SDK`. Changing the interface affects all upper-layer packages.
 
-Beyond the four packages, the repository root also contains: `Makefile` (local development entry point), `workbench/` (internal visual API test app), `tool/ci/` (quality gate and device test scripts), `testing/single/auto_report.dart` (auto-mode runner), `docs/porting/<version>/` (diff, contract, implementation, and acceptance docs for each version upgrade), `reports/` (local auto-run artifacts, gitignored).
+Beyond the four packages, the repository root also contains: `Makefile` (local development entry point), `workbench/` (internal visual API test app, plus the single-device and multi-device test assets under `workbench/single/` and `workbench/multi/`), `ci/` (quality gate and device test scripts), `workbench/single/auto_report.dart` (auto-mode runner), `docs/porting/<version>/` (diff, contract, implementation, and acceptance docs for each version upgrade), `artifacts/` (local run artifacts, gitignored).
 
 ## Environment Preparation
 
@@ -33,7 +33,7 @@ The `Makefile` at the project root is the local development entry point; run `ma
 | `make local-deps` | Generates gitignored local dependency overrides for the main package, Android, iOS, and workbench; preserves existing files |
 | `make deps` | Runs `make local-deps`, then `flutter pub get` in the workbench directory |
 | `make pods` | Runs `deps` first, then uses mtime to check whether Podfile/podspec is newer than Podfile.lock, running `pod install` in `workbench/ios` only when needed |
-| `make auto-report PLATFORM=<android\|ios> [DEVICE=<id>] [SCRIPT=<json>]` | Runs the 5.0.0 auto script and writes a traceable report to `reports/5.0.0/<run-id>/` (on Android it first ensures the debug build is installed, then pushes the script into the app's internal directory by App uid) |
+| `make auto-report PLATFORM=<android\|ios> [DEVICE=<id>] [SCRIPT=<json>]` | Runs the 5.0.0 auto script and writes a traceable report to `artifacts/single/<timestamp>/<platform>/` (on Android it first ensures the debug build is installed, then pushes the script into the app's internal directory by App uid) |
 | `make auto-compare ANDROID=<run-dir> IOS=<run-dir>` | Compares two Android/iOS runs of the same path; exits non-zero when steps diverge |
 | `make clean` | Cleans the workbench's build artifacts, iOS Pods, and Podfile.lock |
 | `make help` | Shows all commands |
@@ -42,7 +42,7 @@ The `Makefile` at the project root is the local development entry point; run `ma
 
 ### Local Dependencies and Publishing
 
-Run `make local-deps` (or `bash tool/use_local_packages.sh`) to create `pubspec_overrides.yaml` beside the pubspecs of the main package, Android, iOS, and workbench. The interface package has no sibling dependencies and needs no override. The repository's `.gitignore` already excludes these files at every depth; only the generator is committed. Existing override files are preserved.
+Run `make local-deps` (or `bash ci/use_local_packages.sh`) to create `pubspec_overrides.yaml` beside the pubspecs of the main package, Android, iOS, and workbench. The interface package has no sibling dependencies and needs no override. The repository's `.gitignore` already excludes these files at every depth; only the generator is committed. Existing override files are preserved.
 
 Overrides apply to the package being resolved, not to packages that depend on it. The workbench therefore needs its own overrides for interface, Android, and iOS, even though its main SDK dependency already uses `path: ../im_flutter_sdk`. `make deps`, `make auto-report`, and the CI quality/build/device-test entry points generate the local files before resolving dependencies.
 
@@ -52,7 +52,7 @@ For release validation, use a checkout without overrides, or temporarily move th
 
 ## Test Data Preparation
 
-Manual and single-device script modes use [the workbench environment](workbench/README.md#setup). Multi-device execution uses the standalone im-test-orchestrator repository, invoked through [scripts/multi.sh](scripts/multi.sh), with case files in `testing/multi/cases/` and its own account preparation. `make config` creates `workbench/config.local.json` without overwriting an existing file.
+Manual and single-device script modes use [the workbench environment](workbench/README.md#setup). Multi-device execution uses the standalone im-test-orchestrator repository, invoked through [workbench/multi/multi.sh](workbench/multi/multi.sh), with case files in `workbench/multi/cases/` and its own account preparation. `make config` creates `workbench/config.local.json` without overwriting an existing file.
 
 Workbench run data is prepared in two steps; both products are local files and neither is committed:
 
@@ -80,29 +80,29 @@ flutter run -d <device> --dart-define=API_SCRIPT=<script path>  # script mode
 
 For 5.0.0, the logged-in scripts are split into positive/negative paths (both single-account):
 
-- `testing/single/cases/script_500_apis_positive.json`: the normal path — 20 steps, all expected to succeed, including batch interfaces mixed with unparseable message ids;
-- `testing/single/cases/script_500_apis_negative.json`: the error path — 10 steps, each expecting a specific error code. Among them, passing a missing message to `fetchGroupMessageReadReceipts` crashes the Android native process, so that step is not executed; the runner always records a `fetch-group-receipt-missing-disabled` candidate.
+- `workbench/single/cases/script_500_apis_positive.json`: the normal path — 20 steps, all expected to succeed, including batch interfaces mixed with unparseable message ids;
+- `workbench/single/cases/script_500_apis_negative.json`: the error path — 10 steps, each expecting a specific error code. Among them, passing a missing message to `fetchGroupMessageReadReceipts` crashes the Android native process, so that step is not executed; the runner always records a `fetch-group-receipt-missing-disabled` candidate.
 
 When evidence needs to be preserved, use the runner at the repository root (more reproducible than typing `flutter run` by hand: it automatically boots/activates the emulator and pushes the script into the Android app's private directory):
 
 ```bash
 make auto-report PLATFORM=android DEVICE=emulator-5554
 make auto-report PLATFORM=ios DEVICE=<udid of a booted simulator>
-make auto-report PLATFORM=android SCRIPT=testing/single/cases/script_500_apis_negative.json
-make auto-compare ANDROID=reports/5.0.0/<android-run> IOS=reports/5.0.0/<ios-run>
+make auto-report PLATFORM=android SCRIPT=workbench/single/cases/script_500_apis_negative.json
+make auto-compare ANDROID=artifacts/single/<ts>/android IOS=artifacts/single/<ts>/ios
 ```
 
-Each run writes `run.json`, `events.jsonl`, `crash.log`, `steps.json`, `summary.md`, and `issues.md` under `reports/5.0.0/<run-id>/`; comparisons write `comparison-<path>-<timestamp>.md` under `reports/5.0.0/`. Reports may contain account and resource identifiers, so the entire `reports/` directory is gitignored; only reviewed and sanitized conclusions go into `docs/porting/`.
+Each run writes `run.json`, `events.jsonl`, `crash.log`, `steps.json`, `summary.md`, and `issues.md` under `artifacts/single/<timestamp>/<platform>/`; comparisons write `comparison-<path>-<timestamp>.md` under `artifacts/single/`. Reports may contain account and resource identifiers, so the entire `artifacts/` directory is gitignored; only reviewed and sanitized conclusions go into `docs/porting/`.
 
 ### Quality Gate
 
-`tool/ci/run_quality.sh` is CI's quality job — locally and in CI the same gate applies. It first generates local SDK overrides with `tool/use_local_packages.sh`, then calls `tool/ci/ensure_workbench_env.sh`: if `workbench/lib/env.dart` does not exist, it generates an empty placeholder from `workbench/templates/env.example.dart`; if it already exists, it is kept as-is. This file is gitignored; without it a fresh checkout of the workbench cannot compile at all, and `flutter analyze` directly reports `Target of URI doesn't exist: '../env.dart'`. The script fills in only this one file — it **does not generate `workbench/config.local.json`**: the credentials in that file belong to each user's own environment configuration, read only by local `make env-gettoken`; CI does not fabricate one for anyone. It then runs in order:
+`ci/run_quality.sh` is CI's quality job — locally and in CI the same gate applies. It first generates local SDK overrides with `ci/use_local_packages.sh`, then calls `ci/ensure_workbench_env.sh`: if `workbench/lib/env.dart` does not exist, it generates an empty placeholder from `workbench/templates/env.example.dart`; if it already exists, it is kept as-is. This file is gitignored; without it a fresh checkout of the workbench cannot compile at all, and `flutter analyze` directly reports `Target of URI doesn't exist: '../env.dart'`. The script fills in only this one file — it **does not generate `workbench/config.local.json`**: the credentials in that file belong to each user's own environment configuration, read only by local `make env-gettoken`; CI does not fabricate one for anyone. It then runs in order:
 
 1. `flutter pub get` in the 5 packages in sequence;
 2. `dart format --set-exit-if-changed`: checks only changed `.dart` files; the baseline is specified by `FORMAT_BASE_SHA` (CI passes the PR base / pre-push sha), falling back to `HEAD^` when unset locally;
 3. `flutter analyze --fatal-infos` in the 5 packages in sequence: `info`-level issues also count as failures;
 4. `flutter test --coverage` under `im_flutter_sdk`;
-5. Three consistency scripts: `tool/ci/check_case_mapping.dart` (native ↔ Flutter naming mapping), `tool/ci/check_contracts.dart` (MethodChannel method-name constants and routing branches on all three ends), `tool/ci/check_versions.dart` (pubspec versions of the 4 packages, the iOS podspec version, and the native SDK versions declared in Android `build.gradle` and the iOS podspec).
+5. Three consistency scripts: `im_flutter_sdk/tool/ci/check_case_mapping.dart` (native ↔ Flutter naming mapping), `im_flutter_sdk/tool/ci/check_contracts.dart` (MethodChannel method-name constants and routing branches on all three ends), `im_flutter_sdk/tool/ci/check_versions.dart` (pubspec versions of the 4 packages, the iOS podspec version, and the native SDK versions declared in Android `build.gradle` and the iOS podspec).
 
 > Note: step 4 only runs `im_flutter_sdk/test/`; `workbench/test/` is outside the gate — after changing the workbench, run `cd workbench && flutter test` separately.
 
@@ -117,8 +117,8 @@ make scan-deprecated PLATFORM=ios   # scan iOS only
 
 - A **clean build is required**: incremental builds do not re-emit warnings for unchanged files, so the script runs `clean` for each platform first. If the parser finds reused compilation in the log (`UP-TO-DATE` / `FROM-CACHE`), it marks the scan as failed rather than reporting "0 entries".
 - Only wrapper sources are scanned (`im_flutter_sdk_android/android/src/main/java`, `im_flutter_sdk_ios/ios`); third-party warnings from the workbench and Pods / pub cache do not enter the report.
-- Android requires `-Xlint:deprecation` (AGP does not enable it by default — it only prints `Note: ...` without file/line numbers), injected via `tool/ci/enable_deprecation_lint.gradle` with `-I`, **without modifying the plugin's own build.gradle**, so user builds are unaffected.
-- Artifacts are archived by current branch name into `reports/<version>/deprecated/` (gitignored; e.g. the `5.0.0` branch writes `reports/5.0.0/deprecated/`, at the same level as auto reports): `{android,ios}-raw.log` raw build logs, `{android,ios}-deprecated-api.json`, and the `native-deprecated-api.md` summary report. When HEAD is not on a branch (detached), the script errors out directly instead of guessing a directory.
+- Android requires `-Xlint:deprecation` (AGP does not enable it by default — it only prints `Note: ...` without file/line numbers), injected via `ci/enable_deprecation_lint.gradle` with `-I`, **without modifying the plugin's own build.gradle**, so user builds are unaffected.
+- Artifacts are written to `artifacts/ci/<timestamp>/deprecated/` (gitignored): `{android,ios}-raw.log` raw build logs, `{android,ios}-deprecated-api.json`, and the `native-deprecated-api.md` summary report.
 - Report-only, non-blocking: finding deprecated calls does not fail the command; only build failures or untrustworthy logs do. For the parsing contract and CI reuse plan, see [docs/spec/2026-09-21-deprecated-api-scan-spec.md](docs/spec/2026-09-21-deprecated-api-scan-spec.md).
 
 ### Device Integration Tests
@@ -127,8 +127,8 @@ Every device task on CI has an equivalent local script; the scripts first compar
 
 | Workflow | Trigger | Content | Local equivalent |
 |----------|---------|---------|------------------|
-| `.github/workflows/ci.yml` | PR, push to `main` / `4.*` / `5.*`, manual | Quality gate + Android debug build + iOS simulator build | `bash tool/ci/run_quality.sh` |
-| `.github/workflows/ci-device.yml` | Daily schedule + manual | Four independent parallel lanes: Android/iOS logged-out smoke (`integration_test/logged_out_test.dart`, built-in public demo appKey, no credentials needed) and Android/iOS logged-in regression (base, group, contact, user info suites) | `bash tool/ci/smoke_local.sh android\|ios` and `bash tool/ci/nightly_local.sh android\|ios` |
+| `.github/workflows/ci.yml` | PR, push to `main` / `4.*` / `5.*`, manual | Quality gate + Android debug build + iOS simulator build | `bash ci/run_quality.sh` |
+| `.github/workflows/ci-device.yml` | Daily schedule + manual | Four independent parallel lanes: Android/iOS logged-out smoke (`integration_test/logged_out_test.dart`, built-in public demo appKey, no credentials needed) and Android/iOS logged-in regression (base, group, contact, user info suites) | `bash ci/smoke_local.sh android\|ios` and `bash ci/nightly_local.sh android\|ios` |
 
 > `ci-device.yml` replaces the former `device-smoke.yml` and `single-account-nightly.yml`: all four lanes are independent and run in parallel, so a failing test case or lane never delays or blocks the others. The two logged-in lanes share one test account across platforms and require multi-device login enabled on the console (the React Native device regression already runs this way).
 
@@ -136,7 +136,7 @@ Every device task on CI has an equivalent local script; the scripts first compar
 
 Android requires a booted emulator (the scripts hard-connect to `emulator-5554`); on iOS, `run_ios_simulator_test.sh` boots the simulator itself, with logs written to `artifacts/*.log` (gitignored).
 
-The two workbench build jobs in `ci.yml` and both `run_*_test.sh` scripts call `tool/ci/ensure_workbench_env.sh` to create the missing `workbench/lib/env.dart` placeholder without overwriting an existing file. This satisfies the compilation dependency only. CI integration tests read credentials from dart-defines; `workbench/config.local.json` and `make env-gettoken` prepare data for the workbench's manual/script modes and do not supply the CI test configuration automatically.
+The two workbench build jobs in `ci.yml` and both `run_*_test.sh` scripts call `ci/ensure_workbench_env.sh` to create the missing `workbench/lib/env.dart` placeholder without overwriting an existing file. This satisfies the compilation dependency only. CI integration tests read credentials from dart-defines; `workbench/config.local.json` and `make env-gettoken` prepare data for the workbench's manual/script modes and do not supply the CI test configuration automatically.
 
 Both `run_*_test.sh` scripts uninstall the app before running to avoid leftover login state in cold-start cases such as `FL-APP-001`. Reinstalling does not remove server-side history. Contact deletion cases prepare friendship only and check the delete API's successful completion; they do not prepare or inspect conversations or messages.
 
@@ -188,13 +188,13 @@ The Nightly workflow and `nightly_local.sh` take the same five host inputs: `E2E
 
 Preparation fetches fresh App/User tokens and ensures the reusable peer account exists through REST `autoCreateUser`. The optional `E2E_USER_SUFFIX` host input derives the effective account `${E2E_USER_ID}${E2E_USER_SUFFIX}` (and the peer `${E2E_USER_ID}${E2E_USER_SUFFIX}_ci_peer`), so parallel lanes never share server-side state: the CI logged-in lanes pin `_flutter_android` / `_flutter_ios`, and `nightly_local.sh` defaults to the same per-platform suffix when it prepares the configuration itself (pass an explicit empty value to keep the base account). The peer token is discarded; the App Token is reused by the test fixtures. No additional Secrets are needed. The JSON has mode `0600` and is removed after the run; Client ID/Secret stay on the host. Shell environment variables do not reach `String.fromEnvironment` unless explicitly included in the dart-define file.
 
-After exporting the five inputs, run `bash tool/ci/nightly_local.sh android` or `bash tool/ci/nightly_local.sh ios`. Standalone configuration generation uses `bash tool/ci/write_e2e_dart_defines.sh OUTPUT_PATH`. The token helper retains its no-argument, User-Token-only stdout contract; `--json` is the structured output consumed by the configuration generator.
+After exporting the five inputs, run `bash ci/nightly_local.sh android` or `bash ci/nightly_local.sh ios`. Standalone configuration generation uses `bash ci/write_e2e_dart_defines.sh OUTPUT_PATH`. The token helper retains its no-argument, User-Token-only stdout contract; `--json` is the structured output consumed by the configuration generator.
 
 For direct device execution with an already prepared, complete temporary JSON, run from the worktree root:
 
 ```bash
-E2E_CONFIG_PATH="$PWD/reports/ci-basic-api/local/e2e-config.json" \
-  bash tool/ci/run_android_emulator_test.sh \
+E2E_CONFIG_PATH="$PWD/artifacts/ci-basic-api/local/e2e-config.json" \
+  bash ci/run_android_emulator_test.sh \
   integration_test/logged_in_base_test.dart android-basic-r1.log
 ```
 
@@ -202,7 +202,7 @@ For group, contact, or user-info cases, choose the corresponding entry above. Fo
 
 #### Results and evidence
 
-Device scripts print the log path under `artifacts/`; pass a different second argument for each platform and retry to preserve earlier failures. Logs and temporary runtime evidence under `reports/` are gitignored. The reviewed [verification record](docs/refs/ci-basic-api-tests/2026-11-07-positive-verification.md) links to the per-case CSV and [troubleshooting record](docs/refs/troubleshooting/2026-11-07-ci-contact-fixture-sync.md). The CSV records case ID, platform, round, expected/actual behavior, result, failure stage, target execution, and evidence; device scripts do not generate it automatically.
+Device scripts print the log path under `artifacts/`; pass a different second argument for each platform and retry to preserve earlier failures. Logs and temporary runtime evidence under `artifacts/` are gitignored. The reviewed [verification record](docs/refs/ci-basic-api-tests/2026-11-07-positive-verification.md) links to the per-case CSV and [troubleshooting record](docs/refs/troubleshooting/2026-11-07-ci-contact-fixture-sync.md). The CSV records case ID, platform, round, expected/actual behavior, result, failure stage, target execution, and evidence; device scripts do not generate it automatically.
 
 The 22 positive cases pass on both Android and iOS. Contact deletion cases check successful API completion for both parameter values; REST result checks, local contact updates, notifications, and conversation behavior are outside these two cases. Earlier local-contact failures on both platforms remain recorded and are not considered fixed by this scope change. The 19 new negative cases expose two send-state failures on both platforms; assertions remain intact pending review. See the [negative verification record](docs/refs/ci-basic-api-tests/2026-11-07-negative-verification.md) for expected behavior, exclusions, per-round results, and logs. Cloud Nightly has not been verified with the expanded suite.
 
@@ -250,6 +250,6 @@ scripts/gen-apidoc.sh en     # English version → output/apidoc-en/
 - The default branch is `main` (renamed from `flutter2_stable`); `4.x` / `5.x` are long-term lines and `ohos` is the independent HarmonyOS line; `alpha`, `dev` etc. are feature or historical branches — no version development on them.
 - Version development flow:
   1. After confirming the working tree is clean, create a branch named after the target version **from the corresponding long-term line** (4.x versions from `4.x`, 5.x versions from `5.x`);
-  2. Complete development and verification on that branch: pass the quality gate with `bash tool/ci/run_quality.sh`, build and run the workbench on both Android/iOS, and run through `script_500_apis_positive.json` / `script_500_apis_negative.json` (or `make auto-report`), keeping the reports;
+  2. Complete development and verification on that branch: pass the quality gate with `bash ci/run_quality.sh`, build and run the workbench on both Android/iOS, and run through `script_500_apis_positive.json` / `script_500_apis_negative.json` (or `make auto-report`), keeping the reports;
   3. After verification passes, merge forward in the order version branch → long-term line → `main` (see the AGENTS.md iron rules).
 - Version upgrades (aligning with the public APIs of a new native SDK version) have a dedicated workflow and acceptance report template; see the `platform-sdk-porting-v2` skill in the team workspace and past upgrade reports.

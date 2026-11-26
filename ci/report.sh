@@ -13,7 +13,7 @@ ci_report_start() {
   if [[ -n "$destination" ]]; then
     args+=(--output "$destination")
   fi
-  report_dir="$(python3 "$repo_root/tool/ci/report.py" "${args[@]}")"
+  report_dir="$(python3 "$repo_root/ci/report.py" "${args[@]}")"
   report_device="unknown"
   report_attempt=0
   report_attempt_recorded=0
@@ -33,12 +33,12 @@ ci_report_start() {
 
 ci_report_attempt_start() {
   report_attempt="$1"
-  python3 "$repo_root/tool/ci/report.py" attempt --run "$report_dir" \
+  python3 "$repo_root/ci/report.py" attempt --run "$report_dir" \
     --number "$report_attempt"
 }
 
 ci_report_attempt() {
-  python3 "$repo_root/tool/ci/report.py" attempt --run "$report_dir" \
+  python3 "$repo_root/ci/report.py" attempt --run "$report_dir" \
     --number "$report_attempt" --exit-code "$1"
   report_attempt_recorded="$report_attempt"
 }
@@ -49,7 +49,7 @@ ci_report_finish() {
   if (( report_attempt > report_attempt_recorded )); then
     ci_report_attempt "$status" || status=1
   fi
-  python3 "$repo_root/tool/ci/report.py" finish --run "$report_dir" \
+  python3 "$repo_root/ci/report.py" finish --run "$report_dir" \
     --exit-code "$status" --device "$report_device" || status=1
   exit "$status"
 }
