@@ -226,6 +226,25 @@ class ChatOptions {
   final String? dnsUrl;
 
   /// ~english
+  /// The DoH (DNS over HTTPS) vendor.
+  ///
+  /// This property takes effect only when `enableDNSConfig` is `true`.
+  /// - `0`: DoH is disabled;
+  /// - (Default) `1`: China;
+  /// - `2`: Global.
+  /// ~end
+  ///
+  /// ~chinese
+  /// DoH（DNS over HTTPS）服务商。
+  ///
+  /// 仅在 `enableDNSConfig` 为 `true` 时生效。
+  /// - `0`：关闭 DoH；
+  /// - （默认）`1`：国内；
+  /// - `2`：海外。
+  /// ~end
+  final int dohVendor;
+
+  /// ~english
   /// The custom REST server.
   /// ~end
   ///
@@ -569,6 +588,8 @@ class ChatOptions {
   ///
   /// Param [dnsUrl] The DNS url.
   ///
+  /// Param [dohVendor] The DoH vendor, effective only when [enableDNSConfig] is `true`. (Default) `1`: China; `2`: Global; `0`: disabled.
+  ///
   /// Param [restServer] The REST server for private deployments.
   ///
   /// Param [imPort] The IM server port for private deployments.
@@ -668,6 +689,8 @@ class ChatOptions {
   ///
   /// Param [dnsUrl] DNS 地址。
   ///
+  /// Param [dohVendor] DoH 服务商，仅在 enableDNSConfig 为 `true` 时生效。（默认）`1`：国内；`2`：海外；`0`：关闭。
+  ///
   /// Param [restServer] 私有部署时的 REST 服务器地址。
   ///
   /// Param [imPort] 私有部署时的 IM 服务器端口。
@@ -725,6 +748,7 @@ class ChatOptions {
     bool isAutoDownloadThumbnail = true,
     bool enableDNSConfig = true,
     String? dnsUrl,
+    int dohVendor = 1,
     String? restServer,
     int? imPort,
     String? imServer,
@@ -764,6 +788,7 @@ class ChatOptions {
           isAutoDownloadThumbnail: isAutoDownloadThumbnail,
           enableDNSConfig: enableDNSConfig,
           dnsUrl: dnsUrl,
+          dohVendor: dohVendor,
           restServer: restServer,
           imPort: imPort,
           imServer: imServer,
@@ -846,6 +871,8 @@ class ChatOptions {
   /// - `false`: No. DNS needs to be disabled for private deployment.
   ///
   /// Param [dnsUrl] The DNS url.
+  ///
+  /// Param [dohVendor] The DoH vendor, effective only when [enableDNSConfig] is `true`. (Default) `1`: China; `2`: Global; `0`: disabled.
   ///
   /// Param [restServer] The REST server for private deployments.
   ///
@@ -946,6 +973,8 @@ class ChatOptions {
   ///
   /// Param [dnsUrl] DNS 地址。
   ///
+  /// Param [dohVendor] DoH 服务商，仅在 enableDNSConfig 为 `true` 时生效。（默认）`1`：国内；`2`：海外；`0`：关闭。
+  ///
   /// Param [restServer] 私有部署时的 REST 服务器地址。
   ///
   /// Param [imPort] 私有部署时的 IM 服务器端口。
@@ -1003,6 +1032,7 @@ class ChatOptions {
     bool isAutoDownloadThumbnail = true,
     bool enableDNSConfig = true,
     String? dnsUrl,
+    int dohVendor = 1,
     String? restServer,
     int? imPort,
     String? imServer,
@@ -1042,6 +1072,7 @@ class ChatOptions {
           isAutoDownloadThumbnail: isAutoDownloadThumbnail,
           enableDNSConfig: enableDNSConfig,
           dnsUrl: dnsUrl,
+          dohVendor: dohVendor,
           restServer: restServer,
           imPort: imPort,
           imServer: imServer,
@@ -1125,6 +1156,8 @@ class ChatOptions {
   /// - `false`: No. DNS needs to be disabled for private deployment.
   ///
   /// Param [dnsUrl] The DNS url.
+  ///
+  /// Param [dohVendor] The DoH vendor, effective only when [enableDNSConfig] is `true`. (Default) `1`: China; `2`: Global; `0`: disabled.
   ///
   /// Param [restServer] The REST server for private deployments.
   ///
@@ -1225,6 +1258,8 @@ class ChatOptions {
   ///
   /// Param [dnsUrl] DNS 地址。
   ///
+  /// Param [dohVendor] DoH 服务商，仅在 enableDNSConfig 为 `true` 时生效。（默认）`1`：国内；`2`：海外；`0`：关闭。
+  ///
   /// Param [restServer] 私有部署时的 REST 服务器地址。
   ///
   /// Param [imPort] 私有部署时的 IM 服务器端口。
@@ -1282,6 +1317,7 @@ class ChatOptions {
     bool isAutoDownloadThumbnail = true,
     bool enableDNSConfig = true,
     String? dnsUrl,
+    int dohVendor = 1,
     String? restServer,
     int? imPort,
     String? imServer,
@@ -1320,6 +1356,7 @@ class ChatOptions {
           isAutoDownloadThumbnail: isAutoDownloadThumbnail,
           enableDNSConfig: enableDNSConfig,
           dnsUrl: dnsUrl,
+          dohVendor: dohVendor,
           restServer: restServer,
           imPort: imPort,
           imServer: imServer,
@@ -1362,6 +1399,7 @@ class ChatOptions {
     this.isAutoDownloadThumbnail = true,
     this.enableDNSConfig = true,
     this.dnsUrl,
+    this.dohVendor = 1,
     this.restServer,
     this.imPort,
     this.imServer,
@@ -1454,6 +1492,7 @@ class ChatOptions {
 
     // 5.2.0
     data['disconnectNotifyThreshold'] = disconnectNotifyThreshold;
+    data['dohVendor'] = dohVendor;
 
     return data;
   }
@@ -1530,6 +1569,7 @@ class ChatOptions {
       isAutoDownloadThumbnail: autoDownloadThumbnail ?? isAutoDownloadThumbnail,
       enableDNSConfig: enableDNSConfig,
       dnsUrl: dnsUrl,
+      dohVendor: dohVendor,
       restServer: restServer,
       imPort: imPort,
       imServer: imServer,

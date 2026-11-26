@@ -28,6 +28,8 @@
     data[@"enableChatroomConversation"] = @(self.enableChatroomConversation);
     data[@"usingHttpsOnly"] = @(self.usingHttpsOnly);
     data[@"enableDNSConfig"] = @(self.enableDnsConfig);
+    // 5.2.0
+    data[@"dohVendor"] = @(self.dohVendor);
     data[@"imPort"] = @(self.chatPort);
     data[@"imServer"] = self.chatServer;
     data[@"webSocketServer"] = self.webSocketServer;
@@ -93,6 +95,11 @@
     }
     options.usingHttpsOnly = [aJson[@"usingHttpsOnly"] boolValue];
     options.enableDnsConfig = [aJson[@"enableDNSConfig"] boolValue];
+    // 5.2.0: effective only when DNS config is enabled; must stay outside any
+    // !enableDnsConfig private-deployment gating.
+    if (aJson[@"dohVendor"] && ![aJson[@"dohVendor"] isKindOfClass:[NSNull class]]) {
+        options.dohVendor = [aJson[@"dohVendor"] integerValue];
+    }
     options.chatPort = [aJson[@"imPort"] intValue];
     options.chatServer = aJson[@"imServer"];
     options.webSocketServer = aJson[@"webSocketServer"];

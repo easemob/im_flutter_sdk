@@ -85,6 +85,11 @@ class OptionsHelper {
         options.setAreaCode(areaCodeFromInt(json.getInt("areaCode")));
         options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
         options.enableDNSConfig(json.getBoolean("enableDNSConfig"));
+        // 5.2.0: effective only when DNS config is enabled; must stay outside
+        // the !enableDNSConfig private-deployment block below.
+        if (json.has("dohVendor") && !json.isNull("dohVendor")) {
+            options.setDohVendor(json.getInt("dohVendor"));
+        }
         options.setLoadEmptyConversations(json.optBoolean("loadEmptyConversations", false));
         // 5.1.0
         if (json.has("autoLoadConversations") && !json.isNull("autoLoadConversations")) {
@@ -152,6 +157,50 @@ class OptionsHelper {
         }
         return options;
 
+    }
+
+    // 5.2.0
+    static Map<String, Object> toJson(EMOptions options) {
+        if (options == null) {
+            return null;
+        }
+        Map<String, Object> data = new HashMap<>();
+        data.put("appKey", options.getAppKey());
+        data.put("appId", options.getAppId());
+        data.put("requireDeliveryAck", options.getRequireDeliveryAck());
+        data.put("sortMessageByServerTime", options.isSortMessageByServerTime());
+        data.put("acceptInvitationAlways", options.getAcceptInvitationAlways());
+        data.put("autoAcceptGroupInvitation", options.autoAcceptGroupInvitations());
+        data.put("deleteMessagesAsExitGroup", options.deleteMessagesOnLeaveGroup());
+        data.put("deleteMessagesAsExitChatRoom", options.deleteMessagesOnLeaveChatroom());
+        data.put("isAutoDownload", options.getAutodownloadThumbnail());
+        data.put("isChatRoomOwnerLeaveAllowed", options.canChatroomOwnerLeave());
+        data.put("serverTransfer", options.getAutoTransferMessageAttachments());
+        data.put("loadEmptyConversations", options.isLoadEmptyConversations());
+        data.put("autoLoadConversations", options.isAutoLoadAllConversations());
+        data.put("enableChatroomConversation", options.isEnableChatroomConversation());
+        data.put("usingHttpsOnly", options.getUsingHttpsOnly());
+        data.put("enableDNSConfig", options.getEnableDNSConfig());
+        data.put("imPort", options.getImPort());
+        data.put("imServer", options.getImServer());
+        data.put("webSocketServer", options.getWebSocketServer());
+        data.put("webSocketPort", options.getWebSocketPort());
+        data.put("restServer", options.getRestServer());
+        data.put("dnsUrl", options.getDnsUrl());
+        data.put("areaCode", options.getAreaCode());
+        data.put("dataSyncType", EMOptions.EMDataSyncType.toNativeMask(options.getDataSyncType()));
+        data.put("deviceName", options.getCustomDeviceName());
+        data.put("osType", options.getCustomOSPlatform());
+        data.put("useReplacedMessageContents", options.isUseReplacedMessageContents());
+        data.put("enableTLS", options.isEnableTLSConnection());
+        data.put("messagesReceiveCallbackIncludeSend", options.isIncludeSendMessageInMessageListener());
+        data.put("regardImportMessagesAsRead", options.regardImportedMsgAsRead());
+        data.put("loginExtensionInfo", options.getLoginCustomExt());
+        data.put("dohVendor", options.getDohVendor());
+        data.put("enableUserInfo", options.isEnableUserInfo());
+        data.put("ntpServers", options.getNtpServers());
+        data.put("disconnectNotifyThreshold", options.getDisconnectNotifyThreshold());
+        return data;
     }
 
     private static EMOptions.AreaCode areaCodeFromInt(int areaCode) {
