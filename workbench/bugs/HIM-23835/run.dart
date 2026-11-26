@@ -34,12 +34,12 @@ Future<void> main(List<String> args) async {
 void _printHelp() {
   stdout.writeln('''
 Usage:
-  bash im_flutter_sdk/example/bugs/HIM-23835/HIM-23835.sh [options]
+  bash workbench/bugs/HIM-23835/HIM-23835.sh [options]
 
 Options:
   --devices <mirror,controller>  Use two specific simulator UDIDs.
   --config <path>                Use an external env-tool JSON config.
-  --keep-apps                    Keep the example app installed afterward.
+  --keep-apps                    Keep the workbench app installed afterward.
   --self-test                    Check orchestration data without devices.
   --help                         Show this help.
 
@@ -113,8 +113,8 @@ final class _Runner {
   final Directory root;
   final _Options options;
 
-  late final Directory example = Directory(
-    '${root.path}/im_flutter_sdk/example',
+  late final Directory workbench = Directory(
+    '${root.path}/workbench',
   );
   late final Directory reportDirectory;
   late final Directory temporaryDirectory;
@@ -229,7 +229,7 @@ final class _Runner {
   }
 
   void _validateRoot() {
-    if (!File('${example.path}/pubspec.yaml').existsSync()) {
+    if (!File('${workbench.path}/pubspec.yaml').existsSync()) {
       throw StateError('Run $_ticket from the 5.0.0 worktree root.');
     }
   }
@@ -252,7 +252,7 @@ final class _Runner {
     } else if (environmentConfig != null) {
       config = environmentConfig;
     } else {
-      final file = File('${example.path}/config.local.json');
+      final file = File('${workbench.path}/config.local.json');
       if (!await file.exists()) {
         throw StateError(
           'Provide --config, HIM_23835_CONFIG, or the E2E_* variables.',
@@ -261,7 +261,7 @@ final class _Runner {
       final decoded = jsonDecode(await file.readAsString());
       if (decoded is! Map) {
         throw const FormatException(
-          'example/config.local.json must be a JSON object',
+          'workbench/config.local.json must be a JSON object',
         );
       }
       config = Map<String, dynamic>.from(decoded);
@@ -370,7 +370,8 @@ final class _Runner {
   }
 
   Future<void> _buildApp() async {
-    await _streamProcess('bash', ['tool/ci/ensure_example_env.sh'], root.path);
+    await _streamProcess(
+        'bash', ['tool/ci/ensure_workbench_env.sh'], root.path);
     await _streamProcess(
         'flutter',
         [
@@ -381,9 +382,9 @@ final class _Runner {
           '--dart-define=API_SCRIPT=${activeScript.path}',
           '--dart-define=API_CONFIG=${runtimeConfig.path}',
         ],
-        example.path);
+        workbench.path);
     runnerApp = Directory(
-      '${example.path}/build/ios/iphonesimulator/Runner.app',
+      '${workbench.path}/build/ios/iphonesimulator/Runner.app',
     );
     if (!await runnerApp.exists()) {
       throw StateError(

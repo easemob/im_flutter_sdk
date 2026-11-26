@@ -40,11 +40,11 @@ class RunnerTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         (self.root / 'tool/ci').mkdir(parents=True)
-        (self.root / 'im_flutter_sdk/example').mkdir(parents=True)
+        (self.root / 'workbench').mkdir(parents=True)
         (self.root / 'im_flutter_sdk/pubspec.yaml').write_text('version: 5.1.0\n')
         for name in ('report.py', 'report.sh', 'nightly_local.sh', 'smoke_local.sh', 'run_android_emulator_test.sh', 'run_ios_simulator_test.sh'):
             shutil.copy(SOURCE / 'tool/ci' / name, self.root / 'tool/ci' / name)
-        for name in ('tool/use_local_packages.sh', 'tool/ci/ensure_example_env.sh'):
+        for name in ('tool/use_local_packages.sh', 'tool/ci/ensure_workbench_env.sh'):
             (self.root / name).write_text('#!/bin/bash\nexit 0\n')
         boot = self.root / 'tool/ci/boot_ios_simulator.sh'
         boot.write_text('#!/bin/bash\necho fake-ios-device\n')

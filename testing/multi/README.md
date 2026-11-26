@@ -21,13 +21,13 @@
 | 输入 | 位置 | 怎么来 |
 |---|---|---|
 | 用例 YAML/JSON | 本目录 | 人工按规范编写，见下文"编写新用例" |
-| 账号配置 `accounts-input.json` | `<IMTO>/multi/config/`（gitignored） | 由 `generate_accounts_input.dart` 从 `im_flutter_sdk/example/config.local.json` 生成 |
+| 账号配置 `accounts-input.json` | `<IMTO>/multi/config/`（gitignored） | 由 `generate_accounts_input.dart` 从 `workbench/config.local.json` 生成 |
 | 账号 Token 源码 `accounts.g.dart` | `<IMTO>/multi/lib/`（gitignored） | 由 `generate_accounts.dart` 经 REST 换取 Token 后生成 |
 | 场景选择配置 `cases.json` | `<IMTO>/multi/config/`（gitignored） | 由 `generate` 命令自动生成，不要手写 |
 
 ### 1.1 准备账号（每个工具仓 checkout 只需做一次，Token 过期后重做）
 
-前置：已执行 `make config` 生成 `im_flutter_sdk/example/config.local.json`，并填入真实 appKey、账号等（见仓库根 CONTRIBUTING.md）。
+前置：已执行 `make config` 生成 `workbench/config.local.json`，并填入真实 appKey、账号等（见仓库根 CONTRIBUTING.md）。
 
 ```bash
 cd <IMTO>/multi
@@ -69,7 +69,7 @@ scripts/multi.sh generate --platform ios --case 5.0.0-multi-presence-positive
 scripts/multi.sh all --cases <IMTO>/multi/config/cases.json
 ```
 
-`all` 依次完成数据准备、设备准备、构建、安装启动、执行、报告。`--app-dir` 默认 `im_flutter_sdk/example`，`--target testing/target-flutter.yaml` 可集中提供构建参数。终端首先输出 `runId=...`——这是找结果的钥匙。
+`all` 依次完成数据准备、设备准备、构建、安装启动、执行、报告。`--app-dir` 默认 `workbench`，`--target testing/target-flutter.yaml` 可集中提供构建参数。终端首先输出 `runId=...`——这是找结果的钥匙。
 
 联系人申请场景（contact-add）需要业务数据核验，命令追加：
 
@@ -139,7 +139,7 @@ python3 testing/report_upgrade.py --version 5.1.0 \
 
 1. 与维护者确认场景、前置条件、允许的准备动作和通过标准（准备动作不能提前完成被测业务行为）。
 2. 在本目录新增 `<版本>-multi-<场景>-positive.yaml` 和同名 `.json`，两端目录逐字节一致；格式与语法见 im-test-orchestrator 仓 `docs/case-authoring.md` 和 `flow_runner/README.md`（YAML 表达流程与角色，JSON 的 `data` 声明输入、`steps` 保存命令、`requiredBindings` 声明必要验证）。
-3. 核对 example 执行端是否支持用例用到的命令；缺支持先补 agent，不能把无法执行的用例当可用产物。
+3. 核对 workbench 执行端是否支持用例用到的命令；缺支持先补 agent，不能把无法执行的用例当可用产物。
 4. 用 `generate --case` 单选新用例跑通后再加入全量。
 
 端间对账（核对 Flutter/RN 副本一致）：

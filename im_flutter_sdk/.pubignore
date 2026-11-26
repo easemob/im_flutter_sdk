@@ -1,0 +1,39 @@
+# Publishing exclusions for pub.dev.
+#
+# NOTE: when a .pubignore file exists, pub ignores .gitignore entirely, so this
+# file must repeat every .gitignore rule and then add the publish-only
+# exclusions at the bottom. Keep it in sync with .gitignore.
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+#.vscode/
+
+# Flutter/Dart/Pub related
+/pubspec.lock
+**/doc/api/
+.dart_tool/
+.kotlin/
+build/
+output/
+
+# Publish-only exclusions: internal tooling and records that are not part of
+# the user-facing package. The published example/ is intentionally kept.
+/docs/
+/scripts/
+/tool/
+/test/

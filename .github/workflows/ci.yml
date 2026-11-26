@@ -85,14 +85,14 @@ jobs:
       - name: Use local SDK packages
         run: bash tool/use_local_packages.sh
 
-      - name: Create the example env placeholder
-        # im_flutter_sdk/example imports the gitignored lib/env.dart, and no
-        # earlier step creates it in a fresh checkout, so the example does not
+      - name: Create the workbench env placeholder
+        # workbench imports the gitignored lib/env.dart, and no
+        # earlier step creates it in a fresh checkout, so the workbench does not
         # compile without this placeholder (see the script's header).
-        run: ./tool/ci/ensure_example_env.sh
+        run: ./tool/ci/ensure_workbench_env.sh
 
-      - name: Build Android example
-        working-directory: im_flutter_sdk/example
+      - name: Build Android workbench
+        working-directory: workbench
         run: |
           flutter pub get
           flutter build apk --debug
@@ -117,9 +117,9 @@ jobs:
       - name: Use local SDK packages
         run: bash tool/use_local_packages.sh
 
-      - name: Create the example env placeholder
+      - name: Create the workbench env placeholder
         # Same reason as in the Android job: the placeholder is gitignored.
-        run: ./tool/ci/ensure_example_env.sh
+        run: ./tool/ci/ensure_workbench_env.sh
 
       - name: Cache Swift Package Manager dependencies
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -131,12 +131,12 @@ jobs:
           path: |
             ~/Library/Caches/org.swift.swiftpm
             ~/Library/Developer/Xcode/DerivedData/*/SourcePackages
-          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.swift', 'im_flutter_sdk/example/pubspec.lock') }}
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.swift', 'workbench/pubspec.lock') }}
           restore-keys: |
             ${{ runner.os }}-spm-
 
-      - name: Build iOS example
-        working-directory: im_flutter_sdk/example
+      - name: Build iOS workbench
+        working-directory: workbench
         # A cold SPM cache (first run after the cache key changes) must
         # download the ShengwangInfra binary target from
         # download.shengwang.cn, which has repeatedly timed out from GitHub

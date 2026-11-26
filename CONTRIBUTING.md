@@ -8,14 +8,14 @@ Federated Plugin architecture; package pubspecs declare hosted version dependenc
 
 | Package | Responsibility |
 |---|---|
-| `im_flutter_sdk/` | Main package: public API, Models, Managers, includes the `example/` test app |
+| `im_flutter_sdk/` | Main package: public API, Models, Managers, includes the minimal `example/` published to pub.dev |
 | `im_flutter_sdk_interface/` | Platform interface layer: MethodChannel abstraction |
 | `im_flutter_sdk_android/` | Android platform implementation |
 | `im_flutter_sdk_ios/` | iOS platform implementation |
 
 Call chain: `Dart API → MethodChannel (interface) → Native Wrapper → HyphenateChat SDK`. Changing the interface affects all upper-layer packages.
 
-Beyond the four packages, the repository root also contains: `Makefile` (local development entry point), `tool/ci/` (quality gate and device test scripts), `testing/single/auto_report.dart` (auto-mode runner), `docs/porting/<version>/` (diff, contract, implementation, and acceptance docs for each version upgrade), `reports/` (local auto-run artifacts, gitignored).
+Beyond the four packages, the repository root also contains: `Makefile` (local development entry point), `workbench/` (internal visual API test app), `tool/ci/` (quality gate and device test scripts), `testing/single/auto_report.dart` (auto-mode runner), `docs/porting/<version>/` (diff, contract, implementation, and acceptance docs for each version upgrade), `reports/` (local auto-run artifacts, gitignored).
 
 ## Environment Preparation
 
@@ -28,23 +28,23 @@ The `Makefile` at the project root is the local development entry point; run `ma
 | target | Purpose |
 |--------|---------|
 | `make setup` | Runs `config` + `deps` + `pods` in sequence |
-| `make config` | Generates `im_flutter_sdk/example/config.local.json` (from `im_flutter_sdk/example/templates/config.local.example.json`) and a placeholder `example/lib/env.dart` (from `example/templates/env.example.dart`); skipped if they already exist |
-| `make env-gettoken` | Exchanges user tokens for each account on the host per `im_flutter_sdk/example/config.local.json` and writes `example/lib/env.dart` directly; exits non-zero when required fields are missing or still `TODO` |
-| `make local-deps` | Generates gitignored local dependency overrides for the main package, Android, iOS, and example; preserves existing files |
-| `make deps` | Runs `make local-deps`, then `flutter pub get` in the example directory |
-| `make pods` | Runs `deps` first, then uses mtime to check whether Podfile/podspec is newer than Podfile.lock, running `pod install` in `example/ios` only when needed |
+| `make config` | Generates `workbench/config.local.json` (from `workbench/templates/config.local.example.json`) and a placeholder `workbench/lib/env.dart` (from `workbench/templates/env.example.dart`); skipped if they already exist |
+| `make env-gettoken` | Exchanges user tokens for each account on the host per `workbench/config.local.json` and writes `workbench/lib/env.dart` directly; exits non-zero when required fields are missing or still `TODO` |
+| `make local-deps` | Generates gitignored local dependency overrides for the main package, Android, iOS, and workbench; preserves existing files |
+| `make deps` | Runs `make local-deps`, then `flutter pub get` in the workbench directory |
+| `make pods` | Runs `deps` first, then uses mtime to check whether Podfile/podspec is newer than Podfile.lock, running `pod install` in `workbench/ios` only when needed |
 | `make auto-report PLATFORM=<android\|ios> [DEVICE=<id>] [SCRIPT=<json>]` | Runs the 5.0.0 auto script and writes a traceable report to `reports/5.0.0/<run-id>/` (on Android it first ensures the debug build is installed, then pushes the script into the app's internal directory by App uid) |
 | `make auto-compare ANDROID=<run-dir> IOS=<run-dir>` | Compares two Android/iOS runs of the same path; exits non-zero when steps diverge |
-| `make clean` | Cleans the example's build artifacts, iOS Pods, and Podfile.lock |
+| `make clean` | Cleans the workbench's build artifacts, iOS Pods, and Podfile.lock |
 | `make help` | Shows all commands |
 
 > **Important**: after changing the native dependency version (e.g. HyphenateChat) in `im_flutter_sdk_ios.podspec`, you must run `make pods`. `flutter run` does not track podspec changes and will skip pod install, causing iOS to compile against the old native SDK and fail with compilation errors.
 
 ### Local Dependencies and Publishing
 
-Run `make local-deps` (or `bash tool/use_local_packages.sh`) to create `pubspec_overrides.yaml` beside the pubspecs of the main package, Android, iOS, and example. The interface package has no sibling dependencies and needs no override. The repository's `.gitignore` already excludes these files at every depth; only the generator is committed. Existing override files are preserved.
+Run `make local-deps` (or `bash tool/use_local_packages.sh`) to create `pubspec_overrides.yaml` beside the pubspecs of the main package, Android, iOS, and workbench. The interface package has no sibling dependencies and needs no override. The repository's `.gitignore` already excludes these files at every depth; only the generator is committed. Existing override files are preserved.
 
-Overrides apply to the package being resolved, not to packages that depend on it. The example therefore needs its own overrides for interface, Android, and iOS, even though its main SDK dependency already uses `path: ../`. `make deps`, `make auto-report`, and the CI quality/build/device-test entry points generate the local files before resolving dependencies.
+Overrides apply to the package being resolved, not to packages that depend on it. The workbench therefore needs its own overrides for interface, Android, and iOS, even though its main SDK dependency already uses `path: ../im_flutter_sdk`. `make deps`, `make auto-report`, and the CI quality/build/device-test entry points generate the local files before resolving dependencies.
 
 The published Android/iOS `5.0.0` packages depend on `im_flutter_sdk_interface: ^4.15.0+1`. Keep this hosted constraint in the three dependent packages for this release: changing only the main package to interface `5.0.0` would conflict with the published platform packages. Local overrides intentionally select the checked-out interface `5.0.0`. Package versions and dependency compatibility ranges are separate concerns.
 
@@ -52,28 +52,28 @@ For release validation, use a checkout without overrides, or temporarily move th
 
 ## Test Data Preparation
 
-Manual and single-device script modes use [the example environment](im_flutter_sdk/example/README.md#setup). Multi-device execution uses the standalone im-test-orchestrator repository, invoked through [scripts/multi.sh](scripts/multi.sh), with case files in `testing/multi/cases/` and its own account preparation. `make config` creates `im_flutter_sdk/example/config.local.json` without overwriting an existing file.
+Manual and single-device script modes use [the workbench environment](workbench/README.md#setup). Multi-device execution uses the standalone im-test-orchestrator repository, invoked through [scripts/multi.sh](scripts/multi.sh), with case files in `testing/multi/cases/` and its own account preparation. `make config` creates `workbench/config.local.json` without overwriting an existing file.
 
-Example run data is prepared in two steps; both products are local files and neither is committed:
+Workbench run data is prepared in two steps; both products are local files and neither is committed:
 
-1. **Credentials and test data**: `make config` generates `im_flutter_sdk/example/config.local.json`; fill in `restApi`, `appKey`, `clientId` / `clientSecret`, plus the test `accounts`, `groups`, and `rooms` per the `TODO` placeholders in `im_flutter_sdk/example/templates/config.local.example.json`.
+1. **Credentials and test data**: `make config` generates `workbench/config.local.json`; fill in `restApi`, `appKey`, `clientId` / `clientSecret`, plus the test `accounts`, `groups`, and `rooms` per the `TODO` placeholders in `workbench/templates/config.local.example.json`.
    - The project configures **one environment only**: this file describes the environment currently being run. To switch environments, edit this file's values directly, or keep multiple copies outside Git (e.g. `config.ngi.json` / `config.ebs.json`) and swap them in; the tooling does not do multi-environment selection.
    - Private deployment is not a separate mode: set the top-level `enablePrivateConfig` to `true` and fill in `webSocketServer` / `restServer` / `msyncServer`; the generated `env.dart` will carry these server fields and force `enableDNSConfig=false`.
-2. **Environment and tokens**: `make env-gettoken` exchanges an app token for each account's user token on the host and writes them directly into `example/lib/env.dart`. The app token and `clientSecret` are not written to the env file.
+2. **Environment and tokens**: `make env-gettoken` exchanges an app token for each account's user token on the host and writes them directly into `workbench/lib/env.dart`. The app token and `clientSecret` are not written to the env file.
 
-`im_flutter_sdk/example/config.local.json` and `example/lib/env.dart` are both gitignored; do not commit them.
+`workbench/config.local.json` and `workbench/lib/env.dart` are both gitignored; do not commit them.
 
 ## Running and Verification
 
-The example is a visual API test app supporting two modes:
+The workbench is a visual API test app supporting two modes:
 
 - **Manual mode**: initialize → log in → search for an API → fill in JSON parameters and call; results and listener callbacks are viewed in the floating log.
 - **Script mode** (suited for AI / automation): pass a JSON script via `--dart-define=API_SCRIPT=...` to execute a batch of APIs in order; each event is output as a single-line JSON with the `[APITEST]` prefix to stdout and a log file.
 
-For page flows, script fields (`steps`, `expect`, `$config.*` / `$prev` / `$step.<id>.*` references, `timeoutMs`), log channels, and Android path caveats, see [im_flutter_sdk/example/README.md](im_flutter_sdk/example/README.md). Manual runs:
+For page flows, script fields (`steps`, `expect`, `$config.*` / `$prev` / `$step.<id>.*` references, `timeoutMs`), log channels, and Android path caveats, see [workbench/README.md](workbench/README.md). Manual runs:
 
 ```bash
-cd im_flutter_sdk/example
+cd workbench
 flutter run -d <device>                                       # manual mode
 flutter run -d <device> --dart-define=API_SCRIPT=<script path>  # script mode
 ```
@@ -96,7 +96,7 @@ Each run writes `run.json`, `events.jsonl`, `crash.log`, `steps.json`, `summary.
 
 ### Quality Gate
 
-`tool/ci/run_quality.sh` is CI's quality job — locally and in CI the same gate applies. It first generates local SDK overrides with `tool/use_local_packages.sh`, then calls `tool/ci/ensure_example_env.sh`: if `im_flutter_sdk/example/lib/env.dart` does not exist, it generates an empty placeholder from `example/templates/env.example.dart`; if it already exists, it is kept as-is. This file is gitignored; without it a fresh checkout of the example cannot compile at all, and `flutter analyze` directly reports `Target of URI doesn't exist: '../env.dart'`. The script fills in only this one file — it **does not generate `im_flutter_sdk/example/config.local.json`**: the credentials in that file belong to each user's own environment configuration, read only by local `make env-gettoken`; CI does not fabricate one for anyone. It then runs in order:
+`tool/ci/run_quality.sh` is CI's quality job — locally and in CI the same gate applies. It first generates local SDK overrides with `tool/use_local_packages.sh`, then calls `tool/ci/ensure_workbench_env.sh`: if `workbench/lib/env.dart` does not exist, it generates an empty placeholder from `workbench/templates/env.example.dart`; if it already exists, it is kept as-is. This file is gitignored; without it a fresh checkout of the workbench cannot compile at all, and `flutter analyze` directly reports `Target of URI doesn't exist: '../env.dart'`. The script fills in only this one file — it **does not generate `workbench/config.local.json`**: the credentials in that file belong to each user's own environment configuration, read only by local `make env-gettoken`; CI does not fabricate one for anyone. It then runs in order:
 
 1. `flutter pub get` in the 5 packages in sequence;
 2. `dart format --set-exit-if-changed`: checks only changed `.dart` files; the baseline is specified by `FORMAT_BASE_SHA` (CI passes the PR base / pre-push sha), falling back to `HEAD^` when unset locally;
@@ -104,7 +104,7 @@ Each run writes `run.json`, `events.jsonl`, `crash.log`, `steps.json`, `summary.
 4. `flutter test --coverage` under `im_flutter_sdk`;
 5. Three consistency scripts: `tool/ci/check_case_mapping.dart` (native ↔ Flutter naming mapping), `tool/ci/check_contracts.dart` (MethodChannel method-name constants and routing branches on all three ends), `tool/ci/check_versions.dart` (pubspec versions of the 4 packages, the iOS podspec version, and the native SDK versions declared in Android `build.gradle` and the iOS podspec).
 
-> Note: step 4 only runs `im_flutter_sdk/test/`; `im_flutter_sdk/example/test/` is outside the gate — after changing the example, run `cd im_flutter_sdk/example && flutter test` separately.
+> Note: step 4 only runs `im_flutter_sdk/test/`; `workbench/test/` is outside the gate — after changing the workbench, run `cd workbench && flutter test` separately.
 
 ### Deprecated API Scan
 
@@ -116,7 +116,7 @@ make scan-deprecated PLATFORM=ios   # scan iOS only
 ```
 
 - A **clean build is required**: incremental builds do not re-emit warnings for unchanged files, so the script runs `clean` for each platform first. If the parser finds reused compilation in the log (`UP-TO-DATE` / `FROM-CACHE`), it marks the scan as failed rather than reporting "0 entries".
-- Only wrapper sources are scanned (`im_flutter_sdk_android/android/src/main/java`, `im_flutter_sdk_ios/ios`); third-party warnings from the example and Pods / pub cache do not enter the report.
+- Only wrapper sources are scanned (`im_flutter_sdk_android/android/src/main/java`, `im_flutter_sdk_ios/ios`); third-party warnings from the workbench and Pods / pub cache do not enter the report.
 - Android requires `-Xlint:deprecation` (AGP does not enable it by default — it only prints `Note: ...` without file/line numbers), injected via `tool/ci/enable_deprecation_lint.gradle` with `-I`, **without modifying the plugin's own build.gradle**, so user builds are unaffected.
 - Artifacts are archived by current branch name into `reports/<version>/deprecated/` (gitignored; e.g. the `5.0.0` branch writes `reports/5.0.0/deprecated/`, at the same level as auto reports): `{android,ios}-raw.log` raw build logs, `{android,ios}-deprecated-api.json`, and the `native-deprecated-api.md` summary report. When HEAD is not on a branch (detached), the script errors out directly instead of guessing a directory.
 - Report-only, non-blocking: finding deprecated calls does not fail the command; only build failures or untrustworthy logs do. For the parsing contract and CI reuse plan, see [docs/spec/2026-09-21-deprecated-api-scan-spec.md](docs/spec/2026-09-21-deprecated-api-scan-spec.md).
@@ -136,13 +136,13 @@ Every device task on CI has an equivalent local script; the scripts first compar
 
 Android requires a booted emulator (the scripts hard-connect to `emulator-5554`); on iOS, `run_ios_simulator_test.sh` boots the simulator itself, with logs written to `artifacts/*.log` (gitignored).
 
-The two example build jobs in `ci.yml` and both `run_*_test.sh` scripts call `tool/ci/ensure_example_env.sh` to create the missing `example/lib/env.dart` placeholder without overwriting an existing file. This satisfies the compilation dependency only. CI integration tests read credentials from dart-defines; `im_flutter_sdk/example/config.local.json` and `make env-gettoken` prepare data for the example's manual/script modes and do not supply the CI test configuration automatically.
+The two workbench build jobs in `ci.yml` and both `run_*_test.sh` scripts call `tool/ci/ensure_workbench_env.sh` to create the missing `workbench/lib/env.dart` placeholder without overwriting an existing file. This satisfies the compilation dependency only. CI integration tests read credentials from dart-defines; `workbench/config.local.json` and `make env-gettoken` prepare data for the workbench's manual/script modes and do not supply the CI test configuration automatically.
 
 Both `run_*_test.sh` scripts uninstall the app before running to avoid leftover login state in cold-start cases such as `FL-APP-001`. Reinstalling does not remove server-side history. Contact deletion cases prepare friendship only and check the delete API's successful completion; they do not prepare or inspect conversations or messages.
 
 #### Cases and inputs
 
-Five stable entry files live under `im_flutter_sdk/example/integration_test/`:
+Five stable entry files live under `workbench/integration_test/`:
 
 | Entry | Existing cases | Explicit synchronization / scope |
 |---|---:|---|
@@ -250,6 +250,6 @@ scripts/gen-apidoc.sh en     # English version → output/apidoc-en/
 - The default branch is `main` (renamed from `flutter2_stable`); `4.x` / `5.x` are long-term lines and `ohos` is the independent HarmonyOS line; `alpha`, `dev` etc. are feature or historical branches — no version development on them.
 - Version development flow:
   1. After confirming the working tree is clean, create a branch named after the target version **from the corresponding long-term line** (4.x versions from `4.x`, 5.x versions from `5.x`);
-  2. Complete development and verification on that branch: pass the quality gate with `bash tool/ci/run_quality.sh`, build and run the example on both Android/iOS, and run through `script_500_apis_positive.json` / `script_500_apis_negative.json` (or `make auto-report`), keeping the reports;
+  2. Complete development and verification on that branch: pass the quality gate with `bash tool/ci/run_quality.sh`, build and run the workbench on both Android/iOS, and run through `script_500_apis_positive.json` / `script_500_apis_negative.json` (or `make auto-report`), keeping the reports;
   3. After verification passes, merge forward in the order version branch → long-term line → `main` (see the AGENTS.md iron rules).
 - Version upgrades (aligning with the public APIs of a new native SDK version) have a dedicated workflow and acceptance report template; see the `platform-sdk-porting-v2` skill in the team workspace and past upgrade reports.

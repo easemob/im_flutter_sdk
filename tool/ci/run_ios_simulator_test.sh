@@ -30,7 +30,7 @@ test_target="${1:?usage: run_ios_simulator_test.sh TEST_TARGET}"
 watchdog_seconds="${WATCHDOG_SECONDS:-720}"
 max_attempts="${MAX_ATTEMPTS:-2}"
 # Keep in sync with PRODUCT_BUNDLE_IDENTIFIER in
-# im_flutter_sdk/example/ios/Runner.xcodeproj/project.pbxproj.
+# workbench/ios/Runner.xcodeproj/project.pbxproj.
 app_id="com.example.example"
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -38,14 +38,14 @@ source "$repo_root/tool/ci/report.sh"
 ci_report_start ios "$test_target"
 bash "$repo_root/tool/use_local_packages.sh"
 
-# The example app only compiles with the gitignored lib/env.dart in place.
-bash "$repo_root/tool/ci/ensure_example_env.sh"
+# The workbench app only compiles with the gitignored lib/env.dart in place.
+bash "$repo_root/tool/ci/ensure_workbench_env.sh"
 
 simulator_udid="$("$repo_root/tool/ci/boot_ios_simulator.sh")"
 report_device="$simulator_udid"
 echo "Using iOS simulator $simulator_udid"
 
-cd "$repo_root/im_flutter_sdk/example"
+cd "$repo_root/workbench"
 flutter pub get
 
 # Note: keep the array non-empty; expanding an empty array under set -u

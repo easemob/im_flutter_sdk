@@ -183,7 +183,7 @@ The following changes are included through the native SDK 5.1.0 upgrade:
 
 ## 4.18.1
 
-- Fixed the group events `onGroupMembersJoined和onGroupMembersExited` triggering the wrong callbacks;
+- Fixed the group events `onGroupMembersJoined` and `onGroupMembersExited` triggering the wrong callbacks;
 
 ## 4.18.0
 

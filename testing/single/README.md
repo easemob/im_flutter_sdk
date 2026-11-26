@@ -1,6 +1,6 @@
 # 单设备平版测试入口
 
-场景在 `cases/`，执行与报告工具为 `auto_report.dart`，共用 example 的 API 注册和脚本引擎。设计规则见 [单设备指南](../../docs/testing/2026-11-09-single-device.md)，JSON 语法和配置见 [example](../../im_flutter_sdk/example/README.md#script-mode-ai-friendly)。
+场景在 `cases/`，执行与报告工具为 `auto_report.dart`，共用 workbench 的 API 注册和脚本引擎。设计规则见 [单设备指南](../../docs/testing/2026-11-09-single-device.md)，JSON 语法和配置见 [workbench](../../workbench/README.md#script-mode-ai-friendly)。
 
 ## 首次准备
 
@@ -18,13 +18,13 @@ cd /Users/asterisk/Codes/zuoyu_flutter/im_flutter_sdk/.worktree/5.1.0
 make config
 ```
 
-填写 Git 忽略的 `im_flutter_sdk/example/config.local.json`：应用凭据、测试账号及所选场景需要的群组、聊天室等资源。然后获取 Token 并生成 example 使用的账号配置：
+填写 Git 忽略的 `workbench/config.local.json`：应用凭据、测试账号及所选场景需要的群组、聊天室等资源。然后获取 Token 并生成 workbench 使用的账号配置：
 
 ```bash
 make env-gettoken
 ```
 
-账号或应用配置变更、Token 过期后重新运行 `make env-gettoken`。这里的配置供 example 脚本使用，与 [CI 环境变量](../../tool/ci/README.md)不同。
+账号或应用配置变更、Token 过期后重新运行 `make env-gettoken`。这里的配置供 workbench 脚本使用，与 [CI 环境变量](../../tool/ci/README.md)不同。
 
 ## 执行一个或多个场景
 

@@ -33,7 +33,7 @@ Document split: this document defines agent conventions; [README.md](README.md) 
 
 Call chain: `Dart API → MethodChannel (interface) → Native Wrapper → HyphenateChat SDK`
 
-Dependency direction: `im_flutter_sdk` → `im_flutter_sdk_android` / `im_flutter_sdk_ios` → `im_flutter_sdk_interface`. The interface is the contract shared by all platform packages; changing it affects every upper-layer package. Package pubspecs use hosted version dependencies for publishing. Run `make local-deps` to generate gitignored `pubspec_overrides.yaml` files for local development; `make deps` and CI do this automatically. Overrides belong to each resolution root, including the example, and are not inherited from dependency packages. See `CONTRIBUTING.md` for release validation.
+Dependency direction: `im_flutter_sdk` → `im_flutter_sdk_android` / `im_flutter_sdk_ios` → `im_flutter_sdk_interface`. The interface is the contract shared by all platform packages; changing it affects every upper-layer package. Package pubspecs use hosted version dependencies for publishing. Run `make local-deps` to generate gitignored `pubspec_overrides.yaml` files for local development; `make deps` and CI do this automatically. Overrides belong to each resolution root, including the workbench and example apps, and are not inherited from dependency packages. See `CONTRIBUTING.md` for release validation.
 
 ## Verification Architecture
 
@@ -41,9 +41,9 @@ Test selection and design rules: [testing guide](docs/testing/README.md).
 
 | Mode | Responsibility | Implementation and entry |
 |---|---|---|
-| CI tests | Protect basic SDK behavior, stability, and regression coverage | Flutter unit/contract tests in `im_flutter_sdk/test/` and device tests in `im_flutter_sdk/example/integration_test/`; workflows in `.github/workflows/`, local entry points in `tool/ci/`. See [CONTRIBUTING.md](CONTRIBUTING.md#running-and-verification). |
-| AI tests | Verify API additions, behavior changes, and interactions for SDK version ports | Single-device JSON scripts via `make auto-report` / `API_SCRIPT`; multi-device YAML flows and JSON commands via the standalone im-test-orchestrator repository (a separate repo checked out next to this one; entry through [scripts/multi.sh](scripts/multi.sh)). See the [example guide](im_flutter_sdk/example/README.md#script-mode-ai-friendly). |
-| Manual mode | Allow free API spot checks and provide usable, extractable examples | Run the [example app](im_flutter_sdk/example/README.md) without `API_SCRIPT` or `API_CONTROL`; initialize, log in, and select APIs in the UI. |
+| CI tests | Protect basic SDK behavior, stability, and regression coverage | Flutter unit/contract tests in `im_flutter_sdk/test/` and device tests in `workbench/integration_test/`; workflows in `.github/workflows/`, local entry points in `tool/ci/`. See [CONTRIBUTING.md](CONTRIBUTING.md#running-and-verification). |
+| AI tests | Verify API additions, behavior changes, and interactions for SDK version ports | Single-device JSON scripts via `make auto-report` / `API_SCRIPT`; multi-device YAML flows and JSON commands via the standalone im-test-orchestrator repository (a separate repo checked out next to this one; entry through [scripts/multi.sh](scripts/multi.sh)). See the [workbench guide](workbench/README.md#script-mode-ai-friendly). |
+| Manual mode | Allow free API spot checks and provide usable, extractable examples | Run the [workbench app](workbench/README.md) without `API_SCRIPT` or `API_CONTROL`; initialize, log in, and select APIs in the UI. |
 
 - Keep CI and AI test architectures independent. Their case formats and execution engines are maintained separately; API coverage may overlap, and a pass in one mode does not replace verification in another. Manual mode is an interactive usage path, not an automated test suite.
 - For each SDK version port, pass the relevant single-device and multi-device scenarios on the affected platforms. Then add CI regression tests for basic behavior, important boundaries, and fixed defects that need lasting protection; do not mechanically duplicate every AI script.
@@ -62,12 +62,12 @@ make setup   # config + deps + pods
 
 | target | Purpose |
 |--------|---------|
-| `make config` | Creates `im_flutter_sdk/example/config.local.json` and placeholder `example/lib/env.dart` (both gitignored) |
-| `make env-gettoken` | Fetches a User Token for each account per `im_flutter_sdk/example/config.local.json` and generates `example/lib/env.dart` directly (the project configures only one environment; switching environments = editing this file) |
+| `make config` | Creates `workbench/config.local.json` and placeholder `workbench/lib/env.dart` (both gitignored) |
+| `make env-gettoken` | Fetches a User Token for each account per `workbench/config.local.json` and generates `workbench/lib/env.dart` directly (the project configures only one environment; switching environments = editing this file) |
 | `make auto-report PLATFORM=<android\|ios> [DEVICE=<id>] [SCRIPT=<json>]` | Runs the 5.0.0 auto script (defaults to the positive path `script_500_apis_positive.json`; use `SCRIPT=` to specify the negative script), explicitly boots the emulator, and produces sanitized events, crash evidence, and issue candidates under the Git-ignored `artifacts/single/<timestamp>/<platform>/` |
 | `make auto-compare ANDROID=<run-dir> IOS=<run-dir>` | Compares two Android/iOS runs of the same path, writes `artifacts/single/comparison-<path>-<timestamp>.md`, and exits non-zero when steps diverge |
-| `make local-deps` | Creates local dependency overrides for the main package, Android, iOS, and example; preserves existing override files |
-| `make deps` | Creates local overrides, then runs `flutter pub get` in the example directory |
+| `make local-deps` | Creates local dependency overrides for the main package, Android, iOS, and workbench; preserves existing override files |
+| `make deps` | Creates local overrides, then runs `flutter pub get` in the workbench directory |
 | `make pods` | `pod install` (runs only when Podfile/podspec changed, detected via mtime) |
 | `make clean` | Cleans build artifacts and Pods |
 

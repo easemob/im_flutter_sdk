@@ -209,7 +209,7 @@ jobs:
           path: |
             ~/Library/Caches/org.swift.swiftpm
             ~/Library/Developer/Xcode/DerivedData/*/SourcePackages
-          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.swift', 'im_flutter_sdk/example/pubspec.lock') }}
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.swift', 'workbench/pubspec.lock') }}
           restore-keys: |
             ${{ runner.os }}-spm-
 
@@ -286,7 +286,7 @@ jobs:
           path: |
             ~/Library/Caches/org.swift.swiftpm
             ~/Library/Developer/Xcode/DerivedData/*/SourcePackages
-          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.swift', 'im_flutter_sdk/example/pubspec.lock') }}
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.swift', 'workbench/pubspec.lock') }}
           restore-keys: |
             ${{ runner.os }}-spm-
 

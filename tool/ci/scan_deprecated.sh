@@ -24,14 +24,14 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-EXAMPLE_DIR="$REPO_ROOT/im_flutter_sdk/example"
-IOS_DIR="$EXAMPLE_DIR/ios"
+WORKBENCH_DIR="$REPO_ROOT/workbench"
+IOS_DIR="$WORKBENCH_DIR/ios"
 CHECKER="$REPO_ROOT/im_flutter_sdk/tool/ci/check_deprecated_api.dart"
 LINT_INIT="$REPO_ROOT/tool/ci/enable_deprecation_lint.gradle"
 
-# CocoaPods compiles the iOS wrapper as a target of the example's Pods project.
+# CocoaPods compiles the iOS wrapper as a target of the workbench app's Pods project.
 IOS_POD_TARGET="im_flutter_sdk_ios"
-# The Android wrapper is a Gradle subproject of the example app.
+# The Android wrapper is a Gradle subproject of the workbench app.
 ANDROID_MODULE=":im_flutter_sdk_android"
 
 PLATFORM="${1:-all}"
@@ -64,12 +64,12 @@ REPORT_DIR="$REPORT_ROOT/deprecated"
 
 mkdir -p "$REPORT_DIR"
 
-# Resolves the example's plugins: Gradle needs .flutter-plugins-dependencies and
+# Resolves the workbench app's plugins: Gradle needs .flutter-plugins-dependencies and
 # CocoaPods needs Flutter/Generated.xcconfig, both written by pub get.
 resolve_dependencies() {
   bash "$REPO_ROOT/tool/use_local_packages.sh"
   (
-    cd "$EXAMPLE_DIR"
+    cd "$WORKBENCH_DIR"
     flutter pub get
   )
 }
@@ -79,7 +79,7 @@ scan_android() {
   local raw_log="$REPORT_DIR/android-raw.log"
   echo "Android: compiling $ANDROID_MODULE (log: $raw_log)..."
   if ! (
-    cd "$EXAMPLE_DIR/android"
+    cd "$WORKBENCH_DIR/android"
     ./gradlew \
       "$ANDROID_MODULE:clean" \
       "$ANDROID_MODULE:compileDebugJavaWithJavac" \

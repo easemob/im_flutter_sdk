@@ -17,7 +17,7 @@
       "assertions": [
         "Native plugin registers and initializes while logged out"
       ],
-      "testFile": "example/integration_test/modules/client_cases.dart"
+      "testFile": "../workbench/integration_test/modules/client_cases.dart"
     },
     {
       "id": "FL-PRESENCE-001",
@@ -36,7 +36,7 @@
       "assertions": [
         "Logged-out call throws ChatError code 201"
       ],
-      "testFile": "example/integration_test/modules/presence_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/presence_cases.negative.dart"
     },
     {
       "id": "FL-PRESENCE-002",
@@ -55,7 +55,7 @@
       "assertions": [
         "Logged-out call throws ChatError code 201"
       ],
-      "testFile": "example/integration_test/modules/presence_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/presence_cases.negative.dart"
     },
     {
       "id": "FL-PRESENCE-003",
@@ -74,7 +74,7 @@
       "assertions": [
         "Logged-out call throws ChatError code 201"
       ],
-      "testFile": "example/integration_test/modules/presence_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/presence_cases.negative.dart"
     },
     {
       "id": "FL-PRESENCE-004",
@@ -93,7 +93,7 @@
       "assertions": [
         "Logged-out call throws ChatError code 201"
       ],
-      "testFile": "example/integration_test/modules/presence_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/presence_cases.negative.dart"
     },
     {
       "id": "FL-PRESENCE-005",
@@ -112,7 +112,7 @@
       "assertions": [
         "Logged-out call throws ChatError code 201"
       ],
-      "testFile": "example/integration_test/modules/presence_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/presence_cases.negative.dart"
     },
     {
       "id": "FL-AUTH-001",
@@ -136,7 +136,7 @@
       "assertions": [
         "Login sets the configured cached user before the native getter refreshes it; native identity, bounded connected state, and a nonempty access token are verified without logging the token"
       ],
-      "testFile": "example/integration_test/modules/client_cases.dart",
+      "testFile": "../workbench/integration_test/modules/client_cases.dart",
       "preparationApis": [
         "ChatClient.startCallback"
       ]
@@ -156,7 +156,7 @@
       "assertions": [
         "The logged-in device ID is nonempty and remains identical on repeated reads within the session"
       ],
-      "testFile": "example/integration_test/modules/client_cases.dart"
+      "testFile": "../workbench/integration_test/modules/client_cases.dart"
     },
     {
       "id": "FL-AUTH-003",
@@ -178,7 +178,7 @@
         "Logout clears cached identity before the native getter is called, clears native identity, and reaches the disconnected state within a bound",
         "Relogin in the same process restores the configured cached/native identity, connected state, and a nonempty token"
       ],
-      "testFile": "example/integration_test/modules/client_cases.dart",
+      "testFile": "../workbench/integration_test/modules/client_cases.dart",
       "preparationApis": [
         "ChatClient.startCallback"
       ]
@@ -208,7 +208,7 @@
         "Replacing extensions is verified through a newly fetched conversation",
         "Deleting with messages removes the conversation from the list and reopening yields no retained messages"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.dart"
+      "testFile": "../workbench/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-CONV-002",
@@ -235,7 +235,7 @@
         "Local incoming and outgoing messages have the expected count and persisted content; latestMessage and lastReceivedMessage select different expected messages",
         "Local insertion keeps unread count at zero; repeated clearConversationUnreadMessageCount preserves zero only, without claiming nonzero unread clearing"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.dart"
+      "testFile": "../workbench/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-CONV-003",
@@ -260,7 +260,7 @@
         "Append and update are independently reloaded with unchanged message ID, body, attributes, and ownership",
         "Deleting one message leaves the exact control-message set and count unchanged"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.dart"
+      "testFile": "../workbench/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-CONV-004",
@@ -279,7 +279,7 @@
       "assertions": [
         "Upward and downward pagination return exact adjacent ID sets, exclude the cursor, do not overlap, include a short final page, and end with an empty page"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.dart"
+      "testFile": "../workbench/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-CONV-005",
@@ -305,7 +305,7 @@
         "Keyword, sender, message type, options, and time filters return exact matching message ID sets while excluding nonmatching messages",
         "Unmatched keyword, type, and time queries return empty results; interval counts match the prepared data"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.dart"
+      "testFile": "../workbench/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-CONV-006",
@@ -329,7 +329,7 @@
         "Deletion by IDs and interior time range preserves the exact remaining message IDs and counts after each operation",
         "Deleting all messages leaves an empty set and zero count"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.dart"
+      "testFile": "../workbench/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-CONV-007",
@@ -349,7 +349,7 @@
         "Deleting a conversation with deleteMessages:false removes its list entry while the message remains independently readable",
         "Reopening the conversation yields exactly its original message and count"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.dart"
+      "testFile": "../workbench/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-CONV-008",
@@ -366,7 +366,7 @@
       "assertions": [
         "Batch deletion removes only the selected conversations and their messages, ignores an absent ID, and preserves the unselected control conversation and message"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.dart"
+      "testFile": "../workbench/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-MSG-001",
@@ -387,7 +387,7 @@
         "A listener registered before sending receives a final success callback correlated with the local message ID; errors and timeout fail the case",
         "The server-confirmed message has the expected status, sender, recipient, body, and attributes and is independently readable in the corresponding listed conversation; recipient delivery is not asserted"
       ],
-      "testFile": "example/integration_test/modules/message_cases.dart"
+      "testFile": "../workbench/integration_test/modules/message_cases.dart"
     },
     {
       "id": "FL-MSG-002",
@@ -408,7 +408,7 @@
         "Imported incoming/outgoing messages preserve ID, body, attributes, direction, sender, recipient, and conversation on independent reads",
         "Batch ID lookup returns exactly the selected messages; update preserves ID and changes body/attributes without modifying the other messages"
       ],
-      "testFile": "example/integration_test/modules/message_cases.dart"
+      "testFile": "../workbench/integration_test/modules/message_cases.dart"
     },
     {
       "id": "FL-MSG-003",
@@ -426,7 +426,7 @@
         "A unique keyword selects exact cross-conversation message sets; sender and upward/downward time filters exclude unrelated messages",
         "An unmatched keyword returns no messages"
       ],
-      "testFile": "example/integration_test/modules/message_cases.dart"
+      "testFile": "../workbench/integration_test/modules/message_cases.dart"
     },
     {
       "id": "FL-MSG-004",
@@ -443,7 +443,7 @@
       "assertions": [
         "Options searches return exact message sets for sender, text/custom types, and upward/downward time constraints; nonmatching data is excluded"
       ],
-      "testFile": "example/integration_test/modules/message_cases.dart"
+      "testFile": "../workbench/integration_test/modules/message_cases.dart"
     },
     {
       "id": "FL-MSG-005",
@@ -461,7 +461,7 @@
         "Keyword aggregation returns exactly the matching conversation keys and message IDs; sender and time constraints narrow both keys and IDs correctly",
         "An unmatched keyword yields no conversation results"
       ],
-      "testFile": "example/integration_test/modules/message_cases.dart"
+      "testFile": "../workbench/integration_test/modules/message_cases.dart"
     },
     {
       "id": "FL-CONTACT-001",
@@ -481,7 +481,7 @@
         "Independently verified bilateral REST friendship is reflected by the SDK contact IDs, records, and detail within a bounded wait",
         "The controlled nonfriend is excluded from the SDK lists; original friendship and blacklist state are restored and verified"
       ],
-      "testFile": "example/integration_test/modules/contact_cases.dart"
+      "testFile": "../workbench/integration_test/modules/contact_cases.dart"
     },
     {
       "id": "FL-CONTACT-002",
@@ -499,7 +499,7 @@
         "deleteContact(keepConversation:true) completes successfully after the server confirms deletion",
         "Friendship is prepared before the call; original friendship and blacklist state are restored after the case"
       ],
-      "testFile": "example/integration_test/modules/contact_cases.dart"
+      "testFile": "../workbench/integration_test/modules/contact_cases.dart"
     },
     {
       "id": "FL-CONTACT-003",
@@ -517,7 +517,7 @@
         "deleteContact(keepConversation:false) completes successfully after the server confirms deletion",
         "Friendship is prepared before the call; original friendship and blacklist state are restored after the case"
       ],
-      "testFile": "example/integration_test/modules/contact_cases.dart"
+      "testFile": "../workbench/integration_test/modules/contact_cases.dart"
     },
     {
       "id": "FL-CONTACT-004",
@@ -538,7 +538,7 @@
         "Adding and removing the controlled user changes exactly that blacklist membership in independent REST, remote SDK, and local SDK observations",
         "The original blacklist is restored and verified; message blocking or delivery is not asserted"
       ],
-      "testFile": "example/integration_test/modules/contact_cases.dart"
+      "testFile": "../workbench/integration_test/modules/contact_cases.dart"
     },
     {
       "id": "FL-GROUP-001",
@@ -559,7 +559,7 @@
         "SDK destruction is followed by an explicit remote absence check; transport or authentication errors do not prove absence",
         "Only this case's group is reclaimed after failure, and rescue cleanup cannot replace the tested destruction result"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart",
+      "testFile": "../workbench/integration_test/modules/group_cases.dart",
       "preparationApis": [
         "ChatGroupManager.fetchMemberListFromServer"
       ]
@@ -581,7 +581,7 @@
         "A group independently created and verified by this case is fetched with matching local detail after explicit native-cache population",
         "The local joined list contains the prepared group exactly once with its expected name; the group is reclaimed and remote absence verified"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart",
+      "testFile": "../workbench/integration_test/modules/group_cases.dart",
       "preparationApis": [
         "ChatGroupManager.createGroup",
         "ChatGroupManager.fetchGroupInfoFromServer",
@@ -605,7 +605,7 @@
       "assertions": [
         "On a cold logged-out SDK, an empty user ID is rejected with Android 110 / iOS 101; cached/native identity remain empty and the connection remains disconnected"
       ],
-      "testFile": "example/integration_test/modules/client_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/client_cases.negative.dart"
     },
     {
       "id": "FL-AUTH-005",
@@ -624,7 +624,7 @@
       "assertions": [
         "On a cold logged-out SDK, an empty token is rejected with Android 110 / iOS 104; cached/native identity remain empty and the connection remains disconnected"
       ],
-      "testFile": "example/integration_test/modules/client_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/client_cases.negative.dart"
     },
     {
       "id": "FL-AUTH-006",
@@ -643,7 +643,7 @@
       "assertions": [
         "Repeated login of the currently connected user returns 200 without changing identity or disconnecting the session"
       ],
-      "testFile": "example/integration_test/modules/client_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/client_cases.negative.dart"
     },
     {
       "id": "FL-CONTACT-005",
@@ -660,7 +660,7 @@
       "assertions": [
         "Cold logged-out deleteContact(keepConversation:true) rejects with exactly ChatError 201; no remote account or relation is required"
       ],
-      "testFile": "example/integration_test/modules/contact_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/contact_cases.negative.dart"
     },
     {
       "id": "FL-CONTACT-006",
@@ -677,7 +677,7 @@
       "assertions": [
         "Cold logged-out deleteContact(keepConversation:false) rejects with exactly ChatError 201; no remote account or relation is required"
       ],
-      "testFile": "example/integration_test/modules/contact_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/contact_cases.negative.dart"
     },
     {
       "id": "FL-CONTACT-007",
@@ -694,7 +694,7 @@
       "assertions": [
         "Cold logged-out addUserToBlockList() rejects with exactly ChatError 201; no remote account or relation is required"
       ],
-      "testFile": "example/integration_test/modules/contact_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/contact_cases.negative.dart"
     },
     {
       "id": "FL-CONTACT-008",
@@ -711,7 +711,7 @@
       "assertions": [
         "Cold logged-out removeUserFromBlockList() rejects with exactly ChatError 201; no remote account or relation is required"
       ],
-      "testFile": "example/integration_test/modules/contact_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/contact_cases.negative.dart"
     },
     {
       "id": "FL-CONTACT-009",
@@ -728,7 +728,7 @@
       "assertions": [
         "Cold logged-out fetchBlockIds() rejects with exactly ChatError 201; no remote account or relation is required"
       ],
-      "testFile": "example/integration_test/modules/contact_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/contact_cases.negative.dart"
     },
     {
       "id": "FL-GROUP-003",
@@ -745,7 +745,7 @@
       "assertions": [
         "Cold logged-out createGroup rejects with exactly ChatError 201 before a server operation; unexpected group creation records its ID and attempts cleanup"
       ],
-      "testFile": "example/integration_test/modules/group_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.negative.dart"
     },
     {
       "id": "FL-GROUP-004",
@@ -762,7 +762,7 @@
       "assertions": [
         "Cold logged-out fetchGroupInfoFromServer rejects with exactly ChatError 201 before a server operation"
       ],
-      "testFile": "example/integration_test/modules/group_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.negative.dart"
     },
     {
       "id": "FL-GROUP-005",
@@ -779,7 +779,7 @@
       "assertions": [
         "Cold logged-out destroyGroup rejects with exactly ChatError 201 before a server operation"
       ],
-      "testFile": "example/integration_test/modules/group_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.negative.dart"
     },
     {
       "id": "FL-GROUP-006",
@@ -796,7 +796,7 @@
       "assertions": [
         "Logged-in fetchGroupInfoFromServer rejects an empty group ID with exactly ChatError 600"
       ],
-      "testFile": "example/integration_test/modules/group_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.negative.dart"
     },
     {
       "id": "FL-GROUP-007",
@@ -813,7 +813,7 @@
       "assertions": [
         "Logged-in destroyGroup rejects an empty group ID with exactly ChatError 600"
       ],
-      "testFile": "example/integration_test/modules/group_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.negative.dart"
     },
     {
       "id": "FL-MSG-006",
@@ -830,7 +830,7 @@
       "assertions": [
         "Sending with a logged-out sender produces a final error callback correlated by local message ID with exactly ChatError 201 and message status FAIL; method completion, timeout, and success callbacks cannot satisfy the assertion"
       ],
-      "testFile": "example/integration_test/modules/message_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/message_cases.negative.dart"
     },
     {
       "id": "FL-MSG-007",
@@ -847,7 +847,7 @@
       "assertions": [
         "Sending with an empty recipient while logged in produces a final error callback correlated by local message ID with exactly ChatError 500 and message status FAIL; method completion, timeout, and success callbacks cannot satisfy the assertion"
       ],
-      "testFile": "example/integration_test/modules/message_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/message_cases.negative.dart"
     },
     {
       "id": "FL-MSG-008",
@@ -865,7 +865,7 @@
       "assertions": [
         "An absent message ID returns null in manager lookup and an empty batch result; a mixed existing/missing batch returns only the existing control message with unchanged content and conversation count"
       ],
-      "testFile": "example/integration_test/modules/message_cases.negative.dart",
+      "testFile": "../workbench/integration_test/modules/message_cases.negative.dart",
       "preparationApis": [
         "ChatConversation.insertMessage"
       ]
@@ -885,7 +885,7 @@
       "assertions": [
         "Updating an unpersisted message returns exactly ChatError 500; the missing message is not inserted and the stored control message and count are unchanged"
       ],
-      "testFile": "example/integration_test/modules/message_cases.negative.dart",
+      "testFile": "../workbench/integration_test/modules/message_cases.negative.dart",
       "preparationApis": [
         "ChatConversation.insertMessage",
         "ChatManager.loadMessage"
@@ -906,7 +906,7 @@
       "assertions": [
         "Updating an unpersisted message in an existing conversation returns exactly ChatError 500; the missing message is not inserted and the stored control message, exact ID set, and count are unchanged"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.negative.dart",
+      "testFile": "../workbench/integration_test/modules/conversation_cases.negative.dart",
       "preparationApis": [
         "ChatConversation.insertMessage",
         "ChatManager.loadMessage"
@@ -929,7 +929,7 @@
       "assertions": [
         "A unique ID absent from local contact lists returns null detail; querying it does not add it to either list"
       ],
-      "testFile": "example/integration_test/modules/contact_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/contact_cases.negative.dart"
     },
     {
       "id": "FL-CONV-010",
@@ -946,7 +946,7 @@
       "assertions": [
         "Default and explicit true return the owned conversation subset in descending latest-message time; false retains the exact subset without any order requirement"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.dart",
+      "testFile": "../workbench/integration_test/modules/conversation_cases.dart",
       "preparationApis": [
         "ChatConversation.insertMessage",
         "ChatManager.getConversation"
@@ -967,7 +967,7 @@
       "assertions": [
         "With autoLoadConversations=false, null/empty first-page cursors agree; bounded traversal respects page size, never repeats IDs or cursors, terminates with empty cursor and includes all owned conversations in descending message time then case-insensitive ID order"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.dart",
+      "testFile": "../workbench/integration_test/modules/conversation_cases.dart",
       "preparationApis": [
         "ChatConversation.insertMessage",
         "ChatManager.getConversation"
@@ -988,7 +988,7 @@
       "assertions": [
         "A malformed cursor returns exactly ChatError 110 after initialization with autoLoadConversations=false"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.negative.dart"
+      "testFile": "../workbench/integration_test/modules/conversation_cases.negative.dart"
     },
     {
       "id": "FL-GROUP-008",
@@ -1006,7 +1006,7 @@
       "assertions": [
         "Owner-only groups created with inviteNeedConfirm=true and false retain the exact flag in server detail and local snapshots; REST cleanup removes both owned groups"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart",
+      "testFile": "../workbench/integration_test/modules/group_cases.dart",
       "preparationApis": [
         "ChatGroupManager.createGroup"
       ]
@@ -1027,7 +1027,7 @@
       "assertions": [
         "A real chatroom message completes with a correlated SUCCESS callback; its local conversation is present exactly once only when enableChatroomConversation=true, checked in independent processes; REST and local teardown reclaim the owned room"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.dart",
+      "testFile": "../workbench/integration_test/modules/conversation_cases.dart",
       "preparationApis": [
         "ChatRoomManager.joinChatRoom"
       ]
@@ -1048,7 +1048,7 @@
       "assertions": [
         "With dataSyncType explicitly set to conversations (1), cold-app login emits start and successful finish events with exactly mask 1 and connects; logout clears identity and connection; omitted-parameter defaults and server-history contents are not asserted"
       ],
-      "testFile": "example/integration_test/modules/client_sync_cases.dart",
+      "testFile": "../workbench/integration_test/modules/client_sync_cases.dart",
       "preparationApis": [
         "ChatClient.startCallback"
       ]
@@ -1072,7 +1072,7 @@
         "The peer disappears after unsubscribe; existing accounts, profiles, contacts and subscriptions are not modified",
         "Cleanup deletes only the freshly created REST account and verifies its absence"
       ],
-      "testFile": "example/integration_test/modules/user_info_cases.dart"
+      "testFile": "../workbench/integration_test/modules/user_info_cases.dart"
     },
     {
       "id": "FL-MSG-010",
@@ -1091,7 +1091,7 @@
         "Saving fetched server history replaces a preheated older latest-message cache with the exact REST message ID; duplicate live delivery cannot satisfy this assertion",
         "Only the owned group and its local conversation are reclaimed during cleanup"
       ],
-      "testFile": "example/integration_test/modules/message_cases.dart",
+      "testFile": "../workbench/integration_test/modules/message_cases.dart",
       "preparationApis": [
         "ChatConversation.deleteMessage",
         "ChatConversation.insertMessage"
@@ -1112,7 +1112,7 @@
       "assertions": [
         "Updated group name is read back without changing description or owner"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-010",
@@ -1129,7 +1129,7 @@
       "assertions": [
         "Updated description is read back without changing name or owner"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-011",
@@ -1146,7 +1146,7 @@
       "assertions": [
         "Updated extension is read back without changing name"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-012",
@@ -1164,7 +1164,7 @@
       "assertions": [
         "Two successive announcement revisions are read back exactly"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-013",
@@ -1181,7 +1181,7 @@
       "assertions": [
         "Avatar update return and server detail contain the requested URL"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-014",
@@ -1199,7 +1199,7 @@
       "assertions": [
         "Own namecard is read back after setting and is null after removal"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-015",
@@ -1216,7 +1216,7 @@
       "assertions": [
         "Only the selected allowInvites field changes; unselected config values are retained"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-016",
@@ -1234,7 +1234,7 @@
       "assertions": [
         "Added peer appears in SDK and REST member lists then disappears after removal"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-017",
@@ -1252,7 +1252,7 @@
       "assertions": [
         "Promoted peer appears in admins, demoted peer leaves admins but remains a member"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-018",
@@ -1269,7 +1269,7 @@
       "assertions": [
         "Typed member query returns the peer with Member role and positive joined timestamp without unknown or duplicate IDs"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-019",
@@ -1289,7 +1289,7 @@
       "assertions": [
         "Own and peer attributes are distinct, multi-user key filtering is exact, and selective deletion preserves the other key and user"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-020",
@@ -1308,7 +1308,7 @@
       "assertions": [
         "Blocked peer appears in blocklist and leaves membership; unblock removes only the block entry"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-021",
@@ -1327,7 +1327,7 @@
       "assertions": [
         "Mute list contains the peer with positive expiry and becomes empty after unmute while membership remains"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-022",
@@ -1346,7 +1346,7 @@
       "assertions": [
         "Allowlist adds the peer and removal restores the original list without changing membership"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-CONTACT-011",
@@ -1363,7 +1363,7 @@
       "assertions": [
         "New remark is read back in contact detail and list; original remark and relationship are restored"
       ],
-      "testFile": "example/integration_test/modules/contact_cases.dart"
+      "testFile": "../workbench/integration_test/modules/contact_cases.dart"
     },
     {
       "id": "FL-USERINFO-002",
@@ -1383,7 +1383,7 @@
       "assertions": [
         "Updated own gender is returned by update, uncached remote reads and native local query; original value is restored"
       ],
-      "testFile": "example/integration_test/modules/user_info_cases.dart"
+      "testFile": "../workbench/integration_test/modules/user_info_cases.dart"
     },
     {
       "id": "FL-CONV-014",
@@ -1400,7 +1400,7 @@
       "assertions": [
         "Pin/unpin state is reread from native detail and list while control and message contents remain unchanged"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.dart"
+      "testFile": "../workbench/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-PRESENCE-006",
@@ -1418,7 +1418,7 @@
       "assertions": [
         "Own unique published description is fetched and original description restored"
       ],
-      "testFile": "example/integration_test/modules/presence_cases.dart"
+      "testFile": "../workbench/integration_test/modules/presence_cases.dart"
     },
     {
       "id": "FL-PRESENCE-007",
@@ -1437,7 +1437,7 @@
       "assertions": [
         "Fresh offline peer is returned by subscribe, appears exactly once in paged subscriptions, disappears after unsubscribe, and is deleted"
       ],
-      "testFile": "example/integration_test/modules/presence_cases.dart"
+      "testFile": "../workbench/integration_test/modules/presence_cases.dart"
     },
     {
       "id": "FL-CONV-015",
@@ -1455,7 +1455,7 @@
       "assertions": [
         "Pinned conversation sorts first across database pages; unpinning restores time-then-ID descending order"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.dart"
+      "testFile": "../workbench/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-CONV-016",
@@ -1474,7 +1474,7 @@
       "assertions": [
         "Two real inbound REST messages raise conversation and account unread counts; clearing restores both baselines"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.dart"
+      "testFile": "../workbench/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-CONV-017",
@@ -1493,7 +1493,7 @@
       "assertions": [
         "Deleting one message removes it from local reads and server history while the rest of account history stays"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.dart"
+      "testFile": "../workbench/integration_test/modules/conversation_cases.dart"
     },
     {
       "id": "FL-MSG-011",
@@ -1513,7 +1513,7 @@
       "assertions": [
         "File and image final callbacks succeed and stored bodies keep remote path, secret and size on reload"
       ],
-      "testFile": "example/integration_test/modules/message_cases.dart"
+      "testFile": "../workbench/integration_test/modules/message_cases.dart"
     },
     {
       "id": "FL-MSG-012",
@@ -1532,7 +1532,7 @@
       "assertions": [
         "Download reports a terminal success callback and restores local bytes identical to the uploaded payload"
       ],
-      "testFile": "example/integration_test/modules/message_cases.dart"
+      "testFile": "../workbench/integration_test/modules/message_cases.dart"
     },
     {
       "id": "FL-MSG-013",
@@ -1549,7 +1549,7 @@
       "assertions": [
         "Five REST deliveries appear exactly once across pageSize=2 server-history pages with monotonic time and no repeated cursors"
       ],
-      "testFile": "example/integration_test/modules/message_cases.dart"
+      "testFile": "../workbench/integration_test/modules/message_cases.dart"
     },
     {
       "id": "FL-GROUP-023",
@@ -1568,7 +1568,7 @@
       "assertions": [
         "With invitation confirmation enabled addMembers keeps the peer out of the member list"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-024",
@@ -1587,7 +1587,7 @@
       "assertions": [
         "isAllMemberMuted follows mute-all and unmute-all server reads while membership is unchanged"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-025",
@@ -1605,7 +1605,7 @@
       "assertions": [
         "Ownership transfer is visible in REST and SDK detail with unchanged membership"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-026",
@@ -1624,7 +1624,7 @@
       "assertions": [
         "Leaving a peer-owned REST group lowers the joined count back to baseline and removes REST membership"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-027",
@@ -1643,7 +1643,7 @@
       "assertions": [
         "Joining a public peer-owned group adds REST membership and raising the count; leaving restores both"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-GROUP-028",
@@ -1663,7 +1663,7 @@
       "assertions": [
         "Uploaded shared file is listed with ID, name and size, downloads byte-identically, and removal empties the list"
       ],
-      "testFile": "example/integration_test/modules/group_cases.dart"
+      "testFile": "../workbench/integration_test/modules/group_cases.dart"
     },
     {
       "id": "FL-ROOM-001",
@@ -1684,7 +1684,7 @@
       "assertions": [
         "Joined REST room reports matching server and local detail with both members and rejoins after leaving"
       ],
-      "testFile": "example/integration_test/modules/chat_room_cases.dart"
+      "testFile": "../workbench/integration_test/modules/chat_room_cases.dart"
     },
     {
       "id": "FL-ROOM-002",
@@ -1702,7 +1702,7 @@
       "assertions": [
         "Each announcement write is read back and the second replaces the first"
       ],
-      "testFile": "example/integration_test/modules/chat_room_cases.dart"
+      "testFile": "../workbench/integration_test/modules/chat_room_cases.dart"
     },
     {
       "id": "FL-ROOM-003",
@@ -1723,7 +1723,7 @@
       "assertions": [
         "Member removal drops the peer while blocking and unblocking update the room blocklist"
       ],
-      "testFile": "example/integration_test/modules/chat_room_cases.dart"
+      "testFile": "../workbench/integration_test/modules/chat_room_cases.dart"
     },
     {
       "id": "FL-ROOM-004",
@@ -1744,7 +1744,7 @@
       "assertions": [
         "Per-member mute updates the mute list and mute-all updates isAllMemberMuted both ways"
       ],
-      "testFile": "example/integration_test/modules/chat_room_cases.dart"
+      "testFile": "../workbench/integration_test/modules/chat_room_cases.dart"
     },
     {
       "id": "FL-ROOM-005",
@@ -1763,7 +1763,7 @@
       "assertions": [
         "Admin promotion and demotion are visible in the server admin list"
       ],
-      "testFile": "example/integration_test/modules/chat_room_cases.dart"
+      "testFile": "../workbench/integration_test/modules/chat_room_cases.dart"
     },
     {
       "id": "FL-MSG-014",
@@ -1783,7 +1783,7 @@
       "assertions": [
         "Pinning a real message reports it in the conversation pinned list with the operator and pin time; unpinning removes it"
       ],
-      "testFile": "example/integration_test/modules/message_cases.dart"
+      "testFile": "../workbench/integration_test/modules/message_cases.dart"
     },
     {
       "id": "FL-MSG-015",
@@ -1804,7 +1804,7 @@
       "assertions": [
         "A reaction added to a real message is reported by the server list, detail page and local message, and removal clears it"
       ],
-      "testFile": "example/integration_test/modules/message_cases.dart"
+      "testFile": "../workbench/integration_test/modules/message_cases.dart"
     },
     {
       "id": "FL-MSG-016",
@@ -1825,7 +1825,7 @@
       "assertions": [
         "A two-text-body message created by createMultiBodySendMessage is accepted by the server with both bodies kept in order, reports MULTIBODY as content type, and reads back identically from local storage"
       ],
-      "testFile": "example/integration_test/modules/message_cases.dart"
+      "testFile": "../workbench/integration_test/modules/message_cases.dart"
     },
     {
       "id": "FL-MSG-017",
@@ -1846,7 +1846,7 @@
       "assertions": [
         "A text-plus-file multi-body message uploads the file body for real (server path and secret present, size preserved) and keeps both bodies ordered in the confirmed and stored message"
       ],
-      "testFile": "example/integration_test/modules/message_cases.dart"
+      "testFile": "../workbench/integration_test/modules/message_cases.dart"
     },
     {
       "id": "FL-CONV-018",
@@ -1865,7 +1865,7 @@
       "assertions": [
         "Adding a mark to the peer conversation is reported locally and removing it clears the mark"
       ],
-      "testFile": "example/integration_test/modules/conversation_cases.dart"
+      "testFile": "../workbench/integration_test/modules/conversation_cases.dart"
     }
   ]
 }

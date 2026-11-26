@@ -107,11 +107,12 @@ void main() {
 
     test('error envelope passes through as status done (judgment is host-side)',
         () async {
-      service = make(execute: (api, params) async => {
-            'success': false,
-            'failureKind': 'sdk',
-            'error': {'code': 110, 'message': 'x'},
-          });
+      service = make(
+          execute: (api, params) async => {
+                'success': false,
+                'failureKind': 'sdk',
+                'error': {'code': 110, 'message': 'x'},
+              });
       final record = await service.submit({
         'commandId': 'c-err',
         'api': 'ChatClient.isConnected',
@@ -127,8 +128,9 @@ void main() {
   group('dedup / in-flight', () {
     test('same id + same content returns the existing record', () async {
       final gate = Completer<void>();
-      service = make(execute: (api, params) => gate.future
-          .then((_) => {'success': true, 'data': 'ok'}));
+      service = make(
+          execute: (api, params) =>
+              gate.future.then((_) => {'success': true, 'data': 'ok'}));
       final cmd = {
         'commandId': 'c1',
         'api': 'ChatClient.isConnected',
@@ -145,8 +147,8 @@ void main() {
 
     test('same id + different content -> 409', () async {
       final gate = Completer<void>();
-      service = make(execute: (api, params) => gate.future
-          .then((_) => {'success': true}));
+      service = make(
+          execute: (api, params) => gate.future.then((_) => {'success': true}));
       await service.submit({
         'commandId': 'c1',
         'api': 'ChatClient.isConnected',
@@ -166,8 +168,8 @@ void main() {
 
     test('in-flight rejects a different command -> 409', () async {
       final gate = Completer<void>();
-      service = make(execute: (api, params) => gate.future
-          .then((_) => {'success': true}));
+      service = make(
+          execute: (api, params) => gate.future.then((_) => {'success': true}));
       await service.submit({
         'commandId': 'c1',
         'api': 'ChatClient.isConnected',
@@ -237,8 +239,7 @@ void main() {
   });
 
   group('expect compat channel', () {
-    test('carried expect is evaluated and returned as expectMatched',
-        () async {
+    test('carried expect is evaluated and returned as expectMatched', () async {
       final record = await service.submit({
         'commandId': 'c1',
         'api': 'ChatClient.isConnected',
@@ -250,11 +251,12 @@ void main() {
     });
 
     test('errorCode expectation matches a failed sdk call', () async {
-      service = make(execute: (api, params) async => {
-            'success': false,
-            'failureKind': 'sdk',
-            'error': {'code': 110, 'message': 'x'},
-          });
+      service = make(
+          execute: (api, params) async => {
+                'success': false,
+                'failureKind': 'sdk',
+                'error': {'code': 110, 'message': 'x'},
+              });
       final record = await service.submit({
         'commandId': 'c1',
         'api': 'ChatClient.isConnected',
@@ -295,8 +297,8 @@ void main() {
 
     test('finish with an in-flight command -> 409', () async {
       final gate = Completer<void>();
-      service = make(execute: (api, params) => gate.future
-          .then((_) => {'success': true}));
+      service = make(
+          execute: (api, params) => gate.future.then((_) => {'success': true}));
       await service.submit({
         'commandId': 'c1',
         'api': 'ChatClient.isConnected',

@@ -30,6 +30,5 @@ migrate_working_dir/
 build/
 output/
 
-# Example local environment and generated credentials.
-/example/config.local.json
-/example/lib/env.dart
+# Example local environment and generated credentials live in the workbench
+# app at the repository root (see workbench/.gitignore).

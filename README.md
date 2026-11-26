@@ -1,6 +1,6 @@
 # EaseMob IM Flutter SDK
 
-The Flutter plugin for EaseMob instant messaging, built on the Federated Plugin architecture. This repository contains the Dart public APIs, the Android/iOS implementations, the example app, and the test tooling; HarmonyOS is maintained in a separate repository.
+The Flutter plugin for EaseMob instant messaging, built on the Federated Plugin architecture. This repository contains the Dart public APIs, the Android/iOS implementations, the internal workbench app, and the test tooling; HarmonyOS is maintained in a separate repository.
 
 Call chain: `Dart API → MethodChannel → Native Wrapper → native IM SDK`.
 
@@ -9,8 +9,8 @@ Call chain: `Dart API → MethodChannel → Native Wrapper → native IM SDK`.
 | Mode | Responsibility | Entry point |
 |---|---|---|
 | CI tests | Guard basic behavior, stability, and regression coverage | `.github/workflows/`; local entry points `run_quality.sh`, `smoke_local.sh`, `nightly_local.sh` under `tool/ci/`, see [CONTRIBUTING](CONTRIBUTING.md#running-and-verification) |
-| AI tests | Verify the APIs, behavior changes, and single-/multi-device scenarios of each SDK version port | Single-device: `make auto-report PLATFORM=<android\|ios> SCRIPT=<json>`, see [script mode](im_flutter_sdk/example/README.md#script-mode-ai-friendly); multi-device: `testing/multi/` with `dart run bin/cli.dart all --cases <selector>`, see [usage](testing/multi/README.md) |
-| Manual mode | Freely spot-check APIs and extract usable example code | Go to `im_flutter_sdk/example/` and run `flutter run -d <device id>`, see [example README](im_flutter_sdk/example/README.md) |
+| AI tests | Verify the APIs, behavior changes, and single-/multi-device scenarios of each SDK version port | Single-device: `make auto-report PLATFORM=<android\|ios> SCRIPT=<json>`, see [script mode](workbench/README.md#script-mode-ai-friendly); multi-device: `testing/multi/` with `dart run bin/cli.dart all --cases <selector>`, see [usage](testing/multi/README.md) |
+| Manual mode | Freely spot-check APIs and extract usable example code | Go to `workbench/` and run `flutter run -d <device id>`, see [workbench README](workbench/README.md) |
 
 CI uses Flutter unit, contract, and on-device integration tests; AI tests use JSON scripts and YAML control flows. The two test architectures are maintained independently, their API coverage may overlap, and neither result replaces the other. Manual mode is free-form operation, not an automated case suite.
 
@@ -23,13 +23,14 @@ For each version port, complete the relevant single-device and multi-device scen
 ├── im_flutter_sdk/             # Main SDK package
 │   ├── lib/                    # Public APIs, models, and business managers
 │   ├── test/                   # SDK unit and contract tests
-│   ├── example/                # Example app: manual operation, script execution, HTTP control server
-│   │   ├── lib/                # Pages, API registry, logging, and the automated runner
-│   │   ├── integration_test/   # On-device Flutter integration tests run by CI
-│   │   └── test/               # Tests for the example app and runner itself
+│   ├── example/                # Minimal user-facing example published to pub.dev
 │   ├── docs/                   # SDK-specific notes, CI case mapping
 │   ├── scripts/                # API documentation generation tools
 │   └── tool/ci/                # Contract, version, and case-mapping checkers
+├── workbench/                  # Internal workbench app: manual operation, script execution, HTTP control server
+│   ├── lib/                    # Pages, API registry, logging, and the automated runner
+│   ├── integration_test/       # On-device Flutter integration tests run by CI
+│   └── test/                   # Tests for the workbench app and runner itself
 ├── im_flutter_sdk_interface/   # MethodChannel platform interface
 ├── im_flutter_sdk_android/     # Android native wrapper
 ├── im_flutter_sdk_ios/         # iOS native wrapper and dependency config

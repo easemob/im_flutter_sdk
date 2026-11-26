@@ -4,7 +4,7 @@
 
 ## 设计规则
 
-- 场景放在 `testing/single/cases/`，复用已有 JSON 引擎和 example API 注册，不在执行端伪造业务结果。
+- 场景放在 `testing/single/cases/`，复用已有 JSON 引擎和 workbench API 注册，不在执行端伪造业务结果。
 - 新增版本场景沿用 5.0.0 的正向、逆向分文件方式：`script_<版本数字>_apis_positive.json` 与 `script_<版本数字>_apis_negative.json`。两者各自准备和清理、可独立运行；初始化依赖项在 `init` 中显式设置。合法布尔值 true/false 均属正向，逆向只使用契约明确的错误输入。
 - API 调用成功只证明该契约的完成条件；查询、筛选、分页、写后读取应按目标检查相关字段和内容。
 - 用 `expect.success`、`expect.errorCode` 和 `expect.checks` 表达断言；`checks` 针对返回 `data`。引用通过 `$config`、`$prev`、`$step.<id>` 获取。
@@ -14,7 +14,7 @@
 
 ## 使用
 
-从仓库根运行 `make auto-report PLATFORM=android SCRIPT=testing/single/cases/<文件>.json`，iOS 使用 `PLATFORM=ios`。先按 [example 配置说明](../../im_flutter_sdk/example/README.md#setup) 准备测试环境。
+从仓库根运行 `make auto-report PLATFORM=android SCRIPT=testing/single/cases/<文件>.json`，iOS 使用 `PLATFORM=ios`。先按 [workbench 配置说明](../../workbench/README.md#setup) 准备测试环境。
 
 当前默认仍是 5.0.0 正向脚本，报告仍在 `reports/5.0.0/`；目录归属不代表完成了 5.1.0 验收。其他场景必须显式指定 `SCRIPT`。具体参数及结果文件见 [单设备入口](../../testing/single/README.md)。
 

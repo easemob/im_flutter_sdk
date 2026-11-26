@@ -136,7 +136,7 @@ void dispose() {
 
 ## Example App
 
-The `example/` directory in the repository provides a visual API testing app that covers initialization, login, and invocation of common APIs with result viewing. It can be used as an integration reference and for feature verification.
+The `example/` directory contains a minimal, self-contained example covering SDK initialization, login, and sending/receiving messages — it is the example shown on pub.dev. The repository root also has an internal `workbench/` app (not published) with a full visual API testing UI, script mode, and integration tests, which can be used as an integration reference and for feature verification.
 
 ## More Resources
 

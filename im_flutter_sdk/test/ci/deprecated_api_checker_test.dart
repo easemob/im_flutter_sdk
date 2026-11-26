@@ -24,7 +24,7 @@ const String _iosLog = '''
 /Users/runner/work/im_flutter_sdk/im_flutter_sdk/im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/PushManagerWrapper.m:193:65: warning: incompatible pointer types sending 'NSString *' to parameter of type 'NSData * _Nonnull' [-Wincompatible-pointer-types]
 warning: Building targets in manual order is deprecated - check "Parallelize build for command-line builds" in the project editor
 /Users/runner/work/im_flutter_sdk/im_flutter_sdk/im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/SilentModeHelper.m:1:1: warning: 'legacyFlag' is deprecated [-Wdeprecated-declarations]
-/Users/runner/example/ios/Pods/HyphenateChat/HyphenateChat.xcframework/ios-arm64/EMClient.h:12:1: warning: 'podsOnly' is deprecated [-Wdeprecated-declarations]
+/Users/runner/workbench/ios/Pods/HyphenateChat/HyphenateChat.xcframework/ios-arm64/EMClient.h:12:1: warning: 'podsOnly' is deprecated [-Wdeprecated-declarations]
 ''';
 
 void main() {

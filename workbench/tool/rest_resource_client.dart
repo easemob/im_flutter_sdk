@@ -53,7 +53,10 @@ final class RestResourceClient {
     if (data is! List) {
       throw FormatException('GET contacts of "$userId": data must be a list');
     }
-    return [for (final e in data) if (e is String) e];
+    return [
+      for (final e in data)
+        if (e is String) e
+    ];
   }
 
   /// Whether [a] and [b] are friends (checked from a's server-side view).
@@ -68,7 +71,7 @@ final class RestResourceClient {
     await _request(
       'POST',
       'users/${Uri.encodeComponent(a)}/contacts/users/'
-      '${Uri.encodeComponent(b)}',
+          '${Uri.encodeComponent(b)}',
     );
   }
 
@@ -83,7 +86,7 @@ final class RestResourceClient {
     await _request(
       'DELETE',
       'users/${Uri.encodeComponent(owner)}/contacts/users/'
-      '${Uri.encodeComponent(friend)}',
+          '${Uri.encodeComponent(friend)}',
     );
   }
 

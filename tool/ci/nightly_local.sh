@@ -96,7 +96,7 @@ if [ -n "${E2E_CONFIG_PATH:-}" ]; then
     echo "error: E2E_CONFIG_PATH is not readable" >&2
     exit 2
   fi
-  # Runners change directory to the example; resolve relative caller paths now.
+  # Runners change directory to the workbench; resolve relative caller paths now.
   export E2E_CONFIG_PATH="$(cd "$(dirname "$E2E_CONFIG_PATH")" && pwd)/$(basename "$E2E_CONFIG_PATH")"
 else
   for var in E2E_APP_KEY E2E_USER_ID E2E_REST_API E2E_CLIENT_ID E2E_CLIENT_SECRET; do

@@ -15,8 +15,7 @@ void main() {
     logs = LogStore.instance;
   });
 
-  test('subscribes to the log stream and keeps events with payload',
-      () async {
+  test('subscribes to the log stream and keeps events with payload', () async {
     final evidence = EvidenceStore();
     addTearDown(evidence.dispose);
 

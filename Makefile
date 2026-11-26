@@ -1,9 +1,9 @@
 # im_flutter_sdk project setup
 # Usage: make setup
 
-EXAMPLE_DIR := im_flutter_sdk/example
-IOS_DIR     := $(EXAMPLE_DIR)/ios
-ENV_TOOL    := $(EXAMPLE_DIR)/tool/env_tool.dart
+WORKBENCH_DIR := workbench
+IOS_DIR     := $(WORKBENCH_DIR)/ios
+ENV_TOOL    := $(WORKBENCH_DIR)/tool/env_tool.dart
 PODSPEC     := im_flutter_sdk_ios/ios/im_flutter_sdk_ios.podspec
 PODFILE     := $(IOS_DIR)/Podfile
 PODLOCK     := $(IOS_DIR)/Podfile.lock
@@ -19,12 +19,12 @@ help: ## Show this help
 
 setup: config deps pods ## Run all setup steps
 	@echo ""
-	@echo "Setup complete. Next: cd $(EXAMPLE_DIR) && flutter run -d <device>"
+	@echo "Setup complete. Next: cd $(WORKBENCH_DIR) && flutter run -d <device>"
 
 config: ## Create local config and placeholder env.dart if missing
 	dart run $(ENV_TOOL) ensure
 
-env-gettoken: ## Fetch tokens from example/config.local.json and write example/lib/env.dart
+env-gettoken: ## Fetch tokens from workbench/config.local.json and write workbench/lib/env.dart
 	dart run $(ENV_TOOL) gettoken
 
 auto-report: local-deps ## Run 5.0.0 auto mode and write a local report: make auto-report PLATFORM=android [DEVICE=...] [SCRIPT=...]
@@ -44,7 +44,7 @@ local-deps: ## Create gitignored pubspec_overrides.yaml files for local SDK pack
 
 deps: local-deps ## flutter pub get with local SDK packages
 	@echo "Running flutter pub get..."
-	cd $(EXAMPLE_DIR) && flutter pub get
+	cd $(WORKBENCH_DIR) && flutter pub get
 	@echo "Done: dependencies resolved"
 
 pods: deps ## pod install (only when needed)
@@ -59,6 +59,6 @@ pods: deps ## pod install (only when needed)
 	fi
 
 clean: ## Remove build artifacts + Pods
-	cd $(EXAMPLE_DIR) && flutter clean
+	cd $(WORKBENCH_DIR) && flutter clean
 	rm -rf $(IOS_DIR)/Pods $(IOS_DIR)/Podfile.lock
 	@echo "Done: cleaned"

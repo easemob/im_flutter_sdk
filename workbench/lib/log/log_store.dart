@@ -73,7 +73,8 @@ class LogStore extends ChangeNotifier {
     }
     for (var index = 0; index < chunks.length; index++) {
       // ignore: avoid_print
-      print('$stdoutChunkPrefix${index + 1}/${chunks.length}] ${chunks[index]}');
+      print(
+          '$stdoutChunkPrefix${index + 1}/${chunks.length}] ${chunks[index]}');
     }
   }
 

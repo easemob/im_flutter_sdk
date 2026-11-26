@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import '../../im_flutter_sdk/example/lib/auto/step_expectation.dart';
+import '../../workbench/lib/auto/step_expectation.dart';
 
 const _packageName = 'com.example.example';
 const _reportsRelativePath = 'artifacts/single';
@@ -80,8 +80,8 @@ writes $_reportsRelativePath/comparison-<timestamp>.md.
     throw const FormatException('--platform must be android or ios');
   }
   final platform = requestedPlatform!;
-  final example = Directory('${root.path}/im_flutter_sdk/example');
-  if (!await example.exists()) {
+  final workbench = Directory('${root.path}/workbench');
+  if (!await workbench.exists()) {
     throw StateError('Run this command from the worktree root.');
   }
   final requestedScript = options['script'] ?? _defaultScriptRelativePath;
@@ -113,8 +113,9 @@ writes $_reportsRelativePath/comparison-<timestamp>.md.
     suffix++;
   }
   final runId = '$runDirName-$platform';
-  final reportDir =
-      Directory('${root.path}/$_reportsRelativePath/$runDirName/$platform');
+  final reportDir = Directory(
+    '${root.path}/$_reportsRelativePath/$runDirName/$platform',
+  );
   await reportDir.create(recursive: true);
   final eventsFile = File('${reportDir.path}/events.jsonl');
   final crashFile = File('${reportDir.path}/crash.log');
@@ -137,9 +138,9 @@ writes $_reportsRelativePath/comparison-<timestamp>.md.
   try {
     await _writeRunMetadata(reportDir, root, script, state, startedAt);
     state.device = await _resolveDevice(platform, options['device']);
-    await _prepareDevice(platform, state.device, example, script, runId);
+    await _prepareDevice(platform, state.device, workbench, script, runId);
     deviceLog = await _startDeviceLogCapture(state);
-    await _runFlutter(state, example);
+    await _runFlutter(state, workbench);
   } catch (error) {
     state.executionErrors.add(_sanitize('$error'));
     stderr.writeln('Execution failed: ${state.executionErrors.last}');
@@ -414,7 +415,7 @@ Future<String> _resolveDevice(String platform, String? requested) async {
 Future<void> _prepareDevice(
   String platform,
   String device,
-  Directory example,
+  Directory workbench,
   File script,
   String runId,
 ) async {
@@ -431,7 +432,7 @@ Future<void> _prepareDevice(
     return;
   }
 
-  await _ensureAndroidAppInstalled(device, example);
+  await _ensureAndroidAppInstalled(device, workbench);
   await _pushAndroidScript(device, script, runId);
   await Process.run('adb', ['-s', device, 'shell', 'input', 'keyevent', '224']);
   await _tryActivateAndroidWindow(device);
@@ -445,7 +446,7 @@ Future<void> _prepareDevice(
 /// reads it.
 Future<void> _ensureAndroidAppInstalled(
   String device,
-  Directory example,
+  Directory workbench,
 ) async {
   final probe = await Process.run('adb', [
     '-s',
@@ -458,7 +459,7 @@ Future<void> _ensureAndroidAppInstalled(
   if ((probe.stdout as String).contains('package:')) return;
 
   final apk = File(
-    '${example.path}/build/app/outputs/flutter-apk/app-debug.apk',
+    '${workbench.path}/build/app/outputs/flutter-apk/app-debug.apk',
   );
   if (!await apk.exists()) {
     stdout.writeln('Building the debug APK to place the auto script...');
@@ -466,7 +467,7 @@ Future<void> _ensureAndroidAppInstalled(
       'build',
       'apk',
       '--debug',
-    ], workingDirectory: example.path);
+    ], workingDirectory: workbench.path);
   }
   stdout.writeln('Installing $_packageName to place the auto script...');
   await _checkedProcess('adb', ['-s', device, 'install', '-r', '-t', apk.path]);
@@ -583,7 +584,7 @@ Future<void> _tryActivateAndroidWindow(String device) async {
 /// Streams the device log into `device.log` under the report directory for
 /// the whole app run, mirroring the multi-device convention: Android captures
 /// the full logcat (no tag filter, so ONE SDK lines survive) and is archived
-/// as `device.log.gz`; iOS streams the simulator log of the example app
+/// as `device.log.gz`; iOS streams the simulator log of the workbench app
 /// process and stays plain text.
 class _DeviceLogCapture {
   _DeviceLogCapture(this._process, this._sink, this._logPath);
@@ -646,11 +647,13 @@ class _DeviceLogCapture {
       await subscription.cancel();
     }
     _process.kill(ProcessSignal.sigint);
-    final exited = await _process.exitCode
-        .timeout(const Duration(seconds: 5), onTimeout: () {
-      _process.kill(ProcessSignal.sigkill);
-      return -1;
-    });
+    final exited = await _process.exitCode.timeout(
+      const Duration(seconds: 5),
+      onTimeout: () {
+        _process.kill(ProcessSignal.sigkill);
+        return -1;
+      },
+    );
     await _sink.flush();
     await _sink.close();
     final logFile = File(_logPath);
@@ -675,14 +678,14 @@ Future<_DeviceLogCapture> _startDeviceLogCapture(_RunState state) async {
   return capture;
 }
 
-Future<void> _runFlutter(_RunState state, Directory example) async {
+Future<void> _runFlutter(_RunState state, Directory workbench) async {
   final scriptArgument = state.platform == 'android'
       ? _androidScriptPath(state.runId)
       : state.scriptHostPath;
   final process = await Process.start(
     'flutter',
     ['run', '-d', state.device, '--dart-define=API_SCRIPT=$scriptArgument'],
-    workingDirectory: example.path,
+    workingDirectory: workbench.path,
     runInShell: true,
   );
 
@@ -918,9 +921,7 @@ Future<void> _writeSummary(
     ..writeln(
       '- Crash evidence: `${state.crashLines.isEmpty ? 'none' : 'see crash.log'}`',
     )
-    ..writeln(
-      '- Device log: `${state.deviceLogFile ?? 'not captured'}`',
-    )
+    ..writeln('- Device log: `${state.deviceLogFile ?? 'not captured'}`')
     ..writeln()
     ..writeln('## Step outcomes')
     ..writeln();

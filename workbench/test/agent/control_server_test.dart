@@ -67,8 +67,8 @@ void main() {
   setUp(() async {
     // Loopback-only test client; bypass ambient proxies (http_proxy env).
     http = HttpClient()..findProxy = (uri) => 'DIRECT';
-    service = makeService(
-        (api, params) async => {'success': true, 'data': 'ok'});
+    service =
+        makeService((api, params) async => {'success': true, 'data': 'ok'});
     evidence = EvidenceStore();
     server = await ControlServer.start(service: service, evidence: evidence);
   });
@@ -105,17 +105,16 @@ void main() {
 
   test('command lifecycle: 202 accepted -> poll to done with envelope',
       () async {
-    final (status, accepted) = await send('POST', '/v1/commands',
-        token: server.token,
-        body: {
-          'commandId': 't-1',
-          'api': 'ChatClient.isConnected',
-          'params': {},
-          'timeoutMs': 2000,
-          // tolerated unknown fields
-          'id': 'legacy',
-          'whatever': [1, 2],
-        });
+    final (status, accepted) =
+        await send('POST', '/v1/commands', token: server.token, body: {
+      'commandId': 't-1',
+      'api': 'ChatClient.isConnected',
+      'params': {},
+      'timeoutMs': 2000,
+      // tolerated unknown fields
+      'id': 'legacy',
+      'whatever': [1, 2],
+    });
     expect(status, 202);
     expect(accepted['commandId'], 't-1');
     expect(accepted['status'], 'accepted');
@@ -131,13 +130,12 @@ void main() {
   });
 
   test('unregistered api -> 422 without side effects', () async {
-    final (status, body) = await send('POST', '/v1/commands',
-        token: server.token,
-        body: {
-          'commandId': 't-x',
-          'api': 'NotAReal.api',
-          'params': {},
-        });
+    final (status, body) =
+        await send('POST', '/v1/commands', token: server.token, body: {
+      'commandId': 't-x',
+      'api': 'NotAReal.api',
+      'params': {},
+    });
     expect(status, 422);
     expect(body['error'], isA<Map>());
   });
@@ -148,17 +146,14 @@ void main() {
     expect(status, 404);
   });
 
-  test('events endpoint exposes command and api sources with cursor',
-      () async {
+  test('events endpoint exposes command and api sources with cursor', () async {
     final before = evidence.lastSeq;
-    await send('POST', '/v1/commands',
-        token: server.token,
-        body: {
-          'commandId': 't-ev',
-          'api': 'ChatClient.isConnected',
-          'params': {},
-          'timeoutMs': 2000,
-        });
+    await send('POST', '/v1/commands', token: server.token, body: {
+      'commandId': 't-ev',
+      'api': 'ChatClient.isConnected',
+      'params': {},
+      'timeoutMs': 2000,
+    });
     await until(() => service.lookup('t-ev')?.status != 'running');
 
     final (status, body) =
@@ -187,24 +182,22 @@ void main() {
     await server.stop();
     server = await ControlServer.start(service: service, evidence: evidence);
 
-    final (status, _) = await send('POST', '/v1/commands',
-        token: server.token,
-        body: {
-          'commandId': 't-to',
-          'api': 'ChatClient.isConnected',
-          'params': {},
-          'timeoutMs': 40,
-        });
+    final (status, _) =
+        await send('POST', '/v1/commands', token: server.token, body: {
+      'commandId': 't-to',
+      'api': 'ChatClient.isConnected',
+      'params': {},
+      'timeoutMs': 40,
+    });
     expect(status, 202);
     await until(() => service.state.name == 'uncertain');
 
-    final (status2, _) = await send('POST', '/v1/commands',
-        token: server.token,
-        body: {
-          'commandId': 't-to-2',
-          'api': 'ChatClient.isConnected',
-          'params': {},
-        });
+    final (status2, _) =
+        await send('POST', '/v1/commands', token: server.token, body: {
+      'commandId': 't-to-2',
+      'api': 'ChatClient.isConnected',
+      'params': {},
+    });
     expect(status2, 503);
   });
 
@@ -216,13 +209,12 @@ void main() {
     final (status2, _) = await send('GET', '/v1/info', token: server.token);
     expect(status2, 200);
 
-    final (status3, _) = await send('POST', '/v1/commands',
-        token: server.token,
-        body: {
-          'commandId': 't-after',
-          'api': 'ChatClient.isConnected',
-          'params': {},
-        });
+    final (status3, _) =
+        await send('POST', '/v1/commands', token: server.token, body: {
+      'commandId': 't-after',
+      'api': 'ChatClient.isConnected',
+      'params': {},
+    });
     expect(status3, 410);
   });
 

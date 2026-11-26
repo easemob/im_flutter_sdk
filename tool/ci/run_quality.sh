@@ -11,16 +11,16 @@ report_device="host"
 
 bash "$repo_root/tool/use_local_packages.sh"
 
-# im_flutter_sdk/example imports the gitignored lib/env.dart; without it the
-# example analysis below fails to resolve the file (see the script's header).
-bash "$repo_root/tool/ci/ensure_example_env.sh"
+# The workbench app imports the gitignored lib/env.dart; without it the
+# workbench analysis below fails to resolve the file (see the script's header).
+bash "$repo_root/tool/ci/ensure_workbench_env.sh"
 
 packages=(
   im_flutter_sdk_interface
   im_flutter_sdk_android
   im_flutter_sdk_ios
   im_flutter_sdk
-  im_flutter_sdk/example
+  workbench
 )
 
 for package in "${packages[@]}"; do

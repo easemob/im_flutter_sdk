@@ -26,7 +26,7 @@ enum DeprecatedApiPlatform {
   /// Path fragment identifying this platform's wrapper sources.
   ///
   /// Warnings are kept only for files containing it, which drops the native
-  /// SDK itself (CocoaPods, pub cache), the example app and every other
+  /// SDK itself (CocoaPods, pub cache), the workbench app and every other
   /// third-party dependency without having to enumerate them.
   final String sourceMarker;
 }

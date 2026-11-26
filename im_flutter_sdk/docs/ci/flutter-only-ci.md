@@ -1,12 +1,12 @@
 # Flutter-only CI stages
 
 CI uses Flutter unit, contract, and device integration tests. AI script tests
-and manual example usage have separate entry points; see the
+and manual workbench usage have separate entry points; see the
 [verification architecture](../../../AGENTS.md#verification-architecture).
 
 1. `Flutter CI` is the required PR gate. It runs Dart formatting, analysis,
    unit tests, MethodChannel contracts, package/podspec versions, the static
-   Native case mapping, and Android/iOS example builds.
+   Native case mapping, and Android/iOS workbench builds.
 2. `Flutter Device Smoke` runs 17 cases: SDK initialization, five existing
    Presence errors, and 11 negative client/contact/group/message cases on
    Android Emulator and iOS Simulator. It needs no account or secret.
@@ -16,7 +16,7 @@ and manual example usage have separate entry points; see the
    device; prepared offline peers and REST fixtures do not require a second
    running client. Android and iOS are serialized.
 
-The five stable entries under `example/integration_test/` classify tests by login
+The five stable entries under `workbench/integration_test/` classify tests by login
 precondition and explicit synchronization settings. Cases remain in business
 `modules/`; negative cases use `*_cases.negative.dart`, and `support/` supplies
 shared helpers. IDs, assertions, and implementation files are listed in
@@ -100,10 +100,10 @@ and deletes only its own temporary file. Peer and token Secrets are not required
 The input contract, direct device command, and log handling are documented in
 [CONTRIBUTING.md](../../../CONTRIBUTING.md#device-integration-tests).
 
-`tool/ci/ensure_example_env.sh` creates the missing gitignored `example/lib/env.dart`
+`tool/ci/ensure_workbench_env.sh` creates the missing gitignored `workbench/lib/env.dart`
 placeholder for compilation and preserves an existing file. Integration tests
-take credentials from dart-defines, independently of the example's local data
-under `im_flutter_sdk/example/config.local.json`.
+take credentials from dart-defines, independently of the workbench's local data
+under `workbench/config.local.json`.
 
 The historical 5.0.0 positive-suite run passed 22/22 on each platform. Contact
 deletion cases check API completion; earlier local-sync failures remain recorded.

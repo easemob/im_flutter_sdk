@@ -3,23 +3,24 @@ import 'dart:io';
 
 const _placeholderPrefix = 'TODO';
 
-/// Local files the example reads. The project configures a single environment:
+/// Local files the workbench reads. The project configures a single environment:
 /// `config.local.json` holds its credentials and test data, and
 /// `lib/env.dart` is the generated Dart view of it.
 class EnvPaths {
-  EnvPaths(this.exampleDir);
+  EnvPaths(this.workbenchDir);
 
   factory EnvPaths.fromScript() {
     return EnvPaths(File.fromUri(Platform.script).parent.parent);
   }
 
-  final Directory exampleDir;
+  final Directory workbenchDir;
 
   File get configTemplate =>
-      File('${exampleDir.path}/templates/config.local.example.json');
-  File get envTemplate => File('${exampleDir.path}/templates/env.example.dart');
-  File get localConfig => File('${exampleDir.path}/config.local.json');
-  File get activeEnv => File('${exampleDir.path}/lib/env.dart');
+      File('${workbenchDir.path}/templates/config.local.example.json');
+  File get envTemplate =>
+      File('${workbenchDir.path}/templates/env.example.dart');
+  File get localConfig => File('${workbenchDir.path}/config.local.json');
+  File get activeEnv => File('${workbenchDir.path}/lib/env.dart');
 }
 
 Future<void> main(List<String> args) async {
@@ -92,7 +93,7 @@ Future<void> generateEnvironment(EnvPaths paths) async {
   }
 }
 
-/// The example environment handed to the app: chat options, the app key, the
+/// The workbench environment handed to the app: chat options, the app key, the
 /// per-account user tokens, and the test resources referenced by the scripts.
 Map<String, Object?> buildEnvironment({
   required Map<String, dynamic> config,

@@ -29,6 +29,21 @@ ensure_overrides im_flutter_sdk ../ \
   im_flutter_sdk_interface im_flutter_sdk_android im_flutter_sdk_ios
 ensure_overrides im_flutter_sdk_android ../ im_flutter_sdk_interface
 ensure_overrides im_flutter_sdk_ios ../ im_flutter_sdk_interface
-# The example already depends on the main package through path: ../.
-ensure_overrides im_flutter_sdk/example ../../ \
+# The workbench already depends on the main package through path: ../im_flutter_sdk.
+ensure_overrides workbench ../ \
   im_flutter_sdk_interface im_flutter_sdk_android im_flutter_sdk_ios
+# The minimal published example depends on the hosted main package; override
+# it locally so pre-release development resolves against the checkout. The
+# main package is the example's parent directory, so the generic generator
+# (which builds paths from dependency names) cannot express this override.
+example_overrides="$repo_root/im_flutter_sdk/example/pubspec_overrides.yaml"
+if [[ -e "$example_overrides" || -L "$example_overrides" ]]; then
+  echo "Keep: im_flutter_sdk/example/pubspec_overrides.yaml"
+else
+  {
+    echo 'dependency_overrides:'
+    echo '  im_flutter_sdk:'
+    echo '    path: ..'
+  } > "$example_overrides"
+  echo "Created: im_flutter_sdk/example/pubspec_overrides.yaml"
+fi

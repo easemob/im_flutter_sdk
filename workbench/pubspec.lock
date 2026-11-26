@@ -213,28 +213,28 @@ packages:
   im_flutter_sdk:
     dependency: "direct main"
     description:
-      path: ".."
+      path: "../im_flutter_sdk"
       relative: true
     source: path
     version: "5.2.0"
   im_flutter_sdk_android:
     dependency: "direct overridden"
     description:
-      path: "../../im_flutter_sdk_android"
+      path: "../im_flutter_sdk_android"
       relative: true
     source: path
     version: "5.2.0"
   im_flutter_sdk_interface:
     dependency: "direct overridden"
     description:
-      path: "../../im_flutter_sdk_interface"
+      path: "../im_flutter_sdk_interface"
       relative: true
     source: path
     version: "5.2.0"
   im_flutter_sdk_ios:
     dependency: "direct overridden"
     description:
-      path: "../../im_flutter_sdk_ios"
+      path: "../im_flutter_sdk_ios"
       relative: true
     source: path
     version: "5.2.0"

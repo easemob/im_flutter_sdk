@@ -26,7 +26,8 @@ class EvidenceEvent {
   /// UTF-8 size of the originating log line, for the byte budget.
   final int bytes;
 
-  Map<String, Object?> toJson() => {'seq': seq, 'source': source, 'payload': payload};
+  Map<String, Object?> toJson() =>
+      {'seq': seq, 'source': source, 'payload': payload};
 }
 
 /// Evidence ring buffer: subscribes to [LogStore] as a plain listener and
@@ -38,7 +39,10 @@ class EvidenceEvent {
 /// degraded (the control server then rejects further business commands with
 /// 503 so a run never passes on incomplete evidence).
 class EvidenceStore extends ChangeNotifier {
-  EvidenceStore({LogStore? logStore, this.maxEntries = 10000, this.maxBytes = 32 * 1024 * 1024})
+  EvidenceStore(
+      {LogStore? logStore,
+      this.maxEntries = 10000,
+      this.maxBytes = 32 * 1024 * 1024})
       : _logStore = logStore ?? LogStore.instance {
     _logStore.addListener(_onLog);
   }
@@ -55,7 +59,8 @@ class EvidenceStore extends ChangeNotifier {
   bool _degraded = false;
 
   /// Seq of the oldest retained event (lastSeq + 1 when empty).
-  int get firstAvailableSeq => _events.isEmpty ? _lastSeq + 1 : _events.first.seq;
+  int get firstAvailableSeq =>
+      _events.isEmpty ? _lastSeq + 1 : _events.first.seq;
 
   /// Seq of the newest event seen (0 when nothing logged yet).
   int get lastSeq => _lastSeq;
@@ -81,7 +86,8 @@ class EvidenceStore extends ChangeNotifier {
     final match = source is String ? _handlerPrefix.firstMatch(source) : null;
     final event = EvidenceEvent(
       seq: seq,
-      source: match != null ? match.group(1)! : (source is String ? source : ''),
+      source:
+          match != null ? match.group(1)! : (source is String ? source : ''),
       payload: decoded['payload'],
       bytes: utf8.encode(raw).length,
     );

@@ -19,16 +19,16 @@ final contactApis = <ApiEntry>[
     group: 'ChatContactManager',
     description: '接受指定用户的好友邀请（发起方收到 onFriendRequestAccepted）。',
     paramsTemplate: '{"userId": "userId"}',
-    invoke: (p) =>
-        ChatClient.getInstance.contactManager.acceptInvitation(p['userId'] as String),
+    invoke: (p) => ChatClient.getInstance.contactManager
+        .acceptInvitation(p['userId'] as String),
   ),
   ApiEntry(
     name: 'ChatContactManager.declineInvitation',
     group: 'ChatContactManager',
     description: '拒绝指定用户的好友邀请（发起方收到 onFriendRequestDeclined）。',
     paramsTemplate: '{"userId": "userId"}',
-    invoke: (p) =>
-        ChatClient.getInstance.contactManager.declineInvitation(p['userId'] as String),
+    invoke: (p) => ChatClient.getInstance.contactManager
+        .declineInvitation(p['userId'] as String),
   ),
   ApiEntry(
     name: 'ChatContactManager.deleteContact',
@@ -59,8 +59,8 @@ final contactApis = <ApiEntry>[
     group: 'ChatContactManager',
     description: '按 userId 获取单个联系人信息；非好友返回 null。',
     paramsTemplate: '{"userId": "userId"}',
-    invoke: (p) =>
-        ChatClient.getInstance.contactManager.getContact(userId: p['userId'] as String),
+    invoke: (p) => ChatClient.getInstance.contactManager
+        .getContact(userId: p['userId'] as String),
   ),
   ApiEntry(
     name: 'ChatContactManager.setContactRemark',

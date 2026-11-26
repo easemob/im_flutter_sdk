@@ -8,7 +8,7 @@ set -euo pipefail
 
 test_target="${1:?usage: run_android_emulator_test.sh TEST_TARGET}"
 # Keep in sync with applicationId in
-# im_flutter_sdk/example/android/app/build.gradle.kts.
+# workbench/android/app/build.gradle.kts.
 app_id="com.example.example"
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -21,10 +21,10 @@ adb -s emulator-5554 get-state >/dev/null 2>&1 || {
 }
 bash "$repo_root/tool/use_local_packages.sh"
 
-# The example app only compiles with the gitignored lib/env.dart in place.
-bash "$repo_root/tool/ci/ensure_example_env.sh"
+# The workbench app only compiles with the gitignored lib/env.dart in place.
+bash "$repo_root/tool/ci/ensure_workbench_env.sh"
 
-cd "$repo_root/im_flutter_sdk/example"
+cd "$repo_root/workbench"
 flutter pub get
 
 # Integration tests assume a cold app. `flutter test` installs over any existing

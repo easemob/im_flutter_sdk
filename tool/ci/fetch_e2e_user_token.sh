@@ -4,7 +4,7 @@
 # cannot be stored as a GitHub secret: each test job calls this script right
 # before generating the dart-define file.
 #
-# Flow (same as TokenClient in example/tool/env_tool.dart): exchange
+# Flow (same as TokenClient in workbench/tool/env_tool.dart): exchange
 # clientId/clientSecret for an app token, then exchange that for a user token
 # with grant_type=inherit (autoCreateUser=true, so the account is created on
 # first use). Mirrors scripts/ci/fetch_e2e_user_token.js in the React Native

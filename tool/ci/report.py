@@ -45,7 +45,7 @@ def link(path, directory, title=None):
 
 
 def configuration(target):
-    source = ROOT / "im_flutter_sdk/example" / target
+    source = ROOT / "workbench" / target
     if not source.is_file():
         return {}
     text = source.read_text()

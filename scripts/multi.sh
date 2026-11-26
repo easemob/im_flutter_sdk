@@ -12,7 +12,7 @@
 #       Runs scripts/generate_cases.dart; defaults --cases-dir to
 #       testing/multi/cases.
 #   scripts/multi.sh prepare|devices|build|launch|run|report|clean|all ...
-#       Runs bin/cli.dart; defaults --app-dir to im_flutter_sdk/example.
+#       Runs bin/cli.dart; defaults --app-dir to workbench.
 # Example:
 #   scripts/multi.sh all --cases <IMTO>/multi/config/cases.json
 #   scripts/multi.sh prepare testing/multi/cases/5.0.0-multi-presence-positive.yaml \
@@ -93,7 +93,7 @@ if [[ "$command" == "generate" && $has_cases_dir -eq 0 ]]; then
 fi
 # Only commands whose CLI accepts --app-dir get the default (build/all).
 if [[ "$command" == "build" || "$command" == "all" ]] && [[ $has_app_dir -eq 0 ]]; then
-  args+=(--app-dir "$REPO_ROOT/im_flutter_sdk/example")
+  args+=(--app-dir "$REPO_ROOT/workbench")
 fi
 
 cd "$MULTI"

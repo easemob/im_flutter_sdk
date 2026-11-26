@@ -56,7 +56,7 @@ bash tool/ci/nightly_local.sh android
 bash tool/ci/nightly_local.sh ios
 ```
 
-自动准备配置还需要 `curl`、`jq`。脚本获取新 Token、准备 peer 账号，生成临时配置并在退出时删除。CI 不会自动读取 example 的 `config.local.json`；`make env-gettoken` 用于 example 的人工/脚本模式，不能代替这里的配置。
+自动准备配置还需要 `curl`、`jq`。脚本获取新 Token、准备 peer 账号，生成临时配置并在退出时删除。CI 不会自动读取 workbench 的 `config.local.json`；`make env-gettoken` 用于 workbench 的人工/脚本模式，不能代替这里的配置。
 
 如果已有有效的 CI dart-define JSON，可用 `E2E_CONFIG_PATH=/绝对路径/e2e-config.json` 执行 Nightly，脚本直接使用它并保留文件，不再自动刷新 Token。格式及凭据说明见 [CI 配置](../../CONTRIBUTING.md)。
 
@@ -90,7 +90,7 @@ CI_TEST_NAME=FL-APP-001 bash tool/ci/run_ios_simulator_test.sh \
   integration_test/logged_out_test.dart
 ```
 
-参数只有相对 example 的测试入口。不传 `CI_TEST_NAME` 则执行该入口的全部用例。
+参数只有相对 workbench 的测试入口。不传 `CI_TEST_NAME` 则执行该入口的全部用例。
 
 单个登录用例需额外提供完整有效的 `E2E_CONFIG_PATH`，包括 `FL-AUTH-007`；基础入口统一检查账号、peer 和 REST 配置。可以在上述五项环境变量设置后先生成配置，再调用设备 runner：
 
@@ -123,4 +123,4 @@ E2E_CONFIG_PATH="$PWD/artifacts/e2e-config.json" CI_TEST_NAME='<用例ID>' \
 
 先看报告中的失败用例，再从链接进入原始证据；准备或构建失败不代表业务用例已执行。定向通过只代表选中的范围，历史已知问题仍以本次实际结果呈现。手动裸跑 `flutter test` 不会自动生成这里的正式报告。
 
-报告重建、显式合并多批结果及统计口径见[自动测试报告](../../docs/testing/2026-11-09-reports.md)。工具和 example 的其他非设备单测入口见[测试入口](../../testing/README.md)。
+报告重建、显式合并多批结果及统计口径见[自动测试报告](../../docs/testing/2026-11-09-reports.md)。工具和 workbench 的其他非设备单测入口见[测试入口](../../testing/README.md)。
