@@ -1296,10 +1296,17 @@ class ChatGroupEventHandler {
 
   /// ~english
   /// Occurs when a user joins a group.
+  ///
+  /// Delivered to group members other than the joiner; the joiner is
+  /// notified of their own joining via
+  /// [ChatGroupEventHandler.onAutoAcceptInvitationFromGroup] instead.
   /// ~end
   ///
   /// ~chinese
   /// 新成员加入群组的回调。
+  ///
+  /// 只通知除加入者以外的群成员；加入者本人通过
+  /// [ChatGroupEventHandler.onAutoAcceptInvitationFromGroup] 接收自己入群的通知。
   /// ~end
   final void Function(
     String groupId,
@@ -1558,7 +1565,7 @@ class ChatGroupEventHandler {
   ///
   /// Param [onMemberExitedFromGroup] A member proactively leaves the group.
   ///
-  /// Param [onMemberJoinedFromGroup] A user joins a group.
+  /// Param [onMemberJoinedFromGroup] A user joins a group (delivered to members other than the joiner).
   ///
   /// Param [onMuteListAddedFromGroup] One or more group members are muted.
   ///
