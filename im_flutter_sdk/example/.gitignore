@@ -2,3 +2,15 @@
 .dart_tool/
 build/
 /pubspec.lock
+
+# Platform scaffolding is intentionally not tracked in git.
+# Regenerate it once with: flutter create --platforms=android,ios .
+/android/
+/ios/
+
+# `flutter create` / IDE by-products
+.metadata
+.idea/
+*.iml
+.flutter-plugins
+.flutter-plugins-dependencies

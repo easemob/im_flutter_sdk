@@ -10,11 +10,16 @@ A minimal, self-contained example for the [`im_flutter_sdk`](https://pub.dev/pac
 
 ## Run it
 
+The `android/` and `ios/` platform directories are intentionally **not tracked in git**. Generate them once from your local Flutter SDK template, then run as usual:
+
 ```bash
 cd example
+flutter create --platforms=android,ios .
 flutter pub get
 flutter run
 ```
+
+No manual native setup is needed: `im_flutter_sdk` is a federated plugin, so the generated scaffolding picks up the Android/iOS implementations from the `im_flutter_sdk_android` / `im_flutter_sdk_ios` packages automatically.
 
 Fill in your App Key, user ID and token (issued by your app server via the REST API), then tap **Init** and **Login**.
 
