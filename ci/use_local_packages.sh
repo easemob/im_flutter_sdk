@@ -36,6 +36,9 @@ ensure_overrides workbench ../ \
 # it locally so pre-release development resolves against the checkout. The
 # main package is the example's parent directory, so the generic generator
 # (which builds paths from dependency names) cannot express this override.
+# Overrides do not inherit across resolution roots: the main package's pinned
+# sibling dependencies (unpublished for pre-release versions) must be
+# overridden from here as well.
 example_overrides="$repo_root/im_flutter_sdk/example/pubspec_overrides.yaml"
 if [[ -e "$example_overrides" || -L "$example_overrides" ]]; then
   echo "Keep: im_flutter_sdk/example/pubspec_overrides.yaml"
@@ -44,6 +47,12 @@ else
     echo 'dependency_overrides:'
     echo '  im_flutter_sdk:'
     echo '    path: ..'
+    echo '  im_flutter_sdk_interface:'
+    echo '    path: ../../im_flutter_sdk_interface'
+    echo '  im_flutter_sdk_android:'
+    echo '    path: ../../im_flutter_sdk_android'
+    echo '  im_flutter_sdk_ios:'
+    echo '    path: ../../im_flutter_sdk_ios'
   } > "$example_overrides"
   echo "Created: im_flutter_sdk/example/pubspec_overrides.yaml"
 fi
