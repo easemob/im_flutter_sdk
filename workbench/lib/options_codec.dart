@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:agora_chat_sdk/agora_chat_sdk.dart';
 
 /// ChatOptions keys accepted by the example environment and script mode.
 const List<String> chatOptionKeys = <String>[

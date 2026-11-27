@@ -866,7 +866,7 @@ Future<void> _writeRunMetadata(
     },
     'sdkVersion': RegExp(r'^version:\s*(\S+)', multiLine: true)
         .firstMatch(
-          await File('${root.path}/im_flutter_sdk/pubspec.yaml').readAsString(),
+          await File('${root.path}/agora_chat_sdk/pubspec.yaml').readAsString(),
         )
         ?.group(1),
   };

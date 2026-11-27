@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:agora_chat_sdk/agora_chat_sdk.dart';
 
 /// API registry entry. Flutter has no runtime reflection; API name -> call must be manually registered.
 class ApiEntry {

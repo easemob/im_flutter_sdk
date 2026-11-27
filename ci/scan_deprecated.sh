@@ -6,7 +6,7 @@
 # compiled from scratch because an incremental build skips unchanged files and
 # re-emits none of their warnings; the full log is kept under
 # artifacts/ci/<timestamp>/deprecated/ and parsed by
-# im_flutter_sdk/tool/ci/check_deprecated_api.dart.
+# agora_chat_sdk/tool/ci/check_deprecated_api.dart.
 #
 # The scan only reports: findings do not fail the run. It fails when the build
 # fails or when the log shows a reused compile, since either makes an empty
@@ -26,13 +26,13 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORKBENCH_DIR="$REPO_ROOT/workbench"
 IOS_DIR="$WORKBENCH_DIR/ios"
-CHECKER="$REPO_ROOT/im_flutter_sdk/tool/ci/check_deprecated_api.dart"
+CHECKER="$REPO_ROOT/agora_chat_sdk/tool/ci/check_deprecated_api.dart"
 LINT_INIT="$REPO_ROOT/ci/enable_deprecation_lint.gradle"
 
 # CocoaPods compiles the iOS wrapper as a target of the workbench app's Pods project.
-IOS_POD_TARGET="im_flutter_sdk_ios"
+IOS_POD_TARGET="agora_chat_sdk_ios"
 # The Android wrapper is a Gradle subproject of the workbench app.
-ANDROID_MODULE=":im_flutter_sdk_android"
+ANDROID_MODULE=":agora_chat_sdk_android"
 
 PLATFORM="${1:-all}"
 case "$PLATFORM" in

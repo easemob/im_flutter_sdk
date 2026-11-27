@@ -1,0 +1,16 @@
+name: agora_chat_sdk_example
+description: A minimal example app for the agora_chat_sdk package.
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.3.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  agora_chat_sdk: ^2.0.0
+
+flutter:
+  uses-material-design: true

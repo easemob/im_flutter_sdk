@@ -41,8 +41,8 @@ class RunnerTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         (self.root / 'ci').mkdir(parents=True)
         (self.root / 'workbench').mkdir(parents=True)
-        (self.root / 'im_flutter_sdk').mkdir()
-        (self.root / 'im_flutter_sdk/pubspec.yaml').write_text('version: 5.1.0\n')
+        (self.root / 'agora_chat_sdk').mkdir()
+        (self.root / 'agora_chat_sdk/pubspec.yaml').write_text('version: 5.1.0\n')
         for name in ('report.py', 'report.sh', 'nightly_local.sh', 'smoke_local.sh', 'run_android_emulator_test.sh', 'run_ios_simulator_test.sh'):
             shutil.copy(SOURCE / 'ci' / name, self.root / 'ci' / name)
         for name in ('ci/use_local_packages.sh', 'ci/ensure_workbench_env.sh'):

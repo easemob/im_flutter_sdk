@@ -25,13 +25,13 @@ ensure_overrides() {
   echo "Created: $package/pubspec_overrides.yaml"
 }
 
-ensure_overrides im_flutter_sdk ../ \
-  im_flutter_sdk_interface im_flutter_sdk_android im_flutter_sdk_ios
-ensure_overrides im_flutter_sdk_android ../ im_flutter_sdk_interface
-ensure_overrides im_flutter_sdk_ios ../ im_flutter_sdk_interface
-# The workbench already depends on the main package through path: ../im_flutter_sdk.
+ensure_overrides agora_chat_sdk ../ \
+  agora_chat_sdk_interface agora_chat_sdk_android agora_chat_sdk_ios
+ensure_overrides agora_chat_sdk_android ../ agora_chat_sdk_interface
+ensure_overrides agora_chat_sdk_ios ../ agora_chat_sdk_interface
+# The workbench already depends on the main package through path: ../agora_chat_sdk.
 ensure_overrides workbench ../ \
-  im_flutter_sdk_interface im_flutter_sdk_android im_flutter_sdk_ios
+  agora_chat_sdk_interface agora_chat_sdk_android agora_chat_sdk_ios
 # The minimal published example depends on the hosted main package; override
 # it locally so pre-release development resolves against the checkout. The
 # main package is the example's parent directory, so the generic generator
@@ -39,20 +39,20 @@ ensure_overrides workbench ../ \
 # Overrides do not inherit across resolution roots: the main package's pinned
 # sibling dependencies (unpublished for pre-release versions) must be
 # overridden from here as well.
-example_overrides="$repo_root/im_flutter_sdk/example/pubspec_overrides.yaml"
+example_overrides="$repo_root/agora_chat_sdk/example/pubspec_overrides.yaml"
 if [[ -e "$example_overrides" || -L "$example_overrides" ]]; then
-  echo "Keep: im_flutter_sdk/example/pubspec_overrides.yaml"
+  echo "Keep: agora_chat_sdk/example/pubspec_overrides.yaml"
 else
   {
     echo 'dependency_overrides:'
-    echo '  im_flutter_sdk:'
+    echo '  agora_chat_sdk:'
     echo '    path: ..'
-    echo '  im_flutter_sdk_interface:'
-    echo '    path: ../../im_flutter_sdk_interface'
-    echo '  im_flutter_sdk_android:'
-    echo '    path: ../../im_flutter_sdk_android'
-    echo '  im_flutter_sdk_ios:'
-    echo '    path: ../../im_flutter_sdk_ios'
+    echo '  agora_chat_sdk_interface:'
+    echo '    path: ../../agora_chat_sdk_interface'
+    echo '  agora_chat_sdk_android:'
+    echo '    path: ../../agora_chat_sdk_android'
+    echo '  agora_chat_sdk_ios:'
+    echo '    path: ../../agora_chat_sdk_ios'
   } > "$example_overrides"
-  echo "Created: im_flutter_sdk/example/pubspec_overrides.yaml"
+  echo "Created: agora_chat_sdk/example/pubspec_overrides.yaml"
 fi

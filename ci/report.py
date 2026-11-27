@@ -80,7 +80,7 @@ def start(args):
         directory.mkdir(parents=True, exist_ok=False)
     commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True)
     dirty = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True)
-    version = re.search(r"^version:\s*(\S+)", (ROOT / "im_flutter_sdk/pubspec.yaml").read_text(), re.M)
+    version = re.search(r"^version:\s*(\S+)", (ROOT / "agora_chat_sdk/pubspec.yaml").read_text(), re.M)
     write(directory / "run.json", {
         "schemaVersion": 1, "startedAt": now(), "platform": args.platform,
         "target": args.target, "filter": args.name, "device": args.device,

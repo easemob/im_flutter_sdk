@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:agora_chat_sdk/agora_chat_sdk.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../env.dart';

@@ -1,6 +1,6 @@
 # Contributor Guide
 
-This document is for developers and maintainers of im_flutter_sdk; it covers repository structure, environment preparation, verification methods, and the release process. SDK users should read [im_flutter_sdk/README.md](im_flutter_sdk/README.md).
+This document is for developers and maintainers of agora_chat_sdk; it covers repository structure, environment preparation, verification methods, and the release process. SDK users should read [agora_chat_sdk/README.md](agora_chat_sdk/README.md).
 
 ## Repository Structure
 
@@ -8,10 +8,10 @@ Federated Plugin architecture; package pubspecs declare hosted version dependenc
 
 | Package | Responsibility |
 |---|---|
-| `im_flutter_sdk/` | Main package: public API, Models, Managers, includes the minimal `example/` published to pub.dev |
-| `im_flutter_sdk_interface/` | Platform interface layer: MethodChannel abstraction |
-| `im_flutter_sdk_android/` | Android platform implementation |
-| `im_flutter_sdk_ios/` | iOS platform implementation |
+| `agora_chat_sdk/` | Main package: public API, Models, Managers, includes the minimal `example/` published to pub.dev |
+| `agora_chat_sdk_interface/` | Platform interface layer: MethodChannel abstraction |
+| `agora_chat_sdk_android/` | Android platform implementation |
+| `agora_chat_sdk_ios/` | iOS platform implementation |
 
 Call chain: `Dart API → MethodChannel (interface) → Native Wrapper → HyphenateChat SDK`. Changing the interface affects all upper-layer packages.
 
@@ -38,15 +38,15 @@ The `Makefile` at the project root is the local development entry point; run `ma
 | `make clean` | Cleans the workbench's build artifacts, iOS Pods, and Podfile.lock |
 | `make help` | Shows all commands |
 
-> **Important**: after changing the native dependency version (e.g. HyphenateChat) in `im_flutter_sdk_ios.podspec`, you must run `make pods`. `flutter run` does not track podspec changes and will skip pod install, causing iOS to compile against the old native SDK and fail with compilation errors.
+> **Important**: after changing the native dependency version (e.g. HyphenateChat) in `agora_chat_sdk_ios.podspec`, you must run `make pods`. `flutter run` does not track podspec changes and will skip pod install, causing iOS to compile against the old native SDK and fail with compilation errors.
 
 ### Local Dependencies and Publishing
 
 Run `make local-deps` (or `bash ci/use_local_packages.sh`) to create `pubspec_overrides.yaml` beside the pubspecs of the main package, Android, iOS, and workbench. The interface package has no sibling dependencies and needs no override. The repository's `.gitignore` already excludes these files at every depth; only the generator is committed. Existing override files are preserved.
 
-Overrides apply to the package being resolved, not to packages that depend on it. The workbench therefore needs its own overrides for interface, Android, and iOS, even though its main SDK dependency already uses `path: ../im_flutter_sdk`. `make deps`, `make auto-report`, and the CI quality/build/device-test entry points generate the local files before resolving dependencies.
+Overrides apply to the package being resolved, not to packages that depend on it. The workbench therefore needs its own overrides for interface, Android, and iOS, even though its main SDK dependency already uses `path: ../agora_chat_sdk`. `make deps`, `make auto-report`, and the CI quality/build/device-test entry points generate the local files before resolving dependencies.
 
-The published Android/iOS `5.0.0` packages depend on `im_flutter_sdk_interface: ^4.15.0+1`. Keep this hosted constraint in the three dependent packages for this release: changing only the main package to interface `5.0.0` would conflict with the published platform packages. Local overrides intentionally select the checked-out interface `5.0.0`. Package versions and dependency compatibility ranges are separate concerns.
+The published Android/iOS `5.0.0` packages depend on `agora_chat_sdk_interface: ^4.15.0+1`. Keep this hosted constraint in the three dependent packages for this release: changing only the main package to interface `5.0.0` would conflict with the published platform packages. Local overrides intentionally select the checked-out interface `5.0.0`. Package versions and dependency compatibility ranges are separate concerns.
 
 For release validation, use a checkout without overrides, or temporarily move the four override files out of the checkout and restore them afterward. Run `dart pub publish --dry-run` inside each publishable package; do not invoke the local-development setup during this check. A successful check with overrides does not establish that the hosted dependency graph resolves. Publish new versions in dependency order: interface, Android/iOS, then the main package. An already-published version cannot be uploaded again.
 
@@ -101,10 +101,10 @@ Each run writes `run.json`, `events.jsonl`, `crash.log`, `steps.json`, `summary.
 1. `flutter pub get` in the 5 packages in sequence;
 2. `dart format --set-exit-if-changed`: checks only changed `.dart` files; the baseline is specified by `FORMAT_BASE_SHA` (CI passes the PR base / pre-push sha), falling back to `HEAD^` when unset locally;
 3. `flutter analyze --fatal-infos` in the 5 packages in sequence: `info`-level issues also count as failures;
-4. `flutter test --coverage` under `im_flutter_sdk`;
-5. Three consistency scripts: `im_flutter_sdk/tool/ci/check_case_mapping.dart` (native ↔ Flutter naming mapping), `im_flutter_sdk/tool/ci/check_contracts.dart` (MethodChannel method-name constants and routing branches on all three ends), `im_flutter_sdk/tool/ci/check_versions.dart` (pubspec versions of the 4 packages, the iOS podspec version, and the native SDK versions declared in Android `build.gradle` and the iOS podspec).
+4. `flutter test --coverage` under `agora_chat_sdk`;
+5. Three consistency scripts: `agora_chat_sdk/tool/ci/check_case_mapping.dart` (native ↔ Flutter naming mapping), `agora_chat_sdk/tool/ci/check_contracts.dart` (MethodChannel method-name constants and routing branches on all three ends), `agora_chat_sdk/tool/ci/check_versions.dart` (pubspec versions of the 4 packages, the iOS podspec version, and the native SDK versions declared in Android `build.gradle` and the iOS podspec).
 
-> Note: step 4 only runs `im_flutter_sdk/test/`; `workbench/test/` is outside the gate — after changing the workbench, run `cd workbench && flutter test` separately.
+> Note: step 4 only runs `agora_chat_sdk/test/`; `workbench/test/` is outside the gate — after changing the workbench, run `cd workbench && flutter test` separately.
 
 ### Deprecated API Scan
 
@@ -116,7 +116,7 @@ make scan-deprecated PLATFORM=ios   # scan iOS only
 ```
 
 - A **clean build is required**: incremental builds do not re-emit warnings for unchanged files, so the script runs `clean` for each platform first. If the parser finds reused compilation in the log (`UP-TO-DATE` / `FROM-CACHE`), it marks the scan as failed rather than reporting "0 entries".
-- Only wrapper sources are scanned (`im_flutter_sdk_android/android/src/main/java`, `im_flutter_sdk_ios/ios`); third-party warnings from the workbench and Pods / pub cache do not enter the report.
+- Only wrapper sources are scanned (`agora_chat_sdk_android/android/src/main/java`, `agora_chat_sdk_ios/ios`); third-party warnings from the workbench and Pods / pub cache do not enter the report.
 - Android requires `-Xlint:deprecation` (AGP does not enable it by default — it only prints `Note: ...` without file/line numbers), injected via `ci/enable_deprecation_lint.gradle` with `-I`, **without modifying the plugin's own build.gradle**, so user builds are unaffected.
 - Artifacts are written to `artifacts/ci/<timestamp>/deprecated/` (gitignored): `{android,ios}-raw.log` raw build logs, `{android,ios}-deprecated-api.json`, and the `native-deprecated-api.md` summary report.
 - Report-only, non-blocking: finding deprecated calls does not fail the command; only build failures or untrustworthy logs do. For the parsing contract and CI reuse plan, see [docs/spec/2026-09-21-deprecated-api-scan-spec.md](docs/spec/2026-09-21-deprecated-api-scan-spec.md).
@@ -170,8 +170,8 @@ choice is confirmed. The inventory remains 55 distinct IDs / 56 execution items;
 these counts do not claim a new successful execution.
 
 `support/` contains shared test timeout, login synchronization, and REST fixture
-helpers. Current configuration and case allocation are in the [CI guide](im_flutter_sdk/docs/ci/flutter-only-ci.md),
-and IDs and assertions are in [native-case-mapping.json](im_flutter_sdk/docs/ci/native-case-mapping.json).
+helpers. Current configuration and case allocation are in the [CI guide](agora_chat_sdk/docs/ci/flutter-only-ci.md),
+and IDs and assertions are in [native-case-mapping.json](agora_chat_sdk/docs/ci/native-case-mapping.json).
 The [API selection](docs/refs/ci-basic-api-tests/2026-11-07-api-selection.md) records
 the earlier scope decisions, not the current entry layout.
 
@@ -213,7 +213,7 @@ Naming conventions, bilingual comment rules, the standard chain for adding an AP
 ## Naming and Compatibility Conventions
 
 - Since 4.22.0, public APIs use the unified `Chat` prefix naming (aligned with the overseas agora_chat_sdk);
-- Legacy `EM*` names remain compatible via `@Deprecated` typedefs in `im_flutter_sdk/lib/em_compat.dart`; new code must not use the old names. `em_compat.dart` is generated uniformly by a script — do not add entries by hand;
+- Legacy `EM*` names remain compatible via `@Deprecated` typedefs in `agora_chat_sdk/lib/em_compat.dart`; new code must not use the old names. `em_compat.dart` is generated uniformly by a script — do not add entries by hand;
 - A few names that cannot be typedef'd (`ChatLog`, `ChatTools`, `ChatGroupPermissionTypeExtension`, etc.) have no legacy-name compatibility — take care when referencing them.
 
 ## Generating API Documentation
@@ -221,20 +221,20 @@ Naming conventions, bilingual comment rules, the standard chain for adding an AP
 Public APIs of the main package use bilingual (Chinese + English) comments (`~english` / `~chinese` / `~end` marker blocks; format in AGENTS.md "Documentation Comment Conventions"). After modifying comments or adding APIs, regenerate the API docs to check the rendering:
 
 ```bash
-cd im_flutter_sdk
+cd agora_chat_sdk
 scripts/gen-apidoc.sh        # Chinese version → output/apidoc-cn/
 scripts/gen-apidoc.sh en     # English version → output/apidoc-en/
 ```
 
-- The script strips the other language block and the marker lines in a temporary copy, then runs `dart doc` without modifying the sources; `im_flutter_sdk/output/` is gitignored and generated artifacts never enter the repository;
+- The script strips the other language block and the marker lines in a temporary copy, then runs `dart doc` without modifying the sources; `agora_chat_sdk/output/` is gitignored and generated artifacts never enter the repository;
 - The side navigation is loaded dynamically via JS and must be accessed over HTTP; double-clicking `index.html` (file:// protocol) yields a blank sidebar. Local preview:
 
   ```bash
-  cd im_flutter_sdk/output/apidoc-cn && python3 -m http.server 8765
+  cd agora_chat_sdk/output/apidoc-cn && python3 -m http.server 8765
   # open http://localhost:8765/ in a browser
   ```
 
-- For deployment, serve the contents of `output/apidoc-cn/im_flutter_sdk/` as the site root (class pages must be mounted under the root path);
+- For deployment, serve the contents of `output/apidoc-cn/agora_chat_sdk/` as the site root (class pages must be mounted under the root path);
 - `dart doc` reports unresolved doc reference warnings for `[xxx]`-style text in comments — a pre-existing style issue that does not affect generation.
 
 ## Version Numbers and CHANGELOG

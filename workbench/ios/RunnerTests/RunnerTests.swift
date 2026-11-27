@@ -1,6 +1,6 @@
 import Flutter
 import HyphenateChat
-import im_flutter_sdk_ios
+import agora_chat_sdk_ios
 import UIKit
 import XCTest
 

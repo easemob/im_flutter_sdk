@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:agora_chat_sdk/agora_chat_sdk.dart';
 
 import '../support/ci_test.dart';
 import '../support/login.dart';

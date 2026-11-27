@@ -1,10 +1,10 @@
-# im_flutter_sdk project setup
+# agora_chat_sdk project setup
 # Usage: make setup
 
 WORKBENCH_DIR := workbench
 IOS_DIR     := $(WORKBENCH_DIR)/ios
 ENV_TOOL    := $(WORKBENCH_DIR)/tool/env_tool.dart
-PODSPEC     := im_flutter_sdk_ios/ios/im_flutter_sdk_ios.podspec
+PODSPEC     := agora_chat_sdk_ios/ios/agora_chat_sdk_ios.podspec
 PODFILE     := $(IOS_DIR)/Podfile
 PODLOCK     := $(IOS_DIR)/Podfile.lock
 
@@ -13,7 +13,7 @@ PODLOCK     := $(IOS_DIR)/Podfile.lock
 .PHONY: help setup config env-gettoken auto-report auto-compare scan-deprecated local-deps deps pods clean
 
 help: ## Show this help
-	@echo "im_flutter_sdk - project setup"
+	@echo "agora_chat_sdk - project setup"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-10s %s\n", $$1, $$2}'
 

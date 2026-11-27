@@ -6,7 +6,7 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$repo_root/ci/report.sh"
-ci_report_start unit "im_flutter_sdk/test (quality)"
+ci_report_start unit "agora_chat_sdk/test (quality)"
 report_device="host"
 
 bash "$repo_root/ci/use_local_packages.sh"
@@ -16,10 +16,10 @@ bash "$repo_root/ci/use_local_packages.sh"
 bash "$repo_root/ci/ensure_workbench_env.sh"
 
 packages=(
-  im_flutter_sdk_interface
-  im_flutter_sdk_android
-  im_flutter_sdk_ios
-  im_flutter_sdk
+  agora_chat_sdk_interface
+  agora_chat_sdk_android
+  agora_chat_sdk_ios
+  agora_chat_sdk
   workbench
 )
 
@@ -61,14 +61,14 @@ done
 
 ci_report_attempt_start 1
 (
-  cd "$repo_root/im_flutter_sdk"
+  cd "$repo_root/agora_chat_sdk"
   test_command=(flutter test --coverage --file-reporter "json:$report_dir/attempt-1.events.jsonl")
   if [[ -n "${CI_TEST_NAME:-}" ]]; then test_command+=(--name "$CI_TEST_NAME"); fi
   "${test_command[@]}" 2>&1 | tee "$report_dir/attempt-1.log"
 )
 ci_report_attempt 0
 (
-  cd "$repo_root/im_flutter_sdk"
+  cd "$repo_root/agora_chat_sdk"
   dart run tool/ci/check_case_mapping.dart .
   dart run tool/ci/check_contracts.dart ..
   dart run tool/ci/check_versions.dart ..

@@ -7,7 +7,7 @@
 所有命令在业务仓库的 worktree 根目录执行，例如：
 
 ```bash
-cd /Users/asterisk/Codes/zuoyu_flutter/im_flutter_sdk/.worktree/5.1.0
+cd /Users/asterisk/Codes/zuoyu_flutter/agora_chat_sdk/.worktree/5.1.0
 ```
 
 使用 Flutter 3.47.0 及其配套 Dart，宿主机需要 `python3` 生成报告。Android 需要 Android SDK / adb；iOS 需要 macOS / Xcode。首次依赖与环境准备见 [CONTRIBUTING.md](../CONTRIBUTING.md)。
@@ -71,7 +71,7 @@ Nightly 通过现有设备 runner 冷启动四个固定登录入口，无需人�
 
 未登录入口固定为 `logged_out_test.dart`，由 Smoke 执行。基础配置显式开启会话同步，关闭群组、联系人同步和用户资料；其他登录入口只开启对应能力。所有初始化选项显式设置，“基础”不表示依赖 SDK 默认值。
 
-入口表示登录前置与初始化配置，用例仍按业务放在 `modules/`。群消息收发不要求开启群组列表同步，消息测试准备好友关系也不改变其基础类归属。用例可以在验证过程中退出、重新登录。普通新增用例只补对应业务模块的现有注册函数，不修改五个稳定入口、不改变共享配置。若新增业务模块确需修改入口 import 或注册接线，也须先说明原因并取得确认，不能默认豁免。完整配置和编号归属见 [CI 说明](../im_flutter_sdk/docs/ci/flutter-only-ci.md)。
+入口表示登录前置与初始化配置，用例仍按业务放在 `modules/`。群消息收发不要求开启群组列表同步，消息测试准备好友关系也不改变其基础类归属。用例可以在验证过程中退出、重新登录。普通新增用例只补对应业务模块的现有注册函数，不修改五个稳定入口、不改变共享配置。若新增业务模块确需修改入口 import 或注册接线，也须先说明原因并取得确认，不能默认豁免。完整配置和编号归属见 [CI 说明](../agora_chat_sdk/docs/ci/flutter-only-ci.md)。
 
 **特殊配置迁移待确认：** FL-CONV-011/012 需要 `autoLoadConversations=false`，FL-CONV-013 还包含 `enableChatroomConversation=true` 的执行项。它们无法直接合并到常规配置，迁移方案未确认前保留原有用例与断言，Nightly 暂时继续在最后执行原有 `conversation_config_test.dart` 三项（当前共五个登录批次）。不将五个稳定入口视为已包含这些特殊执行项，也不将临时保留视为已批准第六个稳定入口。
 

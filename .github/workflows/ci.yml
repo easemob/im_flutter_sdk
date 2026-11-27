@@ -55,7 +55,7 @@ jobs:
         with:
           name: flutter-unit-coverage-${{ github.run_id }}
           path: |
-            im_flutter_sdk/coverage/lcov.info
+            agora_chat_sdk/coverage/lcov.info
             artifacts/ci/
           if-no-files-found: warn
           retention-days: 7

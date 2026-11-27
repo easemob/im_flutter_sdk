@@ -1,4 +1,4 @@
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:agora_chat_sdk/agora_chat_sdk.dart';
 
 import 'log/log_store.dart';
 import 'registry/api_entry.dart';

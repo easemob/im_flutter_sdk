@@ -1,6 +1,6 @@
 # IM API Tester (workbench)
 
-A visual test harness for `im_flutter_sdk`. It lets a human tester — or an AI
+A visual test harness for `agora_chat_sdk`. It lets a human tester — or an AI
 agent — call SDK APIs with JSON parameters and inspect the results, for
 verifying real data correctness after SDK upgrades.
 

@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:agora_chat_sdk/agora_chat_sdk.dart';
 // Use the installed platform bridge with mocked channels, without changing dependencies.
 // ignore: depend_on_referenced_packages
-import 'package:im_flutter_sdk_android/im_flutter_sdk_android.dart';
+import 'package:agora_chat_sdk_android/agora_chat_sdk_android.dart';
 
 import 'package:example/registry/apis/chat_apis.dart';
 

@@ -7,7 +7,7 @@
 所有命令从业务仓库的 worktree 根目录执行，例如：
 
 ```bash
-cd /Users/asterisk/Codes/zuoyu_flutter/im_flutter_sdk/.worktree/5.1.0
+cd /Users/asterisk/Codes/zuoyu_flutter/agora_chat_sdk/.worktree/5.1.0
 ```
 
 使用 Flutter 3.47.0 及其配套 Dart，宿主机需要 `python3` 生成报告；准备目标平台的 Android SDK 或 macOS / Xcode 及模拟器。首次工具链和依赖安装见 [CONTRIBUTING.md](../../CONTRIBUTING.md)。

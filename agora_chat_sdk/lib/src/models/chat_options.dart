@@ -1,0 +1,1605 @@
+import 'package:agora_chat_sdk/agora_chat_sdk.dart';
+import 'package:agora_chat_sdk/src/tools/chat_extension.dart';
+
+/// ~english
+/// Bit-mask values for the data synchronized automatically after login.
+/// ~end
+///
+/// ~chinese
+/// 登录后自动同步的数据类型位掩码值。
+/// ~end
+abstract final class ChatDataSyncType {
+  static const int none = 0;
+  static const int conversations = 1 << 0;
+  static const int contacts = 1 << 1;
+  static const int joinedGroups = 1 << 2;
+}
+
+/// ~english
+/// The ChatOptions class, which contains the settings of the Chat SDK.
+/// ~end
+///
+/// ~chinese
+/// SDK 聊天相关的设置。
+/// ~end
+class ChatOptions {
+  /// ~english
+  /// The app key that you get from the console when creating the app.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 创建 app 时在 console 后台上注册的 app 唯一识别符。
+  /// ~end
+  final String? appKey;
+
+  /// ~english
+  /// The app key that you get from the console when creating the app.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 创建 app 时在 console 后台上注册的 app 唯一识别符。
+  /// ~end
+  final String? appId;
+
+  /// ~english
+  /// Whether to enable debug logging. Configure this option when creating [ChatOptions] and pass the options to [ChatClient.init].
+  ///
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否开启调试日志。创建 [ChatOptions] 时配置，并将该配置传给 [ChatClient.init]。
+  /// - `true`：SDK 会在 log 里输出调试信息；
+  /// - （默认）`false`：不会输出调试信息。
+  /// ~end
+  final bool debugMode;
+
+  /// ~english
+  /// Whether to accept friend invitations from other users automatically.
+  ///
+  /// - (Default) `true`: Yes;
+  /// - `false`: No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否自动接受加好友邀请。
+  /// - （默认）`true`：是。
+  /// - `false`：否。
+  /// ~end
+  final bool acceptInvitationAlways;
+
+  /// ~english
+  /// Whether to accept group invitations automatically.
+  ///
+  /// - (Default) `true`: Yes;
+  /// - `false`: No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否自动接受群组邀请。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  /// ~end
+  final bool autoAcceptGroupInvitation;
+
+  /// ~english
+  /// Whether the SDK automatically sends delivery receipts when receiving one-to-one messages.
+  ///
+  /// - (Default) `true`: Yes;
+  /// - `false`: No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// SDK 收到单聊消息时是否自动发送送达回执。
+  /// - `true`：是。
+  /// - （默认）`false`：否。
+  /// ~end
+  final bool requireDeliveryAck;
+
+  /// ~english
+  /// Whether to delete the group messages when leaving a group.
+  ///
+  /// - (Default) `true`: Yes;
+  /// - `false`: No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 离开群组时是否删除消息。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  /// ~end
+  final bool deleteMessagesAsExitGroup;
+
+  /// ~english
+  /// Whether to delete the chat room messages when leaving the chat room.
+  ///
+  /// - (Default) `true`: Yes;
+  /// - `false`: No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 离开聊天室时是否删除消息。
+  ///
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  /// ~end
+  final bool deleteMessagesAsExitChatRoom;
+
+  /// ~english
+  /// Whether to allow the chat room owner to leave the chat room.
+  ///
+  /// - (Default) `true`: Yes;
+  /// - `false`: No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否允许聊天室所有者离开聊天室。
+  ///
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  /// ~end
+  final bool isChatRoomOwnerLeaveAllowed;
+
+  /// ~english
+  /// Whether to sort the messages by the time when the messages are received by the server.
+  ///
+  /// - (Default) `true`: Yes;
+  /// - `false`: No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否根据服务器收到消息的时间对消息进行排序。
+  ///
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  /// ~end
+  final bool sortMessageByServerTime;
+
+  /// ~english
+  /// Whether only HTTPS is used for REST operations.
+  ///
+  /// - (Default) `true`: Only HTTPS is used.
+  /// - `false`: Both HTTP and HTTPS are allowed.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否只用 HTTPS。
+  ///
+  /// - （默认）`true`：是；
+  /// - `false`：否。可以同时用 HTTP 和 HTTPS。
+  /// ~end
+  final bool usingHttpsOnly;
+
+  /// ~english
+  /// Whether to upload the message attachments automatically to the chat server.
+  ///
+  /// - (Default) `true`:  Yes;
+  /// - `false`: No. Message attachments are uploaded to a custom path.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否自动将消息附件上传到聊天服务器。
+  ///
+  /// - （默认）`true`：是；
+  /// - `false`：否。使用自定义路径。
+  /// ~end
+  final bool serverTransfer;
+
+  /// ~english
+  /// Whether to automatically download the thumbnail.
+  ///
+  /// - (Default) `true`: Yes;
+  /// - `false`: No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否自动下载缩略图。
+  ///
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  /// ~end
+  final bool isAutoDownloadThumbnail;
+
+  /// ~english
+  /// Whether to enable DNS.
+  ///
+  /// - (Default) `true`: Yes;
+  /// - `false`: No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否开启 DNS。
+  ///
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  /// ~end
+  final bool enableDNSConfig;
+
+  /// ~english
+  /// The DNS URL.
+  /// ~end
+  ///
+  /// ~chinese
+  /// DNS 地址。
+  /// ~end
+  final String? dnsUrl;
+
+  /// ~english
+  /// The DoH (DNS over HTTPS) vendor.
+  ///
+  /// This property takes effect only when `enableDNSConfig` is `true`.
+  /// - `0`: DoH is disabled;
+  /// - (Default) `1`: China;
+  /// - `2`: Global.
+  /// ~end
+  ///
+  /// ~chinese
+  /// DoH（DNS over HTTPS）服务商。
+  ///
+  /// 仅在 `enableDNSConfig` 为 `true` 时生效。
+  /// - `0`：关闭 DoH；
+  /// - （默认）`1`：国内；
+  /// - `2`：海外。
+  /// ~end
+  final int dohVendor;
+
+  /// ~english
+  /// The custom REST server.
+  /// ~end
+  ///
+  /// ~chinese
+  /// REST 服务器。
+  /// ~end
+  final String? restServer;
+
+  /// ~english
+  /// The custom IM message server url.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 消息服务器。
+  /// ~end
+  final String? imServer;
+
+  /// ~english
+  /// The custom IM server port.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否使用自定义 IM 服务的端口。用于私有化部署。
+  /// ~end
+  final int? imPort;
+
+  /// ~english
+  /// The WebSocket server.
+  ///
+  /// This property is effective only when `enableDnsConfig` is `NO`.
+  /// Can only be set when initializing the SDK with [ChatClient.init], cannot be altered in runtime.
+  /// ~end
+  ///
+  /// ~chinese
+  /// WebSocket 服务器地址。
+  ///
+  /// enableDnsConfig 为 NO 时生效。只能在 [ChatClient.init] 中设置，不能在程序运行过程中动态修改。
+  /// ~end
+  final String? webSocketServer;
+
+  /// ~english
+  /// The WebSocket server port.
+  ///
+  /// This property is effective only when `enableDnsConfig` is `NO`.
+  /// Can only be set when initializing the SDK with [ChatClient.init], cannot be altered in runtime.
+  /// ~end
+  ///
+  /// ~chinese
+  /// WebSocket 服务器端口。
+  ///
+  /// enableDnsConfig 为 NO 时生效。只能在 [ChatClient.init] 中设置，不能在程序运行过程中动态修改。
+  /// ~end
+  final int? webSocketPort;
+
+  /// ~english
+  /// Whether to enable TLS connection, which takes effect during initialization and is false by default.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否开启 TLS 连接，初始化时生效，默认为 false。
+  /// ~end
+  final bool enableTLS;
+
+  /// ~english
+  /// Whether the sent message is included in [ChatEventHandler.onMessagesReceived]:
+  /// - `true`: Yes. Besides the received message, the sent message is also included in [ChatEventHandler.onMessagesReceived].
+  /// - (Default) `false`: No. Only the received message is included in [ChatEventHandler.onMessagesReceived].
+
+  /// ~end
+  /// ~chinese
+  /// 发送的消息是会执行 [ChatEventHandler.onMessagesReceived] 回调。
+  /// - `true`：是。接收消息回调中包含发送成功的消息。
+  /// - （默认）`false`：否。接收消息回调中只包含接收的消息。
+  /// ~end
+  final bool messagesReceiveCallbackIncludeSend;
+
+  /// ~english
+  /// Whether to regard import messages as read.
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否将导入的消息视为已读。
+  /// - `true`：已读。
+  /// - （默认）`false`：未读。
+  /// ~end
+  final bool regardImportMessagesAsRead;
+
+  /// ~english
+  /// The area code.
+  /// This attribute is used to restrict the scope of accessible edge nodes. The default value is `AreaCodeGLOB`.
+  /// This attribute can be set only when you call [ChatClient.init]. The attribute setting cannot be changed during the app runtime.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 区号
+  /// 此属性用于限制可访问边缘节点的范围。缺省值为AreaCodeGLOB。
+  /// 此属性只能在调用[ChatClient.init]时设置。在应用程序运行期间不能更改属性设置。
+  /// ~end
+  final int chatAreaCode;
+
+  /// ~english
+  /// Whether to include empty conversations when the SDK loads conversations from the local database:
+  /// - `true`: Yes;
+  /// - (Default) `false`: No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从本地数据库加载会话时是否包括空会话。
+  /// - `true`：包含空会话；
+  /// - （默认）`false`：不包含空会话。
+  /// ~end
+  final bool enableEmptyConversation;
+
+  /// ~english
+  /// Whether to automatically load conversations. Defaults to `true`.
+  /// Set this to `false` before initialization to use [ChatManager.getConversationsFromDB].
+  /// This setting cannot be changed at runtime.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否自动加载会话，默认为 `true`。
+  /// 使用 [ChatManager.getConversationsFromDB] 前，需在初始化时将此项设置为 `false`。
+  /// 该配置不能在运行时修改。
+  /// ~end
+  // 5.1.0
+  final bool autoLoadConversations;
+
+  /// ~english
+  /// Whether to include chat room conversations when the SDK gets the local conversation list.
+  ///
+  /// Defaults to `false`. This setting does not control the creation or storage of chat room conversations, and does not affect the sending and receiving of chat room messages. It only takes effect during initialization.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取本地会话列表时是否包含聊天室会话。
+  ///
+  /// 默认为 `false`。该设置不控制聊天室会话的创建或存储，也不影响聊天室消息的正常收发，仅在初始化时设置生效。
+  /// ~end
+  // 5.1.0
+  final bool enableChatroomConversation;
+
+  // 5.2.0
+
+  /// ~english
+  /// The grace period, in seconds, for delaying the [ConnectionEventHandler.onDisconnected] callback when the connection between the SDK and the chat server is interrupted but recoverable.
+  ///
+  /// Defaults to `10`. A value less than or equal to `0` disables the delay, and the callback is fired immediately when the disconnection occurs.
+  /// This setting only takes effect during initialization.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 当 SDK 与聊天服务器之间的连接发生可恢复的断开时，延迟触发 [ConnectionEventHandler.onDisconnected] 回调的宽限时间，单位为秒。
+  ///
+  /// 默认为 `10`。小于或等于 `0` 时表示关闭延迟，断开连接后立即触发回调。仅在初始化时设置生效。
+  /// ~end
+  final int disconnectNotifyThreshold;
+
+  /// ~english
+  ///  Custom device name.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 自定义设备名称。
+  /// ~end
+  final String? deviceName;
+
+  /// ~english
+  /// Custom system type.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 自定义系统类型。
+  /// ~end
+  final int? osType;
+
+  /// ~english
+  /// Whether the server returns the sender the text message with the content replaced during text moderation:
+  /// - `true`: Return the adjusted message to the sender.
+  /// - (Default) `false`: Return the original message to the sender.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否在文本审核时，返回给发送者被替换内容的文本消息：
+  /// - `true`：返回给发送者被调整的消息。
+  /// - （默认）`false`：返回给发送者原始消息。
+  /// ~end
+  final bool useReplacedMessageContents;
+
+  /// ~english
+  /// Whether the SDK work path is copiable, only valid for iOS, default is false.
+  /// ~end
+  ///
+  /// ~chinese
+  ///
+  /// SDK 的工作路径是否可备份, 只有ios生效，默认为 false。
+  /// ~end
+  ///
+  final bool workPathCopiable;
+
+  /// ~english
+  /// Whether to enable the user info feature.
+  ///
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否开启用户属性功能。
+  ///
+  /// - `true`：是；
+  /// - （默认）`false`：否。
+  /// ~end
+  final bool enableUserInfo;
+
+  /// ~english
+  /// The data types automatically synchronized after login.
+  /// Combine [ChatDataSyncType] values with the bitwise OR operator.
+  /// If omitted, the native platform default is used. In native SDK 5.1.0, both platforms synchronize conversations by default.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 登录后自动同步的数据类型。多个 [ChatDataSyncType] 值可使用按位或组合。
+  /// 未设置时使用 native 平台默认值。native SDK 5.1.0 双端默认同步会话数据。
+  /// ~end
+  final int? dataSyncType;
+
+  /// ~english
+  /// The custom NTP server list used by the SDK to calibrate time.
+  ///
+  /// Each element is in the format of "host" or "host:port". If the port is not specified, the default port 123 is used.
+  /// The server must support NTPv4 (RFC 5905).
+  ///
+  /// This setting takes effect only during SDK initialization and cannot be changed at runtime.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 自定义 NTP 服务器列表，用于 SDK 校准时间。
+  ///
+  /// 列表元素格式为 "host" 或 "host:port"，不指定端口时使用默认端口 123。
+  /// 服务器须支持 NTPv4（RFC 5905）。
+  ///
+  /// 该配置仅在 SDK 初始化时生效，运行时不可修改。
+  /// ~end
+  final List<String>? ntpServers;
+
+  /// ~english
+  /// The name of the APNs certificate, which is used for offline push notifications on iOS.
+  ///
+  /// Set the APNs certificate name that you configured in the console. This parameter is specific
+  /// to iOS and is ignored on other platforms.
+  ///
+  /// This setting takes effect only during SDK initialization and cannot be changed at runtime.
+  /// ~end
+  ///
+  /// ~chinese
+  /// APNs 推送证书名称，用于 iOS 的离线推送。
+  ///
+  /// 填写你在控制台配置的 APNs 证书名称。该参数仅对 iOS 生效，其他平台忽略。
+  ///
+  /// 该配置仅在 SDK 初始化时生效，运行时不可修改。
+  /// ~end
+  final String? apnsCertName;
+
+  /// ~english
+  /// The name of the PushKit certificate, which is used for VoIP push notifications on iOS.
+  ///
+  /// Set the PushKit certificate name that you configured in the console. This parameter is
+  /// specific to iOS and is ignored on other platforms. After the app obtains the PushKit token
+  /// from `PKPushRegistry`, bind it with [ChatPushManager.bindPushKitToken].
+  ///
+  /// This setting takes effect only during SDK initialization and cannot be changed at runtime.
+  /// ~end
+  ///
+  /// ~chinese
+  /// PushKit 推送证书名称，用于 iOS 的 VoIP 推送。
+  ///
+  /// 填写你在控制台配置的 PushKit 证书名称。该参数仅对 iOS 生效，其他平台忽略。
+  /// 应用从 `PKPushRegistry` 拿到 PushKit token 后，调用 [ChatPushManager.bindPushKitToken] 绑定。
+  ///
+  /// 该配置仅在 SDK 初始化时生效，运行时不可修改。
+  /// ~end
+  final String? pushKitCertName;
+
+  final Map<String, dynamic>? _extSettings;
+
+  /// ~english
+  /// Sets the app options.
+  ///
+  /// Param [appId] The app Id that you get from the console when creating an app.
+  ///
+  /// Param [debugMode] Whether to enable debug logging. Configure this option when creating [ChatOptions] and pass the options to [ChatClient.init].
+  ///
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
+  /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
+  /// Param [autoAcceptGroupInvitation] Whether to accept group invitations automatically.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
+  /// Param [requireDeliveryAck] Whether the SDK automatically sends delivery receipts when receiving one-to-one messages.
+  ///
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
+  ///
+  /// Param [deleteMessagesAsExitGroup] Whether to delete the related group messages when leaving a group.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
+  /// Param [deleteMessagesAsExitChatRoom] Whether to delete the related chat room messages when leaving the chat room.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
+  /// Param [isChatRoomOwnerLeaveAllowed] Whether to allow the chat room owner to leave the chat room.
+  /// - (Default) `true`: Yes. Even if the chat room owner leaves the chat room, the owner still has all privileges, except for receiving messages in the chat room.
+  /// - `false`: No.
+  ///
+  /// Param [sortMessageByServerTime] Whether to sort the messages in the reverse chronological order of the time when they are received by the server.
+  /// - (Default) `true`: Yes;
+  /// - `false`: No. Messages are sorted in the reverse chronological order of the time when they are created.
+
+  /// Param [usingHttpsOnly] Whether only HTTPS is used for REST operations.
+  /// - (Default) `true`: Only HTTPS is supported.
+  /// - `false`: Both HTTP and HTTPS are allowed.
+  ///
+  /// Param [serverTransfer] Whether to upload the message attachments automatically to the chat server.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No. A custom path is used.
+  ///
+  /// Param [isAutoDownloadThumbnail] Whether to automatically download the thumbnail.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
+  /// Param [enableDNSConfig] Whether to enable DNS.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No. DNS needs to be disabled for private deployment.
+  ///
+  /// Param [dnsUrl] The DNS url.
+  ///
+  /// Param [dohVendor] The DoH vendor, effective only when [enableDNSConfig] is `true`. (Default) `2`: Global; `1`: China; `0`: disabled.
+  ///
+  /// Param [restServer] The REST server for private deployments.
+  ///
+  /// Param [imPort] The IM server port for private deployments.
+  ///
+  /// Param [imServer] The IM server URL for private deployment.
+  ///
+  /// Param [webSocketServer] The WebSocket server for private deployments.
+  ///
+  /// Param [webSocketPort] The WebSocket server port for private deployments.
+  ///
+  /// Param [chatAreaCode] The area code.
+  ///
+  /// Param [enableEmptyConversation] Whether to include empty conversations when the SDK loads conversations from the local database.
+  /// - `true`: Yes. Empty conversations are included.
+  /// - (Default) `false`: No. Empty conversations are excluded.
+  ///
+  /// Param [autoLoadConversations] Whether to automatically load conversations. Defaults to `true`. Set to `false` to use [ChatManager.getConversationsFromDB].
+  ///
+  /// Param [enableChatroomConversation] Whether to include chat room conversations in the local conversation list. Defaults to `false`. It does not control the creation or storage of chat room conversations, nor does it affect the sending and receiving of chat room messages.
+  ///
+  /// Param [disconnectNotifyThreshold] The grace period, in seconds, for delaying the disconnection callback when the connection is recoverable. Defaults to `10`. A value less than or equal to `0` disables the delay.
+  ///
+  /// Param [deviceName] Custom device name.
+  ///
+  /// Param [osType] Custom system type.
+  ///
+  /// Param [useReplacedMessageContents] Whether the server returns the sender the text message with the content replaced during text moderation.
+  /// - `true`: Yes.
+  /// - (Default) `false`: No. The server returns the original message to the sender.
+  ///
+  /// Param [enableTLS] Whether to enable TLS connection, which takes effect during initialization and is false by default.
+  ///
+  /// Param [messagesReceiveCallbackIncludeSend] Whether to include the sent message in [ChatEventHandler.onMessagesReceived].
+  /// - `true`: Yes. Besides the received message, the sent message is also included in [ChatEventHandler.onMessagesReceived].
+  /// - (Default)`false`: No. Only the received message is included in [ChatEventHandler.onMessagesReceived].
+  ///
+  /// Param [regardImportMessagesAsRead] Whether to regard import messages as read:
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
+  ///
+  /// Param [workPathCopiable] Whether the SDK work path is copiable, only valid for iOS, default is false.
+  ///
+  /// ~end
+  ///
+  /// ~chinese
+  /// 设置 SDK
+  /// Param [appKey] 创建 app 时在 console 后台上注册的 app 唯一识别符。
+  ///
+  /// Param [debugMode] 是否开启调试日志。创建 [ChatOptions] 时配置，并将该配置传给 [ChatClient.init]。
+  ///
+  /// - `true`：SDK 会在 log 里输出调试信息；
+  /// - （默认）`false`：不会输出调试信息。
+  ///
+  /// Param [acceptInvitationAlways] 是否自动接受加好友邀请。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [autoAcceptGroupInvitation] 是否自动接受群组邀请。
+  /// -（默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [requireDeliveryAck] 是否发送已送达回执。
+  /// - `true`：是；
+  /// - （默认）`false`：否。
+  ///
+  /// Param [deleteMessagesAsExitGroup] 是否在离开群组时删除群组历史消息。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [deleteMessagesAsExitChatRoom] 是否在离开聊天室时删除聊天历史消息。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [isChatRoomOwnerLeaveAllowed] 是否允许聊天室所有者离开聊天室。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [sortMessageByServerTime] 是否根据服务器收到消息的时间对消息进行排序。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [usingHttpsOnly] 是否只使用 HTTPS。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [serverTransfer] 是否自动将消息附件上传到聊天服务器。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [isAutoDownloadThumbnail] 是否自动下载缩略图。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [enableDNSConfig] 设置是否开启 DNS。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [dnsUrl] DNS 地址。
+  ///
+  /// Param [dohVendor] DoH 服务商，仅在 enableDNSConfig 为 `true` 时生效。（默认）`2`：海外；`1`：国内；`0`：关闭。
+  ///
+  /// Param [restServer] 私有部署时的 REST 服务器地址。
+  ///
+  /// Param [imPort] 私有部署时的 IM 服务器端口。
+  ///
+  /// Param [imServer] 私有部署时的 IM 服务器地址。
+  ///
+  /// Param [webSocketServer] 私有部署时的 WebSocket 服务器地址。
+  ///
+  /// Param [webSocketPort] 私有部署时的 WebSocket 服务器端口。
+  ///
+  /// Param [chatAreaCode] server 区域码.
+  ///
+  /// Param [enableEmptyConversation] 从本地数据库加载会话时是否包括空会话。
+  /// - `true`：包含空会话；
+  /// - （默认）`false`：不包含空会话。
+  ///
+  /// Param [autoLoadConversations] 是否自动加载会话，默认为 `true`。使用 [ChatManager.getConversationsFromDB] 时需设为 `false`。
+  ///
+  /// Param [enableChatroomConversation] 获取本地会话列表时是否包含聊天室会话，默认为 `false`。不控制聊天室会话的创建或存储，也不影响聊天室消息的正常收发。
+  ///
+  /// Param [disconnectNotifyThreshold] 连接发生可恢复断开时延迟断开回调的宽限秒数，默认为 `10`。小于或等于 `0` 表示关闭延迟。
+  ///
+  /// Param [deviceName] 自定义设备名称。
+  ///
+  /// Param [osType] 自定义系统类型。
+  ///
+  /// Param [useReplacedMessageContents] 是否在文本审核时，返回给发送者被替换内容的文本消息。
+  ///  - `true`：将内容替换后的消息返回给发送方。
+  ///  - （默认）`false`：将原消息返回给发送方。
+  ///
+  /// Param [enableTLS] 是否开启 TLS 连接，初始化时生效，默认为 false。
+  ///
+  /// Param [messagesReceiveCallbackIncludeSend] 发送的消息是会执行 [ChatEventHandler.onMessagesReceived] 回调。
+  /// - `true`：是。接收消息通知中包含发送成功的消息。
+  /// - （默认）`false`：否。接收消息通知中只包含接收的消息。
+  ///
+  /// Param [regardImportMessagesAsRead] 是否将导入的消息视为已读, 默认为 false。
+  ///
+  ///
+  /// Param [workPathCopiable] 是否允许复制工作路径到其他地方，只有ios生效，默认为 false。
+  ///
+  /// ~end
+  ChatOptions.withAppId(
+    String appId, {
+    bool debugMode = false,
+    bool acceptInvitationAlways = false,
+    bool autoAcceptGroupInvitation = false,
+    bool requireDeliveryAck = false,
+    bool deleteMessagesAsExitGroup = true,
+    bool deleteMessagesAsExitChatRoom = true,
+    bool isChatRoomOwnerLeaveAllowed = true,
+    bool sortMessageByServerTime = true,
+    bool usingHttpsOnly = true,
+    bool serverTransfer = true,
+    bool isAutoDownloadThumbnail = true,
+    bool enableDNSConfig = true,
+    String? dnsUrl,
+    int dohVendor = 2,
+    String? restServer,
+    int? imPort,
+    String? imServer,
+    String? webSocketServer,
+    int? webSocketPort,
+    int? chatAreaCode,
+    bool enableEmptyConversation = false,
+    bool autoLoadConversations = true,
+    bool enableChatroomConversation = false,
+    int disconnectNotifyThreshold = 10,
+    String? deviceName,
+    int? osType,
+    bool useReplacedMessageContents = false,
+    bool enableTLS = false,
+    bool messagesReceiveCallbackIncludeSend = false,
+    bool regardImportMessagesAsRead = false,
+    bool workPathCopiable = false,
+    bool enableUserInfo = false,
+    int? dataSyncType,
+    String? loginExtension,
+    List<String>? ntpServers,
+    String? apnsCertName,
+    String? pushKitCertName,
+    Map<String, dynamic>? extSettings,
+  }) : this._(
+          appId: appId,
+          debugMode: debugMode,
+          acceptInvitationAlways: acceptInvitationAlways,
+          autoAcceptGroupInvitation: autoAcceptGroupInvitation,
+          requireDeliveryAck: requireDeliveryAck,
+          deleteMessagesAsExitGroup: deleteMessagesAsExitGroup,
+          deleteMessagesAsExitChatRoom: deleteMessagesAsExitChatRoom,
+          isChatRoomOwnerLeaveAllowed: isChatRoomOwnerLeaveAllowed,
+          sortMessageByServerTime: sortMessageByServerTime,
+          usingHttpsOnly: usingHttpsOnly,
+          serverTransfer: serverTransfer,
+          isAutoDownloadThumbnail: isAutoDownloadThumbnail,
+          enableDNSConfig: enableDNSConfig,
+          dnsUrl: dnsUrl,
+          dohVendor: dohVendor,
+          restServer: restServer,
+          imPort: imPort,
+          imServer: imServer,
+          webSocketServer: webSocketServer,
+          webSocketPort: webSocketPort,
+          chatAreaCode: chatAreaCode ?? ChatAreaCode.GLOB,
+          enableEmptyConversation: enableEmptyConversation,
+          autoLoadConversations: autoLoadConversations,
+          enableChatroomConversation: enableChatroomConversation,
+          disconnectNotifyThreshold: disconnectNotifyThreshold,
+          deviceName: deviceName,
+          osType: osType,
+          useReplacedMessageContents: useReplacedMessageContents,
+          enableTLS: enableTLS,
+          messagesReceiveCallbackIncludeSend:
+              messagesReceiveCallbackIncludeSend,
+          regardImportMessagesAsRead: regardImportMessagesAsRead,
+          workPathCopiable: workPathCopiable,
+          enableUserInfo: enableUserInfo,
+          dataSyncType: dataSyncType,
+          loginExtension: loginExtension,
+          ntpServers: ntpServers,
+          apnsCertName: apnsCertName,
+          pushKitCertName: pushKitCertName,
+          extSettings: extSettings,
+        );
+
+  /// ~english
+  /// Sets the app options.
+  ///
+  /// Param [appKey] The app key that you get from the console when creating an app.
+  ///
+  /// Param [debugMode] Whether to enable debug logging. Configure this option when creating [ChatOptions] and pass the options to [ChatClient.init].
+  ///
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
+  /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
+  /// Param [autoAcceptGroupInvitation] Whether to accept group invitations automatically.
+  /// - (Default) `true`: Yes.
+  /// -`false`: No.
+  ///
+  /// Param [requireDeliveryAck] Whether the SDK automatically sends delivery receipts when receiving one-to-one messages.
+  ///
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
+  ///
+  /// Param [deleteMessagesAsExitGroup] Whether to delete the related group messages when leaving a group.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
+  /// Param [deleteMessagesAsExitChatRoom] Whether to delete the related chat room messages when leaving the chat room.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
+  /// Param [isChatRoomOwnerLeaveAllowed] Whether to allow the chat room owner to leave the chat room.
+  /// - (Default) `true`: Yes. Even if the chat room owner leaves the chat room, the owner still has all privileges, except for receiving messages in the chat room.
+  /// - `false`: No.
+  ///
+  /// Param [sortMessageByServerTime] Whether to sort the messages in the reverse chronological order of the time when they are received by the server.
+  /// - (Default) `true`: Yes;
+  /// - `false`: No. Messages are sorted in the reverse chronological order of the time when they are created.
+
+  /// Param [usingHttpsOnly] Whether only HTTPS is used for REST operations.
+  /// - (Default) `true`: Only HTTPS is supported.
+  /// - `false`: Both HTTP and HTTPS are allowed.
+  ///
+  /// Param [serverTransfer] Whether to upload the message attachments automatically to the chat server.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No. A custom path is used.
+  ///
+  /// Param [isAutoDownloadThumbnail] Whether to automatically download the thumbnail.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
+  /// Param [enableDNSConfig] Whether to enable DNS.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No. DNS needs to be disabled for private deployment.
+  ///
+  /// Param [dnsUrl] The DNS url.
+  ///
+  /// Param [dohVendor] The DoH vendor, effective only when [enableDNSConfig] is `true`. (Default) `2`: Global; `1`: China; `0`: disabled.
+  ///
+  /// Param [restServer] The REST server for private deployments.
+  ///
+  /// Param [imPort] The IM server port for private deployments.
+  ///
+  /// Param [imServer] The IM server URL for private deployment.
+  ///
+  /// Param [webSocketServer] The WebSocket server for private deployments.
+  ///
+  /// Param [webSocketPort] The WebSocket server port for private deployments.
+  ///
+  /// Param [chatAreaCode] The area code.
+  ///
+  /// Param [enableEmptyConversation] Whether to include empty conversations when the SDK loads conversations from the local database.
+  /// - `true`: Yes. Empty conversations are included.
+  /// - (Default) `false`: No. Empty conversations are excluded.
+  ///
+  /// Param [autoLoadConversations] Whether to automatically load conversations. Defaults to `true`. Set to `false` to use [ChatManager.getConversationsFromDB].
+  ///
+  /// Param [enableChatroomConversation] Whether to include chat room conversations in the local conversation list. Defaults to `false`. It does not control the creation or storage of chat room conversations, nor does it affect the sending and receiving of chat room messages.
+  ///
+  /// Param [disconnectNotifyThreshold] The grace period, in seconds, for delaying the disconnection callback when the connection is recoverable. Defaults to `10`. A value less than or equal to `0` disables the delay.
+  ///
+  /// Param [deviceName] Custom device name.
+  ///
+  /// Param [osType] Custom system type.
+  ///
+  /// Param [useReplacedMessageContents] Whether the server returns the sender the text message with the content replaced during text moderation.
+  /// - `true`: Yes.
+  /// - (Default) `false`: No. The server returns the original message to the sender.
+  ///
+  /// Param [enableTLS] Whether to enable TLS connection, which takes effect during initialization and is false by default.
+  ///
+  /// Param [messagesReceiveCallbackIncludeSend] Whether to include the sent message in [ChatEventHandler.onMessagesReceived].
+  /// - `true`: Yes. Besides the received message, the sent message is also included in [ChatEventHandler.onMessagesReceived].
+  /// - (Default)`false`: No. Only the received message is included in [ChatEventHandler.onMessagesReceived].
+  ///
+  /// Param [regardImportMessagesAsRead] Whether to regard import messages as read:
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
+  ///
+  /// Param [workPathCopiable] Whether the SDK work path is copiable, only valid for iOS, default is false.
+  ///
+  /// ~end
+  ///
+  /// ~chinese
+  /// 设置 SDK
+  /// Param [appKey] 创建 app 时在 console 后台上注册的 app 唯一识别符。
+  ///
+  /// Param [debugMode] 是否开启调试日志。创建 [ChatOptions] 时配置，并将该配置传给 [ChatClient.init]。
+  ///
+  /// - `true`：SDK 会在 log 里输出调试信息；
+  /// - （默认）`false`：不会输出调试信息。
+  ///
+  /// Param [acceptInvitationAlways] 是否自动接受加好友邀请。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [autoAcceptGroupInvitation] 是否自动接受群组邀请。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [requireDeliveryAck] SDK 收到单聊消息时是否自动发送送达回执。
+  /// - `true`：是。
+  /// - （默认）`false`：否。
+  ///
+  /// Param [deleteMessagesAsExitGroup] 是否在离开群组时删除群组历史消息。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [deleteMessagesAsExitChatRoom] 是否在离开聊天室时删除聊天历史消息。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [isChatRoomOwnerLeaveAllowed] 是否允许聊天室所有者离开聊天室。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [sortMessageByServerTime] 是否根据服务器收到消息的时间对消息进行排序。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [usingHttpsOnly] 是否只使用 HTTPS。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [serverTransfer] 是否自动将消息附件上传到聊天服务器。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [isAutoDownloadThumbnail] 是否自动下载缩略图。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [enableDNSConfig] 设置是否开启 DNS。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [dnsUrl] DNS 地址。
+  ///
+  /// Param [dohVendor] DoH 服务商，仅在 enableDNSConfig 为 `true` 时生效。（默认）`2`：海外；`1`：国内；`0`：关闭。
+  ///
+  /// Param [restServer] 私有部署时的 REST 服务器地址。
+  ///
+  /// Param [imPort] 私有部署时的 IM 服务器端口。
+  ///
+  /// Param [imServer] 私有部署时的 IM 服务器地址。
+  ///
+  /// Param [webSocketServer] 私有部署时的 WebSocket 服务器地址。
+  ///
+  /// Param [webSocketPort] 私有部署时的 WebSocket 服务器端口。
+  ///
+  /// Param [chatAreaCode] server 区域码.
+  ///
+  /// Param [enableEmptyConversation] 从本地数据库加载会话时是否包括空会话。
+  /// - `true`：包含空会话；
+  /// - （默认）`false`：不包含空会话。
+  ///
+  /// Param [autoLoadConversations] 是否自动加载会话，默认为 `true`。使用 [ChatManager.getConversationsFromDB] 时需设为 `false`。
+  ///
+  /// Param [enableChatroomConversation] 获取本地会话列表时是否包含聊天室会话，默认为 `false`。不控制聊天室会话的创建或存储，也不影响聊天室消息的正常收发。
+  ///
+  /// Param [disconnectNotifyThreshold] 连接发生可恢复断开时延迟断开回调的宽限秒数，默认为 `10`。小于或等于 `0` 表示关闭延迟。
+  ///
+  /// Param [deviceName] 自定义设备名称。
+  ///
+  /// Param [osType] 自定义系统类型。
+  ///
+  /// Param [useReplacedMessageContents] 是否在文本审核时，返回给发送者被替换内容的文本消息。
+  ///  - `true`：将内容替换后的消息返回给发送方。
+  ///  - （默认）`false`：将原消息返回给发送方。
+  ///
+  /// Param [enableTLS] 是否开启 TLS 连接，初始化时生效，默认为 false。
+  ///
+  /// Param [messagesReceiveCallbackIncludeSend] 发送的消息是会执行 [ChatEventHandler.onMessagesReceived] 回调。
+  /// - `true`：是。接收消息通知中包含发送成功的消息。
+  /// - （默认）`false`：否。接收消息通知中只包含接收的消息。
+  ///
+  /// Param [regardImportMessagesAsRead] 是否将导入的消息视为已读, 默认为 false。
+  ///
+  ///
+  /// Param [workPathCopiable] 是否允许复制工作路径到其他地方，只有ios生效，默认为 false。
+  ///
+  /// ~end
+  ChatOptions.withAppKey(
+    String appKey, {
+    bool debugMode = false,
+    bool acceptInvitationAlways = false,
+    bool autoAcceptGroupInvitation = false,
+    bool requireDeliveryAck = false,
+    bool deleteMessagesAsExitGroup = true,
+    bool deleteMessagesAsExitChatRoom = true,
+    bool isChatRoomOwnerLeaveAllowed = true,
+    bool sortMessageByServerTime = true,
+    bool usingHttpsOnly = true,
+    bool serverTransfer = true,
+    bool isAutoDownloadThumbnail = true,
+    bool enableDNSConfig = true,
+    String? dnsUrl,
+    int dohVendor = 2,
+    String? restServer,
+    int? imPort,
+    String? imServer,
+    String? webSocketServer,
+    int? webSocketPort,
+    int? chatAreaCode,
+    bool enableEmptyConversation = false,
+    bool autoLoadConversations = true,
+    bool enableChatroomConversation = false,
+    int disconnectNotifyThreshold = 10,
+    String? deviceName,
+    int? osType,
+    bool useReplacedMessageContents = false,
+    bool enableTLS = false,
+    bool messagesReceiveCallbackIncludeSend = false,
+    bool regardImportMessagesAsRead = false,
+    bool workPathCopiable = false,
+    bool enableUserInfo = false,
+    int? dataSyncType,
+    String? loginExtension,
+    List<String>? ntpServers,
+    String? apnsCertName,
+    String? pushKitCertName,
+    Map<String, dynamic>? extSettings,
+  }) : this._(
+          appKey: appKey,
+          debugMode: debugMode,
+          acceptInvitationAlways: acceptInvitationAlways,
+          autoAcceptGroupInvitation: autoAcceptGroupInvitation,
+          requireDeliveryAck: requireDeliveryAck,
+          deleteMessagesAsExitGroup: deleteMessagesAsExitGroup,
+          deleteMessagesAsExitChatRoom: deleteMessagesAsExitChatRoom,
+          isChatRoomOwnerLeaveAllowed: isChatRoomOwnerLeaveAllowed,
+          sortMessageByServerTime: sortMessageByServerTime,
+          usingHttpsOnly: usingHttpsOnly,
+          serverTransfer: serverTransfer,
+          isAutoDownloadThumbnail: isAutoDownloadThumbnail,
+          enableDNSConfig: enableDNSConfig,
+          dnsUrl: dnsUrl,
+          dohVendor: dohVendor,
+          restServer: restServer,
+          imPort: imPort,
+          imServer: imServer,
+          webSocketServer: webSocketServer,
+          webSocketPort: webSocketPort,
+          chatAreaCode: chatAreaCode ?? ChatAreaCode.GLOB,
+          enableEmptyConversation: enableEmptyConversation,
+          autoLoadConversations: autoLoadConversations,
+          enableChatroomConversation: enableChatroomConversation,
+          disconnectNotifyThreshold: disconnectNotifyThreshold,
+          deviceName: deviceName,
+          osType: osType,
+          useReplacedMessageContents: useReplacedMessageContents,
+          enableTLS: enableTLS,
+          messagesReceiveCallbackIncludeSend:
+              messagesReceiveCallbackIncludeSend,
+          regardImportMessagesAsRead: regardImportMessagesAsRead,
+          workPathCopiable: workPathCopiable,
+          enableUserInfo: enableUserInfo,
+          dataSyncType: dataSyncType,
+          loginExtension: loginExtension,
+          ntpServers: ntpServers,
+          apnsCertName: apnsCertName,
+          pushKitCertName: pushKitCertName,
+          extSettings: extSettings,
+        );
+
+  @Deprecated('Use [ChatOptions.withAppKey] instead.')
+
+  /// ~english
+  /// Sets the app options.
+  ///
+  /// Param [appKey] The app key that you get from the console when creating an app.
+  ///
+  /// Param [debugMode] Whether to enable debug logging. Configure this option when creating [ChatOptions] and pass the options to [ChatClient.init].
+  ///
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
+  /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
+  /// Param [autoAcceptGroupInvitation] Whether to accept group invitations automatically.
+  /// - (Default) `true`: Yes.
+  /// -  `false`: No.
+  ///
+  /// Param [requireDeliveryAck] Whether the SDK automatically sends delivery receipts when receiving one-to-one messages.
+  ///
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
+  ///
+  /// Param [deleteMessagesAsExitGroup] Whether to delete the related group messages when leaving a group.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
+  /// Param [deleteMessagesAsExitChatRoom] Whether to delete the related chat room messages when leaving the chat room.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
+  /// Param [isChatRoomOwnerLeaveAllowed] Whether to allow the chat room owner to leave the chat room.
+  /// - (Default) `true`: Yes. Even if the chat room owner leaves the chat room, the owner still has all privileges, except for receiving messages in the chat room.
+  /// - `false`: No.
+  ///
+  /// Param [sortMessageByServerTime] Whether to sort the messages in the reverse chronological order of the time when they are received by the server.
+  /// - (Default) `true`: Yes;
+  /// - `false`: No. Messages are sorted in the reverse chronological order of the time when they are created.
+  /// Param [usingHttpsOnly] Whether only HTTPS is used for REST operations.
+  /// - (Default) `true`: Only HTTPS is supported.
+  /// - `false`: Both HTTP and HTTPS are allowed.
+  ///
+  /// Param [serverTransfer] Whether to upload the message attachments automatically to the chat server.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No. A custom path is used.
+  ///
+  /// Param [isAutoDownloadThumbnail] Whether to automatically download the thumbnail.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
+  ///
+  /// Param [enableDNSConfig] Whether to enable DNS.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No. DNS needs to be disabled for private deployment.
+  ///
+  /// Param [dnsUrl] The DNS url.
+  ///
+  /// Param [dohVendor] The DoH vendor, effective only when [enableDNSConfig] is `true`. (Default) `2`: Global; `1`: China; `0`: disabled.
+  ///
+  /// Param [restServer] The REST server for private deployments.
+  ///
+  /// Param [imPort] The IM server port for private deployments.
+  ///
+  /// Param [imServer] The IM server URL for private deployment.
+  ///
+  /// Param [webSocketServer] The WebSocket server for private deployments.
+  ///
+  /// Param [webSocketPort] The WebSocket server port for private deployments.
+  ///
+  /// Param [chatAreaCode] The area code.
+  ///
+  /// Param [enableEmptyConversation] Whether to include empty conversations when the SDK loads conversations from the local database.
+  /// - `true`: Yes. Empty conversations are included.
+  /// - (Default) `false`: No. Empty conversations are excluded.
+  ///
+  /// Param [autoLoadConversations] Whether to automatically load conversations. Defaults to `true`. Set to `false` to use [ChatManager.getConversationsFromDB].
+  ///
+  /// Param [enableChatroomConversation] Whether to include chat room conversations in the local conversation list. Defaults to `false`. It does not control the creation or storage of chat room conversations, nor does it affect the sending and receiving of chat room messages.
+  ///
+  /// Param [disconnectNotifyThreshold] The grace period, in seconds, for delaying the disconnection callback when the connection is recoverable. Defaults to `10`. A value less than or equal to `0` disables the delay.
+  ///
+  /// Param [deviceName] Custom device name.
+  ///
+  /// Param [osType] Custom system type.
+  ///
+  /// Param [useReplacedMessageContents] Whether the server returns the sender the text message with the content replaced during text moderation.
+  /// - `true`: Yes.
+  /// - (Default) `false`: No. The server returns the original message to the sender.
+  ///
+  /// Param [enableTLS] Whether to enable TLS connection, which takes effect during initialization and is false by default.
+  ///
+  /// Param [messagesReceiveCallbackIncludeSend] Whether to include the sent message in [ChatEventHandler.onMessagesReceived].
+  /// - `true`: Yes. Besides the received message, the sent message is also included in [ChatEventHandler.onMessagesReceived].
+  /// - (Default)`false`: No. Only the received message is included in [ChatEventHandler.onMessagesReceived].
+  ///
+  /// Param [regardImportMessagesAsRead] Whether to regard import messages as read:
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
+  ///
+  /// Param [workPathCopiable] Whether the SDK work path is copiable, only valid for iOS, default is false.
+  ///
+  /// ~end
+  ///
+  /// ~chinese
+  /// 设置 SDK
+  /// Param [appKey] 创建 app 时在 console 后台上注册的 app 唯一识别符。
+  ///
+  /// Param [debugMode] 是否开启调试日志。创建 [ChatOptions] 时配置，并将该配置传给 [ChatClient.init]。
+  ///
+  /// - `true`：SDK 会在 log 里输出调试信息；
+  /// - （默认）`false`：不会输出调试信息。
+  ///
+  /// Param [acceptInvitationAlways] 是否自动接受加好友邀请。
+  /// - （默认）`true`：是。
+  /// - `false`：否。
+  ///
+  /// Param [autoAcceptGroupInvitation] 是否自动接受群组邀请。
+  /// - （默认）`true`：是。
+  /// - false`：否。
+  ///
+  /// Param [requireDeliveryAck] SDK 收到单聊消息时是否自动发送送达回执。
+  /// - `true`：是。
+  /// - （默认）`false`：否。
+  ///
+  /// Param [deleteMessagesAsExitGroup] 是否在离开群组时删除群组历史消息。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [deleteMessagesAsExitChatRoom] 是否在离开聊天室时删除聊天历史消息。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [isChatRoomOwnerLeaveAllowed] 是否允许聊天室所有者离开聊天室。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [sortMessageByServerTime] 是否根据服务器收到消息的时间对消息进行排序。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [usingHttpsOnly] 是否只使用 HTTPS。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [serverTransfer] 是否自动将消息附件上传到聊天服务器。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [isAutoDownloadThumbnail] 是否自动下载缩略图。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [enableDNSConfig] 设置是否开启 DNS。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [dnsUrl] DNS 地址。
+  ///
+  /// Param [dohVendor] DoH 服务商，仅在 enableDNSConfig 为 `true` 时生效。（默认）`2`：海外；`1`：国内；`0`：关闭。
+  ///
+  /// Param [restServer] 私有部署时的 REST 服务器地址。
+  ///
+  /// Param [imPort] 私有部署时的 IM 服务器端口。
+  ///
+  /// Param [imServer] 私有部署时的 IM 服务器地址。
+  ///
+  /// Param [webSocketServer] 私有部署时的 WebSocket 服务器地址。
+  ///
+  /// Param [webSocketPort] 私有部署时的 WebSocket 服务器端口。
+  ///
+  /// Param [chatAreaCode] server 区域码.
+  ///
+  /// Param [enableEmptyConversation] 从本地数据库加载会话时是否包括空会话。
+  /// - `true`：包含空会话；
+  /// - （默认）`false`：不包含空会话。
+  ///
+  /// Param [autoLoadConversations] 是否自动加载会话，默认为 `true`。使用 [ChatManager.getConversationsFromDB] 时需设为 `false`。
+  ///
+  /// Param [enableChatroomConversation] 获取本地会话列表时是否包含聊天室会话，默认为 `false`。不控制聊天室会话的创建或存储，也不影响聊天室消息的正常收发。
+  ///
+  /// Param [disconnectNotifyThreshold] 连接发生可恢复断开时延迟断开回调的宽限秒数，默认为 `10`。小于或等于 `0` 表示关闭延迟。
+  ///
+  /// Param [deviceName] 自定义设备名称。
+  ///
+  /// Param [osType] 自定义系统类型。
+  ///
+  /// Param [useReplacedMessageContents] 是否在文本审核时，返回给发送者被替换内容的文本消息。
+  ///  - `true`：将内容替换后的消息返回给发送方。
+  ///  - （默认）`false`：将原消息返回给发送方。
+  ///
+  /// Param [enableTLS] 是否开启 TLS 连接，初始化时生效，默认为 false。
+  ///
+  /// Param [messagesReceiveCallbackIncludeSend] 发送的消息是会执行 [ChatEventHandler.onMessagesReceived] 回调。
+  /// - `true`：是。接收消息通知中包含发送成功的消息。
+  /// - （默认）`false`：否。接收消息通知中只包含接收的消息。
+  ///
+  /// Param [regardImportMessagesAsRead] 是否将导入的消息视为已读, 默认为 false。
+  ///
+  ///
+  /// Param [workPathCopiable] 是否允许复制工作路径到其他地方，只有ios生效，默认为 false。
+  ///
+  /// ~end
+  ChatOptions({
+    required String appKey,
+    bool debugMode = false,
+    bool acceptInvitationAlways = false,
+    bool autoAcceptGroupInvitation = false,
+    bool requireDeliveryAck = false,
+    bool deleteMessagesAsExitGroup = true,
+    bool deleteMessagesAsExitChatRoom = true,
+    bool isChatRoomOwnerLeaveAllowed = true,
+    bool sortMessageByServerTime = true,
+    bool usingHttpsOnly = true,
+    bool serverTransfer = true,
+    bool isAutoDownloadThumbnail = true,
+    bool enableDNSConfig = true,
+    String? dnsUrl,
+    int dohVendor = 2,
+    String? restServer,
+    int? imPort,
+    String? imServer,
+    String? webSocketServer,
+    int? webSocketPort,
+    int? chatAreaCode,
+    bool enableEmptyConversation = false,
+    bool autoLoadConversations = true,
+    bool enableChatroomConversation = false,
+    int disconnectNotifyThreshold = 10,
+    String? deviceName,
+    int? osType,
+    bool useReplacedMessageContents = false,
+    bool enableTLS = false,
+    bool messagesReceiveCallbackIncludeSend = false,
+    bool regardImportMessagesAsRead = false,
+    bool workPathCopiable = false,
+    bool enableUserInfo = false,
+    int? dataSyncType,
+    String? loginExtension,
+    List<String>? ntpServers,
+    String? apnsCertName,
+    String? pushKitCertName,
+  }) : this._(
+          appKey: appKey,
+          debugMode: debugMode,
+          acceptInvitationAlways: acceptInvitationAlways,
+          autoAcceptGroupInvitation: autoAcceptGroupInvitation,
+          requireDeliveryAck: requireDeliveryAck,
+          deleteMessagesAsExitGroup: deleteMessagesAsExitGroup,
+          deleteMessagesAsExitChatRoom: deleteMessagesAsExitChatRoom,
+          isChatRoomOwnerLeaveAllowed: isChatRoomOwnerLeaveAllowed,
+          sortMessageByServerTime: sortMessageByServerTime,
+          usingHttpsOnly: usingHttpsOnly,
+          serverTransfer: serverTransfer,
+          isAutoDownloadThumbnail: isAutoDownloadThumbnail,
+          enableDNSConfig: enableDNSConfig,
+          dnsUrl: dnsUrl,
+          dohVendor: dohVendor,
+          restServer: restServer,
+          imPort: imPort,
+          imServer: imServer,
+          webSocketServer: webSocketServer,
+          webSocketPort: webSocketPort,
+          chatAreaCode: chatAreaCode ?? ChatAreaCode.GLOB,
+          enableEmptyConversation: enableEmptyConversation,
+          autoLoadConversations: autoLoadConversations,
+          enableChatroomConversation: enableChatroomConversation,
+          disconnectNotifyThreshold: disconnectNotifyThreshold,
+          deviceName: deviceName,
+          osType: osType,
+          useReplacedMessageContents: useReplacedMessageContents,
+          enableTLS: enableTLS,
+          messagesReceiveCallbackIncludeSend:
+              messagesReceiveCallbackIncludeSend,
+          regardImportMessagesAsRead: regardImportMessagesAsRead,
+          workPathCopiable: workPathCopiable,
+          enableUserInfo: enableUserInfo,
+          dataSyncType: dataSyncType,
+          loginExtension: loginExtension,
+          ntpServers: ntpServers,
+          apnsCertName: apnsCertName,
+          pushKitCertName: pushKitCertName,
+        );
+
+  ChatOptions._({
+    this.appId,
+    this.appKey,
+    this.debugMode = false,
+    this.acceptInvitationAlways = false,
+    this.autoAcceptGroupInvitation = false,
+    this.requireDeliveryAck = false,
+    this.deleteMessagesAsExitGroup = true,
+    this.deleteMessagesAsExitChatRoom = true,
+    this.isChatRoomOwnerLeaveAllowed = true,
+    this.sortMessageByServerTime = true,
+    this.usingHttpsOnly = true,
+    this.serverTransfer = true,
+    this.isAutoDownloadThumbnail = true,
+    this.enableDNSConfig = true,
+    this.dnsUrl,
+    this.dohVendor = 2,
+    this.restServer,
+    this.imPort,
+    this.imServer,
+    this.webSocketServer,
+    this.webSocketPort,
+    this.chatAreaCode = ChatAreaCode.GLOB,
+    this.enableEmptyConversation = false,
+    this.autoLoadConversations = true,
+    this.enableChatroomConversation = false,
+    this.disconnectNotifyThreshold = 10,
+    this.deviceName,
+    this.osType,
+    this.useReplacedMessageContents = false,
+    this.enableTLS = false,
+    this.messagesReceiveCallbackIncludeSend = false,
+    this.regardImportMessagesAsRead = false,
+    this.workPathCopiable = false,
+    this.enableUserInfo = false,
+    this.dataSyncType,
+    this.loginExtension,
+    this.ntpServers,
+    this.apnsCertName,
+    this.pushKitCertName,
+    Map<String, dynamic>? extSettings,
+  }) : _extSettings = extSettings;
+
+  Map toJson() {
+    Map data = {};
+    data.putIfNotNull("appKey", appKey);
+    data.putIfNotNull("appId", appId);
+    data.putIfNotNull("debugModel", debugMode);
+    data.putIfNotNull("acceptInvitationAlways", acceptInvitationAlways);
+    data.putIfNotNull("autoAcceptGroupInvitation", autoAcceptGroupInvitation);
+    data.putIfNotNull("deleteMessagesAsExitGroup", deleteMessagesAsExitGroup);
+    data.putIfNotNull(
+      "deleteMessagesAsExitChatRoom",
+      deleteMessagesAsExitChatRoom,
+    );
+    data.putIfNotNull("dnsUrl", dnsUrl);
+    data.putIfNotNull("enableDNSConfig", enableDNSConfig);
+    data.putIfNotNull("imPort", imPort);
+    data.putIfNotNull("imServer", imServer);
+    data.putIfNotNull("webSocketServer", webSocketServer);
+    data.putIfNotNull("webSocketPort", webSocketPort);
+    data.putIfNotNull("isAutoDownload", isAutoDownloadThumbnail);
+    data.putIfNotNull(
+      "isChatRoomOwnerLeaveAllowed",
+      isChatRoomOwnerLeaveAllowed,
+    );
+    data.putIfNotNull("requireDeliveryAck", requireDeliveryAck);
+    data.putIfNotNull("restServer", restServer);
+    data.putIfNotNull("serverTransfer", serverTransfer);
+    data.putIfNotNull("sortMessageByServerTime", sortMessageByServerTime);
+    data.putIfNotNull("usingHttpsOnly", usingHttpsOnly);
+    data.putIfNotNull('loadEmptyConversations', enableEmptyConversation);
+    data.putIfNotNull('deviceName', deviceName);
+    data.putIfNotNull('osType', osType);
+    data.putIfNotNull('useReplacedMessageContents', useReplacedMessageContents);
+    data.putIfNotNull('enableTLS', enableTLS);
+    data.putIfNotNull(
+      'messagesReceiveCallbackIncludeSend',
+      messagesReceiveCallbackIncludeSend,
+    );
+    data.putIfNotNull('regardImportMessagesAsRead', regardImportMessagesAsRead);
+
+    data["usingHttpsOnly"] = usingHttpsOnly;
+    data["areaCode"] = chatAreaCode;
+    data.putIfNotNull('extSettings', _extSettings);
+
+    // 481
+    data.putIfNotNull('loginExtensionInfo', loginExtension);
+
+    // 4.10
+    data.putIfNotNull('workPathCopiable', workPathCopiable);
+
+    // 4.22.0
+    data.putIfNotNull('enableUserInfo', enableUserInfo);
+    data.putIfNotNull('dataSyncType', dataSyncType);
+
+    // 4.24.0
+    data.putIfNotNull('ntpServers', ntpServers);
+
+    // 5.0.0
+    data.putIfNotNull('apnsCertName', apnsCertName);
+    data.putIfNotNull('pushKitCertName', pushKitCertName);
+
+    // 5.1.0
+    data.putIfNotNull('autoLoadConversations', autoLoadConversations);
+    data.putIfNotNull('enableChatroomConversation', enableChatroomConversation);
+
+    // 5.2.0
+    data['disconnectNotifyThreshold'] = disconnectNotifyThreshold;
+    data['dohVendor'] = dohVendor;
+
+    return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
+
+  // 481
+
+  /// ~english
+  /// The extended information carried during login can be a JSON string. The current string length is limited to 1024 characters.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 登录时携带的扩展信息，可以是JSON 字符串，目前字符串长度 底层限制长度1024
+  /// ~end
+  final String? loginExtension;
+
+  /// ~english
+  /// Copies these options with the specified values replaced.
+  /// Param [autoLoadConversations] Whether to automatically load conversations.
+  /// Param [enableChatroomConversation] Whether to include chat room conversations in the local conversation list.
+  /// Param [disconnectNotifyThreshold] The grace period, in seconds, for delaying the disconnection callback when the connection is recoverable.
+  /// These options must be configured before SDK initialization.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 复制配置并替换指定的值。
+  /// Param [autoLoadConversations] 是否自动加载会话。
+  /// Param [enableChatroomConversation] 获取本地会话列表时是否包含聊天室会话。
+  /// Param [disconnectNotifyThreshold] 连接发生可恢复断开时延迟断开回调的宽限秒数。
+  /// 这些配置项必须在 SDK 初始化前设置。
+  /// ~end
+  ChatOptions copyWith({
+    bool? autoLoadConversations,
+    bool? enableChatroomConversation,
+    int? disconnectNotifyThreshold,
+    bool? usingHttpsOnly,
+    String? loginExtension,
+    bool? deleteMessageWhenLeaveRoom,
+    bool? deleteMessagesWhenLeaveGroup,
+    bool? roomOwnerCanLeave,
+    bool? autoAcceptGroupInvitation,
+    bool? acceptInvitationAlways,
+    bool? autoDownloadThumbnail,
+    bool? requireDeliveryAck,
+    bool? sortMessageByServerTime,
+    bool? messagesReceiveCallbackIncludeSend,
+    bool? regardImportMessagesAsRead,
+    int? dataSyncType,
+    Map<String, dynamic>? extSettings,
+  }) {
+    return ChatOptions._(
+      appKey: appKey,
+      appId: appId,
+      debugMode: debugMode,
+      acceptInvitationAlways:
+          acceptInvitationAlways ?? this.acceptInvitationAlways,
+      autoAcceptGroupInvitation:
+          autoAcceptGroupInvitation ?? this.autoAcceptGroupInvitation,
+      requireDeliveryAck: requireDeliveryAck ?? this.requireDeliveryAck,
+      deleteMessagesAsExitGroup:
+          deleteMessagesWhenLeaveGroup ?? deleteMessagesAsExitGroup,
+      deleteMessagesAsExitChatRoom:
+          deleteMessageWhenLeaveRoom ?? deleteMessagesAsExitChatRoom,
+      isChatRoomOwnerLeaveAllowed:
+          roomOwnerCanLeave ?? isChatRoomOwnerLeaveAllowed,
+      sortMessageByServerTime:
+          sortMessageByServerTime ?? this.sortMessageByServerTime,
+      usingHttpsOnly: usingHttpsOnly ?? this.usingHttpsOnly,
+      serverTransfer: serverTransfer,
+      isAutoDownloadThumbnail: autoDownloadThumbnail ?? isAutoDownloadThumbnail,
+      enableDNSConfig: enableDNSConfig,
+      dnsUrl: dnsUrl,
+      dohVendor: dohVendor,
+      restServer: restServer,
+      imPort: imPort,
+      imServer: imServer,
+      webSocketServer: webSocketServer,
+      webSocketPort: webSocketPort,
+      chatAreaCode: chatAreaCode,
+      enableEmptyConversation: enableEmptyConversation,
+      autoLoadConversations:
+          autoLoadConversations ?? this.autoLoadConversations,
+      enableChatroomConversation:
+          enableChatroomConversation ?? this.enableChatroomConversation,
+      disconnectNotifyThreshold:
+          disconnectNotifyThreshold ?? this.disconnectNotifyThreshold,
+      deviceName: deviceName,
+      osType: osType,
+      useReplacedMessageContents: useReplacedMessageContents,
+      enableTLS: enableTLS,
+      messagesReceiveCallbackIncludeSend: messagesReceiveCallbackIncludeSend ??
+          this.messagesReceiveCallbackIncludeSend,
+      regardImportMessagesAsRead:
+          regardImportMessagesAsRead ?? this.regardImportMessagesAsRead,
+      enableUserInfo: enableUserInfo,
+      dataSyncType: dataSyncType ?? this.dataSyncType,
+      loginExtension: loginExtension,
+      extSettings: extSettings,
+    );
+  }
+}
+
+class ExtSettings {
+  static String kAppIDForOhOS = 'appIDForOhOS';
+  static String kDisableIosEnterBackground = 'disableIosEnterBackground';
+}

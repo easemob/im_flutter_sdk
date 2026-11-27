@@ -1,0 +1,469 @@
+import 'package:agora_chat_sdk/agora_chat_sdk.dart';
+import 'package:agora_chat_sdk/src/tools/chat_extension.dart';
+
+/// ~english
+/// The ChatGroup class, which contains the information of the chat group.
+/// ~end
+///
+/// ~chinese
+/// 群组信息类，包含内存中的群组相关信息。
+///
+/// **Note**
+/// 如需最新数据，需先从服务器获取：[ChatGroupManager.fetchGroupInfoFromServer]。
+/// ~end
+class ChatGroup {
+  ChatGroup({
+    required this.groupId,
+    this.groupName,
+    this.avatarUrl,
+    this.desc,
+    this.owner,
+    this.announcement,
+    this.memberCount,
+    this.memberList,
+    this.adminList,
+    this.blockList,
+    this.muteList,
+    this.messageBlocked,
+    this.isAllMemberMuted,
+    this.permissionType,
+    this.maxUserCount,
+    this.isPublic,
+    this.isJoinApprovalRequired,
+    this.isMemberAllowToInvite,
+    this.extension,
+    this.configs,
+    this.isDisabled = false,
+  });
+
+  /// ~english
+  /// Gets the group ID.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 群组 ID。
+  /// ~end
+  final String groupId;
+
+  /// ~english
+  /// Gets the group name.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call [ChatGroupManager.fetchGroupInfoFromServer] before calling this method.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取群组名称。
+  ///
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取：[ChatGroupManager.fetchGroupInfoFromServer]。
+  ///
+  /// **Return** 群组名称。
+  /// ~end
+  final String? groupName;
+
+  /// ~english
+  /// Gets the group avatar.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取群组头像。
+  /// ~end
+  final String? avatarUrl;
+
+  /// ~english
+  /// Gets the group description.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call [ChatGroupManager.fetchGroupInfoFromServer] before calling this method.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取群组描述。
+  ///
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取：[ChatGroupManager.fetchGroupInfoFromServer]。
+  ///
+  /// **Return** 群组描述。
+  /// ~end
+  final String? desc;
+
+  /// ~english
+  /// Gets the user ID of the group owner.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call [ChatGroupManager.fetchGroupInfoFromServer] before calling this method.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取群主用户 ID。
+  ///
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取：[ChatGroupManager.fetchGroupInfoFromServer]。
+  ///
+  /// **Return** 群主用户 ID。
+  /// ~end
+  final String? owner;
+
+  /// ~english
+  ///  The content of the group announcement.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取群公告内容。
+  ///
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取：[ChatGroupManager.fetchGroupInfoFromServer]。
+  /// ~end
+  final String? announcement;
+
+  /// ~english
+  /// Gets the member count of the group.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call [ChatGroupManager.fetchGroupInfoFromServer] before calling this method.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取群组成员数量。
+  ///
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取：[ChatGroupManager.fetchGroupInfoFromServer]。
+  ///
+  /// **Return** 群组成员数量。
+  /// ~end
+  final int? memberCount;
+
+  /// ~english
+  /// Gets the member list of the group.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call [ChatGroupManager.fetchMemberListFromServer] before calling this method.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取群组成员列表。
+  ///
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取：[ChatGroupManager.fetchMemberListFromServer]。
+  ///
+  /// **Return** 群组成员列表。
+  /// ~end
+  final List<String>? memberList;
+
+  /// ~english
+  /// Gets the admin list of the group.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call [ChatGroupManager.fetchGroupInfoFromServer] before calling this method.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取群组管理员列表。
+  ///
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取：[ChatGroupManager.fetchGroupInfoFromServer]。
+  ///
+  /// **Return** 群组管理员列表。
+  /// ~end
+  final List<String>? adminList;
+
+  /// ~english
+  /// Gets the block list of the group.
+  ///
+  /// If no block list is found from the server, the return may be empty.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call [ChatGroupManager.fetchBlockListFromServer] before calling this method.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取群组黑名单。
+  ///
+  /// 如果没有找到会返回空列表。
+  ///
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取：[ChatGroupManager.fetchBlockListFromServer]。
+  ///
+  /// 只有群主和管理员可以调用该方法。
+  ///
+  /// **Return** 群组黑名单。
+  /// ~end
+  final List<String>? blockList;
+
+  /// ~english
+  /// Gets the mute list of the group.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call [ChatGroupManager.fetchMuteListFromServer] before calling this method.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取群组禁言名单。
+  ///
+  /// 只有群主和管理员可以调用该方法。
+  ///
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取：[ChatGroupManager.fetchMuteListFromServer]。
+  ///
+  /// **Return** 群组禁言名单。
+  /// ~end
+  final List<String>? muteList;
+
+  /// ~english
+  /// Gets whether the group message is blocked.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call [ChatGroupManager.fetchGroupInfoFromServer] before calling this method.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取消息是否被屏蔽。
+  ///
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取： [ChatGroupManager.fetchGroupInfoFromServer]。
+  ///
+  /// **Return** 消息是否被屏蔽。
+  /// - `true`: 是；
+  /// - `false`: 否。
+  /// ~end
+  final bool? messageBlocked;
+
+  /// ~english
+  /// Gets Whether all members are muted.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call [ChatGroupManager.fetchGroupInfoFromServer] before calling this method.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取是否已经全员禁言。
+  ///
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取： [ChatGroupManager.fetchGroupInfoFromServer]。
+  ///
+  /// **Return** 是否全员禁言。
+  /// - `true`: 是；
+  /// - `false`: 否。
+  /// ~end
+  final bool? isAllMemberMuted;
+
+  /// ~english
+  /// Gets the current user's role in group.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call [ChatGroupManager.fetchGroupInfoFromServer] before calling this method.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取当前用户在群组中的角色。
+  ///
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取： [ChatGroupManager.fetchGroupInfoFromServer]。
+  ///
+  /// **Return** 当前用户在群组中的角色。
+  /// ~end
+  final ChatGroupPermissionType? permissionType;
+
+  /// ~english
+  /// Gets the maximum number of group members allowed in a group. The parameter is set when the group is created.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call [ChatGroupManager.fetchGroupInfoFromServer] before calling this method.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取群组最大人数限制，创建时确定。
+  //
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取： [ChatGroupManager.fetchGroupInfoFromServer]。
+  ///
+  /// **Return** 群组最大人数限制。
+  /// ~end
+  final int? maxUserCount;
+
+  /// ~english
+  /// Whether the group is public.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 群组是否为公开群。
+  /// ~end
+  final bool? isPublic;
+
+  /// ~english
+  /// Whether joining the public group requires approval.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 加入公开群是否需要审批。
+  /// ~end
+  final bool? isJoinApprovalRequired;
+
+  /// ~english
+  /// Checks whether a group member is allowed to invite other users to join the group.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call [ChatGroupManager.fetchGroupInfoFromServer] before calling this method.
+  ///
+  /// **Return**
+  /// - `true`: Yes;
+  /// - `false`: No. Only the group owner or admin can invite others to join the group.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取是否允许成员邀请他人进群。
+  ///
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取：[ChatGroupManager.fetchGroupInfoFromServer]。
+  ///
+  /// **Return**
+  /// - `true`: 允许;
+  /// - `false`: 不允许。
+  /// ~end
+  final bool? isMemberAllowToInvite;
+
+  /// ~english
+  /// Group detail extensions which can be in the JSON format to contain more group information.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 群组ext
+  /// ~end
+  final String? extension;
+
+  /// ~english
+  /// Whether the group is disabled. The default value for reading or pulling roaming messages from the database is NO
+  /// ~end
+  ///
+  /// ~chinese
+  /// 组是否被禁用。从数据库读取或提取漫游消息的默认值是false。
+  /// ~end
+  final bool isDisabled;
+
+  /// ~english
+  /// The group configurations.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 群组配置。
+  /// ~end
+  final ChatGroupConfigs? configs;
+
+  factory ChatGroup.fromJson(Map map) {
+    String groupId = map['groupId'];
+    String? groupName = map["name"];
+    String? avatarUrl = map["avatarUrl"];
+    String? desc = map["desc"];
+    String? owner = map["owner"];
+    String? announcement = map["announcement"];
+    int? memberCount = map["memberCount"];
+    List<String>? memberList = map.getList("memberList");
+    List<String>? adminList = map.getList("adminList");
+    List<String>? blockList = map.getList("blockList");
+    List<String>? muteList = map.getList("muteList");
+    bool? messageBlocked = map["messageBlocked"];
+    bool? isAllMemberMuted = map["isAllMemberMuted"];
+    ChatGroupPermissionType? permissionType =
+        ChatGroupPermissionTypeExtension.values(map['permissionType']);
+    int? maxUserCount = map["maxUserCount"];
+    bool? isPublic = map["isPublic"];
+    bool? isJoinApprovalRequired = map["isJoinApprovalRequired"];
+    bool? isMemberAllowToInvite = map["isMemberAllowToInvite"];
+    bool? isDisabled = map["isDisabled"];
+    String? extension = map["ext"];
+    ChatGroupConfigs? configs = map['configs'] == null
+        ? null
+        : ChatGroupConfigs.fromJson(map['configs']);
+
+    return ChatGroup(
+      groupId: groupId,
+      avatarUrl: avatarUrl,
+      groupName: groupName,
+      desc: desc,
+      owner: owner,
+      announcement: announcement,
+      memberCount: memberCount,
+      memberList: memberList,
+      adminList: adminList,
+      blockList: blockList,
+      muteList: muteList,
+      messageBlocked: messageBlocked,
+      isAllMemberMuted: isAllMemberMuted,
+      permissionType: permissionType,
+      maxUserCount: maxUserCount,
+      isPublic: isPublic,
+      isJoinApprovalRequired: isJoinApprovalRequired,
+      isMemberAllowToInvite: isMemberAllowToInvite,
+      extension: extension,
+      configs: configs,
+      isDisabled: isDisabled ?? false,
+    );
+  }
+
+  Map toJson() {
+    Map data = {};
+    data.putIfNotNull("groupId", groupId);
+    data.putIfNotNull("name", groupName);
+    data.putIfNotNull("avatarUrl", avatarUrl);
+    data.putIfNotNull("desc", desc);
+    data.putIfNotNull("owner", owner);
+    data.putIfNotNull("announcement", announcement);
+    data.putIfNotNull("memberCount", memberCount);
+    data.putIfNotNull("memberList", memberList);
+    data.putIfNotNull("adminList", adminList);
+    data.putIfNotNull("blockList", blockList);
+    data.putIfNotNull("muteList", muteList);
+    data.putIfNotNull("messageBlocked", messageBlocked);
+    data.putIfNotNull("isDisabled", isDisabled);
+    data.putIfNotNull("isAllMemberMuted", isAllMemberMuted);
+    data.putIfNotNull("maxUserCount", maxUserCount);
+    data.putIfNotNull("isPublic", isPublic);
+    data.putIfNotNull("isJoinApprovalRequired", isJoinApprovalRequired);
+    data.putIfNotNull("isMemberAllowToInvite", isMemberAllowToInvite);
+    data.putIfNotNull("ext", extension);
+    data.putIfNotNull("configs", configs?.toJson());
+    if (permissionType?.index != null) {
+      data.putIfNotNull("permissionType", (permissionType!.index - 1));
+    }
+
+    return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
+}
+
+/// ~english
+/// The class that defines basic information of chat groups.
+/// ~end
+///
+/// ~chinese
+/// ~end
+class ChatGroupInfo {
+  /// ~english
+  /// The group ID.
+  /// ~end
+  ///
+  /// ~chinese
+  /// ~end
+  final String groupId;
+
+  /// ~english
+  /// The group name.
+  /// ~end
+  ///
+  /// ~chinese
+  /// ~end
+  final String? name;
+
+  ChatGroupInfo._private({required this.groupId, required this.name});
+
+  factory ChatGroupInfo.fromJson(Map map) {
+    String groupId = map["groupId"];
+    String? groupName = map["name"];
+    return ChatGroupInfo._private(groupId: groupId, name: groupName);
+  }
+}

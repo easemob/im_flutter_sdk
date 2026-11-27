@@ -6,7 +6,7 @@ import 'package:example/auto/step_expectation.dart';
 import 'package:example/registry/apis/chat_apis.dart';
 import 'package:example/registry/registry.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:agora_chat_sdk/agora_chat_sdk.dart';
 
 void main() {
   test('step expectations accept success and expected errors', () {

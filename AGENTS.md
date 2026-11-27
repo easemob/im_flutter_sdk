@@ -2,7 +2,7 @@
 
 Easemob IM Flutter SDK, built on the Federated Plugin architecture. This document is intended for AI Agents: it describes the project structure, cross-layer call chains, and hard conventions; for code-level details, the actual repository code prevails.
 
-Document split: this document defines agent conventions; [README.md](README.md) provides the project overview and directory map. Environment setup and CI procedures live in [CONTRIBUTING.md](CONTRIBUTING.md); testing entry points are listed below. `im_flutter_sdk/README.md` targets SDK users.
+Document split: this document defines agent conventions; [README.md](README.md) provides the project overview and directory map. Environment setup and CI procedures live in [CONTRIBUTING.md](CONTRIBUTING.md); testing entry points are listed below. `agora_chat_sdk/README.md` targets SDK users.
 
 ## Collaboration Conventions
 
@@ -26,14 +26,14 @@ Document split: this document defines agent conventions; [README.md](README.md) 
 
 | Package | Responsibility |
 |---|---|
-| `im_flutter_sdk/` | Main package: public API, Models, Managers |
-| `im_flutter_sdk_interface/` | Platform interface layer: MethodChannel abstraction |
-| `im_flutter_sdk_android/` | Android platform implementation |
-| `im_flutter_sdk_ios/` | iOS platform implementation |
+| `agora_chat_sdk/` | Main package: public API, Models, Managers |
+| `agora_chat_sdk_interface/` | Platform interface layer: MethodChannel abstraction |
+| `agora_chat_sdk_android/` | Android platform implementation |
+| `agora_chat_sdk_ios/` | iOS platform implementation |
 
 Call chain: `Dart API → MethodChannel (interface) → Native Wrapper → HyphenateChat SDK`
 
-Dependency direction: `im_flutter_sdk` → `im_flutter_sdk_android` / `im_flutter_sdk_ios` → `im_flutter_sdk_interface`. The interface is the contract shared by all platform packages; changing it affects every upper-layer package. Package pubspecs use hosted version dependencies for publishing. Run `make local-deps` to generate gitignored `pubspec_overrides.yaml` files for local development; `make deps` and CI do this automatically. Overrides belong to each resolution root, including the workbench and example apps, and are not inherited from dependency packages. See `CONTRIBUTING.md` for release validation.
+Dependency direction: `agora_chat_sdk` → `agora_chat_sdk_android` / `agora_chat_sdk_ios` → `agora_chat_sdk_interface`. The interface is the contract shared by all platform packages; changing it affects every upper-layer package. Package pubspecs use hosted version dependencies for publishing. Run `make local-deps` to generate gitignored `pubspec_overrides.yaml` files for local development; `make deps` and CI do this automatically. Overrides belong to each resolution root, including the workbench and example apps, and are not inherited from dependency packages. See `CONTRIBUTING.md` for release validation.
 
 ## Verification Architecture
 
@@ -41,7 +41,7 @@ Test selection and design rules: [testing guide](docs/testing/README.md).
 
 | Mode | Responsibility | Implementation and entry |
 |---|---|---|
-| CI tests | Protect basic SDK behavior, stability, and regression coverage | Flutter unit/contract tests in `im_flutter_sdk/test/` and device tests in `workbench/integration_test/`; workflows in `.github/workflows/`, local entry points in `ci/`. See [CONTRIBUTING.md](CONTRIBUTING.md#running-and-verification). |
+| CI tests | Protect basic SDK behavior, stability, and regression coverage | Flutter unit/contract tests in `agora_chat_sdk/test/` and device tests in `workbench/integration_test/`; workflows in `.github/workflows/`, local entry points in `ci/`. See [CONTRIBUTING.md](CONTRIBUTING.md#running-and-verification). |
 | AI tests | Verify API additions, behavior changes, and interactions for SDK version ports | Single-device JSON scripts via `make auto-report` / `API_SCRIPT`; multi-device YAML flows and JSON commands via the standalone im-test-orchestrator repository (a separate repo checked out next to this one; entry through [workbench/multi/multi.sh](workbench/multi/multi.sh)). See the [workbench guide](workbench/README.md#script-mode-ai-friendly). |
 | Manual mode | Allow free API spot checks and provide usable, extractable examples | Run the [workbench app](workbench/README.md) without `API_SCRIPT` or `API_CONTROL`; initialize, log in, and select APIs in the UI. |
 
@@ -85,7 +85,7 @@ After changing a native dependency version in a podspec, you must run `make pods
 
 ## Code Style Essentials
 
-- Import order: dart standard library → flutter → `im_flutter_sdk` → `im_flutter_sdk_interface`
+- Import order: dart standard library → flutter → `agora_chat_sdk` → `agora_chat_sdk_interface`
 - Managers must always be obtained via `ChatClient.getInstance`; direct instantiation is forbidden
 - Models must implement a `fromJson` factory constructor and `toJson()`; the MethodChannel transport format is a JSON Map
 - MethodChannel method names must use constants: `ChatMethodKeys` on the Dart side, `MethodKey.java` on Android, `MethodKeys.h` on iOS; hard-coding strings in code is forbidden. Native callback event names are uniformly defined in `chat_event_keys.dart`
@@ -118,7 +118,7 @@ Public APIs must use bilingual comments split by `~english` / `~chinese` / `~end
 
 When adding or modifying a public API, both languages must be maintained in sync.
 
-Generating single-language API docs: run `im_flutter_sdk/scripts/gen-apidoc.sh [cn|en]` (default `cn`). The script strips the other language block and the marker lines in a temporary copy, then generates HTML with `dart doc`, outputting to `im_flutter_sdk/output/apidoc-<lang>/` (gitignored).
+Generating single-language API docs: run `agora_chat_sdk/scripts/gen-apidoc.sh [cn|en]` (default `cn`). The script strips the other language block and the marker lines in a temporary copy, then generates HTML with `dart doc`, outputting to `agora_chat_sdk/output/apidoc-<lang>/` (gitignored).
 
 ## Standard Chain for Adding an API
 
@@ -126,12 +126,12 @@ Follow an existing API (e.g. `loadConversationMessagesWithKeyword`) and implemen
 
 | Layer | File | Action |
 |---|---|---|
-| Dart implementation | `im_flutter_sdk/lib/src/managers/{business}_manager.dart` | Add the public method with bilingual comments; assemble the request Map for nullable parameters with `putIfNotNull`; handle errors via `ChatError.hasErrorFromResult(result)`; convert return values to strongly-typed objects |
-| Dart constants | `im_flutter_sdk/lib/src/internal/chat_method_keys.dart` | Add a `static const String` method-name constant |
-| Android constants | `im_flutter_sdk_android/android/src/main/java/com/easemob/im_flutter_sdk/MethodKey.java` | Add a constant with the same name and value |
+| Dart implementation | `agora_chat_sdk/lib/src/managers/{business}_manager.dart` | Add the public method with bilingual comments; assemble the request Map for nullable parameters with `putIfNotNull`; handle errors via `ChatError.hasErrorFromResult(result)`; convert return values to strongly-typed objects |
+| Dart constants | `agora_chat_sdk/lib/src/internal/chat_method_keys.dart` | Add a `static const String` method-name constant |
+| Android constants | `agora_chat_sdk_android/android/src/main/java/com/easemob/agora_chat_sdk/MethodKey.java` | Add a constant with the same name and value |
 | Android implementation | `{Business}Wrapper.java` in the same directory | Register a branch in `onMethodCall`; validate parameters and convert types/enums; call the Hyphenate Android SDK async API; return a serializable structure via `updateObject` in the callback |
-| iOS constants | `im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/include/im_flutter_sdk_ios/MethodKeys.h` | Add a constant with the same name and value |
-| iOS implementation | `im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/{Business}Wrapper.m` | Register a branch in `handleMethodCall`; validate parameters and convert types/enums; call the Hyphenate iOS SDK; return via `wrapperCallBack` in completion |
+| iOS constants | `agora_chat_sdk_ios/ios/agora_chat_sdk_ios/Sources/agora_chat_sdk_ios/include/agora_chat_sdk_ios/MethodKeys.h` | Add a constant with the same name and value |
+| iOS implementation | `agora_chat_sdk_ios/ios/agora_chat_sdk_ios/Sources/agora_chat_sdk_ios/{Business}Wrapper.m` | Register a branch in `handleMethodCall`; validate parameters and convert types/enums; call the Hyphenate iOS SDK; return via `wrapperCallBack` in completion |
 
 Also required:
 
@@ -146,9 +146,9 @@ Pre-commit self-check:
 - [ ] Return structures can be correctly deserialized by Dart (watch generics such as `Map<String, List<String>>`)
 - [ ] Routing branches are registered on both Android and iOS
 
-Adding a Model: create a file under `im_flutter_sdk/lib/src/models/`, use the `Chat` prefix for the class name, implement `fromJson`/`toJson`, export it from `im_flutter_sdk/lib/im_flutter_sdk.dart`, and write bilingual comments.
+Adding a Model: create a file under `agora_chat_sdk/lib/src/models/`, use the `Chat` prefix for the class name, implement `fromJson`/`toJson`, export it from `agora_chat_sdk/lib/agora_chat_sdk.dart`, and write bilingual comments.
 
-Adding an event handler: define `Chat{Business}EventHandler` in `im_flutter_sdk/lib/src/handlers/manager_event_handler.dart`, implement `addEventHandler`/`removeEventHandler` in the corresponding Manager, and add the native event names to `lib/src/internal/chat_event_keys.dart`.
+Adding an event handler: define `Chat{Business}EventHandler` in `agora_chat_sdk/lib/src/handlers/manager_event_handler.dart`, implement `addEventHandler`/`removeEventHandler` in the corresponding Manager, and add the native event names to `lib/src/internal/chat_event_keys.dart`.
 
 ## Versioning and CHANGELOG
 
@@ -182,7 +182,7 @@ Iron rules (one-directional flow, non-negotiable):
 
 ## Platform Support
 
-iOS supports both CocoaPods and Swift Package Manager integration, sharing the same source (`ios/im_flutter_sdk_ios/Sources/`). The two integration paths must keep the same native SDK version: CocoaPods goes through `im_flutter_sdk_ios.podspec` (HyphenateChat 4.22.1, deployment target 13.0); SPM goes through `ios/im_flutter_sdk_ios/Package.swift` (HyphenateChat_iOS 4.22.1, deployment target 13.0).
+iOS supports both CocoaPods and Swift Package Manager integration, sharing the same source (`ios/agora_chat_sdk_ios/Sources/`). The two integration paths must keep the same native SDK version: CocoaPods goes through `agora_chat_sdk_ios.podspec` (HyphenateChat 4.22.1, deployment target 13.0); SPM goes through `ios/agora_chat_sdk_ios/Package.swift` (HyphenateChat_iOS 4.22.1, deployment target 13.0).
 
 | Platform | Minimum version |
 |---|---|

@@ -41,8 +41,8 @@ dependencies:
 
   file_picker: ^13.1.0
 
-  im_flutter_sdk:
-    path: ../im_flutter_sdk
+  agora_chat_sdk:
+    path: ../agora_chat_sdk
 
 
 
