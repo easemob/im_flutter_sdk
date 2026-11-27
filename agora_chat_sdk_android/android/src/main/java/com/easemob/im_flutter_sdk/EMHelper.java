@@ -65,6 +65,7 @@ class OptionsHelper {
 
     static EMOptions fromJson(JSONObject json, Context context) throws JSONException {
         EMOptions options = new EMOptions();
+        options.setUseAgoraChatDomain(true);
         if(json.has("appKey")) {
             options.setAppKey(json.getString("appKey"));
         }else {

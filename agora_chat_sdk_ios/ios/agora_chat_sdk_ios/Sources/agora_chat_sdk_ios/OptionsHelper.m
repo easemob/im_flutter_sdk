@@ -72,6 +72,7 @@
     // Dart-side `debugMode` option. The log file is written by core
     // regardless of this switch.
     options.enableConsoleLog = NO;
+    options.useAgoraChatDomain = YES;
     options.enableDeliveryAck = [aJson[@"requireDeliveryAck"] boolValue];
     options.sortMessageByServerTime = [aJson[@"sortMessageByServerTime"] boolValue];
     options.autoAcceptFriendInvitation = [aJson[@"acceptInvitationAlways"] boolValue];
