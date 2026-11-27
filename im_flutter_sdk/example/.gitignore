@@ -14,3 +14,5 @@ build/
 *.iml
 .flutter-plugins
 .flutter-plugins-dependencies
+/analysis_options.yaml
+/test/
